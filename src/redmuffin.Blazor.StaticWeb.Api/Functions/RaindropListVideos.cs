@@ -15,7 +15,7 @@ using redmuffin.Blazor.StaticWeb.Api.Core;
 
 namespace redmuffin.Blazor.StaticWeb.Api.Functions;
 
-public class VideosFunction(ILogger<VideosFunction> logger, IOptions<Settings> settings)
+public class RaindropListVideos(ILogger<RaindropListVideos> logger, IOptions<Settings> settings)
 {
 	private const string TargetCollectionId = "56109697";
 
@@ -33,7 +33,7 @@ public class VideosFunction(ILogger<VideosFunction> logger, IOptions<Settings> s
 	/// 3. Parse the JSON response and extract video items.
 	/// 4. Handle errors gracefully with proper logging and HTTP status codes.
 	/// </summary>
-	[Function("ListVideos")]
+	[Function("RaindropListVideos")]
 	public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req)
 	{
 		logger.LogInformation("Videos function processed a request.");

@@ -26,7 +26,7 @@ public partial class VideosPage
 		_videoData = null;
 		try
 		{
-			var response = await Http.GetAsync("/api/ListVideos");
+			var response = await Http.GetAsync("/api/RaindropListVideos");
 			if (response.IsSuccessStatusCode)
 			{
 				_videoData = await response.Content.ReadAsStringAsync();

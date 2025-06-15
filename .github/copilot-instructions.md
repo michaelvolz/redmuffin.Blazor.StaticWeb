@@ -92,12 +92,10 @@ This repository is a C# Blazor WebAssembly project targeting .NET 9, built with 
 ## 5. Testing & Documentation
 
 - **Unit Tests:**  
-  - Use xUnit for business logic and service classes
-  - Use bUnit for component testing
-- **Integration/E2E:**  
-  - Use Playwright for UI-level tests and flows
-- **Accessibility Tests:**  
-  - Use bUnit/axe or Playwright accessibility checks
+  - Use TUnit for business logic and service classes
+  - Instead of using [Fact] use [Test] for testmethods
+  - For data-driven tests, use [Tests] with [Arguments]
+
 - **Documentation:**  
   - Provide XML docs for all public APIs
   - Keep README, Wiki, or OpenAPI specs updated
