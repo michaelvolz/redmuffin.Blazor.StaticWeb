@@ -1,34 +1,48 @@
 using System.Net;
+using System.Text;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using NSubstitute;
 using redmuffin.Blazor.StaticWeb.Api.Core;
 using redmuffin.Blazor.StaticWeb.Api.Functions;
+using redmuffin.Blazor.StaticWeb.Api.Tests.Helpers;
 
+#pragma warning disable MA0004
 #pragma warning disable CA1707, VSTHRD200
 
 namespace redmuffin.Blazor.StaticWeb.Api.Tests.Functions;
 
-public class RaindropListVideosTests
+public class RaindropListVideosTests : TestBase
 {
 	[Test]
 	public async Task Run_ReturnsOkResponse_WhenApiCallSucceeds()
 	{
-		// Arrange
+		var testToken = Configuration["Values:RainDropTestToken"];
+		if (string.IsNullOrWhiteSpace(testToken)) Assert.Fail("RainDropTestToken is null or whitespace.");
+
+		var settings = Options.Create(new Settings { RainDropTestToken = testToken });
 		var logger = Substitute.For<ILogger<RaindropListVideos>>();
-		var settings = Options.Create(new Settings { RainDropTestToken = "dummy-token" });
 		var function = new RaindropListVideos(logger, settings);
+
+		var request = JsonConvert.SerializeObject("dummy-text");
+		var body = new MemoryStream(Encoding.ASCII.GetBytes(request));
 		var context = Substitute.For<FunctionContext>();
-		var req = Substitute.For<HttpRequestData>(context);
-		var response = Substitute.For<HttpResponseData>(context);
-		req.CreateResponse(HttpStatusCode.OK).Returns(response);
+		var requestData = new FakeHttpRequestData(
+			context,
+			new Uri("http://localhost:7044/SubscribeFunc"),
+			body);
 
-		// Act
-		var result = await function.Run(req).ConfigureAwait(false);
+		// TODO: Find a way to mock the WriteAsJsonAsync method in HttpResponseData, or use a different approach to handle the response serialization.
 
-		// Assert
-		await Assert.That(result.Body.Length > 0).IsTrue();
+		var result = await function.Run(requestData);
+
+		result.Body.Position = 0; // Reset the position to the beginning of the stream
+		using var reader = new StreamReader(result.Body);
+		var responseBody = await reader.ReadToEndAsync();
+
+		await Assert.That(result.StatusCode).IsEqualTo(HttpStatusCode.OK);
+		await Assert.That(responseBody.Length > 0).IsTrue();
 	}
 }
