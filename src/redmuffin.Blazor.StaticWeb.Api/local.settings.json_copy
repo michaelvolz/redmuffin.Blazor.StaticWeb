@@ -1,0 +1,13 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "RainDropClientId": "remove _copy from the filename and replace these values with concrete ones for a local test app. don't put file into git!!",
+    "RainDropClientSecret": "remove _copy from the filename and replace these values with concrete ones for a local test app. don't put file into git!!",
+    "RainDropTestToken": "remove _copy from the filename and replace these values with concrete ones for a local test app. don't put file into git!!"
+  },
+  "Host": {
+    "CORS": "*"
+  }
+}
