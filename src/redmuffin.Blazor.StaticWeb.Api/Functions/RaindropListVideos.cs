@@ -9,9 +9,7 @@ using Microsoft.Extensions.Options;
 
 using redmuffin.Blazor.StaticWeb.Api.Core;
 
-#pragma warning disable CA1848 // Use the LoggerMessage delegates
-#pragma warning disable CA1001 // Types that own disposable fields should be disposable
-#pragma warning disable MA0004 // Use Task.ConfigureAwait(false)
+#pragma warning disable CA1848, CA1001, MA0004
 
 namespace redmuffin.Blazor.StaticWeb.Api.Functions;
 
