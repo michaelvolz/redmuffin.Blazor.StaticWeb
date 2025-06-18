@@ -1,0 +1,53 @@
+﻿using System.Diagnostics;
+using System.Text.Json;
+using Azure.Core.Serialization;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+
+namespace redmuffin.Blazor.StaticWeb.Api.Tests.Functions;
+
+public class TestFunctionContext : FunctionContext
+{
+	public TestFunctionContext()
+	{
+		var jsonSerializerOptions = new JsonSerializerOptions
+		{
+			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+			WriteIndented = true,
+		};
+
+		var workerOptions = new WorkerOptions
+		{
+			Serializer = new JsonObjectSerializer(),
+		};
+
+		var serviceCollection = new ServiceCollection()
+			.AddSingleton<IOptions<WorkerOptions>>(new OptionsWrapper<WorkerOptions>(workerOptions))
+			.AddSingleton(jsonSerializerOptions);
+
+		serviceCollection.AddFunctionsWorkerDefaults();
+
+		InstanceServices = serviceCollection.BuildServiceProvider();
+
+		var serializer = GetObjectSerializer(InstanceServices);
+
+		Debug.Assert(serializer is not null, "Serializer not found!");
+	}
+
+	public override FunctionDefinition FunctionDefinition => new TestFunctionDefinition();
+	public override IDictionary<object, object> Items { get; set; } = null!;
+	public override IInvocationFeatures Features { get; } = null!;
+	public override string InvocationId => Guid.NewGuid().ToString();
+	public override string FunctionId => "RaindropListVideos";
+	public override TraceContext TraceContext => new TestTraceContext();
+	public override BindingContext BindingContext => new TestBindingContext();
+	public override RetryContext RetryContext => null!;
+	public override IServiceProvider InstanceServices { get; set; }
+
+	private static ObjectSerializer GetObjectSerializer(IServiceProvider instanceServices)
+	{
+		return instanceServices.GetService<IOptions<WorkerOptions>>()?.Value?.Serializer
+		       ?? throw new InvalidOperationException("A serializer is not configured for the worker.");
+	}
+}
