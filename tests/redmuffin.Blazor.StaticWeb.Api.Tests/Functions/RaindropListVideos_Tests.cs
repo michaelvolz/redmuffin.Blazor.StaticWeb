@@ -15,14 +15,11 @@ public class RaindropListVideos_Tests : TestBase
 	{
 		// Arrange
 		var logger = NullLogger<RaindropListVideos>.Instance;
-
 		var testToken = Configuration["Values:RainDropTestToken"];
 		if (string.IsNullOrWhiteSpace(testToken)) Assert.Fail("RainDropTestToken is null or whitespace.");
-
 		var settings = Options.Create(new Settings { RainDropTestToken = testToken });
-
 		var function = new RaindropListVideos(logger, settings);
-		var functionContext = new TestFunctionContext("RaindropListVideos");
+		var functionContext = new TestFunctionContext(nameof(RaindropListVideos));
 		var request = new TestHttpRequestData(functionContext);
 
 		TestHttpResponseData? response = null;
@@ -41,10 +38,7 @@ public class RaindropListVideos_Tests : TestBase
 		finally
 		{
 			// Cleanup
-			if (response is IAsyncDisposable asyncDisposableResponse)
-			{
-				await asyncDisposableResponse.DisposeAsync().ConfigureAwait(false);
-			}
+			if (response is IAsyncDisposable asyncDisposableResponse) await asyncDisposableResponse.DisposeAsync().ConfigureAwait(false);
 		}
 	}
 }
