@@ -22,7 +22,7 @@ public class RaindropListVideos_Tests : TestBase
 		var settings = Options.Create(new Settings { RainDropTestToken = testToken });
 
 		var function = new RaindropListVideos(logger, settings);
-		var functionContext = new TestFunctionContext();
+		var functionContext = new TestFunctionContext("RaindropListVideos");
 		var request = new TestHttpRequestData(functionContext);
 
 		TestHttpResponseData? response = null;

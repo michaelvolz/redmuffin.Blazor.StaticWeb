@@ -4,7 +4,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 
 #pragma warning disable CA1816
 
-namespace redmuffin.Blazor.StaticWeb.Api.Tests.Functions;
+namespace redmuffin.Blazor.StaticWeb.Api.Tests.Helpers;
 
 public class TestHttpResponseData(FunctionContext functionContext) : HttpResponseData(functionContext), IDisposable, IAsyncDisposable
 {

@@ -4,7 +4,7 @@ namespace redmuffin.Blazor.StaticWeb.Api.Tests.Helpers;
 
 public class TestBase
 {
-	protected IConfiguration Configuration { get; private set; } = new ConfigurationBuilder()
+	protected IConfiguration Configuration { get; } = new ConfigurationBuilder()
 		.SetBasePath(AppContext.BaseDirectory) // Points to bin/debug/net8.0
 		.AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
 		.Build();
