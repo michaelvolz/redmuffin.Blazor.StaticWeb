@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.WebUtilities;
@@ -72,7 +73,9 @@ public partial class Redirect
 	{
 		Logger.LogInformation("ExchangeCodeForTokenAsync started with code: {Code}", code);
 		var apiRequest = new ApiExchangeRequest { Code = code, RedirectUri = _redirectUri };
-		var jsonRequest = JsonSerializer.Serialize(apiRequest);
+
+		// Use JsonSerializerContext for serialization to avoid trimming issues
+		var jsonRequest = JsonSerializer.Serialize(apiRequest, ApiExchangeRequestContext.Default.ApiExchangeRequest);
 		Logger.LogDebug("API Request JSON: {JsonRequest}", jsonRequest);
 		var requestContent = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
@@ -86,7 +89,8 @@ public partial class Redirect
 			{
 				Logger.LogInformation("Response was successful. Attempting to deserialize.");
 				var responseStream = await response.Content.ReadAsStreamAsync();
-				var apiResponse = await JsonSerializer.DeserializeAsync<ApiExchangeResponse>(responseStream, JsonSerializerOptions);
+				var apiResponse = await JsonSerializer.DeserializeAsync<ApiExchangeResponse>(
+					responseStream, ApiExchangeRequestContext.Default.ApiExchangeResponse);
 				Logger.LogDebug("API Response: {@ApiResponse}", apiResponse);
 
 				if (!string.IsNullOrEmpty(apiResponse?.AccessToken))
@@ -118,7 +122,8 @@ public partial class Redirect
 				ApiExchangeResponse? apiErrorResponse = null;
 				try
 				{
-					apiErrorResponse = JsonSerializer.Deserialize<ApiExchangeResponse>(errorContentString, JsonSerializerOptions);
+					apiErrorResponse = JsonSerializer.Deserialize<ApiExchangeResponse>(
+						errorContentString, ApiExchangeRequestContext.Default.ApiExchangeResponse);
 				}
 				catch (JsonException jsonEx)
 				{
@@ -137,15 +142,21 @@ public partial class Redirect
 		Logger.LogInformation("ExchangeCodeForTokenAsync finished.");
 	}
 
-	private class ApiExchangeRequest
+	public class ApiExchangeRequest
 	{
 		public string Code { get; set; } = string.Empty;
 		public string? RedirectUri { get; set; }
 	}
 
-	private class ApiExchangeResponse
+	public class ApiExchangeResponse
 	{
 		public string? AccessToken { get; set; }
 		public string? Error { get; set; }
+	}
+
+	[JsonSerializable(typeof(ApiExchangeRequest))]
+	[JsonSerializable(typeof(ApiExchangeResponse))]
+	public partial class ApiExchangeRequestContext : JsonSerializerContext
+	{
 	}
 }
