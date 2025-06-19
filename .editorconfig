@@ -36,30 +36,30 @@ dotnet_diagnostic.MA0038.severity = none # default|none|silent|suggestion|warnin
 
 
 # Stylecop.Analyzers
-dotnet_diagnostic.SA0001.severity = none
-dotnet_diagnostic.SA1200.severity = none
-dotnet_diagnostic.SA1633.severity = none
-dotnet_diagnostic.SA1600.severity = none
-dotnet_diagnostic.SA1127.severity = none
-dotnet_diagnostic.SA1649.severity = none
-dotnet_diagnostic.SA1402.severity = none
-dotnet_diagnostic.SA1117.severity = none
-# dotnet_diagnostic.SA1116.severity = none
-dotnet_diagnostic.SA1503.severity = none
-dotnet_diagnostic.SA1516.severity = none
-dotnet_diagnostic.SA1027.severity = none
-dotnet_diagnostic.SA1300.severity = none
-dotnet_diagnostic.SA1309.severity = none
-dotnet_diagnostic.SA1101.severity = none
-dotnet_diagnostic.SA1629.severity = none
-dotnet_diagnostic.SA1133.severity = none
-dotnet_diagnostic.SA1009.severity = none
-dotnet_diagnostic.SA1111.severity = none
-dotnet_diagnostic.SA1601.severity = none
-dotnet_diagnostic.SA1134.severity = none
-dotnet_diagnostic.SA1512.severity = none
-dotnet_diagnostic.SA1005.severity = none
-dotnet_diagnostic.SA1515.severity = none
+dotnet_diagnostic.SA0001.severity = none # SA0001: XML documentation comments must be valid
+dotnet_diagnostic.SA1005.severity = none # SA1005: Single-line comments must not be preceded by blank lines
+dotnet_diagnostic.SA1009.severity = none # SA1009: Closing parenthesis must be on the same line
+dotnet_diagnostic.SA1027.severity = none # SA1027: Tabs must not be used
+dotnet_diagnostic.SA1101.severity = none # SA1101: Prefix local calls with 'this.'
+dotnet_diagnostic.SA1111.severity = none # SA1111: Closing parenthesis must be on the same line as the last parameter
+dotnet_diagnostic.SA1117.severity = none # SA1117: Parameters must be on separate lines
+dotnet_diagnostic.SA1127.severity = none # SA1127: Generic type constraints must be on separate lines
+dotnet_diagnostic.SA1133.severity = none # SA1133: Do not combine attributes
+dotnet_diagnostic.SA1134.severity = none # SA1134: Attributes must be on separate lines
+dotnet_diagnostic.SA1200.severity = none # SA1200: Using directives must be placed correctly
+dotnet_diagnostic.SA1300.severity = none # SA1300: Element names must begin with an uppercase letter
+dotnet_diagnostic.SA1309.severity = none # SA1309: Field names must not begin with an underscore
+dotnet_diagnostic.SA1310.severity = none # SA1310: Field names must not contain underscores
+dotnet_diagnostic.SA1402.severity = none # SA1402: File may only contain a single type
+dotnet_diagnostic.SA1503.severity = none # SA1503: Braces must not be omitted
+dotnet_diagnostic.SA1512.severity = none # SA1512: Single-line comments must not be followed by blank lines
+dotnet_diagnostic.SA1515.severity = none # SA1515: Single-line comments must be preceded by blank lines
+dotnet_diagnostic.SA1516.severity = none # SA1516: Elements must be separated by blank lines
+dotnet_diagnostic.SA1600.severity = none # SA1600: Elements must be documented
+dotnet_diagnostic.SA1601.severity = none # SA1601: Partial elements must be documented
+dotnet_diagnostic.SA1629.severity = none # SA1629: Documentation text must end with a period
+dotnet_diagnostic.SA1633.severity = none # SA1633: File must have a header
+dotnet_diagnostic.SA1649.severity = none # SA1649: File name must match first type name
 
 
 # Microsoft.CodeAnalysis.NetAnalyzers
@@ -83,6 +83,12 @@ dotnet_style_qualification_for_field = false:suggestion
 dotnet_style_qualification_for_method = false:suggestion
 dotnet_style_qualification_for_property = false:suggestion
 dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggestion
+
+# Enforce underscores in namespaces, method names, static variables, and static fields
+csharp_style_namespace_underscore = true:suggestion
+csharp_style_method_name_underscore = true:suggestion
+csharp_style_static_variable_underscore = true:suggestion
+csharp_style_static_field_underscore = true:suggestion
 
 # ReSharper properties
 resharper_csharp_max_line_length = 160

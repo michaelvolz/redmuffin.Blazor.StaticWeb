@@ -1,3 +1,3 @@
 [*.cs]
 dotnet_diagnostic.CA1707.severity = none
-reSharper_inconsistent_naming_highlighting = none
+#reSharper_inconsistent_naming_highlighting = none
