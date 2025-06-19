@@ -21,16 +21,14 @@ public class RaindropListVideos(ILogger<RaindropListVideos> logger, IOptions<Set
 	private readonly Settings _settings = settings.Value;
 
 	/// <summary>
-	/// This method handles HTTP GET requests to fetch a list of videos from the Raindrop API.
-	/// It uses an HttpClient to send a request to the API, retrieves the response, and processes the JSON data.
-	/// If the request is successful, it returns the list of videos in the response.
-	/// If the request fails or an error occurs, it returns an appropriate error message.
-	/// Key steps:
-	/// 1. Set up authorization headers using a token from the settings.
-	/// 2. Send a GET request to the Raindrop API endpoint.
-	/// 3. Parse the JSON response and extract video items.
-	/// 4. Handle errors gracefully with proper logging and HTTP status codes.
+	/// Handles HTTP GET requests to fetch a list of videos from the Raindrop API.
 	/// </summary>
+	/// <param name="req">The HTTP request data containing the trigger information.</param>
+	/// <returns>
+	/// An <see cref="HttpResponseData"/> object containing the response data.
+	/// If successful, it includes the list of videos retrieved from the Raindrop API.
+	/// If an error occurs, it includes an appropriate error message.
+	/// </returns>
 	[Function("RaindropListVideos")]
 	public async Task<HttpResponseData> RunAsync([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req)
 	{
