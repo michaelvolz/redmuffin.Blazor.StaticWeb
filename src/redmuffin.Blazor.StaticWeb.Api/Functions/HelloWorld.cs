@@ -5,15 +5,15 @@ using Microsoft.Extensions.Logging;
 
 namespace redmuffin.Blazor.StaticWeb.Api.Functions;
 
-public class HelloWorld(ILogger<HelloWorld> logger)
+public partial class HelloWorld(ILogger<HelloWorld> logger)
 {
-	private static readonly Action<ILogger, string, Exception?> Log_TriggerProcessed =
-		LoggerMessage.Define<string>(LogLevel.Information, new EventId(1, "Hello"), "C# HTTP trigger function processed a request. {Class}!");
+	[LoggerMessage(1, LogLevel.Information, "C# HTTP trigger function processed a request. {Class}!", EventName = "Log_TriggerProcessed")]
+	public static partial void Log_TriggerProcessed(ILogger logger, string @class);
 
 	[Function("HelloWorld")]
 	public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequest req)
 	{
-		Log_TriggerProcessed(logger, nameof(HelloWorld), null);
+		Log_TriggerProcessed(logger, nameof(HelloWorld));
 		return new OkObjectResult("Welcome to Azure Functions!");
 	}
 }
