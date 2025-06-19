@@ -134,6 +134,8 @@ The project follows a [feature folder structure](https://dev.to/smotastic/layer-
 
 - **[TUnit](https://tunit.net/)**  
   A free, open-source, community-focused unit testing tool for .NET. Used for testing the application.
+- **[NSubstitute](https://nsubstitute.github.io/)**  
+  A friendly mocking library for .NET, used for creating test doubles and simplifying unit tests.
 
 ### Development Tools
 
