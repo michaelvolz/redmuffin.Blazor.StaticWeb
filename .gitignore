@@ -362,3 +362,10 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /.idea
+/src/redmuffin.Blazor.StaticWeb.Api/__blobstorage__
+/src/redmuffin.Blazor.StaticWeb.Api/AzuriteConfig
+/src/redmuffin.Blazor.StaticWeb.Api/__azurite_db_blob_extent__.json
+/src/redmuffin.Blazor.StaticWeb.Api/__azurite_db_blob__.json
+/src/redmuffin.Blazor.StaticWeb.Api/__azurite_db_queue_extent__.json
+/src/redmuffin.Blazor.StaticWeb.Api/__azurite_db_queue__.json
+/src/redmuffin.Blazor.StaticWeb.Api/__azurite_db_table__.json
