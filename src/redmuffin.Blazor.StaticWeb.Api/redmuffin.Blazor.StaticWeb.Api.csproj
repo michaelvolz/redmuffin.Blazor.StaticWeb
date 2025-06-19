@@ -10,6 +10,23 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="__blobstorage__\**" />
+    <EmbeddedResource Remove="__blobstorage__\**" />
+    <None Remove="__blobstorage__\**" />
+    <Watch Remove="__blobstorage__\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="AzuriteConfig" />
+    <None Remove="__azurite_db_blob_extent__.json" />
+    <None Remove="__azurite_db_blob__.json" />
+    <None Remove="__azurite_db_queue_extent__.json" />
+    <None Remove="__azurite_db_queue__.json" />
+    <None Remove="__azurite_db_table__.json" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.0.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.3.0" />
