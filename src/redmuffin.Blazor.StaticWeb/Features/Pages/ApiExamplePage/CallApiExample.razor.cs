@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 
-namespace redmuffin.Blazor.StaticWeb.Features.ApiExample;
+namespace redmuffin.Blazor.StaticWeb.Features.Pages.ApiExamplePage;
 
 public partial class CallApiExample
 {
