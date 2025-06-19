@@ -7,14 +7,21 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using redmuffin.Blazor.StaticWeb.Api.Core;
 
+#pragma warning disable CA1816, CA1848
+
 namespace redmuffin.Blazor.StaticWeb.Api.Functions;
 
-public class RaindropListVideos(ILogger<RaindropListVideos> logger, IOptions<Settings> settings)
+public class RaindropListVideos(ILogger<RaindropListVideos> logger, IOptions<Settings> settings) : IDisposable
 {
 	private const string TargetCollectionId = "56109697";
 
 	private readonly HttpClient _httpClient = new();
 	private readonly Settings _settings = settings.Value;
+
+	public void Dispose()
+	{
+		_httpClient.Dispose();
+	}
 
 	/// <summary>
 	///     Handles HTTP GET requests to fetch a list of videos from the Raindrop API.
@@ -56,7 +63,8 @@ public class RaindropListVideos(ILogger<RaindropListVideos> logger, IOptions<Set
 
 			logger.LogWarning("Raindrop API request failed with status code: {StatusCode}. Response: {Response}", response.StatusCode, json);
 			var errResp = req.CreateResponse(HttpStatusCode.BadRequest);
-			await errResp.WriteAsJsonAsync(new { Error = $"Raindrop API request failed: {response.StatusCode}", Details = json },
+			await errResp.WriteAsJsonAsync(
+				new { Error = $"Raindrop API request failed: {response.StatusCode}", Details = json },
 				req.FunctionContext.CancellationToken).ConfigureAwait(false);
 			return errResp;
 		}
