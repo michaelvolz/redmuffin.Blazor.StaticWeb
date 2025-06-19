@@ -45,6 +45,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "redmuffin.Blazor.StaticWeb.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "redmuffin.Blazor.StaticWeb.Api.Tests", "tests\redmuffin.Blazor.StaticWeb.Api.Tests\redmuffin.Blazor.StaticWeb.Api.Tests.csproj", "{D2FC75C8-211A-4083-AF47-2BD761611B97}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "redmuffin.Blazor.StaticWeb.Common", "src\redmuffin.Blazor.StaticWeb.Common\redmuffin.Blazor.StaticWeb.Common.csproj", "{0D4EDCD5-BFA7-41B7-A6EF-2BA2B87EA048}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{D2FC75C8-211A-4083-AF47-2BD761611B97}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D2FC75C8-211A-4083-AF47-2BD761611B97}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D2FC75C8-211A-4083-AF47-2BD761611B97}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D4EDCD5-BFA7-41B7-A6EF-2BA2B87EA048}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D4EDCD5-BFA7-41B7-A6EF-2BA2B87EA048}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D4EDCD5-BFA7-41B7-A6EF-2BA2B87EA048}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D4EDCD5-BFA7-41B7-A6EF-2BA2B87EA048}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

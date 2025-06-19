@@ -1,0 +1,34 @@
+@page "/videos"
+@inject HttpClient Http
+
+<PageTitle>Videos</PageTitle>
+
+<h1>Videos</h1>
+
+<button class="button primary" @onclick="LoginWithRaindropAsync">Login with Raindrop.io</button>
+<button class="button primary" @onclick="FetchVideosAsync">Fetch Videos</button>
+
+@if (_videoItems != null && _videoItems.Any())
+{
+    <div>
+        <h2>Video Data:</h2>
+        <ul>
+            @foreach (var video in _videoItems)
+            {
+                <li>
+                    <h3>@(string.IsNullOrEmpty(video.Title) ? "No Title Available" : video.Title)</h3>
+                    <p>@(string.IsNullOrEmpty(video.Excerpt) ? "No Excerpt Available" : video.Excerpt)</p>
+                    <img src="@video.Cover" alt="Video Cover" style="max-width: 200px;" />
+                    <p>Created: @video.Created.ToString("yyyy-MM-dd")</p>
+                    <a href="@video.Link" target="_blank">Watch Video</a>
+                </li>
+            }
+        </ul>
+    </div>
+}
+else if (!string.IsNullOrEmpty(_errorMessage))
+{
+    <div class="callout alert">
+        <p>@_errorMessage</p>
+    </div>
+}
