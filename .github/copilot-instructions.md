@@ -92,6 +92,7 @@ This repository is a C# Blazor WebAssembly project targeting .NET 9, built with 
 ## 5. Testing & Documentation
 
 - **Unit Tests:**  
+  - Do NOT use NUnit or xUnit
   - Use TUnit for business logic and service classes
   - Instead of using [Fact] use [Test] for testmethods
   - For data-driven tests, use [Tests] with [Arguments]
