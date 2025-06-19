@@ -18,12 +18,15 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
 	public async Task<HttpResponseData> RunAsync([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData req)
 	{
 		logger.LogInformation("ExchangeRaindropCode function processed a request.");
-		var request = await JsonSerializer.DeserializeAsync<ExchangeRequest>(req.Body, cancellationToken: req.FunctionContext.CancellationToken);
+
+		var token = req.FunctionContext.CancellationToken;
+
+		var request = await JsonSerializer.DeserializeAsync<ExchangeRequest>(req.Body, cancellationToken: token);
 		if (request == null || string.IsNullOrWhiteSpace(request.Code))
 		{
 			logger.LogWarning("Request is null or code is missing.");
 			var badResp = req.CreateResponse(HttpStatusCode.BadRequest);
-			await badResp.WriteAsJsonAsync(new ExchangeResponse { Error = "Missing code." }, req.FunctionContext.CancellationToken);
+			await badResp.WriteAsJsonAsync(new ExchangeResponse { Error = "Missing code." }, token);
 			return badResp;
 		}
 
@@ -33,7 +36,7 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
 			logger.LogWarning("Redirect URI is missing.");
 			// Optionally set a default or require it
 			var badResp = req.CreateResponse(HttpStatusCode.BadRequest);
-			await badResp.WriteAsJsonAsync(new ExchangeResponse { Error = "Missing redirect_uri." }, req.FunctionContext.CancellationToken);
+			await badResp.WriteAsJsonAsync(new ExchangeResponse { Error = "Missing redirect_uri." }, token);
 			return badResp;
 		}
 
@@ -46,8 +49,8 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
 		try
 		{
 			logger.LogInformation("Posting to Raindrop API.");
-			var response = await _httpClient.PostAsync("https://raindrop.io/oauth/access_token", content, req.FunctionContext.CancellationToken);
-			var json = await response.Content.ReadAsStringAsync(req.FunctionContext.CancellationToken);
+			var response = await _httpClient.PostAsync("https://raindrop.io/oauth/access_token", content, token);
+			var json = await response.Content.ReadAsStringAsync(token);
 			if (response.IsSuccessStatusCode)
 			{
 				logger.LogInformation("Successfully received response from Raindrop API.");
@@ -57,21 +60,20 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
 					var accessToken = tokenElem.GetString();
 					logger.LogInformation("Access token retrieved successfully.");
 					var okResp = req.CreateResponse(HttpStatusCode.OK);
-					await okResp.WriteAsJsonAsync(new ExchangeResponse { AccessToken = accessToken }, req.FunctionContext.CancellationToken);
+					await okResp.WriteAsJsonAsync(new ExchangeResponse { AccessToken = accessToken }, token);
 					return okResp;
 				}
 
 				logger.LogWarning("No access_token in response from Raindrop API.");
 				var errResp = req.CreateResponse(HttpStatusCode.BadRequest);
-				await errResp.WriteAsJsonAsync(new ExchangeResponse { Error = "No access_token in response." }, req.FunctionContext.CancellationToken);
+				await errResp.WriteAsJsonAsync(new ExchangeResponse { Error = "No access_token in response." }, token);
 				return errResp;
 			}
 			else
 			{
 				logger.LogWarning("Token request failed with status code: {StatusCode}. Response: {Response}", response.StatusCode, json);
 				var errResp = req.CreateResponse(HttpStatusCode.BadRequest);
-				await errResp.WriteAsJsonAsync(new ExchangeResponse { Error = $"Token request failed: {response.StatusCode}" },
-					req.FunctionContext.CancellationToken);
+				await errResp.WriteAsJsonAsync(new ExchangeResponse { Error = $"Token request failed: {response.StatusCode}" }, token);
 				return errResp;
 			}
 		}
@@ -79,7 +81,7 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
 		{
 			logger.LogError(ex, "An error occurred while exchanging Raindrop code.");
 			var errResp = req.CreateResponse(HttpStatusCode.InternalServerError);
-			await errResp.WriteAsJsonAsync(new ExchangeResponse { Error = ex.Message }, req.FunctionContext.CancellationToken);
+			await errResp.WriteAsJsonAsync(new ExchangeResponse { Error = ex.Message }, token);
 			return errResp;
 		}
 	}
