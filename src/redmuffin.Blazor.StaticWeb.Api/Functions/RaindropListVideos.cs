@@ -32,7 +32,7 @@ public class RaindropListVideos(ILogger<RaindropListVideos> logger, IOptions<Set
 	/// 4. Handle errors gracefully with proper logging and HTTP status codes.
 	/// </summary>
 	[Function("RaindropListVideos")]
-	public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req)
+	public async Task<HttpResponseData> RunAsync([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req)
 	{
 		logger.LogInformation("Videos function processed a request.");
 

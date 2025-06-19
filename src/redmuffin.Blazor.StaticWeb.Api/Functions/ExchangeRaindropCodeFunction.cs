@@ -21,7 +21,7 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
 	private readonly Settings _settings = settings.Value;
 
 	[Function("ExchangeRaindropCode")]
-	public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData req)
+	public async Task<HttpResponseData> RunAsync([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData req)
 	{
 		logger.LogInformation("ExchangeRaindropCode function processed a request.");
 		var request = await JsonSerializer.DeserializeAsync<ExchangeRequest>(req.Body);

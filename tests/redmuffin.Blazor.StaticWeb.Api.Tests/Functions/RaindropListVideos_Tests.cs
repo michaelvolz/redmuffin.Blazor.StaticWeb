@@ -26,7 +26,7 @@ public class RaindropListVideos_Tests : TestBase
 		try
 		{
 			// Act
-			response = (TestHttpResponseData)await function.Run(request).ConfigureAwait(false);
+			response = (TestHttpResponseData)await function.RunAsync(request).ConfigureAwait(false);
 
 			// Assert
 			await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.OK);
