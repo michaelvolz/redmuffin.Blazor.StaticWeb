@@ -5,6 +5,11 @@ namespace redmuffin.Blazor.StaticWeb.Api.Tests;
 
 public class TestDeserialization
 {
+	private static readonly JsonSerializerOptions JsonSerializerOptions = new()
+	{
+		PropertyNameCaseInsensitive = true,
+	};
+
 	[Test]
 	public async Task TestVideosDeserializationAsync()
 	{
@@ -13,10 +18,7 @@ public class TestDeserialization
 			var jsonFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Data", "Videos.json");
 			var jsonData = await File.ReadAllTextAsync(jsonFilePath).ConfigureAwait(false);
 
-			var videoItems = JsonSerializer.Deserialize<List<RaindropItem>>(jsonData, new JsonSerializerOptions
-			{
-				PropertyNameCaseInsensitive = true,
-			});
+			var videoItems = JsonSerializer.Deserialize<List<RaindropItem>>(jsonData, JsonSerializerOptions);
 
 			await Assert.That(videoItems != null).IsTrue();
 			await Assert.That(videoItems?.Count > 0).IsTrue();
@@ -26,12 +28,8 @@ public class TestDeserialization
 				await Assert.That(item.Title is { } s).IsTrue();
 
 				foreach (var highlight in item.Highlights)
-				{
 					if (highlight.CreatorRef is { Name: { Length: > 0 } })
-					{
 						await Assert.That(highlight.CreatorRef?.Name?.Length > 0).IsTrue();
-					}
-				}
 			}
 		}
 		catch (Exception ex)
