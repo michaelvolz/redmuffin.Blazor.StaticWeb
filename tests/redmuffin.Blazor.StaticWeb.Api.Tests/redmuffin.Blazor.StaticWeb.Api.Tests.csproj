@@ -23,4 +23,8 @@
     <ProjectReference Include="..\..\src\redmuffin.Blazor.StaticWeb.Api\redmuffin.Blazor.StaticWeb.Api.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Data\" />
+  </ItemGroup>
+
 </Project>
