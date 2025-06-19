@@ -1,0 +1,688 @@
+[
+  {
+    "_id": 1180248514,
+    "link": "https://www.youtube.com/watch?v=z_-nLK4Ps1Q",
+    "title": "The Breakthroughs Needed for AGI Have Already Been Made: OpenAI Former Research Head Bob McGrew",
+    "excerpt": "As OpenAI\u0027s former Head of Research, Bob McGrew witnessed the company\u0027s evolution from GPT-3\u2019s breakthrough to today\u0027s reasoning models. He argues that there are three legs of the stool for AGI\u2014Transformers, scaled pre-training, and reasoning\u2014and that the fundamentals that will shape the next decade-plus are already in place. He thinks 2025 will be defined by reasoning while pre-training hits diminishing returns. Bob discusses why the agent economy will price services at compute costs due to near-infinite supply, fundamentally disrupting industries like law and medicine, and how his children use ChatGPT to spark curiosity and agency. From robotics breakthroughs to managing brilliant researchers, Bob offers a unique perspective on AI\u2019s trajectory and where startups can still find defensible opportunities.\n\n\nHosted by: Stephanie Zhan and Sonya Huang, Sequoia Capital\n\n00:00 Introduction\n01:16 The Trifecta of AI: Pre-training, Post-training, and Reasoning\n02:19 Deep Dive into AI Reasoning\n03:53 Challenges and Future of Pre-training\n05:23 Exploring Post-training and Model Personality\n06:42 The Future of AI: Predictions and Controversies\n11:44 The Rise of AI Agents and Market Opportunities\n15:46 Robotics: The Next Frontier\n21:31 Proprietary Data and Its Value in AI\n24:22 Proprietary Data and Its Importance\n24:29 The Rapid Evolution of Coding\n25:25 The Future of Coding: Human vs. AI\n27:29 The Role of AgTech Software Engineers\n29:14 The Concept of \u0027Member of the Technical Staff\u0027\n31:11 Generational Differences in Using ChatGPT\n32:41 AI\u0027s Role in Enhancing Learning and Curiosity\n34:45 Preparing the Next Generation for AI\n38:57 Daily Uses of AI\n41:03 Managing High-Performing Teams\n46:39 Security in an Agentic World\n48:17 Conclusion and Final Thoughts",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 4134988
+    },
+    "cover": "https://i.ytimg.com/vi/z_-nLK4Ps1Q/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://i.ytimg.com/vi/z_-nLK4Ps1Q/maxresdefault.jpg",
+        "type": "image"
+      }
+    ],
+    "tags": [],
+    "important": false,
+    "reminder": { "date": null },
+    "removed": false,
+    "created": "2025-06-18T16:32:47.949Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 56109697,
+      "oid": 56109697
+    },
+    "highlights": [
+      {
+        "text": "As OpenAI\u0027s former Head of Research, Bob McGrew witnessed the company\u0027s evolution from GPT-3\u2019s breakthrough to today\u0027s reasoning models. He argues that there are three legs of the stool for AGI\u2014Transformers, scaled pre-training, and reasoning\u2014and that the fundamentals that will shape the next decade-plus are already in place. He thinks 2025 will be defined by reasoning while pre-training hits diminishing returns. Bob discusses why the agent economy will price services at compute costs due to near-infinite supply, fundamentally disrupting industries like law and medicine, and how his children use ChatGPT to spark curiosity and agency. From robotics breakthroughs to managing brilliant researchers, Bob offers a unique perspective on AI\u2019s trajectory and where startups can still find defensible opportunities.",
+        "note": "",
+        "created": "2025-06-18T16:32:47.938Z",
+        "lastUpdate": "2025-06-18T16:32:47.950Z",
+        "creatorRef": 4134988,
+        "_id": "6852ea2f70da8eca554f5f82"
+      }
+    ],
+    "lastUpdate": "2025-06-18T16:32:48.136Z",
+    "domain": "youtube.com",
+    "creatorRef": {
+      "_id": 4134988,
+      "avatar": "https://up.raindrop.io/user/avatars/413/498/8/1749048023155.jpeg",
+      "name": "MVolz",
+      "email": ""
+    },
+    "sort": 1180248514,
+    "collectionId": 56109697
+  },
+  {
+    "_id": 1180000895,
+    "link": "https://www.youtube.com/watch?v=n13GppYIMg4",
+    "title": "Ilya Sutskever Calls for Superalignment Before Data Centers Evolve Into Artificial Life",
+    "excerpt": "#ilyasutskever #ai #technology About Ilya Sutskever:Ilya Sutskever FRS is a Canadian-Israeli-Russian computer scientist specializing in machine learning. A l...",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 4134988
+    },
+    "cover": "https://i.ytimg.com/vi/n13GppYIMg4/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://i.ytimg.com/vi/n13GppYIMg4/maxresdefault.jpg",
+        "type": "image"
+      }
+    ],
+    "tags": [],
+    "important": false,
+    "reminder": { "date": null },
+    "removed": false,
+    "created": "2025-06-18T14:24:25.850Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 56109697,
+      "oid": 56109697
+    },
+    "highlights": [
+      {
+        "text": "About Ilya Sutskever:\nIlya Sutskever FRS is a Canadian-Israeli-Russian computer scientist specializing in machine learning. A leading figure in deep learning, he co-invented AlexNet, a groundbreaking convolutional neural network, alongside Alex Krizhevsky and Geoffrey Hinton.",
+        "note": "",
+        "created": "2025-06-18T14:24:25.839Z",
+        "lastUpdate": "2025-06-18T14:24:25.851Z",
+        "creatorRef": 4134988,
+        "_id": "6852cc19fa770da646f621ef"
+      }
+    ],
+    "lastUpdate": "2025-06-18T14:24:26.036Z",
+    "domain": "youtube.com",
+    "creatorRef": {
+      "_id": 4134988,
+      "avatar": "https://up.raindrop.io/user/avatars/413/498/8/1749048023155.jpeg",
+      "name": "MVolz",
+      "email": ""
+    },
+    "sort": 1180000895,
+    "collectionId": 56109697
+  },
+  {
+    "_id": 1156592993,
+    "link": "https://www.youtube.com/watch?v=XBQEdtXjlho",
+    "title": "Cursor Co-Founder Aman Sanger on the Journey from 0-$100M in 12 Months \u0026 the Future of Programming",
+    "excerpt": "\u201CA lot of the work for Cursor has been just experimenting with what is possible. For everything that you may see in the product, there\u0027s ten failed experiments of what didn\u2019t work.\u201D Aman Sanger started coding when he was 14. Fascinated by the potential of AI, Aman co-founded Cursor, scaling it to $100 million in its first year, and making it one of the fastest growing SaaS companies. In this conversation with Peak XV Managing Director Rajan Anandan, Aman shares the origins and DNA of Cursor. He breaks down how a lean team, a relentless shipping culture, and an obsession with user experience gave Cursor its edge. Aman also lays out his bold vision for the future\u2014building the engineer of tomorrow. \n\nThis conversation was recorded as part of our Surge Immersion in the Bay Area in February 2025.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 4134988
+    },
+    "cover": "https://i.ytimg.com/vi/XBQEdtXjlho/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://i.ytimg.com/vi/XBQEdtXjlho/maxresdefault.jpg",
+        "type": "image"
+      }
+    ],
+    "tags": [],
+    "important": false,
+    "reminder": { "date": null },
+    "removed": false,
+    "created": "2025-06-11T14:14:55.190Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 56109697,
+      "oid": 56109697
+    },
+    "highlights": [
+      {
+        "text": "\u201CA lot of the work for Cursor has been just experimenting with what is possible. For everything that you may see in the product, there\u0027s ten failed experiments of what didn\u2019t work.\u201D Aman Sanger started coding when he was 14. Fascinated by the potential of AI, Aman co-founded Cursor, scaling it to $100 million in its first year, and making it one of the fastest growing SaaS companies. In this conversation with Peak XV Managing Director Rajan Anandan, Aman shares the origins and DNA of Cursor. He breaks down how a lean team, a relentless shipping culture, and an obsession with user experience gave Cursor its edge. Aman also lays out his bold vision for the future\u2014building the engineer of tomorrow. \n\nThis conversation was recorded as part of our Surge Immersion in the Bay Area in February 2025.",
+        "note": "",
+        "created": "2025-06-11T14:14:55.171Z",
+        "lastUpdate": "2025-06-11T14:14:55.191Z",
+        "creatorRef": 4134988,
+        "_id": "68498f5fc9579667bddb7897"
+      }
+    ],
+    "lastUpdate": "2025-06-11T14:14:55.387Z",
+    "domain": "youtube.com",
+    "creatorRef": {
+      "_id": 4134988,
+      "avatar": "https://up.raindrop.io/user/avatars/413/498/8/1749048023155.jpeg",
+      "name": "MVolz",
+      "email": ""
+    },
+    "sort": 1156592993,
+    "collectionId": 56109697
+  },
+  {
+    "_id": 1147968179,
+    "link": "https://www.youtube.com/watch?v=fGcfJ9J_Faw",
+    "title": "The Collapse of AI Reasoning (by Apple)",
+    "excerpt": "New research by Apple on the Collapse of Ai Reasoning Models: The Illusion of AI Thinking. Thinking models, like Sonnet 4 Thinking or Claude 4 Thinking or o3...",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 4134988
+    },
+    "cover": "https://i.ytimg.com/vi/fGcfJ9J_Faw/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://i.ytimg.com/vi/fGcfJ9J_Faw/maxresdefault.jpg",
+        "type": "image"
+      }
+    ],
+    "tags": [],
+    "important": false,
+    "reminder": { "date": null },
+    "removed": false,
+    "created": "2025-06-08T19:52:21.574Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 56109697,
+      "oid": 56109697
+    },
+    "highlights": [
+      {
+        "text": "New research by Apple on the Collapse of Ai Reasoning Models: The Illusion of AI Thinking. Thinking models, like Sonnet 4 Thinking or Claude 4 Thinking or o3, Gemini 2.5 PRO Preview are capable of some powerful reasoning, but collapse rather soon with increasing complexity. Is more thinking a possible solution for future Ai models? \u202A@Google\u202C \u202A@anthropic-ai\u202C",
+        "note": "",
+        "created": "2025-06-08T19:52:21.555Z",
+        "lastUpdate": "2025-06-08T19:52:21.575Z",
+        "creatorRef": 4134988,
+        "_id": "6845e9f59696cb90c4d02709"
+      }
+    ],
+    "lastUpdate": "2025-06-08T19:52:22.209Z",
+    "domain": "youtube.com",
+    "creatorRef": {
+      "_id": 4134988,
+      "avatar": "https://up.raindrop.io/user/avatars/413/498/8/1749048023155.jpeg",
+      "name": "MVolz",
+      "email": ""
+    },
+    "sort": 1147968179,
+    "collectionId": 56109697
+  },
+  {
+    "_id": 1147298845,
+    "link": "https://www.youtube.com/watch?v=DUdRdeUtuZQ\u0026list=PLlrxD0HtieHg4OIwuQGsVgpQhTKl4fFdE\u0026index=68",
+    "title": "Azure AI Foundry: The AI app and Agent Factory | BRK155",
+    "excerpt": "Join Azure AI Foundry\u0027s flagship session. Learn how to supercharge your AI development with our integrated signals loop that connects model choice, knowledge retrieval, fine-tuning, orchestration and memory \u2014anchored by observability and trust. Design, customize, and manage intelligent agents using open standards and protocols such as Model Context Protocol (MCP) and Agent-to-Agent (A2A) to connect with tools and drive collaboration. Gain insights into advanced orchestration, tracing, and monitoring to streamline decision-making, boost efficiency, accelerate time to market, and lower costs.\n\nTo learn more, please check out these resources:\n * https://aka.ms/build25/plan/CreateAgenticAISolutions\n\n\n\uD835\uDDE6\uD835\uDDFD\uD835\uDDF2\uD835\uDDEE\uD835\uDDF8\uD835\uDDF2\uD835\uDDFF\uD835\uDE00:\n * Yina Arenas\n * Scott Hanselman\n\n\n\uD835\uDDE6\uD835\uDDF2\uD835\uDE00\uD835\uDE00\uD835\uDDF6\uD835\uDDFC\uD835\uDDFB \uD835\uDDDC\uD835\uDDFB\uD835\uDDF3\uD835\uDDFC\uD835\uDDFF\uD835\uDDFA\uD835\uDDEE\uD835\uDE01\uD835\uDDF6\uD835\uDDFC\uD835\uDDFB:\nThis is one of many sessions from the Microsoft Build 2025 event. View even more sessions on-demand and learn about Microsoft Build at https://build.microsoft.com\n\nBRK155 | English (US) | AI, Copilot \u0026 Agents\n\n\n#MSBuild, #AI\n\nChapters:\n0:00 - Application Process Simplification Using Azure AI\n00:06:01 - Detailed Discussion on Azure AI Foundry and Integration with AI Models\n00:21:12 - Use Case: Optimizing Podcast Production with AI\n00:26:06 - Overview of grounding in AI models\n00:28:55 - Introduction to content agents and link verification\n00:36:17 - Starting key process and response evaluations\n00:46:52 - Final Recap and Planning for Future Integrations\n\n\uD83D\uDC69\u200D\uD83D\uDCBB\uD83D\uDC68\u200D\uD83D\uDCBB Great devs don\u2019t build alone. \u23F1\uFE0F In a fast-paced dev world, there\u2019s no time to hunt for help.\nThat\u2019s why we created the Azure AI Foundry Developer Community \u2014 your one-stop hub for:\n\uD83C\uDF10 A vibrant forum for Q\u0026A \u002B code\n\uD83C\uDF99\uFE0F DevBlogs with the latest updates\n\uD83C\uDFAE Real-time Discord chats, events \u0026 learning\n\uD83D\uDD17 Join the Forum -- https://github.com/orgs/azure-ai-foundry/discussions\n\uD83D\uDD17 Hop on Discord -- https://discord.com/invite/azureaifoundry",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 4134988
+    },
+    "cover": "https://i.ytimg.com/vi/DUdRdeUtuZQ/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://i.ytimg.com/vi/DUdRdeUtuZQ/maxresdefault.jpg",
+        "type": "image"
+      }
+    ],
+    "tags": [],
+    "important": false,
+    "reminder": { "date": null },
+    "removed": false,
+    "created": "2025-06-08T16:42:15.466Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 56109697,
+      "oid": 56109697
+    },
+    "highlights": [
+      {
+        "text": "Join Azure AI Foundry\u0027s flagship session. Learn how to supercharge your AI development with our integrated signals loop that connects model choice, knowledge retrieval, fine-tuning, orchestration and memory \u2014anchored by observability and trust. Design, customize, and manage intelligent agents using open standards and protocols such as Model Context Protocol (MCP) and Agent-to-Agent (A2A) to connect with tools and drive collaboration. Gain insights into advanced orchestration, tracing, and monitoring to streamline decision-making, boost efficiency, accelerate time to market, and lower costs.",
+        "note": "",
+        "created": "2025-06-08T16:42:15.451Z",
+        "lastUpdate": "2025-06-08T16:42:15.466Z",
+        "creatorRef": 4134988,
+        "_id": "6845bd676d395a577075f2db"
+      }
+    ],
+    "lastUpdate": "2025-06-08T16:42:15.648Z",
+    "domain": "youtube.com",
+    "creatorRef": {
+      "_id": 4134988,
+      "avatar": "https://up.raindrop.io/user/avatars/413/498/8/1749048023155.jpeg",
+      "name": "MVolz",
+      "email": ""
+    },
+    "sort": 1147298845,
+    "collectionId": 56109697
+  },
+  {
+    "_id": 1146043286,
+    "link": "https://www.youtube.com/watch?v=iS25RFups4A",
+    "title": "Visual Studio Code \u002B Model Context Protocol (MCP) Servers Getting Started Guide | What, Why, How",
+    "excerpt": "What the heck is an MCP (Model Context Protocol) Server, why do you care, how does it help you, how does it help software development, and how do you get it setup in VS Code with GitHub Copilot. Let\u0027s do it!\n\nLinks:\nGet VS Code Insiders: https://code.visualstudio.com/insiders/\nGet GitHub Copilot: http://aka.ms/copilot-free\nModel Context Protocol: https://github.com/modelcontextprotocol\nMCP Servers: https://github.com/modelcontextprotocol/servers\nMCP C# SDK: https://github.com/modelcontextprotocol/csharp-sdk\nWhat are MCPs Video: https://www.youtube.com/watch?v=m0YrxLnFPzQ\nmcp.json sample: https://gist.github.com/digitarald/be8322cf237f584f93ea2690db682bf2\n\nChapters:\n00:00 - Intro\n00:40 - What is Model Context Protocol?\n02:40 - Model Context Protocol \u0026 Servers on GitHub\n03:47 - Enabling MCP in VS Code\n05:23 - Configuring MCP Servers in VS Code\n09:35 - Real world MCP Servers with GitHub\n17:53 - Using command palette with MCP\n19:30 - Creating your own MCP Server \u0026 Wrap-up\n\nJoin this channel to get access to perks:\nhttps://www.youtube.com/channel/UCENTmbKaTphpWV2R2evVz2A/join\n\n\uD83D\uDC55 Buy some swag! - https://jamesmontemagno.myspreadshop.com/\n\u2615\uFE0F Buy me a coffee - https://www.buymeacoffee.com/jamesmontemagno\n\nFollow:\n\uD83D\uDC68\u200D\uD83D\uDCBB GitHub: https://github.com/jamesmontemagno\n\uD83E\uDD9C X: https://x.com/jamesmontemagno\n\uD83D\uDCC4 Website: https://www.montemagno.com\n\uD83D\uDCF0 Newsletter: https://newsletter.montemagno.com/\n\nDisclaimer: This channel, videos, and streams are created in my spare time and are a product of me... James Montemagno! They are NOT officially affiliated or endorsed by Microsoft (my employer) in any way. Opinions and views are my own.\n\nWhat is on my hat? It is the CLE clothing logo because I am from Cleveland! Checkout their awesome CLE merch: https://cleclothingco.myshopify.com/\n\nWhat is that art on my wall? It is an original piece from the French street artist Gregos of La Butte Montmartre: https://www.instagram.com/p/BceZ1oNHiQx/\n\nMy Setup:\n\uD83D\uDCF7 Canon M50 Mark II - https://amzn.to/3P8R7lp\n\uD83D\uDCA1 Nanoleaf Elements Lights - https://amzn.to/3umwJVW\n\uD83C\uDF99 Blue Spark Microphone - https://amzn.to/3qgtYkq\n\uD83C\uDF99 Blue Pop Filter - https://amzn.to/3jEWM3r\n\uD83E\uDD33 Rode Microphone Arm - https://amzn.to/2Z68AlE\n\uD83C\uDFA7 Sony MDR7306 Headphones - https://amzn.to/372jxta\n\uD83D\uDCF2 Stream Deck - https://amzn.to/373Uk1n\n\uD83D\uDDB1 MX Master 2S Mouse - https://amzn.to/3d7J2gj\n\u2328\uFE0F Tecware Phantom Keyboard - https://amzn.to/3aUP4y9\n\nUsing links I provide I may receive a commission if you buy something which helps support the channel.\n\n#vscode #githubcopilot  #mcpserver #mcp #mcps #claude  #claudecode #modelcontextprotocol #dotnet",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 4134988
+    },
+    "cover": "https://i.ytimg.com/vi/iS25RFups4A/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://i.ytimg.com/vi/iS25RFups4A/maxresdefault.jpg",
+        "type": "image"
+      }
+    ],
+    "tags": [],
+    "important": false,
+    "reminder": { "date": null },
+    "removed": false,
+    "created": "2025-06-08T08:00:39.502Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 56109697,
+      "oid": 56109697
+    },
+    "highlights": [
+      {
+        "text": "What the heck is an MCP (Model Context Protocol) Server, why do you care, how does it help you, how does it help software development, and how do you get it setup in VS Code with GitHub Copilot. Let\u0027s do it!",
+        "note": "",
+        "created": "2025-06-08T08:00:39.487Z",
+        "lastUpdate": "2025-06-08T08:00:39.503Z",
+        "creatorRef": 4134988,
+        "_id": "684543271225904f4a3e07f5"
+      }
+    ],
+    "lastUpdate": "2025-06-08T08:00:39.674Z",
+    "domain": "youtube.com",
+    "creatorRef": {
+      "_id": 4134988,
+      "avatar": "https://up.raindrop.io/user/avatars/413/498/8/1749048023155.jpeg",
+      "name": "MVolz",
+      "email": ""
+    },
+    "sort": 1146043286,
+    "collectionId": 56109697
+  },
+  {
+    "_id": 1145854366,
+    "link": "https://www.youtube.com/watch?v=x9jBP0zAI3U\u0026list=PLlrxD0HtieHgukvOrEw3CqZuKtxiu_wnM\u0026index=26",
+    "title": "Accelerate your Azure platform journey with Azure Verified Modules | BRK196",
+    "excerpt": "This session is designed for developers building and deploying Infrastructure-as-Code using Bicep or Terraform. Attendees will learn how they can simplify and accelerate their platform and application journey using Azure Verified Modules, improving their security and resiliency. Get an overview of AVM, learn how to leverage its modules for platform and application landing zones including deployment of workloads. Discover new Terraform features like Stacks and ephemeral values.\n\nTo learn more, please check out these resources:\n * https://aka.ms/build25/plan/EnsrReliCritWrklds\n * https://aka.ms/AVM\n * https://aka.ms/ALZ/TechDocs\n * http://hashi.co/build-brk196\n\n\n\uD835\uDDE6\uD835\uDDFD\uD835\uDDF2\uD835\uDDEE\uD835\uDDF8\uD835\uDDF2\uD835\uDDFF\uD835\uDE00:\n * Mate Barabas\n * Kerim Satirli\n * Bilal Amjad\n\n\n\uD835\uDDE6\uD835\uDDF2\uD835\uDE00\uD835\uDE00\uD835\uDDF6\uD835\uDDFC\uD835\uDDFB \uD835\uDDDC\uD835\uDDFB\uD835\uDDF3\uD835\uDDFC\uD835\uDDFF\uD835\uDDFA\uD835\uDDEE\uD835\uDE01\uD835\uDDF6\uD835\uDDFC\uD835\uDDFB:\nThis is one of many sessions from the Microsoft Build 2025 event. View even more sessions on-demand and learn about Microsoft Build at https://build.microsoft.com\n\nBRK196 | English (US) | Cloud Platform\n\n\nRelated Sessions:\nDEM539 -- https://build.microsoft.com/sessions/DEM539?wt.mc_id=yt_\nDEM543 -- https://build.microsoft.com/sessions/DEM543?wt.mc_id=yt_\nODFP966 -- https://build.microsoft.com/sessions/ODFP966?wt.mc_id=yt_\n\n\n#MSBuild, #CloudPlatform\n\nChapters:\n0:00 - Explanation of Azure Verified Modules and their role\n00:02:15 - Purpose and Benefits of Azure Verified Modules\n00:15:12 - Role Assignment with ABM\n00:24:25 - Configuring Azure DevOps through the IC Accelerator\n00:28:24 - Overview of Infrastructure and Automation on Azure\n00:29:01 - Introduction to Landing Zone Vending\n00:31:56 - Detailed Configuration and Deployment of Landing Zones\n00:43:55 - Advantages of Starting with Codification\n00:44:08 - Custom Tooling in Companies",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 4134988
+    },
+    "cover": "https://i.ytimg.com/vi/x9jBP0zAI3U/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://i.ytimg.com/vi/x9jBP0zAI3U/maxresdefault.jpg",
+        "type": "image"
+      }
+    ],
+    "tags": [],
+    "important": false,
+    "reminder": { "date": null },
+    "removed": false,
+    "created": "2025-06-08T05:12:15.240Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 56109697,
+      "oid": 56109697
+    },
+    "highlights": [
+      {
+        "text": "This session is designed for developers building and deploying Infrastructure-as-Code using Bicep or Terraform. Attendees will learn how they can simplify and accelerate their platform and application journey using Azure Verified Modules, improving their security and resiliency. Get an overview of AVM, learn how to leverage its modules for platform and application landing zones including deployment of workloads. Discover new Terraform features like Stacks and ephemeral values.",
+        "note": "",
+        "created": "2025-06-08T05:12:15.223Z",
+        "lastUpdate": "2025-06-08T05:12:15.240Z",
+        "creatorRef": 4134988,
+        "_id": "68451baf3f9878265b30ce7b"
+      }
+    ],
+    "lastUpdate": "2025-06-08T05:12:15.428Z",
+    "domain": "youtube.com",
+    "creatorRef": {
+      "_id": 4134988,
+      "avatar": "https://up.raindrop.io/user/avatars/413/498/8/1749048023155.jpeg",
+      "name": "MVolz",
+      "email": ""
+    },
+    "sort": 1145854366,
+    "collectionId": 56109697
+  },
+  {
+    "_id": 1143287772,
+    "link": "https://www.youtube.com/watch?v=GpBhE78s6Fc\u0026list=PLlrxD0HtieHgzfZCDP1dYD-AvB7zrQ7O2\u0026index=38",
+    "title": "Accelerate Azure Development with GitHub Copilot VS Code \u0026 AI | BRK118",
+    "excerpt": "Unlock the full potential of AI-powered development with GitHub Copilot for Azure, Azure Developer CLI (azd), VS Code, and more. This session covers the entire app lifecycle\u2014from prompt-driven creation to deployment, troubleshooting, and cost optimization. Learn to streamline workflows, accelerate cloud migrations, and harness Azure tools for maximum efficiency. Gain practical tips, real-world use cases, and best practices to build and optimize applications faster and smarter.\n\nTo learn more, please check out these resources:\n * https://aka.ms/build25/plan/AAI_DevAppGitHubCop_Plan\n\n\n\uD835\uDDE6\uD835\uDDFD\uD835\uDDF2\uD835\uDDEE\uD835\uDDF8\uD835\uDDF2\uD835\uDDFF\uD835\uDE00:\n * Mandy Whaley\n * Shayne Boyer\n\n\n\uD835\uDDE6\uD835\uDDF2\uD835\uDE00\uD835\uDE00\uD835\uDDF6\uD835\uDDFC\uD835\uDDFB \uD835\uDDDC\uD835\uDDFB\uD835\uDDF3\uD835\uDDFC\uD835\uDDFF\uD835\uDDFA\uD835\uDDEE\uD835\uDE01\uD835\uDDF6\uD835\uDDFC\uD835\uDDFB:\nThis is one of many sessions from the Microsoft Build 2025 event. View even more sessions on-demand and learn about Microsoft Build at https://build.microsoft.com\n\nBRK118 | English (US) | Developer Tools \u0026 .NET\n\n\nRelated Sessions:\nBRK117 -- https://build.microsoft.com/sessions/BRK117?wt.mc_id=yt_PLlrxD0HtieHgzfZCDP1dYD-AvB7zrQ7O2\nDEM513 -- https://build.microsoft.com/sessions/DEM513?wt.mc_id=yt_PLlrxD0HtieHgzfZCDP1dYD-AvB7zrQ7O2\n\n\n#MSBuild\n\nChapters:\n0:00 - Docker File Creation and Deployment Strategy\n00:15:37 - Handling Challenges and Deployment Discussions\n00:17:32 - Introduction to AI Integration and Usage\n00:23:58 - Deploying Web Application to Azure\n00:24:08 - Testing Web Application with Chat Agent\n00:26:14 - Completing Deployment and Verifying Functionality\n00:39:02 - Example of GitHub Copilot in Action with Azure\n00:41:49 - Encouragement to Try Out Showcased Tools\n00:44:32 - Exploring AI App Gallery with Pre-designed Templates",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 4134988
+    },
+    "cover": "https://i.ytimg.com/vi/GpBhE78s6Fc/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://i.ytimg.com/vi/GpBhE78s6Fc/maxresdefault.jpg",
+        "type": "image"
+      }
+    ],
+    "tags": [],
+    "important": false,
+    "reminder": { "date": null },
+    "removed": false,
+    "created": "2025-06-07T08:01:55.477Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 56109697,
+      "oid": 56109697
+    },
+    "highlights": [
+      {
+        "text": "Unlock the full potential of AI-powered development with GitHub Copilot for Azure, Azure Developer CLI (azd), VS Code, and more. This session covers the entire app lifecycle\u2014from prompt-driven creation to deployment, troubleshooting, and cost optimization. Learn to streamline workflows, accelerate cloud migrations, and harness Azure tools for maximum efficiency. Gain practical tips, real-world use cases, and best practices to build and optimize applications faster and smarter.",
+        "note": "",
+        "created": "2025-06-07T08:01:55.463Z",
+        "lastUpdate": "2025-06-07T08:01:55.478Z",
+        "creatorRef": 4134988,
+        "_id": "6843f1f3a4d2b7da0e23ed6a"
+      }
+    ],
+    "lastUpdate": "2025-06-07T08:01:55.660Z",
+    "domain": "youtube.com",
+    "creatorRef": {
+      "_id": 4134988,
+      "avatar": "https://up.raindrop.io/user/avatars/413/498/8/1749048023155.jpeg",
+      "name": "MVolz",
+      "email": ""
+    },
+    "sort": 1143287772,
+    "collectionId": 56109697
+  },
+  {
+    "_id": 1142144802,
+    "link": "https://www.youtube.com/watch?v=EzP2HTD6wRM\u0026list=PLlrxD0HtieHgzfZCDP1dYD-AvB7zrQ7O2\u0026index=20",
+    "title": "Under the hood and into the magic of GitHub Copilot | BRK108",
+    "excerpt": "GitHub Copilot, the original Copilot, is built on top of foundational large language models and makes use of nearly every pattern to help you code faster and in the flow. But, have you ever wanted to know what happens as GitHub Copilot turns prompts into code suggestions and what happens afterwards? Hear from the GitHub Copilot team on how they built this revolutionary tool and adapt to the evolving landscape where new models and patterns for development are emerging at an unprecedented pace.\n\nTo learn more, please check out these resources:\n * https://aka.ms/build25/plan/AAI_DevAppGitHubCop_Plan\n * https://github.com/features/copilot?utm_campaign=msft_build_github_splash\u0026utm_medium=site\u0026utm_source=msft_build\n * https://github.com/features/issues?utm_campaign=msft_build_github_splash\u0026utm_medium=site\u0026utm_source=msft_build\n * https://github.com/enterprise?utm_campaign=msft_build_github_splash\u0026utm_medium=site\u0026utm_source=msft_build\n * https://github.com/security/advanced-security?utm_campaign=msft_build_github_splash\u0026utm_medium=site\u0026utm_source=msft_build\n * https://resources.github.com/learn/certifications/\n\n\n\uD835\uDDE6\uD835\uDDFD\uD835\uDDF2\uD835\uDDEE\uD835\uDDF8\uD835\uDDF2\uD835\uDDFF\uD835\uDE00:\n * Christina Entcheva\n * Christopher Harrison\n\n\n\uD835\uDDE6\uD835\uDDF2\uD835\uDE00\uD835\uDE00\uD835\uDDF6\uD835\uDDFC\uD835\uDDFB \uD835\uDDDC\uD835\uDDFB\uD835\uDDF3\uD835\uDDFC\uD835\uDDFF\uD835\uDDFA\uD835\uDDEE\uD835\uDE01\uD835\uDDF6\uD835\uDDFC\uD835\uDDFB:\nThis is one of many sessions from the Microsoft Build 2025 event. View even more sessions on-demand and learn about Microsoft Build at https://build.microsoft.com\n\nBRK108 | English (US) | Developer Tools \u0026 .NET\n\n\nRelated Sessions:\nBRK102 -- https://build.microsoft.com/sessions/BRK102?wt.mc_id=yt_PLlrxD0HtieHgzfZCDP1dYD-AvB7zrQ7O2\nBRK113 -- https://build.microsoft.com/sessions/BRK113?wt.mc_id=yt_PLlrxD0HtieHgzfZCDP1dYD-AvB7zrQ7O2\nBRK124 -- https://build.microsoft.com/sessions/BRK124?wt.mc_id=yt_PLlrxD0HtieHgzfZCDP1dYD-AvB7zrQ7O2\nDEM500 -- https://build.microsoft.com/sessions/DEM500?wt.mc_id=yt_PLlrxD0HtieHgzfZCDP1dYD-AvB7zrQ7O2\nDEM509 -- https://build.microsoft.com/sessions/DEM509?wt.mc_id=yt_PLlrxD0HtieHgzfZCDP1dYD-AvB7zrQ7O2\nDEM519 -- https://build.microsoft.com/sessions/DEM519?wt.mc_id=yt_PLlrxD0HtieHgzfZCDP1dYD-AvB7zrQ7O2\nLAB303 -- https://build.microsoft.com/sessions/LAB303?wt.mc_id=yt_PLlrxD0HtieHgzfZCDP1dYD-AvB7zrQ7O2\nLAB303-R1 -- https://build.microsoft.com/sessions/LAB303-R1?wt.mc_id=yt_PLlrxD0HtieHgzfZCDP1dYD-AvB7zrQ7O2\nLAB310 -- https://build.microsoft.com/sessions/LAB310?wt.mc_id=yt_PLlrxD0HtieHgzfZCDP1dYD-AvB7zrQ7O2\nLAB310-R1 -- https://build.microsoft.com/sessions/LAB310-R1?wt.mc_id=yt_PLlrxD0HtieHgzfZCDP1dYD-AvB7zrQ7O2\n\n\n#MSBuild\n\nChapters:\n0:00 - Instructions for Using Agent Mode in Development\n00:45:57 - Tips for Using the Copilot Coding Agent\n00:49:00 - Discussion on Copilot\u0027s Application and Preferences\n00:58:10 - Extending Copilot\u0027s Review Features with Comprehensive Documents",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 4134988
+    },
+    "cover": "https://i.ytimg.com/vi/EzP2HTD6wRM/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://i.ytimg.com/vi/EzP2HTD6wRM/maxresdefault.jpg",
+        "type": "image"
+      }
+    ],
+    "tags": [],
+    "important": false,
+    "reminder": { "date": null },
+    "removed": false,
+    "created": "2025-06-06T16:11:32.282Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 56109697,
+      "oid": 56109697
+    },
+    "highlights": [
+      {
+        "text": "GitHub Copilot, the original Copilot, is built on top of foundational large language models and makes use of nearly every pattern to help you code faster and in the flow. But, have you ever wanted to know what happens as GitHub Copilot turns prompts into code suggestions and what happens afterwards? Hear from the GitHub Copilot team on how they built this revolutionary tool and adapt to the evolving landscape where new models and patterns for development are emerging at an unprecedented pace.",
+        "note": "",
+        "created": "2025-06-06T16:11:32.265Z",
+        "lastUpdate": "2025-06-06T16:11:32.282Z",
+        "creatorRef": 4134988,
+        "_id": "68431334de7c265e5ef60d1f"
+      }
+    ],
+    "lastUpdate": "2025-06-06T16:11:32.466Z",
+    "domain": "youtube.com",
+    "creatorRef": {
+      "_id": 4134988,
+      "avatar": "https://up.raindrop.io/user/avatars/413/498/8/1749048023155.jpeg",
+      "name": "MVolz",
+      "email": ""
+    },
+    "sort": 1142144802,
+    "collectionId": 56109697
+  },
+  {
+    "_id": 1139765899,
+    "link": "https://www.youtube.com/watch?v=CKAs9bRMDcQ\u0026t=1673s",
+    "title": "The Agent Awakens: Collaborative Development with GitHub Copilot | BRK113",
+    "excerpt": "Learn how to collaborate with Copilot, and all about its powerful new agentic capabilities to enhance your workflows, both in your editor and on GitHub. In t...",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 4134988
+    },
+    "cover": "https://i.ytimg.com/vi/CKAs9bRMDcQ/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://i.ytimg.com/vi/CKAs9bRMDcQ/maxresdefault.jpg",
+        "type": "image"
+      }
+    ],
+    "tags": [],
+    "important": false,
+    "reminder": { "date": null },
+    "removed": false,
+    "created": "2025-06-05T17:12:34.374Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 56109697,
+      "oid": 56109697
+    },
+    "highlights": [
+      {
+        "text": "Learn how to collaborate with Copilot, and all about its powerful new agentic capabilities to enhance your workflows, both in your editor and on GitHub. In this demo heavy session you will go beyond the hype and experience how to get software engineering agents to work for you.",
+        "note": "",
+        "created": "2025-06-05T17:12:34.360Z",
+        "lastUpdate": "2025-06-05T17:12:34.375Z",
+        "creatorRef": 4134988,
+        "_id": "6841d002f461de742990d512"
+      }
+    ],
+    "lastUpdate": "2025-06-05T17:12:34.557Z",
+    "domain": "youtube.com",
+    "creatorRef": {
+      "_id": 4134988,
+      "avatar": "https://up.raindrop.io/user/avatars/413/498/8/1749048023155.jpeg",
+      "name": "MVolz",
+      "email": ""
+    },
+    "sort": 1139765899,
+    "collectionId": 56109697
+  },
+  {
+    "_id": 1137019549,
+    "link": "https://www.youtube.com/watch?v=UJfF3-13aFo\u0026t=2s",
+    "title": "A 10x Faster TypeScript with Anders Hejlsberg | BRK116",
+    "excerpt": "To address ever increasing scaling demands, the TypeScript team has embarked on a port of the TypeScript compiler to native code. This port brings a 10x speed-up in compile time, project load, and other operations on most codebases! Our talk will cover the journey of how our team committed to a native port, why we chose Go, how the port will improve your workflow, and what the path to completion looks like.\n\n\uD835\uDDE6\uD835\uDDFD\uD835\uDDF2\uD835\uDDEE\uD835\uDDF8\uD835\uDDF2\uD835\uDDFF\uD835\uDE00:\n * Anders Hejlsberg\n\n\n\uD835\uDDE6\uD835\uDDF2\uD835\uDE00\uD835\uDE00\uD835\uDDF6\uD835\uDDFC\uD835\uDDFB \uD835\uDDDC\uD835\uDDFB\uD835\uDDF3\uD835\uDDFC\uD835\uDDFF\uD835\uDDFA\uD835\uDDEE\uD835\uDE01\uD835\uDDF6\uD835\uDDFC\uD835\uDDFB:\nThis is one of many sessions from the Microsoft Build 2025 event. View even more sessions on-demand and learn about Microsoft Build at https://build.microsoft.com\n\nBRK116 | English (US) | Developer Tools \u0026 .NET\n\n\n#MSBuild\n\nChapters:\n0:00 - TypeScript\u0027s Popularity and Usage Statistics\n00:10:42 - Progress Update on TypeScript\u0027s Native Transition\n00:11:59 - Future Goals and API Prototyping for TypeScript\n00:41:19 - Compiler Functionality Overview\n00:50:28 - Transition to TypeScript 7 and Future Direction",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 4134988
+    },
+    "cover": "https://i.ytimg.com/vi/UJfF3-13aFo/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://i.ytimg.com/vi/UJfF3-13aFo/maxresdefault.jpg",
+        "type": "image"
+      }
+    ],
+    "tags": [],
+    "important": false,
+    "reminder": { "date": null },
+    "removed": false,
+    "created": "2025-06-04T15:46:32.904Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 56109697,
+      "oid": 56109697
+    },
+    "highlights": [
+      {
+        "text": "To address ever increasing scaling demands, the TypeScript team has embarked on a port of the TypeScript compiler to native code. This port brings a 10x speed-up in compile time, project load, and other operations on most codebases! Our talk will cover the journey of how our team committed to a native port, why we chose Go, how the port will improve your workflow, and what the path to completion looks like.",
+        "note": "",
+        "created": "2025-06-04T15:46:32.888Z",
+        "lastUpdate": "2025-06-04T15:46:32.905Z",
+        "creatorRef": 4134988,
+        "_id": "68406a581225904f4a5b8c63"
+      }
+    ],
+    "lastUpdate": "2025-06-04T15:46:33.087Z",
+    "domain": "youtube.com",
+    "creatorRef": {
+      "_id": 4134988,
+      "avatar": "https://up.raindrop.io/user/avatars/413/498/8/1749048023155.jpeg",
+      "name": "MVolz",
+      "email": ""
+    },
+    "sort": 1137019549,
+    "collectionId": 56109697
+  },
+  {
+    "_id": 1137019466,
+    "link": "https://www.youtube.com/watch?v=Z6BYhJl9hV8",
+    "title": "How I Code with GitHub Copilot in Visual Studio 2022 to Boost Productivity Everyday",
+    "excerpt": "Want to see how I code every day inside of Visual Studio with GitHub Copilot? Follow along as I show you how I get up to speed on new code bases, refactor co...",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 4134988
+    },
+    "cover": "https://i.ytimg.com/vi/Z6BYhJl9hV8/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://i.ytimg.com/vi/Z6BYhJl9hV8/maxresdefault.jpg",
+        "type": "image"
+      }
+    ],
+    "tags": [],
+    "important": false,
+    "reminder": { "date": null },
+    "removed": false,
+    "created": "2025-06-04T15:46:13.022Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 56109697,
+      "oid": 56109697
+    },
+    "highlights": [
+      {
+        "text": "Want to see how I code every day inside of Visual Studio with GitHub Copilot? Follow along as I show you how I get up to speed on new code bases, refactor code, add documentation, create diagrams, debug exceptions, implement new features, commit code, and even write some code on occasion. Using the latest features of Visual Studio 2022 and GitHub Copilot are a complete productivity boost once you know where to look and how to use them.",
+        "note": "",
+        "created": "2025-06-04T15:46:13.007Z",
+        "lastUpdate": "2025-06-04T15:46:13.023Z",
+        "creatorRef": 4134988,
+        "_id": "68406a45a4d2b7da0e76936e"
+      }
+    ],
+    "lastUpdate": "2025-06-04T15:46:13.225Z",
+    "domain": "youtube.com",
+    "creatorRef": {
+      "_id": 4134988,
+      "avatar": "https://up.raindrop.io/user/avatars/413/498/8/1749048023155.jpeg",
+      "name": "MVolz",
+      "email": ""
+    },
+    "sort": 1137019466,
+    "collectionId": 56109697
+  },
+  {
+    "_id": 1137019178,
+    "link": "https://www.youtube.com/watch?v=ssqGEBW-gpo",
+    "title": "What\u0027s Next in C# | BRK114",
+    "excerpt": "Join Mads and Dustin on a demo-filled tour through upcoming features in C# 14 and beyond. Dictionary expressions, new kinds of extension members and field ac...",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 4134988
+    },
+    "cover": "https://i.ytimg.com/vi/ssqGEBW-gpo/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://i.ytimg.com/vi/ssqGEBW-gpo/maxresdefault.jpg",
+        "type": "image"
+      }
+    ],
+    "tags": [],
+    "important": false,
+    "reminder": { "date": null },
+    "removed": false,
+    "created": "2025-06-04T15:45:37.544Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 56109697,
+      "oid": 56109697
+    },
+    "highlights": [
+      {
+        "text": "Join Mads and Dustin on a demo-filled tour through upcoming features in C# 14 and beyond. Dictionary expressions, new kinds of extension members and field access in auto-properties are some of the ways that C# keeps making your code clearer, cleaner and more expressive.",
+        "note": "",
+        "created": "2025-06-04T15:45:37.529Z",
+        "lastUpdate": "2025-06-04T15:45:37.544Z",
+        "creatorRef": 4134988,
+        "_id": "68406a217dfdd596b361b98d"
+      }
+    ],
+    "lastUpdate": "2025-06-04T15:45:37.734Z",
+    "domain": "youtube.com",
+    "creatorRef": {
+      "_id": 4134988,
+      "avatar": "https://up.raindrop.io/user/avatars/413/498/8/1749048023155.jpeg",
+      "name": "MVolz",
+      "email": ""
+    },
+    "sort": 1137019178,
+    "collectionId": 56109697
+  },
+  {
+    "_id": 1136962636,
+    "link": "https://www.youtube.com/watch?v=gieL0bxyTUU",
+    "title": "How Microsoft Developers Use AI in Real-World Coding | BRK103",
+    "excerpt": "Tired of the hype? Join real developers from Microsoft as they show how GitHub Copilot fits naturally into their everyday coding workflows. This session is a...",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 4134988
+    },
+    "cover": "https://i.ytimg.com/vi/gieL0bxyTUU/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://i.ytimg.com/vi/gieL0bxyTUU/maxresdefault.jpg",
+        "type": "image"
+      }
+    ],
+    "tags": [],
+    "important": false,
+    "reminder": { "date": null },
+    "removed": false,
+    "created": "2025-06-04T15:12:29.517Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 56109697,
+      "oid": 56109697
+    },
+    "highlights": [
+      {
+        "text": "Tired of the hype? Join real developers from Microsoft as they show how GitHub Copilot fits naturally into their everyday coding workflows. This session is all about practical, real-world use\u2014no fluff. Through live coding demos, you\u0027ll see how different developers apply Copilot in their own styles, using either Visual Studio or VS Code. Whether you\u2019re just getting started or already experimenting with AI tools, you\u2019ll leave with pragmatic tips you can use right away.",
+        "note": "",
+        "created": "2025-06-04T15:12:29.502Z",
+        "lastUpdate": "2025-06-04T15:12:29.517Z",
+        "creatorRef": 4134988,
+        "_id": "6840625d6d395a57707b5d56"
+      }
+    ],
+    "lastUpdate": "2025-06-04T15:12:29.730Z",
+    "domain": "youtube.com",
+    "creatorRef": {
+      "_id": 4134988,
+      "avatar": "https://up.raindrop.io/user/avatars/413/498/8/1749048023155.jpeg",
+      "name": "MVolz",
+      "email": ""
+    },
+    "sort": 1136962636,
+    "collectionId": 56109697
+  }
+]
