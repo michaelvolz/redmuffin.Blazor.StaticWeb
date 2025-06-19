@@ -1,7 +1,12 @@
+using System.Text.Json.Serialization;
+
 namespace redmuffin.Blazor.StaticWeb.Common.Raindrop;
 
 public class MediaItem
 {
-	public string? Link { get; set; }
-	public string? Type { get; set; }
+    [JsonPropertyName("link")]
+    public string? Link { get; set; } = null;
+
+    [JsonPropertyName("type")]
+    public string? Type { get; set; } = null;
 }

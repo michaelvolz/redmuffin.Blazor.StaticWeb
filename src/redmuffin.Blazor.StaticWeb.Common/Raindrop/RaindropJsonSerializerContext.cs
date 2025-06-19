@@ -1,6 +1,5 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 
 namespace redmuffin.Blazor.StaticWeb.Common.Raindrop;
 
@@ -15,4 +14,9 @@ namespace redmuffin.Blazor.StaticWeb.Common.Raindrop;
 [JsonSerializable(typeof(List<Highlight>))]
 public partial class RaindropJsonSerializerContext : JsonSerializerContext
 {
+    public static JsonSerializerOptions DefaultOptions { get; } = new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = false,
+    };
 }

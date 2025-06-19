@@ -1,6 +1,9 @@
+using System.Text.Json.Serialization;
+
 namespace redmuffin.Blazor.StaticWeb.Common.Raindrop;
 
 public class Reminder
 {
-	public DateTime? Date { get; set; }
+    [JsonPropertyName("date")]
+    public DateTime? Date { get; set; } = null;
 }

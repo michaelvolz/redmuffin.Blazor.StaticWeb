@@ -16,11 +16,13 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="NSubstitute" Version="5.0.0" />
+    <PackageReference Include="NUnit" Version="4.3.2" />
     <PackageReference Include="TUnit" Version="0.25.21" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\redmuffin.Blazor.StaticWeb.Api\redmuffin.Blazor.StaticWeb.Api.csproj" />
+    <ProjectReference Include="..\..\src\redmuffin.Blazor.StaticWeb.Common\redmuffin.Blazor.StaticWeb.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

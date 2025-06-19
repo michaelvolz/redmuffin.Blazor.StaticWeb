@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using System.Text.Json.Serialization;
 
 #pragma warning disable MA0048 //Disable warning for file name not matching type name
 
@@ -7,23 +8,60 @@ namespace redmuffin.Blazor.StaticWeb.Common.Raindrop;
 [UsedImplicitly]
 public class RaindropItem
 {
-	public long Id { get; set; }
-	public string? Link { get; set; }
-	public string? Title { get; set; }
-	public string? Excerpt { get; set; }
-	public string? Note { get; set; }
-	public string? Type { get; set; }
-	public UserReference? User { get; set; }
-	public string? Cover { get; set; }
-	public IList<MediaItem>? Media { get; set; }
-	public IList<string>? Tags { get; set; }
-	public bool Important { get; set; }
-	public Reminder? Reminder { get; set; }
-	public bool Removed { get; set; }
-	public DateTime Created { get; set; }
-	public CollectionReference? Collection { get; set; }
-	public IList<Highlight>? Highlights { get; set; }
-	public string? Domain { get; set; }
-	public long CollectionId { get; set; }
-	public long Sort { get; set; }
+    [JsonPropertyName("_id")]
+    public long Id { get; set; }
+
+    [JsonPropertyName("link")]
+    public string Link { get; set; } = string.Empty;
+
+    [JsonPropertyName("title")]
+    public string Title { get; set; } = string.Empty;
+
+    [JsonPropertyName("excerpt")]
+    public string Excerpt { get; set; } = string.Empty;
+
+    [JsonPropertyName("note")]
+    public string Note { get; set; } = string.Empty;
+
+    [JsonPropertyName("type")]
+    public string Type { get; set; } = string.Empty;
+
+    [JsonPropertyName("user")]
+    public UserReference User { get; set; } = new UserReference();
+
+    [JsonPropertyName("cover")]
+    public string Cover { get; set; } = string.Empty;
+
+    [JsonPropertyName("media")]
+    public IList<MediaItem> Media { get; set; } = new List<MediaItem>();
+
+    [JsonPropertyName("tags")]
+    public IList<string> Tags { get; set; } = new List<string>();
+
+    [JsonPropertyName("important")]
+    public bool Important { get; set; }
+
+    [JsonPropertyName("reminder")]
+    public Reminder Reminder { get; set; } = new Reminder();
+
+    [JsonPropertyName("removed")]
+    public bool Removed { get; set; }
+
+    [JsonPropertyName("created")]
+    public DateTime Created { get; set; } = DateTime.MinValue;
+
+    [JsonPropertyName("collection")]
+    public CollectionReference Collection { get; set; } = new CollectionReference();
+
+    [JsonPropertyName("highlights")]
+    public IList<Highlight> Highlights { get; set; } = new List<Highlight>();
+
+    [JsonPropertyName("domain")]
+    public string Domain { get; set; } = string.Empty;
+
+    [JsonPropertyName("collectionId")]
+    public long CollectionId { get; set; }
+
+    [JsonPropertyName("sort")]
+    public long Sort { get; set; }
 }

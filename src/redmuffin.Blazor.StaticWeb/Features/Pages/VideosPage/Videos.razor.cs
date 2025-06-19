@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
@@ -41,8 +40,59 @@ public partial class Videos
 				var json = await response.Content.ReadAsStringAsync();
 				Console.WriteLine("Raw JSON Response: " + json); // Log the raw JSON response
 
-				// Use JsonTypeInfo for deserialization to avoid trimming issues
-				_videoItems = JsonSerializer.Deserialize(json, RaindropJsonSerializerContext.Default.ListRaindropItem);
+				try
+				{
+					// Use JsonTypeInfo for deserialization to avoid trimming issues
+					_videoItems = JsonSerializer.Deserialize(json, RaindropJsonSerializerContext.Default.RaindropItemList);
+				}
+				catch (JsonException jsonEx)
+				{
+					Console.WriteLine("JSON Deserialization Error: " + jsonEx.Message);
+					Console.WriteLine("Path: " + jsonEx.Path);
+					Console.WriteLine("LineNumber: " + jsonEx.LineNumber);
+					Console.WriteLine("BytePositionInLine: " + jsonEx.BytePositionInLine);
+					_errorMessage = "Error deserializing JSON: " + jsonEx.Message;
+					return;
+				}
+
+				// Add checks for _videoItems
+				if (_videoItems == null)
+				{
+					_errorMessage = "Deserialization resulted in null.";
+					Console.WriteLine(_errorMessage);
+				}
+				else if (_videoItems.Count == 0)
+				{
+					_errorMessage = "Deserialization resulted in an empty list.";
+					Console.WriteLine(_errorMessage);
+				}
+				else
+				{
+					Console.WriteLine($"Deserialization successful. {_videoItems.Count} items loaded.");
+
+					// Probe deeper into the data
+					foreach (var item in _videoItems)
+					{
+						Console.WriteLine($"Item ID: {item.Id}, Title: {item.Title}, Link: {item.Link}");
+						Console.WriteLine($"Tags: {string.Join(", ", item.Tags ?? new List<string>())}");
+						Console.WriteLine($"Media Count: {item.Media?.Count ?? 0}");
+						Console.WriteLine($"Highlights Count: {item.Highlights?.Count ?? 0}");
+
+						// Validate individual properties
+						foreach (var highlight in item.Highlights ?? new List<Highlight>())
+						{
+							if (highlight.CreatorRef == null)
+							{
+								Console.WriteLine("Warning: CreatorRef is null.");
+							}
+							else
+							{
+								Console.WriteLine($"CreatorRef Raw JSON: {JsonSerializer.Serialize(highlight.CreatorRef)}");
+								Console.WriteLine($"CreatorRef ID: {highlight.CreatorRef.Id}, Name: {highlight.CreatorRef.Name}");
+							}
+						}
+					}
+				}
 			}
 			else
 			{
