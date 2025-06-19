@@ -5,8 +5,12 @@
 
 <h1>Videos</h1>
 
-<button class="button primary" @onclick="LoginWithRaindropAsync">Login with Raindrop.io</button>
-<button class="button primary" @onclick="FetchVideosAsync">Fetch Videos</button>
+<button class="button primary" @onclick="LoginWithRaindropAsync">
+    <i class="fas fa-sign-in-alt"></i> Login with Raindrop.io
+</button>
+<button class="button primary" @onclick="FetchVideosAsync">
+    <i class="fas fa-video"></i> Fetch Videos
+</button>
 
 @if (_videoItems != null && _videoItems.Any())
 {
