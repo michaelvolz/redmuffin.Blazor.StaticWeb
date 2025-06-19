@@ -7,11 +7,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using redmuffin.Blazor.StaticWeb.Api.Core;
 
-#pragma warning disable CA1816, CA1848
+#pragma warning disable CA1816, SA1204
 
 namespace redmuffin.Blazor.StaticWeb.Api.Functions;
 
-public class RaindropListVideos(ILogger<RaindropListVideos> logger, IOptions<Settings> settings) : IDisposable
+public partial class RaindropListVideos(ILogger<RaindropListVideos> logger, IOptions<Settings> settings) : IDisposable
 {
 	private const string TargetCollectionId = "56109697";
 
@@ -23,56 +23,64 @@ public class RaindropListVideos(ILogger<RaindropListVideos> logger, IOptions<Set
 		_httpClient.Dispose();
 	}
 
+	[LoggerMessage(1, LogLevel.Information, "Videos function processed a request.", EventName = nameof(Log_FunctionProcessed))]
+	public static partial void Log_FunctionProcessed(ILogger logger);
+	[LoggerMessage(2, LogLevel.Information, "Fetching videos from Raindrop API: {ApiUrl}", EventName = nameof(Log_FetchVideos))]
+	public static partial void Log_FetchVideos(ILogger logger, string apiUrl);
+	[LoggerMessage(3, LogLevel.Information, "Successfully received response from Raindrop API.", EventName = nameof(Log_ResponseReceived))]
+	public static partial void Log_ResponseReceived(ILogger logger);
+	[LoggerMessage(4, LogLevel.Warning, "Raindrop API request failed with status code: {StatusCode}. Response: {Response}", EventName = nameof(Log_RequestFailed))]
+	public static partial void Log_RequestFailed(ILogger logger, HttpStatusCode statusCode, string response);
+	[LoggerMessage(5, LogLevel.Error, "An error occurred while fetching videos from Raindrop.", EventName = nameof(Log_ErrorFetchingVideos))]
+	public static partial void Log_ErrorFetchingVideos(ILogger logger, Exception exception);
+
 	/// <summary>
 	///     Handles HTTP GET requests to fetch a list of videos from the Raindrop API.
 	/// </summary>
-	/// <param name="req">The HTTP request data containing the trigger information.</param>
+	/// <param name="request">The HTTP request data containing the trigger information.</param>
 	/// <returns>
 	///     An <see cref="HttpResponseData" /> object containing the response data.
 	///     If successful, it includes the list of videos retrieved from the Raindrop API.
 	///     If an error occurs, it includes an appropriate error message.
 	/// </returns>
 	[Function("RaindropListVideos")]
-	public async Task<HttpResponseData> RunAsync([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req)
+	public async Task<HttpResponseData> RunAsync([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData request)
 	{
-		logger.LogInformation("Videos function processed a request.");
+		Log_FunctionProcessed(logger);
 
 		_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _settings.RainDropTestToken);
 
 		try
 		{
-			// API endpoint to get raindrops from a specific collection, sorted by creation date in descending order
 			var apiUrl = $"https://api.raindrop.io/rest/v1/raindrops/{TargetCollectionId}?sort=-created";
-			logger.LogInformation("Fetching videos from Raindrop API: {ApiUrl}", apiUrl);
+			Log_FetchVideos(logger, apiUrl);
 
-			var response = await _httpClient.GetAsync(apiUrl, req.FunctionContext.CancellationToken).ConfigureAwait(false);
-			var json = await response.Content.ReadAsStringAsync(req.FunctionContext.CancellationToken).ConfigureAwait(false);
+			var response = await _httpClient.GetAsync(apiUrl, request.FunctionContext.CancellationToken).ConfigureAwait(false);
+			var json = await response.Content.ReadAsStringAsync(request.FunctionContext.CancellationToken).ConfigureAwait(false);
 
 			if (response.IsSuccessStatusCode)
 			{
-				logger.LogInformation("Successfully received response from Raindrop API.");
-				// Assuming the response is a JSON array of items.
-				// You might need to adjust the deserialization based on the actual Raindrop API response structure.
+				Log_ResponseReceived(logger);
 				using var jsonDoc = JsonDocument.Parse(json);
 				var items = jsonDoc.RootElement.TryGetProperty("items", out var itemsElement) ? itemsElement.Clone() : jsonDoc.RootElement.Clone();
 
-				var okResp = req.CreateResponse(HttpStatusCode.OK);
-				await okResp.WriteAsJsonAsync(items, req.FunctionContext.CancellationToken).ConfigureAwait(false);
+				var okResp = request.CreateResponse(HttpStatusCode.OK);
+				await okResp.WriteAsJsonAsync(items, request.FunctionContext.CancellationToken).ConfigureAwait(false);
 				return okResp;
 			}
 
-			logger.LogWarning("Raindrop API request failed with status code: {StatusCode}. Response: {Response}", response.StatusCode, json);
-			var errResp = req.CreateResponse(HttpStatusCode.BadRequest);
+			Log_RequestFailed(logger, response.StatusCode, json);
+			var errResp = request.CreateResponse(HttpStatusCode.BadRequest);
 			await errResp.WriteAsJsonAsync(
 				new { Error = $"Raindrop API request failed: {response.StatusCode}", Details = json },
-				req.FunctionContext.CancellationToken).ConfigureAwait(false);
+				request.FunctionContext.CancellationToken).ConfigureAwait(false);
 			return errResp;
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex, "An error occurred while fetching videos from Raindrop.");
-			var errResp = req.CreateResponse(HttpStatusCode.InternalServerError);
-			await errResp.WriteAsJsonAsync(new { Error = ex.Message }, req.FunctionContext.CancellationToken).ConfigureAwait(false);
+			Log_ErrorFetchingVideos(logger, ex);
+			var errResp = request.CreateResponse(HttpStatusCode.InternalServerError);
+			await errResp.WriteAsJsonAsync(new { Error = ex.Message }, request.FunctionContext.CancellationToken).ConfigureAwait(false);
 			return errResp;
 		}
 	}
