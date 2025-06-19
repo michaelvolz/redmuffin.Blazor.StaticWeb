@@ -218,11 +218,24 @@ For more details, refer to the [Azure Static Web Apps CLI Documentation](https:/
 
 ## Local Development: Starting the Project with Azure Static Web Apps CLI
 
-First, start the Blazor WebAssembly frontend and the Azure Functions API backend locally. Ensure that both projects are running before starting the Azure Static Web Apps CLI.
+To simulate the Azure Static Web Apps environment locally, follow these steps:
 
-To run the project locally with the Azure Static Web Apps CLI, use the following command:
-swa start http://localhost:5233 --api-location http://localhost:7184/api
-- `http://localhost:5233` is the local URL for the Blazor WebAssembly frontend.
-- `http://localhost:7184/api` is the local URL for the Azure Functions API backend.
+1. **Start the Azure Static Web Apps CLI:**
+   - Use the following command to start the CLI and connect the frontend and API:
+     `swa start http://localhost:5233 --api-location http://localhost:7184/api`
+   - This command will:
+     - Serve the frontend at `http://localhost:4280`.
+     - Proxy API calls to the backend, enabling seamless integration.
+   - The CLI will automatically poll the frontend and API until they are online, making development easier. It can run continuously, even if you restart the frontend or API during development.
 
-This command will start both the frontend and API locally, simulating the Azure Static Web Apps environment for development and testing.
+2. **Start the Blazor WebAssembly frontend and API backend:**
+   - Use the "Start both" profile in Visual Studio to launch the frontend and API simultaneously.
+   - The browser will automatically redirect to `http://localhost:4280` if necessary.
+
+3. **Access the application:**
+   - Open `http://localhost:4280` in your browser manually to view the application if needed.
+   - All API calls will be routed through the same port as the web app.
+
+### Notes
+- The CLI simulates the Azure Static Web Apps environment, making it ideal for development and testing.
+- The "Start both" profile simplifies launching both projects together.

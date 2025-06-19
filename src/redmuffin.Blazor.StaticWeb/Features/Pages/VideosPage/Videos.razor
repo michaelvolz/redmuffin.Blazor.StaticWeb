@@ -8,22 +8,101 @@
 <button class="button primary" @onclick="LoginWithRaindropAsync">Login with Raindrop.io</button>
 <button class="button primary" @onclick="FetchVideosAsync">Fetch Videos</button>
 
+<style>
+    .masonry {
+        column-count: 4;
+        column-gap: 16px;
+    }
+
+    .card {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 16px;
+        display: inline-block;
+        width: 100%;
+        overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .card img {
+        width: 100%;
+        height: auto;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .card-divider {
+        background: #f4f4f4;
+        padding: 8px;
+        font-weight: bold;
+        font-size: 1.2em;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .card-divider i {
+        color: #007bff;
+    }
+
+    .card-section {
+        padding: 16px;
+        font-size: 0.9em;
+        color: #555;
+    }
+
+    .card-section p {
+        margin: 0 0 8px;
+    }
+
+    .card-section a.button {
+        display: inline-block;
+        padding: 8px 12px;
+        background: #007bff;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 0.9em;
+        transition: background 0.3s;
+    }
+
+    .card-section a.button:hover {
+        background: #0056b3;
+    }
+
+    .callout.alert {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 16px;
+        border: 1px solid #f5c6cb;
+        border-radius: 8px;
+    }
+</style>
+
 @if (_videoItems != null && _videoItems.Any())
 {
-    <div>
-        <h2>Video Data:</h2>
-        <ul>
-            @foreach (var video in _videoItems)
-            {
-                <li>
-                    <h3>@(string.IsNullOrEmpty(video.Title) ? "No Title Available" : video.Title)</h3>
-                    <p>@(string.IsNullOrEmpty(video.Excerpt) ? "No Excerpt Available" : video.Excerpt)</p>
-                    <img src="@video.Cover" alt="Video Cover" style="max-width: 200px;" />
-                    <p>Created: @video.Created.ToString("yyyy-MM-dd")</p>
-                    <a href="@video.Link" target="_blank">Watch Video</a>
-                </li>
-            }
-        </ul>
+    <div class="masonry">
+        @foreach (var video in _videoItems)
+        {
+            <div class="card">
+                <div class="card-divider">
+                    <h5>@(string.IsNullOrEmpty(video.Title) ? "No Title Available" : video.Title)</h5>
+                </div>
+                <img src="@video.Cover" alt="Video Cover" />
+                <div class="card-section">
+                    <p>@(string.IsNullOrEmpty(video.Excerpt) ? "No Excerpt Available" : video.Excerpt.Length > 120 ? video.Excerpt.Substring(0, 120) + "..." : video.Excerpt)</p>
+                    <p><i class="fas fa-calendar-alt"></i> Created: @video.Created.ToString("yyyy-MM-dd")</p>
+                    <a href="@video.Link" target="_blank" class="button"><i class="fas fa-play"></i> Watch Video</a>
+                </div>
+            </div>
+        }
     </div>
 }
 else if (!string.IsNullOrEmpty(_errorMessage))
