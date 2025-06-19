@@ -19,7 +19,7 @@
                 </div>
                 <img src="@video.Cover" alt="Video Cover" />
                 <div class="card-section">
-                    <p>@(string.IsNullOrEmpty(video.Excerpt) ? "No Excerpt Available" : video.Excerpt.Length > 120 ? video.Excerpt.Substring(0, 120) + "..." : video.Excerpt)</p>
+                    <p>@(string.IsNullOrEmpty(video.Excerpt) ? "No Excerpt Available" : video.Excerpt.Length > 250 ? video.Excerpt.Substring(0, 250) + "..." : video.Excerpt)</p>
                     <p><i class="fas fa-calendar-alt"></i> Created: @video.Created.ToString("yyyy-MM-dd")</p>
                     <a href="@video.Link" target="_blank" class="button"><i class="fas fa-play"></i> Watch Video</a>
                 </div>
