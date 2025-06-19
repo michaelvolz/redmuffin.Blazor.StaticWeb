@@ -11,7 +11,7 @@ public partial class HelloWorld(ILogger<HelloWorld> logger)
 	public static partial void Log_TriggerProcessed(ILogger logger, string @class);
 
 	[Function("HelloWorld")]
-	public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequest req)
+	public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequest request)
 	{
 		Log_TriggerProcessed(logger, nameof(HelloWorld));
 		return new OkObjectResult("Welcome to Azure Functions!");
