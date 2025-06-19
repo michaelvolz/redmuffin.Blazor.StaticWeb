@@ -49,4 +49,8 @@
   <ItemGroup>
     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Common\redmuffin.Blazor.StaticWeb.Common.csproj" />
+  </ItemGroup>
 </Project>
