@@ -27,4 +27,4 @@ if (string.IsNullOrWhiteSpace(settings.RainDropClientId) ||
 	string.IsNullOrWhiteSpace(settings.RainDropTestToken))
 	throw new InvalidOperationException("One or more settings are not configured. Please check local.settings.json or application settings.");
 
-host.Run();
+await host.RunAsync().ConfigureAwait(false);
