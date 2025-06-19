@@ -20,6 +20,7 @@ var host = new HostBuilder()
 	{
 		services.AddApplicationInsightsTelemetryWorkerService();
 		services.ConfigureFunctionsApplicationInsights();
+		services.AddHttpClient();
 		services.AddSingleton<Settings>();
 		services.AddSingleton<ILogger>(provider =>
 		{

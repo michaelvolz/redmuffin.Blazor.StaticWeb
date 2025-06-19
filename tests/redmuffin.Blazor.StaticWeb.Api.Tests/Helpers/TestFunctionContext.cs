@@ -22,7 +22,8 @@ public class TestFunctionContext : FunctionContext
 
 		var serviceCollection = new ServiceCollection()
 			.AddSingleton<IOptions<WorkerOptions>>(new OptionsWrapper<WorkerOptions>(workerOptions))
-			.AddSingleton(jsonSerializerOptions);
+			.AddSingleton(jsonSerializerOptions)
+			.AddHttpClient();
 
 		serviceCollection.AddFunctionsWorkerDefaults();
 

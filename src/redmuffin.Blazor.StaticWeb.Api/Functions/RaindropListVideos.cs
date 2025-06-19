@@ -11,17 +11,12 @@ using redmuffin.Blazor.StaticWeb.Api.Core;
 
 namespace redmuffin.Blazor.StaticWeb.Api.Functions;
 
-public partial class RaindropListVideos(ILogger<RaindropListVideos> logger, IOptions<Settings> settings) : IDisposable
+public partial class RaindropListVideos(ILogger<RaindropListVideos> logger, IOptions<Settings> settings, IHttpClientFactory httpClientFactory)
 {
 	private const string TargetCollectionId = "56109697";
 
-	private readonly HttpClient _httpClient = new();
+	private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
 	private readonly Settings _settings = settings.Value;
-
-	public void Dispose()
-	{
-		_httpClient.Dispose();
-	}
 
 	[LoggerMessage(1, LogLevel.Information, "Videos function processed a request.", EventName = nameof(Log_FunctionProcessed))]
 	public static partial void Log_FunctionProcessed(ILogger logger);
