@@ -55,6 +55,7 @@ dotnet_diagnostic.SA1503.severity = none # SA1503: Braces must not be omitted
 dotnet_diagnostic.SA1512.severity = none # SA1512: Single-line comments must not be followed by blank lines
 dotnet_diagnostic.SA1515.severity = none # SA1515: Single-line comments must be preceded by blank lines
 dotnet_diagnostic.SA1516.severity = none # SA1516: Elements must be separated by blank lines
+dotnet_diagnostic.SA1519.severity = none # SA1519: Braces must not be preceded or followed by a blank line
 dotnet_diagnostic.SA1600.severity = none # SA1600: Elements must be documented
 dotnet_diagnostic.SA1601.severity = none # SA1601: Partial elements must be documented
 dotnet_diagnostic.SA1629.severity = none # SA1629: Documentation text must end with a period
@@ -84,6 +85,9 @@ dotnet_style_qualification_for_method = false:suggestion
 dotnet_style_qualification_for_property = false:suggestion
 dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggestion
 
+# Allow omitting braces for single-line if and foreach statements
+csharp_style_allow_single_line_control_flow_statements = true:suggestion
+
 # Enforce underscores in namespaces, method names, static variables, and static fields
 csharp_style_namespace_underscore = true:suggestion
 csharp_style_method_name_underscore = true:suggestion
@@ -108,6 +112,13 @@ resharper_redundant_base_qualifier_highlighting = warning
 resharper_suggest_var_or_type_built_in_types_highlighting = hint
 resharper_suggest_var_or_type_elsewhere_highlighting = hint
 resharper_suggest_var_or_type_simple_types_highlighting = hint
+
+# ReSharper configuration for Types and Namespaces UnderscoreTolerant
+resharper_csharp_types_underscore_tolerant = true
+resharper_csharp_namespaces_underscore_tolerant = true
+
+# ReSharper configuration for UpperCamelCase UnderscoreTolerant
+resharper_csharp_upper_camel_case_underscore_tolerant = true
 
 [*.{c,c++,cc,cginc,compute,cp,cpp,cppm,cs,cshtml,cu,cuh,cxx,fx,fxh,h,hh,hlsl,hlsli,hlslinc,hpp,htm,html,hxx,inc,inl,ino,ipp,ixx,mpp,mq4,mq5,mqh,razor,tpp,usf,ush}]
 indent_style = tab
