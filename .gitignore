@@ -375,3 +375,5 @@ FodyWeavers.xsd
 /src/redmuffin.Blazor.StaticWeb/wwwroot/lib/foundation-root.min.css
 /src/redmuffin.Blazor.StaticWeb/wwwroot/lib/media-query-debugger.css
 /src/redmuffin.Blazor.StaticWeb/wwwroot/lib/media-query-debugger.min.css
+/src/redmuffin.Blazor.StaticWeb/wwwroot/lib/logo.css
+/src/redmuffin.Blazor.StaticWeb/wwwroot/lib/logo.min.css
