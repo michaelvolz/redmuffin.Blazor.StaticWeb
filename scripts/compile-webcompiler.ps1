@@ -1,5 +1,5 @@
-Push-Location "src/redmuffin.Blazor.Static/"
+Push-Location "src/redmuffin.Blazor.StaticWeb/"
 
-dotnet webcompiler -r wwwroot
+webcompiler -c webcompilerconfiguration.json -f webcompiler.conf
 
 Pop-Location
