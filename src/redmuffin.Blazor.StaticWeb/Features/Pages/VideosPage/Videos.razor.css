@@ -1,6 +1,27 @@
 ﻿.masonry {
-    column-count: 4;
+    column-count: 1; /* Default for small screens (mobile) */
     column-gap: 16px;
+}
+
+/* Medium screens (tablets) */
+@media screen and (min-width: 640px) {
+    .masonry {
+        column-count: 2;
+    }
+}
+
+/* Large screens (desktops) */
+@media screen and (min-width: 1024px) {
+    .masonry {
+        column-count: 3;
+    }
+}
+
+/* XLarge screens */
+@media screen and (min-width: 1200px) {
+    .masonry {
+        column-count: 4;
+    }
 }
 
 .card {
@@ -25,6 +46,17 @@
         height: auto;
         border-bottom: 1px solid #ddd;
     }
+
+/* Adjust card appearance on smaller screens */
+@media screen and (max-width: 639px) {
+    .card {
+        margin-bottom: 20px; /* Slightly more spacing between cards on mobile */
+    }
+    
+    .card:hover {
+        transform: translateY(-3px); /* Less dramatic hover effect on mobile */
+    }
+}
 
 .card-divider {
     background: #f4f4f4;
@@ -65,6 +97,25 @@
         .card-section a.button:hover {
             background: #0056b3;
         }
+
+/* Responsive adjustments for smaller screens */
+@media screen and (max-width: 639px) {
+    .card-divider {
+        font-size: 1.1em;
+        padding: 6px 8px;
+    }
+    
+    .card-section {
+        padding: 12px;
+    }
+    
+    .card-section a.button {
+        display: block;
+        width: 100%;
+        text-align: center;
+        padding: 10px;
+    }
+}
 
 .callout.alert {
     background: #f8d7da;
