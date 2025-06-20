@@ -369,3 +369,9 @@ FodyWeavers.xsd
 /src/redmuffin.Blazor.StaticWeb.Api/__azurite_db_queue_extent__.json
 /src/redmuffin.Blazor.StaticWeb.Api/__azurite_db_queue__.json
 /src/redmuffin.Blazor.StaticWeb.Api/__azurite_db_table__.json
+/src/redmuffin.Blazor.StaticWeb/wwwroot/lib/app.css
+/src/redmuffin.Blazor.StaticWeb/wwwroot/lib/app.min.css
+/src/redmuffin.Blazor.StaticWeb/wwwroot/lib/foundation-root.css
+/src/redmuffin.Blazor.StaticWeb/wwwroot/lib/foundation-root.min.css
+/src/redmuffin.Blazor.StaticWeb/wwwroot/lib/media-query-debugger.css
+/src/redmuffin.Blazor.StaticWeb/wwwroot/lib/media-query-debugger.min.css
