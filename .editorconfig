@@ -1,113 +1,96 @@
+# =============================================================================
+# C# Files Configuration
+# =============================================================================
 [*.cs]
 
-# Set severity for all analyzers that are enabled by default (https://docs.microsoft.com/en-us/visualstudio/code-quality/use-roslyn-analyzers?view=vs-2022#set-rule-severity-of-multiple-analyzer-rules-at-once-in-an-editorconfig-file)
-dotnet_analyzer_diagnostic.category-roslynator.severity = default # default|none|silent|suggestion|warning|error
+# =============================================================================
+# Roslynator Analyzer Configuration
+# =============================================================================
 
-# Enable/disable all analyzers by default
-# NOTE: This option can be used only in .roslynatorconfig file
-roslynator_analyzers.enabled_by_default = true # true|false
+# Global Roslynator Settings
+dotnet_analyzer_diagnostic.category-roslynator.severity = default
+roslynator_analyzers.enabled_by_default = true
+roslynator_refactorings.enabled = true
+roslynator_compiler_diagnostic_fixes.enabled = true
 
-# Set severity for a specific analyzer
-# dotnet_diagnostic.<ANALYZER_ID>.severity = default|none|silent|suggestion|warning|error
-dotnet_diagnostic.ros0003.severity = suggestion # default|none|silent|suggestion|warning|error
+# Specific Roslynator Rules
+dotnet_diagnostic.ros0003.severity = suggestion
 dotnet_diagnostic.rcs1205.severity = none
 
-# Enable/disable all refactorings
-roslynator_refactorings.enabled = true # true|false
+# =============================================================================
+# Microsoft Analyzer Configuration
+# =============================================================================
 
-# Enable/disable specific refactoring
-# roslynator_refactoring.<REFACTORING_NAME>.enabled = true|false
-
-# Enable/disable all compiler diagnostic fixes
-roslynator_compiler_diagnostic_fixes.enabled = true # true|false
-
-# Enable/disable specific compiler diagnostic fix
-# roslynator_compiler_diagnostic_fix.<COMPILER_DIAGNOSTIC_ID>.enabled = true|false
-
-
-# Default severity for analyzer diagnostics with category 'Design'
+# Design Category Rules
 dotnet_analyzer_diagnostic.category-design.severity = warning
 
-
-# Meziantou.Analyzer
+# Meziantou.Analyzer Rules
+# Commented settings for future reference:
 # MA0051.maximum_lines_per_method = 60
 # MA0051.maximum_statements_per_method = 40
-dotnet_diagnostic.ma0038.severity = none # default|none|silent|suggestion|warning|error
+dotnet_diagnostic.ma0038.severity = none
 
-
-# Stylecop.Analyzers
-dotnet_diagnostic.sa0001.severity = none # SA0001: XML documentation comments must be valid
-dotnet_diagnostic.sa1005.severity = none # SA1005: Single-line comments must not be preceded by blank lines
-dotnet_diagnostic.sa1009.severity = none # SA1009: Closing parenthesis must be on the same line
-dotnet_diagnostic.sa1027.severity = none # SA1027: Tabs must not be used
-dotnet_diagnostic.sa1101.severity = none # SA1101: Prefix local calls with 'this.'
-dotnet_diagnostic.sa1111.severity = none # SA1111: Closing parenthesis must be on the same line as the last parameter
-dotnet_diagnostic.sa1117.severity = none # SA1117: Parameters must be on separate lines
-dotnet_diagnostic.sa1127.severity = none # SA1127: Generic type constraints must be on separate lines
-dotnet_diagnostic.sa1133.severity = none # SA1133: Do not combine attributes
-dotnet_diagnostic.sa1134.severity = none # SA1134: Attributes must be on separate lines
-dotnet_diagnostic.sa1200.severity = none # SA1200: Using directives must be placed correctly
-dotnet_diagnostic.sa1300.severity = none # SA1300: Element names must begin with an uppercase letter
-dotnet_diagnostic.sa1309.severity = none # SA1309: Field names must not begin with an underscore
-dotnet_diagnostic.sa1310.severity = none # SA1310: Field names must not contain underscores
-dotnet_diagnostic.sa1402.severity = none # SA1402: File may only contain a single type
-dotnet_diagnostic.sa1503.severity = none # SA1503: Braces must not be omitted
-dotnet_diagnostic.sa1512.severity = none # SA1512: Single-line comments must not be followed by blank lines
-dotnet_diagnostic.sa1515.severity = none # SA1515: Single-line comments must be preceded by blank lines
-dotnet_diagnostic.sa1516.severity = none # SA1516: Elements must be separated by blank lines
-dotnet_diagnostic.sa1519.severity = none # SA1519: Braces must not be preceded or followed by a blank line
-dotnet_diagnostic.sa1600.severity = none # SA1600: Elements must be documented
-dotnet_diagnostic.sa1601.severity = none # SA1601: Partial elements must be documented
-dotnet_diagnostic.sa1629.severity = none # SA1629: Documentation text must end with a period
-dotnet_diagnostic.sa1633.severity = none # SA1633: File must have a header
-dotnet_diagnostic.sa1649.severity = none # SA1649: File name must match first type name
-
-
-# Microsoft.CodeAnalysis.NetAnalyzers
+# Microsoft.CodeAnalysis.NetAnalyzers (commented for future use)
 #dotnet_diagnostic.CA1032.severity = none
 #dotnet_diagnostic.CA1707.severity = none
 
-# Microsoft .NET properties
+# =============================================================================
+# StyleCop.Analyzers Configuration
+# =============================================================================
+# Documentation and XML Rules
+dotnet_diagnostic.sa0001.severity = none # XML documentation comments must be valid
+dotnet_diagnostic.sa1600.severity = none # Elements must be documented
+dotnet_diagnostic.sa1601.severity = none # Partial elements must be documented
+dotnet_diagnostic.sa1629.severity = none # Documentation text must end with a period
+dotnet_diagnostic.sa1633.severity = none # File must have a header
+dotnet_diagnostic.sa1649.severity = none # File name must match first type name
+
+# Formatting and Layout Rules
+dotnet_diagnostic.sa1005.severity = none # Single-line comments must not be preceded by blank lines
+dotnet_diagnostic.sa1009.severity = none # Closing parenthesis must be on the same line
+dotnet_diagnostic.sa1027.severity = none # Tabs must not be used
+dotnet_diagnostic.sa1111.severity = none # Closing parenthesis must be on the same line as the last parameter
+dotnet_diagnostic.sa1117.severity = none # Parameters must be on separate lines
+dotnet_diagnostic.sa1127.severity = none # Generic type constraints must be on separate lines
+dotnet_diagnostic.sa1133.severity = none # Do not combine attributes
+dotnet_diagnostic.sa1134.severity = none # Attributes must be on separate lines
+dotnet_diagnostic.sa1200.severity = none # Using directives must be placed correctly
+dotnet_diagnostic.sa1402.severity = none # File may only contain a single type
+dotnet_diagnostic.sa1503.severity = none # Braces must not be omitted
+dotnet_diagnostic.sa1512.severity = none # Single-line comments must not be followed by blank lines
+dotnet_diagnostic.sa1515.severity = none # Single-line comments must be preceded by blank lines
+dotnet_diagnostic.sa1516.severity = none # Elements must be separated by blank lines
+dotnet_diagnostic.sa1519.severity = none # Braces must not be preceded or followed by a blank line
+
+# Naming Rules
+dotnet_diagnostic.sa1300.severity = none # Element names must begin with an uppercase letter
+dotnet_diagnostic.sa1309.severity = none # Field names must not begin with an underscore
+dotnet_diagnostic.sa1310.severity = none # Field names must not contain underscores
+
+# Code Style Rules
+dotnet_diagnostic.sa1101.severity = none # Prefix local calls with 'this.'
+
+# =============================================================================
+# C# Style and Formatting Preferences
+# =============================================================================
+# Code Style Preferences
 csharp_new_line_before_members_in_object_initializers = false
 csharp_preferred_modifier_order = public, private, protected, internal, file, new, static, abstract, virtual, sealed, readonly, override, extern, unsafe, volatile, async, required:suggestion
 csharp_style_prefer_utf8_string_literals = true:suggestion
 csharp_style_var_elsewhere = true:suggestion
 csharp_style_var_for_built_in_types = true:suggestion
 csharp_style_var_when_type_is_apparent = true:suggestion
-dotnet_naming_rule.private_static_readonly_rule.import_to_resharper = True
-dotnet_naming_rule.private_static_readonly_rule.resharper_description = Static readonly fields (private)
-dotnet_naming_rule.private_static_readonly_rule.resharper_guid = 15b5b1f1-457c-4ca6-b278-5615aedc07d3
-dotnet_naming_rule.private_static_readonly_rule.severity = warning
-dotnet_naming_rule.private_static_readonly_rule.style = upper_camel_case_underscore_tolerant_style
-dotnet_naming_rule.private_static_readonly_rule.symbols = private_static_readonly_symbols
-dotnet_naming_rule.types_and_namespaces_rule.import_to_resharper = True
-dotnet_naming_rule.types_and_namespaces_rule.resharper_description = Types and namespaces
-dotnet_naming_rule.types_and_namespaces_rule.resharper_guid = a0b4bc4d-d13b-4a37-b37e-c9c6864e4302
-dotnet_naming_rule.types_and_namespaces_rule.severity = warning
-dotnet_naming_rule.types_and_namespaces_rule.style = upper_camel_case_underscore_tolerant_style
-dotnet_naming_rule.types_and_namespaces_rule.symbols = types_and_namespaces_symbols
-dotnet_naming_rule.unity_serialized_field_rule.import_to_resharper = True
-dotnet_naming_rule.unity_serialized_field_rule.resharper_description = Unity serialized field
-dotnet_naming_rule.unity_serialized_field_rule.resharper_guid = 5f0fdb63-c892-4d2c-9324-15c80b22a7ef
-dotnet_naming_rule.unity_serialized_field_rule.severity = warning
-dotnet_naming_rule.unity_serialized_field_rule.style = lower_camel_case_style
-dotnet_naming_rule.unity_serialized_field_rule.symbols = unity_serialized_field_symbols
-dotnet_naming_style.lower_camel_case_style.capitalization = camel_case
-dotnet_naming_style.upper_camel_case_underscore_tolerant_style.capitalization = pascal_case
-dotnet_naming_style.upper_camel_case_underscore_tolerant_style.word_separator = _
-dotnet_naming_symbols.private_static_readonly_symbols.applicable_accessibilities = private
-dotnet_naming_symbols.private_static_readonly_symbols.applicable_kinds = field
-dotnet_naming_symbols.private_static_readonly_symbols.required_modifiers = readonly,static
-dotnet_naming_symbols.private_static_readonly_symbols.resharper_applicable_kinds = readonly_field
-dotnet_naming_symbols.private_static_readonly_symbols.resharper_required_modifiers = static
-dotnet_naming_symbols.types_and_namespaces_symbols.applicable_accessibilities = *
-dotnet_naming_symbols.types_and_namespaces_symbols.applicable_kinds = class,delegate,enum,namespace,struct
-dotnet_naming_symbols.types_and_namespaces_symbols.resharper_applicable_kinds = namespace,class,struct,enum,delegate
-dotnet_naming_symbols.types_and_namespaces_symbols.resharper_required_modifiers = any
-dotnet_naming_symbols.unity_serialized_field_symbols.applicable_accessibilities = *
-dotnet_naming_symbols.unity_serialized_field_symbols.applicable_kinds = 
-dotnet_naming_symbols.unity_serialized_field_symbols.resharper_applicable_kinds = unity_serialised_field
-dotnet_naming_symbols.unity_serialized_field_symbols.resharper_required_modifiers = instance
+
+# Control Flow Statements
+csharp_style_allow_single_line_control_flow_statements = false:warning
+
+# Custom Underscore Conventions
+csharp_style_namespace_underscore = true:suggestion
+csharp_style_method_name_underscore = true:suggestion
+csharp_style_static_variable_underscore = true:suggestion
+csharp_style_static_field_underscore = true:suggestion
+
+# .NET Style Preferences
 dotnet_style_parentheses_in_arithmetic_binary_operators = never_if_unnecessary:none
 dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:none
 dotnet_style_parentheses_in_relational_binary_operators = never_if_unnecessary:none
@@ -119,22 +102,67 @@ dotnet_style_qualification_for_method = false:suggestion
 dotnet_style_qualification_for_property = false:suggestion
 dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggestion
 
-# Require braces for all control statements for consistency and safety
-csharp_style_allow_single_line_control_flow_statements = false:warning
+# =============================================================================
+# Naming Rules Configuration
+# =============================================================================
 
-# Enforce underscores in namespaces, method names, static variables, and static fields
-csharp_style_namespace_underscore = true:suggestion
-csharp_style_method_name_underscore = true:suggestion
-csharp_style_static_variable_underscore = true:suggestion
-csharp_style_static_field_underscore = true:suggestion
+# Private Static Readonly Fields Rule
+dotnet_naming_rule.private_static_readonly_rule.import_to_resharper = True
+dotnet_naming_rule.private_static_readonly_rule.resharper_description = Static readonly fields (private)
+dotnet_naming_rule.private_static_readonly_rule.resharper_guid = 15b5b1f1-457c-4ca6-b278-5615aedc07d3
+dotnet_naming_rule.private_static_readonly_rule.severity = warning
+dotnet_naming_rule.private_static_readonly_rule.style = upper_camel_case_underscore_tolerant_style
+dotnet_naming_rule.private_static_readonly_rule.symbols = private_static_readonly_symbols
 
-# ReSharper properties
+# Types and Namespaces Rule
+dotnet_naming_rule.types_and_namespaces_rule.import_to_resharper = True
+dotnet_naming_rule.types_and_namespaces_rule.resharper_description = Types and namespaces
+dotnet_naming_rule.types_and_namespaces_rule.resharper_guid = a0b4bc4d-d13b-4a37-b37e-c9c6864e4302
+dotnet_naming_rule.types_and_namespaces_rule.severity = warning
+dotnet_naming_rule.types_and_namespaces_rule.style = upper_camel_case_underscore_tolerant_style
+dotnet_naming_rule.types_and_namespaces_rule.symbols = types_and_namespaces_symbols
+
+# Unity Serialized Field Rule
+dotnet_naming_rule.unity_serialized_field_rule.import_to_resharper = True
+dotnet_naming_rule.unity_serialized_field_rule.resharper_description = Unity serialized field
+dotnet_naming_rule.unity_serialized_field_rule.resharper_guid = 5f0fdb63-c892-4d2c-9324-15c80b22a7ef
+dotnet_naming_rule.unity_serialized_field_rule.severity = warning
+dotnet_naming_rule.unity_serialized_field_rule.style = lower_camel_case_style
+dotnet_naming_rule.unity_serialized_field_rule.symbols = unity_serialized_field_symbols
+
+# Naming Styles
+dotnet_naming_style.lower_camel_case_style.capitalization = camel_case
+dotnet_naming_style.upper_camel_case_underscore_tolerant_style.capitalization = pascal_case
+dotnet_naming_style.upper_camel_case_underscore_tolerant_style.word_separator = _
+
+# Naming Symbols
+dotnet_naming_symbols.private_static_readonly_symbols.applicable_accessibilities = private
+dotnet_naming_symbols.private_static_readonly_symbols.applicable_kinds = field
+dotnet_naming_symbols.private_static_readonly_symbols.required_modifiers = readonly,static
+dotnet_naming_symbols.private_static_readonly_symbols.resharper_applicable_kinds = readonly_field
+dotnet_naming_symbols.private_static_readonly_symbols.resharper_required_modifiers = static
+
+dotnet_naming_symbols.types_and_namespaces_symbols.applicable_accessibilities = *
+dotnet_naming_symbols.types_and_namespaces_symbols.applicable_kinds = class,delegate,enum,namespace,struct
+dotnet_naming_symbols.types_and_namespaces_symbols.resharper_applicable_kinds = namespace,class,struct,enum,delegate
+dotnet_naming_symbols.types_and_namespaces_symbols.resharper_required_modifiers = any
+
+dotnet_naming_symbols.unity_serialized_field_symbols.applicable_accessibilities = *
+dotnet_naming_symbols.unity_serialized_field_symbols.applicable_kinds = 
+dotnet_naming_symbols.unity_serialized_field_symbols.resharper_applicable_kinds = unity_serialised_field
+dotnet_naming_symbols.unity_serialized_field_symbols.resharper_required_modifiers = instance
+
+# =============================================================================
+# ReSharper Configuration
+# =============================================================================
+
+# General ReSharper Settings
 resharper_apply_auto_detected_rules = false
 resharper_csharp_max_line_length = 160
 resharper_keep_existing_attribute_arrangement = true
 resharper_show_autodetect_configure_formatting_tip = false
 
-# ReSharper inspection severities
+# ReSharper Inspection Severities
 resharper_arrange_redundant_parentheses_highlighting = hint
 resharper_arrange_this_qualifier_highlighting = hint
 resharper_arrange_type_member_modifiers_highlighting = hint
@@ -146,39 +174,35 @@ resharper_suggest_var_or_type_built_in_types_highlighting = hint
 resharper_suggest_var_or_type_elsewhere_highlighting = hint
 resharper_suggest_var_or_type_simple_types_highlighting = hint
 
-# ReSharper configuration for Types and Namespaces UnderscoreTolerant
+# ReSharper Underscore Tolerance
 resharper_csharp_types_underscore_tolerant = true
 resharper_csharp_namespaces_underscore_tolerant = true
-
-# ReSharper configuration for UpperCamelCase UnderscoreTolerant
 resharper_csharp_upper_camel_case_underscore_tolerant = true
 
+# =============================================================================
+# File-Specific Indentation Rules
+# =============================================================================
+
+# C/C++ and Related Languages (Tab Indentation)
 [*.{c,c++,cc,cginc,compute,cp,cpp,cppm,cs,cshtml,cu,cuh,cxx,fx,fxh,h,hh,hlsl,hlsli,hlslinc,hpp,htm,html,hxx,inc,inl,ino,ipp,ixx,mpp,mq4,mq5,mqh,razor,tpp,usf,ush}]
 indent_style = tab
 indent_size = tab
 tab_width = 4
 
-[*.{asax,ascx,aspx,axaml,master,paml,skin,vb,xaml,xamlx,xoml}]
-indent_style = space
-indent_size = 4
-tab_width = 4
-
-[*.{appxmanifest,axml,build,config,csproj,dbml,discomap,dtd,jsproj,lsproj,njsproj,nuspec,proj,props,resw,resx,StyleCop,targets,tasks,vbproj,xml,xsd}]
-indent_style = space
-indent_size = 2
-tab_width = 2
-
+# Database Languages (Tab Indentation)
 [*.{cql,sql}]
 indent_style = tab
 indent_size = tab
 tab_width = 4
 
+# Web and UI Files (4-Space Indentation)
 [*.{asax,ascx,aspx,axaml,cs,cshtml,htm,html,master,paml,razor,skin,vb,xaml,xamlx,xoml}]
 indent_style = space
 indent_size = 4
 tab_width = 4
 
-[*.{appxmanifest,axml,config,csproj,dbml,discomap,dtd,jsproj,lsproj,njsproj,nuspec,proj,props,resw,resx,StyleCop,targets,tasks,uxml,vbproj,xml,xsd}]
+# Project and Configuration Files (2-Space Indentation)
+[*.{appxmanifest,axml,build,config,csproj,dbml,discomap,dtd,jsproj,lsproj,njsproj,nuspec,proj,props,resw,resx,StyleCop,targets,tasks,uxml,vbproj,xml,xsd}]
 indent_style = space
 indent_size = 2
 tab_width = 2
