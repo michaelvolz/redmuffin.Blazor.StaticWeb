@@ -61,9 +61,12 @@
 - **Docker Desktop**  
   [Download from Docker website](https://www.docker.com/products/docker-desktop/)
   - Required for GitHub Copilot MCP server functionality
-- **WebCompiler 2022+** Visual Studio 2022 extension  
-  [Download from Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=MadsKristensen.WebCompiler)
-  - Required for compiling SCSS/LESS files to CSS via `compilerconfig.json`
+- **Excubo.WebCompiler**  
+  Install the Excubo WebCompiler as a global .NET tool using the following command: 
+  `dotnet tool install -g Excubo.WebCompiler`  
+  - Required for compiling SCSS files to CSS.
+  - The script `scripts/compile-webcompiler.ps1` can be used manually if needed.
+  - In debug mode, SCSS compilation will automatically run on every .NET compilation during development.
 
 ---
 
@@ -72,19 +75,14 @@
 1. **Clone the repository:** `git clone https://github.com/michaelvolz/redmuffin.Blazor.Static.git`
 2. **Install prerequisites:**
    - Ensure Visual Studio 2022 and .NET 9 SDK are installed.
-   - Install the [WebCompiler 2022+ extension](https://marketplace.visualstudio.com/items?itemName=MadsKristensen.WebCompiler) in Visual Studio.
+   - Install the Excubo WebCompiler as a global .NET tool using the command:
+            
+     `dotnet tool install -g Excubo.WebCompiler`
 
 3. **Open the solution:**
    - Open `redmuffin.Blazor.StaticWeb.sln` in Visual Studio 2022.
 
-4. **Restore and build:** `dotnet restore`
-   dotnet build
----
-
-## Usage
-
-- Run the project using Visual Studio or the .NET CLI: `dotnet run --project src/redmuffin.Blazor.StaticWeb` - The application will be available at `https://localhost:5001` (or the configured port).
-
+4. **Restore and build:** Via Visual Studio or the command `dotnet build`
 ---
 
 ## Project Structure
@@ -109,7 +107,7 @@ The project follows a [feature folder structure](https://dev.to/smotastic/layer-
 ### Frontend and Styling
 
 - **[SCSS (Sass)](https://sass-lang.com/documentation/syntax#scss)**  
-  A powerful CSS preprocessor that adds variables, nesting, and modularization to CSS. SCSS is compiled to standard CSS using WebCompiler for maintainable and scalable stylesheets.
+  A powerful CSS preprocessor that adds variables, nesting, and modularization to CSS. SCSS is compiled to standard CSS using Excubo WebCompiler for maintainable and scalable stylesheets.
 
 - **[Zurb Foundation](https://get.foundation/)**  
   A responsive front-end framework providing a robust grid system, UI components, and accessibility features. Used as the primary CSS framework for consistent and accessible design.
@@ -127,8 +125,8 @@ The project follows a [feature folder structure](https://dev.to/smotastic/layer-
 - **[Code Analyzer](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/overview)**  
   Static code analysis tools integrated into the build process to enforce code quality, security, and maintainability standards.
 
-- **[WebCompiler](https://github.com/madskristensen/WebCompiler)**  
-  A Visual Studio extension for compiling SCSS, LESS, and other preprocessor files into CSS. Ensures that styles are always up to date and optimized.
+- **[Excubo WebCompiler](https://github.com/excubo-ag/WebCompiler)**  
+  A .NET tool for compiling SCSS, LESS, and other preprocessor files into CSS. Ensures that styles are always up to date and optimized.
 
 ### Testing and Coverage
 
@@ -155,7 +153,7 @@ The project follows a [feature folder structure](https://dev.to/smotastic/layer-
 
 ### Build
 
-- Use the following commands to build the project:dotnet build
+- Use the following commands to build the project: `dotnet build`
 ### Deployment
 
 - The project is configured for deployment to Azure Static Web Apps. Follow these steps:
@@ -174,7 +172,7 @@ This project is licensed under the [Unlicense](https://unlicense.org/).
 ## Acknowledgements
 
 - [Markdig](https://github.com/xoofx/markdig) for Markdown processing
-- [WebCompiler](https://github.com/madskristensen/WebCompiler) for SCSS/LESS compilation
+- [Excubo WebCompiler](https://github.com/excubo-ag/WebCompiler) for SCSS/LESS compilation
 - [Zurb Foundation](https://get.foundation/) for the CSS framework
 - [GitHub Copilot](https://github.com/features/copilot) for AI code assistance
 - [Visual Studio](https://visualstudio.microsoft.com/) for development environment
@@ -222,9 +220,11 @@ To simulate the Azure Static Web Apps environment locally, follow these steps:
 
 1. **Start the Azure Static Web Apps CLI:**
    - Use the following command to start the CLI and connect the frontend and API:
+     
      `swa start http://localhost:5233 --api-location http://localhost:7184/api`
+
    - This command will:
-     - Serve the frontend at `http://localhost:4280`.
+     - Proxy the frontend at `http://localhost:4280`.
      - Proxy API calls to the backend, enabling seamless integration.
    - The CLI will automatically poll the frontend and API until they are online, making development easier. It can run continuously, even if you restart the frontend or API during development.
 
