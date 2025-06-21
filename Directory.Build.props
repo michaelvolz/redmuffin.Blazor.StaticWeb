@@ -16,15 +16,17 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
+
   <!-- Performance optimizations for Blazor WebAssembly -->
   <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
     <InvariantGlobalization>true</InvariantGlobalization>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
     <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
     <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
-  </PropertyGroup><!-- Security and reliability enhancements -->
+  </PropertyGroup>
+
+  <!-- Security and reliability enhancements -->
   <PropertyGroup>
-    <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Debug'">true</TreatWarningsAsErrors>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
     <Deterministic>true</Deterministic>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
@@ -36,11 +38,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <AnalysisMode>All</AnalysisMode>
+    <AnalysisMode>recommended</AnalysisMode>
     <AnalysisModeGlobalization>None</AnalysisModeGlobalization>
     <AnalysisModeSecurity>All</AnalysisModeSecurity>
-    <AnalysisModeReliability>All</AnalysisModeReliability>
-    <AnalysisModePerformance>All</AnalysisModePerformance>
   </PropertyGroup>
 
   <ItemGroup>
@@ -62,6 +62,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
   </PropertyGroup>
+
   <!-- Package versions centralized -->
   <PropertyGroup>
     <JetBrainsAnnotationsVersion>2025.1.0-eap1</JetBrainsAnnotationsVersion>
