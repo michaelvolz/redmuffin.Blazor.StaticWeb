@@ -1,8 +1,6 @@
 using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 
-#pragma warning disable MA0048 //Disable warning for file name not matching type name
-
 namespace redmuffin.Blazor.StaticWeb.Common.Raindrop;
 
 [UsedImplicitly]
@@ -33,10 +31,10 @@ public class RaindropItem
 	public string Cover { get; set; } = string.Empty;
 
 	[JsonPropertyName("media")]
-	public IList<MediaItem> Media { get; set; } = new List<MediaItem>();
+	public IList<MediaItem> Media { get; } = new List<MediaItem>();
 
 	[JsonPropertyName("tags")]
-	public IList<string> Tags { get; set; } = new List<string>();
+	public IList<string> Tags { get; } = new List<string>();
 
 	[JsonPropertyName("important")]
 	public bool Important { get; set; }
@@ -54,7 +52,7 @@ public class RaindropItem
 	public CollectionReference Collection { get; set; } = new();
 
 	[JsonPropertyName("highlights")]
-	public IList<Highlight> Highlights { get; set; } = new List<Highlight>();
+	public IList<Highlight> Highlights { get; } = new List<Highlight>();
 
 	[JsonPropertyName("domain")]
 	public string Domain { get; set; } = string.Empty;

@@ -5,8 +5,6 @@ using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.WebUtilities;
 
-#pragma warning disable CA1848
-
 namespace redmuffin.Blazor.StaticWeb.Features.Pages.VideosPage;
 
 public partial class Redirect
@@ -19,16 +17,16 @@ public partial class Redirect
 	private string? _redirectUri = string.Empty;
 
 	[Inject]
-	private NavigationManager Navigation { get; set; } = default!;
+	private NavigationManager Navigation { get; set; } = null!;
 
 	[Inject]
-	private ILocalStorageService LocalStorage { get; set; } = default!;
+	private ILocalStorageService LocalStorage { get; set; } = null!;
 
 	[Inject]
-	private HttpClient Http { get; set; } = default!;
+	private HttpClient Http { get; set; } = null!;
 
 	[Inject]
-	private ILogger<Redirect> Logger { get; set; } = default!; // Added ILogger injection
+	private ILogger<Redirect> Logger { get; set; } = null!; // Added ILogger injection
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -156,7 +154,5 @@ public partial class Redirect
 
 	[JsonSerializable(typeof(ApiExchangeRequest))]
 	[JsonSerializable(typeof(ApiExchangeResponse))]
-	public partial class ApiExchangeRequestContext : JsonSerializerContext
-	{
-	}
+	public partial class ApiExchangeRequestContext : JsonSerializerContext;
 }

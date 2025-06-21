@@ -6,7 +6,7 @@ namespace redmuffin.Blazor.StaticWeb;
 
 public partial class App
 {
-	public ErrorBoundary ComponentErrorBoundary { get; set; } = default!;
+	public ErrorBoundary ComponentErrorBoundary { get; set; } = null!;
 
 	private static Task HandleNavigationAsync(NavigationContext args)
 	{
