@@ -38,7 +38,7 @@ applyTo: "**/*.razor"
 - Dispose components that use resources by implementing `IDisposable`.
 
 ## Security Guidelines
-- Never trust client-side validation�always validate on the server.
+- Never trust client-side validation, always validate on the server.
 - Avoid exposing sensitive logic or secrets in `.razor` files.
 - Use `Microsoft.AspNetCore.Components.Authorization` for secure user authentication and role checking.
 - Use proper encoding when injecting raw HTML or third-party content.
@@ -50,14 +50,14 @@ applyTo: "**/*.razor"
 
 ## Testing & Tooling
 - Use `bUnit` for unit testing Blazor components.
-- Mock services using `Moq`, `FakeItEasy`, or `NSubstitute` in test projects.
+- Mock services using `NSubstitute` in test projects.
 - Use `IJSRuntime` abstraction for JavaScript interop, and mock it in tests.
 - Validate components for accessibility (ARIA, keyboard navigation).
 
 ## Debugging and Diagnostics
 - Use `@ref` cautiously to avoid tight coupling.
 - Enable detailed error messages in development mode.
-- Use browser dev tools and Blazor�s built-in error boundaries.
+- Use browser dev tools and Blazor's built-in error boundaries.
 
 ## General .NET Testability Guidelines
 - Follow the Arrange-Act-Assert pattern in unit tests.
