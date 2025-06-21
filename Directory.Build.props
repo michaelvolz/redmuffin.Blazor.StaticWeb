@@ -16,6 +16,19 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
+  <!-- Performance optimizations for Blazor WebAssembly -->
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
+    <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
+  </PropertyGroup><!-- Security and reliability enhancements -->
+  <PropertyGroup>
+    <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Debug'">true</TreatWarningsAsErrors>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+    <Deterministic>true</Deterministic>
+    <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
+  </PropertyGroup>
 
   <PropertyGroup>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
@@ -23,9 +36,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <AnalysisMode>Recommended</AnalysisMode>
+    <AnalysisMode>All</AnalysisMode>
     <AnalysisModeGlobalization>None</AnalysisModeGlobalization>
     <AnalysisModeSecurity>All</AnalysisModeSecurity>
+    <AnalysisModeReliability>All</AnalysisModeReliability>
+    <AnalysisModePerformance>All</AnalysisModePerformance>
   </PropertyGroup>
 
   <ItemGroup>
@@ -39,39 +54,46 @@
     <NoWarn>1701;1702;CA1014;AD0001</NoWarn>
     <WarningsAsErrors>Nullable</WarningsAsErrors>
     <DocumentationFile>_$(MSBuildProjectName).xml</DocumentationFile>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>13</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <!-- Package versions centralized -->
+  <PropertyGroup>
+    <JetBrainsAnnotationsVersion>2025.1.0-eap1</JetBrainsAnnotationsVersion>
+    <MeziantouAnalyzerVersion>2.0.202</MeziantouAnalyzerVersion>
+    <VSThreadingAnalyzersVersion>17.14.15</VSThreadingAnalyzersVersion>
+    <RoslynatorVersion>4.13.1</RoslynatorVersion>
+    <StyleCopAnalyzersVersion>1.2.0-beta.556</StyleCopAnalyzersVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="2025.1.0-eap1" />
-    <PackageReference Include="Meziantou.Analyzer" Version="2.0.202">
+    <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsAnnotationsVersion)" />
+    <PackageReference Include="Meziantou.Analyzer" Version="$(MeziantouAnalyzerVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.14.15">
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="$(VSThreadingAnalyzersVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Roslynator.Analyzers" Version="4.13.1">
+    <PackageReference Include="Roslynator.Analyzers" Version="$(RoslynatorVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.13.1">
+    <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="$(RoslynatorVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.13.1">
+    <PackageReference Include="Roslynator.Formatting.Analyzers" Version="$(RoslynatorVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
+    <PackageReference Include="StyleCop.Analyzers" Version="$(StyleCopAnalyzersVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
