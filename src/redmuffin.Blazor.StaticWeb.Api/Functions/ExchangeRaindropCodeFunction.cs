@@ -9,9 +9,9 @@ using redmuffin.Blazor.StaticWeb.Api.Core;
 
 namespace redmuffin.Blazor.StaticWeb.Api.Functions;
 
-public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> logger, IOptions<Settings> settings)
+public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> logger, IOptions<Settings> settings, IHttpClientFactory httpClientFactory)
 {
-	private readonly HttpClient _httpClient = new();
+	private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
 	private readonly Settings _settings = settings.Value;
 
 	[Function("ExchangeRaindropCode")]
@@ -21,12 +21,12 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
 
 		var token = req.FunctionContext.CancellationToken;
 
-		var request = await JsonSerializer.DeserializeAsync<ExchangeRequest>(req.Body, cancellationToken: token);
+		var request = await JsonSerializer.DeserializeAsync<ExchangeRequest>(req.Body, cancellationToken: token).ConfigureAwait(false);
 		if (request == null || string.IsNullOrWhiteSpace(request.Code))
 		{
 			logger.LogWarning("Request is null or code is missing.");
 			var badResp = req.CreateResponse(HttpStatusCode.BadRequest);
-			await badResp.WriteAsJsonAsync(new ExchangeResponse { Error = "Missing code." }, token);
+			await badResp.WriteAsJsonAsync(new ExchangeResponse { Error = "Missing code." }, token).ConfigureAwait(false);
 			return badResp;
 		}
 
@@ -36,7 +36,7 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
 			logger.LogWarning("Redirect URI is missing.");
 			// Optionally set a default or require it
 			var badResp = req.CreateResponse(HttpStatusCode.BadRequest);
-			await badResp.WriteAsJsonAsync(new ExchangeResponse { Error = "Missing redirect_uri." }, token);
+			await badResp.WriteAsJsonAsync(new ExchangeResponse { Error = "Missing redirect_uri." }, token).ConfigureAwait(false);
 			return badResp;
 		}
 
@@ -45,12 +45,12 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
 		var content = new StringContent(
 			$"grant_type=authorization_code&code={request.Code}&client_id={_settings.RainDropClientId}&client_secret={_settings.RainDropClientSecret}&redirect_uri={Uri.EscapeDataString(redirectUri)}",
 			Encoding.UTF8, "application/x-www-form-urlencoded");
-
 		try
 		{
 			logger.LogInformation("Posting to Raindrop API.");
-			var response = await _httpClient.PostAsync("https://raindrop.io/oauth/access_token", content, token);
-			var json = await response.Content.ReadAsStringAsync(token);
+			using HttpClient httpClient = _httpClientFactory.CreateClient();
+			var response = await httpClient.PostAsync("https://raindrop.io/oauth/access_token", content, token).ConfigureAwait(false);
+			var json = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
 			if (response.IsSuccessStatusCode)
 			{
 				logger.LogInformation("Successfully received response from Raindrop API.");
@@ -60,30 +60,30 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
 					var accessToken = tokenElem.GetString();
 					logger.LogInformation("Access token retrieved successfully.");
 					var okResp = req.CreateResponse(HttpStatusCode.OK);
-					await okResp.WriteAsJsonAsync(new ExchangeResponse { AccessToken = accessToken }, token);
+					await okResp.WriteAsJsonAsync(new ExchangeResponse { AccessToken = accessToken }, token).ConfigureAwait(false);
 					return okResp;
 				}
 
 				logger.LogWarning("No access_token in response from Raindrop API.");
 				var errResp = req.CreateResponse(HttpStatusCode.BadRequest);
-				await errResp.WriteAsJsonAsync(new ExchangeResponse { Error = "No access_token in response." }, token);
+				await errResp.WriteAsJsonAsync(new ExchangeResponse { Error = "No access_token in response." }, token).ConfigureAwait(false);
 				return errResp;
 			}
 			else
 			{
 				logger.LogWarning("Token request failed with status code: {StatusCode}. Response: {Response}", response.StatusCode, json);
 				var errResp = req.CreateResponse(HttpStatusCode.BadRequest);
-				await errResp.WriteAsJsonAsync(new ExchangeResponse { Error = $"Token request failed: {response.StatusCode}" }, token);
+				await errResp.WriteAsJsonAsync(new ExchangeResponse { Error = $"Token request failed: {response.StatusCode}" }, token).ConfigureAwait(false);
 				return errResp;
 			}
 		}
-		catch (Exception ex)
-		{
-			logger.LogError(ex, "An error occurred while exchanging Raindrop code.");
-			var errResp = req.CreateResponse(HttpStatusCode.InternalServerError);
-			await errResp.WriteAsJsonAsync(new ExchangeResponse { Error = ex.Message }, token);
-			return errResp;
-		}
+	catch (Exception ex)
+	{
+		logger.LogError(ex, "An error occurred while exchanging Raindrop code.");
+		var errResp = req.CreateResponse(HttpStatusCode.InternalServerError);
+		await errResp.WriteAsJsonAsync(new ExchangeResponse { Error = ex.Message }, token).ConfigureAwait(false);
+		return errResp;
+	}
 	}
 
 	public class ExchangeRequest

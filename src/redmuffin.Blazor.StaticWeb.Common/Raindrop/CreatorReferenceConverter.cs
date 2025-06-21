@@ -10,10 +10,10 @@ public class CreatorReferenceConverter : JsonConverter<CreatorReference?>
 		switch (reader.TokenType)
 		{
 			case JsonTokenType.Number:
-			{
-				var id = reader.GetInt64();
-				return new CreatorReference { Id = id };
-			}
+				{
+					var id = reader.GetInt64();
+					return new CreatorReference { Id = id };
+				}
 
 			case JsonTokenType.StartObject:
 				return JsonSerializer.Deserialize<CreatorReference>(ref reader, options);

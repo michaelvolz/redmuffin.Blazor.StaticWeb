@@ -45,6 +45,6 @@ public class TestFunctionContext : FunctionContext
 	private static ObjectSerializer CheckObjectSerializer(IServiceProvider instanceServices)
 	{
 		return instanceServices.GetService<IOptions<WorkerOptions>>()?.Value?.Serializer
-		       ?? throw new InvalidOperationException("A serializer is not configured for the worker.");
+			   ?? throw new InvalidOperationException("A serializer is not configured for the worker.");
 	}
 }

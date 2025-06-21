@@ -17,7 +17,7 @@ Target: .NET 9 Blazor WebAssembly, Visual Studio 2022
 - **Braces:** Always use braces, even for single-line statements
 - **Async:** Always use `async`/`await`
 - **DI:** Blazor DI for services, keep focused and small
-- **HttpClient:** Inject via `[Inject] private IHttpClientFactory HttpClientFactory { get; set; } = null!;`
+- **HttpClient:** For Blazor WebAssembly: `[Inject] private HttpClient Http { get; set; } = default!;` For server-side: Use `IHttpClientFactory`
 - **State:** Cascading parameters, DI services, built-in Blazor patterns
 - **Storage:** Use IJSRuntime for localStorage/sessionStorage via JS interop
 - **Best Practices:** `@inject` for services, strongly-typed parameters, `OnInitialized[Async]`/`OnParametersSet[Async]`, `EventCallback<T>`

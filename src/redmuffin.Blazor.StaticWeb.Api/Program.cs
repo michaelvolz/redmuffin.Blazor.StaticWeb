@@ -7,7 +7,7 @@ using redmuffin.Blazor.StaticWeb.Api.Core;
 using redmuffin.Blazor.StaticWeb.Common;
 
 var host = new HostBuilder()
-	.ConfigureLogging( configureLogging =>
+	.ConfigureLogging(configureLogging =>
 	{
 		configureLogging.ClearProviders();
 		configureLogging.AddConsole();
