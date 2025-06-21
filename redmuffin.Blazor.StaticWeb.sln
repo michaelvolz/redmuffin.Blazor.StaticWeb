@@ -30,11 +30,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Copilot Instructions", "Cop
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Instructions", "Instructions", "{1E5315D5-9FD9-D0B7-CF8A-5A02695B7EE1}"
 	ProjectSection(SolutionItems) = preProject
-		Example.instruction.md = Example.instruction.md
-		.github\instructions\Blazor.instruction.md = .github\instructions\Blazor.instruction.md
-		.github\instructions\CSharp.instruction.md = .github\instructions\CSharp.instruction.md
-		.github\instructions\Powershell.instruction.md = .github\instructions\Powershell.instruction.md
-		SCSS.instruction.md = SCSS.instruction.md
+		.github\instructions\Blazor.instructions.md = .github\instructions\Blazor.instructions.md
+		.github\instructions\CSharp.instructions.md = .github\instructions\CSharp.instructions.md
+		.github\instructions\Powershell.instructions.md = .github\instructions\Powershell.instructions.md
+		.github\instructions\SCSS.instructions.md = .github\instructions\SCSS.instructions.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Prompts", "Prompts", "{1042B09C-CD63-0B34-1D4B-7FE7A2FDFA8E}"

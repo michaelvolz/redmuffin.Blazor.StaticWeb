@@ -72,6 +72,11 @@ Target: .NET 9 Blazor WebAssembly, Visual Studio 2022
 **Structure:**
 ```
 project-root/
+├── .github/instructions/
+│   ├── Blazor.instructions.md
+│   ├── CSharp.instructions.md
+│   ├── Powershell.instructions.md
+│   ├── SCSS.instructions.md
 ├── src/
 │   ├── MainProject/
 │   │   ├── Features/FeatureName/Components/
