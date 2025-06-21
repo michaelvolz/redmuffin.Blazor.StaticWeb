@@ -17,7 +17,7 @@ public partial class CallApiExample
 		try
 		{
 			// The API endpoint is relative to the application's base URI
-			_apiResponse = await Http.GetStringAsync("api/HelloWorld");
+			_apiResponse = await Http.GetStringAsync("api/HelloWorld").ConfigureAwait(false);
 		}
 		catch (HttpRequestException ex)
 		{

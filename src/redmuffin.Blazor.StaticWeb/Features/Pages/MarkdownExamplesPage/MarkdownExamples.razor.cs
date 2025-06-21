@@ -10,6 +10,6 @@ public partial class MarkdownExamples : ComponentBase
 	protected override async Task OnInitializedAsync()
 	{
 		var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-		if (Http != null) _markdownText = new MarkupString(Markdown.ToHtml(await Http.GetStringAsync("Example.md"), pipeline));
+		if (Http != null) _markdownText = new MarkupString(Markdown.ToHtml(await Http.GetStringAsync("Example.md").ConfigureAwait(false), pipeline));
 	}
 }

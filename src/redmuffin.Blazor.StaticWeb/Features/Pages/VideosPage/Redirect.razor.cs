@@ -9,8 +9,6 @@ namespace redmuffin.Blazor.StaticWeb.Features.Pages.VideosPage;
 
 public partial class Redirect
 {
-	private static readonly JsonSerializerOptions JsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
-
 	private string? _accessToken;
 	private string? _authCode;
 	private string? _error;
@@ -45,11 +43,11 @@ public partial class Redirect
 			try
 			{
 				Logger.LogInformation("Attempting to set 'raindrop_auth_code' in LocalStorage.");
-				await LocalStorage.SetItemAsync("raindrop_auth_code", _authCode);
+				await LocalStorage.SetItemAsync("raindrop_auth_code", _authCode).ConfigureAwait(false);
 				Logger.LogInformation("'raindrop_auth_code' successfully set in LocalStorage.");
 
 				Logger.LogInformation("Attempting to exchange code for token.");
-				await ExchangeCodeForTokenAsync(_authCode!);
+				await ExchangeCodeForTokenAsync(_authCode!).ConfigureAwait(false);
 				Logger.LogInformation("ExchangeCodeForTokenAsync completed.");
 			}
 			catch (Exception ex)
@@ -75,20 +73,20 @@ public partial class Redirect
 		// Use JsonSerializerContext for serialization to avoid trimming issues
 		var jsonRequest = JsonSerializer.Serialize(apiRequest, ApiExchangeRequestContext.Default.ApiExchangeRequest);
 		Logger.LogDebug("API Request JSON: {JsonRequest}", jsonRequest);
-		var requestContent = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+		using var requestContent = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
 		try
 		{
 			Logger.LogInformation("Posting to /api/ExchangeRaindropCode");
-			var response = await Http.PostAsync("/api/ExchangeRaindropCode", requestContent);
+			var response = await Http.PostAsync("/api/ExchangeRaindropCode", requestContent).ConfigureAwait(false);
 			Logger.LogInformation("Response received with status code: {StatusCode}", response.StatusCode);
 
 			if (response.IsSuccessStatusCode)
 			{
 				Logger.LogInformation("Response was successful. Attempting to deserialize.");
-				var responseStream = await response.Content.ReadAsStreamAsync();
+				var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 				var apiResponse = await JsonSerializer.DeserializeAsync<ApiExchangeResponse>(
-					responseStream, ApiExchangeRequestContext.Default.ApiExchangeResponse);
+                    responseStream, ApiExchangeRequestContext.Default.ApiExchangeResponse).ConfigureAwait(false);
 				Logger.LogDebug("API Response: {@ApiResponse}", apiResponse);
 
 				if (!string.IsNullOrEmpty(apiResponse?.AccessToken))
@@ -98,7 +96,7 @@ public partial class Redirect
 					try
 					{
 						Logger.LogInformation("Attempting to set 'raindrop_access_token' in LocalStorage.");
-						await LocalStorage.SetItemAsync("raindrop_access_token", _accessToken);
+						await LocalStorage.SetItemAsync("raindrop_access_token", _accessToken).ConfigureAwait(false);
 						Logger.LogInformation("'raindrop_access_token' successfully set in LocalStorage.");
 					}
 					catch (Exception ex)
@@ -115,7 +113,7 @@ public partial class Redirect
 			}
 			else
 			{
-				var errorContentString = await response.Content.ReadAsStringAsync();
+				var errorContentString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 				Logger.LogError("Token exchange with API failed. Status: {StatusCode}, Details: {ErrorContent}", response.StatusCode, errorContentString);
 				ApiExchangeResponse? apiErrorResponse = null;
 				try

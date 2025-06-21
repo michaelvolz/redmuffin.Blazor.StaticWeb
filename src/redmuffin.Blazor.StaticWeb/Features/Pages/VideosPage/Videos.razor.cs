@@ -58,7 +58,7 @@ public partial class Videos
 			}
 			else
 			{
-				_errorMessage = $"Error fetching videos: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}";
+				_errorMessage = $"Error fetching videos: {response.StatusCode} - {await response.Content.ReadAsStringAsync().ConfigureAwait(false)}";
 			}
 		}
 		catch (Exception ex)
