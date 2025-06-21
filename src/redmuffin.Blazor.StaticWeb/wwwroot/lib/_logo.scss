@@ -34,7 +34,9 @@ $white: #FFFFFF;
     /* Muffin part characters - ensuring they're burgundy */
     .char-m, .char-u, .char-f1, .char-f2, .char-i, .char-n {
         color: $burgundy; /* This ensures muffin is burgundy */
-    }      /* Fine-tuned optical spacing between characters - precision kerning */
+    }      
+    
+    /* Fine-tuned optical spacing between characters - precision kerning */
     .char-r { margin-right: -0.4rem; }
     .char-e { margin-right: -0.1rem; }
     .char-d { margin-right: -0.35rem; }
@@ -48,6 +50,6 @@ $white: #FFFFFF;
 
 @media screen and (max-width: 640px) {
     .logo {
-        font-size: 3rem;
+        //font-size: 3rem;
     }
 }
