@@ -52,7 +52,7 @@
     .card {
         margin-bottom: 20px; /* Slightly more spacing between cards on mobile */
     }
-    
+
     .card:hover {
         transform: translateY(-3px); /* Less dramatic hover effect on mobile */
     }
@@ -104,11 +104,11 @@
         font-size: 1.1em;
         padding: 6px 8px;
     }
-    
+
     .card-section {
         padding: 12px;
     }
-    
+
     .card-section a.button {
         display: block;
         width: 100%;
