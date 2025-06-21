@@ -71,8 +71,8 @@ dotnet_diagnostic.SA1649.severity = none # SA1649: File name must match first ty
 csharp_new_line_before_members_in_object_initializers = false
 csharp_preferred_modifier_order = public, private, protected, internal, file, new, static, abstract, virtual, sealed, readonly, override, extern, unsafe, volatile, async, required:suggestion
 csharp_style_prefer_utf8_string_literals = true:suggestion
-csharp_style_var_elsewhere = true:suggestion
-csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_elsewhere = false:suggestion
+csharp_style_var_for_built_in_types = false:suggestion  
 csharp_style_var_when_type_is_apparent = true:suggestion
 dotnet_style_parentheses_in_arithmetic_binary_operators = never_if_unnecessary:none
 dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:none
@@ -85,8 +85,8 @@ dotnet_style_qualification_for_method = false:suggestion
 dotnet_style_qualification_for_property = false:suggestion
 dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggestion
 
-# Allow omitting braces for single-line if and foreach statements
-csharp_style_allow_single_line_control_flow_statements = true:suggestion
+# Require braces for all control statements for consistency and safety
+csharp_style_allow_single_line_control_flow_statements = false:warning
 
 # Enforce underscores in namespaces, method names, static variables, and static fields
 csharp_style_namespace_underscore = true:suggestion

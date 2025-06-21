@@ -5,10 +5,10 @@ applyTo: "**/*.razor"
 # Project coding standards
 
 ## General C# Coding Standards
-- Use `var` only when the type is obvious; otherwise, use explicit types.
-- Keep line length under 160 characters.
-- Use consistent indentation and always include braces (`{}`) even for single-line statements.
-- Group `using` directives with `System.*` first, then others in alphabetical order.
+- Use `var` only when the type is clearly apparent from the right-hand side (e.g., `var items = new List<string>()`), otherwise use explicit types
+- Keep line length under 160 characters
+- Use consistent indentation and always include braces (`{}`) even for single-line statements
+- Group `using` directives with `System.*` first, then others in alphabetical order
 
 ## Naming Conventions
 - Use `PascalCase` for component names, classes, methods, and properties.
@@ -38,7 +38,7 @@ applyTo: "**/*.razor"
 - Dispose components that use resources by implementing `IDisposable`.
 
 ## Security Guidelines
-- Never trust client-side validation—always validate on the server.
+- Never trust client-side validationï¿½always validate on the server.
 - Avoid exposing sensitive logic or secrets in `.razor` files.
 - Use `Microsoft.AspNetCore.Components.Authorization` for secure user authentication and role checking.
 - Use proper encoding when injecting raw HTML or third-party content.
@@ -57,7 +57,7 @@ applyTo: "**/*.razor"
 ## Debugging and Diagnostics
 - Use `@ref` cautiously to avoid tight coupling.
 - Enable detailed error messages in development mode.
-- Use browser dev tools and Blazor’s built-in error boundaries.
+- Use browser dev tools and Blazorï¿½s built-in error boundaries.
 
 ## General .NET Testability Guidelines
 - Follow the Arrange-Act-Assert pattern in unit tests.

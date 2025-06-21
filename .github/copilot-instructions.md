@@ -11,7 +11,10 @@ Target: .NET 9 Blazor WebAssembly, Visual Studio 2022
 ## 2. Coding Standards
 - **Target:** .NET 9 Blazor WebAssembly, C# 12/13 features
 - **Structure:** UI (.razor), Logic (partial classes)
-- **Naming:** PascalCase (classes, methods, properties), camelCase (fields, variables, parameters)
+- **Naming:** PascalCase (classes, methods, properties), camelCase (fields, variables, parameters), `_` prefix for private fields
+- **var Usage:** Only when type is clearly apparent (e.g., `var items = new List<string>()`)
+- **Line Length:** 160 characters maximum
+- **Braces:** Always use braces, even for single-line statements
 - **Async:** Always use `async`/`await`
 - **DI:** Blazor DI for services, keep focused and small
 - **HttpClient:** Inject via `[Inject] private IHttpClientFactory HttpClientFactory { get; set; } = null!;`

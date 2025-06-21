@@ -5,10 +5,10 @@ applyTo: "**/*.cs"
 # Project coding standards
 
 ## General C# Coding Standards
-- Use `var` only when the type is obvious from the right-hand side; otherwise, use explicit types.
-- Use consistent indentation and always use braces, even for single-line blocks.
-- Keep line length under 120 characters.
-- Organize `using` directives alphabetically and group system namespaces first.
+- Use `var` only when the type is clearly apparent from the right-hand side (e.g., `var items = new List<string>()`), otherwise use explicit types
+- Use consistent indentation and always use braces, even for single-line blocks  
+- Keep line length under 160 characters
+- Organize `using` directives alphabetically and group system namespaces first
 
 ## Naming Conventions
 - Use `PascalCase` for class names, methods, properties, and namespaces.
@@ -25,7 +25,7 @@ applyTo: "**/*.cs"
 
 ## Code Quality and Maintainability
 - Keep methods small and focused; one method should do one thing only.
-- Avoid magic numbers and strings—use constants or enums.
+- Avoid magic numbers and stringsï¿½use constants or enums.
 - Prefer modern C# features such as:
   - Pattern matching
   - Null-coalescing operators (`??`, `??=`)
