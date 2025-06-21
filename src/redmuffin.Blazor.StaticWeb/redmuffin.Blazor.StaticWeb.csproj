@@ -46,18 +46,18 @@
     <AdditionalFiles
       Remove="C:\Users\flynn\.nuget\packages\microsoft.visualstudio.threading.analyzers\17.8.14\build\AdditionalFiles\vs-threading.MembersRequiringMainThread.txt" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Common\redmuffin.Blazor.StaticWeb.Common.csproj" />
-  </ItemGroup>  
-  
+  </ItemGroup>
+
   <!-- Run WebCompiler for SASS compilation in Debug mode only -->
   <Target Name="CompileSassFiles" BeforeTargets="CoreCompile" Condition="'$(Configuration)' == 'Debug'">
     <Message Importance="high" Text="===== Running WebCompiler to recompile SASS files =====" />
-    <Exec Command="webcompiler -c &quot;$(ProjectDir)webcompilerconfiguration.json&quot; -f &quot;$(ProjectDir)webcompiler.conf&quot;" 
+    <Exec Command="webcompiler -c &quot;$(ProjectDir)webcompilerconfiguration.json&quot; -f &quot;$(ProjectDir)webcompiler.conf&quot;"
           WorkingDirectory="$(ProjectDir)"
           IgnoreExitCode="false"
-          ContinueOnError="true" 
+          ContinueOnError="true"
           StandardOutputImportance="high"
           StandardErrorImportance="high" />
     <Message Importance="high" Text="===== SASS compilation completed =====" />
