@@ -14,7 +14,7 @@ Target: .NET 9 Blazor WebAssembly, Visual Studio 2022
 - **Naming:** PascalCase (classes, methods, properties), camelCase (fields, variables, parameters)
 - **Async:** Always use `async`/`await`
 - **DI:** Blazor DI for services, keep focused and small
-- **HttpClient:** Inject via `[Inject] private HttpClient Http { get; set; } = null!;`
+- **HttpClient:** Inject via `[Inject] private IHttpClientFactory HttpClientFactory { get; set; } = null!;`
 - **State:** Cascading parameters, DI services, built-in Blazor patterns
 - **Storage:** Use IJSRuntime for localStorage/sessionStorage via JS interop
 - **Best Practices:** `@inject` for services, strongly-typed parameters, `OnInitialized[Async]`/`OnParametersSet[Async]`, `EventCallback<T>`
@@ -35,7 +35,7 @@ Target: .NET 9 Blazor WebAssembly, Visual Studio 2022
 - **Input Validation:** Always validate/sanitize user input
 - **XSS/CSRF:** Use Blazor built-ins and best practices
 - **Secrets:** Never expose in client code
-- **API:** Strongly-typed `HttpClient` via DI, prefer minimal APIs
+- **API:** Use `IHttpClientFactory` for HTTP calls, prefer minimal APIs
 - **CSP:** Enforce strong Content Security Policy
 - **Authentication:** ASP.NET Core Identity, role-based access control
 
