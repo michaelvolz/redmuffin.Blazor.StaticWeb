@@ -1,11 +1,25 @@
+# Define variables for ports and paths
+$frontendProject = "src/redmuffin.Blazor.StaticWeb"
+$backendProject = "src/redmuffin.Blazor.StaticWeb.Api"
+$frontendPort = 5233
+$backendPort = 7184
+
 # Start the Blazor WebAssembly frontend
-Start-Process pwsh -ArgumentList '-NoExit', '-Command', 'dotnet run --project "src/redmuffin.Blazor.StaticWeb"'
+Start-Job -ScriptBlock {
+    Start-Process pwsh -ArgumentList '-NoExit', '-Command', "dotnet run --project $using:frontendProject"
+}
 
 # Start the Azure Functions API backend
-Start-Process pwsh -ArgumentList '-NoExit', '-Command', 'dotnet run --project "src/redmuffin.Blazor.StaticWeb.Api"'
+Start-Job -ScriptBlock {
+    Start-Process pwsh -ArgumentList '-NoExit', '-Command', "dotnet run --project $using:backendProject"
+}
 
-# Wait a few seconds to ensure both projects are running
+# Wait for processes to start
 Start-Sleep -Seconds 5
 
 # Start Azure Static Web Apps CLI
-swa start http://localhost:5233 --api-location http://localhost:7184/api
+swa start "http://localhost:$frontendPort" --api-location "http://localhost:$backendPort/api"
+
+# Add logging
+Write-Host "Frontend running at http://localhost:$frontendPort"
+Write-Host "Backend running at http://localhost:$backendPort"
