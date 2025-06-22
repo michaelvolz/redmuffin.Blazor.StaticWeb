@@ -51,12 +51,15 @@
     <Watch Include="appsettings*.json" />
     <Watch Include="wwwroot\lib\**\*.scss" />
   </ItemGroup>
-
   <PropertyGroup>
     <NoWarn>1701;1702;CA1014;AD0001</NoWarn>
     <WarningsAsErrors>Nullable</WarningsAsErrors>
-    <DocumentationFile>_$(MSBuildProjectName).xml</DocumentationFile>
     <LangVersion>13</LangVersion>
+  </PropertyGroup>
+
+  <!-- Documentation files only for non-test projects -->
+  <PropertyGroup Condition="'$(IsTestProject)' != 'true'">
+    <DocumentationFile>_$(MSBuildProjectName).xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -73,8 +76,7 @@
     <RoslynatorVersion>4.13.1</RoslynatorVersion>
     <StyleCopAnalyzersVersion>1.2.0-beta.556</StyleCopAnalyzersVersion>
   </PropertyGroup>
-
-  <ItemGroup>
+  <ItemGroup Condition="'$(IsTestProject)' != 'true'">
     <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsAnnotationsVersion)" />
     <PackageReference Include="Meziantou.Analyzer" Version="$(MeziantouAnalyzerVersion)">
       <PrivateAssets>all</PrivateAssets>
@@ -100,6 +102,11 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <!-- Minimal analyzer set for test projects -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsAnnotationsVersion)" />
   </ItemGroup>
 
 </Project>
