@@ -18,6 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution items", "Solution 
 		README.md = README.md
 		swa-cli.config.json = swa-cli.config.json
 		Start.ps1 = Start.ps1
+		GEMINI.md = GEMINI.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "redmuffin.Blazor.StaticWeb.Tests", "tests\redmuffin.Blazor.StaticWeb.Tests\redmuffin.Blazor.StaticWeb.Tests.csproj", "{0B9FDD37-73E0-4E09-8965-425A97F2E6C9}"
