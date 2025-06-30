@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+using redmuffin.Blazor.StaticWeb.Api;
 using redmuffin.Blazor.StaticWeb.Api.Core;
 using redmuffin.Blazor.StaticWeb.Common;
 
@@ -49,13 +50,3 @@ if (string.IsNullOrWhiteSpace(settings.RainDropClientId) ||
 	throw new InvalidOperationException("One or more settings are not configured. Please check local.settings.json or application settings.");
 
 await host.RunAsync().ConfigureAwait(false);
-
-// LoggerMessage helpers
-static class LogHelpers
-{
-    private static readonly Action<ILogger, Exception?> LogTestMessageInternal =
-        LoggerMessage.Define(LogLevel.Information, new EventId(1, "LogTestMessage"),
-            "This is a test log message.");
-
-    public static void LogTestMessage(ILogger logger) => LogTestMessageInternal(logger, null);
-}

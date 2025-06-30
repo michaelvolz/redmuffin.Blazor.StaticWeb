@@ -8,7 +8,7 @@ namespace redmuffin.Blazor.StaticWeb.Features.Pages.VideosPage;
 
 public partial class Videos
 {
-	private static readonly string? RainDropClientId = "684ea82bb3333b01de5487c1";
+	private const string? RainDropClientId = "684ea82bb3333b01de5487c1";
 	private string? _errorMessage;
 	private List<RaindropItem>? _videoItems;
 
@@ -26,7 +26,7 @@ public partial class Videos
 		var authUrl =
 			$"https://raindrop.io/oauth/authorize?client_id={RainDropClientId}&redirect_uri={Uri.EscapeDataString(redirectUri)}&response_type=code";
 
-		await Js.InvokeVoidAsync("open", authUrl, "_self");
+		await Js.InvokeVoidAsync("open", authUrl, "_self").ConfigureAwait(false);
 	}
 
 	private async Task FetchVideosAsync()
@@ -35,10 +35,10 @@ public partial class Videos
 		_videoItems = null;
 		try
 		{
-			var response = await Http.GetAsync("/api/RaindropListVideos");
+			var response = await Http.GetAsync("/api/RaindropListVideos").ConfigureAwait(false);
 			if (response.IsSuccessStatusCode)
 			{
-				var json = await response.Content.ReadAsStringAsync();
+				var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 				Console.WriteLine("Raw JSON Response: " + json); // Log the raw JSON response
 
 				try

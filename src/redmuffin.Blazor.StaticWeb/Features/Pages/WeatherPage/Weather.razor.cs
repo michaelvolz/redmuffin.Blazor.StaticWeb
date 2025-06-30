@@ -23,7 +23,7 @@ public partial class Weather : ComponentBase
 #pragma warning restore CA1848
 
 #pragma warning disable IL2026
-		_forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json", JsonOptions);
+		_forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json", JsonOptions).ConfigureAwait(false);
 #pragma warning restore IL2026
 	}
 

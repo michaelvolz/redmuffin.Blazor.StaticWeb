@@ -11,8 +11,6 @@ namespace redmuffin.Blazor.StaticWeb.Api.Functions;
 
 public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> logger, IOptions<Settings> settings, IHttpClientFactory httpClientFactory)
 {
-    private readonly Settings _settings = settings.Value;
-
     // LoggerMessage delegates for better performance
     private static readonly Action<ILogger, Exception?> LogFunctionProcessedRequest =
         LoggerMessage.Define(LogLevel.Information, new EventId(1, nameof(LogFunctionProcessedRequest)),
@@ -54,6 +52,8 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
         LoggerMessage.Define(LogLevel.Error, new EventId(10, nameof(LogExchangeError)),
             "An error occurred while exchanging Raindrop code.");
 
+    private readonly Settings _settings = settings.Value;
+
     [Function("ExchangeRaindropCode")]
     public async Task<HttpResponseData> RunAsync([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData req)
     {
@@ -83,6 +83,13 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
         }
     }
 
+    private static async Task<HttpResponseData> CreateBadRequestResponseAsync(HttpRequestData req, string error, CancellationToken token)
+    {
+        var badResp = req.CreateResponse(HttpStatusCode.BadRequest);
+        await badResp.WriteAsJsonAsync(new ExchangeResponse { Error = error }, token).ConfigureAwait(false);
+        return badResp;
+    }
+
     private async Task<ExchangeRequest?> DeserializeRequestAsync(HttpRequestData req, CancellationToken token)
     {
         var request = await JsonSerializer.DeserializeAsync<ExchangeRequest>(req.Body, cancellationToken: token).ConfigureAwait(false);
@@ -91,6 +98,7 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
             LogMissingCodeOrRequest(logger, null);
             return null;
         }
+
         return request;
     }
 
@@ -102,14 +110,8 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
             LogMissingRedirectUri(logger, null);
             return null;
         }
-        return uri;
-    }
 
-    private async Task<HttpResponseData> CreateBadRequestResponseAsync(HttpRequestData req, string error, CancellationToken token)
-    {
-        var badResp = req.CreateResponse(HttpStatusCode.BadRequest);
-        await badResp.WriteAsJsonAsync(new ExchangeResponse { Error = error }, token).ConfigureAwait(false);
-        return badResp;
+        return uri;
     }
 
     private async Task<HttpResponseData> ExchangeCodeForTokenAsync(HttpRequestData req, string code, string redirectUri, CancellationToken token)
