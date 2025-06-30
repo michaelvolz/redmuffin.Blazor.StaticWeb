@@ -25,6 +25,19 @@
 **Remaining Warnings** (minor style/formatting):
 - MA0047, MA0048, SA1513, SA1400, SA1204, CA1822
 
+### 2025-06-30 18:35:40Z - UI Patch
+
+**Task**: Update link to correct domain in App.razor
+
+**Status**: ✅ COMPLETED
+
+**Files Modified**:
+- `src/redmuffin.Blazor.StaticWeb/App.razor`
+
+**Results**:
+- Link now correctly points to `redmuffin.net`
+
+---
 ---
 
-*Last Updated: 2025-06-30 17:04:06Z*
+*Last Updated: 2025-06-30 18:35:40Z*
