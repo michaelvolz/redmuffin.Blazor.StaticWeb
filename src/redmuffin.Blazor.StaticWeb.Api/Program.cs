@@ -32,8 +32,8 @@ var host = new HostBuilder()
 
 var logger = host.Services.GetRequiredService<ILogger>();
 
-// Test log message
-logger.LogInformation("This is a test log message.");
+// Test log message using LoggerMessage for better performance
+LogHelpers.LogTestMessage(logger);
 
 var settings = host.Services.GetRequiredService<Settings>();
 
@@ -49,3 +49,13 @@ if (string.IsNullOrWhiteSpace(settings.RainDropClientId) ||
 	throw new InvalidOperationException("One or more settings are not configured. Please check local.settings.json or application settings.");
 
 await host.RunAsync().ConfigureAwait(false);
+
+// LoggerMessage helpers
+static class LogHelpers
+{
+    private static readonly Action<ILogger, Exception?> LogTestMessageInternal =
+        LoggerMessage.Define(LogLevel.Information, new EventId(1, "LogTestMessage"),
+            "This is a test log message.");
+
+    public static void LogTestMessage(ILogger logger) => LogTestMessageInternal(logger, null);
+}
