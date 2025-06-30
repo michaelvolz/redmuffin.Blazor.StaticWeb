@@ -190,49 +190,11 @@ public partial class Redirect
 
 			if (response.IsSuccessStatusCode)
 			{
-				LogSuccessfulResponseReceived(Logger, null);
-				var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-				var apiResponse = await JsonSerializer.DeserializeAsync<ApiExchangeResponse>(
-                    responseStream, ApiExchangeRequestContext.Default.ApiExchangeResponse).ConfigureAwait(false);
-
-				if (!string.IsNullOrEmpty(apiResponse?.AccessToken))
-				{
-					_accessToken = apiResponse.AccessToken;
-					LogAccessTokenRetrieved(Logger, _accessToken, null);
-					try
-					{
-						LogAttemptingToSetAccessToken(Logger, null);
-						await LocalStorage.SetItemAsync("raindrop_access_token", _accessToken).ConfigureAwait(false);
-						LogAccessTokenSetSuccessfully(Logger, null);
-					}
-					catch (Exception ex)
-					{
-						LogErrorSettingAccessToken(Logger, ex);
-						_error = $"Error storing access token: {ex.Message}";
-					}
-				}
-				else
-				{
-					_error = apiResponse?.Error ?? "Failed to retrieve access token from API: No token in response.";
-					LogFailedToRetrieveAccessToken(Logger, apiResponse?.Error, null);
-				}
+				await HandleSuccessfulTokenResponseAsync(response).ConfigureAwait(false);
 			}
 			else
 			{
-				var errorContentString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-				LogTokenExchangeFailed(Logger, response.StatusCode, errorContentString, null);
-				ApiExchangeResponse? apiErrorResponse = null;
-				try
-				{
-					apiErrorResponse = JsonSerializer.Deserialize<ApiExchangeResponse>(
-						errorContentString, ApiExchangeRequestContext.Default.ApiExchangeResponse);
-				}
-				catch (JsonException jsonEx)
-				{
-					LogFailedToDeserializeErrorResponse(Logger, jsonEx);
-				}
-
-				_error = apiErrorResponse?.Error ?? $"Token exchange with API failed: {response.StatusCode}. Details: {errorContentString}";
+				await HandleFailedTokenResponseAsync(response).ConfigureAwait(false);
 			}
 		}
 		catch (Exception ex)
@@ -242,6 +204,59 @@ public partial class Redirect
 		}
 
 		LogExchangeCodeFinished(Logger, null);
+	}
+
+	private async Task HandleSuccessfulTokenResponseAsync(HttpResponseMessage response)
+	{
+		LogSuccessfulResponseReceived(Logger, null);
+		var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+		var apiResponse = await JsonSerializer.DeserializeAsync<ApiExchangeResponse>(
+			responseStream, ApiExchangeRequestContext.Default.ApiExchangeResponse).ConfigureAwait(false);
+
+		if (!string.IsNullOrEmpty(apiResponse?.AccessToken))
+		{
+			await StoreAccessTokenAsync(apiResponse.AccessToken).ConfigureAwait(false);
+		}
+		else
+		{
+			_error = apiResponse?.Error ?? "Failed to retrieve access token from API: No token in response.";
+			LogFailedToRetrieveAccessToken(Logger, apiResponse?.Error, null);
+		}
+	}
+
+	private async Task StoreAccessTokenAsync(string accessToken)
+	{
+		_accessToken = accessToken;
+		LogAccessTokenRetrieved(Logger, _accessToken, null);
+		try
+		{
+			LogAttemptingToSetAccessToken(Logger, null);
+			await LocalStorage.SetItemAsync("raindrop_access_token", _accessToken).ConfigureAwait(false);
+			LogAccessTokenSetSuccessfully(Logger, null);
+		}
+		catch (Exception ex)
+		{
+			LogErrorSettingAccessToken(Logger, ex);
+			_error = $"Error storing access token: {ex.Message}";
+		}
+	}
+
+	private async Task HandleFailedTokenResponseAsync(HttpResponseMessage response)
+	{
+		var errorContentString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+		LogTokenExchangeFailed(Logger, response.StatusCode, errorContentString, null);
+		ApiExchangeResponse? apiErrorResponse = null;
+		try
+		{
+			apiErrorResponse = JsonSerializer.Deserialize<ApiExchangeResponse>(
+				errorContentString, ApiExchangeRequestContext.Default.ApiExchangeResponse);
+		}
+		catch (JsonException jsonEx)
+		{
+			LogFailedToDeserializeErrorResponse(Logger, jsonEx);
+		}
+
+		_error = apiErrorResponse?.Error ?? $"Token exchange with API failed: {response.StatusCode}. Details: {errorContentString}";
 	}
 
 	public class ApiExchangeRequest
