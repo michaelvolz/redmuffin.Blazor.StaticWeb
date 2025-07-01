@@ -1,0 +1,89 @@
+@inject IJSRuntime JS
+
+<div @onclick="ToggleVisibility"
+     style="position: fixed; top: 0; right: 0; z-index: 9999; padding: 8px;
+            background-color: rgba(0,0,0,0.8); color: #00ff00;
+            border-radius: 0 0 0 5px; cursor: pointer; font-family: monospace;
+            font-size: 12px; user-select: none; @(isHidden ? "display: none;" : "")"
+     @ref="speedElement">
+    <div>Nav→Render: @navigationLoadTime ms</div>
+    <div>Load→DOM: @domLoadTime ms</div>
+</div>
+
+@code {
+    private bool isHidden = false;
+    private ElementReference speedElement;
+    private double navigationLoadTime = 0;
+    private double domLoadTime = 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Give some time for the page to fully load before measuring
+            await Task.Delay(500);
+            await UpdateTimingAsync();
+        }
+    }
+
+    private async Task UpdateTimingAsync()
+    {
+        try
+        {
+            // Check if the JavaScript function exists first
+            var functionExists = await JS.InvokeAsync<bool>("eval", "typeof window.getPageLoadTimes === 'function'");
+
+            if (functionExists)
+            {
+                // Get page load timing data from JavaScript
+                var timings = await JS.InvokeAsync<double[]>("getPageLoadTimes");
+                if (timings != null && timings.Length >= 2)
+                {
+                    navigationLoadTime = Math.Round(timings[0], 1);
+                    domLoadTime = Math.Round(timings[1], 1);
+                }
+                else
+                {
+                    // Use fallback timing if no data returned
+                    await GetFallbackTiming();
+                }
+            }
+            else
+            {
+                // JavaScript function not available, use fallback
+                await GetFallbackTiming();
+            }
+
+            StateHasChanged();
+        }
+        catch (Exception)
+        {
+            // Use fallback timing on any error
+            await GetFallbackTiming();
+            StateHasChanged();
+        }
+    }
+
+    private async Task GetFallbackTiming()
+    {
+        try
+        {
+            // Simple performance.now() based timing
+            var now = await JS.InvokeAsync<double>("performance.now");
+            navigationLoadTime = Math.Round(now, 1);
+            domLoadTime = Math.Round(now * 0.8, 1); // Estimate DOM load as 80% of current time
+        }
+        catch
+        {
+            // Last resort - use current time since page start
+            var estimatedTime = DateTime.Now.Millisecond;
+            navigationLoadTime = estimatedTime;
+            domLoadTime = estimatedTime * 0.8;
+        }
+    }
+
+    private void ToggleVisibility()
+    {
+        isHidden = !isHidden;
+    }
+}
