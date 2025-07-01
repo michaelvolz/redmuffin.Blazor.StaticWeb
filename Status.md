@@ -94,9 +94,7 @@
 - **Payload Structure**: Replaced form string with JSON object using `JsonSerializer.Serialize()`
 - **Code Quality**: Added trailing comma to fix StyleCop warning SA1413
 
-**Technical Details**:
-```csharp
-// Before (form-encoded)
+**Technical Details**:// Before (form-encoded)
 using var content = new StringContent(
     $"grant_type=authorization_code&code={code}&...",
     Encoding.UTF8, "application/x-www-form-urlencoded");
@@ -105,8 +103,6 @@ using var content = new StringContent(
 var requestData = new { grant_type = "authorization_code", code = code, ... };
 var jsonPayload = JsonSerializer.Serialize(requestData);
 using var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-```
-
 **Files Modified**:
 - `src/redmuffin.Blazor.StaticWeb.Api/Functions/ExchangeRaindropCodeFunction.cs`
 
@@ -167,7 +163,47 @@ using var content = new StringContent(jsonPayload, Encoding.UTF8, "application/j
 - ✅ TUnit assertions provide clear failure messages
 - ✅ Ready for CI/CD integration
 
----
+### 2025-07-01 16:45:00Z - OAuth Redirect Handling Fix
+
+**Task**: Fix handling of OAuth redirect responses for Raindrop.io API
+
+**Status**: ✅ COMPLETED
+
+**Issue**: 
+- Redirect responses were incorrectly handled, expecting `access_token` in the Location header.
+- Raindrop.io follows standard OAuth2 flow, returning `code` in the redirect and requiring a separate token exchange.
+
+**Changes Made**:
+- Removed logic for parsing `access_token` or `code` from redirect responses.
+- Updated `ExchangeCodeForTokenAsync` to only process JSON responses from the token endpoint.
+- Fixed payload format and ensured proper handling of success and error responses.
+
+**Technical Details**:// Before (redirect handling)
+if (response.Headers.Location != null)
+{
+    var location = response.Headers.Location;
+    var query = System.Web.HttpUtility.ParseQueryString(location.Query);
+    var accessToken = query["access_token"];
+    ...
+}
+
+// After (JSON response handling)
+var response = await httpClient.PostAsync("https://raindrop.io/oauth/access_token", content, token).ConfigureAwait(false);
+var json = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
+if (response.IsSuccessStatusCode)
+{
+    return await HandleSuccessfulResponseAsync(req, json, token).ConfigureAwait(false);
+}
+**Files Modified**:
+- `src/redmuffin.Blazor.StaticWeb.Api/Functions/ExchangeRaindropCodeFunction.cs`
+
+**Results**:
+- ✅ OAuth flow now completes successfully
+- ✅ Access token correctly retrieved and stored in LocalStorage
+- ✅ Build: Clean (no warnings)
+- ✅ Tests: 2/2 passing
+- ✅ Ready for production deployment
+
 ---
 
-*Last Updated: 2025-07-01 15:23:00Z*
+*Last Updated: 2025-07-01 16:45:00Z*

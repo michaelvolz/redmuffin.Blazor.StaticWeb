@@ -130,6 +130,7 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
 
         LogPostingToRaindropApi(logger, null);
         using var httpClient = httpClientFactory.CreateClient();
+        // Use default handler (allow redirects)
         var response = await httpClient.PostAsync("https://raindrop.io/oauth/access_token", content, token).ConfigureAwait(false);
         var json = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
 
