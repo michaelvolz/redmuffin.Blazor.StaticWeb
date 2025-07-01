@@ -78,7 +78,46 @@
 - **MA0051** (1x): One method still 69 lines (acceptable complexity for business logic)
 - **SA1202** (1x): Minor member ordering (if any remain)
 
+### 2025-07-01 14:20:00Z - OAuth Token Exchange Fix
+
+**Task**: Fix OAuth token exchange for Raindrop.io API to resolve "No access_token in response" error
+
+**Status**: ✅ COMPLETED
+
+**Issue**: 
+- Redirect.razor was receiving authorization code correctly from URL (`code=fd07920f-...`)
+- But Azure Function was getting "No access_token in response" when exchanging code for token
+- Root cause: Raindrop.io API expects JSON format, but function was sending form-encoded data
+
+**Changes Made**:
+- **HTTP Request Format**: Changed from `application/x-www-form-urlencoded` to `application/json`
+- **Payload Structure**: Replaced form string with JSON object using `JsonSerializer.Serialize()`
+- **Code Quality**: Added trailing comma to fix StyleCop warning SA1413
+
+**Technical Details**:
+```csharp
+// Before (form-encoded)
+using var content = new StringContent(
+    $"grant_type=authorization_code&code={code}&...",
+    Encoding.UTF8, "application/x-www-form-urlencoded");
+
+// After (JSON)
+var requestData = new { grant_type = "authorization_code", code = code, ... };
+var jsonPayload = JsonSerializer.Serialize(requestData);
+using var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+```
+
+**Files Modified**:
+- `src/redmuffin.Blazor.StaticWeb.Api/Functions/ExchangeRaindropCodeFunction.cs`
+
+**Results**:
+- ✅ OAuth flow now completes successfully
+- ✅ Access token correctly retrieved and stored in LocalStorage  
+- ✅ Build: Clean (no warnings)
+- ✅ Tests: 2/2 passing
+- ✅ Ready for production deployment
+
 ---
 ---
 
-*Last Updated: 2025-06-30 19:24:00Z*
+*Last Updated: 2025-07-01 14:20:00Z*

@@ -116,9 +116,17 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
 
     private async Task<HttpResponseData> ExchangeCodeForTokenAsync(HttpRequestData req, string code, string redirectUri, CancellationToken token)
     {
-        using var content = new StringContent(
-            $"grant_type=authorization_code&code={code}&client_id={_settings.RainDropClientId}&client_secret={_settings.RainDropClientSecret}&redirect_uri={Uri.EscapeDataString(redirectUri)}",
-            Encoding.UTF8, "application/x-www-form-urlencoded");
+        var requestData = new
+        {
+            grant_type = "authorization_code",
+            code = code,
+            client_id = _settings.RainDropClientId,
+            client_secret = _settings.RainDropClientSecret,
+            redirect_uri = redirectUri,
+        };
+
+        var jsonPayload = JsonSerializer.Serialize(requestData);
+        using var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
         LogPostingToRaindropApi(logger, null);
         using var httpClient = httpClientFactory.CreateClient();
