@@ -1,3 +1,7 @@
+---
+mode: 'edit'
+description: 'Generating a Product Requirements Document (PRD)'
+---
 # Generating a Product Requirements Document (PRD)
 
 ## Goal

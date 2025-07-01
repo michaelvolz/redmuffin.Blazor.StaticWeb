@@ -1,4 +1,8 @@
-# Task List Management
+---
+mode: 'edit'
+description: 'Execute Task List'
+---
+# Execute Task List
 Guidelines for managing task lists in markdown files to track progress on completing a PRD
 
 ## Task Implementation
