@@ -8,7 +8,13 @@ namespace redmuffin.Blazor.StaticWeb.Features.Pages.VideosPage;
 
 public partial class Videos
 {
-	private const string? RainDropClientId = "684ea82bb3333b01de5487c1";
+	// Update RainDropClientId based on environment
+	private string GetRainDropClientId()
+	{
+		var baseUri = Navigation.BaseUri.TrimEnd('/');
+		return baseUri.Contains("localhost") ? "684ea82bb3333b01de5487c1" : "684c73df642469e7c1969f8e";
+	}
+
 	private string? _errorMessage;
 	private List<RaindropItem>? _videoItems;
 
@@ -24,7 +30,7 @@ public partial class Videos
 		var baseUri = Navigation.BaseUri.TrimEnd('/');
 		var redirectUri = $"{baseUri}{redirectPath}";
 		var authUrl =
-			$"https://raindrop.io/oauth/authorize?client_id={RainDropClientId}&redirect_uri={Uri.EscapeDataString(redirectUri)}&response_type=code";
+			$"https://raindrop.io/oauth/authorize?client_id={GetRainDropClientId()}&redirect_uri={Uri.EscapeDataString(redirectUri)}&response_type=code";
 
 		await Js.InvokeVoidAsync("open", authUrl, "_self").ConfigureAwait(false);
 	}

@@ -94,7 +94,8 @@
 - **Payload Structure**: Replaced form string with JSON object using `JsonSerializer.Serialize()`
 - **Code Quality**: Added trailing comma to fix StyleCop warning SA1413
 
-**Technical Details**:// Before (form-encoded)
+**Technical Details**:
+// Before (form-encoded)
 using var content = new StringContent(
     $"grant_type=authorization_code&code={code}&...",
     Encoding.UTF8, "application/x-www-form-urlencoded");
@@ -103,6 +104,7 @@ using var content = new StringContent(
 var requestData = new { grant_type = "authorization_code", code = code, ... };
 var jsonPayload = JsonSerializer.Serialize(requestData);
 using var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
 **Files Modified**:
 - `src/redmuffin.Blazor.StaticWeb.Api/Functions/ExchangeRaindropCodeFunction.cs`
 
@@ -178,7 +180,8 @@ using var content = new StringContent(jsonPayload, Encoding.UTF8, "application/j
 - Updated `ExchangeCodeForTokenAsync` to only process JSON responses from the token endpoint.
 - Fixed payload format and ensured proper handling of success and error responses.
 
-**Technical Details**:// Before (redirect handling)
+**Technical Details**:
+// Before (redirect handling)
 if (response.Headers.Location != null)
 {
     var location = response.Headers.Location;
@@ -194,6 +197,7 @@ if (response.IsSuccessStatusCode)
 {
     return await HandleSuccessfulResponseAsync(req, json, token).ConfigureAwait(false);
 }
+
 **Files Modified**:
 - `src/redmuffin.Blazor.StaticWeb.Api/Functions/ExchangeRaindropCodeFunction.cs`
 
@@ -204,6 +208,83 @@ if (response.IsSuccessStatusCode)
 - ✅ Tests: 2/2 passing
 - ✅ Ready for production deployment
 
+### 2025-07-01 18:13:00Z - PageLoadSpeed Component Implementation
+
+**Task**: Implement a PageLoadSpeed component to display page load timing information
+
+**Status**: ✅ COMPLETED
+
+**Feature Overview**:
+- Real-time page load performance monitoring overlay
+- Shows navigation-to-render time and DOM load time
+- Terminal-style green-on-black display in top-right corner
+- Click-to-toggle visibility functionality
+- Robust error handling with multiple fallback strategies
+
+**Technical Implementation**:
+- **Frontend Component**: `PageLoadSpeed.razor` with terminal-style UI design
+- **JavaScript Timing**: Custom `page-load-timing.js` using Performance API
+- **Integration**: Added to `MainLayout.razor` for site-wide availability
+- **Error Handling**: Multiple fallback layers to prevent -1 error values
+
+**Files Created**:
+- `src/redmuffin.Blazor.StaticWeb/Features/Shared/Components/PageLoadSpeed.razor`
+- `src/redmuffin.Blazor.StaticWeb/wwwroot/js/page-load-timing.js`
+
+**Files Modified**:
+- `src/redmuffin.Blazor.StaticWeb/Core/Layout/MainLayout.razor`
+- `src/redmuffin.Blazor.StaticWeb/wwwroot/index.html`
+
+**Technical Architecture**:Performance API → JavaScript Timing → Blazor Component → UI Display
+       ↓               ↓                    ↓             ↓
+ navigation.timing → page-load-timing.js → PageLoadSpeed.razor → Fixed overlay
+**Features Implemented**:
+- **Performance API Integration**: Uses `window.performance.timing` for accurate measurements
+- **Multiple Fallback Strategies**: 
+  1. Primary: Performance API timing data
+  2. Secondary: `performance.now()` with estimates  
+  3. Tertiary: System time as last resort
+- **Error Prevention**: Type checking, NaN validation, positive value enforcement
+- **UI/UX**: Monospace font, dark background, click-to-hide functionality
+- **Real-time Updates**: 500ms delay for accurate load completion measurement
+
+**Performance Metrics Displayed**:
+- **Nav→Render**: Time from navigation start to page load completion
+- **Load→DOM**: Time from navigation start to DOM content loaded
+
+**Results**:
+- ✅ Component renders correctly in all pages
+- ✅ Displays accurate timing values (no more -1 errors)
+- ✅ Graceful error handling with meaningful fallbacks
+- ✅ Clean terminal-style UI that doesn't interfere with page content
+- ✅ JavaScript integration working properly
+- ✅ Build: Successful with no warnings
+- ✅ Ready for production use
+
+### 2025-07-01 19:00:00Z - Raindrop Client ID Environment Logic
+
+**Task**: Dynamically select Raindrop.io OAuth client ID based on environment (localhost vs. production)
+
+**Status**: ✅ COMPLETED
+
+**Issue**:
+- The Raindrop.io OAuth client ID was hardcoded, causing issues when running in different environments (localhost vs. production).
+
+**Changes Made**:
+- Removed obsolete constant for client ID.
+- Added `GetRainDropClientId()` method to select the correct client ID based on the current base URI.
+- Updated `LoginWithRaindropAsync` to use the new method.
+- Cleaned up code to ensure no secrets are exposed and logic is environment-aware.
+
+**Files Modified**:
+- `src/redmuffin.Blazor.StaticWeb/Features/Pages/VideosPage/Videos.razor.cs`
+
+**Results**:
+- ✅ Correct client ID is used for both local development and production
+- ✅ No secrets exposed in client code
+- ✅ Build: Successful
+- ✅ Ready for production deployment
+
 ---
 
-*Last Updated: 2025-07-01 16:45:00Z*
+*Last Updated: 2025-07-01 19:00:00Z*
