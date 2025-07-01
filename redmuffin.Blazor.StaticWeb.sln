@@ -40,9 +40,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Prompts", "Prompts", "{1042B09C-CD63-0B34-1D4B-7FE7A2FDFA8E}"
 	ProjectSection(SolutionItems) = preProject
 		.github\prompts\SecurityReviewAPI.prompt.md = .github\prompts\SecurityReviewAPI.prompt.md
-		GeneratePRD.prompt.md = GeneratePRD.prompt.md
-		TaskListFromPRD.prompt.md = TaskListFromPRD.prompt.md
-		ExecuteTaskList.prompt.md = ExecuteTaskList.prompt.md
+		.github\prompts\GeneratePRD.prompt.md = .github\prompts\GeneratePRD.prompt.md
+		.github\prompts\ExecuteTaskList.prompt.md = .github\prompts\ExecuteTaskList.prompt.md
+		.github\prompts\TaskListFromPRD.prompt.md = .github\prompts\TaskListFromPRD.prompt.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "redmuffin.Blazor.StaticWeb.Api", "src\redmuffin.Blazor.StaticWeb.Api\redmuffin.Blazor.StaticWeb.Api.csproj", "{3A0861E0-0988-405C-9A83-4CE5379961A0}"
