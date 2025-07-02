@@ -76,12 +76,16 @@
 
 ### Global Tools
 - **Excubo.WebCompiler**  
-  Install the Excubo WebCompiler as a global .NET tool using the following command: dotnet tool install -g Excubo.WebCompiler  - Required for compiling SCSS files to CSS
+  Install the Excubo WebCompiler as a global .NET tool using the following command: `dotnet tool install -g Excubo.WebCompiler`  
+  - Required for compiling SCSS files to CSS
   - The script `scripts/compile-webcompiler.ps1` can be used manually if needed
   - In debug mode, SCSS compilation will automatically run on every .NET compilation during development
 
 - **Azure Static Web Apps CLI**  
-  Install the Azure Static Web Apps CLI globally:npm install -g @azure/static-web-apps-cli
+  Install the Azure Static Web Apps CLI globally: 
+
+  `npm install -g @azure/static-web-apps-cli`
+
 ### Optional Tools
 - **Azure CLI** - For Azure resource management and deployment
 
@@ -89,43 +93,60 @@
 
 ## Getting Started
 
-1. **Clone the repository:**git clone https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb.git
-cd redmuffin.Blazor.StaticWeb
+1. **Clone the repository:** 
+
+   `git clone https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb.git`
+  
+   `cd redmuffin.Blazor.StaticWeb`
+
 2. **Install prerequisites:**
    - Ensure Visual Studio 2022, .NET 9 SDK, and .NET 8 SDK are installed
-   - Install global tools: ```bash
- dotnet tool install -g Excubo.WebCompiler
-     npm install -g @azure/static-web-apps-cli
- ```
+   - Install global tools: 
+
+    `dotnet tool install -g Excubo.WebCompiler`
+
+    `npm install -g @azure/static-web-apps-cli`
+ 
 3. **Open the solution:**
    - Open `redmuffin.Blazor.StaticWeb.sln` in Visual Studio 2022
 
-4. **Restore and build:**dotnet restore
-dotnet build
-5. **Run tests:**dotnet test
+4. **Restore and build:** 
+
+   `dotnet restore`
+
+   `dotnet build`
+
+5. **Run tests:** `dotnet test`
+
 ---
 
 ## Project Structure
 
 The project follows a [feature folder structure](https://dev.to/smotastic/layer-vs-feature-architecture-3cko) to organize code by feature rather than by technical layer. This approach improves maintainability and scalability by grouping related components, services, and assets together.
+
 redmuffin.Blazor.StaticWeb/
-??? .github/
-?   ??? Documentation.instructions.md
-?   ??? copilot-instructions.md
-?   ??? prompts/
-??? src/
-?   ??? redmuffin.Blazor.StaticWeb/          # Blazor WebAssembly (.NET 9)
-?   ?   ??? Features/
-?   ?   ?   ??? Pages/
-?   ?   ?   ??? Shared/Components/
-?   ?   ??? wwwroot/
-?   ??? redmuffin.Blazor.StaticWeb.Api/      # Azure Functions (.NET 8)
-?   ?   ??? Functions/
-?   ??? redmuffin.Blazor.StaticWeb.Common/   # Shared utilities
-??? tests/
-?   ??? redmuffin.Blazor.StaticWeb.Tests/
-?   ??? redmuffin.Blazor.StaticWeb.Api.Tests/
-??? scripts/
+├── .github/
+│   ├── instructions/                        # AI coding guidelines
+│   ├── workflows/                           # GitHub Actions
+│   └── prompts/                             # AI prompts
+├── src/
+│   ├── redmuffin.Blazor.StaticWeb/          # Blazor WebAssembly (.NET 9)
+│   │   ├── Features/
+│   │   │   ├── Pages/
+│   │   │   └── Shared/
+│   │   ├── Core/
+│   │   ├── wwwroot/
+│   │   └── Properties/
+│   ├── redmuffin.Blazor.StaticWeb.Api/      # Azure Functions (.NET 8)
+│   │   ├── Functions/
+│   │   └── Core/
+│   └── redmuffin.Blazor.StaticWeb.Common/   # Shared utilities
+├── tests/
+│   ├── redmuffin.Blazor.StaticWeb.Tests/
+│   └── redmuffin.Blazor.StaticWeb.Api.Tests/
+├── scripts/                                 # Build & deployment scripts
+├── TestResults/                             # Test output
+
 ---
 
 ## Technology Stack
