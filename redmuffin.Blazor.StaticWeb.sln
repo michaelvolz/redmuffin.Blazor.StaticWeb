@@ -13,7 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution items", "Solution 
 		.github\workflows\azure-static-web-apps-lively-cliff-0945be603.yml = .github\workflows\azure-static-web-apps-lively-cliff-0945be603.yml
 		Directory.Build.props = Directory.Build.props
 		.config\dotnet-tools.json = .config\dotnet-tools.json
-		GEMINI.md = GEMINI.md
 		global.json = global.json
 		src\redmuffin.Blazor.StaticWeb\wwwroot\sample-data\markdown-cheat-sheet.md = src\redmuffin.Blazor.StaticWeb\wwwroot\sample-data\markdown-cheat-sheet.md
 		README.md = README.md
