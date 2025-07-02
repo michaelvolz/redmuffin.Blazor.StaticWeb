@@ -6,13 +6,8 @@
       "version": "2.1.175",
       "commands": [
         "libman"
-      ]
-    },
-    "excubo.webcompiler": {
-      "version": "4.0.26",
-      "commands": [
-        "webcompiler"
-      ]
+      ],
+      "rollForward": false
     }
   }
 }
