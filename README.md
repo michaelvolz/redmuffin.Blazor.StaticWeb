@@ -49,7 +49,7 @@
 ### Development & Quality
 - **Modern C# (C# 12/13) features** - Primary constructors, collection expressions, ref readonly parameters
 - **Comprehensive Testing** - TUnit framework with NSubstitute mocking
-- **SCSS/CSS Asset Pipeline** - Automated compilation and optimization
+- **SCSS/CSS Styling** - Modern styling with Zurb Foundation framework
 - **Feature Folder Structure** - Organized by feature for better maintainability
 - **Code Quality & Security** - CodeQL analysis, automated builds, Dependabot integration
 - **Accessibility Compliance** - WCAG 2.1 AA standards with semantic HTML and ARIA support
@@ -75,12 +75,6 @@
   - Required for GitHub Copilot MCP server functionality
 
 ### Global Tools
-- **Excubo.WebCompiler**  
-  Install the Excubo WebCompiler as a global .NET tool using the following command: `dotnet tool install -g Excubo.WebCompiler`  
-  - Required for compiling SCSS files to CSS
-  - The script `scripts/compile-webcompiler.ps1` can be used manually if needed
-  - In debug mode, SCSS compilation will automatically run on every .NET compilation during development
-
 - **Azure Static Web Apps CLI**  
   Install the Azure Static Web Apps CLI globally: 
 
@@ -102,8 +96,6 @@
 2. **Install prerequisites:**
    - Ensure Visual Studio 2022, .NET 9 SDK, and .NET 8 SDK are installed
    - Install global tools: 
-
-    `dotnet tool install -g Excubo.WebCompiler`
 
     `npm install -g @azure/static-web-apps-cli`
  
@@ -178,7 +170,7 @@ redmuffin.Blazor.StaticWeb/
   Responsive front-end framework providing robust grid system, UI components, and accessibility features.
 
 - **[SCSS (Sass)](https://sass-lang.com/documentation/syntax#scss)**  
-  CSS preprocessor with variables, nesting, and modularization, compiled using Excubo WebCompiler.
+  CSS preprocessor with variables, nesting, and modularization for modern styling capabilities.
 
 - **[Blazored.LocalStorage](https://github.com/Blazored/LocalStorage)**  
   Blazor library for browser local storage access via JavaScript interop.
@@ -200,9 +192,6 @@ redmuffin.Blazor.StaticWeb/
   Friendly mocking library for .NET, used for creating test doubles and simplifying unit tests.
 
 ### Build and Analysis Tools
-
-- **[Excubo WebCompiler](https://github.com/excubo-ag/WebCompiler)**  
-  .NET tool for compiling SCSS, LESS, and other preprocessor files into optimized CSS.
 
 - **[LibMan (Library Manager)](https://learn.microsoft.com/en-us/aspnet/core/client-side/libman/)**  
   Lightweight client-side library acquisition tool for managing third-party libraries like Foundation.
@@ -254,7 +243,6 @@ This project is licensed under the [Unlicense](https://unlicense.org/).
 ## Acknowledgements
 
 - [Markdig](https://github.com/xoofx/markdig) for Markdown processing
-- [Excubo WebCompiler](https://github.com/excubo-ag/WebCompiler) for SCSS/LESS compilation
 - [Zurb Foundation](https://get.foundation/) for the CSS framework
 - [TUnit](https://github.com/thomhurst/TUnit) for the modern testing framework
 - [NSubstitute](https://nsubstitute.github.io/) for mocking capabilities

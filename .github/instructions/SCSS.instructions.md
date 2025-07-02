@@ -20,10 +20,10 @@ applyTo: "**/*.scss"
 - Focus states for interactive elements
 
 ## Workflow
-- Edit SCSS files
+- Edit SCSS files directly
 - Import new files into main SCSS files
-- Add new files to `webcompiler.conf` if standalone compilation needed
-- Compile with: `.\scripts\compile-webcompiler.ps1`
+- SCSS files are used for styling and can be processed by build tools as needed
+- Use dotnet build to compile SCSS files into CSS
 
 ## Customization
 - Override Foundation variables before importing Foundation
