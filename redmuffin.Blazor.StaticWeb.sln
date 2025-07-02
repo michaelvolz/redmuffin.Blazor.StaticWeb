@@ -20,6 +20,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution items", "Solution 
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "redmuffin.Blazor.StaticWeb.Tests", "tests\redmuffin.Blazor.StaticWeb.Tests\redmuffin.Blazor.StaticWeb.Tests.csproj", "{0B9FDD37-73E0-4E09-8965-425A97F2E6C9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0D4EDCD5-BFA7-41B7-A6EF-2BA2B87EA048} = {0D4EDCD5-BFA7-41B7-A6EF-2BA2B87EA048}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Copilot Instructions", "Copilot Instructions", "{0652538E-1D5F-6121-6BBF-D1367D210D62}"
 	ProjectSection(SolutionItems) = preProject
