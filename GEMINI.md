@@ -4,11 +4,11 @@ This file provides project-specific context and instructions for the Gemini AI a
 
 ## Project Description
 
-This project is a Blazor WebAssembly application with an Azure Functions backend.
+This project is a modern full-stack web application built with Blazor WebAssembly (.NET 9) and Azure Functions (.NET 8), featuring OAuth integration, real-time performance monitoring, and comprehensive testing infrastructure.
 
 ## Conventions
 
-- **Frameworks**: Blazor WebAssembly, Azure Functions
+- **Frameworks**: Blazor WebAssembly (.NET 9), Azure Functions (.NET 8)
 - **Languages**: C#
 - **Style Guide**: .editorconfig
 - **Testing**: TUnit, NSubstitute
