@@ -119,8 +119,7 @@ project-root/
   - Keep code buildable at each stage
 - **Standards:** Follow all coding/testing practices, prefer Blazor over JavaScript
 - **Repository:** Owner: `michaelvolz`, Name: `redmuffin.Blazor.StaticWeb`
-- **Git commands:** when using git commands always use --no-pager to avoid issues with long outputs.
 - **File Encoding**: Always use UTF8 with BOM for Markdown files
-- - **Exclude sample files**: Don't use these files when working, they are only dummy files:
+- **Exclude sample files**: Don't use these files when working, they are only dummy files:
     - `src\redmuffin.Blazor.StaticWeb\wwwroot\sample-data\`
     - `src\redmuffin.Blazor.StaticWeb\wwwroot\Example.md `
