@@ -1,4 +1,4 @@
-// Page Load Timing JavaScript
+// Enhanced Page Load Timing JavaScript with comprehensive metrics
 window.pageLoadSpeed = {
     // Store timing data
     timingData: {
@@ -43,38 +43,266 @@ window.pageLoadSpeed = {
         }
     },
 
-    // Get current timing data
-    getTiming: function() {
+    // Get comprehensive performance metrics
+    getComprehensiveMetrics: function() {
         const now = performance.now();
+        let metrics = {
+            // Timing metrics
+            timeToFirstByte: 0,
+            domContentLoaded: 0,
+            loadComplete: 0,
+            firstContentfulPaint: 0,
+            largestContentfulPaint: 0,
+            
+            // Size metrics
+            transferSize: 0,
+            encodedSize: 0,
+            decodedSize: 0,
+            
+            // Calculated metrics
+            serverResponseTime: 0,
+            domProcessingTime: 0,
+            resourceLoadTime: 0
+        };
 
         // Use Performance API timing if available
         if (window.performance && window.performance.timing) {
             const timing = window.performance.timing;
             const navStart = timing.navigationStart;
 
-            const domReady = timing.domContentLoadedEventEnd > 0
-                ? timing.domContentLoadedEventEnd - navStart
-                : this.timingData.domContentLoaded || now;
+            // Core timing metrics
+            metrics.timeToFirstByte = timing.responseStart > 0 ? timing.responseStart - navStart : 0;
+            metrics.domContentLoaded = timing.domContentLoadedEventEnd > 0 ? timing.domContentLoadedEventEnd - navStart : now;
+            metrics.loadComplete = timing.loadEventEnd > 0 ? timing.loadEventEnd - navStart : now;
+            
+            // Calculated metrics
+            metrics.serverResponseTime = timing.responseEnd > 0 && timing.requestStart > 0 
+                ? timing.responseEnd - timing.requestStart : 0;
+            metrics.domProcessingTime = timing.domContentLoadedEventEnd > 0 && timing.responseEnd > 0
+                ? timing.domContentLoadedEventEnd - timing.responseEnd : 0;
+            metrics.resourceLoadTime = timing.loadEventEnd > 0 && timing.domContentLoadedEventEnd > 0
+                ? timing.loadEventEnd - timing.domContentLoadedEventEnd : 0;
+        }
 
-            const loadComplete = timing.loadEventEnd > 0
-                ? timing.loadEventEnd - navStart
-                : this.timingData.loadComplete || now;
+        // Get Paint Timing API metrics if available
+        if (window.performance && window.performance.getEntriesByType) {
+            try {
+                const paintEntries = window.performance.getEntriesByType('paint');
+                paintEntries.forEach(entry => {
+                    if (entry.name === 'first-contentful-paint') {
+                        metrics.firstContentfulPaint = Math.round(entry.startTime);
+                    }
+                });
+
+                // Get LCP if available
+                const lcpEntries = window.performance.getEntriesByType('largest-contentful-paint');
+                if (lcpEntries.length > 0) {
+                    metrics.largestContentfulPaint = Math.round(lcpEntries[lcpEntries.length - 1].startTime);
+                }
+            } catch (e) {
+                // Paint timing not supported
+            }
+        }
+
+        // Get Navigation Timing API v2 for transfer sizes
+        if (window.performance && window.performance.getEntriesByType) {
+            try {
+                const navEntries = window.performance.getEntriesByType('navigation');
+                if (navEntries.length > 0) {
+                    const navEntry = navEntries[0];
+                    metrics.transferSize = navEntry.transferSize || 0;
+                    metrics.encodedSize = navEntry.encodedBodySize || 0;
+                    metrics.decodedSize = navEntry.decodedBodySize || 0;
+                }
+            } catch (e) {
+                // Navigation timing v2 not supported
+            }
+        }
+
+        // Get additional resource transfer sizes
+        if (window.performance && window.performance.getEntriesByType) {
+            try {
+                const resourceEntries = window.performance.getEntriesByType('resource');
+                let totalTransferSize = metrics.transferSize;
+                let totalEncodedSize = metrics.encodedSize;
+                let totalDecodedSize = metrics.decodedSize;
+
+                resourceEntries.forEach(entry => {
+                    totalTransferSize += entry.transferSize || 0;
+                    totalEncodedSize += entry.encodedBodySize || 0;
+                    totalDecodedSize += entry.decodedBodySize || 0;
+                });
+
+                metrics.transferSize = totalTransferSize;
+                metrics.encodedSize = totalEncodedSize;
+                metrics.decodedSize = totalDecodedSize;
+            } catch (e) {
+                // Resource timing not supported
+            }
+        }
+
+        return metrics;
+    },
+
+    // Get current timing data (legacy method for backward compatibility)
+    getTiming: function() {
+        const metrics = this.getComprehensiveMetrics();
+        return {
+            NavigationStartToRender: metrics.loadComplete,
+            LoadStartToDomReady: metrics.domContentLoaded
+        };
+    },
+
+    // Format bytes to human readable format
+    formatBytes: function(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    },
+
+    // Get Core Web Vitals
+    getCoreWebVitals: function() {
+        const vitals = {
+            lcp: 0,
+            fid: 0,
+            cls: 0,
+            fcp: 0,
+            ttfb: 0
+        };
+
+        // Try to get LCP
+        try {
+            const lcpEntries = performance.getEntriesByType('largest-contentful-paint');
+            if (lcpEntries.length > 0) {
+                vitals.lcp = lcpEntries[lcpEntries.length - 1].startTime;
+            }
+        } catch (e) {}
+
+        // Try to get FCP
+        try {
+            const fcpEntries = performance.getEntriesByType('paint');
+            fcpEntries.forEach(entry => {
+                if (entry.name === 'first-contentful-paint') {
+                    vitals.fcp = entry.startTime;
+                }
+            });
+        } catch (e) {}
+
+        // Try to get TTFB
+        try {
+            const navEntries = performance.getEntriesByType('navigation');
+            if (navEntries.length > 0) {
+                vitals.ttfb = navEntries[0].responseStart;
+            }
+        } catch (e) {}
+
+        return vitals;
+    },
+
+    // Get detailed resource timing
+    getResourceTiming: function() {
+        try {
+            const resources = performance.getEntriesByType('resource');
+            let totalResources = 0;
+            let totalSize = 0;
+            let slowestResource = { name: '', duration: 0 };
+
+            resources.forEach(resource => {
+                totalResources++;
+                totalSize += resource.transferSize || 0;
+                
+                if (resource.duration > slowestResource.duration) {
+                    slowestResource = {
+                        name: resource.name.split('/').pop() || resource.name,
+                        duration: resource.duration
+                    };
+                }
+            });
 
             return {
-                NavigationStartToRender: loadComplete,
-                LoadStartToDomReady: domReady
+                totalResources,
+                totalSize,
+                slowestResource,
+                averageResponseTime: totalResources > 0 ? 
+                    resources.reduce((sum, r) => sum + r.duration, 0) / totalResources : 0
             };
-        } else {
-            // Fallback to manual timing
+        } catch (e) {
             return {
-                NavigationStartToRender: this.timingData.loadComplete || now,
-                LoadStartToDomReady: this.timingData.domContentLoaded || now
+                totalResources: 0,
+                totalSize: 0,
+                slowestResource: { name: 'N/A', duration: 0 },
+                averageResponseTime: 0
             };
         }
     }
 };
 
-// Global function for Blazor to call
+// Enhanced global function for Blazor to call with comprehensive metrics
+window.getPageLoadMetrics = function() {
+    try {
+        const metrics = window.pageLoadSpeed.getComprehensiveMetrics();
+        const coreVitals = window.pageLoadSpeed.getCoreWebVitals();
+        const resourceTiming = window.pageLoadSpeed.getResourceTiming();
+        
+        return {
+            // Timing metrics (in milliseconds)
+            timeToFirstByte: Math.max(0, Math.round(metrics.timeToFirstByte || coreVitals.ttfb || 0)),
+            domContentLoaded: Math.max(0, Math.round(metrics.domContentLoaded || performance.now())),
+            loadComplete: Math.max(0, Math.round(metrics.loadComplete || performance.now())),
+            firstContentfulPaint: Math.max(0, Math.round(metrics.firstContentfulPaint || coreVitals.fcp || 0)),
+            largestContentfulPaint: Math.max(0, Math.round(metrics.largestContentfulPaint || coreVitals.lcp || 0)),
+            
+            // Size metrics (in bytes)
+            transferSize: Math.max(0, metrics.transferSize || resourceTiming.totalSize || 0),
+            encodedSize: Math.max(0, metrics.encodedSize || 0),
+            decodedSize: Math.max(0, metrics.decodedSize || 0),
+            
+            // Calculated metrics (in milliseconds)
+            serverResponseTime: Math.max(0, Math.round(metrics.serverResponseTime || 0)),
+            domProcessingTime: Math.max(0, Math.round(metrics.domProcessingTime || 0)),
+            resourceLoadTime: Math.max(0, Math.round(metrics.resourceLoadTime || 0)),
+            
+            // Formatted sizes for display
+            transferSizeFormatted: window.pageLoadSpeed.formatBytes(metrics.transferSize || resourceTiming.totalSize || 0),
+            encodedSizeFormatted: window.pageLoadSpeed.formatBytes(metrics.encodedSize || 0),
+            decodedSizeFormatted: window.pageLoadSpeed.formatBytes(metrics.decodedSize || 0),
+
+            // Additional metrics
+            resourceCount: resourceTiming.totalResources,
+            slowestResourceName: resourceTiming.slowestResource.name,
+            slowestResourceTime: Math.round(resourceTiming.slowestResource.duration),
+            averageResourceTime: Math.round(resourceTiming.averageResponseTime)
+        };
+    } catch (error) {
+        console.warn('Page load metrics error:', error);
+        // Return fallback values
+        const now = performance.now();
+        return {
+            timeToFirstByte: Math.round(now * 0.1),
+            domContentLoaded: Math.round(now * 0.8),
+            loadComplete: Math.round(now),
+            firstContentfulPaint: Math.round(now * 0.6),
+            largestContentfulPaint: Math.round(now * 0.9),
+            transferSize: 0,
+            encodedSize: 0,
+            decodedSize: 0,
+            serverResponseTime: Math.round(now * 0.2),
+            domProcessingTime: Math.round(now * 0.3),
+            resourceLoadTime: Math.round(now * 0.1),
+            transferSizeFormatted: '0 B',
+            encodedSizeFormatted: '0 B',
+            decodedSizeFormatted: '0 B',
+            resourceCount: 0,
+            slowestResourceName: 'N/A',
+            slowestResourceTime: 0,
+            averageResourceTime: 0
+        };
+    }
+};
+
+// Legacy function for backward compatibility
 window.getPageLoadTimes = function() {
     try {
         const timing = window.pageLoadSpeed.getTiming();
@@ -97,5 +325,105 @@ window.getPageLoadTimes = function() {
     }
 };
 
+// Real-time performance monitoring
+window.startPerformanceMonitoring = function(callback) {
+    let observer;
+    
+    try {
+        // Monitor LCP changes
+        observer = new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+                if (entry.entryType === 'largest-contentful-paint') {
+                    callback({
+                        type: 'lcp',
+                        value: entry.startTime,
+                        element: entry.element?.tagName || 'unknown'
+                    });
+                }
+            }
+        });
+        
+        observer.observe({ entryTypes: ['largest-contentful-paint'] });
+        
+        // Monitor layout shifts
+        const clsObserver = new PerformanceObserver((list) => {
+            let clsValue = 0;
+            for (const entry of list.getEntries()) {
+                if (!entry.hadRecentInput) {
+                    clsValue += entry.value;
+                }
+            }
+            if (clsValue > 0) {
+                callback({
+                    type: 'cls',
+                    value: clsValue
+                });
+            }
+        });
+        
+        clsObserver.observe({ entryTypes: ['layout-shift'] });
+        
+        return () => {
+            observer.disconnect();
+            clsObserver.disconnect();
+        };
+    } catch (e) {
+        console.warn('Performance monitoring not supported:', e);
+        return () => {};
+    }
+};
+
 // Initialize when script loads
 window.pageLoadSpeed.init();
+
+// Add a global performance summary function
+window.getPerformanceSummary = function() {
+    const metrics = window.getPageLoadMetrics();
+    const coreVitals = window.pageLoadSpeed.getCoreWebVitals();
+    
+    // Calculate performance score (0-100)
+    let score = 100;
+    
+    // LCP scoring (40% weight)
+    if (metrics.largestContentfulPaint > 4000) score -= 40;
+    else if (metrics.largestContentfulPaint > 2500) score -= 20;
+    else if (metrics.largestContentfulPaint > 1200) score -= 10;
+    
+    // FCP scoring (30% weight)
+    if (metrics.firstContentfulPaint > 3000) score -= 30;
+    else if (metrics.firstContentfulPaint > 1800) score -= 15;
+    else if (metrics.firstContentfulPaint > 1000) score -= 5;
+    
+    // Load time scoring (30% weight)
+    if (metrics.loadComplete > 5000) score -= 30;
+    else if (metrics.loadComplete > 3000) score -= 15;
+    else if (metrics.loadComplete > 1500) score -= 5;
+    
+    return {
+        score: Math.max(0, Math.round(score)),
+        metrics: metrics,
+        recommendations: generateRecommendations(metrics)
+    };
+};
+
+function generateRecommendations(metrics) {
+    const recommendations = [];
+    
+    if (metrics.largestContentfulPaint > 2500) {
+        recommendations.push('Optimize LCP: Consider image optimization and critical resource prioritization');
+    }
+    
+    if (metrics.firstContentfulPaint > 1800) {
+        recommendations.push('Improve FCP: Reduce render-blocking resources and inline critical CSS');
+    }
+    
+    if (metrics.transferSize > 1024 * 1024) { // > 1MB
+        recommendations.push('Reduce bundle size: Consider code splitting and asset optimization');
+    }
+    
+    if (metrics.serverResponseTime > 600) {
+        recommendations.push('Optimize server response: Consider caching and server performance improvements');
+    }
+    
+    return recommendations;
+}

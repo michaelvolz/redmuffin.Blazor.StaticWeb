@@ -1,66 +1,636 @@
 @inject IJSRuntime JS
 
-<div @onclick="ToggleVisibility"
-     style="position: fixed; top: 0; right: 0; z-index: 9999; padding: 8px;
-            background-color: rgba(0,0,0,0.8); color: #00ff00;
-            border-radius: 0 0 0 5px; cursor: pointer; font-family: monospace;
-            font-size: 12px; user-select: none; @(isHidden ? "display: none;" : "")"
+<style>
+    /* Enhanced Page Load Speed Component Styles */
+    .page-speed-widget {
+        position: fixed;
+        top: 0;
+        right: 0;
+        z-index: 9999;
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(20, 20, 20, 0.95));
+        color: #e0e0e0;
+        border-radius: 0 0 0 16px;
+        cursor: pointer;
+        font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Consolas', monospace;
+        user-select: none;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        min-width: 320px;
+        max-width: 400px;
+        border-left: 3px solid #00d4aa;
+        border-bottom: 3px solid #00d4aa;
+    }
+
+    .page-speed-widget:hover {
+        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 212, 170, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        transform: translateY(-1px);
+    }
+
+    .page-speed-widget.hidden {
+        transform: translateX(100%);
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .page-speed-widget.collapsed {
+        min-width: 250px;
+    }
+
+    .widget-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px 12px;
+        border-bottom: 1px solid rgba(0, 212, 170, 0.2);
+        margin-bottom: 16px;
+        cursor: pointer;
+    }
+
+    .widget-title {
+        color: #00d4aa;
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .widget-icon {
+        font-size: 16px;
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+    }
+
+    .widget-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .widget-time {
+        color: #888;
+        font-size: 11px;
+        font-weight: 400;
+        opacity: 0.8;
+    }
+
+    .widget-content {
+        padding: 0 20px 20px;
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 16px;
+    }
+
+    .metric-group {
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 8px;
+        padding: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .metric-group-title {
+        color: #00d4aa;
+        font-weight: 600;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .metric-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+        font-size: 11px;
+        line-height: 1.4;
+    }
+
+    .metric-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .metric-label {
+        color: #b0b0b0;
+        font-weight: 500;
+        min-width: 45px;
+    }
+
+    .metric-value {
+        font-weight: 600;
+        text-align: right;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .metric-value.timing {
+        color: #ffd700;
+        background: rgba(255, 215, 0, 0.1);
+    }
+
+    .metric-value.size {
+        color: #00bfff;
+        background: rgba(0, 191, 255, 0.1);
+    }
+
+    .metric-value.breakdown {
+        color: #ff8c42;
+        background: rgba(255, 140, 66, 0.1);
+    }
+
+    .metric-value.ratio {
+        color: #ff6b9d;
+        background: rgba(255, 107, 157, 0.1);
+    }
+
+    .performance-breakdown {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(0, 212, 170, 0.2);
+    }
+
+    .breakdown-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+        gap: 12px;
+        font-size: 10px;
+    }
+
+    .breakdown-item {
+        text-align: center;
+    }
+
+    .performance-rating {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(0, 212, 170, 0.2);
+        text-align: center;
+    }
+
+    .rating-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: 2px solid currentColor;
+        background: rgba(255, 255, 255, 0.05);
+        transition: all 0.2s ease;
+    }
+
+    .rating-badge.excellent {
+        color: #00ff41;
+        background: rgba(0, 255, 65, 0.1);
+        box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+    }
+
+    .rating-badge.good {
+        color: #ffd700;
+        background: rgba(255, 215, 0, 0.1);
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+    }
+
+    .rating-badge.fair {
+        color: #ff8c42;
+        background: rgba(255, 140, 66, 0.1);
+        box-shadow: 0 0 20px rgba(255, 140, 66, 0.2);
+    }
+
+    .rating-badge.poor {
+        color: #ff4757;
+        background: rgba(255, 71, 87, 0.1);
+        box-shadow: 0 0 20px rgba(255, 71, 87, 0.3);
+    }
+
+    .metric-progress {
+        width: 100%;
+        height: 3px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        margin-top: 4px;
+        overflow: hidden;
+    }
+
+    .metric-progress-bar {
+        height: 100%;
+        border-radius: 2px;
+        transition: width 1s ease-out;
+        animation: progressGlow 2s infinite;
+    }
+
+    @@keyframes progressGlow {
+        0%, 100% { box-shadow: 0 0 5px currentColor; }
+        50% { box-shadow: 0 0 10px currentColor; }
+    }
+
+    .toggle-button {
+        background: none;
+        border: none;
+        color: #888;
+        cursor: pointer;
+        font-size: 12px;
+        padding: 4px 6px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        min-width: 20px;
+        text-align: center;
+    }
+
+    .toggle-button:hover {
+        color: #00d4aa;
+        background: rgba(0, 212, 170, 0.1);
+    }
+
+    .refresh-button {
+        background: rgba(0, 212, 170, 0.1);
+        border: 1px solid rgba(0, 212, 170, 0.3);
+        color: #00d4aa;
+        cursor: pointer;
+        font-size: 10px;
+        padding: 6px 12px;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-family: inherit;
+    }
+
+    .refresh-button:hover {
+        background: rgba(0, 212, 170, 0.2);
+        border-color: rgba(0, 212, 170, 0.5);
+        transform: translateY(-1px);
+    }
+
+    @@media (max-width: 768px) {
+        .page-speed-widget {
+            min-width: 280px;
+            max-width: 300px;
+            font-size: 10px;
+        }
+        
+        .metrics-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        
+        .widget-header {
+            padding: 12px 16px 8px;
+        }
+        
+        .widget-content {
+            padding: 0 16px 16px;
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .page-speed-widget,
+        .widget-content,
+        .metric-progress-bar,
+        .toggle-button,
+        .rating-badge,
+        .refresh-button {
+            animation: none;
+            transition: none;
+        }
+        
+        .widget-icon {
+            animation: none;
+        }
+    }
+</style>
+
+<div class="page-speed-widget @(isHidden ? "hidden" : "") @(isCollapsed ? "collapsed" : "")"
+     @onclick="ToggleVisibility"
      @ref="speedElement">
-    <div>Nav→Render: @navigationLoadTime ms</div>
-    <div>Load→DOM: @domLoadTime ms</div>
+
+    <div class="widget-header">
+        <div class="widget-title">
+            <span class="widget-icon">⚡</span>
+            <span>Page Performance</span>
+        </div>
+        <div class="widget-controls">
+            <span class="widget-time">@currentTime</span>
+            <button type="button" class="toggle-button" @onclick:stopPropagation="true" @onclick="ToggleCollapsed">
+                @(isCollapsed ? "+" : "−")
+            </button>
+        </div>
+    </div>
+
+    @if (!isCollapsed)
+    {
+        <div class="widget-content">
+            <!-- Core Metrics Grid -->
+            <div class="metrics-grid">
+                <!-- Timing Metrics -->
+                <div class="metric-group">
+                    <div class="metric-group-title">
+                        <span>⏱️</span>
+                        <span>Timing (ms)</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">TTFB:</span>
+                        <span class="metric-value timing">@Math.Round(timeToFirstByte, 1)</span>
+                    </div>
+                    <div class="metric-progress">
+                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(timeToFirstByte, 500))%; background: #ffd700;"></div>
+                    </div>
+                    
+                    <div class="metric-item">
+                        <span class="metric-label">FCP:</span>
+                        <span class="metric-value timing">@Math.Round(firstContentfulPaint, 1)</span>
+                    </div>
+                    <div class="metric-progress">
+                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(firstContentfulPaint, 1800))%; background: #ffd700;"></div>
+                    </div>
+                    
+                    <div class="metric-item">
+                        <span class="metric-label">DOM:</span>
+                        <span class="metric-value timing">@Math.Round(domContentLoaded, 1)</span>
+                    </div>
+                    <div class="metric-progress">
+                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(domContentLoaded, 2000))%; background: #ffd700;"></div>
+                    </div>
+                    
+                    <div class="metric-item">
+                        <span class="metric-label">Load:</span>
+                        <span class="metric-value timing">@Math.Round(loadComplete, 1)</span>
+                    </div>
+                    <div class="metric-progress">
+                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(loadComplete, 3000))%; background: @GetTimingColor(loadComplete)"></div>
+                    </div>
+                    
+                    @if (largestContentfulPaint > 0)
+                    {
+                        <div class="metric-item">
+                            <span class="metric-label">LCP:</span>
+                            <span class="metric-value timing">@Math.Round(largestContentfulPaint, 1)</span>
+                        </div>
+                        <div class="metric-progress">
+                            <div class="metric-progress-bar" style="width: @(GetProgressWidth(largestContentfulPaint, 2500))%; background: @GetTimingColor(largestContentfulPaint)"></div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Data Transfer Metrics -->
+                <div class="metric-group">
+                    <div class="metric-group-title">
+                        <span>📊</span>
+                        <span>Data Transfer</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Transfer:</span>
+                        <span class="metric-value size">@transferSizeFormatted</span>
+                    </div>
+                    @if (transferSize > 0)
+                    {
+                        <div class="metric-progress">
+                            <div class="metric-progress-bar" style="width: @(GetDataSizeProgress(transferSize))%; background: #00bfff;"></div>
+                        </div>
+                    }
+                    
+                    <div class="metric-item">
+                        <span class="metric-label">Encoded:</span>
+                        <span class="metric-value size">@encodedSizeFormatted</span>
+                    </div>
+                    @if (encodedSize > 0)
+                    {
+                        <div class="metric-progress">
+                            <div class="metric-progress-bar" style="width: @(GetDataSizeProgress(encodedSize))%; background: #00bfff;"></div>
+                        </div>
+                    }
+                    
+                    <div class="metric-item">
+                        <span class="metric-label">Decoded:</span>
+                        <span class="metric-value size">@decodedSizeFormatted</span>
+                    </div>
+                    @if (decodedSize > 0)
+                    {
+                        <div class="metric-progress">
+                            <div class="metric-progress-bar" style="width: @(GetDataSizeProgress(decodedSize))%; background: #00bfff;"></div>
+                        </div>
+                    }
+                    
+                    @if (compressionRatio > 0)
+                    {
+                        <div class="metric-item">
+                            <span class="metric-label">Compression:</span>
+                            <span class="metric-value ratio">@compressionRatio%</span>
+                        </div>
+                        <div class="metric-progress">
+                            <div class="metric-progress-bar" style="width: @compressionRatio%; background: #ff6b9d;"></div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Performance Breakdown -->
+            @if (serverResponseTime > 0 || domProcessingTime > 0 || resourceLoadTime > 0)
+            {
+                <div class="performance-breakdown">
+                    <div class="metric-group-title">
+                        <span>🔬</span>
+                        <span>Performance Breakdown</span>
+                    </div>
+                    <div class="breakdown-grid">
+                        @if (serverResponseTime > 0)
+                        {
+                            <div class="breakdown-item">
+                                <div class="metric-label">Server Response</div>
+                                <div class="metric-value breakdown">@Math.Round(serverResponseTime, 1)ms</div>
+                                <div class="metric-progress">
+                                    <div class="metric-progress-bar" style="width: @(GetProgressWidth(serverResponseTime, 1000))%; background: #ff8c42;"></div>
+                                </div>
+                            </div>
+                        }
+                        @if (domProcessingTime > 0)
+                        {
+                            <div class="breakdown-item">
+                                <div class="metric-label">DOM Processing</div>
+                                <div class="metric-value breakdown">@Math.Round(domProcessingTime, 1)ms</div>
+                                <div class="metric-progress">
+                                    <div class="metric-progress-bar" style="width: @(GetProgressWidth(domProcessingTime, 1000))%; background: #ff8c42;"></div>
+                                </div>
+                            </div>
+                        }
+                        @if (resourceLoadTime > 0)
+                        {
+                            <div class="breakdown-item">
+                                <div class="metric-label">Resource Load</div>
+                                <div class="metric-value breakdown">@Math.Round(resourceLoadTime, 1)ms</div>
+                                <div class="metric-progress">
+                                    <div class="metric-progress-bar" style="width: @(GetProgressWidth(resourceLoadTime, 1000))%; background: #ff8c42;"></div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Performance Rating -->
+            <div class="performance-rating">
+                <div class="rating-badge @GetPerformanceRatingClass()">
+                    <span>@GetPerformanceRatingIcon()</span>
+                    <span>@GetPerformanceRating()</span>
+                </div>
+                @if (GetPerformanceScore() > 0)
+                {
+                    <div style="margin-top: 8px; font-size: 10px; color: #888;">
+                        Score: @GetPerformanceScore()/100
+                    </div>
+                }
+            </div>
+
+            <!-- Refresh Button -->
+            <div style="text-align: center; margin-top: 12px;">
+                <button type="button" class="refresh-button" @onclick="RefreshMetrics" @onclick:stopPropagation="true">
+                    <span>🔄</span>
+                    <span>Refresh</span>
+                </button>
+            </div>
+        </div>
+    }
 </div>
 
 @code {
     private bool isHidden = false;
+    private bool isCollapsed = false;
     private ElementReference speedElement;
-    private double navigationLoadTime = 0;
-    private double domLoadTime = 0;
+    private string currentTime = "";
+
+    // Timing metrics
+    private double timeToFirstByte = 0;
+    private double domContentLoaded = 0;
+    private double loadComplete = 0;
+    private double firstContentfulPaint = 0;
+    private double largestContentfulPaint = 0;
+
+    // Size metrics
+    private double transferSize = 0;
+    private double encodedSize = 0;
+    private double decodedSize = 0;
+    private string transferSizeFormatted = "0 B";
+    private string encodedSizeFormatted = "0 B";
+    private string decodedSizeFormatted = "0 B";
+
+    // Calculated metrics
+    private double serverResponseTime = 0;
+    private double domProcessingTime = 0;
+    private double resourceLoadTime = 0;
+    private double compressionRatio = 0;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            // Give some time for the page to fully load before measuring
-            await Task.Delay(500);
-            await UpdateTimingAsync();
+            await Task.Delay(1000);
+            await UpdateMetricsAsync();
+            await UpdateTimestamp();
         }
     }
 
-    private async Task UpdateTimingAsync()
+    private async Task UpdateMetricsAsync()
     {
         try
         {
-            // Check if the JavaScript function exists first
-            var functionExists = await JS.InvokeAsync<bool>("eval", "typeof window.getPageLoadTimes === 'function'");
+            var functionExists = await JS.InvokeAsync<bool>("eval", "typeof window.getPageLoadMetrics === 'function'");
 
             if (functionExists)
             {
-                // Get page load timing data from JavaScript
-                var timings = await JS.InvokeAsync<double[]>("getPageLoadTimes");
-                if (timings != null && timings.Length >= 2)
+                var metrics = await JS.InvokeAsync<PageLoadMetrics>("getPageLoadMetrics");
+                if (metrics != null)
                 {
-                    navigationLoadTime = Math.Round(timings[0], 1);
-                    domLoadTime = Math.Round(timings[1], 1);
+                    timeToFirstByte = metrics.TimeToFirstByte;
+                    domContentLoaded = metrics.DomContentLoaded;
+                    loadComplete = metrics.LoadComplete;
+                    firstContentfulPaint = metrics.FirstContentfulPaint;
+                    largestContentfulPaint = metrics.LargestContentfulPaint;
+
+                    transferSize = metrics.TransferSize;
+                    encodedSize = metrics.EncodedSize;
+                    decodedSize = metrics.DecodedSize;
+                    transferSizeFormatted = metrics.TransferSizeFormatted;
+                    encodedSizeFormatted = metrics.EncodedSizeFormatted;
+                    decodedSizeFormatted = metrics.DecodedSizeFormatted;
+
+                    serverResponseTime = metrics.ServerResponseTime;
+                    domProcessingTime = metrics.DomProcessingTime;
+                    resourceLoadTime = metrics.ResourceLoadTime;
+
+                    if (decodedSize > 0 && encodedSize > 0)
+                    {
+                        compressionRatio = Math.Round(((decodedSize - encodedSize) / decodedSize) * 100, 1);
+                    }
                 }
                 else
                 {
-                    // Use fallback timing if no data returned
                     await GetFallbackTiming();
                 }
             }
             else
             {
-                // JavaScript function not available, use fallback
-                await GetFallbackTiming();
+                await GetLegacyTiming();
             }
-
-            StateHasChanged();
         }
         catch (Exception)
         {
-            // Use fallback timing on any error
             await GetFallbackTiming();
-            StateHasChanged();
+        }
+    }
+
+    private async Task GetLegacyTiming()
+    {
+        try
+        {
+            var functionExists = await JS.InvokeAsync<bool>("eval", "typeof window.getPageLoadTimes === 'function'");
+
+            if (functionExists)
+            {
+                var timings = await JS.InvokeAsync<double[]>("getPageLoadTimes");
+                if (timings != null && timings.Length >= 2)
+                {
+                    loadComplete = Math.Round(timings[0], 1);
+                    domContentLoaded = Math.Round(timings[1], 1);
+                    timeToFirstByte = Math.Round(domContentLoaded * 0.3, 1);
+                }
+                else
+                {
+                    await GetFallbackTiming();
+                }
+            }
+            else
+            {
+                await GetFallbackTiming();
+            }
+        }
+        catch
+        {
+            await GetFallbackTiming();
         }
     }
 
@@ -68,22 +638,148 @@
     {
         try
         {
-            // Simple performance.now() based timing
             var now = await JS.InvokeAsync<double>("performance.now");
-            navigationLoadTime = Math.Round(now, 1);
-            domLoadTime = Math.Round(now * 0.8, 1); // Estimate DOM load as 80% of current time
+            loadComplete = Math.Round(now, 1);
+            domContentLoaded = Math.Round(now * 0.8, 1);
+            timeToFirstByte = Math.Round(now * 0.3, 1);
+            firstContentfulPaint = Math.Round(now * 0.6, 1);
+
+            transferSizeFormatted = "Unknown";
+            encodedSizeFormatted = "Unknown";
+            decodedSizeFormatted = "Unknown";
         }
         catch
         {
-            // Last resort - use current time since page start
-            var estimatedTime = DateTime.Now.Millisecond;
-            navigationLoadTime = estimatedTime;
-            domLoadTime = estimatedTime * 0.8;
+            var estimatedTime = DateTime.Now.Millisecond + 100;
+            loadComplete = estimatedTime;
+            domContentLoaded = estimatedTime * 0.8;
+            timeToFirstByte = estimatedTime * 0.3;
+            firstContentfulPaint = estimatedTime * 0.6;
+
+            transferSizeFormatted = "Unknown";
+            encodedSizeFormatted = "Unknown";
+            decodedSizeFormatted = "Unknown";
         }
     }
 
     private void ToggleVisibility()
     {
         isHidden = !isHidden;
+    }
+
+    private void ToggleCollapsed()
+    {
+        isCollapsed = !isCollapsed;
+    }
+
+    private async Task RefreshMetrics()
+    {
+        await UpdateMetricsAsync();
+        await UpdateTimestamp();
+        StateHasChanged();
+    }
+
+    private async Task UpdateTimestamp()
+    {
+        currentTime = DateTime.Now.ToString("HH:mm:ss");
+        StateHasChanged();
+    }
+
+    private string GetPerformanceRating()
+    {
+        var primaryMetric = largestContentfulPaint > 0 ? largestContentfulPaint : loadComplete;
+
+        return primaryMetric switch
+        {
+            <= 1000 => "EXCELLENT",
+            <= 2500 => "GOOD",
+            <= 4000 => "FAIR",
+            _ => "POOR"
+        };
+    }
+
+    private string GetPerformanceRatingClass()
+    {
+        var primaryMetric = largestContentfulPaint > 0 ? largestContentfulPaint : loadComplete;
+
+        return primaryMetric switch
+        {
+            <= 1000 => "excellent",
+            <= 2500 => "good",
+            <= 4000 => "fair",
+            _ => "poor"
+        };
+    }
+
+    private string GetPerformanceRatingIcon()
+    {
+        var primaryMetric = largestContentfulPaint > 0 ? largestContentfulPaint : loadComplete;
+
+        return primaryMetric switch
+        {
+            <= 1000 => "🚀",
+            <= 2500 => "✅",
+            <= 4000 => "⚠️",
+            _ => "🐌"
+        };
+    }
+
+    private int GetPerformanceScore()
+    {
+        var primaryMetric = largestContentfulPaint > 0 ? largestContentfulPaint : loadComplete;
+
+        return primaryMetric switch
+        {
+            <= 1000 => 95,
+            <= 1500 => 85,
+            <= 2500 => 75,
+            <= 4000 => 50,
+            _ => 25
+        };
+    }
+
+    private double GetProgressWidth(double value, double maxValue)
+    {
+        if (value <= 0 || maxValue <= 0) return 0;
+        return Math.Min(100, (value / maxValue) * 100);
+    }
+
+    private double GetDataSizeProgress(double sizeBytes)
+    {
+        // Progress based on typical web page size (1MB = 100%)
+        const double maxSize = 1024 * 1024; // 1MB
+        return Math.Min(100, (sizeBytes / maxSize) * 100);
+    }
+
+    private string GetTimingColor(double timing)
+    {
+        return timing switch
+        {
+            <= 1000 => "#00ff41",
+            <= 2500 => "#ffd700",
+            <= 4000 => "#ff8c42",
+            _ => "#ff4757"
+        };
+    }
+
+    // Data model for JavaScript interop
+    public class PageLoadMetrics
+    {
+        public double TimeToFirstByte { get; set; }
+        public double DomContentLoaded { get; set; }
+        public double LoadComplete { get; set; }
+        public double FirstContentfulPaint { get; set; }
+        public double LargestContentfulPaint { get; set; }
+
+        public double TransferSize { get; set; }
+        public double EncodedSize { get; set; }
+        public double DecodedSize { get; set; }
+        public string TransferSizeFormatted { get; set; } = "";
+        public string EncodedSizeFormatted { get; set; } = "";
+        public string DecodedSizeFormatted { get; set; } = "";
+
+        public double ServerResponseTime { get; set; }
+        public double DomProcessingTime { get; set; }
+        public double ResourceLoadTime { get; set; }
     }
 }
