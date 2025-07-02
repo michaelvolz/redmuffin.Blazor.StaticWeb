@@ -1,196 +1,200 @@
 @inject IJSRuntime JS
+@inject NavigationManager Navigation
 
-<div class="page-speed-widget @(isHidden ? "hidden" : "") @(isCollapsed ? "collapsed" : "")"
-     @onclick="ToggleVisibility"
-     @ref="speedElement">
+@if (!IsLocalhost)
+{
+    <div class="page-speed-widget @(isHidden ? "hidden" : "") @(isCollapsed ? "collapsed" : "")"
+         @onclick="ToggleVisibility"
+         @ref="speedElement">
 
-    <div class="widget-header">
-        <div class="widget-title">
-            <span class="widget-icon">⚡</span>
-            <span>Page Performance</span>
-        </div>
-        <div class="widget-controls">
-            <span class="widget-time">@currentTime</span>
-            <button type="button" class="toggle-button" @onclick:stopPropagation="true" @onclick="ToggleCollapsed">
-                @(isCollapsed ? "+" : "−")
-            </button>
-        </div>
-    </div>
-
-    @if (!isCollapsed)
-    {
-        <div class="widget-content">
-            <!-- Core Metrics Grid -->
-            <div class="metrics-grid">
-                <!-- Timing Metrics -->
-                <div class="metric-group">
-                    <div class="metric-group-title">
-                        <span>⏱️</span>
-                        <span>Timing (ms)</span>
-                    </div>
-                    <div class="metric-item">
-                        <span class="metric-label">TTFB:</span>
-                        <span class="metric-value timing">@Math.Round(timeToFirstByte, 1)</span>
-                    </div>
-                    <div class="metric-progress">
-                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(timeToFirstByte, 500))%; background: #ffd700;"></div>
-                    </div>
-
-                    <div class="metric-item">
-                        <span class="metric-label">FCP:</span>
-                        <span class="metric-value timing">@Math.Round(firstContentfulPaint, 1)</span>
-                    </div>
-                    <div class="metric-progress">
-                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(firstContentfulPaint, 1800))%; background: #ffd700;"></div>
-                    </div>
-
-                    <div class="metric-item">
-                        <span class="metric-label">DOM:</span>
-                        <span class="metric-value timing">@Math.Round(domContentLoaded, 1)</span>
-                    </div>
-                    <div class="metric-progress">
-                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(domContentLoaded, 2000))%; background: #ffd700;"></div>
-                    </div>
-
-                    <div class="metric-item">
-                        <span class="metric-label">Load:</span>
-                        <span class="metric-value timing">@Math.Round(loadComplete, 1)</span>
-                    </div>
-                    <div class="metric-progress">
-                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(loadComplete, 3000))%; background: @GetTimingColor(loadComplete)"></div>
-                    </div>
-
-                    @if (largestContentfulPaint > 0)
-                    {
-                        <div class="metric-item">
-                            <span class="metric-label">LCP:</span>
-                            <span class="metric-value timing">@Math.Round(largestContentfulPaint, 1)</span>
-                        </div>
-                        <div class="metric-progress">
-                            <div class="metric-progress-bar" style="width: @(GetProgressWidth(largestContentfulPaint, 2500))%; background: @GetTimingColor(largestContentfulPaint)"></div>
-                        </div>
-                    }
-                </div>
-
-                <!-- Data Transfer Metrics -->
-                <div class="metric-group">
-                    <div class="metric-group-title">
-                        <span>📊</span>
-                        <span>Data Transfer</span>
-                    </div>
-                    <div class="metric-item">
-                        <span class="metric-label">Transfer:</span>
-                        <span class="metric-value size">@transferSizeFormatted</span>
-                    </div>
-                    @if (transferSize > 0)
-                    {
-                        <div class="metric-progress">
-                            <div class="metric-progress-bar" style="width: @(GetDataSizeProgress(transferSize))%; background: #00bfff;"></div>
-                        </div>
-                    }
-
-                    <div class="metric-item">
-                        <span class="metric-label">Encoded:</span>
-                        <span class="metric-value size">@encodedSizeFormatted</span>
-                    </div>
-                    @if (encodedSize > 0)
-                    {
-                        <div class="metric-progress">
-                            <div class="metric-progress-bar" style="width: @(GetDataSizeProgress(encodedSize))%; background: #00bfff;"></div>
-                        </div>
-                    }
-
-                    <div class="metric-item">
-                        <span class="metric-label">Decoded:</span>
-                        <span class="metric-value size">@decodedSizeFormatted</span>
-                    </div>
-                    @if (decodedSize > 0)
-                    {
-                        <div class="metric-progress">
-                            <div class="metric-progress-bar" style="width: @(GetDataSizeProgress(decodedSize))%; background: #00bfff;"></div>
-                        </div>
-                    }
-
-                    @if (compressionRatio > 0)
-                    {
-                        <div class="metric-item">
-                            <span class="metric-label">Compression:</span>
-                            <span class="metric-value ratio">@compressionRatio%</span>
-                        </div>
-                        <div class="metric-progress">
-                            <div class="metric-progress-bar" style="width: @compressionRatio%; background: #ff6b9d;"></div>
-                        </div>
-                    }
-                </div>
+        <div class="widget-header">
+            <div class="widget-title">
+                <span class="widget-icon">⚡</span>
+                <span>Page Performance</span>
             </div>
-
-            <!-- Performance Breakdown -->
-            @if (serverResponseTime > 0 || domProcessingTime > 0 || resourceLoadTime > 0)
-            {
-                <div class="performance-breakdown">
-                    <div class="metric-group-title">
-                        <span>🔬</span>
-                        <span>Performance Breakdown</span>
-                    </div>
-                    <div class="breakdown-grid">
-                        @if (serverResponseTime > 0)
-                        {
-                            <div class="breakdown-item">
-                                <div class="metric-label">Server Response</div>
-                                <div class="metric-value breakdown">@Math.Round(serverResponseTime, 1)ms</div>
-                                <div class="metric-progress">
-                                    <div class="metric-progress-bar" style="width: @(GetProgressWidth(serverResponseTime, 1000))%; background: #ff8c42;"></div>
-                                </div>
-                            </div>
-                        }
-                        @if (domProcessingTime > 0)
-                        {
-                            <div class="breakdown-item">
-                                <div class="metric-label">DOM Processing</div>
-                                <div class="metric-value breakdown">@Math.Round(domProcessingTime, 1)ms</div>
-                                <div class="metric-progress">
-                                    <div class="metric-progress-bar" style="width: @(GetProgressWidth(domProcessingTime, 1000))%; background: #ff8c42;"></div>
-                                </div>
-                            </div>
-                        }
-                        @if (resourceLoadTime > 0)
-                        {
-                            <div class="breakdown-item">
-                                <div class="metric-label">Resource Load</div>
-                                <div class="metric-value breakdown">@Math.Round(resourceLoadTime, 1)ms</div>
-                                <div class="metric-progress">
-                                    <div class="metric-progress-bar" style="width: @(GetProgressWidth(resourceLoadTime, 1000))%; background: #ff8c42;"></div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                </div>
-            }
-
-            <!-- Performance Rating -->
-            <div class="performance-rating">
-                <div class="rating-badge @GetPerformanceRatingClass()">
-                    <span>@GetPerformanceRatingIcon()</span>
-                    <span>@GetPerformanceRating()</span>
-                </div>
-                @if (GetPerformanceScore() > 0)
-                {
-                    <div style="margin-top: 8px; font-size: 10px; color: #888;">
-                        Score: @GetPerformanceScore()/100
-                    </div>
-                }
-            </div>
-
-            <!-- Refresh Button -->
-            <div style="text-align: center; margin-top: 12px;">
-                <button type="button" class="refresh-button" @onclick="RefreshMetrics" @onclick:stopPropagation="true">
-                    <span>🔄</span>
-                    <span>Refresh</span>
+            <div class="widget-controls">
+                <span class="widget-time">@currentTime</span>
+                <button type="button" class="toggle-button" @onclick:stopPropagation="true" @onclick="ToggleCollapsed">
+                    @(isCollapsed ? "+" : "−")
                 </button>
             </div>
         </div>
-    }
-</div>
+
+        @if (!isCollapsed)
+        {
+            <div class="widget-content">
+                <!-- Core Metrics Grid -->
+                <div class="metrics-grid">
+                    <!-- Timing Metrics -->
+                    <div class="metric-group">
+                        <div class="metric-group-title">
+                            <span>⏱️</span>
+                            <span>Timing (ms)</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">TTFB:</span>
+                            <span class="metric-value timing">@Math.Round(timeToFirstByte, 1)</span>
+                        </div>
+                        <div class="metric-progress">
+                            <div class="metric-progress-bar" style="width: @(GetProgressWidth(timeToFirstByte, 500))%; background: #ffd700;"></div>
+                        </div>
+
+                        <div class="metric-item">
+                            <span class="metric-label">FCP:</span>
+                            <span class="metric-value timing">@Math.Round(firstContentfulPaint, 1)</span>
+                        </div>
+                        <div class="metric-progress">
+                            <div class="metric-progress-bar" style="width: @(GetProgressWidth(firstContentfulPaint, 1800))%; background: #ffd700;"></div>
+                        </div>
+
+                        <div class="metric-item">
+                            <span class="metric-label">DOM:</span>
+                            <span class="metric-value timing">@Math.Round(domContentLoaded, 1)</span>
+                        </div>
+                        <div class="metric-progress">
+                            <div class="metric-progress-bar" style="width: @(GetProgressWidth(domContentLoaded, 2000))%; background: #ffd700;"></div>
+                        </div>
+
+                        <div class="metric-item">
+                            <span class="metric-label">Load:</span>
+                            <span class="metric-value timing">@Math.Round(loadComplete, 1)</span>
+                        </div>
+                        <div class="metric-progress">
+                            <div class="metric-progress-bar" style="width: @(GetProgressWidth(loadComplete, 3000))%; background: @GetTimingColor(loadComplete)"></div>
+                        </div>
+
+                        @if (largestContentfulPaint > 0)
+                        {
+                            <div class="metric-item">
+                                <span class="metric-label">LCP:</span>
+                                <span class="metric-value timing">@Math.Round(largestContentfulPaint, 1)</span>
+                            </div>
+                            <div class="metric-progress">
+                                <div class="metric-progress-bar" style="width: @(GetProgressWidth(largestContentfulPaint, 2500))%; background: @GetTimingColor(largestContentfulPaint)"></div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Data Transfer Metrics -->
+                    <div class="metric-group">
+                        <div class="metric-group-title">
+                            <span>📊</span>
+                            <span>Data Transfer</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Transfer:</span>
+                            <span class="metric-value size">@transferSizeFormatted</span>
+                        </div>
+                        @if (transferSize > 0)
+                        {
+                            <div class="metric-progress">
+                                <div class="metric-progress-bar" style="width: @(GetDataSizeProgress(transferSize))%; background: #00bfff;"></div>
+                            </div>
+                        }
+
+                        <div class="metric-item">
+                            <span class="metric-label">Encoded:</span>
+                            <span class="metric-value size">@encodedSizeFormatted</span>
+                        </div>
+                        @if (encodedSize > 0)
+                        {
+                            <div class="metric-progress">
+                                <div class="metric-progress-bar" style="width: @(GetDataSizeProgress(encodedSize))%; background: #00bfff;"></div>
+                            </div>
+                        }
+
+                        <div class="metric-item">
+                            <span class="metric-label">Decoded:</span>
+                            <span class="metric-value size">@decodedSizeFormatted</span>
+                        </div>
+                        @if (decodedSize > 0)
+                        {
+                            <div class="metric-progress">
+                                <div class="metric-progress-bar" style="width: @(GetDataSizeProgress(decodedSize))%; background: #00bfff;"></div>
+                            </div>
+                        }
+
+                        @if (compressionRatio > 0)
+                        {
+                            <div class="metric-item">
+                                <span class="metric-label">Compression:</span>
+                                <span class="metric-value ratio">@compressionRatio%</span>
+                            </div>
+                            <div class="metric-progress">
+                                <div class="metric-progress-bar" style="width: @compressionRatio%; background: #ff6b9d;"></div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Performance Breakdown -->
+                @if (serverResponseTime > 0 || domProcessingTime > 0 || resourceLoadTime > 0)
+                {
+                    <div class="performance-breakdown">
+                        <div class="metric-group-title">
+                            <span>🔬</span>
+                            <span>Performance Breakdown</span>
+                        </div>
+                        <div class="breakdown-grid">
+                            @if (serverResponseTime > 0)
+                            {
+                                <div class="breakdown-item">
+                                    <div class="metric-label">Server Response</div>
+                                    <div class="metric-value breakdown">@Math.Round(serverResponseTime, 1)ms</div>
+                                    <div class="metric-progress">
+                                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(serverResponseTime, 1000))%; background: #ff8c42;"></div>
+                                    </div>
+                                </div>
+                            }
+                            @if (domProcessingTime > 0)
+                            {
+                                <div class="breakdown-item">
+                                    <div class="metric-label">DOM Processing</div>
+                                    <div class="metric-value breakdown">@Math.Round(domProcessingTime, 1)ms</div>
+                                    <div class="metric-progress">
+                                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(domProcessingTime, 1000))%; background: #ff8c42;"></div>
+                                    </div>
+                                </div>
+                            }
+                            @if (resourceLoadTime > 0)
+                            {
+                                <div class="breakdown-item">
+                                    <div class="metric-label">Resource Load</div>
+                                    <div class="metric-value breakdown">@Math.Round(resourceLoadTime, 1)ms</div>
+                                    <div class="metric-progress">
+                                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(resourceLoadTime, 1000))%; background: #ff8c42;"></div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <!-- Performance Rating -->
+                <div class="performance-rating">
+                    <div class="rating-badge @GetPerformanceRatingClass()">
+                        <span>@GetPerformanceRatingIcon()</span>
+                        <span>@GetPerformanceRating()</span>
+                    </div>
+                    @if (GetPerformanceScore() > 0)
+                    {
+                        <div style="margin-top: 8px; font-size: 10px; color: #888;">
+                            Score: @GetPerformanceScore()/100
+                        </div>
+                    }
+                </div>
+
+                <!-- Refresh Button -->
+                <div style="text-align: center; margin-top: 12px;">
+                    <button type="button" class="refresh-button" @onclick="RefreshMetrics" @onclick:stopPropagation="true">
+                        <span>🔄</span>
+                        <span>Refresh</span>
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+}
 
 @code {
     private bool isHidden = false;
@@ -219,9 +223,22 @@
     private double resourceLoadTime = 0;
     private double compressionRatio = 0;
 
+    private bool IsLocalhost
+    {
+        get
+        {
+            var baseUri = new Uri(Navigation.BaseUri);
+            return baseUri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
+                   baseUri.Host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase) ||
+                   baseUri.Host.StartsWith("192.168.", StringComparison.OrdinalIgnoreCase) ||
+                   baseUri.Host.StartsWith("10.", StringComparison.OrdinalIgnoreCase) ||
+                   baseUri.Host.StartsWith("172.16.", StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (firstRender && !IsLocalhost)
         {
             await Task.Delay(1000);
             await UpdateMetricsAsync();
