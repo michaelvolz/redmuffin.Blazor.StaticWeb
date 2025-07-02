@@ -273,24 +273,7 @@ The API project leverages **Azure Functions with .NET 8 Isolated Worker** to pro
 - **Azure Functions Worker SDK (.NET 8)**: Isolated worker process for better performance and control
 - **HTTP Triggers**: RESTful API endpoints with strong typing and dependency injection
 - **OAuth Integration**: Secure token exchange for external API authentication
-- **Application Insights**: Integrated monitoring, logging, and diagnostics
 - **Dependency Injection**: Full DI container support with `IHttpClientFactory`, `ILogger`, and custom services
-
-### Example Function (Current Architecture)
-[Function("ExchangeRaindropCode")]
-public async Task<HttpResponseData> RunAsync(
-    [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData req,
-    CancellationToken cancellationToken = default)
-{
-    // Modern .NET 8 isolated worker implementation
-    // with dependency injection and structured logging
-    LogFunctionProcessed(_logger);
-    
-    // Implementation with proper error handling,
-    // input validation, and secure token exchange
-    return response;
-}
-### Documentation
 
 For more details, refer to the [Azure Functions Documentation](https://learn.microsoft.com/en-us/azure/azure-functions/).
 
@@ -313,7 +296,10 @@ To simulate the Azure Static Web Apps environment locally, follow these steps:
 
 ### Quick Start
 
-1. **Start the Azure Static Web Apps CLI:**swa start http://localhost:5233 --api-location http://localhost:7184/api   
+1. **Start the Azure Static Web Apps CLI:** 
+   
+   `swa start http://localhost:5233 --api-location http://localhost:7184/api`
+
    This command will:
    - Proxy the frontend at `http://localhost:4280`
    - Proxy API calls to the backend, enabling seamless integration
@@ -322,13 +308,16 @@ To simulate the Azure Static Web Apps environment locally, follow these steps:
 
 2. **Start the Blazor WebAssembly frontend and API backend:**
    - Use the "Start both" profile in Visual Studio to launch both projects simultaneously
-   - Alternatively, start each project manually: ```bash
- # Terminal 1 - Start Blazor WebAssembly
- dotnet run --project src/redmuffin.Blazor.StaticWeb/
+   - Alternatively, start each project manually:
+           
+      - Start Blazor WebAssembly
  
- # Terminal 2 - Start Azure Functions
- dotnet run --project src/redmuffin.Blazor.StaticWeb.Api/
- ```
+        `dotnet run --project src/redmuffin.Blazor.StaticWeb/`
+ 
+      - Start Azure Functions
+ 
+         `dotnet run --project src/redmuffin.Blazor.StaticWeb.Api/`
+ 
 3. **Access the application:**
    - Open `http://localhost:4280` in your browser
    - All API calls will be routed through the same port as the web app
