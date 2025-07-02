@@ -56,7 +56,7 @@
     <Watch Include="**\*.scss" />
   </ItemGroup>
 
-  <Target Name="CompileStaticAssets" AfterTargets="CoreCompile" >
+  <Target Name="CompileStaticAssets" AfterTargets="CoreCompile" Condition="'$(Configuration)' == 'Debug'">
     <PropertyGroup>
       <!-- Compression should be disabled by default if we're in a Razor Class Library -->
       <WebCompilerCompression Condition="'$(RazorLangVersion)' != ''">disabled</WebCompilerCompression>
@@ -73,18 +73,6 @@
     <Exec Command="webcompiler -c &quot;$(ProjectDir)webcompilerconfiguration.json&quot; -f &quot;$(ProjectDir)webcompiler.conf&quot;" StandardOutputImportance="high"
           StandardErrorImportance="high"
           Condition="'$(ErrorCode)' == '0'" />
-  </Target>
-
-  <!-- Run WebCompiler for SASS compilation in Debug mode only -->
-  <Target Name="CompileSassFiles" BeforeTargets="CoreCompile" Condition="'$(Configuration)' == 'Debug'">
-    <Message Importance="high" Text="===== Running WebCompiler to recompile SASS files =====" />
-    <Exec Command="webcompiler -c &quot;$(ProjectDir)webcompilerconfiguration.json&quot; -f &quot;$(ProjectDir)webcompiler.conf&quot;"
-          WorkingDirectory="$(ProjectDir)"
-          IgnoreExitCode="false"
-          ContinueOnError="true"
-          StandardOutputImportance="high"
-          StandardErrorImportance="high" />
-    <Message Importance="high" Text="===== SASS compilation completed =====" />
   </Target>
 
 </Project>
