@@ -6,7 +6,7 @@ description: 'Generating a Product Requirements Document (PRD)'
 
 ## Goal
 
-To guide an AI assistant in creating a detailed Product Requirements Document (PRD) in Markdown format, based on an initial user prompt. The PRD should be clear, actionable, and suitable for a junior developer to understand and implement the feature.
+To guide an AI assistant in creating a detailed Product Requirements Document (PRD) in Markdown format, based on an initial user prompt. The PRD should be clear, actionable, and suitable for a junior developer to understand and implement the feature in a Blazor WebAssembly .NET 9 application.
 
 ## Process
 
@@ -28,6 +28,8 @@ The AI should adapt its questions based on the prompt, but here are some common 
 *   **Data Requirements:** "What kind of data does this feature need to display or manipulate?"
 *   **Design/UI:** "Are there any existing design mockups or UI guidelines to follow?" or "Can you describe the desired look and feel?"
 *   **Edge Cases:** "Are there any potential edge cases or error conditions we should consider?"
+*   **API Integration:** "Does this feature require API endpoints? Should they be implemented as Azure Functions?"
+*   **Client-Side Storage:** "Does this feature need to persist data locally using browser storage?"
 
 ## PRD Structure
 
@@ -38,14 +40,37 @@ The generated PRD should include the following sections:
 3.  **User Stories:** Detail the user narratives describing feature usage and benefits.
 4.  **Functional Requirements:** List the specific functionalities the feature must have. Use clear, concise language (e.g., "The system must allow users to upload a profile picture."). Number these requirements.
 5.  **Non-Goals (Out of Scope):** Clearly state what this feature will *not* include to manage scope.
-6.  **Design Considerations (Optional):** Link to mockups, describe UI/UX requirements, or mention relevant components/styles if applicable.
-7.  **Technical Considerations (Optional):** Mention any known technical constraints, dependencies, or suggestions (e.g., "Should integrate with the existing Auth module").
+6.  **Design Considerations:** Link to mockups, describe UI/UX requirements using Zurb Foundation framework, mention relevant Blazor components/styles if applicable.
+7.  **Technical Considerations:** Mention any known technical constraints, dependencies, or suggestions specific to Blazor WebAssembly .NET 9:
+    *   Blazor component structure (`.razor` files with code-behind `.razor.cs`)
+    *   Integration with existing feature-based architecture (`src/redmuffin.Blazor.StaticWeb/Features/`)
+    *   Azure Functions API endpoints if needed (`src/redmuffin.Blazor.StaticWeb.Api/`)
+    *   Client-side storage using `Blazored.LocalStorage` or `IJSRuntime`
+    *   Use of `HttpClient` for API calls
+    *   SCSS/CSS styling with Zurb Foundation
 8.  **Success Metrics:** How will the success of this feature be measured? (e.g., "Increase user engagement by 10%", "Reduce support tickets related to X").
-9.  **Open Questions:** List any remaining questions or areas needing further clarification.
+9.  **Implementation Notes:** Blazor-specific guidance:
+    *   Component placement in feature directories
+    *   Parameter binding and event callbacks
+    *   Lifecycle methods (`OnInitializedAsync`, `OnParametersSetAsync`)
+    *   State management approaches
+    *   Testing considerations using TUnit
+10. **Open Questions:** List any remaining questions or areas needing further clarification.
 
 ## Target Audience
 
-Assume the primary reader of the PRD is a **junior developer**. Therefore, requirements should be explicit, unambiguous, and avoid jargon where possible. Provide enough detail for them to understand the feature's purpose and core logic.
+Assume the primary reader of the PRD is a **junior developer** familiar with Blazor WebAssembly and .NET 9. Requirements should be explicit, unambiguous, and leverage Blazor-specific patterns and conventions. Provide enough detail for them to understand the feature's purpose, core logic, and integration points within the existing application architecture.
+
+## Technology Context
+
+This PRD is for a Blazor WebAssembly .NET 9 application with the following characteristics:
+*   **Frontend:** Blazor WebAssembly with Zurb Foundation for UI
+*   **Backend:** Azure Functions (.NET 8) for API endpoints
+*   **Testing:** TUnit framework (NOT NUnit/xUnit)
+*   **Architecture:** Feature-based organization under `src/redmuffin.Blazor.StaticWeb/Features/`
+*   **Styling:** SCSS with Foundation framework
+*   **Storage:** Browser-based storage via `Blazored.LocalStorage` and `IJSRuntime`
+*   **Build:** .NET 9 with WebAssembly optimizations enabled
 
 ## Output
 
@@ -55,6 +80,7 @@ Assume the primary reader of the PRD is a **junior developer**. Therefore, requi
 
 ## Final instructions
 
-1. Do NOT start implmenting the PRD
+1. Do NOT start implementing the PRD
 2. Make sure to ask the user clarifying questions
 3. Take the user's answers to the clarifying questions and improve the PRD
+4. Ensure all technical considerations align with Blazor WebAssembly and the existing project structure
