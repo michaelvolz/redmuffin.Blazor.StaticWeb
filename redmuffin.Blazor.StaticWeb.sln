@@ -13,13 +13,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution items", "Solution 
 		.github\workflows\azure-static-web-apps-lively-cliff-0945be603.yml = .github\workflows\azure-static-web-apps-lively-cliff-0945be603.yml
 		Directory.Build.props = Directory.Build.props
 		.config\dotnet-tools.json = .config\dotnet-tools.json
+		GEMINI.md = GEMINI.md
 		global.json = global.json
 		src\redmuffin.Blazor.StaticWeb\wwwroot\sample-data\markdown-cheat-sheet.md = src\redmuffin.Blazor.StaticWeb\wwwroot\sample-data\markdown-cheat-sheet.md
 		README.md = README.md
 		swa-cli.config.json = swa-cli.config.json
-		Start.ps1 = Start.ps1
-		GEMINI.md = GEMINI.md
-		Status.md = Status.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "redmuffin.Blazor.StaticWeb.Tests", "tests\redmuffin.Blazor.StaticWeb.Tests\redmuffin.Blazor.StaticWeb.Tests.csproj", "{0B9FDD37-73E0-4E09-8965-425A97F2E6C9}"
@@ -40,9 +38,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Instructions", "Instruction
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Prompts", "Prompts", "{1042B09C-CD63-0B34-1D4B-7FE7A2FDFA8E}"
 	ProjectSection(SolutionItems) = preProject
-		.github\prompts\SecurityReviewAPI.prompt.md = .github\prompts\SecurityReviewAPI.prompt.md
-		.github\prompts\GeneratePRD.prompt.md = .github\prompts\GeneratePRD.prompt.md
 		.github\prompts\ExecuteTaskList.prompt.md = .github\prompts\ExecuteTaskList.prompt.md
+		.github\prompts\GeneratePRD.prompt.md = .github\prompts\GeneratePRD.prompt.md
+		.github\prompts\SecurityReviewAPI.prompt.md = .github\prompts\SecurityReviewAPI.prompt.md
 		.github\prompts\TaskListFromPRD.prompt.md = .github\prompts\TaskListFromPRD.prompt.md
 	EndProjectSection
 EndProject
