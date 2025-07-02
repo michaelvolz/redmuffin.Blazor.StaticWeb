@@ -1,0 +1,162 @@
+{
+  "filteringRules": {
+    "mergeCommits": {
+      "enabled": true,
+      "patterns": [
+        "^[Mm]erge\\s+",
+        "^[Mm]erge\\s+branch\\s+",
+        "^[Mm]erge\\s+pull\\s+request\\s+",
+        "^[Mm]erge\\s+remote-tracking\\s+",
+        "^[Aa]uto-merge\\s+",
+        "\\binto\\s+\\w+\\s*$"
+      ]
+    },
+    "dependabotCommits": {
+      "enabled": true,
+      "patterns": [
+        "^[Dd]ependabot",
+        "^[Bb]ump\\s+.*\\s+from\\s+",
+        "\\bdependabot\\[bot\\]",
+        "^[Aa]uto.*[Uu]pdate\\s+",
+        "^[Ss]ecurity\\s+[Uu]pdate"
+      ]
+    },
+    "documentationCommits": {
+      "enabled": true,
+      "patterns": [
+        "^[Dd]ocs?\\s",
+        "^[Dd]ocumentation\\s",
+        "^[Uu]pdate\\s+[Dd]ocs?\\b",
+        "^[Aa]dd\\s+[Dd]ocumentation\\b",
+        "^[Ff]ix\\s+[Dd]ocs?\\b",
+        "\\b[Rr]eadme\\b.*[Uu]pdate",
+        "\\b[Rr]eadme\\.md\\b",
+        "^[Uu]pdate\\s+[Rr]eadme\\b",
+        "\\b\\.md\\s+file\\b",
+        "^[Dd]oc\\s+[Ff]ix\\b",
+        "^[Cc]omments?\\s+[Uu]pdate",
+        "^[Aa]dd\\s+[Cc]omments?\\b",
+        "^[Uu]pdate\\s+[Cc]omments?\\b",
+        "\\b[Cc]omment\\s+[Ff]ix\\b",
+        "^[Tt]ypo\\s+[Ff]ix\\b",
+        "^[Ff]ix\\s+[Tt]ypo\\b"
+      ]
+    },
+    "formattingCommits": {
+      "enabled": true,
+      "patterns": [
+        "^[Ff]ix\\s+formatting\\b",
+        "^[Ff]ormat\\s+code\\b",
+        "^[Cc]ode\\s+format\\b",
+        "^[Ll]inting\\s",
+        "^[Ff]ix\\s+linting\\b",
+        "^[Ll]int\\s+fix\\b",
+        "^[Rr]un\\s+prettier\\b",
+        "^[Pp]rettier\\s+fix\\b",
+        "^[Ee]slint\\s+fix\\b",
+        "^[Ff]ix\\s+eslint\\b",
+        "^[Ss]tyle\\s+fix\\b",
+        "^[Ff]ix\\s+style\\b",
+        "^[Ww]hitespace\\s+fix\\b",
+        "^[Ff]ix\\s+whitespace\\b",
+        "^[Ii]ndentation\\s+fix\\b",
+        "^[Ff]ix\\s+indentation\\b",
+        "^[Aa]uto\\s+format\\b",
+        "^[Ff]ormatting\\s+update\\b",
+        "^[Cc]lean\\s+up\\s+code\\b",
+        "^[Cc]ode\\s+cleanup\\b",
+        "^[Rr]eformat\\s+code\\b",
+        "\\b[Ss]tylecop\\s+fix\\b",
+        "\\b[Rr]esharper\\s+cleanup\\b",
+        "^[Ff]ix\\s+[Cc][Ss]\\s+warnings?\\b"
+      ]
+    },
+    "packageUpdates": {
+      "enabled": true,
+      "patterns": [
+        "\\bpackage\\.json\\b",
+        "\\bpackage-lock\\.json\\b",
+        "\\byarn\\.lock\\b",
+        "\\bGemfile\\.lock\\b",
+        "\\bComposer\\.lock\\b",
+        "\\bpoetry\\.lock\\b",
+        "\\bPipfile\\.lock\\b",
+        "\\brequirements\\.txt\\b",
+        "\\b[Uu]pdate.*[Dd]ependenc",
+        "\\b[Bb]ump.*[Vv]ersion\\b",
+        "\\b[Uu]pgrade.*[Pp]ackage",
+        "^[Uu]pdate\\s+\\w+\\s+to\\s+v?\\d",
+        "\\b[Dd]ependency\\s+[Uu]pdate",
+        "^[Cc]hore.*[Dd]ep\\b"
+      ]
+    }
+  },
+  "categories": {
+    "added": {
+      "name": "Added",
+      "patterns": [
+        "^[Ff]eat(\\(.*\\))?:",
+        "^[Ff]eature:",
+        "^[Aa]dd\\s+",
+        "^[Nn]ew\\s+",
+        "^[Ii]mplement\\s+"
+      ]
+    },
+    "fixed": {
+      "name": "Fixed",
+      "patterns": [
+        "^[Ff]ix(\\(.*\\))?:",
+        "^[Bb]ug:",
+        "^[Pp]atch:",
+        "^[Rr]esolve\\s+",
+        "^[Ff]ix\\s+"
+      ]
+    },
+    "changed": {
+      "name": "Changed",
+      "patterns": [
+        "^[Ii]mprove\\s+",
+        "^[Ee]nhance\\s+",
+        "^[Oo]ptimize\\s+",
+        "^[Rr]efactor(\\(.*\\))?:",
+        "^[Uu]pdate\\s+",
+        "^[Mm]odify\\s+",
+        "^[Cc]hore(\\(.*\\))?:"
+      ]
+    },
+    "removed": {
+      "name": "Removed",
+      "patterns": [
+        "^[Rr]emove\\s+",
+        "^[Dd]elete\\s+",
+        "^[Dd]rop\\s+"
+      ]
+    },
+    "security": {
+      "name": "Security",
+      "patterns": [
+        "^[Ss]ecurity:",
+        "^[Ss]ec:",
+        "\\bsecurity\\s+fix",
+        "\\bvulnerability"
+      ]
+    },
+    "deprecated": {
+      "name": "Deprecated",
+      "patterns": [
+        "^[Dd]eprecate\\s+",
+        "\\bdeprecated\\b"
+      ]
+    }
+  },
+  "formatting": {
+                       "commitFormat": "{message} ({hash})",
+    "dateFormat": "yyyy-MM-dd",
+    "includeDate": false
+  },
+  "output": {
+    "title": "# Changelog",
+    "description": "All notable changes to this project will be documented in this file.",
+    "sortOrder": "descending"
+  }
+}
