@@ -51,28 +51,4 @@
     <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Common\redmuffin.Blazor.StaticWeb.Common.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!--specify file extensions here as needed-->
-    <Watch Include="**\*.scss" />
-  </ItemGroup>
-
-  <Target Name="CompileStaticAssets" AfterTargets="CoreCompile" Condition="'$(Configuration)' == 'Debug'">
-    <PropertyGroup>
-      <!-- Compression should be disabled by default if we're in a Razor Class Library -->
-      <WebCompilerCompression Condition="'$(RazorLangVersion)' != ''">disabled</WebCompilerCompression>
-      <WebCompilerCompression Condition="'$(RazorLangVersion)' == ''">enabled</WebCompilerCompression>
-    </PropertyGroup>
-
-    <!-- Test if WebCompiler is installed -->
-    <Exec Command="webcompiler -h" ContinueOnError="true" StandardOutputImportance="low" StandardErrorImportance="low" LogStandardErrorAsError="false" IgnoreExitCode="true">
-      <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
-    </Exec>
-
-    <!-- Execute the WebCompiler task if the test was successful -->
-    <Message Importance="high" Text="===== Running WebCompiler to recompile SASS files! =====" />
-    <Exec Command="webcompiler -c &quot;$(ProjectDir)webcompilerconfiguration.json&quot; -f &quot;$(ProjectDir)webcompiler.conf&quot;" StandardOutputImportance="high"
-          StandardErrorImportance="high"
-          Condition="'$(ErrorCode)' == '0'" />
-  </Target>
-
 </Project>
