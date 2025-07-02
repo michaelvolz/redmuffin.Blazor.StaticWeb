@@ -74,4 +74,16 @@ public partial class Videos
 
 		StateHasChanged();
 	}
+
+	private async Task StopShimmerAsync(string elementId)
+	{
+		try
+		{
+			await Js.InvokeVoidAsync("eval", $"document.getElementById('{elementId}')?.classList.add('loaded')").ConfigureAwait(false);
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error stopping shimmer for {elementId}: {ex.Message}");
+		}
+	}
 }
