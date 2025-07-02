@@ -124,6 +124,7 @@
 
 The project follows a [feature folder structure](https://dev.to/smotastic/layer-vs-feature-architecture-3cko) to organize code by feature rather than by technical layer. This approach improves maintainability and scalability by grouping related components, services, and assets together.
 
+<pre>
 redmuffin.Blazor.StaticWeb/
 ├── .github/
 │   ├── instructions/                        # AI coding guidelines
@@ -146,6 +147,7 @@ redmuffin.Blazor.StaticWeb/
 │   └── redmuffin.Blazor.StaticWeb.Api.Tests/
 ├── scripts/                                 # Build & deployment scripts
 ├── TestResults/                             # Test output
+</pre>
 
 ---
 
