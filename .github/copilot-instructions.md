@@ -2,13 +2,7 @@
 
 Target: .NET 9 Blazor WebAssembly, Visual Studio 2022
 
-## 1. Commit Standards
-- Format: `<type>(<scope>): <description>` (<72 chars)
-- Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
-- Scopes: `blazor`, `api`, `ui`, `db`, `auth`
-- Body: 2-3 sentences explaining changes
-
-## 2. Coding Standards
+## 1. Coding Standards
 - **Target:** .NET 9 Blazor WebAssembly, C# 12/13 features
 - **Structure:** UI (.razor), Logic (partial classes)
 - **Naming:** PascalCase (classes, methods, properties), camelCase (fields, variables, parameters), `_` prefix for private fields
@@ -22,7 +16,7 @@ Target: .NET 9 Blazor WebAssembly, Visual Studio 2022
 - **Storage:** Use IJSRuntime for localStorage/sessionStorage via JS interop
 - **Best Practices:** `@inject` for services, strongly-typed parameters, `OnInitialized[Async]`/`OnParametersSet[Async]`, `EventCallback<T>`
 
-## 3. UI & Styling
+## 2. UI & Styling
 - **Framework:** Zurb Foundation for all UI/layout
 - **Styles:** Place in `wwwroot/css` or `wwwroot/scss`
 - **Responsive:** Foundation grid/utilities or custom CSS
@@ -34,7 +28,7 @@ Target: .NET 9 Blazor WebAssembly, Visual Studio 2022
 - **JS Interop:** Use `IJSRuntime.InvokeAsync<T>()`, dispose JS object references
 - **Security:** Sanitize inputs, enforce CSP, secure cookies, RBAC
 
-## 4. Security & API
+## 3. Security & API
 - **Input Validation:** Always validate/sanitize user input
 - **XSS/CSRF:** Use Blazor built-ins and best practices
 - **Secrets:** Never expose in client code
@@ -42,11 +36,11 @@ Target: .NET 9 Blazor WebAssembly, Visual Studio 2022
 - **CSP:** Enforce strong Content Security Policy
 - **Authentication:** ASP.NET Core Identity, role-based access control
 
-## 5. Testing & Documentation
+## 4. Testing & Documentation
 - **Unit Tests:** Use TUnit (NOT NUnit/xUnit), `[Test]` for methods, `[Tests]` with `[Arguments]` for data-driven
 - **Documentation:** XML docs for public APIs, update README/Wiki/OpenAPI
 
-## 6. Modern C# Features (12/13)
+## 5. Modern C# Features (12/13)
 | Feature | Example |
 |---------|---------|
 | Primary Constructors | `public class Person(string name, int age) { ... }` |
@@ -64,7 +58,7 @@ Target: .NET 9 Blazor WebAssembly, Visual Studio 2022
 | Partial Properties | `public partial string Name { get; set; }` |
 | Overload Priority | `[OverloadResolutionPriority(1)] void M(int a) {}` |
 
-## 7. File & Directory Organization
+## 6. File & Directory Organization
 - **Features:** `src/MainProject/Features/FeatureName/` - Include Razor components, code-behind, feature-specific CSS
 - **Feature Subcomponents:** `src/MainProject/Features/FeatureName/Components/`
 - **Static Assets:** `src/MainProject/wwwroot/` - Use subfolders: `css/`, `scss/`, `lib/`, `sample-data/`
@@ -89,7 +83,7 @@ project-root/
 ├── scripts/
 ```
 
-## 8. Blazor Patterns
+## 7. Blazor Patterns
 - **Component Parameters:** Use `[Parameter]` with proper validation
 - **Event Callbacks:** `[Parameter] public EventCallback<T> OnEvent { get; set; }`
 - **Child Content:** `[Parameter] public RenderFragment? ChildContent { get; set; }`
@@ -99,7 +93,7 @@ project-root/
 - **Loading States:** Show loading indicators for async operations
 - **Error Boundaries:** Wrap components in `<ErrorBoundary>` for error handling
 
-## 9. Best Practices
+## 8. Best Practices
 - Develop modular, reusable, testable components
 - Favor strongly-typed parameters over dynamic
 - Handle exceptions with try/catch or error boundaries (`<ErrorBoundary>`)
@@ -109,7 +103,7 @@ project-root/
 - Use `StateHasChanged()` sparingly, prefer parameter binding
 - Implement `IDisposable` for event subscriptions and timers
 
-## 10. AI Operational Guidelines
+## 9. AI Operational Guidelines
 - Offer PowerShell scripts for complex/data-intensive tasks
 - Use Context7 MCP Server for framework/library documentation - prioritize over training data
 - **Workflow:**
@@ -121,5 +115,5 @@ project-root/
 - **Repository:** Owner: `michaelvolz`, Name: `redmuffin.Blazor.StaticWeb`
 - **File Encoding**: Always use UTF8 with BOM for Markdown files
 - **Exclude sample files**: Don't use these files when working, they are only dummy files:
-    - `src\redmuffin.Blazor.StaticWeb\wwwroot\sample-data\`
+    - `src\redmuffin.Blazor.StaticWeb\wwwroot\sample-data\markdown-cheat-sheet.md`
     - `src\redmuffin.Blazor.StaticWeb\wwwroot\Example.md `
