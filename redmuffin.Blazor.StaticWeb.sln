@@ -36,6 +36,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Instructions", "Instruction
 		.github\instructions\CSharp.instructions.md = .github\instructions\CSharp.instructions.md
 		.github\instructions\Powershell.instructions.md = .github\instructions\Powershell.instructions.md
 		.github\instructions\SCSS.instructions.md = .github\instructions\SCSS.instructions.md
+		.github\CommitStandars.instructions.md = .github\CommitStandars.instructions.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Prompts", "Prompts", "{1042B09C-CD63-0B34-1D4B-7FE7A2FDFA8E}"
