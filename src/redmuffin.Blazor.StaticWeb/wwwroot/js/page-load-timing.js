@@ -8,6 +8,9 @@ window.pageLoadSpeed = {
         blazorReady: 0,
         scriptLoadTime: 0
     },
+    
+    // Store LCP value from PerformanceObserver
+    lcpValue: 0,
 
     // Initialize timing measurements
     init: function() {
@@ -40,6 +43,26 @@ window.pageLoadSpeed = {
             // Page is fully loaded
             this.timingData.domContentLoaded = performance.now();
             this.timingData.loadComplete = performance.now();
+        }
+        
+        // Set up PerformanceObserver for LCP
+        this.observeLCP();
+    },
+    
+    // Observe LCP using PerformanceObserver API
+    observeLCP: function() {
+        const self = this;
+        if ('PerformanceObserver' in window) {
+            try {
+                const observer = new PerformanceObserver((list) => {
+                    const entries = list.getEntries();
+                    const lastEntry = entries[entries.length - 1];
+                    self.lcpValue = lastEntry.startTime;
+                });
+                observer.observe({ entryTypes: ['largest-contentful-paint'] });
+            } catch (e) {
+                // LCP observation not supported
+            }
         }
     },
 
@@ -94,10 +117,9 @@ window.pageLoadSpeed = {
                     }
                 });
 
-                // Get LCP if available
-                const lcpEntries = window.performance.getEntriesByType('largest-contentful-paint');
-                if (lcpEntries.length > 0) {
-                    metrics.largestContentfulPaint = Math.round(lcpEntries[lcpEntries.length - 1].startTime);
+                // Use stored LCP value from PerformanceObserver
+                if (this.lcpValue > 0) {
+                    metrics.largestContentfulPaint = Math.round(this.lcpValue);
                 }
             } catch (e) {
                 // Paint timing not supported
@@ -172,13 +194,10 @@ window.pageLoadSpeed = {
             ttfb: 0
         };
 
-        // Try to get LCP
-        try {
-            const lcpEntries = performance.getEntriesByType('largest-contentful-paint');
-            if (lcpEntries.length > 0) {
-                vitals.lcp = lcpEntries[lcpEntries.length - 1].startTime;
-            }
-        } catch (e) {}
+        // Use stored LCP value from PerformanceObserver
+        if (this.lcpValue > 0) {
+            vitals.lcp = this.lcpValue;
+        }
 
         // Try to get FCP
         try {
