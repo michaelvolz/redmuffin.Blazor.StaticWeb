@@ -56,23 +56,20 @@
                         </div>
 
                         <div class="metric-item">
+                            <span class="metric-label">LCP:</span>
+                            <span class="metric-value timing">@(largestContentfulPaint > 0 ? Math.Round(largestContentfulPaint, 1) : 0)</span>
+                        </div>
+                        <div class="metric-progress">
+                            <div class="metric-progress-bar" style="width: @(GetProgressWidth(largestContentfulPaint, 2500))%; background: @GetTimingColor(largestContentfulPaint)"></div>
+                        </div>
+
+                        <div class="metric-item">
                             <span class="metric-label">Load:</span>
                             <span class="metric-value timing">@Math.Round(loadComplete, 1)</span>
                         </div>
                         <div class="metric-progress">
                             <div class="metric-progress-bar" style="width: @(GetProgressWidth(loadComplete, 3000))%; background: @GetTimingColor(loadComplete)"></div>
                         </div>
-
-                        @if (largestContentfulPaint > 0)
-                        {
-                            <div class="metric-item">
-                                <span class="metric-label">LCP:</span>
-                                <span class="metric-value timing">@Math.Round(largestContentfulPaint, 1)</span>
-                            </div>
-                            <div class="metric-progress">
-                                <div class="metric-progress-bar" style="width: @(GetProgressWidth(largestContentfulPaint, 2500))%; background: @GetTimingColor(largestContentfulPaint)"></div>
-                            </div>
-                        }
                     </div>
 
                     <!-- Data Transfer Metrics -->

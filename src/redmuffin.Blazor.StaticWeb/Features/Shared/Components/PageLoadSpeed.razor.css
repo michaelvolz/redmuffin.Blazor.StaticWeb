@@ -236,6 +236,8 @@
     }
 
     .rating-badge:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.3);
         transform: translateY(-1px);
     }
 
