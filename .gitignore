@@ -362,6 +362,10 @@ MigrationBackup/
 # Changelog backup files
 CHANGELOG_backup_*.md
 
+# PowerShell test artifacts
+TestResults.xml
+CHANGELOG_UPDATES_SUMMARY.md
+
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /.idea
