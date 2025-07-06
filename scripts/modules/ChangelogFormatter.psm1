@@ -34,6 +34,113 @@ function Get-FormattingConfig {
     }
 }
 
+function Get-EmojiConfig {
+    <#
+    .SYNOPSIS
+    Loads the emoji configuration from the config file
+    
+    .PARAMETER ConfigPath
+    Path to the configuration file
+    
+    .RETURNS
+    Configuration object with emoji mappings
+    #>
+    param(
+        [Parameter(Mandatory = $false)]
+        [string]$ConfigPath = "config/changelog-config.json"
+    )
+    
+    try {
+        if (Test-Path $ConfigPath) {
+            $configContent = Get-Content $ConfigPath -Raw -Encoding UTF8
+            $config = $configContent | ConvertFrom-Json
+            return $config.emojis
+        }
+        else {
+            Write-Warning "Configuration file not found at: $ConfigPath. Using default emojis."
+            return $null
+        }
+    }
+    catch {
+        Write-Warning "Failed to load emoji config: $($_.Exception.Message). Using default emojis."
+        return $null
+    }
+}
+
+function Get-CategoryEmoji {
+    <#
+    .SYNOPSIS
+    Gets the emoji for a specific category
+    
+    .PARAMETER CategoryName
+    Name of the category
+    
+    .PARAMETER ConfigPath
+    Path to the configuration file
+    
+    .RETURNS
+    Emoji string for the category
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$CategoryName,
+        
+        [Parameter(Mandatory = $false)]
+        [string]$ConfigPath = "config/changelog-config.json"
+    )
+    
+    $emojiConfig = Get-EmojiConfig -ConfigPath $ConfigPath
+    
+    if ($emojiConfig -and $emojiConfig.categories -and $emojiConfig.categories.$CategoryName) {
+        return $emojiConfig.categories.$CategoryName
+    }
+    elseif ($emojiConfig -and $emojiConfig.defaultEmoji) {
+        return $emojiConfig.defaultEmoji
+    }
+    else {
+        # Default emoji if config is not available
+        return "📝"
+    }
+}
+
+function Get-CommitTypeEmoji {
+    <#
+    .SYNOPSIS
+    Gets the emoji for a specific commit type
+    
+    .PARAMETER CommitMessage
+    The commit message to analyze
+    
+    .PARAMETER ConfigPath
+    Path to the configuration file
+    
+    .RETURNS
+    Emoji string for the commit type
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$CommitMessage,
+        
+        [Parameter(Mandatory = $false)]
+        [string]$ConfigPath = "config/changelog-config.json"
+    )
+    
+    $emojiConfig = Get-EmojiConfig -ConfigPath $ConfigPath
+    
+    # Extract commit type from conventional commit format
+    # Handle messages that may start with emojis or other characters
+    if ($CommitMessage -match '(?:^|\s)([a-z]+)(\(.*\))?:') {
+        $commitType = $matches[1]
+        
+        if ($emojiConfig -and $emojiConfig.commitTypes -and $emojiConfig.commitTypes.$commitType) {
+            return $emojiConfig.commitTypes.$commitType
+        }
+    }
+    
+    # Return empty string if no matching type found
+    return ""
+}
+
 function Format-CommitEntry {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     <#
@@ -46,6 +153,9 @@ function Format-CommitEntry {
     .PARAMETER Format
     The format string to use (default: "{message} ({hash})")
     
+    .PARAMETER ConfigPath
+    Path to the configuration file
+    
     .RETURNS
     Formatted string representing the commit entry
     #>
@@ -54,11 +164,22 @@ function Format-CommitEntry {
         [PSCustomObject]$Commit,
         
         [Parameter(Mandatory = $false)]
-        [string]$Format = "{message} ({hash})"
+        [string]$Format = "{message} ({hash})",
+        
+        [Parameter(Mandatory = $false)]
+        [string]$ConfigPath = "config/changelog-config.json"
     )
+    
+    # Get emoji for commit type
+    $commitEmoji = Get-CommitTypeEmoji -CommitMessage $Commit.Message -ConfigPath $ConfigPath
     
     # Escape any special Markdown characters in the commit message
     $escapedMessage = Escape-MarkdownText -Text $Commit.Message
+    
+    # Add emoji prefix to message if emoji exists
+    if (-not [string]::IsNullOrWhiteSpace($commitEmoji)) {
+        $escapedMessage = "$commitEmoji $escapedMessage"
+    }
     
     # Replace placeholders in the format string
     $formattedEntry = $Format -replace '\{message\}', $escapedMessage
@@ -89,14 +210,10 @@ function Escape-MarkdownText {
         [string]$Text
     )
     
-    # Only escape characters that would break the markdown structure
-    # Remove most escaping for better readability in plain text
-    $escapedText = $Text
-    
-    # Only escape backticks since they can break code formatting
-    $escapedText = $escapedText -replace '`', '\`'
-    
-    return $escapedText
+    # For plain text changelog, we don't need to escape anything
+    # This makes the changelog more readable as a simple text file
+    # If markdown rendering is needed in the future, escaping can be re-enabled
+    return $Text
 }
 
 function Sort-CommitsChronologically {
@@ -195,14 +312,17 @@ function Format-CategorySection {
     }
     $sortedCommits = Sort-CommitsChronologically -CommitList $CommitList -Order $sortOrder
     
+    # Get emoji for category
+    $categoryEmoji = Get-CategoryEmoji -CategoryName $CategoryName -ConfigPath $ConfigPath
+    
     # Build the section
     $section = @()
     $section += ""  # Empty line before section
-    $section += "### $CategoryName"
+    $section += "### $categoryEmoji $CategoryName"
     $section += ""  # Empty line after heading
     
     foreach ($commit in $sortedCommits) {
-        $formattedEntry = Format-CommitEntry -Commit $commit -Format $commitFormat
+        $formattedEntry = Format-CommitEntry -Commit $commit -Format $commitFormat -ConfigPath $ConfigPath
         $section += "- $formattedEntry"
     }
     
@@ -244,11 +364,24 @@ function Format-ChangelogDocument {
         }
     }
     
+    # Get emoji config
+    $emojiConfig = Get-EmojiConfig -ConfigPath $ConfigPath
+    $headerEmoji = if ($emojiConfig -and $emojiConfig.header) { 
+        $emojiConfig.header 
+    } else { 
+        "📋" 
+    }
+    
     # Get title and description from config or use defaults
     $title = if ($config -and $config.output -and $config.output.title) { 
         $config.output.title 
     } else { 
         "# Changelog" 
+    }
+    
+    # Add emoji to title
+    if ($title -match '^(\s*#\s*)(.*)$') {
+        $title = "$($matches[1])$headerEmoji $($matches[2])"
     }
     
     $description = if ($config -and $config.output -and $config.output.description) { 
@@ -341,4 +474,4 @@ function Test-MarkdownValidity {
 }
 
 # Export functions
-Export-ModuleMember -Function Get-FormattingConfig, Format-CommitEntry, Escape-MarkdownText, Sort-CommitsChronologically, Format-CategorySection, Format-ChangelogDocument, Test-MarkdownValidity
+Export-ModuleMember -Function Get-FormattingConfig, Get-EmojiConfig, Get-CategoryEmoji, Get-CommitTypeEmoji, Format-CommitEntry, Escape-MarkdownText, Sort-CommitsChronologically, Format-CategorySection, Format-ChangelogDocument, Test-MarkdownValidity
