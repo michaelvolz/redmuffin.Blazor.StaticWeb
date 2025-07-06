@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 
 ### ✨ Added
 
+- 🚀 feat(changelog): add emojis to header, footer, and summary (0211bf7)
+- 🚀 feat(changelog): implement emoji helper functions and formatting (ab8c958)
+- 🚀 feat(changelog): add emoji mappings to configuration (2add30e)
 - 🚀 feat(scripts): integrate git log directly into changelog generator (b49e607)
 - 🚀 feat(scripts): update changelog script to align with new commit standards (254337f)
 - 🚀 feat(components): improve PageLoadSpeed widget UI/UX (b121acb)
@@ -112,6 +115,7 @@ All notable changes to this project will be documented in this file.
 
 ### 🔄 Changed
 
+- 🔨 chore(changelog): regenerate changelog with emoji support (c4151cb)
 - 🔨 chore(config): remove obsolete PRD prompt files (94b3100)
 - 🔨 chore(changelog): update generated changelog with git integration changes (34bfbd2)
 - 🔨 chore(config): add PowerShell test artifacts to .gitignore (bc9620b)
@@ -369,10 +373,11 @@ All notable changes to this project will be documented in this file.
 
 ### 🧪 Testing
 
+- 🧪 test(changelog): add comprehensive tests for emoji functionality (101cc86)
 - 🧪 test(scripts): add comprehensive tests for git integration (e2afea6)
 - 🧪 test(scripts): fix changelog generation tests for Pester 5.x compatibility (4e28d0b)
 ---
 
-*🤖 This changelog was automatically generated from 697 commits.*
-*346 commits were filtered out (merges, dependencies, formatting, etc.).*
+*🤖 This changelog was automatically generated from 703 commits.*
+*347 commits were filtered out (merges, dependencies, formatting, etc.).*
 
