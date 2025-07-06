@@ -190,6 +190,7 @@ function Add-ChangelogMetadata {
 }
 
 function Backup-ExistingChangelog {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     <#
     .SYNOPSIS
     Creates a backup of an existing changelog file
@@ -286,7 +287,7 @@ function Write-ChangelogToFile {
         }
         
         # Import the ChangelogFormatter module
-        Import-Module (Join-Path $PSScriptRoot "ChangelogFormatter.psm1") -Force
+        Import-Module (Join-Path $PSScriptRoot "ChangelogFormatter.psm1") -Force -DisableNameChecking
         
         # Generate the formatted changelog content
         Write-Host "Formatting changelog content..." -ForegroundColor Yellow
@@ -370,7 +371,7 @@ function Test-ChangelogFileIntegrity {
         }
         
         # Import ChangelogFormatter for Markdown validation
-        Import-Module (Join-Path $PSScriptRoot "ChangelogFormatter.psm1") -Force
+        Import-Module (Join-Path $PSScriptRoot "ChangelogFormatter.psm1") -Force -DisableNameChecking
         
         # Validate Markdown
         if (-not (Test-MarkdownValidity -MarkdownContent $content)) {

@@ -35,6 +35,7 @@ function Get-FormattingConfig {
 }
 
 function Format-CommitEntry {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     <#
     .SYNOPSIS
     Formats a single commit entry according to the specified format
@@ -72,6 +73,7 @@ function Format-CommitEntry {
 }
 
 function Escape-MarkdownText {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     <#
     .SYNOPSIS
     Escapes special Markdown characters in text (minimal escaping for readability)
@@ -98,6 +100,7 @@ function Escape-MarkdownText {
 }
 
 function Sort-CommitsChronologically {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     <#
     .SYNOPSIS
     Sorts commits in chronological order (newest first by default)
@@ -143,6 +146,7 @@ function Sort-CommitsChronologically {
 }
 
 function Format-CategorySection {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     <#
     .SYNOPSIS
     Formats a category section with its commits
@@ -164,6 +168,7 @@ function Format-CategorySection {
         [string]$CategoryName,
         
         [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
         [array]$CommitList,
         
         [Parameter(Mandatory = $false)]
@@ -205,6 +210,7 @@ function Format-CategorySection {
 }
 
 function Format-ChangelogDocument {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     <#
     .SYNOPSIS
     Formats the complete changelog document
@@ -259,7 +265,7 @@ function Format-ChangelogDocument {
     $document += ""  # Empty line
     
     # Get category order from CategorizationModule
-    Import-Module (Join-Path $PSScriptRoot "CategorizationModule.psm1") -Force
+    Import-Module (Join-Path $PSScriptRoot "CategorizationModule.psm1") -Force -DisableNameChecking
     $categoryOrder = Get-CategoryOrder -ConfigPath $ConfigPath
     
     # Add each category section in the specified order

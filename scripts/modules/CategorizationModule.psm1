@@ -149,73 +149,55 @@ function Get-CommitCategory {
     }
     else {
         # Fallback to default categorization logic
-        
-        # Security (highest priority)
-        if ($Message -match '^[Ss]ecurity(\\(.*\\))?:' -or 
-            $Message -match '^[Ss]ec:' -or 
-            $Message -match '\\bsecurity\\s+fix' -or 
-            $Message -match '\\bvulnerability') {
-            return "Security"
-        }
-        
-        # Removed (breaking changes)
-        if ($Message -match '^[Rr]emove\\s+' -or 
-            $Message -match '^[Dd]elete\\s+' -or 
-            $Message -match '^[Dd]rop\\s+') {
-            return "Removed"
-        }
-        
-        # Deprecated
-        if ($Message -match '^[Dd]eprecate\\s+' -or 
-            $Message -match '\\bdeprecated\\b') {
-            return "Deprecated"
-        }
+        # Only match conventional commits as per commit standards
         
         # Added (new features)
-        if ($Message -match '^[Ff]eat(\\(.*\\))?:' -or 
-            $Message -match '^[Ff]eature:' -or 
-            $Message -match '^[Aa]dd\\s+' -or 
-            $Message -match '^[Nn]ew\\s+' -or 
-            $Message -match '^[Ii]mplement\\s+') {
+        if ($Message -match '^feat(\(.*\))?:') {
             return "Added"
         }
         
         # Fixed (bug fixes)
-        if ($Message -match '^[Ff]ix(\\(.*\\))?:' -or 
-            $Message -match '^[Bb]ug:' -or 
-            $Message -match '^[Pp]atch:' -or 
-            $Message -match '^[Rr]esolve\\s+' -or 
-            $Message -match '^[Ff]ix\\s+') {
+        if ($Message -match '^fix(\(.*\))?:') {
             return "Fixed"
         }
         
         # Documentation
-        if ($Message -match '^[Dd]ocs?(\\(.*\\))?:') {
+        if ($Message -match '^docs?(\(.*\))?:') {
             return "Documentation"
         }
         
         # Testing
-        if ($Message -match '^[Tt]est(\\(.*\\))?:') {
+        if ($Message -match '^test(\(.*\))?:') {
             return "Testing"
         }
         
+        # Security
+        if ($Message -match '^security(\(.*\))?:') {
+            return "Security"
+        }
+        
         # Reverted
-        if ($Message -match '^[Rr]evert(\\(.*\\))?:') {
+        if ($Message -match '^revert(\(.*\))?:') {
             return "Reverted"
         }
         
+        # Deprecated (not in commit standards but keeping for compatibility)
+        if ($Message -match '^deprecate(\(.*\))?:') {
+            return "Deprecated"
+        }
+        
+        # Removed (not in commit standards but keeping for compatibility)
+        if ($Message -match '^remove(\(.*\))?:') {
+            return "Removed"
+        }
+        
         # Changed (improvements/modifications)
-        if ($Message -match '^[Ii]mprove\\s+' -or 
-            $Message -match '^[Ee]nhance\\s+' -or 
-            $Message -match '^[Oo]ptimize\\s+' -or 
-            $Message -match '^[Rr]efactor(\\(.*\\))?:' -or 
-            $Message -match '^[Pp]erf(\\(.*\\))?:' -or 
-            $Message -match '^[Cc]hore(\\(.*\\))?:' -or 
-            $Message -match '^[Cc]onfig(\\(.*\\))?:' -or 
-            $Message -match '^[Cc]i(\\(.*\\))?:' -or 
-            $Message -match '^[Ss]tyle(\\(.*\\))?:' -or 
-            $Message -match '^[Uu]pdate\\s+' -or 
-            $Message -match '^[Mm]odify\\s+') {
+        if ($Message -match '^refactor(\(.*\))?:' -or 
+            $Message -match '^perf(\(.*\))?:' -or 
+            $Message -match '^chore(\(.*\))?:' -or 
+            $Message -match '^config(\(.*\))?:' -or 
+            $Message -match '^ci(\(.*\))?:' -or 
+            $Message -match '^style(\(.*\))?:') {
             return "Changed"
         }
     }
@@ -225,6 +207,7 @@ function Get-CommitCategory {
 }
 
 function Categorize-Commits {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     <#
     .SYNOPSIS
     Categorizes an array of commits into groups
@@ -279,7 +262,7 @@ function Get-CategoryOrder {
         [string]$ConfigPath = "config/changelog-config.json"
     )
     
-    # Default order following Keep a Changelog standard
+    # Default order following Keep a Changelog standard (excluding Documentation)
     $defaultOrder = @(
         "Added",
         "Changed", 
@@ -287,7 +270,6 @@ function Get-CategoryOrder {
         "Removed",
         "Fixed",
         "Security",
-        "Documentation",
         "Testing",
         "Reverted"
     )
@@ -314,5 +296,36 @@ function Get-CategoryOrder {
     return $defaultOrder
 }
 
+function Remove-UnwantedCategories {
+    <#
+    .SYNOPSIS
+    Removes Documentation and Other Changes categories from categorized commits
+    
+    .PARAMETER CategorizedCommits
+    Hashtable of categorized commits
+    
+    .RETURNS
+    Hashtable with unwanted categories removed
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [hashtable]$CategorizedCommits
+    )
+    
+    $filteredCategories = @{}
+    
+    foreach ($category in $CategorizedCommits.Keys) {
+        # Skip Documentation and Other Changes categories
+        if ($category -eq "Documentation" -or $category -eq "Other Changes") {
+            Write-Host "Filtering out $($CategorizedCommits[$category].Count) commits from category: $category" -ForegroundColor Yellow
+            continue
+        }
+        
+        $filteredCategories[$category] = $CategorizedCommits[$category]
+    }
+    
+    return $filteredCategories
+}
+
 # Export functions
-Export-ModuleMember -Function Get-CategorizationConfig, Test-CommitCategory, Get-CommitCategory, Categorize-Commits, Get-CategoryOrder
+Export-ModuleMember -Function Get-CategorizationConfig, Test-CommitCategory, Get-CommitCategory, Categorize-Commits, Get-CategoryOrder, Remove-UnwantedCategories

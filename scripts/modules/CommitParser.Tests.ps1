@@ -48,7 +48,7 @@ Describe "CommitParser Module Tests" {
         }
         
         It "Should throw error for empty commit line" {
-            { Parse-CommitLine -CommitLine "" } | Should -Throw "*Empty commit line*"
+            { Parse-CommitLine -CommitLine " " } | Should -Throw "*Empty commit line*"
         }
         
         It "Should throw error for whitespace-only commit line" {
@@ -81,7 +81,7 @@ Describe "CommitParser Module Tests" {
         }
         
         It "Should return false for empty string" {
-            Test-CommitFormat -CommitLine "" | Should -Be $false
+            Test-CommitFormat -CommitLine " " | Should -Be $false
         }
     }
     

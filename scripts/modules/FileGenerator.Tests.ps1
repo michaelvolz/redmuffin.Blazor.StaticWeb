@@ -25,7 +25,7 @@ Describe "FileGenerator Tests" {
             Test-Path $testFile | Should -Be $true
             
             $fileContent = Get-Content $testFile -Raw
-            $fileContent | Should -Contain "# Test Changelog"
+            $fileContent | Should -Match "# Test Changelog"
         }
         
         It "Should create directory if it doesn't exist" {
@@ -48,7 +48,7 @@ Describe "FileGenerator Tests" {
             
             $result | Should -Be $true
             $fileContent = Get-Content $testFile -Raw -Encoding UTF8
-            $fileContent | Should -Contain "àáâãäå"
+            $fileContent | Should -Match "àáâãäå"
         }
         
         It "Should return false on write failure" {
@@ -92,8 +92,8 @@ Describe "FileGenerator Tests" {
         It "Should create default header when no config" {
             $header = Get-ChangelogHeader -ConfigPath "non-existent.json"
             
-            $header | Should -Contain "# Changelog"
-            $header | Should -Contain "All notable changes to this project will be documented in this file."
+            $header | Should -Match "# Changelog"
+            $header | Should -Match "All notable changes to this project will be documented in this file\."
             $header | Should -Match "\*Generated on \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\*"
         }
         
@@ -112,8 +112,8 @@ Describe "FileGenerator Tests" {
         It "Should use custom config when available" {
             $header = Get-ChangelogHeader -ConfigPath $script:testConfigPath
             
-            $header | Should -Contain "# Custom Changelog Title"
-            $header | Should -Contain "Custom description for the changelog."
+            $header | Should -Match "# Custom Changelog Title"
+            $header | Should -Match "Custom description for the changelog\."
         }
     }
     
@@ -123,17 +123,17 @@ Describe "FileGenerator Tests" {
             $content = "# Changelog`n`nSome content"
             $result = Add-ChangelogMetadata -Content $content -CommitCount 50 -FilteredCount 10
             
-            $result | Should -Contain "---"
-            $result | Should -Contain "*This changelog was automatically generated from 50 commits.*"
-            $result | Should -Contain "*10 commits were filtered out*"
+            $result | Should -Match "---"
+            $result | Should -Match "\*This changelog was automatically generated from 50 commits\.\*"
+            $result | Should -Match "\*10 commits were filtered out"
         }
         
         It "Should handle zero filtered commits" {
             $content = "# Changelog"
             $result = Add-ChangelogMetadata -Content $content -CommitCount 25 -FilteredCount 0
             
-            $result | Should -Contain "*This changelog was automatically generated from 25 commits.*"
-            $result | Should -Not -Contain "filtered out"
+            $result | Should -Match "\*This changelog was automatically generated from 25 commits\.\*"
+            $result | Should -Not -Match "filtered out"
         }
     }
     
@@ -152,8 +152,8 @@ Describe "FileGenerator Tests" {
             Test-Path $backupPath | Should -Be $true
             
             $backupContent = Get-Content $backupPath -Raw
-            $backupContent | Should -Contain "# Existing Changelog"
-            $backupContent | Should -Contain "Old content"
+            $backupContent | Should -Match "# Existing Changelog"
+            $backupContent | Should -Match "Old content"
         }
         
         It "Should return null for non-existent file" {
@@ -194,11 +194,11 @@ Describe "FileGenerator Tests" {
             Test-Path $outputFile | Should -Be $true
             
             $content = Get-Content $outputFile -Raw
-            $content | Should -Contain "# Changelog"
-            $content | Should -Contain "### Features"
-            $content | Should -Contain "### Bug Fixes"
-            $content | Should -Contain "[Add user authentication] (abc123)"
-            $content | Should -Contain "[Fix login issue] (def456)"
+            $content | Should -Match "# Changelog"
+            $content | Should -Match "### Features"
+            $content | Should -Match "### Bug Fixes"
+            $content | Should -Match "Add user authentication.*abc123"
+            $content | Should -Match "Fix login issue.*def456"
         }
         
         It "Should create backup when requested" {

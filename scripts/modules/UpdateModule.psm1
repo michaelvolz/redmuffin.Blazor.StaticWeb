@@ -26,8 +26,9 @@ function Get-ExistingChangelogEntries {
         $content = Get-Content $FilePath -Raw -Encoding UTF8
         $existingHashes = @()
         
-        # Regex pattern to match commit entries: [message] (hash)
-        $pattern = '\[.+?\]\s*\(([a-f0-9]{7,40})\)'
+        # Regex pattern to match commit entries: message (hash) or [message] (hash)
+        # Updated to support new format without brackets
+        $pattern = '(?:^|\s)- (?:\[.+?\]|[^\(\[]+?)\s*\(([a-f0-9]{7,40})\)'
         $matches = [regex]::Matches($content, $pattern)
         
         foreach ($match in $matches) {
@@ -65,12 +66,18 @@ function Test-CommitExists {
         [string]$CommitHash,
         
         [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
         [array]$ExistingHashes
     )
     
     # Check for exact match or if the new hash starts with any existing hash
     # (to handle cases where existing entries might have shorter hashes)
     foreach ($existingHash in $ExistingHashes) {
+        # Skip empty strings
+        if ([string]::IsNullOrWhiteSpace($existingHash)) {
+            continue
+        }
+        
         if ($CommitHash -eq $existingHash -or 
             $CommitHash.StartsWith($existingHash) -or 
             $existingHash.StartsWith($CommitHash)) {
@@ -82,6 +89,7 @@ function Test-CommitExists {
 }
 
 function Filter-NewCommits {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     <#
     .SYNOPSIS
     Filters out commits that already exist in the changelog
@@ -100,6 +108,7 @@ function Filter-NewCommits {
         [array]$CommitList,
         
         [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
         [array]$ExistingHashes
     )
     
@@ -177,6 +186,7 @@ function Get-ChangelogSections {
 }
 
 function Merge-ChangelogSections {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     <#
     .SYNOPSIS
     Merges new categorized commits with existing changelog sections
@@ -205,8 +215,8 @@ function Merge-ChangelogSections {
     )
     
     # Import required modules
-    Import-Module (Join-Path $PSScriptRoot "ChangelogFormatter.psm1") -Force
-    Import-Module (Join-Path $PSScriptRoot "CategorizationModule.psm1") -Force
+    Import-Module (Join-Path $PSScriptRoot "ChangelogFormatter.psm1") -Force -DisableNameChecking
+    Import-Module (Join-Path $PSScriptRoot "CategorizationModule.psm1") -Force -DisableNameChecking
     
     $mergedSections = @{}
     
@@ -215,6 +225,11 @@ function Merge-ChangelogSections {
     
     # Process each category in order
     foreach ($category in $categoryOrder) {
+        # Skip Documentation and Other Changes categories
+        if ($category -eq "Documentation" -or $category -eq "Other Changes") {
+            continue
+        }
+        
         $existingEntries = if ($ExistingSections.ContainsKey($category)) { 
             $ExistingSections[$category] 
         } else { 
@@ -320,6 +335,7 @@ function Get-LastProcessedCommit {
 }
 
 function Update-ExistingChangelog {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     <#
     .SYNOPSIS
     Updates an existing changelog with new commits
@@ -359,6 +375,11 @@ function Update-ExistingChangelog {
         # Get existing entries to prevent duplicates
         $existingHashes = Get-ExistingChangelogEntries -FilePath $FilePath
         
+        # Ensure we have an array, not null
+        if ($null -eq $existingHashes) {
+            $existingHashes = @()
+        }
+        
         # Filter out commits that already exist
         $filteredNewCommits = Filter-NewCommits -CommitList $NewCommits -ExistingHashes $existingHashes
         
@@ -369,7 +390,7 @@ function Update-ExistingChangelog {
         
         # Create backup if requested
         if ($CreateBackup) {
-            Import-Module (Join-Path $PSScriptRoot "FileGenerator.psm1") -Force
+            Import-Module (Join-Path $PSScriptRoot "FileGenerator.psm1") -Force -DisableNameChecking
             $backupPath = Backup-ExistingChangelog -FilePath $FilePath
             if (-not $backupPath) {
                 Write-Warning "Backup creation failed, but continuing with update"
@@ -377,17 +398,20 @@ function Update-ExistingChangelog {
         }
         
         # Import required modules
-        Import-Module (Join-Path $PSScriptRoot "CategorizationModule.psm1") -Force
-        Import-Module (Join-Path $PSScriptRoot "ChangelogFormatter.psm1") -Force
+        Import-Module (Join-Path $PSScriptRoot "CategorizationModule.psm1") -Force -DisableNameChecking
+        Import-Module (Join-Path $PSScriptRoot "ChangelogFormatter.psm1") -Force -DisableNameChecking
         
         # Categorize new commits
         $newCategorizedCommits = Categorize-Commits -CommitList $filteredNewCommits -ConfigPath $ConfigPath
+        
+        # Remove Documentation and Other Changes categories
+        $filteredNewCategories = Remove-UnwantedCategories -CategorizedCommits $newCategorizedCommits
         
         # Get existing sections
         $existingSections = Get-ChangelogSections -FilePath $FilePath
         
         # Merge sections
-        $mergedSections = Merge-ChangelogSections -ExistingSections $existingSections -NewCategorizedCommits $newCategorizedCommits -ConfigPath $ConfigPath
+        $mergedSections = Merge-ChangelogSections -ExistingSections $existingSections -NewCategorizedCommits $filteredNewCategories -ConfigPath $ConfigPath
         
         # Convert merged sections back to categorized commits format for the formatter
         $mergedCategorizedCommits = @{}
@@ -399,9 +423,10 @@ function Update-ExistingChangelog {
             if (-not [string]::IsNullOrWhiteSpace($mergedSections[$category])) {
                 $lines = $mergedSections[$category] -split "`r`n"
                 foreach ($line in $lines) {
-                    if ($line -match '^- \[(.+?)\] \(([a-f0-9]{7,40})\)') {
-                        $message = $matches[1]
-                        $hash = $matches[2]
+                    # Match both formats: "- [message] (hash)" and "- message (hash)"
+                    if ($line -match '^- (?:\[(.+?)\]|(.+?)) \(([a-f0-9]{7,40})\)') {
+                        $message = if ($matches[1]) { $matches[1] } else { $matches[2] }
+                        $hash = $matches[3]
                         $mergedCategorizedCommits[$category] += [PSCustomObject]@{
                             Hash = $hash
                             Message = $message
@@ -413,12 +438,12 @@ function Update-ExistingChangelog {
         }
         
         # Write updated changelog
-        Import-Module (Join-Path $PSScriptRoot "FileGenerator.psm1") -Force
+        Import-Module (Join-Path $PSScriptRoot "FileGenerator.psm1") -Force -DisableNameChecking
         $success = Write-ChangelogToFile -FilePath $FilePath -CategorizedCommits $mergedCategorizedCommits -ConfigPath $ConfigPath -CommitCount ($NewCommits.Count + $existingHashes.Count) -FilteredCount 0
         
         if ($success -and $filteredNewCommits.Count -gt 0) {
             # Save the last processed commit (first new commit, since they're in newest-first order)
-            Save-LastProcessedCommit -CommitHash $filteredNewCommits[0].Hash
+            $null = Save-LastProcessedCommit -CommitHash $filteredNewCommits[0].Hash
         }
         
         return $success

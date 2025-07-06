@@ -2,6 +2,7 @@
 # Module for parsing git commit lines
 
 function Parse-CommitLine {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     <#
     .SYNOPSIS
     Parses a single commit line from git log --oneline format

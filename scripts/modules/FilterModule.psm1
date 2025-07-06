@@ -258,7 +258,7 @@ function Test-PackageUpdate {
         '\b[Uu]pgrade.*[Pp]ackage',   # "Upgrade package"
         '^[Uu]pdate\s+\w+\s+to\s+v?\d', # "Update package to v1.2.3"
         '\b[Dd]ependency\s+[Uu]pdate', # "Dependency update"
-        '^[Cc]hore.*[Dd]ep\b'         # "chore: update deps"
+        '^[Cc]hore.*[Dd]eps?\b'       # "chore: update deps" or "dep"
     )
     
     foreach ($pattern in $packagePatterns) {
@@ -271,6 +271,7 @@ function Test-PackageUpdate {
 }
 
 function Filter-CommitsWithConfig {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     <#
     .SYNOPSIS
     Filters out non-essential commit messages using configuration
@@ -304,31 +305,31 @@ function Filter-CommitsWithConfig {
             $rules = $config.filteringRules
             
             # Check merge commits
-            if (-not $exclude -and $rules.mergeCommits.enabled -and 
+            if (-not $exclude -and $rules.mergeCommits -and $rules.mergeCommits.enabled -and 
                 (Test-CommitAgainstPatterns -Message $commit.Message -Patterns $rules.mergeCommits.patterns)) {
                 $exclude = $true
             }
             
             # Check dependabot commits
-            if (-not $exclude -and $rules.dependabotCommits.enabled -and 
+            if (-not $exclude -and $rules.dependabotCommits -and $rules.dependabotCommits.enabled -and 
                 (Test-CommitAgainstPatterns -Message $commit.Message -Patterns $rules.dependabotCommits.patterns)) {
                 $exclude = $true
             }
             
             # Check documentation commits
-            if (-not $exclude -and $rules.documentationCommits.enabled -and 
+            if (-not $exclude -and $rules.documentationCommits -and $rules.documentationCommits.enabled -and 
                 (Test-CommitAgainstPatterns -Message $commit.Message -Patterns $rules.documentationCommits.patterns)) {
                 $exclude = $true
             }
             
             # Check formatting commits
-            if (-not $exclude -and $rules.formattingCommits.enabled -and 
+            if (-not $exclude -and $rules.formattingCommits -and $rules.formattingCommits.enabled -and 
                 (Test-CommitAgainstPatterns -Message $commit.Message -Patterns $rules.formattingCommits.patterns)) {
                 $exclude = $true
             }
             
             # Check package updates
-            if (-not $exclude -and $rules.packageUpdates.enabled -and 
+            if (-not $exclude -and $rules.packageUpdates -and $rules.packageUpdates.enabled -and 
                 (Test-CommitAgainstPatterns -Message $commit.Message -Patterns $rules.packageUpdates.patterns)) {
                 $exclude = $true
             }
@@ -361,6 +362,7 @@ function Filter-CommitsWithConfig {
 }
 
 function Filter-Commits {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     <#
     .SYNOPSIS
     Filters out non-essential commit messages
@@ -380,7 +382,7 @@ function Filter-Commits {
     $patterns = @(
         '^Merge\s',                  # Merge commits
         '^Dependabot\s',             # Dependabot commits
-        '^Docs?\s',                  # Documentation changes
+        '^Docs?[:\s]',               # Documentation changes (with colon or space)
         '^Fix formatting\s',         # Formatting changes
         '^Linting\s'                 # Linting
     )
