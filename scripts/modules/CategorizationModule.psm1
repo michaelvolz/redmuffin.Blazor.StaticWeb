@@ -123,6 +123,24 @@ function Get-CommitCategory {
             return $categories.fixed.name
         }
         
+        # Check Documentation
+        if ($categories.documentation -and 
+            (Test-CommitCategory -Message $Message -Patterns $categories.documentation.patterns)) {
+            return $categories.documentation.name
+        }
+        
+        # Check Testing
+        if ($categories.testing -and 
+            (Test-CommitCategory -Message $Message -Patterns $categories.testing.patterns)) {
+            return $categories.testing.name
+        }
+        
+        # Check Reverted
+        if ($categories.reverted -and 
+            (Test-CommitCategory -Message $Message -Patterns $categories.reverted.patterns)) {
+            return $categories.reverted.name
+        }
+        
         # Check Changed (improvements/modifications)
         if ($categories.changed -and 
             (Test-CommitCategory -Message $Message -Patterns $categories.changed.patterns)) {
@@ -133,7 +151,7 @@ function Get-CommitCategory {
         # Fallback to default categorization logic
         
         # Security (highest priority)
-        if ($Message -match '^[Ss]ecurity:' -or 
+        if ($Message -match '^[Ss]ecurity(\\(.*\\))?:' -or 
             $Message -match '^[Ss]ec:' -or 
             $Message -match '\\bsecurity\\s+fix' -or 
             $Message -match '\\bvulnerability') {
@@ -171,14 +189,33 @@ function Get-CommitCategory {
             return "Fixed"
         }
         
+        # Documentation
+        if ($Message -match '^[Dd]ocs?(\\(.*\\))?:') {
+            return "Documentation"
+        }
+        
+        # Testing
+        if ($Message -match '^[Tt]est(\\(.*\\))?:') {
+            return "Testing"
+        }
+        
+        # Reverted
+        if ($Message -match '^[Rr]evert(\\(.*\\))?:') {
+            return "Reverted"
+        }
+        
         # Changed (improvements/modifications)
         if ($Message -match '^[Ii]mprove\\s+' -or 
             $Message -match '^[Ee]nhance\\s+' -or 
             $Message -match '^[Oo]ptimize\\s+' -or 
             $Message -match '^[Rr]efactor(\\(.*\\))?:' -or 
+            $Message -match '^[Pp]erf(\\(.*\\))?:' -or 
+            $Message -match '^[Cc]hore(\\(.*\\))?:' -or 
+            $Message -match '^[Cc]onfig(\\(.*\\))?:' -or 
+            $Message -match '^[Cc]i(\\(.*\\))?:' -or 
+            $Message -match '^[Ss]tyle(\\(.*\\))?:' -or 
             $Message -match '^[Uu]pdate\\s+' -or 
-            $Message -match '^[Mm]odify\\s+' -or 
-            $Message -match '^[Cc]hore(\\(.*\\))?:') {
+            $Message -match '^[Mm]odify\\s+') {
             return "Changed"
         }
     }
@@ -249,7 +286,10 @@ function Get-CategoryOrder {
         "Deprecated",
         "Removed",
         "Fixed",
-        "Security"
+        "Security",
+        "Documentation",
+        "Testing",
+        "Reverted"
     )
     
     # Try to get order from config
@@ -264,6 +304,9 @@ function Get-CategoryOrder {
         if ($categories.removed) { $configOrder += $categories.removed.name }
         if ($categories.fixed) { $configOrder += $categories.fixed.name }
         if ($categories.security) { $configOrder += $categories.security.name }
+        if ($categories.documentation) { $configOrder += $categories.documentation.name }
+        if ($categories.testing) { $configOrder += $categories.testing.name }
+        if ($categories.reverted) { $configOrder += $categories.reverted.name }
         
         return $configOrder
     }

@@ -22,7 +22,7 @@
       ]
     },
     "documentationCommits": {
-      "enabled": true,
+      "enabled": false,
       "patterns": [
         "^[Dd]ocs?\\s",
         "^[Dd]ocumentation\\s",
@@ -115,13 +115,29 @@
     "changed": {
       "name": "Changed",
       "patterns": [
+        "^[Rr]efactor(\\(.*\\))?:",
+        "^[Pp]erf(\\(.*\\))?:",
+        "^[Cc]hore(\\(.*\\))?:",
+        "^[Cc]onfig(\\(.*\\))?:",
+        "^[Cc]i(\\(.*\\))?:",
+        "^[Ss]tyle(\\(.*\\))?:",
         "^[Ii]mprove\\s+",
         "^[Ee]nhance\\s+",
         "^[Oo]ptimize\\s+",
-        "^[Rr]efactor(\\(.*\\))?:",
         "^[Uu]pdate\\s+",
-        "^[Mm]odify\\s+",
-        "^[Cc]hore(\\(.*\\))?:"
+        "^[Mm]odify\\s+"
+      ]
+    },
+    "documentation": {
+      "name": "Documentation",
+      "patterns": [
+        "^[Dd]ocs?(\\(.*\\))?:"
+      ]
+    },
+    "testing": {
+      "name": "Testing",
+      "patterns": [
+        "^[Tt]est(\\(.*\\))?:"
       ]
     },
     "removed": {
@@ -135,7 +151,7 @@
     "security": {
       "name": "Security",
       "patterns": [
-        "^[Ss]ecurity:",
+        "^[Ss]ecurity(\\(.*\\))?:",
         "^[Ss]ec:",
         "\\bsecurity\\s+fix",
         "\\bvulnerability"
@@ -146,6 +162,12 @@
       "patterns": [
         "^[Dd]eprecate\\s+",
         "\\bdeprecated\\b"
+      ]
+    },
+    "reverted": {
+      "name": "Reverted",
+      "patterns": [
+        "^[Rr]evert(\\(.*\\))?:"
       ]
     }
   },
