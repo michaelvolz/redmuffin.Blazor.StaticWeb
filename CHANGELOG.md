@@ -51,7 +51,6 @@ All notable changes to this project will be documented in this file.
 - Add start-dev.ps1 script to project (9e43d02)
 - Add swa-cli.config.json for Azure Static Web Apps (4d9090b)
 - Add favicon.ico and update index.html (2821c69)
-- Add Azure Functions Integration section to README.md (7e6bc32)
 - Add Azure Functions API project and update workflow (55f4c33)
 - Add API Example page and update navigation menu (b04da1e)
 - Add Azure Function and OAuth integration for videos (517ceb0)
@@ -74,7 +73,6 @@ All notable changes to this project will be documented in this file.
 - Add file change check to skip workflows for docs only (8d1c58a)
 - Add scrollbar visibility (e57d8ba)
 - Add badges for SonarQube, last commit, and Dependabot (ed84b0b)
-- Add .NET 9 badge to README.md (1d91603)
 - Add Xunit import to StringExtensionsTests.cs (b21e0f0)
 - Add JSON options for weather data fetching (f31ca49)
 - Add using directives for Blazor components and HTTP (0d0a989)
@@ -106,7 +104,6 @@ All notable changes to this project will be documented in this file.
 - Add workflow badge (6d82a5d)
 - Add dotnet workload restore step (21d4d76)
 - Add dotnet workload restore (1eb0b27)
-- Add comment for update (ada0a50)
 - Add cachebuster (3035880)
 - Add reload link (e358128)
 - Add version.txt (94704b6)
@@ -115,6 +112,10 @@ All notable changes to this project will be documented in this file.
 
 ### 🔄 Changed
 
+- config(changelog): enable documentation commits in filtering (fc8a090)
+- 🔨 chore(prps): remove obsolete PRP template files (7a4dfb6)
+- ♻️ refactor(tasks): reorganize task files into feature-specific directories (f4d018e)
+- 🔨 chore(changelog): update changelog with emoji feature commits (f747c1b)
 - 🔨 chore(changelog): regenerate changelog with emoji support (c4151cb)
 - 🔨 chore(config): remove obsolete PRD prompt files (94b3100)
 - 🔨 chore(changelog): update generated changelog with git integration changes (34bfbd2)
@@ -159,7 +160,6 @@ All notable changes to this project will be documented in this file.
 - Update Content-Security-Policy for font loading (858a847)
 - Enhance mobile styles and update security policies (51c5df0)
 - Update Content-Security-Policy and route exclusions (01f48cd)
-- Update README.md to replace WebCompiler with Excubo.WebCompiler and clarify installation instructions (d3e58c9)
 - Enhance SASS compilation target in project file for improved error handling (03376a5)
 - Update webcompiler.conf for SCSS file paths (7b0a010)
 - Update web compiler configuration and clean stylesheets (6baaf9f)
@@ -199,7 +199,6 @@ All notable changes to this project will be documented in this file.
 - Enhance start-dev.ps1 for frontend and backend launch (bb03d04)
 - Update launchSettings.json for application URL (496d34b)
 - Update SDK declaration in project file (05acef1)
-- Update README.md for Azure Static Web Apps CLI (546f91c)
 - Update API location and configuration files (06a924c)
 - Update Content-Security-Policy in config file (fb1e346)
 - Update Content-Security-Policy for font loading (89a113c)
@@ -231,9 +230,6 @@ All notable changes to this project will be documented in this file.
 - Update copilot instructions and clarify memory updates (9c05868)
 - Enhance user interaction and MCP memory (45c8a1a)
 - Update .mcp.json with new server configurations (708c382)
-- Update README to include Docker Desktop requirements (beec032)
-- Improve README formatting and update links (f561150)
-- Update README.md with build, deployment, and tech details (0b32285)
 - Update prompt for REST API security review (738c927)
 - Update NuGet package versions and clean up references (74f5f87)
 - Enhance Copilot instructions and documentation (f570171)
@@ -246,12 +242,8 @@ All notable changes to this project will be documented in this file.
 - Enhance editing guidelines in copilot-instructions.md (4db9063)
 - Update project documentation for improved organization (c29ae45)
 - Update guidelines for .NET 9 Blazor project (c50a987)
-- Update SonarQube badge URL in README.md (c8af6a1)
-- Enhance README.md with new features and tools (1973dea)
 - Update .editorconfig and add Blazor static web support (07ec124)
 - Update environment variable paths for client and API (0a44d29)
-- Update README.md (65815c2)
-- Update README.md with new badges and technology stack (4d2cc6d)
 - Update workflow configuration for new project structure (d6e73dc)
 - Update deployment configuration and secrets (cfe29b9)
 - Update Azure Static Web Apps workflow configuration (e171649)
@@ -259,7 +251,6 @@ All notable changes to this project will be documented in this file.
 - Update stylesheets in index.html (2561579)
 - Enhance CSS styling for forms, buttons, and layout (653797a)
 - Update Markdig package version to 0.41.2 (e7d5ef5)
-- Update README.md for improved clarity and presentation (a22f24d)
 - Update foundation-sites and enhance SCSS styles (314b082)
 - Update Copilot configuration and project file structure (3345738)
 - Update CodeQL workflow (170ef88)
@@ -274,7 +265,6 @@ All notable changes to this project will be documented in this file.
 - Update packages (94030c3)
 - Update global.json to 8.0.* (dc492eb)
 - Update counter button styles (f4307c7)
-- Update README.md (00cb600)
 - Update sonarcloud.yml (d709340)
 - Update sonarcloud.yml (61d4b07)
 - Optimize css loading (ce5032a)
@@ -285,7 +275,6 @@ All notable changes to this project will be documented in this file.
 - Update workflow (3ab53cd)
 - Update workflow (44cf3d6)
 - Modify webassembly settings for release, debug -> deploy (22e0f76)
-- Update README.md (a821614)
 - Update index.html (b632641)
 - Update cache headers (855b3fe)
 - Update routes (c44cf4b)
@@ -323,7 +312,6 @@ All notable changes to this project will be documented in this file.
 - Remove API_LOCATION specification in workflow (9186b21)
 - Remove hardcoded client secret for security (0a51345)
 - Remove brands.css file and associated styles (af91046)
-- Remove SonarQube badge from README.md (1f7c21d)
 - Remove static assets compilation from build process (f5e6d15)
 - Remove unused assets (1134618)
 - Remove GitHub server configuration from .mcp.json (b198cfa)
@@ -378,6 +366,6 @@ All notable changes to this project will be documented in this file.
 - 🧪 test(scripts): fix changelog generation tests for Pester 5.x compatibility (4e28d0b)
 ---
 
-*🤖 This changelog was automatically generated from 703 commits.*
-*347 commits were filtered out (merges, dependencies, formatting, etc.).*
+*🤖 This changelog was automatically generated from 707 commits.*
+*363 commits were filtered out (merges, dependencies, formatting, etc.).*
 
