@@ -62,7 +62,7 @@ All notable changes to this project will be documented in this file.
 - Add memory command to MCP configuration and update copilot instructions (f9fd498)
 - Add Font Awesome integration and improve accessibility (641a823)
 - Add "time" command configuration to MCP JSON file (d651773)
-- Add \`.mcp.json\` to project for MCP support (e6deee0)
+- Add \\`.mcp.json\\` to project for MCP support (e6deee0)
 - Add Copilot instructions and prompts examples for future use (a4cb2eb)
 - Add support for new Markdown documentation files (63ba81e)
 - Add check for documentation-only changes in CodeQL workflow (74c5801)
@@ -81,7 +81,7 @@ All notable changes to this project will be documented in this file.
 - Add media query debugger stylesheet to index.html (bf64bbf)
 - Add UI Styling guidelines with Zurb Foundation (14d9537)
 - Add professional standards for Blazor projects (0aea137)
-- Add GitHub Copilot configuration file \`copilot.yml\` (547e5ba)
+- Add GitHub Copilot configuration file \\`copilot.yml\\` (547e5ba)
 - Add C# 12/13 features and update file organization (db8da18)
 - Add copilot configuration and a simple media query debugger css (bebea67)
 - Add full trimming to project file (7d3e370)
@@ -111,6 +111,12 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- chore(config): add PowerShell test artifacts to .gitignore (bc9620b)
+- chore(scripts): update git commits input file (71e333b)
+- chore(changelog): update generated changelog and state tracking (a11a999)
+- chore(config): add PowerShell test artifacts to .gitignore (bc9620b)
+- chore(scripts): update git commits input file (71e333b)
+- chore(changelog): update generated changelog and state tracking (a11a999)
 - chore(config): add changelog backup files to .gitignore (2f431e2)
 - refactor(blazor): replace console logging with ILogger in Videos page (07ee49e)
 - style(components): add hover effect to PageLoadSpeed rating badge (a649c10)
@@ -346,7 +352,7 @@ All notable changes to this project will be documented in this file.
 - Fix Unexpected missing generic font family (ebbba19)
 - Fix Content-Security-Policy duplication in config (9723f8a)
 - FIx font next try (6daee02)
-- Fix Font Awesome font \`Unexpected missing generic font family\` (ae9ba4a)
+- Fix Font Awesome font \\`Unexpected missing generic font family\\` (ae9ba4a)
 - Fix git diff command error handling in workflow (6aa7f2e)
 - Fix path (f5c0f7c)
 - Fix workflow (2f6ce1b)
@@ -359,8 +365,12 @@ All notable changes to this project will be documented in this file.
 - Fix 2 (254d6c1)
 - Fix try (ea4cec7)
 - Fix update (1ddd91e)
+
+### Testing
+
+- test(scripts): fix changelog generation tests for Pester 5.x compatibility (4e28d0b)
+- test(scripts): fix changelog generation tests for Pester 5.x compatibility (4e28d0b)
 ---
 
-*This changelog was automatically generated from 686 commits.*
-*344 commits were filtered out (merges, dependencies, formatting, etc.).*
+*This changelog was automatically generated from 301 commits.*
 
