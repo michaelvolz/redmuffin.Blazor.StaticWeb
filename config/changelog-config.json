@@ -22,7 +22,7 @@
       ]
     },
     "documentationCommits": {
-      "enabled": false,
+      "enabled": true,
       "patterns": [
         "^[Dd]ocs?\\s",
         "^[Dd]ocumentation\\s",
