@@ -1,30 +1,31 @@
-# Changelog
+# 📋 Changelog
 
 All notable changes to this project will be documented in this file.
 
 
-### Added
+### ✨ Added
 
-- feat(scripts): update changelog script to align with new commit standards (254337f)
-- feat(components): improve PageLoadSpeed widget UI/UX (b121acb)
-- feat(prp): add multi-agent system template with email draft capabilities (516308e)
-- feat(prompts): add Execute and Generate PRP templates for feature implementation (5779a61)
-- feat(changelog): add product requirements document for changelog generation (016ebd1)
+- 🚀 feat(scripts): integrate git log directly into changelog generator (b49e607)
+- 🚀 feat(scripts): update changelog script to align with new commit standards (254337f)
+- 🚀 feat(components): improve PageLoadSpeed widget UI/UX (b121acb)
+- 🚀 feat(prp): add multi-agent system template with email draft capabilities (516308e)
+- 🚀 feat(prompts): add Execute and Generate PRP templates for feature implementation (5779a61)
+- 🚀 feat(changelog): add product requirements document for changelog generation (016ebd1)
 - Implement UpdateModule for changelog management and add comprehensive unit tests (8b83399)
-- feat(blazor): restructure project startup in Start.ps1 (f589c57)
-- feat(blazor): enhance PageLoadSpeed widget functionality (1faac7f)
-- feat(ui): add shimmer loading effect for video thumbnails (36f9d4f)
-- feat(blazor): update watch command and add SASS compilation (fd65dd6)
-- feat(blazor): add warm-up service for Azure Functions (2464db6)
-- feat(ui): add new performance metrics to PageLoadSpeed widget (ecb3d03)
-- feat(ui): enhance PageLoadSpeed widget and metrics (b7fec96)
+- 🚀 feat(blazor): restructure project startup in Start.ps1 (f589c57)
+- 🚀 feat(blazor): enhance PageLoadSpeed widget functionality (1faac7f)
+- 🚀 feat(ui): add shimmer loading effect for video thumbnails (36f9d4f)
+- 🚀 feat(blazor): update watch command and add SASS compilation (fd65dd6)
+- 🚀 feat(blazor): add warm-up service for Azure Functions (2464db6)
+- 🚀 feat(ui): add new performance metrics to PageLoadSpeed widget (ecb3d03)
+- 🚀 feat(ui): enhance PageLoadSpeed widget and metrics (b7fec96)
 - Add PageLoadSpeed component for load timing metrics (e763b6d)
-- feat(tests): implement comprehensive test suite for ExchangeRaindropCodeFunction (91f7603)
-- feat(tests): add ExchangeRaindropCodeFunction tests and request handler (7c5fe9b)
-- feat(prompts): add detailed prompts for task list and PRD generation (10265c9)
-- feat(prompts): add metadata for task list and PRD generation prompts (15d8839)
-- feat(prompts): add detailed prompts for PRD generation and task list creation (5967006)
-- feat(gemini): add initial settings configuration for context7 MCP (e9e8ec6)
+- 🚀 feat(tests): implement comprehensive test suite for ExchangeRaindropCodeFunction (91f7603)
+- 🚀 feat(tests): add ExchangeRaindropCodeFunction tests and request handler (7c5fe9b)
+- 🚀 feat(prompts): add detailed prompts for task list and PRD generation (10265c9)
+- 🚀 feat(prompts): add metadata for task list and PRD generation prompts (15d8839)
+- 🚀 feat(prompts): add detailed prompts for PRD generation and task list creation (5967006)
+- 🚀 feat(gemini): add initial settings configuration for context7 MCP (e9e8ec6)
 - Add Azure Functions programming best practices for GitHub Copilot (4170959)
 - Add ConfigureAwait(false) to async calls for performance (c3e87e4)
 - Add coding standards and best practices for Blazor, C#, PowerShell, and SCSS (3999c98)
@@ -109,38 +110,37 @@ All notable changes to this project will be documented in this file.
 - Add logentry (07af68c)
 - New Errorhandler (7205a73)
 
-### Changed
+### 🔄 Changed
 
-- chore(config): add PowerShell test artifacts to .gitignore (bc9620b)
-- chore(scripts): update git commits input file (71e333b)
-- chore(changelog): update generated changelog and state tracking (a11a999)
-- chore(config): add PowerShell test artifacts to .gitignore (bc9620b)
-- chore(scripts): update git commits input file (71e333b)
-- chore(changelog): update generated changelog and state tracking (a11a999)
-- chore(config): add changelog backup files to .gitignore (2f431e2)
-- refactor(blazor): replace console logging with ILogger in Videos page (07ee49e)
-- style(components): add hover effect to PageLoadSpeed rating badge (a649c10)
-- style(components): refine PageLoadSpeed widget hover effects (85970c3)
-- chore(docs): update filename formats for PRD and task list (081e675)
-- chore(instructions): rename prd files for better clarity (188b536)
-- perf(services): optimize PrefixedLogger for better performance (4de6189)
-- chore(gemini): remove obsolete settings.json file The settings.json file has been deleted as it is no longer needed. This helps to clean up the project and reduce clutter in the repository. (9b5bc68)
-- chore(blazor): update package references for configurations (bd85fa2)
-- chore(blazor): update project paths and configurations (f82117c)
-- chore(blazor): update project file and package references (a9a3d29)
-- chore(install): remove error handling from installation scripts (098c04a)
-- chore(blazor): update solution and prompt files (9afa94b)
-- chore(blazor): remove SCSS watch and WebCompiler target (ed2870c)
-- chore(launchSettings): remove no-hot-reload from watch args (7416693)
-- chore(webcompiler): remove SCSS paths and config settings (685e882)
-- chore(tools): update library manager and web compiler settings (583cab9)
-- chore(launchSettings): simplify watch command arguments (5ebf022)
-- chore(blazor): update static asset compilation targets (be20039)
-- chore(docs): remove obsolete documentation files for project status and test verification analysis (eee582a)
-- chore(mcp): simplify GitHub server Docker configuration (a26587d)
+- 🔨 chore(config): remove obsolete PRD prompt files (94b3100)
+- 🔨 chore(changelog): update generated changelog with git integration changes (34bfbd2)
+- 🔨 chore(config): add PowerShell test artifacts to .gitignore (bc9620b)
+- 🔨 chore(scripts): update git commits input file (71e333b)
+- 🔨 chore(changelog): update generated changelog and state tracking (a11a999)
+- 🔨 chore(config): add changelog backup files to .gitignore (2f431e2)
+- ♻️ refactor(blazor): replace console logging with ILogger in Videos page (07ee49e)
+- 💄 style(components): add hover effect to PageLoadSpeed rating badge (a649c10)
+- 💄 style(components): refine PageLoadSpeed widget hover effects (85970c3)
+- 🔨 chore(docs): update filename formats for PRD and task list (081e675)
+- 🔨 chore(instructions): rename prd files for better clarity (188b536)
+- ⚡ perf(services): optimize PrefixedLogger for better performance (4de6189)
+- 🔨 chore(gemini): remove obsolete settings.json file The settings.json file has been deleted as it is no longer needed. This helps to clean up the project and reduce clutter in the repository. (9b5bc68)
+- 🔨 chore(blazor): update package references for configurations (bd85fa2)
+- 🔨 chore(blazor): update project paths and configurations (f82117c)
+- 🔨 chore(blazor): update project file and package references (a9a3d29)
+- 🔨 chore(install): remove error handling from installation scripts (098c04a)
+- 🔨 chore(blazor): update solution and prompt files (9afa94b)
+- 🔨 chore(blazor): remove SCSS watch and WebCompiler target (ed2870c)
+- 🔨 chore(launchSettings): remove no-hot-reload from watch args (7416693)
+- 🔨 chore(webcompiler): remove SCSS paths and config settings (685e882)
+- 🔨 chore(tools): update library manager and web compiler settings (583cab9)
+- 🔨 chore(launchSettings): simplify watch command arguments (5ebf022)
+- 🔨 chore(blazor): update static asset compilation targets (be20039)
+- 🔨 chore(docs): remove obsolete documentation files for project status and test verification analysis (eee582a)
+- 🔨 chore(mcp): simplify GitHub server Docker configuration (a26587d)
 - Update OAuth flow and add PageLoadSpeed component (2664de1)
-- refactor(blazor): resolve final MA0051 warning with method extraction (bfcd9d5)
-- refactor(api): improve logging performance and code organization (eccedae)
+- ♻️ refactor(blazor): resolve final MA0051 warning with method extraction (bfcd9d5)
+- ♻️ refactor(api): improve logging performance and code organization (eccedae)
 - Update project references and README for StaticWeb (87ceba1)
 - Update solution file to replace start-dev.ps1 with Start.ps1 in Solution items (3fb9c3e)
 - Update script for project paths and asynchronous start (88937d2)
@@ -187,7 +187,7 @@ All notable changes to this project will be documented in this file.
 - Update project file for tests and remove coverlet (80a64fb)
 - Update Redirect.razor.cs to ensure trimming compatibility (2ec9da5)
 - Update local.settings.json_copy for local development (aa5b694)
-- Refactor: Remove HelloWorld class and related usings (b2ed377)
+- ♻️ Refactor: Remove HelloWorld class and related usings (b2ed377)
 - Update package versions and clean project files (d2342da)
 - Enhance settings management and API functionality (a7de047)
 - Update Raindrop.io client ID in login method (cb79e00)
@@ -238,7 +238,7 @@ All notable changes to this project will be documented in this file.
 - Enhance CI workflows for Azure and CodeQL checks (4bcc324)
 - Improve git diff base reference handling (8eb3f40)
 - Optimize directory layout description (72842be)
-- chore: update documentation and coding standards (1cb52de)
+- 🔨 chore: update documentation and coding standards (1cb52de)
 - Enhance editing guidelines in copilot-instructions.md (4db9063)
 - Update project documentation for improved organization (c29ae45)
 - Update guidelines for .NET 9 Blazor project (c50a987)
@@ -301,13 +301,13 @@ All notable changes to this project will be documented in this file.
 - Update for build (b0a1a26)
 - Enhance errorhandling (14b4740)
 - Update route and cache settings (51284d3)
-- ci: add Azure Static Web Apps workflow file on-behalf-of: @Azure opensource@microsoft.com (d4910c0)
+- 👷 ci: add Azure Static Web Apps workflow file on-behalf-of: @Azure opensource@microsoft.com (d4910c0)
 
-### Deprecated
+### 🚨 Deprecated
 
-- fix(ui): resolve PageSpeed widget styling and deprecated API issues (dc4e2b3)
+- 🔧 fix(ui): resolve PageSpeed widget styling and deprecated API issues (dc4e2b3)
 
-### Removed
+### 🗑️ Removed
 
 - Remove RaindropJsonSerializerContext class and imports (95c68f7)
 - Remove RaindropItem and related classes (bc6292f)
@@ -342,12 +342,13 @@ All notable changes to this project will be documented in this file.
 - Remove blazor cache-buster (c15a0e1)
 - Remove trimming fix 4 (9af2031)
 
-### Fixed
+### 🐛 Fixed
 
+- 🔧 fix(changelog): remove unnecessary escape sequences from CHANGELOG.md (3bed8b6)
 - Fix OAuth redirect handling for Raindrop.io API (b6c15dd)
-- fix(api): change Raindrop OAuth to JSON format (ffa2632)
-- fix(blazor,api): resolve 90% of compilation warnings (be20736)
-- fix(ui): update link to correct domain (655af17)
+- 🔧 fix(api): change Raindrop OAuth to JSON format (ffa2632)
+- 🔧 fix(blazor,api): resolve 90% of compilation warnings (be20736)
+- 🔧 fix(ui): update link to correct domain (655af17)
 - Fix typos and improve clarity in Blazor coding standards documentation (46125e9)
 - Fix Unexpected missing generic font family (ebbba19)
 - Fix Content-Security-Policy duplication in config (9723f8a)
@@ -366,11 +367,12 @@ All notable changes to this project will be documented in this file.
 - Fix try (ea4cec7)
 - Fix update (1ddd91e)
 
-### Testing
+### 🧪 Testing
 
-- test(scripts): fix changelog generation tests for Pester 5.x compatibility (4e28d0b)
-- test(scripts): fix changelog generation tests for Pester 5.x compatibility (4e28d0b)
+- 🧪 test(scripts): add comprehensive tests for git integration (e2afea6)
+- 🧪 test(scripts): fix changelog generation tests for Pester 5.x compatibility (4e28d0b)
 ---
 
-*This changelog was automatically generated from 301 commits.*
+*🤖 This changelog was automatically generated from 697 commits.*
+*346 commits were filtered out (merges, dependencies, formatting, etc.).*
 
