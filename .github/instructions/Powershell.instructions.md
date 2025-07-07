@@ -1,5 +1,5 @@
 ---
-applyTo: "**/*.{ps1,psm1}"
+applyTo: "**/*.{ps1,psm1,psd1}"
 ---
 
 # Project coding standards
