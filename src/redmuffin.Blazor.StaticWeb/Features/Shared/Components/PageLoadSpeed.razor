@@ -3,9 +3,9 @@
 
 @if (!IsLocalhost)
 {
-    <div class="page-speed-widget @(isHidden ? "hidden" : "") @(isCollapsed ? "collapsed" : "")"
+    <div class="page-speed-widget @(_isHidden ? "hidden" : "") @(_isCollapsed ? "collapsed" : "")"
          @onclick="ToggleVisibility"
-         @ref="speedElement">
+         @ref="_speedElement">
 
         <div class="widget-header">
             <div class="widget-title">
@@ -13,14 +13,14 @@
                 <span>Page Performance</span>
             </div>
             <div class="widget-controls">
-                <span class="widget-time">@currentTime</span>
+                <span class="widget-time">@_currentTime</span>
                 <button type="button" class="toggle-button" @onclick:stopPropagation="true" @onclick="ToggleCollapsed">
-                    @(isCollapsed ? "+" : "−")
+                    @(_isCollapsed ? "+" : "−")
                 </button>
             </div>
         </div>
 
-        @if (!isCollapsed)
+        @if (!_isCollapsed)
         {
             <div class="widget-content">
                 <!-- Core Metrics Grid -->
@@ -33,42 +33,42 @@
                         </div>
                         <div class="metric-item">
                             <span class="metric-label">TTFB:</span>
-                            <span class="metric-value timing">@Math.Round(timeToFirstByte, 1)</span>
+                            <span class="metric-value timing">@Math.Round(_timeToFirstByte, 1)</span>
                         </div>
                         <div class="metric-progress">
-                            <div class="metric-progress-bar" style="width: @(GetProgressWidth(timeToFirstByte, 500))%; background: #ffd700;"></div>
+                            <div class="metric-progress-bar" style="width: @(GetProgressWidth(_timeToFirstByte, 500))%; background: #ffd700;"></div>
                         </div>
 
                         <div class="metric-item">
                             <span class="metric-label">FCP:</span>
-                            <span class="metric-value timing">@Math.Round(firstContentfulPaint, 1)</span>
+                            <span class="metric-value timing">@Math.Round(_firstContentfulPaint, 1)</span>
                         </div>
                         <div class="metric-progress">
-                            <div class="metric-progress-bar" style="width: @(GetProgressWidth(firstContentfulPaint, 1800))%; background: #ffd700;"></div>
+                            <div class="metric-progress-bar" style="width: @(GetProgressWidth(_firstContentfulPaint, 1800))%; background: #ffd700;"></div>
                         </div>
 
                         <div class="metric-item">
                             <span class="metric-label">DOM:</span>
-                            <span class="metric-value timing">@Math.Round(domContentLoaded, 1)</span>
+                            <span class="metric-value timing">@Math.Round(_domContentLoaded, 1)</span>
                         </div>
                         <div class="metric-progress">
-                            <div class="metric-progress-bar" style="width: @(GetProgressWidth(domContentLoaded, 2000))%; background: #ffd700;"></div>
+                            <div class="metric-progress-bar" style="width: @(GetProgressWidth(_domContentLoaded, 2000))%; background: #ffd700;"></div>
                         </div>
 
                         <div class="metric-item">
                             <span class="metric-label">LCP:</span>
-                            <span class="metric-value timing">@(largestContentfulPaint > 0 ? Math.Round(largestContentfulPaint, 1) : 0)</span>
+                            <span class="metric-value timing">@(_largestContentfulPaint > 0 ? Math.Round(_largestContentfulPaint, 1) : 0)</span>
                         </div>
                         <div class="metric-progress">
-                            <div class="metric-progress-bar" style="width: @(GetProgressWidth(largestContentfulPaint, 2500))%; background: @GetTimingColor(largestContentfulPaint)"></div>
+                            <div class="metric-progress-bar" style="width: @(GetProgressWidth(_largestContentfulPaint, 2500))%; background: @GetTimingColor(_largestContentfulPaint)"></div>
                         </div>
 
                         <div class="metric-item">
                             <span class="metric-label">Load:</span>
-                            <span class="metric-value timing">@Math.Round(loadComplete, 1)</span>
+                            <span class="metric-value timing">@Math.Round(_loadComplete, 1)</span>
                         </div>
                         <div class="metric-progress">
-                            <div class="metric-progress-bar" style="width: @(GetProgressWidth(loadComplete, 3000))%; background: @GetTimingColor(loadComplete)"></div>
+                            <div class="metric-progress-bar" style="width: @(GetProgressWidth(_loadComplete, 3000))%; background: @GetTimingColor(_loadComplete)"></div>
                         </div>
                     </div>
 
@@ -80,52 +80,52 @@
                         </div>
                         <div class="metric-item">
                             <span class="metric-label">Transfer:</span>
-                            <span class="metric-value size">@transferSizeFormatted</span>
+                            <span class="metric-value size">@_transferSizeFormatted</span>
                         </div>
-                        @if (transferSize > 0)
+                        @if (_transferSize > 0)
                         {
                             <div class="metric-progress">
-                                <div class="metric-progress-bar" style="width: @(GetDataSizeProgress(transferSize))%; background: #00bfff;"></div>
+                                <div class="metric-progress-bar" style="width: @(GetDataSizeProgress(_transferSize))%; background: #00bfff;"></div>
                             </div>
                         }
 
                         <div class="metric-item">
                             <span class="metric-label">Encoded:</span>
-                            <span class="metric-value size">@encodedSizeFormatted</span>
+                            <span class="metric-value size">@_encodedSizeFormatted</span>
                         </div>
-                        @if (encodedSize > 0)
+                        @if (_encodedSize > 0)
                         {
                             <div class="metric-progress">
-                                <div class="metric-progress-bar" style="width: @(GetDataSizeProgress(encodedSize))%; background: #00bfff;"></div>
+                                <div class="metric-progress-bar" style="width: @(GetDataSizeProgress(_encodedSize))%; background: #00bfff;"></div>
                             </div>
                         }
 
                         <div class="metric-item">
                             <span class="metric-label">Decoded:</span>
-                            <span class="metric-value size">@decodedSizeFormatted</span>
+                            <span class="metric-value size">@_decodedSizeFormatted</span>
                         </div>
-                        @if (decodedSize > 0)
+                        @if (_decodedSize > 0)
                         {
                             <div class="metric-progress">
-                                <div class="metric-progress-bar" style="width: @(GetDataSizeProgress(decodedSize))%; background: #00bfff;"></div>
+                                <div class="metric-progress-bar" style="width: @(GetDataSizeProgress(_decodedSize))%; background: #00bfff;"></div>
                             </div>
                         }
 
-                        @if (compressionRatio > 0)
+                        @if (_compressionRatio > 0)
                         {
                             <div class="metric-item">
                                 <span class="metric-label">Compression:</span>
-                                <span class="metric-value ratio">@compressionRatio%</span>
+                                <span class="metric-value ratio">@_compressionRatio%</span>
                             </div>
                             <div class="metric-progress">
-                                <div class="metric-progress-bar" style="width: @compressionRatio%; background: #ff6b9d;"></div>
+                                <div class="metric-progress-bar" style="width: @_compressionRatio%; background: #ff6b9d;"></div>
                             </div>
                         }
                     </div>
                 </div>
 
                 <!-- Performance Breakdown -->
-                @if (serverResponseTime > 0 || domProcessingTime > 0 || resourceLoadTime > 0)
+                @if (_serverResponseTime > 0 || _domProcessingTime > 0 || _resourceLoadTime > 0)
                 {
                     <div class="performance-breakdown">
                         <div class="metric-group-title">
@@ -133,33 +133,33 @@
                             <span>Performance Breakdown</span>
                         </div>
                         <div class="breakdown-grid">
-                            @if (serverResponseTime > 0)
+                            @if (_serverResponseTime > 0)
                             {
                                 <div class="breakdown-item">
                                     <div class="metric-label">Server Response</div>
-                                    <div class="metric-value breakdown">@Math.Round(serverResponseTime, 1)ms</div>
+                                    <div class="metric-value breakdown">@Math.Round(_serverResponseTime, 1)ms</div>
                                     <div class="metric-progress">
-                                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(serverResponseTime, 1000))%; background: #ff8c42;"></div>
+                                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(_serverResponseTime, 1000))%; background: #ff8c42;"></div>
                                     </div>
                                 </div>
                             }
-                            @if (domProcessingTime > 0)
+                            @if (_domProcessingTime > 0)
                             {
                                 <div class="breakdown-item">
                                     <div class="metric-label">DOM Processing</div>
-                                    <div class="metric-value breakdown">@Math.Round(domProcessingTime, 1)ms</div>
+                                    <div class="metric-value breakdown">@Math.Round(_domProcessingTime, 1)ms</div>
                                     <div class="metric-progress">
-                                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(domProcessingTime, 1000))%; background: #ff8c42;"></div>
+                                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(_domProcessingTime, 1000))%; background: #ff8c42;"></div>
                                     </div>
                                 </div>
                             }
-                            @if (resourceLoadTime > 0)
+                            @if (_resourceLoadTime > 0)
                             {
                                 <div class="breakdown-item">
                                     <div class="metric-label">Resource Load</div>
-                                    <div class="metric-value breakdown">@Math.Round(resourceLoadTime, 1)ms</div>
+                                    <div class="metric-value breakdown">@Math.Round(_resourceLoadTime, 1)ms</div>
                                     <div class="metric-progress">
-                                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(resourceLoadTime, 1000))%; background: #ff8c42;"></div>
+                                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(_resourceLoadTime, 1000))%; background: #ff8c42;"></div>
                                     </div>
                                 </div>
                             }
@@ -194,31 +194,31 @@
 }
 
 @code {
-    private bool isHidden = false;
-    private bool isCollapsed = false;
-    private ElementReference speedElement;
-    private string currentTime = "";
+    private bool _isHidden = false;
+    private bool _isCollapsed = false;
+    private ElementReference _speedElement;
+    private string _currentTime = "";
 
     // Timing metrics
-    private double timeToFirstByte = 0;
-    private double domContentLoaded = 0;
-    private double loadComplete = 0;
-    private double firstContentfulPaint = 0;
-    private double largestContentfulPaint = 0;
+    private double _timeToFirstByte = 0;
+    private double _domContentLoaded = 0;
+    private double _loadComplete = 0;
+    private double _firstContentfulPaint = 0;
+    private double _largestContentfulPaint = 0;
 
     // Size metrics
-    private double transferSize = 0;
-    private double encodedSize = 0;
-    private double decodedSize = 0;
-    private string transferSizeFormatted = "0 B";
-    private string encodedSizeFormatted = "0 B";
-    private string decodedSizeFormatted = "0 B";
+    private double _transferSize = 0;
+    private double _encodedSize = 0;
+    private double _decodedSize = 0;
+    private string _transferSizeFormatted = "0 B";
+    private string _encodedSizeFormatted = "0 B";
+    private string _decodedSizeFormatted = "0 B";
 
     // Calculated metrics
-    private double serverResponseTime = 0;
-    private double domProcessingTime = 0;
-    private double resourceLoadTime = 0;
-    private double compressionRatio = 0;
+    private double _serverResponseTime = 0;
+    private double _domProcessingTime = 0;
+    private double _resourceLoadTime = 0;
+    private double _compressionRatio = 0;
 
     private bool IsLocalhost
     {
@@ -254,26 +254,26 @@
                 var metrics = await JS.InvokeAsync<PageLoadMetrics>("getPageLoadMetrics");
                 if (metrics != null)
                 {
-                    timeToFirstByte = metrics.TimeToFirstByte;
-                    domContentLoaded = metrics.DomContentLoaded;
-                    loadComplete = metrics.LoadComplete;
-                    firstContentfulPaint = metrics.FirstContentfulPaint;
-                    largestContentfulPaint = metrics.LargestContentfulPaint;
+                    _timeToFirstByte = metrics.TimeToFirstByte;
+                    _domContentLoaded = metrics.DomContentLoaded;
+                    _loadComplete = metrics.LoadComplete;
+                    _firstContentfulPaint = metrics.FirstContentfulPaint;
+                    _largestContentfulPaint = metrics.LargestContentfulPaint;
 
-                    transferSize = metrics.TransferSize;
-                    encodedSize = metrics.EncodedSize;
-                    decodedSize = metrics.DecodedSize;
-                    transferSizeFormatted = metrics.TransferSizeFormatted;
-                    encodedSizeFormatted = metrics.EncodedSizeFormatted;
-                    decodedSizeFormatted = metrics.DecodedSizeFormatted;
+                    _transferSize = metrics.TransferSize;
+                    _encodedSize = metrics.EncodedSize;
+                    _decodedSize = metrics.DecodedSize;
+                    _transferSizeFormatted = metrics.TransferSizeFormatted;
+                    _encodedSizeFormatted = metrics.EncodedSizeFormatted;
+                    _decodedSizeFormatted = metrics.DecodedSizeFormatted;
 
-                    serverResponseTime = metrics.ServerResponseTime;
-                    domProcessingTime = metrics.DomProcessingTime;
-                    resourceLoadTime = metrics.ResourceLoadTime;
+                    _serverResponseTime = metrics.ServerResponseTime;
+                    _domProcessingTime = metrics.DomProcessingTime;
+                    _resourceLoadTime = metrics.ResourceLoadTime;
 
-                    if (decodedSize > 0 && encodedSize > 0)
+                    if (_decodedSize > 0 && _encodedSize > 0)
                     {
-                        compressionRatio = Math.Round(((decodedSize - encodedSize) / decodedSize) * 100, 1);
+                        _compressionRatio = Math.Round(((_decodedSize - _encodedSize) / _decodedSize) * 100, 1);
                     }
                 }
                 else
@@ -303,9 +303,9 @@
                 var timings = await JS.InvokeAsync<double[]>("getPageLoadTimes");
                 if (timings != null && timings.Length >= 2)
                 {
-                    loadComplete = Math.Round(timings[0], 1);
-                    domContentLoaded = Math.Round(timings[1], 1);
-                    timeToFirstByte = Math.Round(domContentLoaded * 0.3, 1);
+                    _loadComplete = Math.Round(timings[0], 1);
+                    _domContentLoaded = Math.Round(timings[1], 1);
+                    _timeToFirstByte = Math.Round(_domContentLoaded * 0.3, 1);
                 }
                 else
                 {
@@ -328,55 +328,55 @@
         try
         {
             var now = await JS.InvokeAsync<double>("performance.now");
-            loadComplete = Math.Round(now, 1);
-            domContentLoaded = Math.Round(now * 0.8, 1);
-            timeToFirstByte = Math.Round(now * 0.3, 1);
-            firstContentfulPaint = Math.Round(now * 0.6, 1);
+            _loadComplete = Math.Round(now, 1);
+            _domContentLoaded = Math.Round(now * 0.8, 1);
+            _timeToFirstByte = Math.Round(now * 0.3, 1);
+            _firstContentfulPaint = Math.Round(now * 0.6, 1);
 
-            transferSizeFormatted = "Unknown";
-            encodedSizeFormatted = "Unknown";
-            decodedSizeFormatted = "Unknown";
+            _transferSizeFormatted = "Unknown";
+            _encodedSizeFormatted = "Unknown";
+            _decodedSizeFormatted = "Unknown";
         }
         catch
         {
             var estimatedTime = DateTime.Now.Millisecond + 100;
-            loadComplete = estimatedTime;
-            domContentLoaded = estimatedTime * 0.8;
-            timeToFirstByte = estimatedTime * 0.3;
-            firstContentfulPaint = estimatedTime * 0.6;
+            _loadComplete = estimatedTime;
+            _domContentLoaded = estimatedTime * 0.8;
+            _timeToFirstByte = estimatedTime * 0.3;
+            _firstContentfulPaint = estimatedTime * 0.6;
 
-            transferSizeFormatted = "Unknown";
-            encodedSizeFormatted = "Unknown";
-            decodedSizeFormatted = "Unknown";
+            _transferSizeFormatted = "Unknown";
+            _encodedSizeFormatted = "Unknown";
+            _decodedSizeFormatted = "Unknown";
         }
     }
 
     private void ToggleVisibility()
     {
-        isHidden = !isHidden;
+        _isHidden = !_isHidden;
     }
 
     private void ToggleCollapsed()
     {
-        isCollapsed = !isCollapsed;
+        _isCollapsed = !_isCollapsed;
     }
 
     private async Task RefreshMetrics()
     {
         await UpdateMetricsAsync();
-        await UpdateTimestamp();
+        UpdateTimestamp();
         StateHasChanged();
     }
 
-    private async Task UpdateTimestamp()
+    private void UpdateTimestamp()
     {
-        currentTime = DateTime.Now.ToString("HH:mm:ss");
+        _currentTime = DateTime.Now.ToString("HH:mm:ss");
         StateHasChanged();
     }
 
     private string GetPerformanceRating()
     {
-        var primaryMetric = largestContentfulPaint > 0 ? largestContentfulPaint : loadComplete;
+        var primaryMetric = _largestContentfulPaint > 0 ? _largestContentfulPaint : _loadComplete;
 
         return primaryMetric switch
         {
@@ -389,7 +389,7 @@
 
     private string GetPerformanceRatingClass()
     {
-        var primaryMetric = largestContentfulPaint > 0 ? largestContentfulPaint : loadComplete;
+        var primaryMetric = _largestContentfulPaint > 0 ? _largestContentfulPaint : _loadComplete;
 
         return primaryMetric switch
         {
@@ -402,7 +402,7 @@
 
     private string GetPerformanceRatingIcon()
     {
-        var primaryMetric = largestContentfulPaint > 0 ? largestContentfulPaint : loadComplete;
+        var primaryMetric = _largestContentfulPaint > 0 ? _largestContentfulPaint : _loadComplete;
 
         return primaryMetric switch
         {
@@ -415,7 +415,7 @@
 
     private int GetPerformanceScore()
     {
-        var primaryMetric = largestContentfulPaint > 0 ? largestContentfulPaint : loadComplete;
+        var primaryMetric = _largestContentfulPaint > 0 ? _largestContentfulPaint : _loadComplete;
 
         return primaryMetric switch
         {
