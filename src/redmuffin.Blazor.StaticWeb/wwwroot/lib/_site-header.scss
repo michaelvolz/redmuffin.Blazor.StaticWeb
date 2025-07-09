@@ -1,0 +1,143 @@
+/* Site Header Styles - Layout for logo and navigation */
+@import 'foundation-sites/scss/util/util';
+@import 'foundation-sites/scss/util/breakpoint';
+
+.site-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    padding: 8px; // Few pixels spacing from browser border
+    margin-bottom: 0; // Remove default margin
+    
+    // Logo styling adjustments for different breakpoints
+    .logo-container {
+        margin-bottom: 4px; // Minimal spacing between logo and nav
+        
+        .logo {
+            @include breakpoint(small only) {
+                font-size: 2.5rem; // Smaller on mobile
+            }
+            
+            @include breakpoint(medium) {
+                font-size: 3rem; // Smaller default size
+            }
+            
+            @include breakpoint(large) {
+                font-size: 3.5rem; // Slightly larger on large screens
+            }
+        }
+    }
+    
+    // Navigation positioning - compact and left-aligned
+    nav {
+        width: 100%;
+        display: flex;
+        justify-content: flex-start;
+        margin-top: 0;
+        
+        ul.breadcrumbs {
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            margin: 0;
+            padding: 0;
+            
+            @include breakpoint(small only) {
+                font-size: 0.875rem; // Smaller nav text on mobile
+                
+                li {
+                    padding: 0.125rem 0.5rem 0.125rem 0; // Compact spacing
+                    margin: 0;
+                    
+                    i.fa {
+                        font-size: 0.8rem;
+                        margin-right: 0.25rem;
+                    }
+                }
+            }
+            
+            @include breakpoint(medium) {
+                font-size: 1rem; // Smaller nav size for compactness
+                
+                li {
+                    padding: 0.25rem 0.75rem 0.25rem 0; // Compact spacing
+                    margin: 0;
+                    
+                    i.fa {
+                        font-size: 0.9rem;
+                        margin-right: 0.375rem;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Additional spacing adjustments for main content
+// Double the header spacing (header has 8px padding, so main gets 16px)
+main {
+    padding-top: 16px; // Double the header spacing
+    padding-left: 8px; // Match header left spacing
+    padding-right: 8px; // Match header right spacing
+    
+    @include breakpoint(small only) {
+        padding-top: 16px;
+    }
+    
+    @include breakpoint(medium) {
+        padding-top: 16px;
+    }
+    
+    @include breakpoint(large) {
+        padding-top: 16px;
+    }
+}
+
+// Override media query debugger margins to account for header
+@media only screen and (min-width: 0) {
+    #mainNavigation {
+        margin-bottom: 20px; // Reduced from 90px since logo is now in header
+    }
+}
+
+@media only screen and (min-width: 376px) {
+    #mainNavigation {
+        margin-bottom: 20px; // Reduced from 80px
+    }
+}
+
+@media only screen and (min-width: 431px) {
+    #mainNavigation {
+        margin-bottom: 20px; // Reduced from 42px
+    }
+}
+
+@media only screen and (min-width: 640px) {
+    #mainNavigation {
+        margin-bottom: 20px; // Reduced from 38px
+    }
+}
+
+@media only screen and (min-width: 769px) {
+    #mainNavigation {
+        margin-bottom: 20px; // Reduced from 38px
+    }
+}
+
+@media only screen and (min-width: 1024px) {
+    #mainNavigation {
+        margin-bottom: 20px; // Reduced from 30px
+    }
+}
+
+@media only screen and (min-width: 1200px) {
+    #mainNavigation {
+        margin-bottom: 20px; // Reduced from 25px
+    }
+}
+
+@media only screen and (min-width: 1440px) {
+    #mainNavigation {
+        margin-bottom: 20px; // Reduced from 20px
+    }
+}
