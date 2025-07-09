@@ -1,7 +1,11 @@
-@inject IJSRuntime JS
+@using redmuffin.Blazor.StaticWeb.Services
+@using redmuffin.Blazor.StaticWeb.Models
+@using redmuffin.Blazor.StaticWeb.Configuration
+@inject IPerformanceMetricsService PerformanceService
 @inject NavigationManager Navigation
+@implements IAsyncDisposable
 
-@if (!IsLocalhost)
+@if (PageLoadSpeedConfig.ShouldDisplayComponent(Navigation.BaseUri))
 {
     <div class="page-speed-widget @(_isHidden ? "hidden" : "") @(_isCollapsed ? "collapsed" : "")"
          @onclick="ToggleVisibility"
@@ -13,7 +17,7 @@
                 <span>Page Performance</span>
             </div>
             <div class="widget-controls">
-                <span class="widget-time">@_currentTime</span>
+                <span class="widget-time">@_currentMetrics?.FormattedTimestamp</span>
                 <button type="button" class="toggle-button" @onclick:stopPropagation="true" @onclick="ToggleCollapsed">
                     @(_isCollapsed ? "+" : "−")
                 </button>
@@ -33,43 +37,58 @@
                         </div>
                         <div class="metric-item">
                             <span class="metric-label">TTFB:</span>
-                            <span class="metric-value timing">@Math.Round(_timeToFirstByte, 1)</span>
+                            <span class="metric-value timing">@Math.Round(_currentMetrics?.Timing.TimeToFirstByte ?? 0, 1)</span>
                         </div>
-                        <div class="metric-progress">
-                            <div class="metric-progress-bar" style="width: @(GetProgressWidth(_timeToFirstByte, 500))%; background: #ffd700;"></div>
-                        </div>
+                        @if ((_currentMetrics?.Timing.TimeToFirstByte ?? 0) > 0)
+                        {
+                            <div class="metric-progress">
+                                <div class="metric-progress-bar" style="width: @(GetProgressWidth(_currentMetrics?.Timing.TimeToFirstByte ?? 0, 500))%; background: #ffd700;"></div>
+                            </div>
+                        }
 
                         <div class="metric-item">
                             <span class="metric-label">FCP:</span>
-                            <span class="metric-value timing">@Math.Round(_firstContentfulPaint, 1)</span>
+                            <span class="metric-value timing">@Math.Round(_currentMetrics?.Timing.FirstContentfulPaint ?? 0, 1)</span>
                         </div>
-                        <div class="metric-progress">
-                            <div class="metric-progress-bar" style="width: @(GetProgressWidth(_firstContentfulPaint, 1800))%; background: #ffd700;"></div>
-                        </div>
+                        @if ((_currentMetrics?.Timing.FirstContentfulPaint ?? 0) > 0)
+                        {
+                            <div class="metric-progress">
+                                <div class="metric-progress-bar" style="width: @(GetProgressWidth(_currentMetrics?.Timing.FirstContentfulPaint ?? 0, 1800))%; background: #ffd700;"></div>
+                            </div>
+                        }
 
                         <div class="metric-item">
                             <span class="metric-label">DOM:</span>
-                            <span class="metric-value timing">@Math.Round(_domContentLoaded, 1)</span>
+                            <span class="metric-value timing">@Math.Round(_currentMetrics?.Timing.DomContentLoaded ?? 0, 1)</span>
                         </div>
-                        <div class="metric-progress">
-                            <div class="metric-progress-bar" style="width: @(GetProgressWidth(_domContentLoaded, 2000))%; background: #ffd700;"></div>
-                        </div>
+                        @if ((_currentMetrics?.Timing.DomContentLoaded ?? 0) > 0)
+                        {
+                            <div class="metric-progress">
+                                <div class="metric-progress-bar" style="width: @(GetProgressWidth(_currentMetrics?.Timing.DomContentLoaded ?? 0, 2000))%; background: #ffd700;"></div>
+                            </div>
+                        }
 
                         <div class="metric-item">
                             <span class="metric-label">LCP:</span>
-                            <span class="metric-value timing">@(_largestContentfulPaint > 0 ? Math.Round(_largestContentfulPaint, 1) : 0)</span>
+                            <span class="metric-value timing">@Math.Round(_currentMetrics?.Timing.LargestContentfulPaint ?? 0, 1)</span>
                         </div>
-                        <div class="metric-progress">
-                            <div class="metric-progress-bar" style="width: @(GetProgressWidth(_largestContentfulPaint, 2500))%; background: @GetTimingColor(_largestContentfulPaint)"></div>
-                        </div>
+                        @if ((_currentMetrics?.Timing.LargestContentfulPaint ?? 0) > 0)
+                        {
+                            <div class="metric-progress">
+                                <div class="metric-progress-bar" style="width: @(GetProgressWidth(_currentMetrics?.Timing.LargestContentfulPaint ?? 0, 2500))%; background: @GetTimingColor(_currentMetrics?.Timing.LargestContentfulPaint ?? 0)"></div>
+                            </div>
+                        }
 
                         <div class="metric-item">
                             <span class="metric-label">Load:</span>
-                            <span class="metric-value timing">@Math.Round(_loadComplete, 1)</span>
+                            <span class="metric-value timing">@Math.Round(_currentMetrics?.Timing.LoadComplete ?? 0, 1)</span>
                         </div>
-                        <div class="metric-progress">
-                            <div class="metric-progress-bar" style="width: @(GetProgressWidth(_loadComplete, 3000))%; background: @GetTimingColor(_loadComplete)"></div>
-                        </div>
+                        @if ((_currentMetrics?.Timing.LoadComplete ?? 0) > 0)
+                        {
+                            <div class="metric-progress">
+                                <div class="metric-progress-bar" style="width: @(GetProgressWidth(_currentMetrics?.Timing.LoadComplete ?? 0, 3000))%; background: @GetTimingColor(_currentMetrics?.Timing.LoadComplete ?? 0)"></div>
+                            </div>
+                        }
                     </div>
 
                     <!-- Data Transfer Metrics -->
@@ -80,52 +99,52 @@
                         </div>
                         <div class="metric-item">
                             <span class="metric-label">Transfer:</span>
-                            <span class="metric-value size">@_transferSizeFormatted</span>
+                            <span class="metric-value size">@(_currentMetrics?.Size.TransferSizeFormatted ?? "0 B")</span>
                         </div>
-                        @if (_transferSize > 0)
+                        @if ((_currentMetrics?.Size.TransferSize ?? 0) > 0)
                         {
                             <div class="metric-progress">
-                                <div class="metric-progress-bar" style="width: @(GetDataSizeProgress(_transferSize))%; background: #00bfff;"></div>
+                                <div class="metric-progress-bar" style="width: @(GetDataSizeProgress(_currentMetrics?.Size.TransferSize ?? 0))%; background: #00bfff;"></div>
                             </div>
                         }
 
                         <div class="metric-item">
                             <span class="metric-label">Encoded:</span>
-                            <span class="metric-value size">@_encodedSizeFormatted</span>
+                            <span class="metric-value size">@(_currentMetrics?.Size.EncodedSizeFormatted ?? "0 B")</span>
                         </div>
-                        @if (_encodedSize > 0)
+                        @if ((_currentMetrics?.Size.EncodedSize ?? 0) > 0)
                         {
                             <div class="metric-progress">
-                                <div class="metric-progress-bar" style="width: @(GetDataSizeProgress(_encodedSize))%; background: #00bfff;"></div>
+                                <div class="metric-progress-bar" style="width: @(GetDataSizeProgress(_currentMetrics?.Size.EncodedSize ?? 0))%; background: #00bfff;"></div>
                             </div>
                         }
 
                         <div class="metric-item">
                             <span class="metric-label">Decoded:</span>
-                            <span class="metric-value size">@_decodedSizeFormatted</span>
+                            <span class="metric-value size">@(_currentMetrics?.Size.DecodedSizeFormatted ?? "0 B")</span>
                         </div>
-                        @if (_decodedSize > 0)
+                        @if ((_currentMetrics?.Size.DecodedSize ?? 0) > 0)
                         {
                             <div class="metric-progress">
-                                <div class="metric-progress-bar" style="width: @(GetDataSizeProgress(_decodedSize))%; background: #00bfff;"></div>
+                                <div class="metric-progress-bar" style="width: @(GetDataSizeProgress(_currentMetrics?.Size.DecodedSize ?? 0))%; background: #00bfff;"></div>
                             </div>
                         }
 
-                        @if (_compressionRatio > 0)
+                        @if ((_currentMetrics?.Size.CompressionRatio ?? 0) > 0)
                         {
                             <div class="metric-item">
                                 <span class="metric-label">Compression:</span>
-                                <span class="metric-value ratio">@_compressionRatio%</span>
+                                <span class="metric-value ratio">@(_currentMetrics?.Size.CompressionRatio ?? 0)%</span>
                             </div>
                             <div class="metric-progress">
-                                <div class="metric-progress-bar" style="width: @_compressionRatio%; background: #ff6b9d;"></div>
+                                <div class="metric-progress-bar" style="width: @(_currentMetrics?.Size.CompressionRatio ?? 0)%; background: #ff6b9d;"></div>
                             </div>
                         }
                     </div>
                 </div>
 
                 <!-- Performance Breakdown -->
-                @if (_serverResponseTime > 0 || _domProcessingTime > 0 || _resourceLoadTime > 0)
+                @if (HasBreakdownMetrics())
                 {
                     <div class="performance-breakdown">
                         <div class="metric-group-title">
@@ -133,33 +152,33 @@
                             <span>Performance Breakdown</span>
                         </div>
                         <div class="breakdown-grid">
-                            @if (_serverResponseTime > 0)
+                            @if ((_currentMetrics?.Calculated.ServerResponseTime ?? 0) > 0)
                             {
                                 <div class="breakdown-item">
                                     <div class="metric-label">Server Response</div>
-                                    <div class="metric-value breakdown">@Math.Round(_serverResponseTime, 1)ms</div>
+                                    <div class="metric-value breakdown">@Math.Round(_currentMetrics?.Calculated.ServerResponseTime ?? 0, 1)ms</div>
                                     <div class="metric-progress">
-                                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(_serverResponseTime, 1000))%; background: #ff8c42;"></div>
+                                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(_currentMetrics?.Calculated.ServerResponseTime ?? 0, 1000))%; background: #ff8c42;"></div>
                                     </div>
                                 </div>
                             }
-                            @if (_domProcessingTime > 0)
+                            @if ((_currentMetrics?.Calculated.DomProcessingTime ?? 0) > 0)
                             {
                                 <div class="breakdown-item">
                                     <div class="metric-label">DOM Processing</div>
-                                    <div class="metric-value breakdown">@Math.Round(_domProcessingTime, 1)ms</div>
+                                    <div class="metric-value breakdown">@Math.Round(_currentMetrics?.Calculated.DomProcessingTime ?? 0, 1)ms</div>
                                     <div class="metric-progress">
-                                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(_domProcessingTime, 1000))%; background: #ff8c42;"></div>
+                                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(_currentMetrics?.Calculated.DomProcessingTime ?? 0, 1000))%; background: #ff8c42;"></div>
                                     </div>
                                 </div>
                             }
-                            @if (_resourceLoadTime > 0)
+                            @if ((_currentMetrics?.Calculated.ResourceLoadTime ?? 0) > 0)
                             {
                                 <div class="breakdown-item">
                                     <div class="metric-label">Resource Load</div>
-                                    <div class="metric-value breakdown">@Math.Round(_resourceLoadTime, 1)ms</div>
+                                    <div class="metric-value breakdown">@Math.Round(_currentMetrics?.Calculated.ResourceLoadTime ?? 0, 1)ms</div>
                                     <div class="metric-progress">
-                                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(_resourceLoadTime, 1000))%; background: #ff8c42;"></div>
+                                        <div class="metric-progress-bar" style="width: @(GetProgressWidth(_currentMetrics?.Calculated.ResourceLoadTime ?? 0, 1000))%; background: #ff8c42;"></div>
                                     </div>
                                 </div>
                             }
@@ -169,23 +188,23 @@
 
                 <!-- Performance Rating -->
                 <div class="performance-rating">
-                    <div class="rating-badge @GetPerformanceRatingClass()">
-                        <span>@GetPerformanceRatingIcon()</span>
-                        <span>@GetPerformanceRating()</span>
+                    <div class="rating-badge @PerformanceCache.CssClass">
+                        <span>@PerformanceCache.Icon</span>
+                        <span>@PerformanceCache.RatingText</span>
                     </div>
-                    @if (GetPerformanceScore() > 0)
+                    @if (PerformanceCache.Score > 0)
                     {
                         <div style="margin-top: 8px; font-size: 10px; color: #888;">
-                            Score: @GetPerformanceScore()/100
+                            Score: @PerformanceCache.Score/100
                         </div>
                     }
                 </div>
 
                 <!-- Refresh Button -->
                 <div style="text-align: center; margin-top: 12px;">
-                    <button type="button" class="refresh-button" @onclick="RefreshMetrics" @onclick:stopPropagation="true">
-                        <span>🔄</span>
-                        <span>Refresh</span>
+                    <button type="button" class="refresh-button" @onclick="RefreshMetrics" @onclick:stopPropagation="true" disabled="@_isRefreshing">
+                        <span>@(_isRefreshing ? "🔄" : "🔄")</span>
+                        <span>@(_isRefreshing ? "Refreshing..." : "Refresh")</span>
                     </button>
                 </div>
             </div>
@@ -196,158 +215,141 @@
 @code {
     private bool _isHidden = false;
     private bool _isCollapsed = false;
+    private bool _isRefreshing = false;
     private ElementReference _speedElement;
-    private string _currentTime = "";
+    private PerformanceMetrics? _currentMetrics;
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
 
-    // Timing metrics
-    private double _timeToFirstByte = 0;
-    private double _domContentLoaded = 0;
-    private double _loadComplete = 0;
-    private double _firstContentfulPaint = 0;
-    private double _largestContentfulPaint = 0;
-
-    // Size metrics
-    private double _transferSize = 0;
-    private double _encodedSize = 0;
-    private double _decodedSize = 0;
-    private string _transferSizeFormatted = "0 B";
-    private string _encodedSizeFormatted = "0 B";
-    private string _decodedSizeFormatted = "0 B";
-
-    // Calculated metrics
-    private double _serverResponseTime = 0;
-    private double _domProcessingTime = 0;
-    private double _resourceLoadTime = 0;
-    private double _compressionRatio = 0;
-
-    private bool IsLocalhost
+    // Cached performance data
+    private PerformanceCache _performanceCache = PerformanceCache.Create(0);
+    private PerformanceCache PerformanceCache
     {
         get
         {
-            var baseUri = new Uri(Navigation.BaseUri);
-            return baseUri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
-                   baseUri.Host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase) ||
-                   baseUri.Host.StartsWith("192.168.", StringComparison.OrdinalIgnoreCase) ||
-                   baseUri.Host.StartsWith("10.", StringComparison.OrdinalIgnoreCase) ||
-                   baseUri.Host.StartsWith("172.16.", StringComparison.OrdinalIgnoreCase);
+            if (_currentMetrics.HasValue)
+            {
+                var newCache = _currentMetrics.Value.GetPerformanceCache();
+                if (Math.Abs(newCache.PrimaryMetric - _performanceCache.PrimaryMetric) > 0.1)
+                {
+                    _performanceCache = newCache;
+                }
+            }
+            return _performanceCache;
         }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && !IsLocalhost)
+        var shouldDisplay = PageLoadSpeedConfig.ShouldDisplayComponent(Navigation.BaseUri);
+        
+        if (firstRender && shouldDisplay)
         {
-            await Task.Delay(1000);
-            await UpdateMetricsAsync();
-            UpdateTimestamp();
+            try
+            {
+                // Initialize with empty metrics first to ensure UI shows something
+                if (!_currentMetrics.HasValue)
+                {
+                    _currentMetrics = new PerformanceMetrics(
+                        new TimingMetrics(0, 0, 0, 0, 0),
+                        new SizeMetrics(0, 0, 0, "Loading...", "Loading...", "Loading..."),
+                        new CalculatedMetrics(0, 0, 0),
+                        DateTime.Now.ToString("HH:mm:ss"));
+                    await InvokeAsync(StateHasChanged);
+                }
+                
+                await Task.Delay(PageLoadSpeedConfig.AutoLoadDelayMs, _cancellationTokenSource.Token);
+                await UpdateMetricsAsync();
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected during disposal
+            }
+            catch (Exception)
+            {
+                // If initialization fails, component will still show UI with manual refresh option
+            }
         }
     }
 
     private async Task UpdateMetricsAsync()
     {
+        if (_cancellationTokenSource.IsCancellationRequested) return;
+
         try
         {
-            var functionExists = await JS.InvokeAsync<bool>("eval", "typeof window.getPageLoadMetrics === 'function'");
-
-            if (functionExists)
+            // Try to get comprehensive metrics first
+            var metrics = await PerformanceService.GetMetricsAsync(_cancellationTokenSource.Token);
+            if (metrics != null)
             {
-                var metrics = await JS.InvokeAsync<PageLoadMetrics>("getPageLoadMetrics");
-                if (metrics != null)
-                {
-                    _timeToFirstByte = metrics.TimeToFirstByte;
-                    _domContentLoaded = metrics.DomContentLoaded;
-                    _loadComplete = metrics.LoadComplete;
-                    _firstContentfulPaint = metrics.FirstContentfulPaint;
-                    _largestContentfulPaint = metrics.LargestContentfulPaint;
-
-                    _transferSize = metrics.TransferSize;
-                    _encodedSize = metrics.EncodedSize;
-                    _decodedSize = metrics.DecodedSize;
-                    _transferSizeFormatted = metrics.TransferSizeFormatted;
-                    _encodedSizeFormatted = metrics.EncodedSizeFormatted;
-                    _decodedSizeFormatted = metrics.DecodedSizeFormatted;
-
-                    _serverResponseTime = metrics.ServerResponseTime;
-                    _domProcessingTime = metrics.DomProcessingTime;
-                    _resourceLoadTime = metrics.ResourceLoadTime;
-
-                    if (_decodedSize > 0 && _encodedSize > 0)
-                    {
-                        _compressionRatio = Math.Round(((_decodedSize - _encodedSize) / _decodedSize) * 100, 1);
-                    }
-                }
-                else
-                {
-                    await GetFallbackTiming();
-                }
+                _currentMetrics = PerformanceMetrics.FromPageLoadMetrics(metrics, DateTime.Now.ToString("HH:mm:ss"));
+                return;
             }
-            else
+
+            // Try legacy timing
+            var legacyTimings = await PerformanceService.GetLegacyTimingAsync(_cancellationTokenSource.Token);
+            if (legacyTimings != null && legacyTimings.Length >= 2)
             {
-                await GetLegacyTiming();
+                var legacyMetrics = new PageLoadMetrics
+                {
+                    TimeToFirstByte = Math.Round(legacyTimings[1] * 0.3, 1),
+                    DomContentLoaded = Math.Round(legacyTimings[1], 1),
+                    LoadComplete = Math.Round(legacyTimings[0], 1),
+                    FirstContentfulPaint = 0,
+                    LargestContentfulPaint = 0,
+                    TransferSize = 0,
+                    EncodedSize = 0,
+                    DecodedSize = 0,
+                    TransferSizeFormatted = "Unknown",
+                    EncodedSizeFormatted = "Unknown",
+                    DecodedSizeFormatted = "Unknown",
+                    ServerResponseTime = 0,
+                    DomProcessingTime = 0,
+                    ResourceLoadTime = 0
+                };
+                _currentMetrics = PerformanceMetrics.FromPageLoadMetrics(legacyMetrics, DateTime.Now.ToString("HH:mm:ss"));
+                return;
             }
+
+            // Use fallback timing
+            var fallbackMetrics = await PerformanceService.GetFallbackTimingAsync();
+            _currentMetrics = PerformanceMetrics.FromPageLoadMetrics(fallbackMetrics, DateTime.Now.ToString("HH:mm:ss"));
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected during cancellation
         }
         catch (Exception)
         {
-            await GetFallbackTiming();
-        }
-    }
-
-    private async Task GetLegacyTiming()
-    {
-        try
-        {
-            var functionExists = await JS.InvokeAsync<bool>("eval", "typeof window.getPageLoadTimes === 'function'");
-
-            if (functionExists)
+            // Use fallback on any error
+            try
             {
-                var timings = await JS.InvokeAsync<double[]>("getPageLoadTimes");
-                if (timings != null && timings.Length >= 2)
-                {
-                    _loadComplete = Math.Round(timings[0], 1);
-                    _domContentLoaded = Math.Round(timings[1], 1);
-                    _timeToFirstByte = Math.Round(_domContentLoaded * 0.3, 1);
-                }
-                else
-                {
-                    await GetFallbackTiming();
-                }
+                var fallbackMetrics = await PerformanceService.GetFallbackTimingAsync();
+                _currentMetrics = PerformanceMetrics.FromPageLoadMetrics(fallbackMetrics, DateTime.Now.ToString("HH:mm:ss"));
             }
-            else
+            catch
             {
-                await GetFallbackTiming();
+                // Final fallback - create empty metrics
+                _currentMetrics = new PerformanceMetrics(
+                    new TimingMetrics(0, 0, 0, 0, 0),
+                    new SizeMetrics(0, 0, 0, "Unknown", "Unknown", "Unknown"),
+                    new CalculatedMetrics(0, 0, 0),
+                    DateTime.Now.ToString("HH:mm:ss"));
             }
         }
-        catch
+        finally
         {
-            await GetFallbackTiming();
-        }
-    }
-
-    private async Task GetFallbackTiming()
-    {
-        try
-        {
-            var now = await JS.InvokeAsync<double>("performance.now");
-            _loadComplete = Math.Round(now, 1);
-            _domContentLoaded = Math.Round(now * 0.8, 1);
-            _timeToFirstByte = Math.Round(now * 0.3, 1);
-            _firstContentfulPaint = Math.Round(now * 0.6, 1);
-
-            _transferSizeFormatted = "Unknown";
-            _encodedSizeFormatted = "Unknown";
-            _decodedSizeFormatted = "Unknown";
-        }
-        catch
-        {
-            var estimatedTime = DateTime.Now.Millisecond + 100;
-            _loadComplete = estimatedTime;
-            _domContentLoaded = estimatedTime * 0.8;
-            _timeToFirstByte = estimatedTime * 0.3;
-            _firstContentfulPaint = estimatedTime * 0.6;
-
-            _transferSizeFormatted = "Unknown";
-            _encodedSizeFormatted = "Unknown";
-            _decodedSizeFormatted = "Unknown";
+            // Ensure UI updates after any metrics update
+            if (!_cancellationTokenSource.IsCancellationRequested)
+            {
+                try
+                {
+                    await InvokeAsync(StateHasChanged);
+                }
+                catch
+                {
+                    // If InvokeAsync fails, component might be disposed
+                }
+            }
         }
     }
 
@@ -363,84 +365,43 @@
 
     private async Task RefreshMetrics()
     {
-        await UpdateMetricsAsync();
-        UpdateTimestamp();
-        StateHasChanged();
-    }
+        if (_isRefreshing) return;
 
-    private void UpdateTimestamp()
-    {
-        _currentTime = DateTime.Now.ToString("HH:mm:ss");
-        StateHasChanged();
-    }
+        _isRefreshing = true;
+        await InvokeAsync(StateHasChanged);
 
-    private string GetPerformanceRating()
-    {
-        var primaryMetric = _largestContentfulPaint > 0 ? _largestContentfulPaint : _loadComplete;
-
-        return primaryMetric switch
+        try
         {
-            <= 1000 => "EXCELLENT",
-            <= 2500 => "GOOD",
-            <= 4000 => "FAIR",
-            _ => "POOR"
-        };
-    }
-
-    private string GetPerformanceRatingClass()
-    {
-        var primaryMetric = _largestContentfulPaint > 0 ? _largestContentfulPaint : _loadComplete;
-
-        return primaryMetric switch
+            await UpdateMetricsAsync();
+        }
+        finally
         {
-            <= 1000 => "excellent",
-            <= 2500 => "good",
-            <= 4000 => "fair",
-            _ => "poor"
-        };
+            _isRefreshing = false;
+            // UpdateMetricsAsync already calls StateHasChanged in finally block
+        }
     }
 
-    private string GetPerformanceRatingIcon()
+    private bool HasBreakdownMetrics()
     {
-        var primaryMetric = _largestContentfulPaint > 0 ? _largestContentfulPaint : _loadComplete;
-
-        return primaryMetric switch
-        {
-            <= 1000 => "🚀",
-            <= 2500 => "✅",
-            <= 4000 => "⚠️",
-            _ => "🐌"
-        };
+        return (_currentMetrics?.Calculated.ServerResponseTime ?? 0) > 0 ||
+               (_currentMetrics?.Calculated.DomProcessingTime ?? 0) > 0 ||
+               (_currentMetrics?.Calculated.ResourceLoadTime ?? 0) > 0;
     }
 
-    private int GetPerformanceScore()
-    {
-        var primaryMetric = _largestContentfulPaint > 0 ? _largestContentfulPaint : _loadComplete;
-
-        return primaryMetric switch
-        {
-            <= 1000 => 95,
-            <= 1500 => 85,
-            <= 2500 => 75,
-            <= 4000 => 50,
-            _ => 25
-        };
-    }
-
-    private double GetProgressWidth(double value, double maxValue)
+    private static double GetProgressWidth(double value, double maxValue)
     {
         if (value <= 0 || maxValue <= 0) return 0;
         return Math.Min(100, (value / maxValue) * 100);
     }
 
-    private double GetDataSizeProgress(double sizeBytes)
+    private static double GetDataSizeProgress(double sizeBytes)
     {
         // Progress based on typical web page size (1MB = 100%)
         const double maxSize = 1024 * 1024; // 1MB
         return Math.Min(100, (sizeBytes / maxSize) * 100);
     }
 
-    private string GetTimingColor(double timing)
+    private static string GetTimingColor(double timing)
     {
         return timing switch
         {
@@ -449,6 +410,12 @@
             <= 4000 => "#ff8c42",
             _ => "#ff4757"
         };
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _cancellationTokenSource.Cancel();
+        _cancellationTokenSource.Dispose();
     }
 
     // Data model for JavaScript interop
