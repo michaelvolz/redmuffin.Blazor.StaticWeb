@@ -1,11 +1,14 @@
 ﻿@inherits LayoutComponentBase
-
+@using redmuffin.Blazor.StaticWeb.Features.Shared.Components
 
 <div class="grid-container" style="outline: 1px solid red;">
-	<NavMenu />
-	<section>
+	<header class="site-header">
+		<Logo />
+		<NavMenu />
+	</header>
+	<main>
 		@Body
-	</section>
+	</main>
 </div>
 
 <PageLoadSpeed />
