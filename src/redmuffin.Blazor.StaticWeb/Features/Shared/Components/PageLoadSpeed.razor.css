@@ -10,13 +10,15 @@
     cursor: pointer;
     font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Consolas', monospace;
     user-select: none;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    min-width: 352px;
-    max-width: 440px;
+    width: 440px;
     border-left: 3px solid #00d4aa;
     border-bottom: 3px solid #00d4aa;
+    /* Performance optimizations */
+    contain: layout style paint;
+    will-change: transform;
 }
 
     .page-speed-widget:hover {
@@ -30,7 +32,7 @@
     }
 
     .page-speed-widget.collapsed {
-        min-width: 275px;
+        width: 440px; /* Keep same width when collapsed */
     }
 
 .widget-header {
@@ -253,8 +255,11 @@
 .metric-progress-bar {
     height: 100%;
     border-radius: 2px;
-    transition: width 1s ease-out;
+    transition: transform 1s ease-out;
     animation: progressGlow 2s infinite;
+    /* Performance optimizations */
+    transform-origin: left;
+    will-change: transform;
 }
 
 @keyframes progressGlow {
@@ -300,16 +305,21 @@
     font-family: inherit;
 }
 
-    .refresh-button:hover {
+    .refresh-button:hover:not(:disabled) {
         background: rgba(0, 212, 170, 0.2);
         border-color: rgba(0, 212, 170, 0.5);
         transform: translateY(-1px);
     }
 
+    .refresh-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
 @media (max-width: 768px) {
     .page-speed-widget {
-        min-width: 308px;
-        max-width: 330px;
+        width: 330px;
         font-size: 10px;
     }
 
