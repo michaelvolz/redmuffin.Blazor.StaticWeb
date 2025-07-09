@@ -64,7 +64,16 @@
 .video-card {
   .shimmer-placeholder {
     width: 100%;
-    height: 157px; // Standard video thumbnail height
+    // Use modern CSS aspect-ratio property for robust handling
+    aspect-ratio: 16 / 9; // Match the original 1280x720 aspect ratio
+    
+    // Fallback for browsers that don't support aspect-ratio
+    @supports not (aspect-ratio: 16 / 9) {
+      height: 0;
+      padding-bottom: 56.25%; // 16:9 fallback
+      position: relative;
+    }
+    
     background-color: #e8f4f8; // Subtle blue tint for video context
     background-image: linear-gradient(
       90deg,
@@ -72,31 +81,23 @@
       #d1e7dd 40px,
       #e8f4f8 80px
     );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; // Prevent any content from spilling out
 
-    @media screen and (max-width: 640px) {
-      height: 280px; // Increased height for tablets and larger phones
-    }
-
-    @media screen and (max-width: 480px) {
-      height: 320px; // Even more height for smaller phones like iPhone
-    }
-
-    // Alternative approach: Use aspect ratio for very small screens
-    @media screen and (max-width: 390px) {
-      height: 0;
-      padding-bottom: 56.25%; // 16:9 aspect ratio (9/16 = 0.5625)
-      position: relative;
-    }
-
-    // Ensure images maintain proper aspect ratio
+    // Ensure images maintain proper aspect ratio and show full image
     img {
       width: 100%;
       height: 100%;
-      object-fit: cover; // Maintain aspect ratio while filling container
+      object-fit: contain; // Show full image without cropping
       object-position: center; // Center the image within the container
+      max-width: 100%;
+      max-height: 100%;
+      display: block; // Remove any inline spacing
       
-      // For aspect ratio approach on very small screens
-      @media screen and (max-width: 390px) {
+      // Fallback positioning for older browsers
+      @supports not (aspect-ratio: 16 / 9) {
         position: absolute;
         top: 0;
         left: 0;
