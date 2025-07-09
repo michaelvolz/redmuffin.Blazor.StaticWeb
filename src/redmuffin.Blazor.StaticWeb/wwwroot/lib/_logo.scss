@@ -7,8 +7,8 @@ $white: #FFFFFF;
 
 .logo-container {
     display: flex;
-    justify-content: center;
-    background-color: $white;
+    justify-content: flex-start;
+    background-color: transparent;
 }
 
 .logo {
