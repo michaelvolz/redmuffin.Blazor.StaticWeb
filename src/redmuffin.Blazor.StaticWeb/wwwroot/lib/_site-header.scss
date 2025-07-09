@@ -1,30 +1,31 @@
 /* Site Header Styles - Layout for logo and navigation */
 @import 'foundation-sites/scss/util/util';
 @import 'foundation-sites/scss/util/breakpoint';
+@import 'variables';
 
 .site-header {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     width: 100%;
-    padding: 8px; // Few pixels spacing from browser border
+    padding: $header-spacing; // Using centralized spacing variable
     margin-bottom: 0; // Remove default margin
     
     // Logo styling adjustments for different breakpoints
     .logo-container {
-        margin-bottom: 4px; // Minimal spacing between logo and nav
+        margin-bottom: $logo-nav-spacing; // Using centralized spacing variable
         
         .logo {
             @include breakpoint(small only) {
-                font-size: 2.5rem; // Smaller on mobile
+                font-size: $logo-font-size-small; // Using centralized typography variable
             }
             
             @include breakpoint(medium) {
-                font-size: 3rem; // Smaller default size
+                font-size: $logo-font-size-medium; // Using centralized typography variable
             }
             
             @include breakpoint(large) {
-                font-size: 3.5rem; // Slightly larger on large screens
+                font-size: $logo-font-size-large; // Using centralized typography variable
             }
         }
     }
@@ -43,29 +44,29 @@
             padding: 0;
             
             @include breakpoint(small only) {
-                font-size: 0.875rem; // Smaller nav text on mobile
+                font-size: $nav-font-size-small; // Using centralized typography variable
                 
                 li {
-                    padding: 0.125rem 0.5rem 0.125rem 0; // Compact spacing
+                    padding: $nav-compact-spacing $nav-item-spacing $nav-compact-spacing 0; // Using centralized spacing variables
                     margin: 0;
                     
                     i.fa {
-                        font-size: 0.8rem;
-                        margin-right: 0.25rem;
+                        font-size: $nav-icon-size-small; // Using centralized typography variable
+                        margin-right: calc($nav-compact-spacing * 1.25); // Proportional to compact spacing
                     }
                 }
             }
             
             @include breakpoint(medium) {
-                font-size: 1rem; // Smaller nav size for compactness
+                font-size: $nav-font-size-medium; // Using centralized typography variable
                 
                 li {
-                    padding: 0.25rem 0.75rem 0.25rem 0; // Compact spacing
+                    padding: calc($nav-compact-spacing * 1.25) $nav-item-spacing calc($nav-compact-spacing * 1.25) 0; // Using centralized spacing variables
                     margin: 0;
                     
                     i.fa {
-                        font-size: 0.9rem;
-                        margin-right: 0.375rem;
+                        font-size: $nav-icon-size-medium; // Using centralized typography variable
+                        margin-right: calc($nav-item-spacing * 0.5); // Proportional to item spacing
                     }
                 }
             }
@@ -74,70 +75,22 @@
 }
 
 // Additional spacing adjustments for main content
-// Double the header spacing (header has 8px padding, so main gets 16px)
+// Double the header spacing for visual hierarchy
 main {
-    padding-top: 16px; // Double the header spacing
-    padding-left: 8px; // Match header left spacing
-    padding-right: 8px; // Match header right spacing
+    padding-top: $header-content-spacing; // Using centralized spacing variable
+    padding-left: $header-spacing; // Match header left spacing
+    padding-right: $header-spacing; // Match header right spacing
     
+    // Responsive adjustments - all use the same spacing for consistency
     @include breakpoint(small only) {
-        padding-top: 16px;
+        padding-top: $header-content-spacing; // Consistent with variable
     }
     
     @include breakpoint(medium) {
-        padding-top: 16px;
+        padding-top: $header-content-spacing; // Consistent with variable
     }
     
     @include breakpoint(large) {
-        padding-top: 16px;
-    }
-}
-
-// Override media query debugger margins to account for header
-@media only screen and (min-width: 0) {
-    #mainNavigation {
-        margin-bottom: 20px; // Reduced from 90px since logo is now in header
-    }
-}
-
-@media only screen and (min-width: 376px) {
-    #mainNavigation {
-        margin-bottom: 20px; // Reduced from 80px
-    }
-}
-
-@media only screen and (min-width: 431px) {
-    #mainNavigation {
-        margin-bottom: 20px; // Reduced from 42px
-    }
-}
-
-@media only screen and (min-width: 640px) {
-    #mainNavigation {
-        margin-bottom: 20px; // Reduced from 38px
-    }
-}
-
-@media only screen and (min-width: 769px) {
-    #mainNavigation {
-        margin-bottom: 20px; // Reduced from 38px
-    }
-}
-
-@media only screen and (min-width: 1024px) {
-    #mainNavigation {
-        margin-bottom: 20px; // Reduced from 30px
-    }
-}
-
-@media only screen and (min-width: 1200px) {
-    #mainNavigation {
-        margin-bottom: 20px; // Reduced from 25px
-    }
-}
-
-@media only screen and (min-width: 1440px) {
-    #mainNavigation {
-        margin-bottom: 20px; // Reduced from 20px
+        padding-top: $header-content-spacing; // Consistent with variable
     }
 }
