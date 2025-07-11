@@ -283,32 +283,22 @@ To simulate the Azure Static Web Apps environment locally, follow these steps:
 
 ### Quick Start
 
-1. **Start the Azure Static Web Apps CLI:** 
+1. **Start the development server:**
    
-   `swa start http://localhost:5233 --api-location http://localhost:7184/api`
+   `swa start`
 
-   This command will:
-   - Proxy the frontend at `http://localhost:4280`
-   - Proxy API calls to the backend, enabling seamless integration
-   - Automatically poll both services until they are online
-   - Provide hot reload capabilities during development
+   This single command will:
+   - Automatically build and start both the Blazor WebAssembly frontend and Azure Functions API
+   - Launch the Azure Static Web Apps emulator
+   - Proxy the frontend and API through a unified development server
+   - Enable seamless integration between frontend and backend
 
-2. **Start the Blazor WebAssembly frontend and API backend:**
-   - Use the "Start both" profile in Visual Studio to launch both projects simultaneously
-   - Alternatively, start each project manually:
-           
-      - Start Blazor WebAssembly
- 
-        `dotnet run --project src/redmuffin.Blazor.StaticWeb/`
- 
-      - Start Azure Functions
- 
-         `dotnet run --project src/redmuffin.Blazor.StaticWeb.Api/`
- 
-3. **Access the application:**
+2. **Access the application:**
    - Open `http://localhost:4280` in your browser
    - All API calls will be routed through the same port as the web app
    - OAuth redirects and authentication flows will work correctly
+
+**Alternative:** You can also use the "Start both" profile in Visual Studio to launch both projects simultaneously if you prefer working within the IDE.
 
 ### Development Features
 
