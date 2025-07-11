@@ -32,7 +32,7 @@
 - [Azure Functions Integration](#azure-functions-integration)
 - [Azure CLI Dependency](#azure-cli-dependency)
 - [Azure Static Web Apps CLI Dependency](#azure-static-web-apps-cli-dependency)
-- [Local Development: Starting the Project with Azure Static Web Apps CLI](#local-development-starting-the-project-with-azure-static-web-apps-cli)
+- [Local Development: Visual Studio Multi-Project Startup](#local-development-visual-studio-multi-project-startup)
 
 ---
 
@@ -132,7 +132,8 @@ redmuffin.Blazor.StaticWeb/
 │   ├── redmuffin.Blazor.StaticWeb.Api/      # Azure Functions (.NET 8)
 │   │   ├── Functions/
 │   │   └── Core/
-│   └── redmuffin.Blazor.StaticWeb.Common/   # Shared utilities
+│   ├── redmuffin.Blazor.StaticWeb.Common/   # Shared utilities
+│   └── SwaLauncher/                         # SWA CLI launcher (.NET 9)
 ├── tests/
 │   ├── redmuffin.Blazor.StaticWeb.Tests/
 │   └── redmuffin.Blazor.StaticWeb.Api.Tests/
@@ -277,28 +278,24 @@ For more details, refer to the [Azure Static Web Apps CLI Documentation](https:/
 
 ---
 
-## Local Development: Starting the Project with Azure Static Web Apps CLI
+## Local Development: Visual Studio Multi-Project Startup
 
-To simulate the Azure Static Web Apps environment locally, follow these steps:
+The project is configured for seamless development using Visual Studio's multi-project startup feature, which automatically launches all required components.
 
 ### Quick Start
 
-1. **Start the development server:**
-   
-   `swa start`
-
-   This single command will:
-   - Automatically build and start both the Blazor WebAssembly frontend and Azure Functions API
-   - Launch the Azure Static Web Apps emulator
-   - Proxy the frontend and API through a unified development server
-   - Enable seamless integration between frontend and backend
+1. **Start the development environment:**
+   - Open `redmuffin.Blazor.StaticWeb.sln` in Visual Studio 2022
+   - Use the "Start both" profile (or similar multi-project startup configuration)
+   - Visual Studio will automatically start:
+     - Blazor WebAssembly frontend
+     - Azure Functions API backend
+     - SwaLauncher (which starts the Azure Static Web Apps emulator)
 
 2. **Access the application:**
    - Open `http://localhost:4280` in your browser
    - All API calls will be routed through the same port as the web app
    - OAuth redirects and authentication flows will work correctly
-
-**Alternative:** You can also use the "Start both" profile in Visual Studio to launch both projects simultaneously if you prefer working within the IDE.
 
 ### Development Features
 
