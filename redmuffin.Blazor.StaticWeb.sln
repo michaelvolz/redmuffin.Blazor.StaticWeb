@@ -33,10 +33,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Instructions", "Instructions", "{1E5315D5-9FD9-D0B7-CF8A-5A02695B7EE1}"
 	ProjectSection(SolutionItems) = preProject
 		.github\instructions\Blazor.instructions.md = .github\instructions\Blazor.instructions.md
+		.github\CommitStandars.instructions.md = .github\CommitStandars.instructions.md
 		.github\instructions\CSharp.instructions.md = .github\instructions\CSharp.instructions.md
 		.github\instructions\Powershell.instructions.md = .github\instructions\Powershell.instructions.md
 		.github\instructions\SCSS.instructions.md = .github\instructions\SCSS.instructions.md
-		.github\CommitStandars.instructions.md = .github\CommitStandars.instructions.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Prompts", "Prompts", "{1042B09C-CD63-0B34-1D4B-7FE7A2FDFA8E}"
@@ -52,6 +52,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "redmuffin.Blazor.StaticWeb.Api.Tests", "tests\redmuffin.Blazor.StaticWeb.Api.Tests\redmuffin.Blazor.StaticWeb.Api.Tests.csproj", "{D2FC75C8-211A-4083-AF47-2BD761611B97}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "redmuffin.Blazor.StaticWeb.Common", "src\redmuffin.Blazor.StaticWeb.Common\redmuffin.Blazor.StaticWeb.Common.csproj", "{0D4EDCD5-BFA7-41B7-A6EF-2BA2B87EA048}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SwaLauncher", "src\SwaLauncher\SwaLauncher.csproj", "{C36EDD2C-065F-42B4-8667-2CD8E7C08AB4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -79,6 +81,10 @@ Global
 		{0D4EDCD5-BFA7-41B7-A6EF-2BA2B87EA048}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D4EDCD5-BFA7-41B7-A6EF-2BA2B87EA048}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0D4EDCD5-BFA7-41B7-A6EF-2BA2B87EA048}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C36EDD2C-065F-42B4-8667-2CD8E7C08AB4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C36EDD2C-065F-42B4-8667-2CD8E7C08AB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C36EDD2C-065F-42B4-8667-2CD8E7C08AB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C36EDD2C-065F-42B4-8667-2CD8E7C08AB4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
