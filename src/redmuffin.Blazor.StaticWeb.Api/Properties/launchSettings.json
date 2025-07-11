@@ -2,11 +2,11 @@
   "profiles": {
     "redmuffin.Blazor.StaticWeb.Api": {
       "commandName": "Project",
-      "commandLineArgs": "--port 7184",
-      "launchUrl": "http://localhost:7184",
-      "applicationUrl": "http://localhost:7184",
+      "commandLineArgs": "--port 7071",
+      "launchUrl": "http://localhost:7071",
+      "applicationUrl": "http://localhost:7071",
       "environmentVariables": {
-        "FUNCTIONS_WORKER_GRPC_URI": "http://localhost:7184"
+        "FUNCTIONS_WORKER_GRPC_URI": "http://localhost:7071"
       }
     }
   }
