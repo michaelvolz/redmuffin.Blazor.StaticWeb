@@ -53,6 +53,8 @@
 ### Development & Quality
 - **Modern C# (C# 12/13) features** - Primary constructors, collection expressions, ref readonly parameters
 - **Comprehensive Testing** - TUnit framework with NSubstitute mocking
+- **Code Coverage** - Automated coverage reports with Coverlet and ReportGenerator
+- **PowerShell Automation** - Scripts for coverage report generation and viewing
 - **SCSS/CSS Styling** - Modern styling with Zurb Foundation framework
 - **Feature Folder Structure** - Organized by feature for better maintainability
 - **Code Quality & Security** - CodeQL analysis, automated builds, Dependabot integration
@@ -204,6 +206,12 @@ redmuffin.Blazor.StaticWeb/
 - **[Code Analyzers](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/overview)**  
   Static code analysis tools integrated into the build process for code quality, security, and maintainability.
 
+- **[Coverlet](https://github.com/coverlet-coverage/coverlet)**  
+  Cross-platform code coverage library for .NET, enabling comprehensive test coverage analysis with multiple output formats.
+
+- **[ReportGenerator](https://github.com/danielpalme/ReportGenerator)**  
+  Powerful tool for generating readable reports from code coverage data, supporting HTML, XML, and various other formats with historical tracking.
+
 ### Development Tools
 
 - **[GitHub Copilot](https://github.com/features/copilot)**  
@@ -237,6 +245,42 @@ Build the entire solution:dotnet build
 Build specific projects:dotnet build src/redmuffin.Blazor.StaticWeb/
 dotnet build src/redmuffin.Blazor.StaticWeb.Api/
 Run tests:dotnet test
+
+### Code Coverage
+
+The project includes comprehensive code coverage analysis using Coverlet and ReportGenerator:
+
+**Generate Coverage Reports:**
+```powershell
+.\scripts\Generate-CoverageReport.ps1
+```
+
+**View Coverage Reports:**
+```powershell
+# View unified coverage report (default)
+.\scripts\View-CoverageReport.ps1
+
+# View branded coverage report with history
+.\scripts\View-CoverageReport.ps1 -ReportType Branded
+
+# View basic HTML coverage report
+.\scripts\View-CoverageReport.ps1 -ReportType Html
+```
+
+**Coverage Features:**
+- **Multiple Output Formats**: HTML, XML, JSON, and Cobertura formats
+- **Unified Reports**: Combined coverage from both Blazor and API test projects
+- **Historical Tracking**: Coverage trends over time with the branded report
+- **Automated Exclusions**: Generated files, vendor libraries, and test projects automatically excluded
+- **Threshold Configuration**: Configurable coverage thresholds for quality gates
+- **Tool Integration**: Automatic installation of required tools (ReportGenerator)
+
+**Coverage Configuration:**
+- Coverage settings are configured in test project files (.csproj)
+- Global exclusions are defined in Directory.Build.props
+- Additional exclusions can be configured in .coverletrc
+- Reports are generated in the `coverage/` directory
+
 ### Deployment
 
 The project is configured for deployment to Azure Static Web Apps:

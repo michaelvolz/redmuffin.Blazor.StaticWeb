@@ -40,6 +40,12 @@ Target: .NET 9 Blazor WebAssembly, Visual Studio 2022
 
 ## 4. Testing & Documentation
 - **Unit Tests:** Use TUnit (NOT NUnit/xUnit), `[Test]` for methods, `[Tests]` with `[Arguments]` for data-driven
+- **Code Coverage:** Configured with Coverlet and ReportGenerator
+  - Generate reports: `.\scripts\Generate-CoverageReport.ps1`
+  - View reports: `.\scripts\View-CoverageReport.ps1 [-ReportType Unified|Branded|Html]`
+  - Coverage configured in test project .csproj files
+  - Exclusions defined in .coverletrc and Directory.Build.props
+  - Reports output to `coverage/` directory
 - **Documentation:** XML docs for public APIs, update README/Wiki/OpenAPI
 
 ## 5. Modern C# Features (12/13)
@@ -107,6 +113,12 @@ project-root/
 
 ## 9. AI Operational Guidelines
 - Offer PowerShell scripts for complex/data-intensive tasks
+- **Code Coverage Automation:** PowerShell scripts available for coverage tasks
+  - `scripts/Generate-CoverageReport.ps1`: Runs tests and generates coverage reports
+  - `scripts/View-CoverageReport.ps1`: Opens coverage reports in browser
+  - Coverage configuration: Test projects have Coverlet MSBuild integration
+  - Reports: HTML (unified/branded), XML, JSON, Cobertura formats
+  - Exclusions: Configured in .coverletrc, Directory.Build.props, and test project files
 - **Context7 MCP Server:** Available for up-to-date documentation
   - Tools: `resolve-library-id` (resolves library names), `get-library-docs` (fetches documentation)
   - Workflow: Always call `resolve-library-id` first, then use returned ID with `get-library-docs`
