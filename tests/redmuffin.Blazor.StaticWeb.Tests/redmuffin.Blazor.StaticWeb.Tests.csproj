@@ -8,10 +8,28 @@
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+
+    <!-- Code Coverage Configuration -->
+    <CollectCoverage>true</CollectCoverage>
+    <CoverletOutputFormat>opencover,cobertura,json</CoverletOutputFormat>
+    <CoverletOutput>../../coverage/blazor-</CoverletOutput>
+    <Include>[redmuffin.Blazor.StaticWeb*]*</Include>
+    <Exclude>[*Tests*]*,[*]*Program,[*]*Startup,[System*]*,[Microsoft*]*,[Newtonsoft*]*,[TUnit*]*,[coverlet*]*</Exclude>
+    <ExcludeByFile>**/obj/**/*;**/bin/**/*;**/*.g.cs;**/*.razor.g.cs;**/*.designer.cs;**/GlobalUsings.g.cs;**/AssemblyInfo.cs</ExcludeByFile>
+
+    <!-- Coverage Thresholds (Warning level, not failing) -->
+    <ThresholdType>line,branch,method</ThresholdType>
+    <Threshold>1,1,1</Threshold>
+    <ThresholdStat>minimum</ThresholdStat>
+    <DoesNotReturnAttribute>DoesNotReturnAttribute</DoesNotReturnAttribute>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="TUnit" Version="0.25.21" />
+    <PackageReference Include="coverlet.msbuild" Version="6.0.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
