@@ -1,8 +1,8 @@
-# Generate-Changelog.Tests.ps1
-# Comprehensive tests for Generate-Changelog.ps1
+# Update-Changelog.Tests.ps1
+# Comprehensive tests for Update-Changelog.ps1
 
 BeforeAll {
-    $script:ScriptPath = Join-Path $PSScriptRoot "Generate-Changelog.ps1"
+    $script:ScriptPath = Join-Path $PSScriptRoot "Update-Changelog.ps1"
     $script:ModulePath = Join-Path $PSScriptRoot "modules"
     
     # Dot source the script to load functions
@@ -21,7 +21,7 @@ AfterAll {
     Set-Location $script:OriginalLocation
 }
 
-Describe "Generate-Changelog Git Integration Tests" {
+Describe "Update-Changelog Git Integration Tests" {
     
     Context "Git Availability Detection" {
         

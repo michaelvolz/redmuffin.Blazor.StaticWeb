@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Generate-Changelog.ps1 - Automated changelog generation from git commits
+    Update-Changelog.ps1 - Automated changelog generation from git commits
 
 .DESCRIPTION
     This script generates a CHANGELOG.md file from git commit messages following conventional commit standards.
@@ -136,19 +136,19 @@
 
 .EXAMPLE
     # Generate new changelog from git log
-    .\Generate-Changelog.ps1
+    .\Update-Changelog.ps1
 
     # Update existing changelog with new commits from git log
-    .\Generate-Changelog.ps1 -Update
+    .\Update-Changelog.ps1 -Update
 
     # Use custom input file (backward compatibility)
-    .\Generate-Changelog.ps1 -InputFile "commits.txt" -OutputFile "CHANGELOG-v2.md"
+    .\Update-Changelog.ps1 -InputFile "commits.txt" -OutputFile "CHANGELOG-v2.md"
 
     # Generate changelog from git log with custom output file
-    .\Generate-Changelog.ps1 -OutputFile "CHANGELOG-v2.md"
+    .\Update-Changelog.ps1 -OutputFile "CHANGELOG-v2.md"
 
     # Generate changelog from last 100 commits only
-    .\Generate-Changelog.ps1 -CommitLimit 100
+    .\Update-Changelog.ps1 -CommitLimit 100
 
 .REQUIREMENTS
     For default git log mode:
@@ -173,7 +173,7 @@
     - Proper module structure in ./modules directory
 #>
 
-# Generate-Changelog.ps1
+# Update-Changelog.ps1
 # Main script for generating changelog from git commits (git log by default, or from file)
 
 [CmdletBinding()]
