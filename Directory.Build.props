@@ -5,6 +5,11 @@
     <Version Condition="$(Version) == ''">0.1.0.0</Version>
   </PropertyGroup>
 
+  <!-- Global Coverage Exclusions -->
+  <PropertyGroup>
+    <ExcludeFromCodeCoverage>**/Migrations/**;**/obj/**;**/bin/**;**/wwwroot/**;**/node_modules/**</ExcludeFromCodeCoverage>
+  </PropertyGroup>
+
   <PropertyGroup>
     <Version>$(Version)</Version>
     <Authors>Michael A. Volz</Authors>
