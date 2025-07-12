@@ -1,0 +1,32 @@
+# Coverlet configuration file
+# For more information see: https://github.com/coverlet-coverage/coverlet/blob/master/Documentation/MSBuildIntegration.md
+
+[Exclude]
+# Exclude generated assemblies and namespaces
+*.g.cs
+*.designer.cs
+*.AssemblyInfo.cs
+*GlobalUsings.g.cs
+
+# Exclude specific namespaces that should not be covered
+Microsoft.*
+System.*
+Newtonsoft.*
+TUnit.*
+coverlet.*
+NSubstitute.*
+
+# Exclude specific types or methods if needed (examples)
+# [ExcludeFromCodeCoverage]
+# CompilerGenerated
+
+[ExcludeByFile]
+# Exclude files by pattern
+**/bin/**/*
+**/obj/**/*
+**/*.g.cs
+**/*.razor.g.cs
+**/*.designer.cs
+**/GlobalUsings.g.cs
+**/AssemblyInfo.cs
+**/Migrations/**/*
