@@ -16,17 +16,8 @@
   "servers": {
     "github": {
       "command": "docker",
-      "args": [
-        "run",
-        "-i",
-        "--rm",
-        "-e",
-        "GITHUB_PERSONAL_ACCESS_TOKEN",
-        "ghcr.io/github/github-mcp-server"
-      ],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "${input:github_token}"
-      }
+      "args": [ "run", "-i", "--rm", "-e", "GITHUB_PERSONAL_ACCESS_TOKEN", "ghcr.io/github/github-mcp-server" ],
+      "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${input:github_token}" }
     },
     "fetch": {
       "command": "docker",
@@ -46,17 +37,8 @@
     },
     "brave-search": {
       "command": "docker",
-      "args": [
-        "run",
-        "-i",
-        "--rm",
-        "-e",
-        "BRAVE_API_KEY",
-        "mcp/brave-search"
-      ],
-      "env": {
-        "BRAVE_API_KEY": "${input:brave_api_key}"
-      }
+      "args": [ "run", "-i", "--rm", "-e", "BRAVE_API_KEY", "mcp/brave-search" ],
+      "env": {"BRAVE_API_KEY": "${input:brave_api_key}" }
     }
   }
 }
