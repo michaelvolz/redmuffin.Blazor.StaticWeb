@@ -38,11 +38,6 @@ LogHelpers.LogTestMessage(logger);
 
 var settings = host.Services.GetRequiredService<Settings>();
 
-// Output settings to console for debugging
-Console.WriteLine($"RainDropClientId: {settings.RainDropClientId}");
-Console.WriteLine($"RainDropClientSecret: {settings.RainDropClientSecret}");
-Console.WriteLine($"RainDropTestToken: {settings.RainDropTestToken}");
-
 // Validate Settings
 if (string.IsNullOrWhiteSpace(settings.RainDropClientId) ||
 	string.IsNullOrWhiteSpace(settings.RainDropClientSecret) ||
