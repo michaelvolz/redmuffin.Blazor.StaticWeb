@@ -241,10 +241,21 @@ redmuffin.Blazor.StaticWeb/
 
 ### Build Commands
 
-Build the entire solution:dotnet build
-Build specific projects:dotnet build src/redmuffin.Blazor.StaticWeb/
+**Build the entire solution:**
+```bash
+dotnet build
+```
+
+**Build specific projects:**
+```bash
+dotnet build src/redmuffin.Blazor.StaticWeb/
 dotnet build src/redmuffin.Blazor.StaticWeb.Api/
-Run tests:dotnet test
+```
+
+**Run tests:**
+```bash
+dotnet test
+```
 
 ### Code Coverage
 
@@ -334,7 +345,12 @@ The project requires **Azure Static Web Apps CLI** for local development and tes
 
 ### Installation
 
-To install Azure Static Web Apps CLI, use the following command:npm install -g @azure/static-web-apps-cli
+To install Azure Static Web Apps CLI, use the following command:
+
+```bash
+npm install -g @azure/static-web-apps-cli
+```
+
 For more details, refer to the [Azure Static Web Apps CLI Documentation](https://learn.microsoft.com/en-us/azure/static-web-apps/cli).
 
 ---
