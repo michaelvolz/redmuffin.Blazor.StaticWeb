@@ -1,66 +1,77 @@
 ---
-applyTo: "**/*.razor"
+description: 'Blazor component and application patterns'
+applyTo: '**/*.razor, **/*.razor.cs, **/*.razor.css'
 ---
 
-# Project coding standards
+## Blazor Code Style and Structure
 
-## General C# Coding Standards
-- Use `var` only when the type is clearly apparent from the right-hand side (e.g., `var items = new List<string>()`), otherwise use explicit types
-- Keep line length under 160 characters
-- Use consistent indentation and always include braces (`{}`) even for single-line statements
-- Group `using` directives with `System.*` first, then others in alphabetical order
+- Write idiomatic and efficient Blazor and C# code.
+- Follow .NET and Blazor conventions.
+- Use Razor Components appropriately for component-based UI development.
+- Prefer inline functions for smaller components but separate complex logic into code-behind or service classes.
+- Async/await should be used where applicable to ensure non-blocking UI operations.
 
 ## Naming Conventions
-- Use `PascalCase` for component names, classes, methods, and properties.
-- Use `camelCase` for parameters and local variables.
-- Prefix private fields with `_` (e.g., `_userService`).
-- Blazor component files must match the component class name (e.g., `MyComponent.razor` must contain `MyComponent`).
 
-## Blazor-Specific Best Practices
-- Split large components into smaller, reusable child components.
-- Use `@code { }` instead of `@functions { }`.
-- Keep UI markup and C# logic separate when complexity grows (e.g., use partial classes).
-- Avoid directly mutating bound parameters (`[Parameter]`) in child components.
-- Use `EventCallback<T>` instead of `Action` or custom delegates for parameter events.
-- Use `CascadingParameter` for passing data like authentication state, theme, or culture.
-- Prefer `OnInitializedAsync()` over `OnInitialized()` when using `await`.
+- Follow PascalCase for component names, method names, and public members.
+- Use camelCase for private fields and local variables.
+- Prefix interface names with "I" (e.g., IUserService).
 
-## Component Architecture
-- Organize components by domain/feature in folders (e.g., `Pages/`, `Components/`, `Shared/`).
-- Follow the MVU or MVVM pattern when the state becomes complex.
-- Use `@inject` for dependency injection rather than service locators.
-- Prefer `RenderFragment` over `MarkupString` unless you need raw HTML rendering.
+## Blazor and .NET Specific Guidelines
 
-##  Performance Best Practices
-- Minimize re-rendering by using `ShouldRender()` or conditional UI logic.
-- Use `@key` in `@foreach` loops to help Blazor track DOM elements.
-- Avoid using `async void`; use `async Task` instead.
-- Dispose components that use resources by implementing `IDisposable`.
+- Utilize Blazor's built-in features for component lifecycle (e.g., OnInitializedAsync, OnParametersSetAsync).
+- Use data binding effectively with @bind.
+- Leverage Dependency Injection for services in Blazor.
+- Structure Blazor components and services following Separation of Concerns.
+- Always use the latest version C#, currently C# 13 features like record types, pattern matching, and global usings.
 
-## Security Guidelines
-- Never trust client-side validation, always validate on the server.
-- Avoid exposing sensitive logic or secrets in `.razor` files.
-- Use `Microsoft.AspNetCore.Components.Authorization` for secure user authentication and role checking.
-- Use proper encoding when injecting raw HTML or third-party content.
+## Error Handling and Validation
 
-## Reusability and Maintainability
-- Prefer `RenderFragment` parameters to allow child content injection (similar to slot in other frameworks).
-- Isolate reusable logic in services or base classes.
-- Use feature-based folders to group pages, components, and services.
+- Implement proper error handling for Blazor pages and API calls.
+- Use logging for error tracking in the backend and consider capturing UI-level errors in Blazor with tools like ErrorBoundary.
+- Implement validation using FluentValidation or DataAnnotations in forms.
 
-## Testing & Tooling
-- Use `bUnit` for unit testing Blazor components.
-- Mock services using `NSubstitute` in test projects.
-- Use `IJSRuntime` abstraction for JavaScript interop, and mock it in tests.
-- Validate components for accessibility (ARIA, keyboard navigation).
+## Blazor API and Performance Optimization
 
-## Debugging and Diagnostics
-- Use `@ref` cautiously to avoid tight coupling.
-- Enable detailed error messages in development mode.
-- Use browser dev tools and Blazor's built-in error boundaries.
+- Utilize Blazor server-side or WebAssembly optimally based on the project requirements.
+- Use asynchronous methods (async/await) for API calls or UI actions that could block the main thread.
+- Optimize Razor components by reducing unnecessary renders and using StateHasChanged() efficiently.
+- Minimize the component render tree by avoiding re-renders unless necessary, using ShouldRender() where appropriate.
+- Use EventCallbacks for handling user interactions efficiently, passing only minimal data when triggering events.
 
-## General .NET Testability Guidelines
-- Follow the Arrange-Act-Assert pattern in unit tests.
-- Ensure all services are injected through interfaces.
-- Avoid static classes unless stateless and pure utility.
-- Keep logic out of the UI layer when possible for easier testing.
+## Caching Strategies
+
+- Implement in-memory caching for frequently used data, especially for Blazor Server apps. Use IMemoryCache for lightweight caching solutions.
+- For Blazor WebAssembly, utilize localStorage or sessionStorage to cache application state between user sessions.
+- Consider Distributed Cache strategies (like Redis or SQL Server Cache) for larger applications that need shared state across multiple users or clients.
+- Cache API calls by storing responses to avoid redundant calls when data is unlikely to change, thus improving the user experience.
+
+## State Management Libraries
+
+- Use Blazor's built-in Cascading Parameters and EventCallbacks for basic state sharing across components.
+- Implement advanced state management solutions using libraries like Fluxor or BlazorState when the application grows in complexity.
+- For client-side state persistence in Blazor WebAssembly, consider using Blazored.LocalStorage or Blazored.SessionStorage to maintain state between page reloads.
+- For server-side Blazor, use Scoped Services and the StateContainer pattern to manage state within user sessions while minimizing re-renders.
+
+## API Design and Integration
+
+- Use HttpClient or other appropriate services to communicate with external APIs or your own backend.
+- Implement error handling for API calls using try-catch and provide proper user feedback in the UI.
+
+## Testing and Debugging in Visual Studio
+
+- All unit testing and integration testing should be done in Visual Studio Enterprise.
+- Test Blazor components and services using xUnit, NUnit, or MSTest.
+- Use Moq or NSubstitute for mocking dependencies during tests.
+- Debug Blazor UI issues using browser developer tools and Visual Studio's debugging tools for backend and server-side issues.
+- For performance profiling and optimization, rely on Visual Studio's diagnostics tools.
+
+## Security and Authentication
+
+- Implement Authentication and Authorization in the Blazor app where necessary using ASP.NET Identity or JWT tokens for API authentication.
+- Use HTTPS for all web communication and ensure proper CORS policies are implemented.
+
+## API Documentation and Swagger
+
+- Use Swagger/OpenAPI for API documentation for your backend API services.
+- Ensure XML documentation for models and API methods for enhancing Swagger documentation.

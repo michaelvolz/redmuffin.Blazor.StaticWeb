@@ -1,50 +1,333 @@
 ---
-applyTo: "**/*.{ps1,psm1,psd1}"
----
+applyTo: '**/*.ps1,**/*.psm1'
+description: 'PowerShell cmdlet and scripting best practices based on Microsoft guidelines'
+---  
 
-# Project coding standards
+# PowerShell Cmdlet Development Guidelines
 
-## General PowerShell Best Practices
-- Always use `PascalCase` for function names (e.g., `Get-UserInfo`) and `camelCase` for variables.
-- Follow the verb-noun convention in function names using approved verbs from `Get-Verb`.
-- Write functions with `CmdletBinding()` and proper parameter blocks.
-- Avoid aliases (e.g., use `Get-ChildItem`, not `gci`) for clarity and cross-platform compatibility.
-- Use `Write-Verbose`, `Write-Output`, and `Write-Error` appropriately based on the context.
+This guide provides PowerShell-specific instructions to help GitHub Copilot generate idiomatic, safe, and maintainable scripts. It aligns with Microsoft’s PowerShell cmdlet development guidelines.
 
-## Code Style and Structure
-- Use Tabs for indentation�be consistent across scripts.
-- Avoid one-liners for complex logic; prefer clarity over brevity.
-- Use `Begin`, `Process`, `End` blocks when writing advanced functions.
-- Prefer `param()` blocks with type constraints and default values.
+## Naming Conventions
 
-## Security Best Practices
-- Avoid hardcoding credentials; use `Get-Credential` or Windows Credential Manager.
-- Always validate and sanitize input from users or external sources.
-- Use `-ErrorAction Stop` when handling critical operations to catch and handle errors properly.
-- Avoid invoking external executables without validating paths or input.
+- **Verb-Noun Format:**
+  - Use approved PowerShell verbs (Get-Verb)
+  - Use singular nouns
+  - PascalCase for both verb and noun
+  - Avoid special characters and spaces
 
-## Tooling & Modules
-- Prefer using modules (`.psm1`) over large scripts when sharing functions.
-- Group related functions into modules with a clear `Export-ModuleMember` section.
-- Use comment-based help for all public functions (`.SYNOPSIS`, `.DESCRIPTION`, `.EXAMPLE`, `.PARAMETER`, `.OUTPUTS`).
+- **Parameter Names:**
+  - Use PascalCase
+  - Choose clear, descriptive names
+  - Use singular form unless always multiple
+  - Follow PowerShell standard names
 
-## Testing and Validation
-- Use Pester for testing PowerShell functions and scripts.
-- Follow the Arrange-Act-Assert structure in Pester tests.
-- Validate scripts with `Invoke-ScriptAnalyzer` and fix violations.
+- **Variable Names:**
+  - Use PascalCase for public variables
+  - Use camelCase for private variables
+  - Avoid abbreviations
+  - Use meaningful names
 
-## Reusability and Maintainability
-- Break large scripts into reusable functions or modules.
-- Use `Try/Catch/Finally` for error handling instead of checking `$?` or `$LASTEXITCODE`.
-- Comment and document non-trivial logic using inline comments.
-- Avoid excessive pipeline chaining�use intermediate variables when needed.
+- **Alias Avoidance:**
+  - Use full cmdlet names
+  - Avoid using aliases in scripts (e.g., use Get-ChildItem instead of gci)
+  - Document any custom aliases
+  - Use full parameter names
 
-## Clean Output
-- Always return structured data (e.g., hashtables or custom objects), not raw strings.
-- Avoid unnecessary `Write-Host` (use `Write-Output` or return values).
-- Do not use `Write-Output` for logging�use `Write-Verbose` or `Write-Information`.
+### Example
 
-## Performance Considerations
-- Use `[ordered]` and `[hashtable]` appropriately when working with key-value pairs.
-- Avoid unnecessary loops; leverage the pipeline and built-in cmdlets like `ForEach-Object`.
-- Use `Where-Object` and `Select-Object` efficiently to reduce memory and improve readability.
+```powershell
+function Get-UserProfile {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Username,
+
+        [Parameter()]
+        [ValidateSet('Basic', 'Detailed')]
+        [string]$ProfileType = 'Basic'
+    )
+
+    process {
+        # Logic here
+    }
+}
+```
+
+## Parameter Design
+
+- **Standard Parameters:**
+  - Use common parameter names (`Path`, `Name`, `Force`)
+  - Follow built-in cmdlet conventions
+  - Use aliases for specialized terms
+  - Document parameter purpose
+
+- **Parameter Names:**
+  - Use singular form unless always multiple
+  - Choose clear, descriptive names
+  - Follow PowerShell conventions
+  - Use PascalCase formatting
+
+- **Type Selection:**
+  - Use common .NET types
+  - Implement proper validation
+  - Consider ValidateSet for limited options
+  - Enable tab completion where possible
+
+- **Switch Parameters:**
+  - Use [switch] for boolean flags
+  - Avoid $true/$false parameters
+  - Default to $false when omitted
+  - Use clear action names
+
+### Example
+
+```powershell
+function Set-ResourceConfiguration {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Name,
+        
+        [Parameter()]
+        [ValidateSet('Dev', 'Test', 'Prod')]
+        [string]$Environment = 'Dev',
+        
+        [Parameter()]
+        [switch]$Force,
+        
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string[]]$Tags
+    )
+    
+    process {
+        # Logic here
+    }
+}
+```
+
+## Pipeline and Output
+
+- **Pipeline Input:**
+  - Use `ValueFromPipeline` for direct object input
+  - Use `ValueFromPipelineByPropertyName` for property mapping
+  - Implement Begin/Process/End blocks for pipeline handling
+  - Document pipeline input requirements
+
+- **Output Objects:**
+  - Return rich objects, not formatted text
+  - Use PSCustomObject for structured data
+  - Avoid Write-Host for data output
+  - Enable downstream cmdlet processing
+
+- **Pipeline Streaming:**
+  - Output one object at a time
+  - Use process block for streaming
+  - Avoid collecting large arrays
+  - Enable immediate processing
+
+- **PassThru Pattern:**
+  - Default to no output for action cmdlets
+  - Implement `-PassThru` switch for object return
+  - Return modified/created object with `-PassThru`
+  - Use verbose/warning for status updates
+
+### Example
+
+```powershell
+function Update-ResourceStatus {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [string]$Name,
+
+        [Parameter(Mandatory)]
+        [ValidateSet('Active', 'Inactive', 'Maintenance')]
+        [string]$Status,
+
+        [Parameter()]
+        [switch]$PassThru
+    )
+
+    begin {
+        Write-Verbose "Starting resource status update process"
+        $timestamp = Get-Date
+    }
+
+    process {
+        # Process each resource individually
+        Write-Verbose "Processing resource: $Name"
+        
+        $resource = [PSCustomObject]@{
+            Name = $Name
+            Status = $Status
+            LastUpdated = $timestamp
+            UpdatedBy = $env:USERNAME
+        }
+
+        # Only output if PassThru is specified
+        if ($PassThru) {
+            Write-Output $resource
+        }
+    }
+
+    end {
+        Write-Verbose "Resource status update process completed"
+    }
+}
+ ```
+
+## Error Handling and Safety
+
+- **ShouldProcess Implementation:**
+  - Use `[CmdletBinding(SupportsShouldProcess = $true)]`
+  - Set appropriate `ConfirmImpact` level
+  - Call `$PSCmdlet.ShouldProcess()` for system changes
+  - Use `ShouldContinue()` for additional confirmations
+
+- **Message Streams:**
+  - `Write-Verbose` for operational details with `-Verbose`
+  - `Write-Warning` for warning conditions
+  - `Write-Error` for non-terminating errors
+  - `throw` for terminating errors
+  - Avoid `Write-Host` except for user interface text
+
+- **Error Handling Pattern:**
+  - Use try/catch blocks for error management
+  - Set appropriate ErrorAction preferences
+  - Return meaningful error messages
+  - Use ErrorVariable when needed
+  - Include proper terminating vs non-terminating error handling
+
+- **Non-Interactive Design:**
+  - Accept input via parameters
+  - Avoid `Read-Host` in scripts
+  - Support automation scenarios
+  - Document all required inputs
+
+### Example
+
+```powershell
+function Remove-UserAccount {
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
+    param(
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Username,
+
+        [Parameter()]
+        [switch]$Force
+    )
+
+    begin {
+        Write-Verbose "Starting user account removal process"
+        $ErrorActionPreference = 'Stop'
+    }
+
+    process {
+        try {
+            # Validation
+            if (-not (Test-UserExists -Username $Username)) {
+                Write-Error "User account '$Username' not found"
+                return
+            }
+
+            # Confirmation
+            $shouldProcessMessage = "Remove user account '$Username'"
+            if ($Force -or $PSCmdlet.ShouldProcess($Username, $shouldProcessMessage)) {
+                Write-Verbose "Removing user account: $Username"
+                
+                # Main operation
+                Remove-ADUser -Identity $Username -ErrorAction Stop
+                Write-Warning "User account '$Username' has been removed"
+            }
+        }
+        catch [Microsoft.ActiveDirectory.Management.ADException] {
+            Write-Error "Active Directory error: $_"
+            throw
+        }
+        catch {
+            Write-Error "Unexpected error removing user account: $_"
+            throw
+        }
+    }
+
+    end {
+        Write-Verbose "User account removal process completed"
+    }
+}
+```
+
+## Documentation and Style
+
+- **Comment-Based Help:** Include comment-based help for any public-facing function or cmdlet. Inside the function, add a `<# ... #>` help comment with at least:
+  - `.SYNOPSIS` Brief description
+  - `.DESCRIPTION` Detailed explanation
+  - `.EXAMPLE` sections with practical usage
+  - `.PARAMETER` descriptions
+  - `.OUTPUTS` Type of output returned
+  - `.NOTES` Additional information
+
+- **Consistent Formatting:**
+  - Follow consistent PowerShell style
+  - Use proper indentation (4 spaces recommended)
+  - Opening braces on same line as statement
+  - Closing braces on new line
+  - Use line breaks after pipeline operators
+  - PascalCase for function and parameter names
+  - Avoid unnecessary whitespace
+
+- **Pipeline Support:**
+  - Implement Begin/Process/End blocks for pipeline functions
+  - Use ValueFromPipeline where appropriate
+  - Support pipeline input by property name
+  - Return proper objects, not formatted text
+
+- **Avoid Aliases:** Use full cmdlet names and parameters
+  - Avoid using aliases in scripts (e.g., use Get-ChildItem instead of gci); aliases are acceptable for interactive shell use.
+  - Use `Where-Object` instead of `?` or `where`
+  - Use `ForEach-Object` instead of `%`
+  - Use `Get-ChildItem` instead of `ls` or `dir`
+
+## Full Example: End-to-End Cmdlet Pattern
+
+```powershell
+function New-Resource {
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
+    param(
+        [Parameter(Mandatory = $true,
+                   ValueFromPipeline = $true,
+                   ValueFromPipelineByPropertyName = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Name,
+
+        [Parameter()]
+        [ValidateSet('Development', 'Production')]
+        [string]$Environment = 'Development'
+    )
+    
+    begin {
+        Write-Verbose "Starting resource creation process"
+    }
+    
+    process {
+        try {
+            if ($PSCmdlet.ShouldProcess($Name, "Create new resource")) {
+                # Resource creation logic here
+                Write-Output ([PSCustomObject]@{
+                    Name = $Name
+                    Environment = $Environment
+                    Created = Get-Date
+                })
+            }
+        }
+        catch {
+            Write-Error "Failed to create resource: $_"
+        }
+    }
+    
+    end {
+        Write-Verbose "Completed resource creation process"
+    }
+}
+```

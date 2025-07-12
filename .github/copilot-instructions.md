@@ -1,4 +1,6 @@
-﻿# Blazor WebAssembly .NET 9 – AI Coding Instructions
+﻿# AI Code Assistant Instructions
+
+**FOR AI CODE ASSISTANTS ONLY** - This file contains technical guidelines and tool information specifically for AI assistants. Human developers should refer to README.md for project documentation.
 
 Target: .NET 9 Blazor WebAssembly, Visual Studio 2022
 
@@ -105,7 +107,33 @@ project-root/
 
 ## 9. AI Operational Guidelines
 - Offer PowerShell scripts for complex/data-intensive tasks
-- Use Context7 MCP Server for framework/library documentation - prioritize over training data
+- **Context7 MCP Server:** Available for up-to-date documentation
+  - Tools: `resolve-library-id` (resolves library names), `get-library-docs` (fetches documentation)
+  - Workflow: Always call `resolve-library-id` first, then use returned ID with `get-library-docs`
+  - Prioritize over training data - fetches current, version-specific documentation
+  - Use for: .NET/Blazor/Azure docs, framework guides, API references, code examples
+  - Examples: "Get latest Blazor docs", "Fetch .NET 9 API reference", "Get TUnit framework documentation"
+  - Auto-detects libraries in conversation and retrieves relevant documentation
+- **Fetch MCP Server:** Available for web content retrieval
+  - Fetches URLs and converts HTML to markdown automatically
+  - Supports HTML, JSON, Markdown, plain text formats
+  - Use for: API docs, GitHub repos, tutorials, specifications
+  - Examples: "Fetch Blazor routing docs", "Get TUnit setup instructions", "Retrieve Foundation CSS examples"
+  - Handles content truncation and pagination for large documents
+- **Brave Search MCP Server:** Available for web and local search
+  - Tools: `brave_web_search` (general web), `brave_local_search` (local businesses)
+  - Parameters: query (required), count (max 20), offset (max 9 for pagination)
+  - Auto-fallback: Local search falls back to web search if no results
+  - Use for: Recent info, news, current events, local businesses, API changes
+  - Examples: "Search for latest .NET 9 updates", "Find Blazor WebAssembly performance tips", "Get current Azure Functions pricing"
+  - Free tier: 2,000 queries/month, privacy-focused results
+- **Sequential Thinking MCP Server:** Available for structured problem-solving
+  - Tool: `sequentialthinking` - breaks complex problems into manageable steps
+  - Key parameters: thought, thought_number, total_thoughts, next_thought_needed
+  - Features: Dynamic adaptation, revision capability, branching logic, progress tracking
+  - Use for: Complex coding problems, architecture planning, debugging analysis, feature design
+  - Examples: "Think through implementing OAuth step-by-step", "Plan Blazor component architecture systematically"
+  - Can adjust total thoughts and revise previous steps as understanding evolves
 - **Workflow:**
   - Edit one file at a time to avoid conflicts
   - For large changes: outline plan, get approval, make incremental edits

@@ -1,89 +1,114 @@
 ---
-applyTo: "**/*.cs"
+description: 'Guidelines for building C# applications'
+applyTo: '**/*.cs'
 ---
 
-# Project coding standards
+# C# Development
 
-## General C# Coding Standards
-- Use `var` only when the type is clearly apparent from the right-hand side (e.g., `var items = new List<string>()`), otherwise use explicit types
-- Use consistent indentation and always use braces, even for single-line blocks  
-- Keep line length under 160 characters
-- Organize `using` directives alphabetically and group system namespaces first
+## C# Instructions
+- Always use the latest version C#, currently C# 13 features.
+- Write clear and concise comments for each function.
+
+## General Instructions
+- Make only high confidence suggestions when reviewing code changes.
+- Write code with good maintainability practices, including comments on why certain design decisions were made.
+- Handle edge cases and write clear exception handling.
+- For libraries or external dependencies, mention their usage and purpose in comments.
 
 ## Naming Conventions
-- Use `PascalCase` for class names, methods, properties, and namespaces.
-- Use `camelCase` for variables and method parameters.
-- Prefix private fields with `_` and use `camelCase` (e.g., `_service`).
-- Avoid abbreviations; prefer descriptive and meaningful names.
 
-## Design Patterns & Architecture
-- Follow the SOLID principles.
-- Prefer composition over inheritance.
-- Use Dependency Injection for decoupling and testability.
-- Apply appropriate design patterns such as Repository, Strategy, Factory, and Adapter where applicable.
-- Follow Clean Architecture when structuring large applications.
+- Follow PascalCase for component names, method names, and public members.
+- Use camelCase for private fields and local variables.
+- Prefix interface names with "I" (e.g., IUserService).
 
-## Code Quality and Maintainability
-- Keep methods small and focused; one method should do one thing only.
-- Avoid magic numbers and strings�use constants or enums.
-- Prefer modern C# features such as:
-  - Pattern matching
-  - Null-coalescing operators (`??`, `??=`)
-  - `switch` expressions
-  - Records and value types
-  - Expression-bodied members
+## Formatting
 
-## Performance and Memory Efficiency
-- Avoid unnecessary allocations (e.g., avoid `ToList()` unless required).
-- Use `Span<T>` and `Memory<T>` when working with slices of data.
-- Prefer `ValueTask` over `Task` in performance-critical async methods.
-- Avoid boxing/unboxing and excessive object creation in loops or hot paths.
+- Apply code-formatting style defined in `.editorconfig`.
+- Prefer file-scoped namespace declarations and single-line using directives.
+- Insert a newline before the opening curly brace of any code block (e.g., after `if`, `for`, `while`, `foreach`, `using`, `try`, etc.).
+- Ensure that the final return statement of a method is on its own line.
+- Use pattern matching and switch expressions wherever possible.
+- Use `nameof` instead of string literals when referring to member names.
+- Ensure that XML doc comments are created for any public APIs. When applicable, include `<example>` and `<code>` documentation in the comments.
 
-## Error Handling and Logging
-- Do not silently catch or suppress exceptions.
-- Catch only specific exception types when possible.
-- Use exception filters and `when` clauses to improve readability.
-- Use logging frameworks (e.g., Serilog, Microsoft.Extensions.Logging) for structured logging.
+## Project Setup and Structure
 
-## Security Best Practices
-- Validate all input, especially data coming from clients or external sources.
-- Avoid hardcoded credentials or API keys. Use secrets management or configuration files.
-- Sanitize and encode output to prevent XSS or injection attacks.
-- Use secure algorithms for hashing and encryption (e.g., SHA-256, AES-GCM).
+- Guide users through creating a new .NET project with the appropriate templates.
+- Explain the purpose of each generated file and folder to build understanding of the project structure.
+- Demonstrate how to organize code using feature folders or domain-driven design principles.
+- Show proper separation of concerns with models, services, and data access layers.
+- Explain the Program.cs and configuration system in ASP.NET Core 9 including environment-specific settings.
 
-## Testability
-- Favor interfaces and abstractions over concrete types.
-- Use dependency injection and mocking libraries for unit tests.
-- Avoid static classes when testability is important.
-- Write unit tests using xUnit, NUnit, or MSTest with clear Arrange/Act/Assert structure.
+## Nullable Reference Types
 
-Coding standards, domain knowledge, and preferences that AI should follow.
+- Declare variables non-nullable, and check for `null` at entry points.
+- Always use `is null` or `is not null` instead of `== null` or `!= null`.
+- Trust the C# null annotations and don't add null checks when the type system says a value cannot be null.
 
-## Namespaces
-- Use file-scoped namespaces that match the folder structure.
+## Data Access Patterns
 
-## Immutability
-- Prefer immutable types unless mutability is requested.
-- Prefer records over classes for immutable types.
+- Guide the implementation of a data access layer using Entity Framework Core.
+- Explain different options (SQL Server, SQLite, In-Memory) for development and production.
+- Demonstrate repository pattern implementation and when it's beneficial.
+- Show how to implement database migrations and data seeding.
+- Explain efficient query patterns to avoid common performance issues.
 
-## Files Organization
-- Define one type per file.
+## Authentication and Authorization
 
-## Record Design
-- Define record's properties on the same line with the record declaration.
-- Accompany each record `<name>` with `<name>Factory` static factory class.
-- Place the factory class in the same file as the record.
-- Expose static `Create` method in the factory class for instantiation.
-- Place argument validation in the `Create` method.
-- Never use record's constructor when there is a factory method.
-- Use immutable collections in records unless requested otherwise.
-- Use `ImmutableList<T>` in records whenever possible.
-- Define record behavior in extension methods in other static classes.
+- Guide users through implementing authentication using JWT Bearer tokens.
+- Explain OAuth 2.0 and OpenID Connect concepts as they relate to ASP.NET Core.
+- Show how to implement role-based and policy-based authorization.
+- Demonstrate integration with Microsoft Entra ID (formerly Azure AD).
+- Explain how to secure both controller-based and Minimal APIs consistently.
 
-## Discriminated Unions Design
-- Prefer using records for discriminated unions.
-- Derive specific types from a base abstract record.
-- Define the entire discriminated union in one file.
-- Define one static factories class per discriminated union.
-- Expose one static factory method per variant.
-- Follow all rules for record design when designing a discriminated union.
+## Validation and Error Handling
+
+- Guide the implementation of model validation using data annotations and FluentValidation.
+- Explain the validation pipeline and how to customize validation responses.
+- Demonstrate a global exception handling strategy using middleware.
+- Show how to create consistent error responses across the API.
+- Explain problem details (RFC 7807) implementation for standardized error responses.
+
+## API Versioning and Documentation
+
+- Guide users through implementing and explaining API versioning strategies.
+- Demonstrate Swagger/OpenAPI implementation with proper documentation.
+- Show how to document endpoints, parameters, responses, and authentication.
+- Explain versioning in both controller-based and Minimal APIs.
+- Guide users on creating meaningful API documentation that helps consumers.
+
+## Logging and Monitoring
+
+- Guide the implementation of structured logging using Serilog or other providers.
+- Explain the logging levels and when to use each.
+- Demonstrate integration with Application Insights for telemetry collection.
+- Show how to implement custom telemetry and correlation IDs for request tracking.
+- Explain how to monitor API performance, errors, and usage patterns.
+
+## Testing
+
+- Always include test cases for critical paths of the application.
+- Guide users through creating unit tests.
+- Do not emit "Act", "Arrange" or "Assert" comments.
+- Copy existing style in nearby files for test method names and capitalization.
+- Explain integration testing approaches for API endpoints.
+- Demonstrate how to mock dependencies for effective testing.
+- Show how to test authentication and authorization logic.
+- Explain test-driven development principles as applied to API development.
+
+## Performance Optimization
+
+- Guide users on implementing caching strategies (in-memory, distributed, response caching).
+- Explain asynchronous programming patterns and why they matter for API performance.
+- Demonstrate pagination, filtering, and sorting for large data sets.
+- Show how to implement compression and other performance optimizations.
+- Explain how to measure and benchmark API performance.
+
+## Deployment and DevOps
+
+- Guide users through containerizing their API using .NET's built-in container support (`dotnet publish --os linux --arch x64 -p:PublishProfile=DefaultContainer`).
+- Explain the differences between manual Dockerfile creation and .NET's container publishing features.
+- Explain CI/CD pipelines for NET applications.
+- Demonstrate deployment to Azure App Service, Azure Container Apps, or other hosting options.
+- Show how to implement health checks and readiness probes.
+- Explain environment-specific configurations for different deployment stages.
