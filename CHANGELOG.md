@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 
 ### ✨ Added
 
+- 🚀 feat(prompts): add .NET tooling and workflow management prompts (68b65c5)
+- 🚀 feat(prompts): add development and architecture prompt files (72fc949)
+- 🚀 feat(prompts): add core workflow prompt files (cccc329)
+- 🚀 feat(chatmodes): add specialized GitHub Copilot chat modes (3b4aef3)
+- 🚀 feat(instructions): add advanced development instruction files (fef94bd)
+- 🚀 feat(instructions): add core technology instruction files (63200d1)
 - 🚀 feat(swa): add SwaLauncher project for Visual Studio integration (d043e52)
 - 🚀 feat(di): register PerformanceMetricsService in dependency injection (036d43c)
 - 🚀 feat(services): add performance metrics service with async optimization (f4a7838)
@@ -120,6 +126,8 @@ All notable changes to this project will be documented in this file.
 
 ### 🔄 Changed
 
+- config(github): update GitHub Copilot configuration and instructions (4862423)
+- 🔨 chore(prompts): remove obsolete prompt and instruction files (b66ea78)
 - 🔨 chore(config): add backup of original SWA CLI configuration (2f81d33)
 - 💄 style(components): fix width jumping and reduce drop shadow intensity (1bdff36)
 - ♻️ refactor(components): optimize PageLoadSpeed with centralized config and services (7e5f712)
@@ -392,6 +400,6 @@ All notable changes to this project will be documented in this file.
 - 🧪 test(scripts): fix changelog generation tests for Pester 5.x compatibility (4e28d0b)
 ---
 
-*🤖 This changelog was automatically generated from 741 commits.*
-*371 commits were filtered out (merges, dependencies, formatting, etc.).*
+*🤖 This changelog was automatically generated from 750 commits.*
+*372 commits were filtered out (merges, dependencies, formatting, etc.).*
 
