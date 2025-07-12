@@ -1,5 +1,7 @@
 # redmuffin.Blazor.StaticWeb (preview - alpha)
 
+**FOR HUMAN DEVELOPERS ONLY** - If you are an AI code assistant, please refer to `.github/copilot-instructions.md` instead of this file for technical guidelines and project information.
+
 [![Build Status](https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb/actions/workflows/azure-static-web-apps-lively-cliff-0945be603.yml/badge.svg)](https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb/actions/workflows/azure-static-web-apps-lively-cliff-0945be603.yml)
 [![CodeQL](https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb/actions/workflows/codeql.yml/badge.svg)](https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb/actions/workflows/codeql.yml)
 [![Last Commit (master)](https://img.shields.io/github/last-commit/michaelvolz/redmuffin.Blazor.StaticWeb/master.svg)](https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb/commits/master)
@@ -32,6 +34,9 @@
 - [Azure Functions Integration](#azure-functions-integration)
 - [Azure CLI Dependency](#azure-cli-dependency)
 - [Azure Static Web Apps CLI Dependency](#azure-static-web-apps-cli-dependency)
+- [Fetch MCP Server Integration](#fetch-mcp-server-integration)
+- [Brave Search MCP Server Integration](#brave-search-mcp-server-integration)
+- [Context7 MCP Server Integration](#context7-mcp-server-integration)
 - [Local Development: Visual Studio Multi-Project Startup](#local-development-visual-studio-multi-project-startup)
 
 ---
@@ -204,6 +209,18 @@ redmuffin.Blazor.StaticWeb/
 - **[GitHub Copilot](https://github.com/features/copilot)**  
   AI-powered code completion tool with MCP server integration via Docker Desktop.
 
+- **[Fetch MCP Server](https://github.com/modelcontextprotocol/servers/tree/main/src/fetch)**  
+  Model Context Protocol server that enables AI assistants to fetch and process web content from URLs, automatically converting HTML to markdown for easier consumption.
+
+- **[Brave Search MCP Server](https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search)**  
+  Model Context Protocol server that provides AI assistants with real-time web search and local business search capabilities through Brave's privacy-focused search API.
+
+- **[Context7 MCP Server](https://github.com/upstash/context7)**
+  Provides up-to-date documentation for libraries and frameworks, allowing AI assistants to fetch relevant code examples and documentation directly.
+
+- **[Sequential Thinking MCP Server](https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking)**
+  Enables structured step-by-step reasoning and problem-solving through a dynamic thinking process that can adapt and evolve as understanding deepens.
+
 - **[EditorConfig](https://editorconfig.org/)**  
   Consistent coding style definitions across different editors and IDEs.
 
@@ -275,6 +292,179 @@ The project requires **Azure Static Web Apps CLI** for local development and tes
 
 To install Azure Static Web Apps CLI, use the following command:npm install -g @azure/static-web-apps-cli
 For more details, refer to the [Azure Static Web Apps CLI Documentation](https://learn.microsoft.com/en-us/azure/static-web-apps/cli).
+
+---
+
+## Fetch MCP Server Integration
+
+The development environment includes **Fetch MCP Server** integration to enhance AI-powered code assistance capabilities. This Model Context Protocol server enables AI assistants (like GitHub Copilot) to fetch and process web content from URLs, providing real-time access to documentation, APIs, and web resources.
+
+### Key Capabilities
+
+- **Web Content Fetching**: Retrieve content from any publicly accessible URL
+- **Format Conversion**: Automatically converts HTML to markdown for easier AI consumption
+- **Multiple Content Types**: Supports HTML, JSON, Markdown, and plain text formats
+- **Content Processing**: Handles content truncation and pagination for large documents
+- **Automatic Detection**: Intelligently detects content types and applies appropriate processing
+
+### Configuration
+
+The Fetch MCP Server is pre-configured in the project's `.mcp.json` file and ready for use with compatible AI assistants.
+
+### Integration with GitHub Copilot
+
+The Fetch MCP Server integrates seamlessly with GitHub Copilot in Visual Studio Code, enabling the AI assistant to:
+
+- Fetch API documentation from official sources
+- Retrieve code examples and tutorials from web resources
+- Access real-time information from documentation websites
+- Pull content from GitHub repositories and wikis
+- Process web-based configuration files and specifications
+
+### Usage Examples
+
+Once configured, you can ask your AI assistant to:
+
+- "Fetch the latest documentation for Blazor WebAssembly routing"
+- "Get the current API specification from the Azure Functions documentation"
+- "Retrieve the setup instructions from the TUnit GitHub repository"
+- "Fetch examples of SCSS usage with Foundation framework"
+
+### Configuration
+
+The Fetch MCP Server configuration is typically managed through your AI assistant's settings. For GitHub Copilot integration, the server runs automatically when Docker Desktop is available and properly configured.
+
+### Security Considerations
+
+- The server can access local/internal IP addresses and may represent a security risk in some environments
+- Ensure proper network security policies are in place when using in corporate environments
+- The server respects robots.txt files and includes configurable user-agent settings
+
+For more details, refer to the [Fetch MCP Server Documentation](https://github.com/modelcontextprotocol/servers/tree/main/src/fetch).
+
+---
+
+## Brave Search MCP Server Integration
+
+The development environment includes **Brave Search MCP Server** integration to provide AI assistants with real-time web search capabilities. This Model Context Protocol server enables AI assistants (like GitHub Copilot) to perform web searches and local business searches using Brave's privacy-focused search API.
+
+### Key Capabilities
+
+- **Web Search**: General web searches for current information, news, and documentation
+- **Local Business Search**: Find local businesses, services, and points of interest
+- **Privacy-Focused**: Uses Brave's privacy-respecting search engine
+- **Real-Time Results**: Access to current information and recent developments
+- **Smart Fallbacks**: Automatically falls back to web search if local results are unavailable
+- **Pagination Support**: Handle large result sets with built-in pagination
+
+### Configuration
+
+The Brave Search MCP Server configuration can be added to the project's `.mcp.json` file. This server requires a Brave Search API key for operation. The free tier provides 2,000 queries per month, perfect for development and testing.
+
+### Integration with GitHub Copilot
+
+The Brave Search MCP Server integrates seamlessly with GitHub Copilot in Visual Studio Code, enabling the AI assistant to:
+
+- Search for the latest technology updates and releases
+- Find current best practices and coding patterns
+- Access real-time information about frameworks and libraries
+- Discover recent blog posts and tutorials
+- Look up API changes and breaking changes
+- Find local development resources and services
+
+### Usage Examples
+
+Once configured, you can ask your AI assistant to:
+
+- "Search for the latest .NET 9 performance improvements"
+- "Find current Blazor WebAssembly best practices"
+- "Look up recent Azure Functions updates"
+- "Search for TUnit testing framework examples"
+- "Find local developer meetups in my area"
+
+### Configuration
+
+The Brave Search MCP Server configuration is typically managed through your AI assistant's settings. For GitHub Copilot integration, configure the server with your API key when Docker Desktop is available.
+
+### Search Tools Available
+
+- **brave_web_search**: General web search with customizable result count (max 20) and pagination
+- **brave_local_search**: Local business and service search with automatic web search fallback
+
+### Benefits for Development
+
+- **Stay Current**: Access to the latest information about technologies and frameworks
+- **Research Efficiency**: Quickly find relevant documentation and examples
+- **Problem Solving**: Search for solutions to current issues and error messages
+- **Learning**: Discover new techniques and best practices
+- **Privacy-Focused**: Search without tracking or data collection concerns
+
+For more details, refer to the [Brave Search MCP Server Documentation](https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search).
+
+---
+
+## Context7 MCP Server Integration
+
+The development environment includes **Context7 MCP Server** integration to provide AI assistants with access to up-to-date documentation for libraries and frameworks. This Model Context Protocol server enables AI assistants (like GitHub Copilot) to fetch current documentation, code examples, and API references directly from authoritative sources.
+
+### Key Capabilities
+
+- **Up-to-Date Documentation**: Fetches current documentation instead of relying on outdated training data
+- **Version-Specific Content**: Access documentation for specific versions of libraries and frameworks
+- **Code Examples**: Retrieve relevant code examples and usage patterns
+- **Library Resolution**: Automatically resolves common library names to Context7-compatible IDs
+- **Multi-Language Support**: Supports documentation for various programming languages and frameworks
+- **Smart Ranking**: Intelligent project ranking and customizable token limits
+
+### Configuration
+
+The Context7 MCP Server is pre-configured in the project's `.mcp.json` file as an HTTP-based service and ready for use with compatible AI assistants.
+
+### Integration with GitHub Copilot
+
+The Context7 MCP Server integrates seamlessly with GitHub Copilot in Visual Studio Code, enabling the AI assistant to:
+
+- Access current documentation for .NET, Blazor, and Azure technologies
+- Fetch up-to-date API references and code examples
+- Retrieve version-specific documentation for frameworks and libraries
+- Get current best practices and implementation patterns
+- Access documentation that's more recent than training data cutoffs
+
+### Usage Examples
+
+Once configured, you can ask your AI assistant to:
+
+- "Get the latest Blazor WebAssembly documentation using Context7"
+- "Fetch current .NET 9 API documentation"
+- "Use Context7 to get TUnit testing framework examples"
+- "Get Azure Functions documentation for .NET 8"
+- "Fetch Foundation CSS framework documentation"
+
+### Available Tools
+
+- **resolve-library-id**: Resolves a general library name into a Context7-compatible library ID
+- **get-library-docs**: Fetches documentation for a library using a Context7-compatible library ID
+
+### Configuration
+
+The Context7 MCP Server configuration is typically managed through your AI assistant's settings. For GitHub Copilot integration, the server runs automatically when Docker Desktop is available and properly configured.
+
+### Workflow
+
+1. **Library Detection**: Context7 automatically detects mentioned libraries and frameworks
+2. **ID Resolution**: Uses `resolve-library-id` to find the correct Context7 library identifier
+3. **Documentation Fetch**: Retrieves current documentation using `get-library-docs`
+4. **Context Injection**: Injects relevant documentation directly into the AI prompt
+
+### Benefits for Development
+
+- **Current Information**: Always access the latest documentation and examples
+- **Reduced Research Time**: Get documentation without leaving your development environment
+- **Better Code Quality**: Access to current best practices and implementation patterns
+- **Version Accuracy**: Get documentation that matches your project's dependency versions
+- **Multi-Framework Support**: Works with .NET, JavaScript, Python, and many other ecosystems
+
+For more details, refer to the [Context7 MCP Server Documentation](https://github.com/upstash/context7).
 
 ---
 

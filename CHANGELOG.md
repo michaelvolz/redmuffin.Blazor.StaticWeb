@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 
 ### ✨ Added
 
+- 🚀 feat(swa): add SwaLauncher project for Visual Studio integration (d043e52)
+- 🚀 feat(di): register PerformanceMetricsService in dependency injection (036d43c)
+- 🚀 feat(services): add performance metrics service with async optimization (f4a7838)
+- 🚀 feat(models): add immutable performance data models with caching (fa68808)
+- 🚀 feat(config): add centralized PageLoadSpeed configuration system (0285ae4)
+- 🚀 feat(styles): enhance Foundation integration with centralized variables (826a118)
+- 🚀 feat(styles): create centralized variables system extending Foundation (42ba54c)
+- 🚀 feat(ui): add responsive site header layout styles (6cb40bf)
 - 🚀 feat(changelog): add emojis to header, footer, and summary (0211bf7)
 - 🚀 feat(changelog): implement emoji helper functions and formatting (ab8c958)
 - 🚀 feat(changelog): add emoji mappings to configuration (2add30e)
@@ -112,6 +120,19 @@ All notable changes to this project will be documented in this file.
 
 ### 🔄 Changed
 
+- 🔨 chore(config): add backup of original SWA CLI configuration (2f81d33)
+- 💄 style(components): fix width jumping and reduce drop shadow intensity (1bdff36)
+- ♻️ refactor(components): optimize PageLoadSpeed with centralized config and services (7e5f712)
+- ♻️ refactor(components): optimize PageLoadSpeed component code structure (2f7b1ca)
+- ♻️ refactor(components): integrate media query debugger with centralized variables (1786d66)
+- ♻️ refactor(components): integrate site header with centralized variables (85fd407)
+- 💄 style(ui): integrate site header styles and override navigation (1cfc6cb)
+- 💄 style(ui): update logo container alignment and background (994eb3e)
+- ♻️ refactor(pages): remove duplicate Logo component from Videos page (8e7569f)
+- ♻️ refactor(blazor): restructure MainLayout with centralized header (4bbbdb7)
+- 🔨 chore: remove unused git-commits.txt file (1b55368)
+- 🔨 chore(instructions): update applyTo pattern to include .psd1 files for PowerShell scripts (c268978)
+- 🔨 chore(changelog): update with reorganization and config changes (d45e6a6)
 - config(changelog): enable documentation commits in filtering (fc8a090)
 - 🔨 chore(prps): remove obsolete PRP template files (7a4dfb6)
 - ♻️ refactor(tasks): reorganize task files into feature-specific directories (f4d018e)
@@ -336,6 +357,11 @@ All notable changes to this project will be documented in this file.
 
 ### 🐛 Fixed
 
+- 🔧 fix(api): update Azure Functions launch settings for consistent port usage (d2f4f32)
+- 🔧 fix(config): resolve SWA CLI build conflicts and update dev server URL (f3b904e)
+- 🔧 fix(components): remove unnecessary await from UpdateTimestamp call (1f6a1d5)
+- 🔧 fix(ui): correct thumbnail aspect ratio display problem (c565eb1)
+- 🔧 fix(ui): adjust shimmer loading effect mobile height (17702fc)
 - 🔧 fix(changelog): remove unnecessary escape sequences from CHANGELOG.md (3bed8b6)
 - Fix OAuth redirect handling for Raindrop.io API (b6c15dd)
 - 🔧 fix(api): change Raindrop OAuth to JSON format (ffa2632)
@@ -366,6 +392,6 @@ All notable changes to this project will be documented in this file.
 - 🧪 test(scripts): fix changelog generation tests for Pester 5.x compatibility (4e28d0b)
 ---
 
-*🤖 This changelog was automatically generated from 707 commits.*
-*363 commits were filtered out (merges, dependencies, formatting, etc.).*
+*🤖 This changelog was automatically generated from 741 commits.*
+*371 commits were filtered out (merges, dependencies, formatting, etc.).*
 
