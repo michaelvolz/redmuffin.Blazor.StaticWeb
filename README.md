@@ -48,6 +48,8 @@ Suitable for experimentation, learning, and development environments.
 - [Features](#features)
 - [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
+- [Development Workflow](#development-workflow)
+  - [Trunk-Based Development](#trunk-based-development)
 - [Usage](#usage)
 - [Project Structure](#project-structure)
 - [Technology Stack](#technology-stack)
@@ -215,6 +217,68 @@ After setup, verify everything is working:
 - See [Usage](#usage) for common development tasks
 - Check [Local Development](#local-development-visual-studio-multi-project-startup) for development workflow
 - Review [MCP Server Integration](#mcp-server-integration) for AI-enhanced development
+
+---
+
+## Development Workflow
+
+### Trunk-Based Development
+
+This project follows **[Trunk-Based Development](https://trunkbaseddevelopment.com/)** - a source-control branching model where developers collaborate on code in a single branch called 'trunk' (or 'main'/'master'), avoiding long-lived feature branches.
+
+#### Key Principles
+
+- **Single Main Branch**: All development happens on the `master` branch
+- **Frequent Integration**: Developers commit/push to trunk **at least once every 24 hours**
+- **Short-Lived Feature Branches**: When used, feature branches are small, short-lived (hours to 1-2 days), and created from a single developer workstation
+- **Continuous Integration**: Every commit triggers automated builds and tests
+- **No Merge Hell**: Avoid the complexity of long-lived branches and large merges
+
+#### Benefits for This Project
+
+- **Continuous Integration Ready**: Enables true CI/CD with frequent integration
+- **Faster Feedback**: Issues are discovered and resolved quickly
+- **Simplified Workflow**: No complex branching strategies to manage
+- **Better Collaboration**: All developers work with the latest code
+- **Reduced Risk**: Smaller, more frequent changes are easier to review and safer to deploy
+
+#### Workflow Guidelines
+
+1. **Daily Commits**: Commit to `master` at least once per day
+2. **Small Changes**: Break work into small, incremental commits
+3. **Pre-Integration Checks**: Run full build and tests before pushing
+4. **Feature Flags**: Use feature flags for incomplete features rather than branches
+5. **Pull Requests**: Use short-lived PRs for code review (merge within 24 hours)
+
+#### Best Practices
+
+- **Keep the Build Green**: Never break the build on `master`
+- **Test Locally First**: Run `dotnet build` and `dotnet test` before pushing
+- **Use Feature Flags**: Hide incomplete features behind flags instead of long-lived branches
+- **Quick Code Reviews**: Review and merge PRs promptly to avoid drift
+- **Rollback Ready**: Maintain ability to rollback any commit if needed
+
+#### Tools and Automation
+
+- **GitHub Actions**: Automated CI/CD pipeline on every push
+- **Automated Testing**: TUnit tests run on every commit
+- **Code Quality Checks**: CodeQL security scanning and analysis
+- **Deployment Pipeline**: Automatic deployment to Azure Static Web Apps
+
+#### Anti-Patterns to Avoid
+
+- ❌ Long-lived feature branches (more than 1-2 days)
+- ❌ Delaying integration until "feature complete"
+- ❌ Large batch commits
+- ❌ Breaking the build on `master`
+- ❌ Avoiding commits due to "incomplete" work
+
+#### Resources
+
+- **[Official Trunk-Based Development Site](https://trunkbaseddevelopment.com/)**
+- **[Atlassian Guide](https://www.atlassian.com/continuous-delivery/continuous-integration/trunk-based-development)**
+- **[Martin Fowler's Feature Flags](https://martinfowler.com/articles/feature-toggles.html)**
+- **[Continuous Integration](https://www.atlassian.com/continuous-delivery/continuous-integration)**
 
 ---
 
