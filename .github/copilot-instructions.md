@@ -77,7 +77,7 @@ public partial class Example : ComponentBase
 [Test]
 public async Task ShouldReturnExpectedResult()
 {
-    // Arrange, Act, Assert
+    // Test
 }
 
 [Test]
