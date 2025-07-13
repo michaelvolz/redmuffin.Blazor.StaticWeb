@@ -35,10 +35,14 @@ public static class PageLoadSpeedConfig
     public static bool ShouldDisplayComponent(string baseUri)
     {
         if (!IsEnabled)
+        {
             return false;
+        }
 
         if (EnableOnLocalhost)
+        {
             return true;
+        }
 
         // Check if running on localhost/development
         var uri = new Uri(baseUri);
