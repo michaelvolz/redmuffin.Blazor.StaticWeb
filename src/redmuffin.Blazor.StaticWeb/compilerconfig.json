@@ -10,5 +10,9 @@
   {
     "outputFile": "wwwroot/css/media-query-debugger.min.css",
     "inputFile": "wwwroot/lib/media-query-debugger.scss"
+  },
+  {
+    "outputFile": "wwwroot/js/page-load-timing.min.js",
+    "inputFile": "wwwroot/js/page-load-timing.js"
   }
 ]
