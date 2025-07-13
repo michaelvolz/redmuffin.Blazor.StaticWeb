@@ -39,8 +39,6 @@ Suitable for experimentation, learning, and development environments.
 
 **redmuffin.Blazor.StaticWeb** is a modern full-stack web application built with Blazor WebAssembly (.NET 9) and Azure Functions (.NET 8). The solution provides a performant, maintainable static web application with serverless backend capabilities, featuring OAuth integration and comprehensive testing infrastructure.
 
----
-
 ## Table of Contents
 
 - [Project Status](#project-status)
