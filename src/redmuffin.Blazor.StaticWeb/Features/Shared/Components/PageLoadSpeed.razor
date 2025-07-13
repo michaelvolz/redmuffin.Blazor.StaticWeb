@@ -412,10 +412,11 @@
         };
     }
 
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
         _cancellationTokenSource.Cancel();
         _cancellationTokenSource.Dispose();
+        return ValueTask.CompletedTask;
     }
 
     // Data model for JavaScript interop

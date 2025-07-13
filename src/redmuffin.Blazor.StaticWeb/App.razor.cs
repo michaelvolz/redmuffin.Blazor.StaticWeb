@@ -8,9 +8,9 @@ namespace redmuffin.Blazor.StaticWeb;
 
 public partial class App
 {
-    [Inject] private IWarmupService WarmupService { get; set; } = default!;
-
     public ErrorBoundary ComponentErrorBoundary { get; set; } = null!;
+
+    [Inject] private IWarmupService WarmupService { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {

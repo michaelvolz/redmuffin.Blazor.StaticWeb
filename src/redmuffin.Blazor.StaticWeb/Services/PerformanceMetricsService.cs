@@ -29,14 +29,14 @@ public class PerformanceMetricsService : IPerformanceMetricsService, IAsyncDispo
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             cts.CancelAfter(TimeSpan.FromSeconds(PageLoadSpeedConfig.JsInteropTimeoutSeconds));
 
-            await _semaphore.WaitAsync(cts.Token);
+            await _semaphore.WaitAsync(cts.Token).ConfigureAwait(false);
             try
             {
-                var functionExists = await _jsRuntime.InvokeAsync<bool>("eval", cts.Token, "typeof window.getPageLoadMetrics === 'function'");
+                var functionExists = await _jsRuntime.InvokeAsync<bool>("eval", cts.Token, "typeof window.getPageLoadMetrics === 'function'").ConfigureAwait(false);
 
                 if (functionExists)
                 {
-                    var metrics = await _jsRuntime.InvokeAsync<PageLoadSpeed.PageLoadMetrics>("getPageLoadMetrics", cts.Token);
+                    var metrics = await _jsRuntime.InvokeAsync<PageLoadSpeed.PageLoadMetrics>("getPageLoadMetrics", cts.Token).ConfigureAwait(false);
                     return metrics;
                 }
 
@@ -64,7 +64,7 @@ public class PerformanceMetricsService : IPerformanceMetricsService, IAsyncDispo
 
         try
         {
-            return await _jsRuntime.InvokeAsync<bool>("eval", "typeof window.getPageLoadMetrics === 'function'");
+            return await _jsRuntime.InvokeAsync<bool>("eval", "typeof window.getPageLoadMetrics === 'function'").ConfigureAwait(false);
         }
         catch
         {
@@ -82,14 +82,14 @@ public class PerformanceMetricsService : IPerformanceMetricsService, IAsyncDispo
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             cts.CancelAfter(TimeSpan.FromSeconds(PageLoadSpeedConfig.JsInteropTimeoutSeconds));
 
-            await _semaphore.WaitAsync(cts.Token);
+            await _semaphore.WaitAsync(cts.Token).ConfigureAwait(false);
             try
             {
-                var functionExists = await _jsRuntime.InvokeAsync<bool>("eval", cts.Token, "typeof window.getPageLoadTimes === 'function'");
+                var functionExists = await _jsRuntime.InvokeAsync<bool>("eval", cts.Token, "typeof window.getPageLoadTimes === 'function'").ConfigureAwait(false);
 
                 if (functionExists)
                 {
-                    var timings = await _jsRuntime.InvokeAsync<double[]>("getPageLoadTimes", cts.Token);
+                    var timings = await _jsRuntime.InvokeAsync<double[]>("getPageLoadTimes", cts.Token).ConfigureAwait(false);
                     return timings?.Length >= 2 ? timings : null;
                 }
 
@@ -115,7 +115,7 @@ public class PerformanceMetricsService : IPerformanceMetricsService, IAsyncDispo
     {
         try
         {
-            var now = await _jsRuntime.InvokeAsync<double>("performance.now");
+            var now = await _jsRuntime.InvokeAsync<double>("performance.now").ConfigureAwait(false);
             return new PageLoadSpeed.PageLoadMetrics
             {
                 TimeToFirstByte = Math.Round(now * 0.3, 1),
@@ -165,7 +165,7 @@ public class PerformanceMetricsService : IPerformanceMetricsService, IAsyncDispo
 
         if (_performanceModule != null)
         {
-            await _performanceModule.DisposeAsync();
+            await _performanceModule.DisposeAsync().ConfigureAwait(false);
         }
 
         _semaphore.Dispose();
