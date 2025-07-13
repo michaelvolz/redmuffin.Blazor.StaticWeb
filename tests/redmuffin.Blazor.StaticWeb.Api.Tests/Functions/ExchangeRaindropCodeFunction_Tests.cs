@@ -11,7 +11,7 @@ using redmuffin.Blazor.StaticWeb.Api.Tests.Helpers;
 
 namespace redmuffin.Blazor.StaticWeb.Api.Tests.Functions;
 
-public class ExchangeRaindropCodeFunction_Tests : TestBase
+public class ExchangeRaindropCodeFunction_Tests : TestBase, IAsyncDisposable
 {
 	private readonly ILogger<ExchangeRaindropCodeFunction> _logger;
 	private readonly IOptions<Settings> _settings;
@@ -33,7 +33,9 @@ public class ExchangeRaindropCodeFunction_Tests : TestBase
 		_httpClient = new HttpClient(_testMessageHandler);
 		_httpClientFactory = Substitute.For<IHttpClientFactory>();
 		_httpClientFactory.CreateClient(Arg.Any<string>()).Returns(_httpClient);
+#pragma warning disable CA2000 // Dispose objects before losing scope - _httpClient is disposed in DisposeAsync
 		_httpClientFactory.CreateClient().Returns(_httpClient);
+#pragma warning restore CA2000
 	}
 
 	private static TestHttpRequestDataWithBody CreateHttpRequestWithBody(object body)
@@ -360,6 +362,14 @@ public class ExchangeRaindropCodeFunction_Tests : TestBase
 				await asyncDisposableResponse.DisposeAsync().ConfigureAwait(false);
 			httpResponseMessage.Dispose();
 		}
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		_httpClient?.Dispose();
+		_testMessageHandler?.Dispose();
+		GC.SuppressFinalize(this);
+		await Task.CompletedTask.ConfigureAwait(false);
 	}
 }
 
