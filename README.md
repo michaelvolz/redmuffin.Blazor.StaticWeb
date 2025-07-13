@@ -8,11 +8,22 @@ AI assistants should refer to .github/copilot-instructions.md for technical guid
 [![Build Status](https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb/actions/workflows/azure-static-web-apps-lively-cliff-0945be603.yml/badge.svg)](https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb/actions/workflows/azure-static-web-apps-lively-cliff-0945be603.yml)
 [![CodeQL](https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb/actions/workflows/codeql.yml/badge.svg)](https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb/actions/workflows/codeql.yml)
 [![Last Commit (master)](https://img.shields.io/github/last-commit/michaelvolz/redmuffin.Blazor.StaticWeb/master.svg)](https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb/commits/master)
+
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](https://en.wikipedia.org/wiki/Unlicense)
 [![Dependabot enabled](https://img.shields.io/badge/Dependabot-enabled-blue.svg)](https://docs.github.com/en/code-security/dependabot/working-with-dependabot)
 ![GitHub language count](https://img.shields.io/github/languages/count/michaelvolz/redmuffin.Blazor.StaticWeb)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/michaelvolz/redmuffin.Blazor.StaticWeb)
+
 [![.NET 9](https://img.shields.io/badge/.NET-9-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+[![Blazor WebAssembly](https://img.shields.io/badge/Blazor-WebAssembly-512BD4?logo=blazor&logoColor=white)](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor)
+[![Azure Functions](https://img.shields.io/badge/Azure-Functions-0078D4?logo=microsoftazure&logoColor=white)](https://azure.microsoft.com/en-us/products/functions)
+[![C# 13](https://img.shields.io/badge/C%23-13-239120?logo=csharp&logoColor=white)](https://learn.microsoft.com/en-us/dotnet/csharp/)
+[![TUnit](https://img.shields.io/badge/Testing-TUnit-green?logo=.net&logoColor=white)](https://github.com/thomhurst/TUnit)
+[![Foundation](https://img.shields.io/badge/UI-Foundation-29A2DD?logo=foundation&logoColor=white)](https://get.foundation/)
+
+[![Maintenance](https://img.shields.io/badge/Maintained-yes-green.svg)](https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb/graphs/commit-activity)
+[![GitHub commit activity](https://img.shields.io/github/commit-activity/m/michaelvolz/redmuffin.Blazor.StaticWeb)](https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb/graphs/commit-activity)
+
 
 ## Project Status
 
