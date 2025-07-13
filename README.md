@@ -76,7 +76,9 @@ Suitable for experimentation, learning, and development environments.
 - **Comprehensive Testing** - TUnit framework with NSubstitute mocking
 - **Code Coverage** - Automated coverage reports with Coverlet and ReportGenerator
 - **PowerShell Automation** - Scripts for coverage report generation and viewing
-- **SCSS/CSS Styling** - Modern styling with Zurb Foundation framework
+- **SCSS Styling Only** - All styling should be done using SCSS files in the `wwwroot/scss/` directory.
+- **CSS Files are Auto-Generated** - Direct modifications to CSS files are not allowed; they are automatically generated from SCSS.
+- **SCSS Partials** - All SCSS partial files must start with an underscore (_) and be included in `app.scss` for automatic compilation.
 - **Feature Folder Structure** - Organized by feature for better maintainability
 - **Code Quality & Security** - CodeQL analysis, automated builds, Dependabot integration
 - **Accessibility Compliance** - WCAG 2.1 AA standards with semantic HTML and ARIA support
@@ -420,6 +422,10 @@ redmuffin.Blazor.StaticWeb/
 
 - **[SCSS (Sass)](https://sass-lang.com/documentation/syntax#scss)**  
   CSS preprocessor with variables, nesting, and modularization for modern styling capabilities.
+  
+  **Important:** All styling must be done through SCSS files located in `wwwroot/scss/`. CSS files in `wwwroot/css/` are automatically generated and should never be edited directly. Component-specific styles should use `.razor.css` files for scoped styling.
+  
+  **SCSS Partials:** All SCSS partial files must start with an underscore (_) and be imported into `app.scss` for automatic compilation. This ensures proper dependency management and build optimization.
 
 - **[Blazored.LocalStorage](https://github.com/Blazored/LocalStorage)**  
   Blazor library for browser local storage access via JavaScript interop.

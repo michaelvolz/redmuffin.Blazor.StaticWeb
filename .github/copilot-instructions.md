@@ -31,8 +31,12 @@
 
 ## 1. UI & Styling
 - **Framework:** Zurb Foundation for all UI/layout
-- **Styles:** Place in `wwwroot/css` or `wwwroot/scss`
-- **Responsive:** Foundation grid/utilities or custom CSS
+- **SCSS Only:** All styles must be implemented in SCSS files in `wwwroot/scss/` folder
+- **CSS Files:** Never modify CSS files directly - they are auto-generated from SCSS
+- **Component Styles:** Use `.razor.css` files for component-scoped styles (these are NOT auto-generated)
+- **SCSS Partials:** All SCSS partial files must start with an underscore (_) and be included in `app.scss` for automatic compilation
+- **SCSS Compilation:** Files are automatically compiled when included in `app.scss` - no manual compilation needed
+- **Responsive:** Foundation grid/utilities or custom SCSS
 - **Accessibility:** Semantic HTML, ARIA roles, keyboard navigation, WCAG 2.1 AA compliance, proper color contrast
 - **Performance:** Optimize assets (bundling, minification), lazy loading, virtualization for large lists
 - **Modern CSS:** Grid, Flexbox, variables, nesting, dark mode support
