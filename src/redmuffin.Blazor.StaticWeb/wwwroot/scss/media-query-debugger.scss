@@ -1,0 +1,113 @@
+﻿/* ======================================
+    +Credits+
+    Originally posted at Webdesign Tuts+
+    Article: A Basic Responsive Grid (Plus Handy CSS3 Media Query Reporter)
+    By: David Cochran on Nov 30th 2011 with 38 comments
+    Link: http://webdesign.tutsplus.com/tutorials/htmlcss-tutorials/a-basic-responsive-grid-plus-handy-css3-media-query-reporter/
+
+    Modified and Packaged for Nuget by: Ed Charbeneau (twitter:@EdCharbeneau)
+========================================= */
+
+// Import our centralized variables
+@import 'variables';
+
+/* ======================================
+    MediaQuery Debugger
+========================================= */
+
+body { padding-top: 0;}
+
+body:after {
+    font-size: 300%; /* Default for larger screens */
+    font-weight: bold;
+    position: fixed;
+    bottom: 47px;
+    width: 100%;
+    text-align: center;
+    background-color: hsla(0,60%,40%,0.3); /* Base color */
+    color: #fff;
+    z-index: 9999; /* Ensure it's on top */
+    line-height: 1.2; /* Added to help control line height */
+    box-sizing: border-box; /* Added to ensure padding/border don't add to width/height issues */
+    padding: 0.1em 0;
+}
+
+/* Default (0px - 375px): Small Phones (e.g., iPhone SE) / Foundation 'small' (0px) */
+@media only screen and (min-width: 0px) {
+    #mainNavigation { margin-bottom: $debug-nav-spacing; } // Using centralized spacing variable
+    body:after {
+        content: "0-375px: Small Phones (iPhone SE) / F: small";
+        background-color: hsla(0, 70%, 50%, 0.4); /* Hue 0 */
+        font-size: 120%; /* Adjusted for small screens */
+    }
+}
+
+/* 376px - 430px: Standard Phones (e.g., iPhone 15) */
+@media only screen and (min-width: 376px) {
+    #mainNavigation { margin-bottom: $debug-nav-spacing; } // Using centralized spacing variable
+    body:after {
+        content: "376-430px: Standard Phones (iPhone 15)";
+        background-color: hsla(45, 70%, 50%, 0.4); /* Hue 45 */
+        font-size: 135%; /* Adjusted for standard phones */
+    }
+}
+
+/* 431px - 639px: Large Phones / Small Tablets */
+@media only screen and (min-width: 431px) {
+    #mainNavigation { margin-bottom: $debug-nav-spacing; } // Using centralized spacing variable
+    body:after {
+        content: "431-639px: Large Phones / Small Tablets";
+        background-color: hsla(90, 70%, 50%, 0.4); /* Hue 90 */
+        font-size: 180%; /* Further adjusted for large phones/small tablets */
+    }
+}
+
+/* 640px - 768px: Foundation 'medium' (640px) / iPad Mini portrait */
+@media only screen and (min-width: 640px) {
+    #mainNavigation { margin-bottom: $debug-nav-spacing; } // Using centralized spacing variable
+    body:after {
+        content: "640-768px: F: medium / iPad Mini portrait";
+        background-color: hsla(135, 70%, 50%, 0.4); /* Hue 135 */
+        font-size: 220%; /* Adjusted for smaller tablets */
+    }
+}
+
+/* 769px - 1023px: Tablets (e.g., iPad Air/Pro portrait) */
+@media only screen and (min-width: 769px) {
+    #mainNavigation { margin-bottom: $debug-nav-spacing; } // Using centralized spacing variable
+    body:after {
+        content: "769-1023px: Tablets (iPad Air/Pro portrait)";
+        background-color: hsla(180, 70%, 50%, 0.4); /* Hue 180 */
+        font-size: 230%; /* Slightly reduced from default */
+    }
+}
+
+/* 1024px - 1199px: Foundation 'large' (1024px) / Small Desktops / Large Tablets landscape */
+@media only screen and (min-width: 1024px) {
+    #mainNavigation { margin-bottom: $debug-nav-spacing; } // Using centralized spacing variable
+    body:after {
+        content: "1024-1199px: F: large / Small Desktops";
+        background-color: hsla(225, 70%, 50%, 0.4); /* Hue 225 */
+        /* Uses default font-size: 300% from global body:after */
+    }
+}
+
+/* 1200px - 1439px: Foundation 'xlarge' (1200px) / Standard Desktops */
+@media only screen and (min-width: 1200px) {
+    #mainNavigation { margin-bottom: $debug-nav-spacing; } // Using centralized spacing variable
+    body:after {
+        content: "1200-1439px: F: xlarge / Standard Desktops";
+        background-color: hsla(270, 70%, 50%, 0.4); /* Hue 270 */
+        /* Uses default font-size: 300% from global body:after */
+    }
+}
+
+/* 1440px and up: Foundation 'xxlarge' (1440px) / Large Desktops */
+@media only screen and (min-width: 1440px) {
+    #mainNavigation { margin-bottom: $debug-nav-spacing; } // Using centralized spacing variable
+    body:after {
+        content: "1440px+: F: xxlarge / Large Desktops";
+        background-color: hsla(315, 70%, 50%, 0.4); /* Hue 315 */
+        /* Uses default font-size: 300% from global body:after */
+    }
+}
