@@ -7,16 +7,10 @@ namespace redmuffin.Blazor.StaticWeb.Services;
 /// <summary>
 /// Service implementation for collecting web performance metrics via JavaScript interop
 /// </summary>
-public class PerformanceMetricsService : IPerformanceMetricsService, IAsyncDisposable
+public class PerformanceMetricsService(IJSRuntime jsRuntime) : IPerformanceMetricsService, IAsyncDisposable
 {
-    private readonly IJSRuntime _jsRuntime;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
     private bool _disposed;
-
-    public PerformanceMetricsService(IJSRuntime jsRuntime)
-    {
-        _jsRuntime = jsRuntime;
-    }
 
     /// <inheritdoc />
     public async Task<PageLoadSpeed.PageLoadMetrics?> GetMetricsAsync(CancellationToken cancellationToken = default)
@@ -34,11 +28,11 @@ public class PerformanceMetricsService : IPerformanceMetricsService, IAsyncDispo
             await _semaphore.WaitAsync(cts.Token).ConfigureAwait(false);
             try
             {
-                var functionExists = await _jsRuntime.InvokeAsync<bool>("eval", cts.Token, "typeof window.getPageLoadMetrics === 'function'").ConfigureAwait(false);
+                var functionExists = await jsRuntime.InvokeAsync<bool>("eval", cts.Token, "typeof window.getPageLoadMetrics === 'function'").ConfigureAwait(false);
 
                 if (functionExists)
                 {
-                    var metrics = await _jsRuntime.InvokeAsync<PageLoadSpeed.PageLoadMetrics>("getPageLoadMetrics", cts.Token).ConfigureAwait(false);
+                    var metrics = await jsRuntime.InvokeAsync<PageLoadSpeed.PageLoadMetrics>("getPageLoadMetrics", cts.Token).ConfigureAwait(false);
                     return metrics;
                 }
 
@@ -69,7 +63,7 @@ public class PerformanceMetricsService : IPerformanceMetricsService, IAsyncDispo
 
         try
         {
-            return await _jsRuntime.InvokeAsync<bool>("eval", "typeof window.getPageLoadMetrics === 'function'").ConfigureAwait(false);
+            return await jsRuntime.InvokeAsync<bool>("eval", "typeof window.getPageLoadMetrics === 'function'").ConfigureAwait(false);
         }
         catch
         {
@@ -93,11 +87,11 @@ public class PerformanceMetricsService : IPerformanceMetricsService, IAsyncDispo
             await _semaphore.WaitAsync(cts.Token).ConfigureAwait(false);
             try
             {
-                var functionExists = await _jsRuntime.InvokeAsync<bool>("eval", cts.Token, "typeof window.getPageLoadTimes === 'function'").ConfigureAwait(false);
+                var functionExists = await jsRuntime.InvokeAsync<bool>("eval", cts.Token, "typeof window.getPageLoadTimes === 'function'").ConfigureAwait(false);
 
                 if (functionExists)
                 {
-                    var timings = await _jsRuntime.InvokeAsync<double[]>("getPageLoadTimes", cts.Token).ConfigureAwait(false);
+                    var timings = await jsRuntime.InvokeAsync<double[]>("getPageLoadTimes", cts.Token).ConfigureAwait(false);
                     return timings?.Length >= 2 ? timings : null;
                 }
 
@@ -123,7 +117,7 @@ public class PerformanceMetricsService : IPerformanceMetricsService, IAsyncDispo
     {
         try
         {
-            var now = await _jsRuntime.InvokeAsync<double>("performance.now").ConfigureAwait(false);
+            var now = await jsRuntime.InvokeAsync<double>("performance.now").ConfigureAwait(false);
             return new PageLoadSpeed.PageLoadMetrics
             {
                 TimeToFirstByte = Math.Round(now * 0.3, 1),
