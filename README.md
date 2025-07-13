@@ -214,6 +214,25 @@ After setup, verify everything is working:
 4. **API endpoints are accessible** (check browser dev tools Network tab)
 5. **Hot reload works** (modify a `.razor` file and see changes)
 
+### Known Build Warnings
+
+**IL2111 Warnings (Expected and Safe to Ignore):**
+
+During development and building, you may encounter IL2111 warnings like:
+
+```
+warning IL2111: Method 'Microsoft.AspNetCore.Components.LayoutView.Layout.set' with parameters or return value with `DynamicallyAccessedMembersAttribute` is accessed via reflection. Trimmer can't guarantee availability of the requirements of the method.
+```
+
+**These warnings are expected and safe to ignore** because:
+- They occur in generated Razor files (`App_razor.g.cs`) during Blazor WebAssembly compilation
+- They are related to Blazor's internal layout handling mechanism
+- They do not affect application functionality or performance
+- They are part of the normal Blazor compilation process and ASP.NET Core Components trimming optimization
+- They are in generated code that is not under developer control
+
+**Action required:** None - these warnings can be safely ignored during development and deployment.
+
 ### Next Steps
 
 - See [Usage](#usage) for common development tasks
