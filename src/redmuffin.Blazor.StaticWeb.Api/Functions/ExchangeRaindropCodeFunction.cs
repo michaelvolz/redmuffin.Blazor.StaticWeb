@@ -64,11 +64,15 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
         {
             var request = await DeserializeRequestAsync(req, token).ConfigureAwait(false);
             if (request == null)
+            {
                 return await CreateBadRequestResponseAsync(req, "Missing code.", token).ConfigureAwait(false);
+            }
 
             var redirectUri = ValidateRedirectUri(request.RedirectUri);
             if (redirectUri == null)
+            {
                 return await CreateBadRequestResponseAsync(req, "Missing redirect_uri.", token).ConfigureAwait(false);
+            }
 
             LogRequestDetails(logger, request.Code, redirectUri, null);
 
