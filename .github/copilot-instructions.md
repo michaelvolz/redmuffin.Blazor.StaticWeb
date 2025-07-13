@@ -148,6 +148,9 @@ Consult these instruction files based on the file types you're working with:
 - **General Documentation Resources** → [_Documentation.instructions.md](.github/instructions/_Documentation.instructions.md)
 
 ### Development Workflow
+- **Pre-commit Testing:** Before any git commit, run `dotnet test` and ensure it passes without errors (warnings are acceptable)
+  - If test errors exist, the commit must be stopped until errors are resolved
+  - This ensures code quality and prevents breaking changes in the repository
 - When asked to git commit something do it in batches for SRP to produce the best possible commit messages
 - When anything is unclear ask questions and stop and wait for all the answers before continuing
 - Offer PowerShell scripts for complex/data-intensive tasks
