@@ -8,7 +8,7 @@ public enum PerformanceRating
     Excellent,
     Good,
     Fair,
-    Poor
+    Poor,
 }
 
 /// <summary>
@@ -78,7 +78,7 @@ public readonly record struct PerformanceMetrics(
     string FormattedTimestamp)
 {
     public PerformanceCache GetPerformanceCache() => PerformanceCache.Create(Timing.PrimaryMetric);
-    
+
     public static PerformanceMetrics FromPageLoadMetrics(
         redmuffin.Blazor.StaticWeb.Features.Shared.Components.PageLoadSpeed.PageLoadMetrics metrics,
         string timestamp)
