@@ -126,8 +126,28 @@ public async Task<HttpResponseData> Run(
 - Implement `IDisposable` for event subscriptions and timers
 
 ## 6. AI Operational Guidelines
-- **Additional Instructions:** Refer to `.github/instructions/` for technology-specific coding standards (Blazor, C#, PowerShell, SCSS, etc.)
-- **Development Workflow:** Use `.github/prompts/` for specialized development tasks and `.github/chatmodes/` for role-specific AI assistance
+
+### Technology-Specific Instructions
+Consult these instruction files based on the file types you're working with:
+
+**Core Technologies:**
+- **Blazor** (`*.razor`, `*.razor.cs`, `*.razor.css`) → [Blazor.instructions.md](.github/instructions/Blazor.instructions.md)
+- **C#** (`*.cs`) → [CSharp.instructions.md](.github/instructions/CSharp.instructions.md)
+- **PowerShell** (`*.ps1`, `*.psm1`, `*.psd1`) → [Powershell.instructions.md](.github/instructions/Powershell.instructions.md)
+- **SCSS** (`*.scss`) → [_SCSS.instructions.md](.github/instructions/_SCSS.instructions.md)
+- **Markdown** (`*.md`) → [markdown.instructions.md](.github/instructions/markdown.instructions.md)
+
+**Architecture & APIs:**
+- **REST APIs** (`*.cs`, `*.json`) → [aspnet-rest-apis.instructions.md](.github/instructions/aspnet-rest-apis.instructions.md)
+- **Azure Functions** → [_AzureFunctionsProgrammingBestPractices.instructions.md](.github/instructions/_AzureFunctionsProgrammingBestPractices.instructions.md)
+
+**Development Workflow:**
+- **GitHub Actions** (all files) → [github-actions-ci-cd-best-practices.instructions.md](.github/instructions/github-actions-ci-cd-best-practices.instructions.md)
+- **Performance** (all files) → [performance-optimization.instructions.md](.github/instructions/performance-optimization.instructions.md)
+- **Commit Standards** → [_CommitStandars.instructions.md](.github/instructions/_CommitStandars.instructions.md)
+- **General Documentation Resources** → [_Documentation.instructions.md](.github/instructions/_Documentation.instructions.md)
+
+### Development Workflow
 - When asked to git commit something do it in batches for SRP to produce the best possible commit messages
 - When anything is unclear ask questions and stop and wait for all the answers before continuing
 - Offer PowerShell scripts for complex/data-intensive tasks
