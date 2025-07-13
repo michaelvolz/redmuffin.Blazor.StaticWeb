@@ -21,7 +21,10 @@ public class PerformanceMetricsService : IPerformanceMetricsService, IAsyncDispo
     /// <inheritdoc />
     public async Task<PageLoadSpeed.PageLoadMetrics?> GetMetricsAsync(CancellationToken cancellationToken = default)
     {
-        if (_disposed) return null;
+        if (_disposed)
+        {
+            return null;
+        }
 
         try
         {
@@ -59,7 +62,10 @@ public class PerformanceMetricsService : IPerformanceMetricsService, IAsyncDispo
     /// <inheritdoc />
     public async ValueTask<bool> IsJavaScriptAvailableAsync()
     {
-        if (_disposed) return false;
+        if (_disposed)
+        {
+            return false;
+        }
 
         try
         {
@@ -74,7 +80,10 @@ public class PerformanceMetricsService : IPerformanceMetricsService, IAsyncDispo
     /// <inheritdoc />
     public async Task<double[]?> GetLegacyTimingAsync(CancellationToken cancellationToken = default)
     {
-        if (_disposed) return null;
+        if (_disposed)
+        {
+            return null;
+        }
 
         try
         {
@@ -158,7 +167,10 @@ public class PerformanceMetricsService : IPerformanceMetricsService, IAsyncDispo
 
     public ValueTask DisposeAsync()
     {
-        if (_disposed) return ValueTask.CompletedTask;
+        if (_disposed)
+        {
+            return ValueTask.CompletedTask;
+        }
 
         _disposed = true;
 
