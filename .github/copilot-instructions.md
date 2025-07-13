@@ -12,20 +12,26 @@
 - **Build**: WebAssembly optimizations enabled via Directory.Build.props
 - **Deployment**: Azure Static Web Apps with CSP and caching configurations
 
-## Key Dependencies & Build Configuration
+## Key Dependencies 
+
 - **Blazored.LocalStorage**: Client-side storage for Blazor WebAssembly
 - **Markdig**: Markdown parsing and rendering
 - **Microsoft.Azure.Functions.Worker**: Azure Functions isolated worker model
 - **TUnit**: Modern testing framework with `[Test]` and `[Arguments]` attributes
 - **Zurb Foundation**: UI framework via CDN (libman.json)
+- **Roslynator Analyzers**: Provides refactorings, analyzers, and code fixes.
+- **StyleCop Analyzers**: Focuses on style and consistency rules for C# development.
+- **Meziantou Analyzers**: Adds diagnostics for performance, security, and best practices.
+- **VSThreading Analyzers**: Encourages best practices for multithreading and async operations.
 - **FontAwesome**: Icons via CDN (libman.json)
 - **BuildWebCompiler2022**: SCSS compilation (debug mode only)
 - **Coverlet**: Code coverage collection with MSBuild integration
 
 **Build Optimizations (Directory.Build.props):**
+
 - **WebAssembly**: `WasmStripILAfterAOT=true`, `InvariantGlobalization=true`, `PublishTrimmed=true`
 - **Security**: `CheckForOverflowUnderflow=true`, nullable reference types enabled
-- **Analyzers**: Roslynator, StyleCop, Meziantou, VSThreading analyzers configured
+- **Analyzers**: Comprehensive integration of Roslynator, StyleCop, Meziantou, and VSThreading analyzers
 - **C# Language**: Preview features enabled (`LangVersion=preview`)
 - **Coverage**: Centralized exclusions for generated files and dependencies
 

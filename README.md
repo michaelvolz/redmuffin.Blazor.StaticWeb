@@ -451,8 +451,17 @@ redmuffin.Blazor.StaticWeb/
 - **[LibMan (Library Manager)](https://learn.microsoft.com/en-us/aspnet/core/client-side/libman/)**  
   Lightweight client-side library acquisition tool for managing third-party libraries like Foundation.
 
-- **[Code Analyzers](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/overview)**  
-  Static code analysis tools integrated into the build process for code quality, security, and maintainability.
+- **[Roslynator Analyzers](https://github.com/JosefPihrt/Roslynator)**  
+  Provides refactorings, analyzers, and fixes for improving code quality and maintainability.
+
+- **[StyleCop Analyzers](https://github.com/DotNetAnalyzers/StyleCopAnalyzers)**  
+  Enforces a set of style and consistency rules for C# code, ensuring adherence to coding standards.
+
+- **[Meziantou Analyzers](https://github.com/meziantou/Meziantou.Analyzer)**  
+  Offers additional code quality checks focused on performance, security, and best practices.
+
+- **[VSThreading Analyzers](https://github.com/microsoft/vs-threading/tree/main/doc/analyzers)**  
+  Ensures threading best practices are followed, especially for asynchronous programming.
 
 - **[Coverlet](https://github.com/coverlet-coverage/coverlet)**  
   Cross-platform code coverage library for .NET, enabling comprehensive test coverage analysis with multiple output formats.
