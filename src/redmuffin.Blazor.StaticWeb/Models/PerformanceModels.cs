@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace redmuffin.Blazor.StaticWeb.Models;
 
 /// <summary>
@@ -34,6 +36,7 @@ public readonly record struct PerformanceCache(
 /// <summary>
 /// Immutable timing metrics record
 /// </summary>
+[StructLayout(LayoutKind.Auto)]
 public readonly record struct TimingMetrics(
     double TimeToFirstByte,
     double DomContentLoaded,
@@ -47,6 +50,7 @@ public readonly record struct TimingMetrics(
 /// <summary>
 /// Immutable size metrics record
 /// </summary>
+[StructLayout(LayoutKind.Auto)]
 public readonly record struct SizeMetrics(
     double TransferSize,
     double EncodedSize,
@@ -63,6 +67,7 @@ public readonly record struct SizeMetrics(
 /// <summary>
 /// Immutable calculated metrics record
 /// </summary>
+[StructLayout(LayoutKind.Auto)]
 public readonly record struct CalculatedMetrics(
     double ServerResponseTime,
     double DomProcessingTime,

@@ -11,7 +11,6 @@ public class PerformanceMetricsService : IPerformanceMetricsService, IAsyncDispo
 {
     private readonly IJSRuntime _jsRuntime;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
-    private IJSObjectReference? _performanceModule;
     private bool _disposed;
 
     public PerformanceMetricsService(IJSRuntime jsRuntime)
@@ -157,18 +156,14 @@ public class PerformanceMetricsService : IPerformanceMetricsService, IAsyncDispo
         }
     }
 
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
-        if (_disposed) return;
+        if (_disposed) return ValueTask.CompletedTask;
 
         _disposed = true;
 
-        if (_performanceModule != null)
-        {
-            await _performanceModule.DisposeAsync().ConfigureAwait(false);
-        }
-
         _semaphore.Dispose();
         GC.SuppressFinalize(this);
+        return ValueTask.CompletedTask;
     }
 }
