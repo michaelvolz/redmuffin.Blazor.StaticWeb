@@ -1,6 +1,6 @@
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Configuration;
-using redmuffin.Blazor.StaticWeb.Features.Shared.Components;
+using redmuffin.Blazor.StaticWeb.Features.Shared.PageLoadSpeed;
 
 namespace redmuffin.Blazor.StaticWeb.Services;
 
