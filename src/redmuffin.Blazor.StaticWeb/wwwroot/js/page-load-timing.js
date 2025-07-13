@@ -8,7 +8,7 @@ window.pageLoadSpeed = {
         blazorReady: 0,
         scriptLoadTime: 0
     },
-    
+
     // Store LCP value from PerformanceObserver
     lcpValue: 0,
 
@@ -44,11 +44,11 @@ window.pageLoadSpeed = {
             this.timingData.domContentLoaded = performance.now();
             this.timingData.loadComplete = performance.now();
         }
-        
+
         // Set up PerformanceObserver for LCP
         this.observeLCP();
     },
-    
+
     // Observe LCP using PerformanceObserver API
     observeLCP: function() {
         const self = this;
@@ -76,12 +76,12 @@ window.pageLoadSpeed = {
             loadComplete: 0,
             firstContentfulPaint: 0,
             largestContentfulPaint: 0,
-            
+
             // Size metrics
             transferSize: 0,
             encodedSize: 0,
             decodedSize: 0,
-            
+
             // Calculated metrics
             serverResponseTime: 0,
             domProcessingTime: 0,
@@ -97,9 +97,9 @@ window.pageLoadSpeed = {
             metrics.timeToFirstByte = timing.responseStart > 0 ? timing.responseStart - navStart : 0;
             metrics.domContentLoaded = timing.domContentLoadedEventEnd > 0 ? timing.domContentLoadedEventEnd - navStart : now;
             metrics.loadComplete = timing.loadEventEnd > 0 ? timing.loadEventEnd - navStart : now;
-            
+
             // Calculated metrics
-            metrics.serverResponseTime = timing.responseEnd > 0 && timing.requestStart > 0 
+            metrics.serverResponseTime = timing.responseEnd > 0 && timing.requestStart > 0
                 ? timing.responseEnd - timing.requestStart : 0;
             metrics.domProcessingTime = timing.domContentLoadedEventEnd > 0 && timing.responseEnd > 0
                 ? timing.domContentLoadedEventEnd - timing.responseEnd : 0;
@@ -231,7 +231,7 @@ window.pageLoadSpeed = {
             resources.forEach(resource => {
                 totalResources++;
                 totalSize += resource.transferSize || 0;
-                
+
                 if (resource.duration > slowestResource.duration) {
                     slowestResource = {
                         name: resource.name.split('/').pop() || resource.name,
@@ -244,7 +244,7 @@ window.pageLoadSpeed = {
                 totalResources,
                 totalSize,
                 slowestResource,
-                averageResponseTime: totalResources > 0 ? 
+                averageResponseTime: totalResources > 0 ?
                     resources.reduce((sum, r) => sum + r.duration, 0) / totalResources : 0
             };
         } catch (e) {
@@ -264,7 +264,7 @@ window.getPageLoadMetrics = function() {
         const metrics = window.pageLoadSpeed.getComprehensiveMetrics();
         const coreVitals = window.pageLoadSpeed.getCoreWebVitals();
         const resourceTiming = window.pageLoadSpeed.getResourceTiming();
-        
+
         return {
             // Timing metrics (in milliseconds)
             timeToFirstByte: Math.max(0, Math.round(metrics.timeToFirstByte || coreVitals.ttfb || 0)),
@@ -272,17 +272,17 @@ window.getPageLoadMetrics = function() {
             loadComplete: Math.max(0, Math.round(metrics.loadComplete || performance.now())),
             firstContentfulPaint: Math.max(0, Math.round(metrics.firstContentfulPaint || coreVitals.fcp || 0)),
             largestContentfulPaint: Math.max(0, Math.round(metrics.largestContentfulPaint || coreVitals.lcp || 0)),
-            
+
             // Size metrics (in bytes)
             transferSize: Math.max(0, metrics.transferSize || resourceTiming.totalSize || 0),
             encodedSize: Math.max(0, metrics.encodedSize || 0),
             decodedSize: Math.max(0, metrics.decodedSize || 0),
-            
+
             // Calculated metrics (in milliseconds)
             serverResponseTime: Math.max(0, Math.round(metrics.serverResponseTime || 0)),
             domProcessingTime: Math.max(0, Math.round(metrics.domProcessingTime || 0)),
             resourceLoadTime: Math.max(0, Math.round(metrics.resourceLoadTime || 0)),
-            
+
             // Formatted sizes for display
             transferSizeFormatted: window.pageLoadSpeed.formatBytes(metrics.transferSize || resourceTiming.totalSize || 0),
             encodedSizeFormatted: window.pageLoadSpeed.formatBytes(metrics.encodedSize || 0),
@@ -347,7 +347,7 @@ window.getPageLoadTimes = function() {
 // Real-time performance monitoring
 window.startPerformanceMonitoring = function(callback) {
     let observer;
-    
+
     try {
         // Monitor LCP changes
         observer = new PerformanceObserver((list) => {
@@ -356,14 +356,14 @@ window.startPerformanceMonitoring = function(callback) {
                     callback({
                         type: 'lcp',
                         value: entry.startTime,
-                        element: entry.element?.tagName || 'unknown'
+                        element: (entry.element && entry.element.tagName) || 'unknown'
                     });
                 }
             }
         });
-        
+
         observer.observe({ entryTypes: ['largest-contentful-paint'] });
-        
+
         // Monitor layout shifts
         const clsObserver = new PerformanceObserver((list) => {
             let clsValue = 0;
@@ -379,9 +379,9 @@ window.startPerformanceMonitoring = function(callback) {
                 });
             }
         });
-        
+
         clsObserver.observe({ entryTypes: ['layout-shift'] });
-        
+
         return () => {
             observer.disconnect();
             clsObserver.disconnect();
@@ -399,25 +399,25 @@ window.pageLoadSpeed.init();
 window.getPerformanceSummary = function() {
     const metrics = window.getPageLoadMetrics();
     const coreVitals = window.pageLoadSpeed.getCoreWebVitals();
-    
+
     // Calculate performance score (0-100)
     let score = 100;
-    
+
     // LCP scoring (40% weight)
     if (metrics.largestContentfulPaint > 4000) score -= 40;
     else if (metrics.largestContentfulPaint > 2500) score -= 20;
     else if (metrics.largestContentfulPaint > 1200) score -= 10;
-    
+
     // FCP scoring (30% weight)
     if (metrics.firstContentfulPaint > 3000) score -= 30;
     else if (metrics.firstContentfulPaint > 1800) score -= 15;
     else if (metrics.firstContentfulPaint > 1000) score -= 5;
-    
+
     // Load time scoring (30% weight)
     if (metrics.loadComplete > 5000) score -= 30;
     else if (metrics.loadComplete > 3000) score -= 15;
     else if (metrics.loadComplete > 1500) score -= 5;
-    
+
     return {
         score: Math.max(0, Math.round(score)),
         metrics: metrics,
@@ -427,22 +427,22 @@ window.getPerformanceSummary = function() {
 
 function generateRecommendations(metrics) {
     const recommendations = [];
-    
+
     if (metrics.largestContentfulPaint > 2500) {
         recommendations.push('Optimize LCP: Consider image optimization and critical resource prioritization');
     }
-    
+
     if (metrics.firstContentfulPaint > 1800) {
         recommendations.push('Improve FCP: Reduce render-blocking resources and inline critical CSS');
     }
-    
+
     if (metrics.transferSize > 1024 * 1024) { // > 1MB
         recommendations.push('Reduce bundle size: Consider code splitting and asset optimization');
     }
-    
+
     if (metrics.serverResponseTime > 600) {
         recommendations.push('Optimize server response: Consider caching and server performance improvements');
     }
-    
+
     return recommendations;
 }
