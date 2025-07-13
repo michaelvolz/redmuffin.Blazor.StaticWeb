@@ -1,10 +1,5 @@
 namespace redmuffin.Blazor.StaticWeb.Core.Services;
 
-public interface IWarmupService
-{
-    Task WarmupAsync();
-}
-
 public class WarmupService(HttpClient httpClient) : IWarmupService
 {
     public async Task WarmupAsync()
