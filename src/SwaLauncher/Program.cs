@@ -2,7 +2,7 @@
 
 namespace SwaLauncher;
 
-internal class Program
+internal static class Program
 {
     private static void Main(string[] args)
     {
@@ -14,7 +14,7 @@ internal class Program
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             CreateNoWindow = false,
-            WorkingDirectory = Directory.GetCurrentDirectory()
+            WorkingDirectory = Directory.GetCurrentDirectory(),
         };
 
         using var process = new Process();

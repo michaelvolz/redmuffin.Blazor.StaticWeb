@@ -1,6 +1,6 @@
 using Microsoft.JSInterop;
-using redmuffin.Blazor.StaticWeb.Features.Shared.Components;
 using redmuffin.Blazor.StaticWeb.Configuration;
+using redmuffin.Blazor.StaticWeb.Features.Shared.Components;
 
 namespace redmuffin.Blazor.StaticWeb.Services;
 
@@ -33,13 +33,13 @@ public class PerformanceMetricsService : IPerformanceMetricsService, IAsyncDispo
             try
             {
                 var functionExists = await _jsRuntime.InvokeAsync<bool>("eval", cts.Token, "typeof window.getPageLoadMetrics === 'function'");
-                
+
                 if (functionExists)
                 {
                     var metrics = await _jsRuntime.InvokeAsync<PageLoadSpeed.PageLoadMetrics>("getPageLoadMetrics", cts.Token);
                     return metrics;
                 }
-                
+
                 return null;
             }
             finally
@@ -131,7 +131,7 @@ public class PerformanceMetricsService : IPerformanceMetricsService, IAsyncDispo
                 DecodedSizeFormatted = "Unknown",
                 ServerResponseTime = 0,
                 DomProcessingTime = 0,
-                ResourceLoadTime = 0
+                ResourceLoadTime = 0,
             };
         }
         catch (Exception)
@@ -152,7 +152,7 @@ public class PerformanceMetricsService : IPerformanceMetricsService, IAsyncDispo
                 DecodedSizeFormatted = "Unknown",
                 ServerResponseTime = 0,
                 DomProcessingTime = 0,
-                ResourceLoadTime = 0
+                ResourceLoadTime = 0,
             };
         }
     }
