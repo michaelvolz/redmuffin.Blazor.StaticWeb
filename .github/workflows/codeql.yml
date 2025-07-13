@@ -37,12 +37,14 @@ jobs:
           # Add new files to this list as needed (one per line)
           DOC_FILES=(
             "README.md"
+            "CHANGELOG.md"
+            "docs/*.md"
+            "tasks/*.md"
             ".github/copilot-instructions.md"
             ".github/instructions/*.md"
+            ".github/prompts/*.md"
+            ".github/chatmodes/*.md"
             # Add more documentation files here as needed
-            # "docs/*.md"
-            # "CONTRIBUTING.md"
-            # etc.
           )
 
           # Build regex pattern from file list
