@@ -137,6 +137,23 @@ public async Task<HttpResponseData> Run(
 
 ## 6. AI Operational Guidelines
 
+### Known Build Warnings
+
+**IL2111 Warnings (Expected and Safe to Ignore):**
+The following IL2111 warnings are expected during Blazor WebAssembly compilation and do not indicate issues with the code:
+
+```
+warning IL2111: Method 'Microsoft.AspNetCore.Components.LayoutView.Layout.set' with parameters or return value with `DynamicallyAccessedMembersAttribute` is accessed via reflection. Trimmer can't guarantee availability of the requirements of the method.
+```
+
+**Context:** These warnings occur in generated Razor files (`App_razor.g.cs`) and are related to Blazor's internal layout handling mechanism. They are:
+- **Safe to ignore** - Do not affect application functionality
+- **Expected behavior** - Part of Blazor's compilation process
+- **Generated code** - Not under developer control
+- **Framework-level** - Related to ASP.NET Core Components trimming optimization
+
+**Action:** No action required. These warnings can be safely ignored during development and deployment.
+
 ### Technology-Specific Instructions
 Consult these instruction files based on the file types you're working with:
 
