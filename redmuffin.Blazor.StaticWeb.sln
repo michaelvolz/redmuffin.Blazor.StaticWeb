@@ -55,6 +55,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "redmuffin.Blazor.StaticWeb.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SwaLauncher", "src\SwaLauncher\SwaLauncher.csproj", "{C36EDD2C-065F-42B4-8667-2CD8E7C08AB4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Chatmodes", "Chatmodes", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		.github\chatmodes\accesibility.chatmode.md = .github\chatmodes\accesibility.chatmode.md
+		.github\chatmodes\azure-principal-architect.chatmode.md = .github\chatmodes\azure-principal-architect.chatmode.md
+		.github\chatmodes\csharp-dotnet-janitor.chatmode.md = .github\chatmodes\csharp-dotnet-janitor.chatmode.md
+		.github\chatmodes\debug.chatmode.md = .github\chatmodes\debug.chatmode.md
+		.github\chatmodes\expert-dotnet-software-engineer.chatmode.md = .github\chatmodes\expert-dotnet-software-engineer.chatmode.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -92,6 +101,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{1E5315D5-9FD9-D0B7-CF8A-5A02695B7EE1} = {0652538E-1D5F-6121-6BBF-D1367D210D62}
 		{1042B09C-CD63-0B34-1D4B-7FE7A2FDFA8E} = {0652538E-1D5F-6121-6BBF-D1367D210D62}
+		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {0652538E-1D5F-6121-6BBF-D1367D210D62}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A0087A1A-355D-4454-AE85-D0509704B21F}
