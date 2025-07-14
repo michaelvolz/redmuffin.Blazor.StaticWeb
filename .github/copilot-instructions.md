@@ -35,7 +35,13 @@
 - **C# Language**: Preview features enabled (`LangVersion=preview`)
 - **Coverage**: Centralized exclusions for generated files and dependencies
 
-## 1. UI & Styling
+## 1. Coding Standards
+- **Private Fields:** Use `_` prefix for private fields
+- **var Usage:** Only when type is clearly apparent (e.g., `var items = new List<string>()`)
+- **Line Length:** 160 characters maximum
+- **Braces:** Always use braces, even for single-line statements
+
+## 2. UI & Styling
 - **Framework:** Zurb Foundation for all UI/layout
 - **SCSS Only:** All styles must be implemented in SCSS files in `wwwroot/scss/` folder
 - **CSS Files:** Never modify CSS files directly - they are auto-generated from SCSS
@@ -51,7 +57,7 @@
 - **JS Interop:** Use `IJSRuntime.InvokeAsync<T>()`, dispose JS object references
 - **Security:** Sanitize inputs, enforce CSP, secure cookies, RBAC
 
-## 2. Security & API
+## 3. Security & API
 - **Input Validation:** Always validate/sanitize user input
 - **XSS/CSRF:** Use Blazor built-ins and best practices
 - **Secrets:** Never expose in client code
@@ -60,7 +66,7 @@
 - **Azure Functions:** Use isolated worker model with dependency injection
 - **Authentication:** ASP.NET Core Identity, role-based access control
 
-## 3. Testing & Documentation
+## 4. Testing & Documentation
 - **Unit Tests:** Use TUnit (NOT NUnit/xUnit), `[Test]` for methods, `[Tests]` with `[Arguments]` for data-driven
 - **Code Coverage:** Coverlet + ReportGenerator with PowerShell automation (see AI Operational Guidelines section)
 - **Documentation:** XML docs for public APIs, update README/Wiki/OpenAPI
@@ -109,7 +115,25 @@ public async Task<HttpResponseData> Run(
 }
 ```
 
-## 4. File & Directory Organization
+## 5. Modern C# Features (12/13)
+| Feature | Example |
+|---------|---------|
+| Primary Constructors | `public class Person(string name, int age) { ... }` |
+| Collection Expressions | `int[] nums = [1,2,3];` |
+| Default Lambda Params | `Func<int,int,int> add = (x, y=5) => x+y;` |
+| ref readonly Parameters | `void M(ref readonly int x) { ... }` |
+| Alias Any Type | `using IntPair = (int, int);` |
+| Inline Arrays | `[InlineArray(10)] struct Buffer { ... }` |
+| params Collections | `void M(params ReadOnlySpan<T> items) { ... }` |
+| New Lock Object | `var l = new Lock(); using(l.EnterScope()) { ... }` |
+| New Escape Sequence | `char esc = '\e';` |
+| Method Group Natural Type | `var act = (string s) => ...;` |
+| Implicit Index Access | `buffer = { [^1]=0 }` |
+| ref/unsafe in Iterators | `async Task M() { ref int x = ...; }` |
+| Partial Properties | `public partial string Name { get; set; }` |
+| Overload Priority | `[OverloadResolutionPriority(1)] void M(int a) {}` |
+
+## 6. File & Directory Organization
 - **Features:** `src/redmuffin.Blazor.StaticWeb/Features/` - Feature-based organization with pages and components
 - **Static Assets:** `src/redmuffin.Blazor.StaticWeb/wwwroot/` - CSS, SCSS, JS, sample data, and libraries
 - **Tests:** `tests/` - Mirror main project structure with TUnit test projects
@@ -125,7 +149,7 @@ public async Task<HttpResponseData> Run(
 - `src/redmuffin.Blazor.StaticWeb.Common/` - Shared models and utilities
 - `tests/` - TUnit test projects mirroring source structure
 
-## 5. Best Practices
+## 7. Best Practices
 - Develop modular, reusable, testable components
 - Favor strongly-typed parameters over dynamic
 - Handle exceptions with try/catch or error boundaries (`<ErrorBoundary>`)
@@ -135,7 +159,7 @@ public async Task<HttpResponseData> Run(
 - Use `StateHasChanged()` sparingly, prefer parameter binding
 - Implement `IDisposable` for event subscriptions and timers
 
-## 6. AI Operational Guidelines
+## 8. AI Operational Guidelines
 
 ### Known Build Warnings
 
