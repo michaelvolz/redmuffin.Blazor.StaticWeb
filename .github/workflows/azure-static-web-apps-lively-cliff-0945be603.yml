@@ -103,8 +103,32 @@ jobs:
             echo "should_skip=false" >> $GITHUB_OUTPUT
           fi
 
-  build_and_deploy_job:
+  test_job:
     needs: check_changes
+    if: |
+      (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')) &&
+      needs.check_changes.outputs.should_skip != 'true'
+    runs-on: ubuntu-latest
+    name: Run Tests
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Run TUnit tests
+        run: dotnet test --no-restore --verbosity normal
+
+  build_and_deploy_job:
+    needs: [check_changes, test_job]
     if: |
       (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')) &&
       needs.check_changes.outputs.should_skip != 'true'
