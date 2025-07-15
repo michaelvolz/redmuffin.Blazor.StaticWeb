@@ -1,0 +1,43 @@
+@page "/articles"
+@inject HttpClient Http
+
+<PageTitle>Programming & AI Article Hub</PageTitle>
+
+<h1>Programming & AI Article Hub</h1>
+<p class="subheader">This page showcases a curated collection of articles on programming, AI, .NET, C#, Blazor, and more, featuring insights from industry experts and practical tutorials.</p>
+
+<button class="button primary" @onclick="FetchArticlesAsync" disabled="@_isLoading">
+    <i class="fas @(_isLoading ? "fa-spinner fa-spin" : "fa-file-text")"></i> @(_isLoading ? "Loading..." : "Fetch Articles")
+</button>
+
+@if (_isLoading)
+{
+    <p>Loading articles...</p>
+}
+else if (_articleItems != null && _articleItems.Any())
+{
+    <div class="masonry">
+        @foreach (var article in _articleItems)
+        {
+            <div class="card article-card">
+                <div class="card-divider">
+                    <h5>@(string.IsNullOrEmpty(article.Title) ? "No Title Available" : article.Title)</h5>
+                </div>
+                <div class="shimmer-placeholder" id="shimmer-@article.Id">
+                    <img src="@article.Cover" alt="Article Cover" @onload="@(() => StopShimmerAsync($"shimmer-{article.Id}"))" @onerror="@(() => StopShimmerAsync($"shimmer-{article.Id}"))" />
+                </div>
+                <div class="card-section">
+                    <p>@(string.IsNullOrEmpty(article.Excerpt) ? "No Excerpt Available" : article.Excerpt.Length > 250 ? article.Excerpt.Substring(0, 250) + "..." : article.Excerpt)</p>
+                    <p><i class="fas fa-calendar-alt"></i> Created: @article.Created.ToString("yyyy-MM-dd")</p>
+                    <a href="@article.Link" target="_blank" class="button"><i class="fas fa-external-link-alt"></i> Read Article</a>
+                </div>
+            </div>
+        }
+    </div>
+}
+else if (!string.IsNullOrEmpty(_errorMessage))
+{
+    <div class="callout alert">
+        <p>@_errorMessage</p>
+    </div>
+}
