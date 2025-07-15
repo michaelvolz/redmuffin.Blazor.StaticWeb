@@ -110,6 +110,11 @@ jobs:
       needs.check_changes.outputs.should_skip != 'true'
     runs-on: ubuntu-latest
     name: Run Tests
+    env:
+      # Environment variables for Azure Functions testing
+      Values__RainDropClientId: ${{ secrets.RAINDROP_CLIENT_ID }}
+      Values__RainDropClientSecret: ${{ secrets.RAINDROP_CLIENT_SECRET }}
+      Values__RainDropTestToken: ${{ secrets.RAINDROP_TEST_TOKEN }}
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -123,6 +128,25 @@ jobs:
 
       - name: Restore dependencies
         run: dotnet restore
+
+      - name: Create test local.settings.json
+        run: |
+          mkdir -p src/redmuffin.Blazor.StaticWeb.Api
+          cat > src/redmuffin.Blazor.StaticWeb.Api/local.settings.json << 'EOF'
+          {
+            "IsEncrypted": false,
+            "Values": {
+              "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+              "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+              "RainDropClientId": "${{ secrets.RAINDROP_CLIENT_ID }}",
+              "RainDropClientSecret": "${{ secrets.RAINDROP_CLIENT_SECRET }}",
+              "RainDropTestToken": "${{ secrets.RAINDROP_TEST_TOKEN }}"
+            },
+            "Host": {
+              "CORS": "*"
+            }
+          }
+          EOF
 
       - name: Run TUnit tests
         run: dotnet test --no-restore --verbosity normal
