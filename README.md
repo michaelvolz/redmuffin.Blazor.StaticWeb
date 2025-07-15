@@ -453,8 +453,9 @@ dotnet test
 # Add files under src/redmuffin.Blazor.StaticWeb/Features/YourFeature/
 # - YourFeature.razor           # Main component
 # - YourFeature.razor.cs        # Code-behind
-# - YourFeature.razor.css       # Component styles
 # - Components/                 # Child components
+# Add component styles as SCSS partial:
+# - wwwroot/scss/_YourFeature.scss  # Component styles (imported in app.scss)
 ```
 
 #### API Development
@@ -482,7 +483,7 @@ dotnet test
 1. Create `src/redmuffin.Blazor.StaticWeb/Features/Pages/NewPage.razor`
 2. Add `@page "/newpage"` directive
 3. Implement component logic in `NewPage.razor.cs`
-4. Add styles in `NewPage.razor.css`
+4. Add styles as SCSS partial in `wwwroot/scss/_NewPage.scss` and import in `app.scss`
 5. Test locally and add unit tests
 
 #### Creating an API Endpoint
@@ -556,7 +557,7 @@ redmuffin.Blazor.StaticWeb/
 - **[SCSS (Sass)](https://sass-lang.com/documentation/syntax#scss)**  
   CSS preprocessor with variables, nesting, and modularization for modern styling capabilities.
   
-  **Important:** All styling must be done through SCSS files located in `wwwroot/scss/`. CSS files in `wwwroot/css/` are automatically generated and should never be edited directly. Component-specific styles should use `.razor.css` files for scoped styling.
+  **Important:** All styling must be done through SCSS files located in `wwwroot/scss/`. CSS files in `wwwroot/css/` are automatically generated and should never be edited directly. Component-specific styles should be created as SCSS partials (starting with underscore) and imported into `app.scss` for automatic compilation.
   
   **SCSS Partials:** All SCSS partial files must start with an underscore (_) and be imported into `app.scss` for automatic compilation. This ensures proper dependency management and build optimization.
 
