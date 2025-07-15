@@ -383,6 +383,94 @@ warning IL2111: Method 'Microsoft.AspNetCore.Components.LayoutView.Layout.set' w
 
 **Action:** No action required. These warnings can be safely ignored during development and deployment.
 
+### Build Warning Prevention Guidelines
+
+This section provides comprehensive guidelines to prevent common build warnings and maintain a clean, warning-free codebase. Following these practices ensures better code quality, maintainability, and compliance with project standards.
+
+#### StyleCop Analyzer Guidelines
+
+**File Organization:**
+- **SA1402: File may only contain a single type** - Keep one class, interface, or enum per file for better organization
+- **SA1208/SA1210: Using directive ordering** - Order using directives alphabetically, with System namespaces first
+
+**Member Ordering (SA1201-SA1214):**
+- **Fields** → **Properties** → **Constructors** → **Methods** → **Nested types**
+- **public** → **internal** → **protected** → **private** (SA1202)
+- **const** → **static readonly** → **readonly** → **regular fields** (SA1203)
+- **static members** before **instance members** (SA1204)
+- **readonly fields** before **non-readonly fields** (SA1214)
+
+**Code Formatting:**
+- **SA1413: Use trailing comma in multi-line initializers** - Always add trailing commas for cleaner diffs
+- **SA1513: Closing brace should be followed by blank line** - Improve readability with proper spacing
+- **SA1500: Braces for multi-line statements should not share line** - Opening brace on new line
+- **SA1507: No multiple blank lines in a row** - Use single blank lines for separation
+- **SA1508: No blank line before closing brace** - Remove unnecessary whitespace
+- **SA1028: Remove trailing whitespace** - Clean up lines to prevent formatting issues
+- **SA1108: No embedded comments in block statements** - Keep comments separate from code blocks
+
+#### Meziantou Analyzer Guidelines
+
+**Collection Usage:**
+- **MA0016: Prefer collection abstractions** - Use `IEnumerable<T>`, `ICollection<T>`, `IList<T>` instead of concrete types like `List<T>`
+
+**String Operations:**
+- **MA0002: Use IEqualityComparer<string> overloads** - Specify string comparison behavior explicitly
+- **MA0006: Use string.Equals instead of == operators** - Use `string.Equals(a, b, StringComparison.OrdinalIgnoreCase)`
+- **MA0074: Use StringComparison parameter** - Always specify comparison type for `StartsWith()`, `EndsWith()`, etc.
+- **MA0076: Avoid culture-sensitive ToString in interpolated strings** - Use `.ToString(CultureInfo.InvariantCulture)`
+
+**Async/Await Patterns:**
+- **MA0004: Use ConfigureAwait(false)** - Always use `.ConfigureAwait(false)` in library code to prevent deadlocks
+
+**Code Quality:**
+- **MA0048: File name must match type name** - Ensure file names match the primary type they contain
+- **MA0051: Method is too long** - Keep methods under 60 lines; refactor longer methods
+- **MA0053: Make class sealed** - Seal classes not intended for inheritance
+
+#### Microsoft Code Analysis Guidelines
+
+**Performance Optimizations:**
+- **CA1845: Use span-based string.Concat** - Use `AsSpan()` instead of `Substring()` for better performance
+- **CA1854: Use TryGetValue for Dictionary access** - Avoid double lookups with `ContainsKey()` + indexer
+- **CA1869: Cache JsonSerializerOptions** - Reuse `JsonSerializerOptions` instances instead of creating new ones
+- **CA1848: Use LoggerMessage delegates** - Use compiled logging for better performance
+
+**Async Best Practices:**
+- **CA2007: Use ConfigureAwait on awaited tasks** - Always use `.ConfigureAwait(false)` in library code
+- **CA2016: Forward CancellationToken parameter** - Pass `CancellationToken` to async methods that support it
+
+**Security:**
+- **CA5394: Use cryptographically secure random generators** - Use `RandomNumberGenerator` instead of `Random` for security-sensitive operations
+
+**Code Quality:**
+- **CA1805: Remove explicit default value initialization** - Remove redundant `= false`, `= 0`, etc.
+- **CA1822: Mark members as static** - Make methods static when they don't access instance data
+- **CA1852: Seal types** - Seal internal types that aren't inherited from
+
+#### Compiler Warning Guidelines
+
+**Variable Usage:**
+- **CS0219: Remove unused variables** - Clean up assigned but unused variables
+- **CS1998: Add await to async methods** - Either add `await` operators or make method synchronous
+
+#### Quick Reference Checklist
+
+**Before submitting code, verify:**
+- [ ] One type per file (SA1402)
+- [ ] Using directives ordered alphabetically (SA1208/SA1210)
+- [ ] Proper member ordering: fields → properties → constructors → methods (SA1201-SA1214)
+- [ ] Trailing commas in multi-line initializers (SA1413)
+- [ ] No trailing whitespace (SA1028)
+- [ ] Use collection abstractions (IEnumerable<T>, IList<T>) instead of concrete types (MA0016)
+- [ ] Specify StringComparison in string operations (MA0002, MA0006, MA0074)
+- [ ] Use ConfigureAwait(false) in library code (MA0004, CA2007)
+- [ ] Methods under 60 lines (MA0051)
+- [ ] Remove unused variables (CS0219)
+- [ ] Use TryGetValue for Dictionary access (CA1854)
+- [ ] Cache JsonSerializerOptions instances (CA1869)
+- [ ] Forward CancellationToken parameters (CA2016)
+
 ### Technology-Specific Instructions
 Consult these instruction files based on the file types you're working with:
 
