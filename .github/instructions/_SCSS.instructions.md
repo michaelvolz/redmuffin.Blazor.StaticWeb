@@ -2,31 +2,271 @@
 applyTo: "**/*.scss"
 ---
 
-# SCSS Coding Instructions
+# Comprehensive SCSS Coding Instructions
 
-## Framework & Structure
+## 1. Introduction to SCSS
+SCSS (Sassy CSS) is a preprocessor that enhances CSS with features like variables, mixins, functions, and nesting. It compiles into standard CSS, enabling developers to write more maintainable and efficient stylesheets. SCSS is particularly valuable for large projects, as it supports modularity, reusability, and robust code organization.
+
+## 2. Framework & Structure
 - Use Zurb Foundation 6.9.0 as UI framework
-- Main files: `wwwroot/lib/app.scss`, `wwwroot/lib/foundation-root.scss`, `wwwroot/lib/_site-colors.scss`
-- Foundation located: `wwwroot/lib/foundation-sites/scss/`
-
-## Coding Rules
+- Main files: `scss/app.scss`, `scss/foundation-root.scss`
+- Foundation located: `wwwroot/lib/foundation-sites/`
 - Use Foundation grid system, mixins, and responsive patterns
-- Max 3 levels of nesting
-- BEM naming convention for custom classes
-- Variables for colors/spacing in `_site-colors.scss`
-- Component styles in respective feature folders
 - Modern CSS: Grid, Flexbox, CSS variables
+
+## 3. Architecture & Organization
+
+### Modular Architecture Patterns
+
+#### a. 7-1 Pattern (Sass Guidelines)
+The 7-1 pattern organizes SCSS into seven folders and one main file for clarity and maintainability:
+- **abstracts/**: Variables, mixins, functions, and placeholders (e.g., `_variables.scss`, `_mixins.scss`).
+- **base/**: Base styles like resets and typography (e.g., `_reset.scss`, `_typography.scss`).
+- **components/**: Reusable components (e.g., `_button.scss`, `_card.scss`).
+- **layout/**: Layout-related styles (e.g., `_grid.scss`, `_header.scss`).
+- **pages/**: Page-specific styles (e.g., `_home.scss`).
+- **themes/**: Theme-specific styles (e.g., `_theme-dark.scss`).
+- **vendors/**: Third-party styles (e.g., `_bootstrap.scss`).
+- **main.scss**: The entry point that imports all other files.
+
+**Import Order in `main.scss`:**
+```scss
+@import 'abstracts/variables';
+@import 'abstracts/mixins';
+@import 'vendors/bootstrap';
+@import 'base/reset';
+@import 'base/typography';
+@import 'layout/grid';
+@import 'components/button';
+@import 'pages/home';
+@import 'themes/theme-dark';
+```
+
+#### b. SMACSS (Scalable and Modular Architecture for CSS)
+SMACSS categorizes styles into five groups:
+- **Base**: Default styles for HTML elements (e.g., resets, typography).
+- **Layout**: Styles for page structure (e.g., header, footer).
+- **Module**: Reusable components (e.g., buttons, forms).
+- **State**: Styles for dynamic states (e.g., `.is-active`, `.is-hidden`).
+- **Theme**: Styles for visual themes (e.g., color schemes).
+
+**Example:**
+```scss
+/* Base */
+html { margin: 0; font-family: sans-serif; }
+
+/* Layout */
+.l-header { background: #fcfcfc; }
+
+/* Module */
+.button { padding: 10px; }
+
+/* State */
+.is-active { background: blue; }
+
+/* Theme */
+.theme-dark .button { background: #333; }
+```
+
+#### c. CSS Modules
+CSS Modules provide locally scoped class names, ideal for component-based frameworks like React:
+- Each component has its own SCSS file (e.g., `Button.scss`).
+- Use `.scss` for modular styles and `.global.scss` for global styles.
+- Configure Webpack to handle modular SCSS (e.g., `css-loader` with `camelCase: true`).
+
+**Example:**
+```scss
+/* Button.scss */
+.button {
+  padding: 10px;
+}
+```
+
+**Compiled Output:**
+```css
+.Button_button_3rk4 { padding: 10px; }
+```
+
+### Project-Specific Structure
+```plaintext
+scss/
+├── abstracts/
+│   ├── _variables.scss
+│   ├── _mixins.scss
+│   └── _functions.scss
+├── base/
+│   ├── _reset.scss
+│   └── _typography.scss
+├── components/
+│   ├── _button.scss
+│   └── _card.scss
+├── layout/
+│   └── _grid.scss
+├── pages/
+│   └── _home.scss
+├── themes/
+│   └── _theme-dark.scss
+├── vendors/
+│   └── _bootstrap.scss
+└── main.scss
+```
+
+## 4. Coding Rules & Best Practices
+
+### a. Variables
+- Use variables for values repeated at least twice or likely to change
+- Use `!default` for variables that can be overridden in libraries
+- Prefer maps for complex value sets (e.g., breakpoints, z-indexes)
+- Variables for colors/spacing in `_site-colors.scss`
+- **Example:**
+  ```scss
+  $breakpoints: (
+    small: 480px,
+    medium: 768px,
+    large: 1024px
+  );
+  $primary-color: #007bff;
+  ```
+
+### b. Mixins and Functions
+- **Mixins**: Use for reusable property groups (e.g., clearfix, size). Keep under 20 lines.
+  ```scss
+  @mixin size($width, $height) {
+    width: $width;
+    height: $height;
+  }
+  .box { @include size(100px, 100px); }
+  ```
+- **Functions**: Use for computations.
+  ```scss
+  @function percentage($value, $total) {
+    @return ($value / $total) * 100%;
+  }
+  ```
+- Avoid custom vendor prefix mixins; use Autoprefixer instead
+
+### c. Extend
+- Use `@extend` with placeholders (`%`) to share styles without increasing specificity
+- **Example:**
+  ```scss
+  %button-base {
+    padding: 10px;
+    border: none;
+  }
+  .primary-button {
+    @extend %button-base;
+    background: $primary-color;
+  }
+  ```
+
+### d. Nesting
+- Max 3 levels of nesting
+- Limit nesting to pseudo-classes, pseudo-elements, and component states
+- Avoid deep nesting to prevent overly specific selectors
+- **Example:**
+  ```scss
+  .button {
+    padding: 10px;
+    &:hover { background: lighten($primary-color, 10%); }
+  }
+  ```
+
+### e. Responsive Design
+- Use general breakpoint names (e.g., 'small', 'medium')
+- Manage breakpoints with a mixin
+- **Example:**
+  ```scss
+  @mixin respond-to($breakpoint) {
+    @if map-has-key($breakpoints, $breakpoint) {
+      @media (min-width: map-get($breakpoints, $breakpoint)) {
+        @content;
+      }
+    } @else {
+      @error "Unknown breakpoint: #{$breakpoint}";
+    }
+  }
+  .container {
+    width: 100%;
+    @include respond-to(medium) { width: 80%; }
+  }
+  ```
+
+### f. Naming Conventions
+- BEM naming convention for custom classes
+- Use lowercase hyphen-delimited names (e.g., `$vertical-rhythm-baseline`, `@mixin size`)
+- For constants, use all-caps snakerized names (e.g., `$CSS_POSITIONS`)
+- Namespace distributed code (e.g., `su-` prefix)
+
+## 5. Accessibility & Quality
 - WCAG 2.1 AA color contrast compliance
 - Focus states for interactive elements
+- **Minimize Specificity**: Use classes over IDs and avoid `!important`
+- **Linters**: Use SCSS-lint to enforce code quality
+- **Testing**: Test compilation with SassMeister
+- **Error Handling**: Use `@error` for critical issues (e.g., missing map keys)
 
-## Workflow
+## 6. Reusability
+- **Components**: Create independent, reusable components in separate partials (e.g., `_button.scss`)
+- **Partials**: Use leading underscores (e.g., `_partial.scss`) and import where needed
+- **Avoid Cross-Referencing**: Ensure components do not depend on each other's styles
+- Component styles in respective feature folders
+
+## 7. Workflow
 - Edit SCSS files directly
 - Import new files into main SCSS files
 - SCSS files are used for styling and can be processed by build tools as needed
 - Use dotnet build to compile SCSS files into CSS
 
-## Customization
+## 8. Customization
 - Override Foundation variables before importing Foundation
 - Define colors in `_site-colors.scss`
-- Configure Foundation palette in `foundation-root.scss`
+
+## 9. Code Formatting
+- **Indentation**: Use 2 spaces, no tabs
+- **Line Length**: Keep under 80 characters
+- **Declaration Sorting**: Use alphabetical or type-based sorting (e.g., Concentric CSS)
+- **Strings**: Use single quotes, except for `@charset` (double quotes in CSS output)
+- **Colors**: Prefer HSL, then RGB, then lowercase shortened hex
+
+## 10. Documentation
+- Use SassDoc for documenting reusable elements
+- **Example:**
+  ```scss
+  /// Vertical rhythm baseline used across the codebase.
+  /// @type Length
+  $vertical-rhythm-baseline: 16px;
+  ```
+
+## 11. Tools and Methodologies
+- **CSS Modules**: Use for component-based frameworks to scope styles locally
+- **BEM**: Apply Block-Element-Modifier naming for clarity (e.g., `.button--primary`)
+- **Autoprefixer**: Automate vendor prefixes for cross-browser compatibility
+- **Grid Systems**: Consider Bootstrap, Foundation, or Susy
+
+## 12. Practical Examples
+
+### a. Reusable Component
+```scss
+// components/_button.scss
+%button-base {
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+}
+.button {
+  @extend %button-base;
+  @include respond-to(medium) { padding: 15px 30px; }
+}
+.button--primary {
+  @extend %button-base;
+  background: $primary-color;
+  color: white;
+}
+```
+
+## 13. Additional Notes
+- **Simplicity**: Prioritize KISS (Keep It Simple, Stupid) over DRY when appropriate
+- **Consistency**: Adhere to a consistent styleguide
+- **Integration with C# and Blazor**: For Blazor projects, use CSS Modules or scoped CSS to align with component-based architecture, ensuring compatibility with Visual Studio 2022 workflows
+
 

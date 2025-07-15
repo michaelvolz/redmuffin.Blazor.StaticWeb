@@ -127,15 +127,17 @@ public partial class UserProfile : ComponentBase
 - **Framework:** Zurb Foundation for all UI/layout
 - **SCSS Only:** All styles must be implemented in SCSS files in `wwwroot/scss/` folder
 - **CSS Files:** Never modify CSS files directly - they are auto-generated from SCSS
-- **Component Styles:** Use `.razor.css` files for component-scoped styles (these are NOT auto-generated)
+- **Component Styles:** NEVER use `.razor.css` files - use SCSS partials instead
 - **SCSS Partials:** All SCSS partial files must start with an underscore (_) and be included in `app.scss` for automatic compilation
 - **SCSS Compilation:** Files are automatically compiled when included in `app.scss` - no manual compilation needed
+- **Styling Architecture:** Create semantic SCSS partials for component groups (e.g., `_ArticleImageDisplay.scss` for article image components)
 - **Responsive:** Foundation grid/utilities or custom SCSS
 - **Accessibility:** Semantic HTML, ARIA roles, keyboard navigation, WCAG 2.1 AA compliance, proper color contrast
 - **Performance:** Optimize assets (bundling, minification), lazy loading, virtualization for large lists
 - **Modern CSS:** Grid, Flexbox, variables, nesting, dark mode support
 - **Images:** WebP/AVIF, `loading="lazy"`, `srcset`
 - **JavaScript:** Minimal - prefer C#/Blazor, JS interop only when necessary
+- **No JavaScript for CSS:** Never use JavaScript for CSS styling or manipulation. Use modern CSS features instead (since this site only needs to run on evergreen browsers)
 - **JS Interop:** Use `IJSRuntime.InvokeAsync<T>()`, dispose JS object references
 - **Security:** Sanitize inputs, enforce CSP, secure cookies, RBAC
 
@@ -385,7 +387,7 @@ warning IL2111: Method 'Microsoft.AspNetCore.Components.LayoutView.Layout.set' w
 Consult these instruction files based on the file types you're working with:
 
 **Core Technologies:**
-- **Blazor** (`*.razor`, `*.razor.cs`, `*.razor.css`) → [Blazor.instructions.md](.github/instructions/Blazor.instructions.md)
+- **Blazor** (`*.razor`, `*.razor.cs`) → [Blazor.instructions.md](.github/instructions/Blazor.instructions.md)
 - **C#** (`*.cs`) → [CSharp.instructions.md](.github/instructions/CSharp.instructions.md)
 - **PowerShell** (`*.ps1`, `*.psm1`, `*.psd1`) → [Powershell.instructions.md](.github/instructions/Powershell.instructions.md)
 - **SCSS** (`*.scss`) → [_SCSS.instructions.md](.github/instructions/_SCSS.instructions.md)
