@@ -32,19 +32,47 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Copilot Instructions", "Cop
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Instructions", "Instructions", "{1E5315D5-9FD9-D0B7-CF8A-5A02695B7EE1}"
 	ProjectSection(SolutionItems) = preProject
-		.github\instructions\Blazor.instructions.md = .github\instructions\Blazor.instructions.md
-		.github\CommitStandars.instructions.md = .github\CommitStandars.instructions.md
-		.github\instructions\CSharp.instructions.md = .github\instructions\CSharp.instructions.md
-		.github\instructions\Powershell.instructions.md = .github\instructions\Powershell.instructions.md
-		.github\instructions\SCSS.instructions.md = .github\instructions\SCSS.instructions.md
+		.github\instructions\aspnet-rest-apis.instructions.md = .github\instructions\aspnet-rest-apis.instructions.md
+		.github\instructions\blazor.instructions.md = .github\instructions\blazor.instructions.md
+		.github\instructions\csharp.instructions.md = .github\instructions\csharp.instructions.md
+		.github\instructions\github-actions-ci-cd-best-practices.instructions.md = .github\instructions\github-actions-ci-cd-best-practices.instructions.md
+		.github\instructions\markdown.instructions.md = .github\instructions\markdown.instructions.md
+		.github\instructions\performance-optimization.instructions.md = .github\instructions\performance-optimization.instructions.md
+		.github\instructions\powershell.instructions.md = .github\instructions\powershell.instructions.md
+		.github\instructions\_AzureFunctionsProgrammingBestPractices.instructions.md = .github\instructions\_AzureFunctionsProgrammingBestPractices.instructions.md
+		.github\instructions\_CommitStandars.instructions.md = .github\instructions\_CommitStandars.instructions.md
+		.github\instructions\_Documentation.instructions.md = .github\instructions\_Documentation.instructions.md
+		.github\instructions\_SCSS.instructions.md = .github\instructions\_SCSS.instructions.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Prompts", "Prompts", "{1042B09C-CD63-0B34-1D4B-7FE7A2FDFA8E}"
 	ProjectSection(SolutionItems) = preProject
-		.github\prompts\ExecuteTaskList.prompt.md = .github\prompts\ExecuteTaskList.prompt.md
-		.github\prompts\GeneratePRD.prompt.md = .github\prompts\GeneratePRD.prompt.md
-		.github\prompts\SecurityReviewAPI.prompt.md = .github\prompts\SecurityReviewAPI.prompt.md
-		.github\prompts\TaskListFromPRD.prompt.md = .github\prompts\TaskListFromPRD.prompt.md
+		.github\prompts\aspnet-minimal-api-openapi.prompt.md = .github\prompts\aspnet-minimal-api-openapi.prompt.md
+		.github\prompts\create-architectural-decision-record.prompt.md = .github\prompts\create-architectural-decision-record.prompt.md
+		.github\prompts\create-github-issue-feature-from-specification.prompt.md = .github\prompts\create-github-issue-feature-from-specification.prompt.md
+		.github\prompts\create-github-issues-feature-from-implementation-plan.prompt.md = .github\prompts\create-github-issues-feature-from-implementation-plan.prompt.md
+		.github\prompts\create-github-issues-for-unmet-specification-requirements.prompt.md = .github\prompts\create-github-issues-for-unmet-specification-requirements.prompt.md
+		.github\prompts\create-implementation-plan.prompt.md = .github\prompts\create-implementation-plan.prompt.md
+		.github\prompts\create-specification.prompt.md = .github\prompts\create-specification.prompt.md
+		.github\prompts\csharp-async.prompt.md = .github\prompts\csharp-async.prompt.md
+		.github\prompts\csharp-docs.prompt.md = .github\prompts\csharp-docs.prompt.md
+		.github\prompts\csharp-tunit.prompt.md = .github\prompts\csharp-tunit.prompt.md
+		.github\prompts\csharp-xunit.prompt.md = .github\prompts\csharp-xunit.prompt.md
+		.github\prompts\dotnet-best-practices.prompt.md = .github\prompts\dotnet-best-practices.prompt.md
+		.github\prompts\dotnet-design-pattern-review.prompt.md = .github\prompts\dotnet-design-pattern-review.prompt.md
+		.github\prompts\ef-core.prompt.md = .github\prompts\ef-core.prompt.md
+		.github\prompts\gen-specs-as-issues.prompt.md = .github\prompts\gen-specs-as-issues.prompt.md
+		.github\prompts\my-issues.prompt.md = .github\prompts\my-issues.prompt.md
+		.github\prompts\my-pull-requests.prompt.md = .github\prompts\my-pull-requests.prompt.md
+		.github\prompts\suggest-awesome-github-copilot-chatmodes.prompt.md = .github\prompts\suggest-awesome-github-copilot-chatmodes.prompt.md
+		.github\prompts\suggest-awesome-github-copilot-prompts.prompt.md = .github\prompts\suggest-awesome-github-copilot-prompts.prompt.md
+		.github\prompts\update-implementation-plan.prompt.md = .github\prompts\update-implementation-plan.prompt.md
+		.github\prompts\update-markdown-file-index.prompt.md = .github\prompts\update-markdown-file-index.prompt.md
+		.github\prompts\update-specification.prompt.md = .github\prompts\update-specification.prompt.md
+		.github\prompts\_ExecuteTaskList.prompt.md = .github\prompts\_ExecuteTaskList.prompt.md
+		.github\prompts\_GeneratePRD.prompt.md = .github\prompts\_GeneratePRD.prompt.md
+		.github\prompts\_SecurityReviewAPI.prompt.md = .github\prompts\_SecurityReviewAPI.prompt.md
+		.github\prompts\_TaskListFromPRD.prompt.md = .github\prompts\_TaskListFromPRD.prompt.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "redmuffin.Blazor.StaticWeb.Api", "src\redmuffin.Blazor.StaticWeb.Api\redmuffin.Blazor.StaticWeb.Api.csproj", "{3A0861E0-0988-405C-9A83-4CE5379961A0}"
