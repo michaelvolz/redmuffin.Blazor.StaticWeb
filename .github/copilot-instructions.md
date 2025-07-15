@@ -86,6 +86,8 @@ public class UserService
 }
 ```
 
+**Important:** Only inject HttpClient/IHttpClientFactory when the service actually needs to make HTTP requests. Do not include these dependencies unless there is a genuine requirement for external API calls or HTTP communication.
+
 ### Blazor Component DI Pattern
 ```csharp
 public partial class UserProfile : ComponentBase
@@ -141,7 +143,7 @@ public partial class UserProfile : ComponentBase
 - **Input Validation:** Always validate/sanitize user input
 - **XSS/CSRF:** Use Blazor built-ins and best practices
 - **Secrets:** Never expose in client code
-- **API:** Use `IHttpClientFactory` for HTTP calls, prefer minimal APIs
+- **API:** Use `IHttpClientFactory` for HTTP calls only when actually needed for external API communication, prefer minimal APIs
 - **CSP:** Configured in `staticwebapp.config.json` - allows 'unsafe-inline' for styles, restricts scripts
 - **Azure Functions:** Use isolated worker model with dependency injection
 - **Authentication:** ASP.NET Core Identity, role-based access control
