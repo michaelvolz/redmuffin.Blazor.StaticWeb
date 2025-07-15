@@ -14,7 +14,94 @@ SCSS (Sassy CSS) is a preprocessor that enhances CSS with features like variable
 - Use Foundation grid system, mixins, and responsive patterns
 - Modern CSS: Grid, Flexbox, CSS variables
 
-## 3. Architecture & Organization
+## 3. Architecture  Organization
+
+### Feature-Based SCSS Organization
+
+#### Feature Folders Structure
+Organize SCSS files by Blazor feature rather than by type to maintain consistency with the component-based architecture:
+
+```plaintext
+scss/
+├── features/
+│   ├── authentication/
+│   │   ├── _login.scss
+│   │   ├── _register.scss
+│   │   └── _index.scss
+│   ├── user-profile/
+│   │   ├── _profile-view.scss
+│   │   ├── _profile-edit.scss
+│   │   └── _index.scss
+│   ├── dashboard/
+│   │   ├── _dashboard-layout.scss
+│   │   ├── _widgets.scss
+│   │   └── _index.scss
+│   └── shared/
+│       ├── _buttons.scss
+│       ├── _forms.scss
+│       └── _index.scss
+├── abstracts/
+│   ├── _variables.scss
+│   ├── _mixins.scss
+│   └── _functions.scss
+├── base/
+│   ├── _reset.scss
+│   └── _typography.scss
+├── layout/
+│   └── _grid.scss
+├── themes/
+│   └── _theme-dark.scss
+├── vendors/
+│   └── _foundation.scss
+└── app.scss
+```
+
+#### Feature Folder Guidelines
+
+1. **Mirror Blazor Feature Structure**: Each feature folder should correspond to a Blazor feature in `src/redmuffin.Blazor.StaticWeb/Features/`
+2. **Lightweight and Modular**: Keep feature SCSS files focused on specific components or pages within that feature
+3. **Index Files**: Each feature folder should have an `_index.scss` file that imports all partials in that feature
+4. **Cross-Feature Dependencies**: Minimize dependencies between features; use shared abstracts instead
+5. **Component-Specific Styles**: Place component-specific styles in the corresponding feature folder
+
+#### Feature Folder Naming Conventions
+- Use kebab-case for folder names (e.g., `user-profile`, `content-management`)
+- Prefix partial files with underscore (e.g., `_profile-view.scss`)
+- Use descriptive names that match the component or page purpose
+- Group related components within the same feature folder
+
+#### Feature Index File Pattern
+```scss
+// features/user-profile/_index.scss
+@forward 'profile-view';
+@forward 'profile-edit';
+@forward 'profile-settings';
+```
+
+#### Main App Integration
+```scss
+// app.scss
+@use 'abstracts' as *;
+@use 'base' as *;
+@use 'layout' as *;
+@use 'vendors' as *;
+
+// Feature imports
+@use 'features/authentication';
+@use 'features/user-profile';
+@use 'features/dashboard';
+@use 'features/shared';
+
+// Theme imports
+@use 'themes' as *;
+```
+
+#### Benefits of Feature-Based Organization
+- **Maintainability**: Easy to locate and modify styles for specific features
+- **Scalability**: New features can be added without affecting existing styles
+- **Team Collaboration**: Different developers can work on different features simultaneously
+- **Code Splitting**: Supports lazy loading of feature-specific styles
+- **Blazor Alignment**: Matches the component-based architecture of Blazor WebAssembly
 
 ### Modular Architecture Patterns
 
