@@ -35,13 +35,86 @@
 - **C# Language**: Preview features enabled (`LangVersion=preview`)
 - **Coverage**: Centralized exclusions for generated files and dependencies
 
-## 1. Coding Standards
+## 1. Test-Driven Development (TDD)
+
+### TDD Cycle (Red-Green-Refactor)
+- **Red:** Write a failing test first that defines desired behavior
+- **Green:** Write minimal code to make the test pass
+- **Refactor:** Improve code quality while keeping tests green
+
+### TDD Workflow for AI Assistants
+1. **Before any new feature/method:**
+   - Write failing TUnit test(s) first
+   - Run `dotnet test` to confirm failure (Red)
+   - Implement minimal code to pass test (Green)
+   - Refactor for quality/performance while tests remain green
+
+2. **TDD Best Practices:**
+   - One test per behavior/requirement
+   - Tests should be independent and isolated
+   - Use descriptive test names with underscores (e.g., `Should_Return_Valid_User_When_Id_Exists`)
+   - Test edge cases and error conditions
+   - Mock external dependencies using constructor injection
+
+### TDD with Blazor Components
+- Test component parameters, events, and rendering
+- Use `TestContext` for component testing
+- Mock services injected into components
+- Test user interactions and state changes
+
+## 2. Dependency Injection Best Practices
+
+### Constructor Injection (Preferred)
+```csharp
+public class UserService
+{
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<UserService> _logger;
+
+    public UserService(IHttpClientFactory httpClientFactory, ILogger<UserService> logger)
+    {
+        _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+}
+```
+
+### Blazor Component DI Pattern
+```csharp
+public partial class UserProfile : ComponentBase
+{
+    [Inject] private IUserService UserService { get; set; } = default!;
+    [Inject] private ILogger<UserProfile> Logger { get; set; } = default!;
+    [Inject] private ILocalStorageService LocalStorage { get; set; } = default!;
+    
+    // Always validate injected services in OnInitialized if critical
+    protected override async Task OnInitializedAsync()
+    {
+        ArgumentNullException.ThrowIfNull(UserService);
+        // Component logic
+    }
+}
+```
+
+### Service Registration Patterns
+- **Singleton:** `services.AddSingleton<IService, Service>()` - Shared instance
+- **Scoped:** `services.AddScoped<IService, Service>()` - Per request/circuit
+- **Transient:** `services.AddTransient<IService, Service>()` - New instance each time
+
+### DI Guidelines for AI Assistants
+1. **Always prefer constructor injection** over property/method injection
+2. **Validate constructor parameters** with null checks or ArgumentNullException.ThrowIfNull
+3. **Use interfaces** for all injected dependencies to enable testing
+4. **Avoid service locator pattern** - inject what you need directly
+5. **Design for testability** - constructor injection enables easy mocking
+
+## 3. Coding Standards
 - **Private Fields:** Use `_` prefix for private fields
 - **var Usage:** Only when type is clearly apparent (e.g., `var items = new List<string>()`)
 - **Line Length:** 160 characters maximum
 - **Braces:** Always use braces, even for single-line statements
 
-## 2. UI & Styling
+## 4. UI & Styling
 - **Framework:** Zurb Foundation for all UI/layout
 - **SCSS Only:** All styles must be implemented in SCSS files in `wwwroot/scss/` folder
 - **CSS Files:** Never modify CSS files directly - they are auto-generated from SCSS
@@ -57,7 +130,7 @@
 - **JS Interop:** Use `IJSRuntime.InvokeAsync<T>()`, dispose JS object references
 - **Security:** Sanitize inputs, enforce CSP, secure cookies, RBAC
 
-## 3. Security & API
+## 5. Security & API
 - **Input Validation:** Always validate/sanitize user input
 - **XSS/CSRF:** Use Blazor built-ins and best practices
 - **Secrets:** Never expose in client code
@@ -66,12 +139,111 @@
 - **Azure Functions:** Use isolated worker model with dependency injection
 - **Authentication:** ASP.NET Core Identity, role-based access control
 
-## 4. Testing & Documentation
-- **Unit Tests:** Use TUnit (NOT NUnit/xUnit), `[Test]` for methods, `[Tests]` with `[Arguments]` for data-driven
+## 6. Testing & Documentation (Enhanced with TDD)
+
+### TDD-First Development
+- **Write tests before implementation** using Red-Green-Refactor cycle
+- **Test structure:** Arrange-Act-Assert pattern
+- **Mock dependencies** using constructor injection for isolation
+- **Test naming:** Use underscores in test method names for readability: `Should_Return_True_If_UserId_Exists` format (underscores only in test methods, not in production code)
+
+### TUnit Testing Patterns with DI
+```csharp
+[Test]
+public async Task Should_Return_User_When_Valid_Id_Provided()
+{
+    // Arrange
+    var mockHttpClient = new Mock<HttpClient>();
+    var mockLogger = new Mock<ILogger<UserService>>();
+    var userService = new UserService(mockHttpClient.Object, mockLogger.Object);
+    var userId = "valid-id";
+
+    // Act
+    var result = await userService.GetUserAsync(userId);
+
+    // Assert
+    result.Should().NotBeNull();
+    result.Id.Should().Be(userId);
+}
+
+[Test]
+[Arguments(null)]
+[Arguments("")]
+[Arguments("   ")]
+public async Task Should_Throw_Argument_Exception_When_Invalid_Id_Provided(string invalidId)
+{
+    // Arrange
+    var mockHttpClient = new Mock<HttpClient>();
+    var mockLogger = new Mock<ILogger<UserService>>();
+    var userService = new UserService(mockHttpClient.Object, mockLogger.Object);
+
+    // Act & Assert
+    await Assert.ThrowsAsync<ArgumentException>(() => userService.GetUserAsync(invalidId));
+}
+```
+
+### Component Testing with DI
+```csharp
+[Test]
+public void Should_Render_UserProfile_When_User_Loaded()
+{
+    // Arrange
+    using var ctx = new TestContext();
+    var mockUserService = new Mock<IUserService>();
+    mockUserService.Setup(x => x.GetCurrentUserAsync()).ReturnsAsync(new User { Name = "John" });
+    ctx.Services.AddSingleton(mockUserService.Object);
+
+    // Act
+    var component = ctx.RenderComponent<UserProfile>();
+
+    // Assert
+    component.Find("h1").TextContent.Should().Contain("John");
+}
+```
+
 - **Code Coverage:** Coverlet + ReportGenerator with PowerShell automation (see AI Operational Guidelines section)
 - **Documentation:** XML docs for public APIs, update README/Wiki/OpenAPI
 
 ## Code Examples
+
+**TDD Example with Dependency Injection:**
+```csharp
+// 1. RED: Write failing test first
+[Test]
+public async Task Should_Validate_User_Credentials()
+{
+    // Arrange
+    var mockAuthService = new Mock<IAuthService>();
+    var mockLogger = new Mock<ILogger<LoginComponent>>();
+    var loginComponent = new LoginComponent(mockAuthService.Object, mockLogger.Object);
+    
+    // Act
+    var result = await loginComponent.ValidateLoginAsync("user", "pass");
+    
+    // Assert
+    result.Should().BeTrue();
+}
+
+// 2. GREEN: Implement minimal code to pass
+public partial class LoginComponent : ComponentBase
+{
+    private readonly IAuthService _authService;
+    private readonly ILogger<LoginComponent> _logger;
+    
+    public LoginComponent(IAuthService authService, ILogger<LoginComponent> logger)
+    {
+        _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+    
+    public async Task<bool> ValidateLoginAsync(string username, string password)
+    {
+        return await _authService.ValidateAsync(username, password);
+    }
+}
+
+// 3. REFACTOR: Improve while keeping tests green
+```
 
 **Blazor Component Structure:**
 ```csharp
@@ -91,7 +263,7 @@ public partial class Example : ComponentBase
 **TUnit Test Pattern:**
 ```csharp
 [Test]
-public async Task ShouldReturnExpectedResult()
+public async Task Should_Return_Expected_Result()
 {
     // Test
 }
@@ -99,7 +271,7 @@ public async Task ShouldReturnExpectedResult()
 [Test]
 [Arguments("input1", "expected1")]
 [Arguments("input2", "expected2")]
-public async Task ShouldHandleMultipleInputs(string input, string expected)
+public async Task Should_Handle_Multiple_Inputs(string input, string expected)
 {
     // Data-driven test
 }
@@ -115,7 +287,7 @@ public async Task<HttpResponseData> Run(
 }
 ```
 
-## 5. Modern C# Features (12/13)
+## 7. Modern C# Features (12/13)
 | Feature | Example |
 |---------|---------|
 | Primary Constructors | `public class Person(string name, int age) { ... }` |
@@ -133,7 +305,7 @@ public async Task<HttpResponseData> Run(
 | Partial Properties | `public partial string Name { get; set; }` |
 | Overload Priority | `[OverloadResolutionPriority(1)] void M(int a) {}` |
 
-## 6. File & Directory Organization
+## 8. File & Directory Organization
 - **Features:** `src/redmuffin.Blazor.StaticWeb/Features/` - Feature-based organization with pages and components
 - **Static Assets:** `src/redmuffin.Blazor.StaticWeb/wwwroot/` - CSS, SCSS, JS, sample data, and libraries
 - **Tests:** `tests/` - Mirror main project structure with TUnit test projects
@@ -149,7 +321,27 @@ public async Task<HttpResponseData> Run(
 - `src/redmuffin.Blazor.StaticWeb.Common/` - Shared models and utilities
 - `tests/` - TUnit test projects mirroring source structure
 
-## 7. Best Practices
+## 9. Best Practices (Enhanced)
+
+### TDD Principles
+- **Test First:** Write tests before implementation
+- **Small Steps:** Make minimal changes to pass tests
+- **Continuous Refactoring:** Improve code while tests remain green
+- **Fast Feedback:** Keep test execution time minimal
+
+### Dependency Injection Principles
+- **Dependency Inversion:** Depend on abstractions, not concretions
+- **Constructor Injection:** Preferred method for required dependencies
+- **Single Responsibility:** Each service should have one reason to change
+- **Interface Segregation:** Create small, focused interfaces
+
+### Integration Guidelines
+- Combine TDD with DI for highly testable code
+- Mock external dependencies in unit tests
+- Use integration tests to verify DI container configuration
+- Design services with constructor injection for easy mocking
+
+### General Best Practices
 - Develop modular, reusable, testable components
 - Favor strongly-typed parameters over dynamic
 - Handle exceptions with try/catch or error boundaries (`<ErrorBoundary>`)
@@ -159,7 +351,7 @@ public async Task<HttpResponseData> Run(
 - Use `StateHasChanged()` sparingly, prefer parameter binding
 - Implement `IDisposable` for event subscriptions and timers
 
-## 8. AI Operational Guidelines
+## 10. AI Operational Guidelines
 
 ### Known Build Warnings
 
@@ -197,6 +389,31 @@ Consult these instruction files based on the file types you're working with:
 - **Performance** (all files) → [performance-optimization.instructions.md](.github/instructions/performance-optimization.instructions.md)
 - **Commit Standards** → [_CommitStandars.instructions.md](.github/instructions/_CommitStandars.instructions.md)
 - **General Documentation Resources** → [_Documentation.instructions.md](.github/instructions/_Documentation.instructions.md)
+
+### TDD Workflow for AI Assistants
+1. **Before implementing any new feature:**
+   - Ask: "What should this feature do?" (requirements clarification)
+   - Write failing test(s) that define expected behavior
+   - Run `dotnet test` to confirm red state
+   - Implement minimal code to achieve green state
+   - Refactor while maintaining green state
+
+2. **When modifying existing code:**
+   - Ensure existing tests pass before changes
+   - Add new tests for new behaviors
+   - Refactor with confidence knowing tests will catch regressions
+
+3. **Testing Strategy:**
+   - Unit tests for business logic with mocked dependencies
+   - Integration tests for component interactions
+   - End-to-end tests for critical user flows
+   - Always test edge cases and error conditions
+
+### Dependency Injection Guidelines
+1. **Service Design:** Design services with single responsibility
+2. **Interface Segregation:** Create focused interfaces for better testability
+3. **Lifecycle Management:** Choose appropriate service lifetimes
+4. **Testing:** Always design services with constructor injection for easy mocking
 
 ### Development Workflow
 - **Pre-commit Testing:** Before any git commit, run `dotnet test` and ensure it passes without errors (warnings are acceptable)
