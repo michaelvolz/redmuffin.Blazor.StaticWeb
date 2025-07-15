@@ -49,6 +49,7 @@ Suitable for experimentation, learning, and development environments.
 - [Development Workflow](#development-workflow)
   - [Trunk-Based Development](#trunk-based-development)
   - [Test-Driven Development (TDD)](#test-driven-development-tdd)
+  - [Testing Behavior, Not Implementation Details](#testing-behavior-not-implementation-details)
 - [Usage](#usage)
 - [Project Structure](#project-structure)
 - [Technology Stack](#technology-stack)
@@ -368,6 +369,50 @@ This project embraces **[Test-Driven Development](https://martinfowler.com/bliki
 - **[Microsoft's TDD Walkthrough](https://learn.microsoft.com/en-us/visualstudio/test/quick-start-test-driven-development-with-test-explorer)**
 - **[Uncle Bob's Clean Code TDD](http://cleancoder.com/)**
 - **[.NET Testing Best Practices](https://learn.microsoft.com/en-us/dotnet/core/testing/)**
+
+### Testing Behavior, Not Implementation Details
+
+This project follows authoritative testing best practices that emphasize **testing behavior through public interfaces** rather than internal implementation details. This approach produces more maintainable, refactor-safe tests that provide long-term value.
+
+#### Core Principles
+
+- **Test Public Contracts**: Focus on testing public methods, parameters, and return values
+- **Avoid Internal Dependencies**: Do not test private methods, internal data structures, or implementation details
+- **Stable Test Foundation**: Test what remains stable over time (the interface) rather than what changes frequently (internal logic)
+- **Refactor-Safe Design**: Write tests that survive refactoring when public behavior remains unchanged
+- **Design for Testability**: Encourage refactoring internal code to make it more testable through public interfaces
+
+#### Benefits
+
+- **Maintainable Tests**: Tests remain valid as long as public behavior is preserved
+- **Flexible Implementation**: Internal code can be refactored without breaking tests
+- **True Regression Protection**: Tests verify actual user-facing behavior, not implementation artifacts
+- **Reduced Test Brittleness**: Fewer tests break during legitimate refactoring activities
+- **Better API Design**: Writing tests first against public interfaces leads to cleaner, more intuitive APIs
+
+#### Guidelines for This Project
+
+1. **Focus on Public APIs**: Test methods, properties, and behaviors that are accessible to consumers
+2. **Avoid Private Method Testing**: If a private method needs testing, consider making it public or refactoring
+3. **Test Outcomes, Not Steps**: Verify what the code produces, not how it produces it
+4. **Use Mocking Judiciously**: Mock external dependencies, not internal components
+5. **Design Components for Testing**: Structure code so that behavior can be validated through public interfaces
+
+#### Anti-Patterns to Avoid
+
+- ❌ Testing private methods directly
+- ❌ Asserting on internal data structures or state
+- ❌ Testing implementation details that could change during refactoring
+- ❌ White-box testing that tightly couples tests to current implementation
+- ❌ Testing trivial code (simple getters/setters) that provides no real value
+
+#### Authoritative References
+
+- **[Martin Fowler on Unit Testing](https://martinfowler.com/bliki/UnitTest.html)**: Emphasizes testing behavior over implementation
+- **[Kent Beck's TDD Philosophy](https://www.amazon.com/Test-Driven-Development-Kent-Beck/dp/0321146530)**: Focus on what the code should do, not how it does it
+- **[Microsoft .NET Testing Best Practices](https://learn.microsoft.com/en-us/dotnet/core/testing/best-practices)**: Avoid testing internal implementations
+- **[Uncle Bob's Clean Code](http://cleancoder.com/)**: Tests should be independent of implementation details
+- **[Google Testing Blog](https://testing.googleblog.com/)**: Advocates for testing behavior through stable interfaces
 
 ---
 

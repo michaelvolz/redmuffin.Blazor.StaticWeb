@@ -56,6 +56,13 @@
    - Test edge cases and error conditions
    - Mock external dependencies using constructor injection
 
+3. **Test Behavior, Not Implementation:**
+   - **Test the Contract**: Focus on testing public interfaces, parameters, and return values
+   - **Avoid Internal Logic**: Do not test private methods or internal implementation details
+   - **Stable Over Time**: Test what is stable (public API) rather than what changes frequently (internal logic)
+   - **Refactor-Safe Tests**: Tests should survive refactoring when behavior remains unchanged
+   - **Design for Testability**: If code cannot be validated through public interface, refactor to make it more testable
+
 ### TDD with Blazor Components
 - Test component parameters, events, and rendering
 - Use `TestContext` for component testing
@@ -146,6 +153,7 @@ public partial class UserProfile : ComponentBase
 - **Test structure:** Arrange-Act-Assert pattern
 - **Mock dependencies** using constructor injection for isolation
 - **Test naming:** Use underscores in test method names for readability: `Should_Return_True_If_UserId_Exists` format (underscores only in test methods, not in production code)
+- **Test Behavior, Not Implementation:** Focus on testing public contracts and interfaces, not internal logic or private methods
 
 ### TUnit Testing Patterns with DI
 ```csharp
@@ -328,6 +336,7 @@ public async Task<HttpResponseData> Run(
 - **Small Steps:** Make minimal changes to pass tests
 - **Continuous Refactoring:** Improve code while tests remain green
 - **Fast Feedback:** Keep test execution time minimal
+- **Behavior-Focused:** Test public contracts and interfaces, not internal implementation details
 
 ### Dependency Injection Principles
 - **Dependency Inversion:** Depend on abstractions, not concretions
@@ -408,6 +417,8 @@ Consult these instruction files based on the file types you're working with:
    - Integration tests for component interactions
    - End-to-end tests for critical user flows
    - Always test edge cases and error conditions
+   - **Focus on Behavior:** Test public interfaces, parameters, and return values - not internal implementation
+   - **Refactor-Safe Tests:** Write tests that survive refactoring when public behavior remains unchanged
 
 ### Dependency Injection Guidelines
 1. **Service Design:** Design services with single responsibility
