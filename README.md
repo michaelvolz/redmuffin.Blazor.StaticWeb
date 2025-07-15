@@ -48,6 +48,7 @@ Suitable for experimentation, learning, and development environments.
 - [Getting Started](#getting-started)
 - [Development Workflow](#development-workflow)
   - [Trunk-Based Development](#trunk-based-development)
+  - [Test-Driven Development (TDD)](#test-driven-development-tdd)
 - [Usage](#usage)
 - [Project Structure](#project-structure)
 - [Technology Stack](#technology-stack)
@@ -298,6 +299,75 @@ This project follows **[Trunk-Based Development](https://trunkbaseddevelopment.c
 - **[Atlassian Guide](https://www.atlassian.com/continuous-delivery/continuous-integration/trunk-based-development)**
 - **[Martin Fowler's Feature Flags](https://martinfowler.com/articles/feature-toggles.html)**
 - **[Continuous Integration](https://www.atlassian.com/continuous-delivery/continuous-integration)**
+
+### Test-Driven Development (TDD)
+
+This project embraces **[Test-Driven Development](https://martinfowler.com/bliki/TestDrivenDevelopment.html)** - a software development methodology that guides software development by writing tests before the actual implementation. TDD was developed by Kent Beck in the late 1990s as part of Extreme Programming.
+
+#### Core Principles
+
+- **Red-Green-Refactor Cycle**: Write a failing test (Red), make it pass with minimal code (Green), then refactor while keeping tests green
+- **Test-First Approach**: Write tests before writing the production code they're meant to verify
+- **Incremental Development**: Build software in small, testable increments
+- **Continuous Testing**: Maintain a comprehensive suite of automated tests that run frequently
+- **Design Through Testing**: Use tests to drive and validate software design decisions
+
+#### Benefits for This Project
+
+- **Higher Code Quality**: TDD leads to cleaner, more maintainable code with fewer bugs
+- **Better Design**: Writing tests first forces consideration of API design and component interfaces
+- **Faster Feedback**: Immediate feedback on code changes through automated test execution
+- **Regression Prevention**: Comprehensive test suite catches issues when refactoring or adding features
+- **Documentation**: Tests serve as living documentation of how the code should behave
+- **Confidence**: Developers can refactor and change code with confidence knowing tests will catch issues
+
+#### TDD Workflow Guidelines
+
+1. **Write a Failing Test**: Start by writing a test that describes the desired behavior
+2. **Run the Test**: Verify the test fails (Red state) - this confirms the test is valid
+3. **Write Minimal Code**: Implement just enough code to make the test pass (Green state)
+4. **Refactor**: Improve the code quality while keeping all tests green
+5. **Repeat**: Continue the cycle for each new piece of functionality
+
+#### Best Practices
+
+- **One Test at a Time**: Focus on one failing test before moving to the next
+- **Small Steps**: Make the smallest possible change to pass each test
+- **Test Names**: Use descriptive test names with underscores (e.g., `Should_Return_User_When_Valid_Id_Provided`)
+- **Fast Tests**: Keep tests fast-running to enable frequent execution
+- **Independent Tests**: Each test should be able to run independently of others
+- **Mock External Dependencies**: Use mocking to isolate units under test
+
+#### TDD with Our Technology Stack
+
+- **[TUnit Framework](https://github.com/thomhurst/TUnit)**: Modern, fast testing framework optimized for .NET
+- **Constructor Injection**: Design services with dependency injection for easy testing
+- **Component Testing**: Use `TestContext` for testing Blazor components
+- **API Testing**: Test Azure Functions with HTTP triggers and dependency injection
+- **Mocking**: Use NSubstitute for creating test doubles
+
+#### Tools and Automation
+
+- **Visual Studio Integration**: Run tests directly from IDE with full debugging support
+- **Continuous Testing**: Tests run automatically on every commit via GitHub Actions
+- **Code Coverage**: Comprehensive coverage reports to ensure test effectiveness
+- **Fast Feedback**: TUnit's performance optimizations enable rapid test execution
+
+#### Anti-Patterns to Avoid
+
+- ❌ Writing tests after the implementation (Test-Last Development)
+- ❌ Testing implementation details instead of behavior
+- ❌ Large, complex tests that are hard to understand and maintain
+- ❌ Skipping the refactor step in the Red-Green-Refactor cycle
+- ❌ Writing tests that are tightly coupled to specific implementations
+
+#### Resources
+
+- **[Martin Fowler on TDD](https://martinfowler.com/bliki/TestDrivenDevelopment.html)**
+- **[Kent Beck's "Test Driven Development: By Example"](https://www.amazon.com/Test-Driven-Development-Kent-Beck/dp/0321146530)**
+- **[Microsoft's TDD Walkthrough](https://learn.microsoft.com/en-us/visualstudio/test/quick-start-test-driven-development-with-test-explorer)**
+- **[Uncle Bob's Clean Code TDD](http://cleancoder.com/)**
+- **[.NET Testing Best Practices](https://learn.microsoft.com/en-us/dotnet/core/testing/)**
 
 ---
 
