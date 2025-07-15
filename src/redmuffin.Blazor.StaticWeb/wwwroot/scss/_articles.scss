@@ -1,0 +1,139 @@
+// Articles Page Styles - Masonry Layout and Card Components
+.masonry {
+    column-count: 1; /* Default for small screens (mobile) */
+    column-gap: 16px;
+}
+
+/* Medium screens (tablets) */
+@media screen and (min-width: 640px) {
+    .masonry {
+        column-count: 2;
+    }
+}
+
+/* Large screens (desktops) */
+@media screen and (min-width: 1024px) {
+    .masonry {
+        column-count: 3;
+    }
+}
+
+/* XLarge screens */
+@media screen and (min-width: 1200px) {
+    .masonry {
+        column-count: 4;
+    }
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 16px;
+    display: inline-block;
+    width: 100%;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    img {
+        width: 100%;
+        height: auto;
+        border-bottom: 1px solid #ddd;
+    }
+}
+
+/* Article-specific card styling optimizations */
+.article-card {
+    /* Subtle optimizations for article readability */
+    line-height: 1.6; /* Improved readability for text content */
+    
+    .card-section {
+        p {
+            line-height: 1.65; /* Slightly better line height for article text */
+        }
+    }
+}
+
+/* Adjust card appearance on smaller screens */
+@media screen and (max-width: 639px) {
+    .card {
+        margin-bottom: 20px; /* Slightly more spacing between cards on mobile */
+
+        &:hover {
+            transform: translateY(-3px); /* Less dramatic hover effect on mobile */
+        }
+    }
+}
+
+.card-divider {
+    background: #f4f4f4;
+    padding: 8px;
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    i {
+        color: #007bff;
+    }
+}
+
+.card-section {
+    padding: 16px;
+    font-size: 0.9em;
+    color: #555;
+
+    p {
+        margin: 0 0 8px;
+    }
+
+    a.button {
+        display: inline-block;
+        padding: 8px 12px;
+        background: #007bff;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 0.9em;
+        transition: background 0.3s;
+
+        &:hover {
+            background: #0056b3;
+        }
+    }
+}
+
+/* Responsive adjustments for smaller screens */
+@media screen and (max-width: 639px) {
+    .card-divider {
+        font-size: 1.1em;
+        padding: 6px 8px;
+    }
+
+    .card-section {
+        padding: 12px;
+
+        a.button {
+            display: block;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+        }
+    }
+}
+
+.callout.alert {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 16px;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+}
