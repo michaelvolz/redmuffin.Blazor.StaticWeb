@@ -72,6 +72,15 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
         EventName = "Request_SizeValidation")]
     public static partial void LogRequestSizeValidation(ILogger logger, int articleCount, int requestSizeKB);
 
+    [LoggerMessage(15, LogLevel.Error, "Failed to deserialize batch request: {ErrorMessage}", EventName = "Batch_DeserializationFailed")]
+    public static partial void LogBatchDeserializationFailed(ILogger logger, Exception exception, string errorMessage);
+
+    [LoggerMessage(16, LogLevel.Error, "Unexpected error processing batch request: {ErrorMessage}", EventName = "Batch_UnexpectedError")]
+    public static partial void LogBatchUnexpectedError(ILogger logger, Exception exception, string errorMessage);
+
+    [LoggerMessage(17, LogLevel.Error, "Failed to read request body: {ErrorMessage}", EventName = "Request_ReadBodyFailed")]
+    public static partial void LogRequestReadBodyFailed(ILogger logger, Exception exception, string errorMessage);
+
     [Function("GetOpenGraphImages")]
     public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request)
     {
@@ -120,12 +129,12 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
         }
         catch (JsonException ex)
         {
-            _logger.LogError(ex, "Failed to deserialize batch request");
+            LogBatchDeserializationFailed(_logger, ex, ex.Message);
             return new BadRequestObjectResult("Invalid JSON format");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error processing batch request");
+            LogBatchUnexpectedError(_logger, ex, ex.Message);
             return new StatusCodeResult(500);
         }
     }
@@ -800,7 +809,7 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to read request body");
+            LogRequestReadBodyFailed(_logger, ex, ex.Message);
             return null;
         }
     }
