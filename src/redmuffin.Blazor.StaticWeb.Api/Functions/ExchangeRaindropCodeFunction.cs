@@ -54,6 +54,13 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
 
     private readonly Settings _settings = settings.Value;
 
+    private static async Task<HttpResponseData> CreateBadRequestResponseAsync(HttpRequestData req, string error, CancellationToken token)
+    {
+        var badResp = req.CreateResponse(HttpStatusCode.BadRequest);
+        await badResp.WriteAsJsonAsync(new ExchangeResponse { Error = error }, token).ConfigureAwait(false);
+        return badResp;
+    }
+
     [Function("ExchangeRaindropCode")]
     public async Task<HttpResponseData> RunAsync([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData req)
     {
@@ -79,13 +86,6 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
             await errResp.WriteAsJsonAsync(new ExchangeResponse { Error = ex.Message }, token).ConfigureAwait(false);
             return errResp;
         }
-    }
-
-    private static async Task<HttpResponseData> CreateBadRequestResponseAsync(HttpRequestData req, string error, CancellationToken token)
-    {
-        var badResp = req.CreateResponse(HttpStatusCode.BadRequest);
-        await badResp.WriteAsJsonAsync(new ExchangeResponse { Error = error }, token).ConfigureAwait(false);
-        return badResp;
     }
 
     private async Task<ExchangeRequest?> DeserializeRequestAsync(HttpRequestData req, CancellationToken token)
