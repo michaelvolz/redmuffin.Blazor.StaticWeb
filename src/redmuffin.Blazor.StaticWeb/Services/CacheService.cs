@@ -30,8 +30,8 @@ public class CacheService : ICacheService
             LastAccessedAt = DateTime.UtcNow
         };
 
-        await _browserStorageService.SetItemAsync(namespacedKey, cacheEntry, cancellationToken);
-        await UpdateNamespaceIndexAsync(cacheNamespace, key, cancellationToken);
+        await _browserStorageService.SetItemAsync(namespacedKey, cacheEntry, cancellationToken).ConfigureAwait(false);
+        await UpdateNamespaceIndexAsync(cacheNamespace, key, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<T?> GetItemAsync<T>(string cacheNamespace, string key, CancellationToken cancellationToken = default)
@@ -40,21 +40,21 @@ public class CacheService : ICacheService
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
 
         var namespacedKey = GetNamespacedKey(cacheNamespace, key);
-        var cacheEntry = await _browserStorageService.GetItemAsync<CacheEntry<T>>(namespacedKey, cancellationToken);
+        var cacheEntry = await _browserStorageService.GetItemAsync<CacheEntry<T>>(namespacedKey, cancellationToken).ConfigureAwait(false);
 
         if (cacheEntry == null) return default;
 
         // Check if the item has expired
         if (cacheEntry.ExpiresAt.HasValue && DateTime.UtcNow > cacheEntry.ExpiresAt.Value)
         {
-            await RemoveItemAsync(cacheNamespace, key, cancellationToken);
+            await RemoveItemAsync(cacheNamespace, key, cancellationToken).ConfigureAwait(false);
             return default;
         }
 
         // Update access statistics
         cacheEntry.LastAccessedAt = DateTime.UtcNow;
         cacheEntry.AccessCount++;
-        await _browserStorageService.SetItemAsync(namespacedKey, cacheEntry, cancellationToken);
+        await _browserStorageService.SetItemAsync(namespacedKey, cacheEntry, cancellationToken).ConfigureAwait(false);
 
         return cacheEntry.Value;
     }
@@ -65,8 +65,8 @@ public class CacheService : ICacheService
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
 
         var namespacedKey = GetNamespacedKey(cacheNamespace, key);
-        await _browserStorageService.RemoveItemAsync(namespacedKey, cancellationToken);
-        await RemoveFromNamespaceIndexAsync(cacheNamespace, key, cancellationToken);
+        await _browserStorageService.RemoveItemAsync(namespacedKey, cancellationToken).ConfigureAwait(false);
+        await RemoveFromNamespaceIndexAsync(cacheNamespace, key, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<bool> ContainsKeyAsync(string cacheNamespace, string key, CancellationToken cancellationToken = default)
@@ -75,14 +75,14 @@ public class CacheService : ICacheService
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
 
         var namespacedKey = GetNamespacedKey(cacheNamespace, key);
-        return await _browserStorageService.ContainsKeyAsync(namespacedKey, cancellationToken);
+        return await _browserStorageService.ContainsKeyAsync(namespacedKey, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<IEnumerable<string>> GetKeysAsync(string cacheNamespace, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(cacheNamespace);
 
-        var namespaceIndex = await GetNamespaceIndexAsync(cancellationToken);
+        var namespaceIndex = await GetNamespaceIndexAsync(cancellationToken).ConfigureAwait(false);
         return namespaceIndex.TryGetValue(cacheNamespace, out var keys) ? keys : Enumerable.Empty<string>();
     }
 
@@ -90,14 +90,14 @@ public class CacheService : ICacheService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(cacheNamespace);
 
-        var keys = await GetKeysAsync(cacheNamespace, cancellationToken);
+        var keys = await GetKeysAsync(cacheNamespace, cancellationToken).ConfigureAwait(false);
         foreach (var key in keys)
         {
             var namespacedKey = GetNamespacedKey(cacheNamespace, key);
-            await _browserStorageService.RemoveItemAsync(namespacedKey, cancellationToken);
+            await _browserStorageService.RemoveItemAsync(namespacedKey, cancellationToken).ConfigureAwait(false);
         }
 
-        await RemoveNamespaceFromIndexAsync(cacheNamespace, cancellationToken);
+        await RemoveNamespaceFromIndexAsync(cacheNamespace, cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Cleared cache namespace: {Namespace}", cacheNamespace);
     }
 
@@ -105,7 +105,7 @@ public class CacheService : ICacheService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(cacheNamespace);
 
-        var keys = await GetKeysAsync(cacheNamespace, cancellationToken);
+        var keys = await GetKeysAsync(cacheNamespace, cancellationToken).ConfigureAwait(false);
         var stats = new CacheNamespaceStats
         {
             Namespace = cacheNamespace,
@@ -116,11 +116,11 @@ public class CacheService : ICacheService
         foreach (var key in keys)
         {
             var namespacedKey = GetNamespacedKey(cacheNamespace, key);
-            var size = await _browserStorageService.GetItemSizeAsync(namespacedKey, cancellationToken);
+            var size = await _browserStorageService.GetItemSizeAsync(namespacedKey, cancellationToken).ConfigureAwait(false);
             stats.TotalSizeBytes += size;
 
             // Try to get metadata for timing information
-            var cacheEntry = await _browserStorageService.GetItemAsync<CacheEntry<object>>(namespacedKey, cancellationToken);
+            var cacheEntry = await _browserStorageService.GetItemAsync<CacheEntry<object>>(namespacedKey, cancellationToken).ConfigureAwait(false);
             if (cacheEntry != null)
             {
                 totalAccessCount += cacheEntry.AccessCount;
@@ -139,7 +139,7 @@ public class CacheService : ICacheService
 
     public async Task<CacheStats> GetCacheStatsAsync(CancellationToken cancellationToken = default)
     {
-        var namespaceIndex = await GetNamespaceIndexAsync(cancellationToken);
+        var namespaceIndex = await GetNamespaceIndexAsync(cancellationToken).ConfigureAwait(false);
         var stats = new CacheStats
         {
             NamespaceCount = namespaceIndex.Count,
@@ -148,7 +148,7 @@ public class CacheService : ICacheService
 
         foreach (var namespaceName in namespaceIndex.Keys)
         {
-            var namespaceStats = await GetNamespaceStatsAsync(namespaceName, cancellationToken);
+            var namespaceStats = await GetNamespaceStatsAsync(namespaceName, cancellationToken).ConfigureAwait(false);
             stats.NamespaceStats[namespaceName] = namespaceStats;
             stats.TotalItems += namespaceStats.TotalItems;
             stats.TotalSizeBytes += namespaceStats.TotalSizeBytes;
@@ -169,12 +169,12 @@ public class CacheService : ICacheService
 
     public async Task<int> CleanupExpiredItemsAsync(CancellationToken cancellationToken = default)
     {
-        var namespaceIndex = await GetNamespaceIndexAsync(cancellationToken);
+        var namespaceIndex = await GetNamespaceIndexAsync(cancellationToken).ConfigureAwait(false);
         var totalCleanedUp = 0;
 
         foreach (var namespaceName in namespaceIndex.Keys)
         {
-            var cleanedUp = await CleanupExpiredItemsAsync(namespaceName, cancellationToken);
+            var cleanedUp = await CleanupExpiredItemsAsync(namespaceName, cancellationToken).ConfigureAwait(false);
             totalCleanedUp += cleanedUp;
         }
 
@@ -186,18 +186,18 @@ public class CacheService : ICacheService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(cacheNamespace);
 
-        var keys = await GetKeysAsync(cacheNamespace, cancellationToken);
+        var keys = await GetKeysAsync(cacheNamespace, cancellationToken).ConfigureAwait(false);
         var expiredKeys = new List<string>();
 
         foreach (var key in keys)
         {
             var namespacedKey = GetNamespacedKey(cacheNamespace, key);
-            var cacheEntry = await _browserStorageService.GetItemAsync<CacheEntry<object>>(namespacedKey, cancellationToken);
+            var cacheEntry = await _browserStorageService.GetItemAsync<CacheEntry<object>>(namespacedKey, cancellationToken).ConfigureAwait(false);
 
             if (cacheEntry != null && cacheEntry.ExpiresAt.HasValue && DateTime.UtcNow > cacheEntry.ExpiresAt.Value) expiredKeys.Add(key);
         }
 
-        foreach (var key in expiredKeys) await RemoveItemAsync(cacheNamespace, key, cancellationToken);
+        foreach (var key in expiredKeys) await RemoveItemAsync(cacheNamespace, key, cancellationToken).ConfigureAwait(false);
 
         if (expiredKeys.Count > 0) _logger.LogInformation("Cleaned up {Count} expired items from namespace: {Namespace}", expiredKeys.Count, cacheNamespace);
 
@@ -211,7 +211,7 @@ public class CacheService : ICacheService
 
     private async Task UpdateNamespaceIndexAsync(string cacheNamespace, string key, CancellationToken cancellationToken)
     {
-        var namespaceIndex = await GetNamespaceIndexAsync(cancellationToken);
+        var namespaceIndex = await GetNamespaceIndexAsync(cancellationToken).ConfigureAwait(false);
 
         if (!namespaceIndex.TryGetValue(cacheNamespace, out var keys))
         {
@@ -220,31 +220,31 @@ public class CacheService : ICacheService
         }
 
         keys.Add(key);
-        await _browserStorageService.SetItemAsync(NamespaceIndexKey, namespaceIndex, cancellationToken);
+        await _browserStorageService.SetItemAsync(NamespaceIndexKey, namespaceIndex, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task RemoveFromNamespaceIndexAsync(string cacheNamespace, string key, CancellationToken cancellationToken)
     {
-        var namespaceIndex = await GetNamespaceIndexAsync(cancellationToken);
+        var namespaceIndex = await GetNamespaceIndexAsync(cancellationToken).ConfigureAwait(false);
 
         if (namespaceIndex.TryGetValue(cacheNamespace, out var keys))
         {
             keys.Remove(key);
             if (keys.Count == 0) namespaceIndex.Remove(cacheNamespace);
-            await _browserStorageService.SetItemAsync(NamespaceIndexKey, namespaceIndex, cancellationToken);
+            await _browserStorageService.SetItemAsync(NamespaceIndexKey, namespaceIndex, cancellationToken).ConfigureAwait(false);
         }
     }
 
     private async Task RemoveNamespaceFromIndexAsync(string cacheNamespace, CancellationToken cancellationToken)
     {
-        var namespaceIndex = await GetNamespaceIndexAsync(cancellationToken);
+        var namespaceIndex = await GetNamespaceIndexAsync(cancellationToken).ConfigureAwait(false);
 
-        if (namespaceIndex.Remove(cacheNamespace)) await _browserStorageService.SetItemAsync(NamespaceIndexKey, namespaceIndex, cancellationToken);
+        if (namespaceIndex.Remove(cacheNamespace)) await _browserStorageService.SetItemAsync(NamespaceIndexKey, namespaceIndex, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<Dictionary<string, HashSet<string>>> GetNamespaceIndexAsync(CancellationToken cancellationToken)
     {
-        return await _browserStorageService.GetItemAsync<Dictionary<string, HashSet<string>>>(NamespaceIndexKey, cancellationToken)
+        return await _browserStorageService.GetItemAsync<Dictionary<string, HashSet<string>>>(NamespaceIndexKey, cancellationToken).ConfigureAwait(false)
                ?? new Dictionary<string, HashSet<string>>();
     }
 }
