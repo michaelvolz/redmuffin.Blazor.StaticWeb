@@ -1,4 +1,4 @@
-# Trimming Warnings Documentation
+﻿# Trimming Warnings Documentation
 
 ## Current Status
 
