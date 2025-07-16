@@ -19,8 +19,14 @@ internal static class Program
 
         using var process = new Process();
         process.StartInfo = processInfo;
-        process.OutputDataReceived += (sender, e) => { if (e.Data != null) Console.WriteLine(e.Data); };
-        process.ErrorDataReceived += (sender, e) => { if (e.Data != null) Console.WriteLine(e.Data); };
+        process.OutputDataReceived += (sender, e) =>
+        {
+            if (e.Data != null) Console.WriteLine(e.Data);
+        };
+        process.ErrorDataReceived += (sender, e) =>
+        {
+            if (e.Data != null) Console.WriteLine(e.Data);
+        };
         process.Start();
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();

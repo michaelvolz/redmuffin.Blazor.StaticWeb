@@ -63,16 +63,10 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
         try
         {
             var request = await DeserializeRequestAsync(req, token).ConfigureAwait(false);
-            if (request == null)
-            {
-                return await CreateBadRequestResponseAsync(req, "Missing code.", token).ConfigureAwait(false);
-            }
+            if (request == null) return await CreateBadRequestResponseAsync(req, "Missing code.", token).ConfigureAwait(false);
 
             var redirectUri = ValidateRedirectUri(request.RedirectUri);
-            if (redirectUri == null)
-            {
-                return await CreateBadRequestResponseAsync(req, "Missing redirect_uri.", token).ConfigureAwait(false);
-            }
+            if (redirectUri == null) return await CreateBadRequestResponseAsync(req, "Missing redirect_uri.", token).ConfigureAwait(false);
 
             LogRequestDetails(logger, request.Code, redirectUri, null);
 
@@ -123,7 +117,7 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
         var requestData = new
         {
             grant_type = "authorization_code",
-            code = code,
+            code,
             client_id = _settings.RainDropClientId,
             client_secret = _settings.RainDropClientSecret,
             redirect_uri = redirectUri,
@@ -138,14 +132,9 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
         var response = await httpClient.PostAsync("https://raindrop.io/oauth/access_token", content, token).ConfigureAwait(false);
         var json = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
 
-        if (response.IsSuccessStatusCode)
-        {
-            return await HandleSuccessfulResponseAsync(req, json, token).ConfigureAwait(false);
-        }
-        else
-        {
-            return await HandleFailedResponseAsync(req, response.StatusCode, json, token).ConfigureAwait(false);
-        }
+        if (response.IsSuccessStatusCode) return await HandleSuccessfulResponseAsync(req, json, token).ConfigureAwait(false);
+
+        return await HandleFailedResponseAsync(req, response.StatusCode, json, token).ConfigureAwait(false);
     }
 
     private async Task<HttpResponseData> HandleSuccessfulResponseAsync(HttpRequestData req, string json, CancellationToken token)
