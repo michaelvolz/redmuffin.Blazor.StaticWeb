@@ -13,12 +13,6 @@ namespace redmuffin.Blazor.StaticWeb.Api.Tests.Functions;
 
 public class ExchangeRaindropCodeFunction_Tests : TestBase, IAsyncDisposable
 {
-    private readonly HttpClient _httpClient;
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<ExchangeRaindropCodeFunction> _logger;
-    private readonly IOptions<Settings> _settings;
-    private readonly TestHttpMessageHandler _testMessageHandler;
-
     public ExchangeRaindropCodeFunction_Tests()
     {
         _logger = NullLogger<ExchangeRaindropCodeFunction>.Instance;
@@ -37,6 +31,12 @@ public class ExchangeRaindropCodeFunction_Tests : TestBase, IAsyncDisposable
         _httpClientFactory.CreateClient().Returns(_httpClient);
 #pragma warning restore CA2000
     }
+
+    private readonly HttpClient _httpClient;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<ExchangeRaindropCodeFunction> _logger;
+    private readonly IOptions<Settings> _settings;
+    private readonly TestHttpMessageHandler _testMessageHandler;
 
     public async ValueTask DisposeAsync()
     {
@@ -65,7 +65,60 @@ public class ExchangeRaindropCodeFunction_Tests : TestBase, IAsyncDisposable
     }
 
     [Test]
-    public async Task RunAsync_WithValidRequest_ReturnsOkWithAccessToken()
+    public async Task RunAsync_VerifiesCorrectApiCallToRaindrop()
+    {
+        // Arrange
+        var function = new ExchangeRaindropCodeFunction(_logger, _settings, _httpClientFactory);
+        var requestBody = new ExchangeRaindropCodeFunction.ExchangeRequest
+        {
+            Code = "test_authorization_code",
+            RedirectUri = "https://example.com/redirect"
+        };
+        var request = CreateHttpRequestWithBody(requestBody);
+
+        var raindropResponse = new { access_token = "test_token" };
+        var raindropJson = JsonSerializer.Serialize(raindropResponse);
+        var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(raindropJson, Encoding.UTF8, "application/json")
+        };
+
+        _testMessageHandler.SetResponse(httpResponseMessage);
+
+        TestHttpResponseData? response = null;
+        try
+        {
+            // Act
+            response = (TestHttpResponseData)await function.RunAsync(request).ConfigureAwait(false);
+
+            // Assert
+            var capturedRequest = _testMessageHandler.LastRequest;
+            await Assert.That(capturedRequest).IsNotNull();
+            await Assert.That(capturedRequest!.Method).IsEqualTo(HttpMethod.Post);
+            await Assert.That(capturedRequest.RequestUri!.ToString()).IsEqualTo("https://raindrop.io/oauth/access_token");
+            await Assert.That(capturedRequest.Content!.Headers.ContentType!.MediaType).IsEqualTo("application/json");
+
+            // Verify the JSON payload sent to Raindrop.io
+            var requestContent = _testMessageHandler.LastRequestContent;
+            await Assert.That(requestContent).IsNotNull();
+            var sentPayload = JsonSerializer.Deserialize<JsonElement>(requestContent!);
+
+            await Assert.That(sentPayload.GetProperty("grant_type").GetString()).IsEqualTo("authorization_code");
+            await Assert.That(sentPayload.GetProperty("code").GetString()).IsEqualTo("test_authorization_code");
+            await Assert.That(sentPayload.GetProperty("client_id").GetString()).IsEqualTo("test_client_id");
+            await Assert.That(sentPayload.GetProperty("client_secret").GetString()).IsEqualTo("test_client_secret");
+            await Assert.That(sentPayload.GetProperty("redirect_uri").GetString()).IsEqualTo("https://example.com/redirect");
+        }
+        finally
+        {
+            if (response is IAsyncDisposable asyncDisposableResponse)
+                await asyncDisposableResponse.DisposeAsync().ConfigureAwait(false);
+            httpResponseMessage.Dispose();
+        }
+    }
+
+    [Test]
+    public async Task RunAsync_WhenHttpClientThrowsException_ReturnsInternalServerError()
     {
         // Arrange
         var function = new ExchangeRaindropCodeFunction(_logger, _settings, _httpClientFactory);
@@ -76,8 +129,7 @@ public class ExchangeRaindropCodeFunction_Tests : TestBase, IAsyncDisposable
         };
         var request = CreateHttpRequestWithBody(requestBody);
 
-        var apiResponse = new { access_token = "fake_access_token" };
-        SetupHttpMock(HttpStatusCode.OK, JsonSerializer.Serialize(apiResponse));
+        _testMessageHandler.SetException(new HttpRequestException("Network error"));
 
         TestHttpResponseData? response = null;
         try
@@ -86,83 +138,13 @@ public class ExchangeRaindropCodeFunction_Tests : TestBase, IAsyncDisposable
             response = (TestHttpResponseData)await function.RunAsync(request).ConfigureAwait(false);
 
             // Assert
-            await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.OK);
+            await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.InternalServerError);
 
             var responseBody = response.GetBodyAsString();
             var exchangeResponse = JsonSerializer.Deserialize<ExchangeRaindropCodeFunction.ExchangeResponse>(responseBody);
 
             await Assert.That(exchangeResponse).IsNotNull();
-            await Assert.That(exchangeResponse!.AccessToken).IsEqualTo("fake_access_token");
-            await Assert.That(exchangeResponse.Error).IsNull();
-        }
-        finally
-        {
-            if (response is IAsyncDisposable asyncDisposableResponse)
-                await asyncDisposableResponse.DisposeAsync().ConfigureAwait(false);
-        }
-    }
-
-    [Test]
-    public async Task RunAsync_WithMissingCode_ReturnsBadRequest()
-    {
-        // Arrange
-        var function = new ExchangeRaindropCodeFunction(_logger, _settings, _httpClientFactory);
-        var requestBody = new ExchangeRaindropCodeFunction.ExchangeRequest
-        {
-            Code = "",
-            RedirectUri = "http://localhost/redirect"
-        };
-        var request = CreateHttpRequestWithBody(requestBody);
-
-        TestHttpResponseData? response = null;
-        try
-        {
-            // Act
-            response = (TestHttpResponseData)await function.RunAsync(request).ConfigureAwait(false);
-
-            // Assert
-            await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
-
-            var responseBody = response.GetBodyAsString();
-            var exchangeResponse = JsonSerializer.Deserialize<ExchangeRaindropCodeFunction.ExchangeResponse>(responseBody);
-
-            await Assert.That(exchangeResponse).IsNotNull();
-            await Assert.That(exchangeResponse!.Error).IsEqualTo("Missing code.");
-            await Assert.That(exchangeResponse.AccessToken).IsNull();
-        }
-        finally
-        {
-            if (response is IAsyncDisposable asyncDisposableResponse)
-                await asyncDisposableResponse.DisposeAsync().ConfigureAwait(false);
-        }
-    }
-
-    [Test]
-    public async Task RunAsync_WithMissingRedirectUri_ReturnsBadRequest()
-    {
-        // Arrange
-        var function = new ExchangeRaindropCodeFunction(_logger, _settings, _httpClientFactory);
-        var requestBody = new ExchangeRaindropCodeFunction.ExchangeRequest
-        {
-            Code = "valid_code",
-            RedirectUri = ""
-        };
-        var request = CreateHttpRequestWithBody(requestBody);
-
-        TestHttpResponseData? response = null;
-        try
-        {
-            // Act
-            response = (TestHttpResponseData)await function.RunAsync(request).ConfigureAwait(false);
-
-            // Assert
-            await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
-
-            var responseBody = response.GetBodyAsString();
-            var exchangeResponse = JsonSerializer.Deserialize<ExchangeRaindropCodeFunction.ExchangeResponse>(responseBody);
-
-            await Assert.That(exchangeResponse).IsNotNull();
-            await Assert.That(exchangeResponse!.Error).IsEqualTo("Missing redirect_uri.");
+            await Assert.That(exchangeResponse!.Error).Contains("Network error");
             await Assert.That(exchangeResponse.AccessToken).IsNull();
         }
         finally
@@ -249,43 +231,6 @@ public class ExchangeRaindropCodeFunction_Tests : TestBase, IAsyncDisposable
     }
 
     [Test]
-    public async Task RunAsync_WhenHttpClientThrowsException_ReturnsInternalServerError()
-    {
-        // Arrange
-        var function = new ExchangeRaindropCodeFunction(_logger, _settings, _httpClientFactory);
-        var requestBody = new ExchangeRaindropCodeFunction.ExchangeRequest
-        {
-            Code = "valid_code",
-            RedirectUri = "http://localhost/redirect"
-        };
-        var request = CreateHttpRequestWithBody(requestBody);
-
-        _testMessageHandler.SetException(new HttpRequestException("Network error"));
-
-        TestHttpResponseData? response = null;
-        try
-        {
-            // Act
-            response = (TestHttpResponseData)await function.RunAsync(request).ConfigureAwait(false);
-
-            // Assert
-            await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.InternalServerError);
-
-            var responseBody = response.GetBodyAsString();
-            var exchangeResponse = JsonSerializer.Deserialize<ExchangeRaindropCodeFunction.ExchangeResponse>(responseBody);
-
-            await Assert.That(exchangeResponse).IsNotNull();
-            await Assert.That(exchangeResponse!.Error).Contains("Network error");
-            await Assert.That(exchangeResponse.AccessToken).IsNull();
-        }
-        finally
-        {
-            if (response is IAsyncDisposable asyncDisposableResponse)
-                await asyncDisposableResponse.DisposeAsync().ConfigureAwait(false);
-        }
-    }
-
-    [Test]
     public async Task RunAsync_WithInvalidJsonRequest_ReturnsInternalServerError()
     {
         // Arrange
@@ -320,25 +265,16 @@ public class ExchangeRaindropCodeFunction_Tests : TestBase, IAsyncDisposable
     }
 
     [Test]
-    public async Task RunAsync_VerifiesCorrectApiCallToRaindrop()
+    public async Task RunAsync_WithMissingCode_ReturnsBadRequest()
     {
         // Arrange
         var function = new ExchangeRaindropCodeFunction(_logger, _settings, _httpClientFactory);
         var requestBody = new ExchangeRaindropCodeFunction.ExchangeRequest
         {
-            Code = "test_authorization_code",
-            RedirectUri = "https://example.com/redirect"
+            Code = "",
+            RedirectUri = "http://localhost/redirect"
         };
         var request = CreateHttpRequestWithBody(requestBody);
-
-        var raindropResponse = new { access_token = "test_token" };
-        var raindropJson = JsonSerializer.Serialize(raindropResponse);
-        var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(raindropJson, Encoding.UTF8, "application/json")
-        };
-
-        _testMessageHandler.SetResponse(httpResponseMessage);
 
         TestHttpResponseData? response = null;
         try
@@ -347,28 +283,92 @@ public class ExchangeRaindropCodeFunction_Tests : TestBase, IAsyncDisposable
             response = (TestHttpResponseData)await function.RunAsync(request).ConfigureAwait(false);
 
             // Assert
-            var capturedRequest = _testMessageHandler.LastRequest;
-            await Assert.That(capturedRequest).IsNotNull();
-            await Assert.That(capturedRequest!.Method).IsEqualTo(HttpMethod.Post);
-            await Assert.That(capturedRequest.RequestUri!.ToString()).IsEqualTo("https://raindrop.io/oauth/access_token");
-            await Assert.That(capturedRequest.Content!.Headers.ContentType!.MediaType).IsEqualTo("application/json");
+            await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
 
-            // Verify the JSON payload sent to Raindrop.io
-            var requestContent = _testMessageHandler.LastRequestContent;
-            await Assert.That(requestContent).IsNotNull();
-            var sentPayload = JsonSerializer.Deserialize<JsonElement>(requestContent!);
+            var responseBody = response.GetBodyAsString();
+            var exchangeResponse = JsonSerializer.Deserialize<ExchangeRaindropCodeFunction.ExchangeResponse>(responseBody);
 
-            await Assert.That(sentPayload.GetProperty("grant_type").GetString()).IsEqualTo("authorization_code");
-            await Assert.That(sentPayload.GetProperty("code").GetString()).IsEqualTo("test_authorization_code");
-            await Assert.That(sentPayload.GetProperty("client_id").GetString()).IsEqualTo("test_client_id");
-            await Assert.That(sentPayload.GetProperty("client_secret").GetString()).IsEqualTo("test_client_secret");
-            await Assert.That(sentPayload.GetProperty("redirect_uri").GetString()).IsEqualTo("https://example.com/redirect");
+            await Assert.That(exchangeResponse).IsNotNull();
+            await Assert.That(exchangeResponse!.Error).IsEqualTo("Missing code.");
+            await Assert.That(exchangeResponse.AccessToken).IsNull();
         }
         finally
         {
             if (response is IAsyncDisposable asyncDisposableResponse)
                 await asyncDisposableResponse.DisposeAsync().ConfigureAwait(false);
-            httpResponseMessage.Dispose();
+        }
+    }
+
+    [Test]
+    public async Task RunAsync_WithMissingRedirectUri_ReturnsBadRequest()
+    {
+        // Arrange
+        var function = new ExchangeRaindropCodeFunction(_logger, _settings, _httpClientFactory);
+        var requestBody = new ExchangeRaindropCodeFunction.ExchangeRequest
+        {
+            Code = "valid_code",
+            RedirectUri = ""
+        };
+        var request = CreateHttpRequestWithBody(requestBody);
+
+        TestHttpResponseData? response = null;
+        try
+        {
+            // Act
+            response = (TestHttpResponseData)await function.RunAsync(request).ConfigureAwait(false);
+
+            // Assert
+            await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
+
+            var responseBody = response.GetBodyAsString();
+            var exchangeResponse = JsonSerializer.Deserialize<ExchangeRaindropCodeFunction.ExchangeResponse>(responseBody);
+
+            await Assert.That(exchangeResponse).IsNotNull();
+            await Assert.That(exchangeResponse!.Error).IsEqualTo("Missing redirect_uri.");
+            await Assert.That(exchangeResponse.AccessToken).IsNull();
+        }
+        finally
+        {
+            if (response is IAsyncDisposable asyncDisposableResponse)
+                await asyncDisposableResponse.DisposeAsync().ConfigureAwait(false);
+        }
+    }
+
+    [Test]
+    public async Task RunAsync_WithValidRequest_ReturnsOkWithAccessToken()
+    {
+        // Arrange
+        var function = new ExchangeRaindropCodeFunction(_logger, _settings, _httpClientFactory);
+        var requestBody = new ExchangeRaindropCodeFunction.ExchangeRequest
+        {
+            Code = "valid_code",
+            RedirectUri = "http://localhost/redirect"
+        };
+        var request = CreateHttpRequestWithBody(requestBody);
+
+        var apiResponse = new { access_token = "fake_access_token" };
+        SetupHttpMock(HttpStatusCode.OK, JsonSerializer.Serialize(apiResponse));
+
+        TestHttpResponseData? response = null;
+        try
+        {
+            // Act
+            response = (TestHttpResponseData)await function.RunAsync(request).ConfigureAwait(false);
+
+            // Assert
+            await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.OK);
+
+            var responseBody = response.GetBodyAsString();
+            var exchangeResponse = JsonSerializer.Deserialize<ExchangeRaindropCodeFunction.ExchangeResponse>(responseBody);
+
+            await Assert.That(exchangeResponse).IsNotNull();
+            await Assert.That(exchangeResponse!.AccessToken).IsEqualTo("fake_access_token");
+            await Assert.That(exchangeResponse.Error).IsNull();
+        }
+        finally
+        {
+            if (response is IAsyncDisposable asyncDisposableResponse)
+                await asyncDisposableResponse.DisposeAsync().ConfigureAwait(false);
         }
     }
 }

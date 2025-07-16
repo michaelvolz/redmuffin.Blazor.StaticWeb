@@ -9,6 +9,84 @@ namespace redmuffin.Blazor.StaticWeb.Api.Tests.Functions;
 public class ArticlesApiVerification_Tests : TestBase
 {
     [Test]
+    public async Task Compare_Videos_And_Articles_API_Structure()
+    {
+        // Arrange
+        var testToken = Configuration["Values:RainDropTestToken"];
+        if (string.IsNullOrWhiteSpace(testToken))
+        {
+            Assert.Fail("RainDropTestToken is null or whitespace. Cannot test actual API response.");
+            return;
+        }
+
+        using var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", testToken);
+
+        var videosUrl = "https://api.raindrop.io/rest/v1/raindrops/56109697?sort=-created";
+        var articlesUrl = "https://api.raindrop.io/rest/v1/raindrops/56658122?sort=-created";
+
+        // Act
+        var videosResponse = await httpClient.GetAsync(videosUrl).ConfigureAwait(false);
+        var videosJson = await videosResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+        var articlesResponse = await httpClient.GetAsync(articlesUrl).ConfigureAwait(false);
+        var articlesJson = await articlesResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+        // Assert
+        await Assert.That(videosResponse.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert.That(articlesResponse.StatusCode).IsEqualTo(HttpStatusCode.OK);
+
+        using var videosDoc = JsonDocument.Parse(videosJson);
+        using var articlesDoc = JsonDocument.Parse(articlesJson);
+
+        // Compare structure
+        await Assert.That(videosDoc.RootElement.TryGetProperty("items", out var videosItems)).IsTrue();
+        await Assert.That(articlesDoc.RootElement.TryGetProperty("items", out var articlesItems)).IsTrue();
+
+        Console.WriteLine("API Structure Comparison:");
+        Console.WriteLine("Videos:");
+        Console.WriteLine($"  - Status: {videosResponse.StatusCode}");
+        Console.WriteLine($"  - Items count: {videosItems.GetArrayLength()}");
+
+        Console.WriteLine("Articles:");
+        Console.WriteLine($"  - Status: {articlesResponse.StatusCode}");
+        Console.WriteLine($"  - Items count: {articlesItems.GetArrayLength()}");
+
+        if (videosItems.GetArrayLength() > 0 && articlesItems.GetArrayLength() > 0)
+        {
+            var videoItem = videosItems[0];
+            var articleItem = articlesItems[0];
+
+            Console.WriteLine("Structure comparison:");
+            Console.WriteLine($"  Videos CollectionId: {(videoItem.TryGetProperty("collectionId", out var vCid) ? vCid.ToString() : "missing")}");
+            Console.WriteLine($"  Articles CollectionId: {(articleItem.TryGetProperty("collectionId", out var aCid) ? aCid.ToString() : "missing")}");
+            Console.WriteLine($"  Videos Type: {(videoItem.TryGetProperty("type", out var vType) ? vType.GetString() : "missing")}");
+            Console.WriteLine($"  Articles Type: {(articleItem.TryGetProperty("type", out var aType) ? aType.GetString() : "missing")}");
+            Console.WriteLine($"  Videos Domain: {(videoItem.TryGetProperty("domain", out var vDomain) ? vDomain.GetString() : "missing")}");
+            Console.WriteLine($"  Articles Domain: {(articleItem.TryGetProperty("domain", out var aDomain) ? aDomain.GetString() : "missing")}");
+
+            // Verify both can be deserialized with the same model
+            try
+            {
+                var videos = JsonSerializer.Deserialize(videosItems.GetRawText(), RaindropJsonSerializerContext.Default.RaindropItemList);
+                var articles = JsonSerializer.Deserialize(articlesItems.GetRawText(), RaindropJsonSerializerContext.Default.RaindropItemList);
+
+                await Assert.That(videos).IsNotNull();
+                await Assert.That(articles).IsNotNull();
+                await Assert.That(videos!.Count).IsGreaterThan(0);
+                await Assert.That(articles!.Count).IsGreaterThan(0);
+
+                Console.WriteLine("✅ Both Videos and Articles can be deserialized with the same RaindropItem model!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Deserialization comparison failed: {ex.Message}");
+                throw;
+            }
+        }
+    }
+
+    [Test]
     public async Task Verify_Articles_API_Response_Structure()
     {
         // Arrange
@@ -87,84 +165,6 @@ public class ArticlesApiVerification_Tests : TestBase
         else
         {
             Console.WriteLine("⚠️  No articles found in the response");
-        }
-    }
-
-    [Test]
-    public async Task Compare_Videos_And_Articles_API_Structure()
-    {
-        // Arrange
-        var testToken = Configuration["Values:RainDropTestToken"];
-        if (string.IsNullOrWhiteSpace(testToken))
-        {
-            Assert.Fail("RainDropTestToken is null or whitespace. Cannot test actual API response.");
-            return;
-        }
-
-        using var httpClient = new HttpClient();
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", testToken);
-
-        var videosUrl = "https://api.raindrop.io/rest/v1/raindrops/56109697?sort=-created";
-        var articlesUrl = "https://api.raindrop.io/rest/v1/raindrops/56658122?sort=-created";
-
-        // Act
-        var videosResponse = await httpClient.GetAsync(videosUrl).ConfigureAwait(false);
-        var videosJson = await videosResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-        var articlesResponse = await httpClient.GetAsync(articlesUrl).ConfigureAwait(false);
-        var articlesJson = await articlesResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-        // Assert
-        await Assert.That(videosResponse.StatusCode).IsEqualTo(HttpStatusCode.OK);
-        await Assert.That(articlesResponse.StatusCode).IsEqualTo(HttpStatusCode.OK);
-
-        using var videosDoc = JsonDocument.Parse(videosJson);
-        using var articlesDoc = JsonDocument.Parse(articlesJson);
-
-        // Compare structure
-        await Assert.That(videosDoc.RootElement.TryGetProperty("items", out var videosItems)).IsTrue();
-        await Assert.That(articlesDoc.RootElement.TryGetProperty("items", out var articlesItems)).IsTrue();
-
-        Console.WriteLine("API Structure Comparison:");
-        Console.WriteLine("Videos:");
-        Console.WriteLine($"  - Status: {videosResponse.StatusCode}");
-        Console.WriteLine($"  - Items count: {videosItems.GetArrayLength()}");
-
-        Console.WriteLine("Articles:");
-        Console.WriteLine($"  - Status: {articlesResponse.StatusCode}");
-        Console.WriteLine($"  - Items count: {articlesItems.GetArrayLength()}");
-
-        if (videosItems.GetArrayLength() > 0 && articlesItems.GetArrayLength() > 0)
-        {
-            var videoItem = videosItems[0];
-            var articleItem = articlesItems[0];
-
-            Console.WriteLine("Structure comparison:");
-            Console.WriteLine($"  Videos CollectionId: {(videoItem.TryGetProperty("collectionId", out var vCid) ? vCid.ToString() : "missing")}");
-            Console.WriteLine($"  Articles CollectionId: {(articleItem.TryGetProperty("collectionId", out var aCid) ? aCid.ToString() : "missing")}");
-            Console.WriteLine($"  Videos Type: {(videoItem.TryGetProperty("type", out var vType) ? vType.GetString() : "missing")}");
-            Console.WriteLine($"  Articles Type: {(articleItem.TryGetProperty("type", out var aType) ? aType.GetString() : "missing")}");
-            Console.WriteLine($"  Videos Domain: {(videoItem.TryGetProperty("domain", out var vDomain) ? vDomain.GetString() : "missing")}");
-            Console.WriteLine($"  Articles Domain: {(articleItem.TryGetProperty("domain", out var aDomain) ? aDomain.GetString() : "missing")}");
-
-            // Verify both can be deserialized with the same model
-            try
-            {
-                var videos = JsonSerializer.Deserialize(videosItems.GetRawText(), RaindropJsonSerializerContext.Default.RaindropItemList);
-                var articles = JsonSerializer.Deserialize(articlesItems.GetRawText(), RaindropJsonSerializerContext.Default.RaindropItemList);
-
-                await Assert.That(videos).IsNotNull();
-                await Assert.That(articles).IsNotNull();
-                await Assert.That(videos!.Count).IsGreaterThan(0);
-                await Assert.That(articles!.Count).IsGreaterThan(0);
-
-                Console.WriteLine("✅ Both Videos and Articles can be deserialized with the same RaindropItem model!");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Deserialization comparison failed: {ex.Message}");
-                throw;
-            }
         }
     }
 }

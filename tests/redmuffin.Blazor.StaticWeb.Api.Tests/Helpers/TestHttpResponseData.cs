@@ -21,6 +21,13 @@ public class TestHttpResponseData(FunctionContext functionContext) : HttpRespons
 
     public override HttpCookies Cookies { get; } = null!;
 
+    public string GetBodyAsString()
+    {
+        _bodyStream.Position = 0;
+        using var reader = new StreamReader(_bodyStream);
+        return reader.ReadToEnd();
+    }
+
     public async ValueTask DisposeAsync()
     {
         await _bodyStream.DisposeAsync().ConfigureAwait(false);
@@ -29,12 +36,5 @@ public class TestHttpResponseData(FunctionContext functionContext) : HttpRespons
     public void Dispose()
     {
         _bodyStream.Dispose();
-    }
-
-    public string GetBodyAsString()
-    {
-        _bodyStream.Position = 0;
-        using var reader = new StreamReader(_bodyStream);
-        return reader.ReadToEnd();
     }
 }

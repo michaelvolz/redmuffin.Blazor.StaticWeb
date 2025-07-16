@@ -32,6 +32,8 @@ public class TestFunctionContext : FunctionContext
         CheckObjectSerializer(InstanceServices);
     }
 
+    public sealed override IServiceProvider InstanceServices { get; set; }
+
     public override FunctionDefinition FunctionDefinition => new TestFunctionDefinition(FunctionId);
     public override IDictionary<object, object> Items { get; set; } = null!;
     public override IInvocationFeatures Features { get; } = null!;
@@ -40,7 +42,6 @@ public class TestFunctionContext : FunctionContext
     public override TraceContext TraceContext => new TestTraceContext();
     public override BindingContext BindingContext => new TestBindingContext();
     public override RetryContext RetryContext => null!;
-    public sealed override IServiceProvider InstanceServices { get; set; }
 
     private static ObjectSerializer CheckObjectSerializer(IServiceProvider instanceServices)
     {
