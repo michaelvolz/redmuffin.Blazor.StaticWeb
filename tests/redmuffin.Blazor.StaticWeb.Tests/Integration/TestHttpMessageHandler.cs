@@ -8,12 +8,13 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Integration;
 
 public class TestHttpMessageHandler : HttpMessageHandler
 {
-    private readonly List<HttpRequestMessage> _requests = new();
-    private readonly Dictionary<string, HttpResponseMessage> _responses = new();
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
     };
+
+    private readonly List<HttpRequestMessage> _requests = new();
+    private readonly Dictionary<string, HttpResponseMessage> _responses = new();
 
     public IReadOnlyList<HttpRequestMessage> Requests => _requests.AsReadOnly();
 

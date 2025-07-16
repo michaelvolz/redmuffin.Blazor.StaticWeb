@@ -87,7 +87,7 @@
   <ItemGroup Condition="'$(IsTestProject)' != 'true'">
     <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsAnnotationsVersion)" />
   </ItemGroup>
-  
+
   <!-- Analyzer packages - Debug configuration only -->
   <ItemGroup Condition="'$(IsTestProject)' != 'true' And '$(Configuration)'=='Debug'">
     <PackageReference Include="Meziantou.Analyzer" Version="$(MeziantouAnalyzerVersion)">

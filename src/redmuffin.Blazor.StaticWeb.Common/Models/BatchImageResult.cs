@@ -56,7 +56,7 @@ public class BatchImageResult
             TotalProcessingTimeMs = totalProcessingTimeMs,
             SuccessCount = successCount,
             FailureCount = failureCount,
-            CacheHitCount = cacheHitCount,
+            CacheHitCount = cacheHitCount
         };
     }
 
@@ -69,7 +69,7 @@ public class BatchImageResult
         {
             IsSuccess = false,
             GlobalErrors = new List<string> { errorMessage },
-            TotalProcessingTimeMs = totalProcessingTimeMs,
+            TotalProcessingTimeMs = totalProcessingTimeMs
         };
     }
 }

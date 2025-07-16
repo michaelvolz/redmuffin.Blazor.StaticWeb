@@ -120,7 +120,7 @@ public class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindropCodeFunction> 
             code,
             client_id = _settings.RainDropClientId,
             client_secret = _settings.RainDropClientSecret,
-            redirect_uri = redirectUri,
+            redirect_uri = redirectUri
         };
 
         var jsonPayload = JsonSerializer.Serialize(requestData);

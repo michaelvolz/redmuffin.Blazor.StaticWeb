@@ -12,31 +12,37 @@ public class ImageValidationService : IImageValidationService, IDisposable
     private const string CacheNamespace = "image_validation";
     private const int CacheExpirationHours = 1; // 1 hour for image validation results
     private const int DefaultTimeoutMs = 10000; // 10 seconds
-    private readonly ICacheService _cacheService;
-    private readonly SemaphoreSlim _concurrentRequestsSemaphore = new(10, 10);
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<ImageValidationService> _logger;
-    private readonly ConcurrentDictionary<string, ImageValidationResult> _memoryCache = new(StringComparer.Ordinal);
 
     // LoggerMessage delegates
     private static readonly Action<ILogger, string, string, Exception?> LogUpgradedHttpToHttps =
         LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(1, nameof(LogUpgradedHttpToHttps)),
             "Upgraded HTTP to HTTPS: {OriginalUrl} → {HttpsUrl}");
+
     private static readonly Action<ILogger, Exception> LogFailedToClearValidationCache =
         LoggerMessage.Define(LogLevel.Error, new EventId(2, nameof(LogFailedToClearValidationCache)),
             "Failed to clear validation cache");
+
     private static readonly Action<ILogger, Exception> LogFailedToGetValidationCacheStats =
         LoggerMessage.Define(LogLevel.Error, new EventId(3, nameof(LogFailedToGetValidationCacheStats)),
             "Failed to get validation cache statistics");
+
     private static readonly Action<ILogger, string, Exception> LogHttpRequestFailed =
         LoggerMessage.Define<string>(LogLevel.Warning, new EventId(4, nameof(LogHttpRequestFailed)),
             "HTTP request failed for image validation: {ImageUrl}");
+
     private static readonly Action<ILogger, string, Exception> LogImageValidationTimedOut =
         LoggerMessage.Define<string>(LogLevel.Warning, new EventId(5, nameof(LogImageValidationTimedOut)),
             "Image validation timed out: {ImageUrl}");
+
     private static readonly Action<ILogger, string, Exception> LogUnexpectedErrorDuringValidation =
         LoggerMessage.Define<string>(LogLevel.Error, new EventId(6, nameof(LogUnexpectedErrorDuringValidation)),
             "Unexpected error during image validation: {ImageUrl}");
+
+    private readonly ICacheService _cacheService;
+    private readonly SemaphoreSlim _concurrentRequestsSemaphore = new(10, 10);
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<ImageValidationService> _logger;
+    private readonly ConcurrentDictionary<string, ImageValidationResult> _memoryCache = new(StringComparer.Ordinal);
 
     public ImageValidationService(
         IHttpClientFactory httpClientFactory,
@@ -46,6 +52,12 @@ public class ImageValidationService : IImageValidationService, IDisposable
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    public void Dispose()
+    {
+        _concurrentRequestsSemaphore?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     public async Task<ImageValidationResult> ValidateImageAsync(string imageUrl, CancellationToken cancellationToken = default)
@@ -192,12 +204,6 @@ public class ImageValidationService : IImageValidationService, IDisposable
             LogFailedToGetValidationCacheStats(_logger, ex);
             return new Dictionary<string, object>(StringComparer.Ordinal);
         }
-    }
-
-    public void Dispose()
-    {
-        _concurrentRequestsSemaphore?.Dispose();
-        GC.SuppressFinalize(this);
     }
 
     private async Task<ImageValidationResult> PerformHttpHeadValidationAsync(

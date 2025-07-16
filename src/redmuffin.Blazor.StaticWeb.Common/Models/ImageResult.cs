@@ -48,7 +48,7 @@ public class ImageResult
             Data = data,
             FromCache = fromCache,
             ProcessingTimeMs = processingTimeMs,
-            ErrorType = ImageRetrievalErrorType.None,
+            ErrorType = ImageRetrievalErrorType.None
         };
     }
 
@@ -62,7 +62,7 @@ public class ImageResult
             IsSuccess = false,
             ErrorMessage = errorMessage,
             ErrorType = errorType,
-            ProcessingTimeMs = processingTimeMs,
+            ProcessingTimeMs = processingTimeMs
         };
     }
 
@@ -77,7 +77,7 @@ public class ImageResult
             Data = null,
             ErrorMessage = reason,
             ErrorType = ImageRetrievalErrorType.None,
-            ProcessingTimeMs = processingTimeMs,
+            ProcessingTimeMs = processingTimeMs
         };
     }
 }

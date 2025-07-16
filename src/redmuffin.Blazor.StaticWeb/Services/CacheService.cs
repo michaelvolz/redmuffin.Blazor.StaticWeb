@@ -6,19 +6,22 @@ namespace redmuffin.Blazor.StaticWeb.Services;
 public class CacheService : ICacheService
 {
     private const string NamespaceIndexKey = "cache_namespace_index";
-    private readonly IBrowserStorageService _browserStorageService;
-    private readonly ILogger<CacheService> _logger;
 
     // LoggerMessage delegates for better performance
     private static readonly Action<ILogger, string, Exception?> LogCacheNamespaceCleared =
         LoggerMessage.Define<string>(LogLevel.Information, new EventId(1, nameof(LogCacheNamespaceCleared)),
             "Cleared cache namespace: {Namespace}");
+
     private static readonly Action<ILogger, int, Exception?> LogExpiredItemsCleanedUp =
         LoggerMessage.Define<int>(LogLevel.Information, new EventId(2, nameof(LogExpiredItemsCleanedUp)),
             "Cleaned up {TotalCount} expired items across all namespaces");
+
     private static readonly Action<ILogger, int, string, Exception?> LogNamespaceExpiredItemsCleanedUp =
         LoggerMessage.Define<int, string>(LogLevel.Information, new EventId(3, nameof(LogNamespaceExpiredItemsCleanedUp)),
             "Cleaned up {Count} expired items from namespace: {Namespace}");
+
+    private readonly IBrowserStorageService _browserStorageService;
+    private readonly ILogger<CacheService> _logger;
 
     public CacheService(IBrowserStorageService browserStorageService, ILogger<CacheService> logger)
     {
@@ -250,7 +253,8 @@ public class CacheService : ICacheService
     {
         var namespaceIndex = await GetNamespaceIndexAsync(cancellationToken).ConfigureAwait(false);
 
-        if (namespaceIndex.Remove(cacheNamespace)) await _browserStorageService.SetItemAsync(NamespaceIndexKey, namespaceIndex, cancellationToken).ConfigureAwait(false);
+        if (namespaceIndex.Remove(cacheNamespace))
+            await _browserStorageService.SetItemAsync(NamespaceIndexKey, namespaceIndex, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<Dictionary<string, HashSet<string>>> GetNamespaceIndexAsync(CancellationToken cancellationToken)

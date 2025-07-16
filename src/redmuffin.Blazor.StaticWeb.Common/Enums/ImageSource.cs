@@ -33,5 +33,5 @@ public enum ImageSource
     /// <summary>
     ///     No image found or extraction failed.
     /// </summary>
-    None,
+    None
 }

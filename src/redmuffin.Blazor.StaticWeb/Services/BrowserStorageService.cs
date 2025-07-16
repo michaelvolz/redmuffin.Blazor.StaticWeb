@@ -10,32 +10,39 @@ public class BrowserStorageService : IBrowserStorageService
     private const double EvictionThreshold = 0.85; // Start eviction when 85% full
     private const double EvictionTarget = 0.75; // Evict down to 75% full
     private static readonly TimeSpan DefaultExpirationTime = TimeSpan.FromDays(7); // 7 days cache expiration
-    private readonly ILocalStorageService _localStorage;
-    private readonly ILogger<BrowserStorageService> _logger;
-    private long _quotaLimit = 1024 * 1024 * 10; // 10 MB default quota limit
 
     // LoggerMessage delegates for better performance
     private static readonly Action<ILogger, string, long, DateTime, Exception?> LogEvictedLRUItem =
         LoggerMessage.Define<string, long, DateTime>(LogLevel.Debug, new EventId(1, nameof(LogEvictedLRUItem)),
             "Evicted LRU item: {Key}, Size: {Size} bytes, LastAccessed: {LastAccessed}");
+
     private static readonly Action<ILogger, int, long, Exception?> LogLRUEvictionCompleted =
         LoggerMessage.Define<int, long>(LogLevel.Information, new EventId(2, nameof(LogLRUEvictionCompleted)),
             "LRU eviction completed. Evicted {Count} items, freed {FreedSize} bytes");
+
     private static readonly Action<ILogger, string, Exception?> LogRemovedExpiredItem =
         LoggerMessage.Define<string>(LogLevel.Debug, new EventId(3, nameof(LogRemovedExpiredItem)),
             "Removed expired cache item: {Key}");
+
     private static readonly Action<ILogger, int, Exception?> LogCleanedUpExpiredItems =
         LoggerMessage.Define<int>(LogLevel.Information, new EventId(4, nameof(LogCleanedUpExpiredItems)),
             "Cleaned up {ExpiredCount} expired cache items");
+
     private static readonly Action<ILogger, double, double, Exception?> LogStorageApproachingCapacity =
         LoggerMessage.Define<double, double>(LogLevel.Information, new EventId(5, nameof(LogStorageApproachingCapacity)),
             "Storage approaching capacity ({Usage:P2}), starting LRU eviction to {Target:P2}");
+
     private static readonly Action<ILogger, int, int, Exception?> LogStorageOptimizationCompleted =
         LoggerMessage.Define<int, int>(LogLevel.Information, new EventId(6, nameof(LogStorageOptimizationCompleted)),
             "Storage optimization completed. Expired: {ExpiredCount}, Evicted: {EvictedCount}");
+
     private static readonly Action<ILogger, int, Exception?> LogStorageOptimizationExpiredOnly =
         LoggerMessage.Define<int>(LogLevel.Information, new EventId(7, nameof(LogStorageOptimizationExpiredOnly)),
             "Storage optimization completed using only expired item cleanup: {ExpiredCount}");
+
+    private readonly ILocalStorageService _localStorage;
+    private readonly ILogger<BrowserStorageService> _logger;
+    private long _quotaLimit = 1024 * 1024 * 10; // 10 MB default quota limit
 
     public BrowserStorageService(ILocalStorageService localStorage, ILogger<BrowserStorageService> logger)
     {

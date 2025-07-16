@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using AngleSharp;
@@ -23,10 +24,12 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
     // Static collections for rate limiting and circuit breaker
     private static readonly ConcurrentDictionary<string, RateLimitTracker> RateLimitTrackers = new(StringComparer.OrdinalIgnoreCase);
     private static readonly ConcurrentDictionary<string, CircuitBreakerState> CircuitBreakers = new(StringComparer.OrdinalIgnoreCase);
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
     };
+
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
     private readonly ILogger<GetOpenGraphImages> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -218,7 +221,8 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
     private void HandleCanceledException(BatchImageResponse response, BatchImageRequest batchRequest)
     {
         response.IsSuccess = false;
-        response.ErrorMessages.Add($"Batch processing was cancelled due to timeout after {batchRequest.BatchTimeoutMs.ToString(CultureInfo.InvariantCulture)}ms");
+        response.ErrorMessages.Add(
+            $"Batch processing was cancelled due to timeout after {batchRequest.BatchTimeoutMs.ToString(CultureInfo.InvariantCulture)}ms");
         LogRequestTimedOut(_logger, batchRequest.BatchTimeoutMs, batchRequest.RequestId);
     }
 
@@ -815,7 +819,7 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
         var baseDelay = 1000;
         var delay = baseDelay * Math.Pow(2, attempt - 1);
         // Add jitter to prevent thundering herd
-        var jitter = System.Security.Cryptography.RandomNumberGenerator.GetInt32(0, 500);
+        var jitter = RandomNumberGenerator.GetInt32(0, 500);
         // Max 30 seconds
         return (int)Math.Min(delay + jitter, 30000);
     }
@@ -1014,22 +1018,27 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
                     errors.Add($"Article[{index.ToString(CultureInfo.InvariantCulture)}]: Internal/local network URLs are not allowed");
 
                 // URL length validation
-                if (article.ArticleUrl.Length > 2000) errors.Add($"Article[{index.ToString(CultureInfo.InvariantCulture)}]: ArticleUrl cannot exceed 2000 characters");
+                if (article.ArticleUrl.Length > 2000)
+                    errors.Add($"Article[{index.ToString(CultureInfo.InvariantCulture)}]: ArticleUrl cannot exceed 2000 characters");
             }
         }
 
         // Validate optional fields
-        if (article.ArticleTitle != null && article.ArticleTitle.Length > 500) errors.Add($"Article[{index.ToString(CultureInfo.InvariantCulture)}]: ArticleTitle cannot exceed 500 characters");
+        if (article.ArticleTitle != null && article.ArticleTitle.Length > 500)
+            errors.Add($"Article[{index.ToString(CultureInfo.InvariantCulture)}]: ArticleTitle cannot exceed 500 characters");
 
         if (article.ArticleDescription != null && article.ArticleDescription.Length > 1000)
             errors.Add($"Article[{index.ToString(CultureInfo.InvariantCulture)}]: ArticleDescription cannot exceed 1000 characters");
 
-        if (article.UserAgent != null && article.UserAgent.Length > 200) errors.Add($"Article[{index.ToString(CultureInfo.InvariantCulture)}]: UserAgent cannot exceed 200 characters");
+        if (article.UserAgent != null && article.UserAgent.Length > 200)
+            errors.Add($"Article[{index.ToString(CultureInfo.InvariantCulture)}]: UserAgent cannot exceed 200 characters");
 
         // Validate timeout values
-        if (article.TimeoutMs < 5000 || article.TimeoutMs > 120000) errors.Add($"Article[{index.ToString(CultureInfo.InvariantCulture)}]: TimeoutMs must be between 5,000 and 120,000 milliseconds");
+        if (article.TimeoutMs < 5000 || article.TimeoutMs > 120000)
+            errors.Add($"Article[{index.ToString(CultureInfo.InvariantCulture)}]: TimeoutMs must be between 5,000 and 120,000 milliseconds");
 
-        if (article.MaxImages <= 0 || article.MaxImages > 10) errors.Add($"Article[{index.ToString(CultureInfo.InvariantCulture)}]: MaxImages must be between 1 and 10");
+        if (article.MaxImages <= 0 || article.MaxImages > 10)
+            errors.Add($"Article[{index.ToString(CultureInfo.InvariantCulture)}]: MaxImages must be between 1 and 10");
 
         return errors;
     }

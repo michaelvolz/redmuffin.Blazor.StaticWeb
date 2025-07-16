@@ -12,6 +12,72 @@ public class CacheMonitoringService : ICacheMonitoringService
     private const double HighStorageUtilizationThreshold = 80.0;
     private const double CriticalStorageUtilizationThreshold = 90.0;
     private const double HighFragmentationThreshold = 30.0;
+
+    // LoggerMessage delegates for better performance
+    private static readonly Action<ILogger, Exception?> LogCollectingComprehensiveStats =
+        LoggerMessage.Define(LogLevel.Debug, new EventId(1, nameof(LogCollectingComprehensiveStats)),
+            "Collecting comprehensive cache statistics");
+
+    private static readonly Action<ILogger, Exception?> LogComprehensiveStatsCollected =
+        LoggerMessage.Define(LogLevel.Information, new EventId(2, nameof(LogComprehensiveStatsCollected)),
+            "Comprehensive cache statistics collected successfully");
+
+    private static readonly Action<ILogger, Exception> LogFailedToCollectStats =
+        LoggerMessage.Define(LogLevel.Error, new EventId(3, nameof(LogFailedToCollectStats)),
+            "Failed to collect comprehensive cache statistics");
+
+    private static readonly Action<ILogger, Exception?> LogCollectingHealthMetrics =
+        LoggerMessage.Define(LogLevel.Debug, new EventId(4, nameof(LogCollectingHealthMetrics)),
+            "Collecting cache health metrics");
+
+    private static readonly Action<ILogger, Exception> LogFailedToCollectHealthMetrics =
+        LoggerMessage.Define(LogLevel.Error, new EventId(5, nameof(LogFailedToCollectHealthMetrics)),
+            "Failed to collect cache health metrics");
+
+    private static readonly Action<ILogger, int, Exception?> LogCollectingPerformanceStats =
+        LoggerMessage.Define<int>(LogLevel.Debug, new EventId(6, nameof(LogCollectingPerformanceStats)),
+            "Collecting cache performance statistics for {TimeRange} hours");
+
+    private static readonly Action<ILogger, int, Exception?> LogPerformanceStatsCollected =
+        LoggerMessage.Define<int>(LogLevel.Information, new EventId(7, nameof(LogPerformanceStatsCollected)),
+            "Cache performance statistics collected for {TimeRange} hours");
+
+    private static readonly Action<ILogger, Exception> LogFailedToCollectPerformanceStats =
+        LoggerMessage.Define(LogLevel.Error, new EventId(8, nameof(LogFailedToCollectPerformanceStats)),
+            "Failed to collect cache performance statistics");
+
+    private static readonly Action<ILogger, Exception?> LogStartingCacheOptimization =
+        LoggerMessage.Define(LogLevel.Information, new EventId(9, nameof(LogStartingCacheOptimization)),
+            "Starting cache optimization");
+
+    private static readonly Action<ILogger, Exception> LogCacheOptimizationFailed =
+        LoggerMessage.Define(LogLevel.Error, new EventId(10, nameof(LogCacheOptimizationFailed)),
+            "Cache optimization failed");
+
+    private static readonly Action<ILogger, Exception?> LogGeneratingCacheRecommendations =
+        LoggerMessage.Define(LogLevel.Debug, new EventId(11, nameof(LogGeneratingCacheRecommendations)),
+            "Generating cache recommendations");
+
+    private static readonly Action<ILogger, int, Exception?> LogCacheRecommendationsGenerated =
+        LoggerMessage.Define<int>(LogLevel.Information, new EventId(12, nameof(LogCacheRecommendationsGenerated)),
+            "Cache recommendations generated with health score: {HealthScore}");
+
+    private static readonly Action<ILogger, Exception> LogFailedToGenerateRecommendations =
+        LoggerMessage.Define(LogLevel.Error, new EventId(13, nameof(LogFailedToGenerateRecommendations)),
+            "Failed to generate cache recommendations");
+
+    private static readonly Action<ILogger, CacheHealthStatus, double, Exception?> LogCacheHealthMetricsCollected =
+        LoggerMessage.Define<CacheHealthStatus, double>(LogLevel.Information, new EventId(14, nameof(LogCacheHealthMetricsCollected)),
+            "Cache health metrics collected: Status={HealthStatus}, StorageUtilization={StorageUtilization:F2}%");
+
+    private static readonly Action<ILogger, long, double, double, Exception?> LogCacheOptimizationCompleted =
+        LoggerMessage.Define<long, double, double>(LogLevel.Information, new EventId(15, nameof(LogCacheOptimizationCompleted)),
+            "Cache optimization completed successfully in {ElapsedMs}ms. Storage utilization: {Before:F2}% → {After:F2}%");
+
+    private static readonly Action<ILogger, long, Exception> LogCacheOptimizationFailedWithTime =
+        LoggerMessage.Define<long>(LogLevel.Error, new EventId(16, nameof(LogCacheOptimizationFailedWithTime)),
+            "Cache optimization failed after {ElapsedMs}ms");
+
     // Commented out as these are not currently used
     // private const double LowCacheHitRateThreshold = 60.0;
     // private const double CriticalCacheHitRateThreshold = 40.0;
@@ -20,56 +86,6 @@ public class CacheMonitoringService : ICacheMonitoringService
     private readonly IImageValidationService _imageValidationService;
     private readonly ILogger<CacheMonitoringService> _logger;
     private readonly IOpenGraphImagesService _openGraphImagesService;
-
-    // LoggerMessage delegates for better performance
-    private static readonly Action<ILogger, Exception?> LogCollectingComprehensiveStats =
-        LoggerMessage.Define(LogLevel.Debug, new EventId(1, nameof(LogCollectingComprehensiveStats)),
-            "Collecting comprehensive cache statistics");
-    private static readonly Action<ILogger, Exception?> LogComprehensiveStatsCollected =
-        LoggerMessage.Define(LogLevel.Information, new EventId(2, nameof(LogComprehensiveStatsCollected)),
-            "Comprehensive cache statistics collected successfully");
-    private static readonly Action<ILogger, Exception> LogFailedToCollectStats =
-        LoggerMessage.Define(LogLevel.Error, new EventId(3, nameof(LogFailedToCollectStats)),
-            "Failed to collect comprehensive cache statistics");
-    private static readonly Action<ILogger, Exception?> LogCollectingHealthMetrics =
-        LoggerMessage.Define(LogLevel.Debug, new EventId(4, nameof(LogCollectingHealthMetrics)),
-            "Collecting cache health metrics");
-    private static readonly Action<ILogger, Exception> LogFailedToCollectHealthMetrics =
-        LoggerMessage.Define(LogLevel.Error, new EventId(5, nameof(LogFailedToCollectHealthMetrics)),
-            "Failed to collect cache health metrics");
-    private static readonly Action<ILogger, int, Exception?> LogCollectingPerformanceStats =
-        LoggerMessage.Define<int>(LogLevel.Debug, new EventId(6, nameof(LogCollectingPerformanceStats)),
-            "Collecting cache performance statistics for {TimeRange} hours");
-    private static readonly Action<ILogger, int, Exception?> LogPerformanceStatsCollected =
-        LoggerMessage.Define<int>(LogLevel.Information, new EventId(7, nameof(LogPerformanceStatsCollected)),
-            "Cache performance statistics collected for {TimeRange} hours");
-    private static readonly Action<ILogger, Exception> LogFailedToCollectPerformanceStats =
-        LoggerMessage.Define(LogLevel.Error, new EventId(8, nameof(LogFailedToCollectPerformanceStats)),
-            "Failed to collect cache performance statistics");
-    private static readonly Action<ILogger, Exception?> LogStartingCacheOptimization =
-        LoggerMessage.Define(LogLevel.Information, new EventId(9, nameof(LogStartingCacheOptimization)),
-            "Starting cache optimization");
-    private static readonly Action<ILogger, Exception> LogCacheOptimizationFailed =
-        LoggerMessage.Define(LogLevel.Error, new EventId(10, nameof(LogCacheOptimizationFailed)),
-            "Cache optimization failed");
-    private static readonly Action<ILogger, Exception?> LogGeneratingCacheRecommendations =
-        LoggerMessage.Define(LogLevel.Debug, new EventId(11, nameof(LogGeneratingCacheRecommendations)),
-            "Generating cache recommendations");
-    private static readonly Action<ILogger, int, Exception?> LogCacheRecommendationsGenerated =
-        LoggerMessage.Define<int>(LogLevel.Information, new EventId(12, nameof(LogCacheRecommendationsGenerated)),
-            "Cache recommendations generated with health score: {HealthScore}");
-    private static readonly Action<ILogger, Exception> LogFailedToGenerateRecommendations =
-        LoggerMessage.Define(LogLevel.Error, new EventId(13, nameof(LogFailedToGenerateRecommendations)),
-            "Failed to generate cache recommendations");
-    private static readonly Action<ILogger, CacheHealthStatus, double, Exception?> LogCacheHealthMetricsCollected =
-        LoggerMessage.Define<CacheHealthStatus, double>(LogLevel.Information, new EventId(14, nameof(LogCacheHealthMetricsCollected)),
-            "Cache health metrics collected: Status={HealthStatus}, StorageUtilization={StorageUtilization:F2}%");
-    private static readonly Action<ILogger, long, double, double, Exception?> LogCacheOptimizationCompleted =
-        LoggerMessage.Define<long, double, double>(LogLevel.Information, new EventId(15, nameof(LogCacheOptimizationCompleted)),
-            "Cache optimization completed successfully in {ElapsedMs}ms. Storage utilization: {Before:F2}% → {After:F2}%");
-    private static readonly Action<ILogger, long, Exception> LogCacheOptimizationFailedWithTime =
-        LoggerMessage.Define<long>(LogLevel.Error, new EventId(16, nameof(LogCacheOptimizationFailedWithTime)),
-            "Cache optimization failed after {ElapsedMs}ms");
 
     public CacheMonitoringService(
         ICacheService cacheService,

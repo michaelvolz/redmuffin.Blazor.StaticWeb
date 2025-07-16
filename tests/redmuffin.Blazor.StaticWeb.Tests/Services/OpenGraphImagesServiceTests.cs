@@ -16,11 +16,11 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Services;
 public class OpenGraphImagesServiceTests : IDisposable
 {
     private readonly ICacheService _cacheService = Substitute.For<ICacheService>();
+    private readonly HttpClient _httpClient;
     private readonly IHttpClientFactory _httpClientFactory = Substitute.For<IHttpClientFactory>();
     private readonly IImageValidationService _imageValidationService = Substitute.For<IImageValidationService>();
     private readonly ILogger<OpenGraphImagesService> _logger = Substitute.For<ILogger<OpenGraphImagesService>>();
     private readonly OpenGraphImagesService _service;
-    private readonly HttpClient _httpClient;
 
     public OpenGraphImagesServiceTests()
     {

@@ -33,7 +33,8 @@ public class CacheStats
     /// <summary>
     ///     Statistics for each namespace.
     /// </summary>
-    public IDictionary<string, CacheNamespaceStats> NamespaceStats { get; set; } = new Dictionary<string, CacheNamespaceStats>(StringComparer.OrdinalIgnoreCase);
+    public IDictionary<string, CacheNamespaceStats> NamespaceStats { get; set; } =
+        new Dictionary<string, CacheNamespaceStats>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     ///     Total number of expired items across all namespaces.

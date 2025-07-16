@@ -48,5 +48,5 @@ public enum ImageRetrievalErrorType
     /// <summary>
     ///     Unknown or unexpected error
     /// </summary>
-    Unknown = 99,
+    Unknown = 99
 }

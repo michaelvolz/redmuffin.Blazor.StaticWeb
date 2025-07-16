@@ -17,6 +17,6 @@ public partial class RaindropJsonSerializerContext : JsonSerializerContext
     public static JsonSerializerOptions DefaultOptions { get; } = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = false,
+        WriteIndented = false
     };
 }

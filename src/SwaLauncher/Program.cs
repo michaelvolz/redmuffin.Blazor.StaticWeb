@@ -14,7 +14,7 @@ internal static class Program
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             CreateNoWindow = false,
-            WorkingDirectory = Directory.GetCurrentDirectory(),
+            WorkingDirectory = Directory.GetCurrentDirectory()
         };
 
         using var process = new Process();
