@@ -1,4 +1,4 @@
-## Relevant Files
+﻿## Relevant Files
 
 - `scripts/Generate-Changelog.ps1` - Main PowerShell script that orchestrates the changelog generation process
 - `git-commits.txt` - Input file containing Git commit history one-liners (already exists)

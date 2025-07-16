@@ -1,4 +1,4 @@
-# PRD: Modify Generate-Changelog.ps1 to Use Git Log Directly
+﻿# PRD: Modify Generate-Changelog.ps1 to Use Git Log Directly
 
 ## Introduction/Overview
 

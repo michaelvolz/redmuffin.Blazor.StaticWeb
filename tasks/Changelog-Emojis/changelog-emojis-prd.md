@@ -1,4 +1,4 @@
-# Product Requirements Document: Emojis in CHANGELOG.md
+﻿# Product Requirements Document: Emojis in CHANGELOG.md
 
 ## Introduction/Overview
 

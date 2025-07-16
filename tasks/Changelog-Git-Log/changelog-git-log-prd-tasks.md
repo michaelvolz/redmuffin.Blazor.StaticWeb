@@ -1,4 +1,4 @@
-## Relevant Files
+﻿## Relevant Files
 
 ### PowerShell Scripts
 - `scripts/Generate-Changelog.ps1` - Main PowerShell script that needs modification to integrate git log
