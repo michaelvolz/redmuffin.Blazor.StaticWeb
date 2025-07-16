@@ -101,6 +101,175 @@ public class CacheMonitoringService : ICacheMonitoringService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    private static long CalculateTotalAccesses(CacheStats stats)
+    {
+        // Estimate total accesses based on namespace statistics
+        return stats.NamespaceStats.Values.Sum(ns => (long)(ns.TotalItems * ns.AverageAccessCount));
+    }
+
+    private static (double HitRate, double MissRate) CalculateHitMissRates(CacheStats stats, long totalAccesses)
+    {
+        if (totalAccesses == 0) return (0.0, 0.0);
+
+        // Estimate hit rate based on cache efficiency
+        var hitRate = Math.Min(95.0, 60.0 + stats.TotalItems * 0.01);
+        var missRate = 100.0 - hitRate;
+
+        return (hitRate, missRate);
+    }
+
+    private static double CalculateAverageAccessTime(CacheStats stats)
+    {
+        // Estimate average access time based on storage utilization
+        var baseTime = 1.0; // Base access time in milliseconds
+        var utilizationFactor = stats.QuotaUsagePercent / 100.0;
+        return baseTime * (1.0 + utilizationFactor);
+    }
+
+    private static CacheHealthStatus DetermineHealthStatus(double storageUtilization, CacheStats stats)
+    {
+        if (storageUtilization > CriticalStorageUtilizationThreshold)
+            return CacheHealthStatus.Critical;
+
+        if (storageUtilization > HighStorageUtilizationThreshold)
+            return CacheHealthStatus.Warning;
+
+        if (stats.TotalExpiredItemsCount > stats.TotalItems * 0.1)
+            return CacheHealthStatus.Warning;
+
+        return CacheHealthStatus.Healthy;
+    }
+
+    private static List<string> AnalyzePerformanceIssues(CacheStats stats, double storageUtilization)
+    {
+        var issues = new List<string>();
+
+        if (storageUtilization > CriticalStorageUtilizationThreshold)
+            issues.Add($"Critical storage utilization: {storageUtilization.ToString("F2", CultureInfo.InvariantCulture)}%");
+        else if (storageUtilization > HighStorageUtilizationThreshold)
+            issues.Add($"High storage utilization: {storageUtilization.ToString("F2", CultureInfo.InvariantCulture)}%");
+
+        if (stats.TotalExpiredItemsCount > 0)
+            issues.Add($"{stats.TotalExpiredItemsCount.ToString(CultureInfo.InvariantCulture)} expired items need cleanup");
+
+        var fragmentationPercent = CalculateFragmentationPercent(stats);
+        if (fragmentationPercent > HighFragmentationThreshold)
+            issues.Add($"High cache fragmentation: {fragmentationPercent.ToString("F2", CultureInfo.InvariantCulture)}%");
+
+        return issues;
+    }
+
+    private static double CalculateFragmentationPercent(CacheStats stats)
+    {
+        if (stats.TotalItems == 0) return 0.0;
+
+        // Estimate fragmentation based on expired items ratio
+        var expiredRatio = (double)stats.TotalExpiredItemsCount / stats.TotalItems;
+        return Math.Min(100.0, expiredRatio * 100.0);
+    }
+
+    private static double EstimateAverageHitRate(CacheStats stats)
+    {
+        // Estimate based on cache efficiency
+        return Math.Min(95.0, 60.0 + stats.TotalItems * 0.01);
+    }
+
+    private static double EstimateAverageResponseTime(CacheStats stats)
+    {
+        return CalculateAverageAccessTime(stats);
+    }
+
+    private static long EstimateTotalOperations(CacheStats stats, int timeRangeHours)
+    {
+        // Estimate based on current activity
+        var operationsPerHour = stats.TotalItems * 10; // Rough estimate
+        return operationsPerHour * timeRangeHours;
+    }
+
+    private static int EstimateEvictionsCount(CacheStats stats)
+    {
+        // Estimate based on storage pressure
+        return stats.QuotaUsagePercent > HighStorageUtilizationThreshold ? (int)(stats.TotalItems * 0.1) : 0;
+    }
+
+    private static int EstimateCleanupCount(CacheStats stats)
+    {
+        // Estimate based on expired items
+        return stats.TotalExpiredItemsCount > 0 ? 1 : 0;
+    }
+
+    private static void AnalyzeStorageRecommendations(CacheStats stats, CacheRecommendations recommendations)
+    {
+        if (stats.QuotaUsagePercent > CriticalStorageUtilizationThreshold)
+        {
+            recommendations.SizeRecommendations.Add("Consider increasing cache quota limit");
+            recommendations.SizeRecommendations.Add("Implement more aggressive LRU eviction");
+        }
+        else if (stats.QuotaUsagePercent > HighStorageUtilizationThreshold)
+        {
+            recommendations.SizeRecommendations.Add("Monitor storage usage closely");
+            recommendations.SizeRecommendations.Add("Consider periodic cleanup scheduling");
+        }
+    }
+
+    private static void AnalyzeExpirationRecommendations(CacheStats stats, CacheRecommendations recommendations)
+    {
+        if (stats.TotalExpiredItemsCount > stats.TotalItems * 0.1)
+        {
+            recommendations.ExpirationRecommendations.Add("Schedule more frequent expired item cleanup");
+            recommendations.ExpirationRecommendations.Add("Consider shorter expiration times for volatile data");
+        }
+    }
+
+    private static void AnalyzePerformanceRecommendations(CacheHealthMetrics healthMetrics, CacheRecommendations recommendations)
+    {
+        if (healthMetrics.IsMemoryPressureHigh)
+        {
+            recommendations.PerformanceRecommendations.Add("Reduce cache size to relieve memory pressure");
+            recommendations.PerformanceRecommendations.Add("Implement batch operations for better efficiency");
+        }
+
+        if (healthMetrics.FragmentationPercent > HighFragmentationThreshold)
+        {
+            recommendations.PerformanceRecommendations.Add("Perform cache defragmentation");
+            recommendations.PerformanceRecommendations.Add("Consider cache reorganization");
+        }
+    }
+
+    private static void AnalyzeMaintenanceRecommendations(CacheStats stats, CacheHealthMetrics healthMetrics, CacheRecommendations recommendations)
+    {
+        if (stats.TotalExpiredItemsCount > 0) recommendations.MaintenanceRecommendations.Add("Run cache cleanup immediately");
+
+        if (healthMetrics.StorageUtilizationPercent > HighStorageUtilizationThreshold)
+            recommendations.MaintenanceRecommendations.Add("Schedule regular cache optimization");
+
+        if (healthMetrics.PerformanceIssues.Any()) recommendations.MaintenanceRecommendations.Add("Address performance issues identified");
+    }
+
+    private static int CalculateHealthScore(CacheHealthMetrics healthMetrics, CacheStats stats)
+    {
+        var score = 100;
+
+        // Deduct points for storage utilization
+        if (healthMetrics.StorageUtilizationPercent > CriticalStorageUtilizationThreshold)
+            score -= 40;
+        else if (healthMetrics.StorageUtilizationPercent > HighStorageUtilizationThreshold)
+            score -= 20;
+
+        // Deduct points for expired items
+        if (stats.TotalExpiredItemsCount > 0)
+            score -= Math.Min(20, stats.TotalExpiredItemsCount);
+
+        // Deduct points for fragmentation
+        if (healthMetrics.FragmentationPercent > HighFragmentationThreshold)
+            score -= 15;
+
+        // Deduct points for performance issues
+        score -= Math.Min(25, healthMetrics.PerformanceIssues.Count * 5);
+
+        return Math.Max(0, score);
+    }
+
     public async Task<CacheMonitoringStats> GetComprehensiveCacheStatsAsync(CancellationToken cancellationToken = default)
     {
         try
@@ -309,174 +478,5 @@ public class CacheMonitoringService : ICacheMonitoringService
                 HealthScore = 0
             };
         }
-    }
-
-    private static long CalculateTotalAccesses(CacheStats stats)
-    {
-        // Estimate total accesses based on namespace statistics
-        return stats.NamespaceStats.Values.Sum(ns => (long)(ns.TotalItems * ns.AverageAccessCount));
-    }
-
-    private static (double HitRate, double MissRate) CalculateHitMissRates(CacheStats stats, long totalAccesses)
-    {
-        if (totalAccesses == 0) return (0.0, 0.0);
-
-        // Estimate hit rate based on cache efficiency
-        var hitRate = Math.Min(95.0, 60.0 + (stats.TotalItems * 0.01));
-        var missRate = 100.0 - hitRate;
-
-        return (hitRate, missRate);
-    }
-
-    private static double CalculateAverageAccessTime(CacheStats stats)
-    {
-        // Estimate average access time based on storage utilization
-        var baseTime = 1.0; // Base access time in milliseconds
-        var utilizationFactor = stats.QuotaUsagePercent / 100.0;
-        return baseTime * (1.0 + utilizationFactor);
-    }
-
-    private static CacheHealthStatus DetermineHealthStatus(double storageUtilization, CacheStats stats)
-    {
-        if (storageUtilization > CriticalStorageUtilizationThreshold)
-            return CacheHealthStatus.Critical;
-
-        if (storageUtilization > HighStorageUtilizationThreshold)
-            return CacheHealthStatus.Warning;
-
-        if (stats.TotalExpiredItemsCount > stats.TotalItems * 0.1)
-            return CacheHealthStatus.Warning;
-
-        return CacheHealthStatus.Healthy;
-    }
-
-    private static List<string> AnalyzePerformanceIssues(CacheStats stats, double storageUtilization)
-    {
-        var issues = new List<string>();
-
-        if (storageUtilization > CriticalStorageUtilizationThreshold)
-            issues.Add($"Critical storage utilization: {storageUtilization.ToString("F2", CultureInfo.InvariantCulture)}%");
-        else if (storageUtilization > HighStorageUtilizationThreshold)
-            issues.Add($"High storage utilization: {storageUtilization.ToString("F2", CultureInfo.InvariantCulture)}%");
-
-        if (stats.TotalExpiredItemsCount > 0)
-            issues.Add($"{stats.TotalExpiredItemsCount.ToString(CultureInfo.InvariantCulture)} expired items need cleanup");
-
-        var fragmentationPercent = CalculateFragmentationPercent(stats);
-        if (fragmentationPercent > HighFragmentationThreshold)
-            issues.Add($"High cache fragmentation: {fragmentationPercent.ToString("F2", CultureInfo.InvariantCulture)}%");
-
-        return issues;
-    }
-
-    private static double CalculateFragmentationPercent(CacheStats stats)
-    {
-        if (stats.TotalItems == 0) return 0.0;
-
-        // Estimate fragmentation based on expired items ratio
-        var expiredRatio = (double)stats.TotalExpiredItemsCount / stats.TotalItems;
-        return Math.Min(100.0, expiredRatio * 100.0);
-    }
-
-    private static double EstimateAverageHitRate(CacheStats stats)
-    {
-        // Estimate based on cache efficiency
-        return Math.Min(95.0, 60.0 + (stats.TotalItems * 0.01));
-    }
-
-    private static double EstimateAverageResponseTime(CacheStats stats)
-    {
-        return CalculateAverageAccessTime(stats);
-    }
-
-    private static long EstimateTotalOperations(CacheStats stats, int timeRangeHours)
-    {
-        // Estimate based on current activity
-        var operationsPerHour = stats.TotalItems * 10; // Rough estimate
-        return operationsPerHour * timeRangeHours;
-    }
-
-    private static int EstimateEvictionsCount(CacheStats stats)
-    {
-        // Estimate based on storage pressure
-        return stats.QuotaUsagePercent > HighStorageUtilizationThreshold ? (int)(stats.TotalItems * 0.1) : 0;
-    }
-
-    private static int EstimateCleanupCount(CacheStats stats)
-    {
-        // Estimate based on expired items
-        return stats.TotalExpiredItemsCount > 0 ? 1 : 0;
-    }
-
-    private static void AnalyzeStorageRecommendations(CacheStats stats, CacheRecommendations recommendations)
-    {
-        if (stats.QuotaUsagePercent > CriticalStorageUtilizationThreshold)
-        {
-            recommendations.SizeRecommendations.Add("Consider increasing cache quota limit");
-            recommendations.SizeRecommendations.Add("Implement more aggressive LRU eviction");
-        }
-        else if (stats.QuotaUsagePercent > HighStorageUtilizationThreshold)
-        {
-            recommendations.SizeRecommendations.Add("Monitor storage usage closely");
-            recommendations.SizeRecommendations.Add("Consider periodic cleanup scheduling");
-        }
-    }
-
-    private static void AnalyzeExpirationRecommendations(CacheStats stats, CacheRecommendations recommendations)
-    {
-        if (stats.TotalExpiredItemsCount > stats.TotalItems * 0.1)
-        {
-            recommendations.ExpirationRecommendations.Add("Schedule more frequent expired item cleanup");
-            recommendations.ExpirationRecommendations.Add("Consider shorter expiration times for volatile data");
-        }
-    }
-
-    private static void AnalyzePerformanceRecommendations(CacheHealthMetrics healthMetrics, CacheRecommendations recommendations)
-    {
-        if (healthMetrics.IsMemoryPressureHigh)
-        {
-            recommendations.PerformanceRecommendations.Add("Reduce cache size to relieve memory pressure");
-            recommendations.PerformanceRecommendations.Add("Implement batch operations for better efficiency");
-        }
-
-        if (healthMetrics.FragmentationPercent > HighFragmentationThreshold)
-        {
-            recommendations.PerformanceRecommendations.Add("Perform cache defragmentation");
-            recommendations.PerformanceRecommendations.Add("Consider cache reorganization");
-        }
-    }
-
-    private static void AnalyzeMaintenanceRecommendations(CacheStats stats, CacheHealthMetrics healthMetrics, CacheRecommendations recommendations)
-    {
-        if (stats.TotalExpiredItemsCount > 0) recommendations.MaintenanceRecommendations.Add("Run cache cleanup immediately");
-
-        if (healthMetrics.StorageUtilizationPercent > HighStorageUtilizationThreshold)
-            recommendations.MaintenanceRecommendations.Add("Schedule regular cache optimization");
-
-        if (healthMetrics.PerformanceIssues.Any()) recommendations.MaintenanceRecommendations.Add("Address performance issues identified");
-    }
-
-    private static int CalculateHealthScore(CacheHealthMetrics healthMetrics, CacheStats stats)
-    {
-        var score = 100;
-
-        // Deduct points for storage utilization
-        if (healthMetrics.StorageUtilizationPercent > CriticalStorageUtilizationThreshold)
-            score -= 40;
-        else if (healthMetrics.StorageUtilizationPercent > HighStorageUtilizationThreshold)
-            score -= 20;
-
-        // Deduct points for expired items
-        if (stats.TotalExpiredItemsCount > 0)
-            score -= Math.Min(20, stats.TotalExpiredItemsCount);
-
-        // Deduct points for fragmentation
-        if (healthMetrics.FragmentationPercent > HighFragmentationThreshold)
-            score -= 15;
-
-        // Deduct points for performance issues
-        score -= Math.Min(25, healthMetrics.PerformanceIssues.Count * 5);
-
-        return Math.Max(0, score);
     }
 }

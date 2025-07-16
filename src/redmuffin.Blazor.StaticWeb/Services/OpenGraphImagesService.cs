@@ -154,6 +154,84 @@ public class OpenGraphImagesService : IOpenGraphImagesService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    private static BatchImageRequest CreateSingleArticleRequest(string articleUrl)
+    {
+        return new BatchImageRequest
+        {
+            Articles = new List<ArticleImageRequest>
+            {
+                new()
+                {
+                    ArticleUrl = articleUrl,
+                    ValidateImages = true,
+                    MaxImages = 1
+                }
+            },
+            MaxConcurrency = 1,
+            UseCache = false // We're handling cache at service level
+        };
+    }
+
+    private static async Task<BatchImageResponse?> DeserializeApiResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        return JsonSerializer.Deserialize<BatchImageResponse>(responseContent, JsonOptions);
+    }
+
+    private static CachedImageData CreateCachedImageData(string articleUrl, ArticleImageResponse articleResult)
+    {
+        return new CachedImageData
+        {
+            ArticleUrl = articleUrl,
+            ImageUrl = articleResult.PrimaryImageUrl!,
+            ImageSource = articleResult.PrimaryImageSource,
+            IsValidated = true,
+            CachedAt = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow.AddHours(CacheExpirationHours),
+            LastAccessedAt = DateTime.UtcNow,
+            AccessCount = 1
+        };
+    }
+
+    private static CachedImageData CreateCacheDataForValidationResult(string articleUrl, string imageUrl, ImageSource imageSource,
+        ImageValidationResult? validationResult)
+    {
+        var isValid = validationResult?.IsValid == true;
+        return new CachedImageData
+        {
+            ArticleUrl = articleUrl,
+            ImageUrl = imageUrl,
+            ImageSource = imageSource,
+            IsValidated = isValid,
+            CachedAt = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow.AddHours(isValid ? 24 : 6), // 24h for valid, 6h for invalid
+            LastAccessedAt = DateTime.UtcNow,
+            AccessCount = 1
+        };
+    }
+
+    private static ImageValidationResult CreateFailedValidationResult(string imageUrl, string errorMessage)
+    {
+        return new ImageValidationResult
+        {
+            ImageUrl = imageUrl,
+            IsValid = false,
+            ErrorMessage = errorMessage,
+            ValidatedAt = DateTime.UtcNow
+        };
+    }
+
+    private static void CreateFallbackValidationResults(
+        List<string> imageUrls,
+        Dictionary<string, ImageValidationResult> result,
+        Exception ex)
+    {
+        // Fallback: Mark all images as invalid to avoid blocking the process
+        foreach (var imageUrl in imageUrls)
+            if (!result.ContainsKey(imageUrl))
+                result[imageUrl] = CreateFailedValidationResult(imageUrl, $"Validation failed due to system error: {ex.Message}");
+    }
+
     public async Task<CachedImageData?> GetImageAsync(string articleUrl, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(articleUrl))
@@ -346,30 +424,6 @@ public class OpenGraphImagesService : IOpenGraphImagesService
         return await httpClient.PostAsync("/api/GetOpenGraphImages", content, cancellationToken).ConfigureAwait(false);
     }
 
-    private static BatchImageRequest CreateSingleArticleRequest(string articleUrl)
-    {
-        return new BatchImageRequest
-        {
-            Articles = new List<ArticleImageRequest>
-            {
-                new()
-                {
-                    ArticleUrl = articleUrl,
-                    ValidateImages = true,
-                    MaxImages = 1
-                }
-            },
-            MaxConcurrency = 1,
-            UseCache = false // We're handling cache at service level
-        };
-    }
-
-    private static async Task<BatchImageResponse?> DeserializeApiResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken)
-    {
-        var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        return JsonSerializer.Deserialize<BatchImageResponse>(responseContent, JsonOptions);
-    }
-
     private async Task<CachedImageData?> ProcessSingleImageResultAsync(string articleUrl, BatchImageResponse? batchResponse,
         CancellationToken cancellationToken)
     {
@@ -386,21 +440,6 @@ public class OpenGraphImagesService : IOpenGraphImagesService
         }
 
         return null;
-    }
-
-    private static CachedImageData CreateCachedImageData(string articleUrl, ArticleImageResponse articleResult)
-    {
-        return new CachedImageData
-        {
-            ArticleUrl = articleUrl,
-            ImageUrl = articleResult.PrimaryImageUrl!,
-            ImageSource = articleResult.PrimaryImageSource,
-            IsValidated = true,
-            CachedAt = DateTime.UtcNow,
-            ExpiresAt = DateTime.UtcNow.AddHours(CacheExpirationHours),
-            LastAccessedAt = DateTime.UtcNow,
-            AccessCount = 1
-        };
     }
 
     /// <summary>
@@ -541,23 +580,6 @@ public class OpenGraphImagesService : IOpenGraphImagesService
         await SaveImageBatchToCacheAsync(cacheDataBatch, cancellationToken).ConfigureAwait(false);
 
         LogParallelValidationCompleted(_logger, imagesToValidate.Count, null);
-    }
-
-    private static CachedImageData CreateCacheDataForValidationResult(string articleUrl, string imageUrl, ImageSource imageSource,
-        ImageValidationResult? validationResult)
-    {
-        var isValid = validationResult?.IsValid == true;
-        return new CachedImageData
-        {
-            ArticleUrl = articleUrl,
-            ImageUrl = imageUrl,
-            ImageSource = imageSource,
-            IsValidated = isValid,
-            CachedAt = DateTime.UtcNow,
-            ExpiresAt = DateTime.UtcNow.AddHours(isValid ? 24 : 6), // 24h for valid, 6h for invalid
-            LastAccessedAt = DateTime.UtcNow,
-            AccessCount = 1
-        };
     }
 
     private async Task SaveImageToCacheAsync(CachedImageData cacheData)
@@ -701,33 +723,11 @@ public class OpenGraphImagesService : IOpenGraphImagesService
             }
     }
 
-    private static ImageValidationResult CreateFailedValidationResult(string imageUrl, string errorMessage)
-    {
-        return new ImageValidationResult
-        {
-            ImageUrl = imageUrl,
-            IsValid = false,
-            ErrorMessage = errorMessage,
-            ValidatedAt = DateTime.UtcNow
-        };
-    }
-
     private void LogValidationSummary(Dictionary<string, ImageValidationResult> result, int totalCount)
     {
         var validCount = result.Values.Count(v => v.IsValid);
         var invalidCount = result.Values.Count - validCount;
 
         LogParallelImageValidationCompleted(_logger, validCount, invalidCount, totalCount, null);
-    }
-
-    private static void CreateFallbackValidationResults(
-        List<string> imageUrls,
-        Dictionary<string, ImageValidationResult> result,
-        Exception ex)
-    {
-        // Fallback: Mark all images as invalid to avoid blocking the process
-        foreach (var imageUrl in imageUrls)
-            if (!result.ContainsKey(imageUrl))
-                result[imageUrl] = CreateFailedValidationResult(imageUrl, $"Validation failed due to system error: {ex.Message}");
     }
 }

@@ -50,6 +50,22 @@ public class BrowserStorageService : IBrowserStorageService
         _logger = logger;
     }
 
+    private static string GetMetadataKey(string key)
+    {
+        return key + "_meta";
+    }
+
+    private static string ComputeHash(string input)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        return Convert.ToBase64String(bytes);
+    }
+
+    private static bool IsExpired(DateTime createdAt, TimeSpan expirationTime)
+    {
+        return DateTime.UtcNow - createdAt > expirationTime;
+    }
+
     public void SetQuotaLimit(long quotaBytes)
     {
         _quotaLimit = quotaBytes;
@@ -304,21 +320,5 @@ public class BrowserStorageService : IBrowserStorageService
     {
         return await _localStorage.GetItemAsync<Dictionary<string, StoredItemMetadata>>(IndexKey, cancellationToken).ConfigureAwait(false) ??
                new Dictionary<string, StoredItemMetadata>(StringComparer.OrdinalIgnoreCase);
-    }
-
-    private static string GetMetadataKey(string key)
-    {
-        return key + "_meta";
-    }
-
-    private static string ComputeHash(string input)
-    {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(input));
-        return Convert.ToBase64String(bytes);
-    }
-
-    private static bool IsExpired(DateTime createdAt, TimeSpan expirationTime)
-    {
-        return DateTime.UtcNow - createdAt > expirationTime;
     }
 }

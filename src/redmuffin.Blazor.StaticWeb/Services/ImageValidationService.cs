@@ -54,6 +54,48 @@ public class ImageValidationService : IImageValidationService, IDisposable
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    private static ImageValidationResult CreateValidationResult(HttpResponseMessage response, string imageUrl)
+    {
+        var result = new ImageValidationResult
+        {
+            ImageUrl = imageUrl,
+            IsValid = response.IsSuccessStatusCode,
+            StatusCode = response.StatusCode,
+            ContentType = response.Content?.Headers?.ContentType?.MediaType ?? string.Empty,
+            ContentLength = response.Content?.Headers?.ContentLength,
+            ValidatedAt = DateTime.UtcNow,
+            ResponseTimeMs = 0
+        };
+
+        if (!response.IsSuccessStatusCode)
+        {
+            result.ErrorMessage = $"HTTP {response.StatusCode}: {response.ReasonPhrase}";
+        }
+        else if (!IsValidContentType(result.ContentType))
+        {
+            result.IsValid = false;
+            result.ErrorMessage = $"Content type '{result.ContentType}' is not an image";
+        }
+
+        return result;
+    }
+
+    private static ImageValidationResult CreateFailedValidationResult(string imageUrl, string errorMessage)
+    {
+        return new ImageValidationResult
+        {
+            ImageUrl = imageUrl,
+            IsValid = false,
+            ErrorMessage = errorMessage,
+            ValidatedAt = DateTime.UtcNow
+        };
+    }
+
+    private static bool IsValidContentType(string? contentType)
+    {
+        return contentType != null && contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
+    }
+
     public void Dispose()
     {
         _concurrentRequestsSemaphore?.Dispose();
@@ -241,47 +283,5 @@ public class ImageValidationService : IImageValidationService, IDisposable
 
         using var request = new HttpRequestMessage(HttpMethod.Head, uri);
         return await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-    }
-
-    private static ImageValidationResult CreateValidationResult(HttpResponseMessage response, string imageUrl)
-    {
-        var result = new ImageValidationResult
-        {
-            ImageUrl = imageUrl,
-            IsValid = response.IsSuccessStatusCode,
-            StatusCode = response.StatusCode,
-            ContentType = response.Content?.Headers?.ContentType?.MediaType ?? string.Empty,
-            ContentLength = response.Content?.Headers?.ContentLength,
-            ValidatedAt = DateTime.UtcNow,
-            ResponseTimeMs = 0
-        };
-
-        if (!response.IsSuccessStatusCode)
-        {
-            result.ErrorMessage = $"HTTP {response.StatusCode}: {response.ReasonPhrase}";
-        }
-        else if (!IsValidContentType(result.ContentType))
-        {
-            result.IsValid = false;
-            result.ErrorMessage = $"Content type '{result.ContentType}' is not an image";
-        }
-
-        return result;
-    }
-
-    private static ImageValidationResult CreateFailedValidationResult(string imageUrl, string errorMessage)
-    {
-        return new ImageValidationResult
-        {
-            ImageUrl = imageUrl,
-            IsValid = false,
-            ErrorMessage = errorMessage,
-            ValidatedAt = DateTime.UtcNow
-        };
-    }
-
-    private static bool IsValidContentType(string? contentType)
-    {
-        return contentType != null && contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
     }
 }

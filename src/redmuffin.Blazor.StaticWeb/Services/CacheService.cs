@@ -29,6 +29,11 @@ public class CacheService : ICacheService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    private static string GetNamespacedKey(string cacheNamespace, string key)
+    {
+        return $"{cacheNamespace}:{key}";
+    }
+
     public async Task SetItemAsync<T>(string cacheNamespace, string key, T value, int? expirationMinutes = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(cacheNamespace);
@@ -216,11 +221,6 @@ public class CacheService : ICacheService
         if (expiredKeys.Count > 0) LogNamespaceExpiredItemsCleanedUp(_logger, expiredKeys.Count, cacheNamespace, null);
 
         return expiredKeys.Count;
-    }
-
-    private static string GetNamespacedKey(string cacheNamespace, string key)
-    {
-        return $"{cacheNamespace}:{key}";
     }
 
     private async Task UpdateNamespaceIndexAsync(string cacheNamespace, string key, CancellationToken cancellationToken)
