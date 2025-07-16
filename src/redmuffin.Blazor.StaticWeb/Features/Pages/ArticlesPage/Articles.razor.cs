@@ -59,8 +59,6 @@ public partial class Articles
     private bool _isLoading;
     private bool _isProcessingImages;
     private int _processingCount;
-    private double _processingProgress;
-    private int _totalArticles;
 
     [Inject]
     private ILogger<Articles> Logger { get; set; } = null!;
@@ -187,7 +185,6 @@ public partial class Articles
             LogImageProcessingCompleted(Logger, successCount, failedCount, null);
 
             // Final UI update
-            _processingProgress = 100;
             StateHasChanged();
         }
         catch (Exception ex)
@@ -206,8 +203,6 @@ public partial class Articles
     private void InitializeProcessingTracking(int processingCount, int totalCount)
     {
         _processingCount = processingCount;
-        _totalArticles = totalCount;
-        _processingProgress = 0;
         LogImageProcessingStarted(Logger, processingCount, totalCount, null);
     }
 
@@ -251,7 +246,6 @@ public partial class Articles
 
             // Update progress
             processedCount++;
-            _processingProgress = (double)processedCount / _processingCount * 100;
 
             // Trigger incremental UI updates for smooth progress
             if (processedCount % 2 == 0 || processedCount == _processingCount) StateHasChanged();
@@ -656,5 +650,19 @@ public partial class Articles
         }
 
         return "Image not available";
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Validate injected dependencies
+        ArgumentNullException.ThrowIfNull(Http);
+        ArgumentNullException.ThrowIfNull(Logger);
+        ArgumentNullException.ThrowIfNull(Js);
+        ArgumentNullException.ThrowIfNull(Navigation);
+        ArgumentNullException.ThrowIfNull(OpenGraphImagesService);
+        ArgumentNullException.ThrowIfNull(ImageValidationService);
+
+        // Load articles automatically when the page starts
+        await FetchArticlesAsync();
     }
 }

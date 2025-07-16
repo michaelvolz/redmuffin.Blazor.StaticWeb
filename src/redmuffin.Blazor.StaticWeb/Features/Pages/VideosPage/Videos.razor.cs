@@ -144,4 +144,16 @@ public partial class Videos
             LogShimmerError(Logger, elementId, ex);
         }
     }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Validate injected dependencies
+        ArgumentNullException.ThrowIfNull(Http);
+        ArgumentNullException.ThrowIfNull(Logger);
+        ArgumentNullException.ThrowIfNull(Js);
+        ArgumentNullException.ThrowIfNull(Navigation);
+
+        // Load articles automatically when the page starts
+        await FetchVideosAsync();
+    }
 }
