@@ -266,8 +266,8 @@ public partial class Articles
             if (!validationResult.IsValid && validationResult.ErrorMessage != null && 
                 validationResult.ErrorMessage.Contains("Browser blocked", StringComparison.OrdinalIgnoreCase))
             {
-                // This image was previously blocked, use placeholder instead
-                _imageUrlCache[article.Link] = "https://via.placeholder.com/400x200?text=Image+Blocked";
+                // This image was previously blocked, use data URI placeholder instead
+                _imageUrlCache[article.Link] = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1IiBzdHJva2U9IiNkZGQiIHN0cm9rZS13aWR0aD0iMiIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM5OTkiPkltYWdlIEJsb2NrZWQ8L3RleHQ+Cjwvc3ZnPg==";
             }
             else
             {
@@ -468,7 +468,7 @@ public partial class Articles
         // Fallback to original cover image if available
         return !string.IsNullOrEmpty(article.Cover)
             ? article.Cover
-            : "https://via.placeholder.com/400x200?text=No+Image+Available"; // Last resort: return a placeholder
+            : "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1IiBzdHJva2U9IiNkZGQiIHN0cm9rZS13aWR0aD0iMiIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM5OTkiPk5vIEltYWdlIEF2YWlsYWJsZTwvdGV4dD4KPC9zdmc+";
     }
 
     /// <summary>
