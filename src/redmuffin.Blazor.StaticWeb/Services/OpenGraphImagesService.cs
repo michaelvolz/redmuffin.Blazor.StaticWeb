@@ -432,9 +432,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
         }
 
         // Ensure all requested URLs have entries in the result, even if they failed
-        foreach (var url in articleUrls)
-            if (!result.ContainsKey(url))
-                result[url] = null;
+        foreach (var url in articleUrls) result.TryAdd(url, null);
 
         return result;
     }
