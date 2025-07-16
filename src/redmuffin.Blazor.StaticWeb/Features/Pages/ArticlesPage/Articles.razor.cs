@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Common.Models;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Services;
 using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Models;
+using redmuffin.Blazor.StaticWeb.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage;
 
@@ -32,14 +32,15 @@ public partial class Articles
         LoggerMessage.Define<int, int>(LogLevel.Information, new EventId(5, nameof(LogImageProcessingCompleted)),
             "Completed processing OpenGraph images: {SuccessCount} successful, {FailedCount} failed");
 
-    private string? _errorMessage;
+    private readonly Dictionary<string, ArticleProcessingState> _articleStates = new();
     private List<RaindropItem>? _articleItems;
+
+    private string? _errorMessage;
     private bool _isLoading;
     private bool _isProcessingImages;
-    private readonly Dictionary<string, ArticleProcessingState> _articleStates = new();
     private int _processingCount;
-    private int _totalArticles;
     private double _processingProgress;
+    private int _totalArticles;
 
     [Inject]
     private ILogger<Articles> Logger { get; set; } = null!;
@@ -50,18 +51,19 @@ public partial class Articles
     [Inject]
     private NavigationManager Navigation { get; set; } = null!;
 
-    private void UpdateArticleState(RaindropItem article, Action<ArticleProcessingState> updateAction) {
-        var state = GetOrCreateArticleState(article.Link);
-        updateAction(state);
-        StateHasChanged();
-    }
 
-    
     [Inject]
     private IOpenGraphImagesService OpenGraphImagesService { get; set; } = null!;
 
     [Inject]
     private IImageValidationService ImageValidationService { get; set; } = null!;
+
+    private void UpdateArticleState(RaindropItem article, Action<ArticleProcessingState> updateAction)
+    {
+        var state = GetOrCreateArticleState(article.Link);
+        updateAction(state);
+        StateHasChanged();
+    }
 
     private async Task FetchArticlesAsync()
     {
@@ -82,13 +84,11 @@ public partial class Articles
                 {
                     // Use JsonTypeInfo for deserialization to avoid trimming issues
                     _articleItems = JsonSerializer.Deserialize(json, RaindropJsonSerializerContext.Default.RaindropItemList);
-                    
+
                     // Process OpenGraph images for articles requiring enhancement
-                    if (_articleItems != null && _articleItems.Any())
-                    {
+                    if (_articleItems is { Count: > 0 })
                         // Don't await - process images in background
                         _ = ProcessOpenGraphImagesAsync();
-                    }
                 }
                 catch (JsonException jsonEx)
                 {
@@ -132,8 +132,8 @@ public partial class Articles
     }
 
     /// <summary>
-    /// Processes OpenGraph images for articles that require image enhancement.
-    /// This method identifies articles that need better images and processes them in batches.
+    ///     Processes OpenGraph images for articles that require image enhancement.
+    ///     This method identifies articles that need better images and processes them in batches.
     /// </summary>
     private async Task ProcessOpenGraphImagesAsync()
     {
@@ -141,13 +141,13 @@ public partial class Articles
             return;
 
         _isProcessingImages = true;
-        
+
         try
         {
             // Identify articles requiring image processing
             var articlesRequiringProcessing = IdentifyArticlesRequiringImageProcessing(_articleItems);
-            
-            if (!articlesRequiringProcessing.Any())
+
+            if (!(articlesRequiringProcessing.Count > 0))
             {
                 Logger.LogDebug("No articles require OpenGraph image processing");
                 return;
@@ -166,25 +166,25 @@ public partial class Articles
                 var state = GetOrCreateArticleState(article.Link);
                 state.StartProcessing();
             }
-            
+
             // Trigger UI update to show processing states
             StateHasChanged();
 
             // Extract URLs for batch processing
             var urlsToProcess = articlesRequiringProcessing.Select(a => a.Link).ToList();
-            
+
             // Process images in batch
             var results = await OpenGraphImagesService.GetImagesAsync(urlsToProcess).ConfigureAwait(false);
-            
+
             // Update article states with processing results
             var successCount = 0;
             var failedCount = 0;
             var processedCount = 0;
-            
+
             foreach (var result in results)
             {
                 var state = GetOrCreateArticleState(result.Key);
-                
+
                 if (result.Value?.IsValidated == true && !string.IsNullOrEmpty(result.Value.ImageUrl))
                 {
                     state.CompleteProcessing(result.Value);
@@ -197,20 +197,17 @@ public partial class Articles
                     state.FailProcessing(errorMessage, fallbackReason);
                     failedCount++;
                 }
-                
+
                 // Update progress
                 processedCount++;
                 _processingProgress = (double)processedCount / _processingCount * 100;
-                
+
                 // Trigger incremental UI updates for smooth progress
-                if (processedCount % 2 == 0 || processedCount == _processingCount)
-                {
-                    StateHasChanged();
-                }
+                if (processedCount % 2 == 0 || processedCount == _processingCount) StateHasChanged();
             }
-            
+
             LogImageProcessingCompleted(Logger, successCount, failedCount, null);
-            
+
             // Final UI update with completed state
             _processingProgress = 100;
             StateHasChanged();
@@ -218,16 +215,12 @@ public partial class Articles
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error processing OpenGraph images");
-            
+
             // Update all processing states to failed
             foreach (var state in _articleStates.Values)
-            {
                 if (state.ProcessingPhase == ProcessingPhase.Processing)
-                {
                     state.FailProcessing(ex.Message, "Processing error");
-                }
-            }
-            
+
             StateHasChanged();
         }
         finally
@@ -237,22 +230,22 @@ public partial class Articles
     }
 
     /// <summary>
-    /// Identifies articles that require OpenGraph image processing.
-    /// Articles need processing if they have broken/missing cover images or can benefit from enhancement.
+    ///     Identifies articles that require OpenGraph image processing.
+    ///     Articles need processing if they have broken/missing cover images or can benefit from enhancement.
     /// </summary>
     /// <param name="articles">List of articles to evaluate</param>
     /// <returns>List of articles that need image processing</returns>
     private List<RaindropItem> IdentifyArticlesRequiringImageProcessing(List<RaindropItem> articles)
     {
         var articlesRequiringProcessing = new List<RaindropItem>();
-        
+
         foreach (var article in articles)
         {
             // Skip if already processed or processing
-            if (_articleStates.TryGetValue(article.Link, out var state) && 
+            if (_articleStates.TryGetValue(article.Link, out var state) &&
                 state.ProcessingPhase != ProcessingPhase.None)
                 continue;
-                
+
             // Process if:
             // 1. No cover image exists
             // 2. Cover image is likely broken (generic placeholder patterns)
@@ -260,18 +253,15 @@ public partial class Articles
             var needsProcessing = string.IsNullOrEmpty(article.Cover) ||
                                   IsCoverImageSuspicious(article.Cover) ||
                                   ShouldEnhanceImage(article);
-            
-            if (needsProcessing)
-            {
-                articlesRequiringProcessing.Add(article);
-            }
+
+            if (needsProcessing) articlesRequiringProcessing.Add(article);
         }
-        
+
         return articlesRequiringProcessing;
     }
 
     /// <summary>
-    /// Determines if a cover image URL is suspicious and likely needs replacement.
+    ///     Determines if a cover image URL is suspicious and likely needs replacement.
     /// </summary>
     /// <param name="coverUrl">The cover image URL to evaluate</param>
     /// <returns>True if the image is suspicious and should be replaced</returns>
@@ -279,7 +269,7 @@ public partial class Articles
     {
         if (string.IsNullOrEmpty(coverUrl))
             return true;
-            
+
         // Check for common placeholder patterns
         var suspiciousPatterns = new[]
         {
@@ -295,13 +285,13 @@ public partial class Articles
             "1x1",
             "pixel"
         };
-        
+
         var lowerUrl = coverUrl.ToLowerInvariant();
         return suspiciousPatterns.Any(pattern => lowerUrl.Contains(pattern));
     }
 
     /// <summary>
-    /// Determines if an article should have its image enhanced even if it has a cover image.
+    ///     Determines if an article should have its image enhanced even if it has a cover image.
     /// </summary>
     /// <param name="article">The article to evaluate</param>
     /// <returns>True if the article should be enhanced</returns>
@@ -310,7 +300,7 @@ public partial class Articles
         // Always try to enhance if no cover image
         if (string.IsNullOrEmpty(article.Cover))
             return true;
-            
+
         // Enhance articles from specific domains known to have better OpenGraph images
         var domainsToEnhance = new[]
         {
@@ -322,44 +312,38 @@ public partial class Articles
             "docs.microsoft.com",
             "devblogs.microsoft.com"
         };
-        
+
         return domainsToEnhance.Any(domain => article.Link.Contains(domain, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>
-    /// Gets the best available image URL for an article, prioritizing enhanced images.
+    ///     Gets the best available image URL for an article, prioritizing enhanced images.
     /// </summary>
     /// <param name="article">The article to get the image for</param>
     /// <returns>The best available image URL</returns>
     private string GetBestImageUrl(RaindropItem article)
     {
         // First, try to get enhanced image from state
-        if (_articleStates.TryGetValue(article.Link, out var state) && 
-            state.EnhancedImage?.IsValidated == true && 
+        if (_articleStates.TryGetValue(article.Link, out var state) &&
+            state.EnhancedImage?.IsValidated == true &&
             !string.IsNullOrEmpty(state.EnhancedImage.ImageUrl))
-        {
             return state.EnhancedImage.ImageUrl;
-        }
-        
+
         // Fallback to original cover image if available
-        if (!string.IsNullOrEmpty(article.Cover))
-        {
-            return article.Cover;
-        }
-        
+        if (!string.IsNullOrEmpty(article.Cover)) return article.Cover;
+
         // Last resort: return a placeholder
         return "https://via.placeholder.com/400x200?text=No+Image+Available";
     }
 
     /// <summary>
-    /// Gets the processing state for an article's image.
+    ///     Gets the processing state for an article's image.
     /// </summary>
     /// <param name="article">The article to get the state for</param>
     /// <returns>Processing state: "processing", "enhanced", "failed", or "none"</returns>
     private string GetImageProcessingState(RaindropItem article)
     {
         if (_articleStates.TryGetValue(article.Link, out var state))
-        {
             return state.ProcessingPhase switch
             {
                 ProcessingPhase.Processing => "processing",
@@ -367,12 +351,11 @@ public partial class Articles
                 ProcessingPhase.Failed => "failed",
                 _ => "none"
             };
-        }
         return "none";
     }
 
     /// <summary>
-    /// Gets the CSS class for the article card based on its processing state.
+    ///     Gets the CSS class for the article card based on its processing state.
     /// </summary>
     /// <param name="processingState">The processing state of the article</param>
     /// <returns>CSS class name for the card state</returns>
@@ -388,8 +371,8 @@ public partial class Articles
     }
 
     /// <summary>
-    /// Handles image load/error events and updates load states for fallback placeholder management.
-    /// This method integrates image validation and cache updates with UI rendering.
+    ///     Handles image load/error events and updates load states for fallback placeholder management.
+    ///     This method integrates image validation and cache updates with UI rendering.
     /// </summary>
     /// <param name="elementId">The ID of the shimmer element</param>
     /// <param name="articleLink">The link of the article</param>
@@ -400,26 +383,26 @@ public partial class Articles
         {
             // Get or create article state
             var state = GetOrCreateArticleState(articleLink);
-            
+
             // Update image load state
             state.SetImageLoadState(loadSuccess ? ImageLoadState.Loaded : ImageLoadState.Failed);
-            
+
             // Get the current image URL being displayed
-            var article = _articleItems?.FirstOrDefault(a => a.Link == articleLink);
+            var article = _articleItems?.FirstOrDefault(a => string.Equals(a.Link, articleLink, StringComparison.Ordinal));
             if (article != null)
             {
                 var currentImageUrl = GetBestImageUrl(article);
-                
+
                 // Validate the image in the background and update cache
                 _ = ValidateAndUpdateImageCacheAsync(currentImageUrl, articleLink, loadSuccess);
             }
-            
+
             // Handle load failure scenarios
             if (!loadSuccess)
             {
                 var fallbackReason = DetermineFallbackReason(articleLink);
                 state.SetFallbackReason(fallbackReason);
-                
+
                 // Update validation state to reflect failure
                 state.ValidationState = ImageValidationState.Failed;
             }
@@ -428,10 +411,10 @@ public partial class Articles
                 // Image loaded successfully, update validation state
                 state.ValidationState = ImageValidationState.Validated;
             }
-            
+
             // Stop shimmer effect
             await StopShimmerAsync(elementId).ConfigureAwait(false);
-            
+
             // Update UI to reflect new state
             StateHasChanged();
         }
@@ -440,10 +423,10 @@ public partial class Articles
             Logger.LogError(ex, "Error handling image load event for article: {ArticleLink}", articleLink);
         }
     }
-    
+
     /// <summary>
-    /// Validates an image URL and updates the cache with validation results.
-    /// This method runs in the background to maintain UI responsiveness.
+    ///     Validates an image URL and updates the cache with validation results.
+    ///     This method runs in the background to maintain UI responsiveness.
     /// </summary>
     /// <param name="imageUrl">The image URL to validate</param>
     /// <param name="articleLink">The article link associated with the image</param>
@@ -453,60 +436,54 @@ public partial class Articles
         try
         {
             // Skip validation for placeholder URLs
-            if (imageUrl.Contains("placeholder.com", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-            
+            if (imageUrl.Contains("placeholder.com", StringComparison.OrdinalIgnoreCase)) return;
+
             // Get article state for updates
             var state = GetOrCreateArticleState(articleLink);
-            
+
             // Update validation state to indicate validation is in progress
             state.ValidationState = ImageValidationState.Validating;
-            
+
             // Perform HTTP HEAD validation
             var validationResult = await ImageValidationService.ValidateImageAsync(imageUrl).ConfigureAwait(false);
-            
+
             // Update article state based on validation result
             if (validationResult.IsValid)
             {
                 state.ValidationState = ImageValidationState.Validated;
-                
+
                 // Update cache with validation confirmation
                 await UpdateCacheWithValidationResultAsync(imageUrl, articleLink, validationResult).ConfigureAwait(false);
             }
             else
             {
                 state.ValidationState = ImageValidationState.Failed;
-                
+
                 // If validation failed but browser load succeeded, mark as suspicious
-                if (loadSuccess)
-                {
-                    state.SetFallbackReason("Image validation failed: " + validationResult.ErrorMessage);
-                }
-                
+                if (loadSuccess) state.SetFallbackReason("Image validation failed: " + validationResult.ErrorMessage);
+
                 // Update cache to reflect validation failure
                 await UpdateCacheWithValidationResultAsync(imageUrl, articleLink, validationResult).ConfigureAwait(false);
             }
-            
+
             // Trigger UI update to reflect validation state changes
             StateHasChanged();
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error validating image for article: {ArticleLink}, ImageUrl: {ImageUrl}", articleLink, imageUrl);
-            
+
             // Update state to reflect validation error
             var state = GetOrCreateArticleState(articleLink);
             state.ValidationState = ImageValidationState.Failed;
             state.SetFallbackReason("Validation error: " + ex.Message);
-            
+
             StateHasChanged();
         }
     }
-    
+
     /// <summary>
-    /// Updates the cache with validation results to improve future performance.
+    ///     Updates the cache with validation results to improve future performance.
     /// </summary>
     /// <param name="imageUrl">The validated image URL</param>
     /// <param name="articleLink">The article link associated with the image</param>
@@ -522,19 +499,15 @@ public partial class Articles
                 state.EnhancedImage.IsValidated = validationResult.IsValid;
                 state.EnhancedImage.LastAccessedAt = DateTime.UtcNow;
                 state.EnhancedImage.AccessCount++;
-                
+
                 // Update the cache through the OpenGraph service
                 if (validationResult.IsValid)
-                {
                     await OpenGraphImagesService.UpdateCacheEntryAsync(articleLink, state.EnhancedImage).ConfigureAwait(false);
-                }
                 else
-                {
                     // If validation failed, consider invalidating the cache entry
                     await OpenGraphImagesService.InvalidateCacheAsync(articleLink).ConfigureAwait(false);
-                }
             }
-            
+
             // The ImageValidationService handles its own cache management
             // No additional action needed as ValidateImageAsync already caches the result
         }
@@ -545,7 +518,7 @@ public partial class Articles
     }
 
     /// <summary>
-    /// Determines if an article should show a fallback placeholder.
+    ///     Determines if an article should show a fallback placeholder.
     /// </summary>
     /// <param name="article">The article to check</param>
     /// <returns>True if fallback placeholder should be shown</returns>
@@ -554,43 +527,33 @@ public partial class Articles
         if (_articleStates.TryGetValue(article.Link, out var state))
         {
             // Show fallback if image failed to load
-            if (state.ImageLoadState == ImageLoadState.Failed)
-            {
-                return true;
-            }
-            
+            if (state.ImageLoadState == ImageLoadState.Failed) return true;
+
             // Show fallback if processing failed and no original cover image
-            if (state.ProcessingPhase == ProcessingPhase.Failed && 
+            if (state.ProcessingPhase == ProcessingPhase.Failed &&
                 string.IsNullOrEmpty(article.Cover))
-            {
                 return true;
-            }
         }
-        
+
         // Show fallback if using placeholder URL
         var imageUrl = GetBestImageUrl(article);
-        if (imageUrl.Contains("placeholder.com", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-        
+        if (imageUrl.Contains("placeholder.com", StringComparison.OrdinalIgnoreCase)) return true;
+
         return false;
     }
 
     /// <summary>
-    /// Gets the fallback reason message for an article.
+    ///     Gets the fallback reason message for an article.
     /// </summary>
     /// <param name="article">The article to get the reason for</param>
     /// <returns>Fallback reason message</returns>
     private string GetFallbackReason(RaindropItem article)
     {
         // Return cached reason if available from state
-        if (_articleStates.TryGetValue(article.Link, out var state) && 
+        if (_articleStates.TryGetValue(article.Link, out var state) &&
             !string.IsNullOrEmpty(state.FallbackReason))
-        {
             return state.FallbackReason;
-        }
-        
+
         // Determine reason based on current state
         var reason = DetermineFallbackReason(article.Link);
         state?.SetFallbackReason(reason);
@@ -598,7 +561,7 @@ public partial class Articles
     }
 
     /// <summary>
-    /// Gets or creates an article processing state for the given article link.
+    ///     Gets or creates an article processing state for the given article link.
     /// </summary>
     /// <param name="articleLink">The article link to get or create state for</param>
     /// <returns>The article processing state</returns>
@@ -609,11 +572,12 @@ public partial class Articles
             state = new ArticleProcessingState();
             _articleStates[articleLink] = state;
         }
+
         return state;
     }
 
     /// <summary>
-    /// Determines the fallback reason for an article based on its current state.
+    ///     Determines the fallback reason for an article based on its current state.
     /// </summary>
     /// <param name="articleLink">The article link</param>
     /// <param name="cachedImageData">The cached image data if available</param>
@@ -623,46 +587,28 @@ public partial class Articles
         // If we have cached data, use it to determine the reason
         if (cachedImageData != null)
         {
-            if (!cachedImageData.IsValidated)
-            {
-                return "Image not verified";
-            }
-            
-            if (string.IsNullOrEmpty(cachedImageData.ImageUrl))
-            {
-                return "No image found";
-            }
+            if (!cachedImageData.IsValidated) return "Image not verified";
+
+            if (string.IsNullOrEmpty(cachedImageData.ImageUrl)) return "No image found";
         }
-        
+
         // Check article state for more specific reasons
         if (_articleStates.TryGetValue(articleLink, out var articleState))
         {
-            if (articleState.ProcessingPhase == ProcessingPhase.Failed)
-            {
-                return articleState.ErrorMessage ?? "Enhancement failed";
-            }
-            
-            if (articleState.ImageLoadState == ImageLoadState.Failed)
-            {
-                return "Image unavailable";
-            }
+            if (articleState.ProcessingPhase == ProcessingPhase.Failed) return articleState.ErrorMessage ?? "Enhancement failed";
+
+            if (articleState.ImageLoadState == ImageLoadState.Failed) return "Image unavailable";
         }
-        
+
         // Find the article to check original cover
-        var article = _articleItems?.FirstOrDefault(a => a.Link == articleLink);
+        var article = _articleItems?.FirstOrDefault(a => string.Equals(a.Link, articleLink, StringComparison.Ordinal));
         if (article != null)
         {
-            if (string.IsNullOrEmpty(article.Cover))
-            {
-                return "No image available";
-            }
-            
-            if (IsCoverImageSuspicious(article.Cover))
-            {
-                return "Placeholder image";
-            }
+            if (string.IsNullOrEmpty(article.Cover)) return "No image available";
+
+            if (IsCoverImageSuspicious(article.Cover)) return "Placeholder image";
         }
-        
+
         return "Image not available";
     }
 }
