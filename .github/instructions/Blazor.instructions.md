@@ -1,4 +1,4 @@
----
+﻿---
 description: 'Blazor component and application patterns'
 applyTo: '**/*.razor, **/*.razor.cs'
 ---

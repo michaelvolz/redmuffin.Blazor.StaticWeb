@@ -1,4 +1,4 @@
----
+﻿---
 description: 'Guidelines for building REST APIs with ASP.NET'
 applyTo: '**/*.cs, **/*.json'
 ---

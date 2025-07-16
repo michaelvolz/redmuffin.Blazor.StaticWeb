@@ -1,4 +1,4 @@
-# Azure Functions Programming Best Practices for GitHub Copilot
+﻿# Azure Functions Programming Best Practices for GitHub Copilot
 
 - **Dependency Injection**: Use `Startup.cs` to register services (`ILogger`, `IHttpClientFactory`) in C# Azure Functions for testability and maintainability. Example: `builder.Services.AddSingleton<IMyService, MyService>();`.
 - **Cold Start Optimization**: Minimize assembly size by reducing dependencies in C# projects. Use .NET Isolated Worker for better control over startup logic and avoid heavy initialization in function code.
