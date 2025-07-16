@@ -37,17 +37,20 @@
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
   </PropertyGroup>
 
-  <PropertyGroup>
+  <!-- Enable .NET analyzers only in Debug configuration -->
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <AnalysisMode>recommended</AnalysisMode>
     <AnalysisModeGlobalization>None</AnalysisModeGlobalization>
     <AnalysisModeSecurity>All</AnalysisModeSecurity>
     <AnalysisModeReliability>All</AnalysisModeReliability>
     <AnalysisModePerformance>All</AnalysisModePerformance>
+  </PropertyGroup>
+
+  <!-- Disable .NET analyzers in other configurations -->
+  <PropertyGroup Condition="'$(Configuration)'!='Debug'">
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>
@@ -80,8 +83,13 @@
     <RoslynatorVersion>4.13.1</RoslynatorVersion>
     <StyleCopAnalyzersVersion>1.2.0-beta.556</StyleCopAnalyzersVersion>
   </PropertyGroup>
+  <!-- JetBrains.Annotations for all configurations (not just Debug) -->
   <ItemGroup Condition="'$(IsTestProject)' != 'true'">
     <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsAnnotationsVersion)" />
+  </ItemGroup>
+  
+  <!-- Analyzer packages - Debug configuration only -->
+  <ItemGroup Condition="'$(IsTestProject)' != 'true' And '$(Configuration)'=='Debug'">
     <PackageReference Include="Meziantou.Analyzer" Version="$(MeziantouAnalyzerVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
