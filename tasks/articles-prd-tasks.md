@@ -1,4 +1,4 @@
-﻿## Relevant Files
+## Relevant Files
 
 ### Blazor Components
 - `src/redmuffin.Blazor.StaticWeb/Features/Pages/ArticlesPage/Articles.razor` - Main Articles page component displaying article list in masonry layout.

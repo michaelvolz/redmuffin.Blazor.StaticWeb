@@ -1,4 +1,4 @@
-﻿# SCSS Component Validation Report - Task 2.6
+# SCSS Component Validation Report - Task 2.6
 
 ## Validation Date
 **Date:** 2025-07-15  

@@ -1,4 +1,4 @@
-﻿<!-- 
+<!-- 
 This README is intended for human developers. 
 AI assistants should refer to .github/copilot-instructions.md for technical guidelines.
 -->

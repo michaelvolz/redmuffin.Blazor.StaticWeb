@@ -1,4 +1,4 @@
-﻿## 📋 IMPORTANT: READ THIS ENTIRE TASK LIST FILE COMPLETELY BEFORE PROCEEDING
+## 📋 IMPORTANT: READ THIS ENTIRE TASK LIST FILE COMPLETELY BEFORE PROCEEDING
 **You must read and understand all sections of this PRD task list file before continuing with any tasks.**
 
 ## 🚨🚨🚨 CRITICAL REQUIREMENT 🚨🚨🚨

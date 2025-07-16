@@ -1,4 +1,4 @@
-﻿# Product Requirements Document: Open Graph Image Fallback for Articles
+# Product Requirements Document: Open Graph Image Fallback for Articles
 
 ## Introduction/Overview
 

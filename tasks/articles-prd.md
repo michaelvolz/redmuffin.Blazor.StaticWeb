@@ -1,4 +1,4 @@
-﻿# Product Requirements Document: Articles Page
+# Product Requirements Document: Articles Page
 
 ## Introduction/Overview
 

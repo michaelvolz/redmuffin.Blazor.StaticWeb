@@ -1,4 +1,4 @@
-﻿# Code Coverage Guide
+# Code Coverage Guide
 
 This guide explains how to use code coverage in the redmuffin.Blazor.StaticWeb project using Coverlet and ReportGenerator.
 

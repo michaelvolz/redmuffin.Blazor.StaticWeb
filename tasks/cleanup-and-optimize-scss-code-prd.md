@@ -1,4 +1,4 @@
-﻿## Cleanup and Optimize SCSS Code - PRD
+## Cleanup and Optimize SCSS Code - PRD
 
 ### Introduction/Overview
 The goal is to reorganize, restructure, and rebuild the `app.scss` file along with its dependencies to enhance maintainability and modularity. This task aims to ensure adherence to the updated SCSS guidelines while minimizing CSS usage in SCSS files and relying on inherited values.

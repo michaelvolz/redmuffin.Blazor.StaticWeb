@@ -1,4 +1,4 @@
-﻿## Relevant Files
+## Relevant Files
 
 ### PowerShell Modules
 - `scripts/modules/ChangelogFormatter.psm1` - Main module for formatting changelog entries, needs emoji insertion logic

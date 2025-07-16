@@ -1,4 +1,4 @@
-﻿# Product Requirements Document: Changelog Generation
+# Product Requirements Document: Changelog Generation
 
 ## Introduction/Overview
 This feature automates the generation of a professional changelog from Git commit history. It processes the existing `git-commits.txt` file to filter out irrelevant commits and organizes important changes into a well-formatted `changelog.md` file suitable for both internal development tracking and public release notes.

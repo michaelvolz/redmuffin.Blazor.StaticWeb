@@ -1,4 +1,4 @@
-﻿# Fix All Build Warnings PRD
+# Fix All Build Warnings PRD
 
 ## Introduction/Overview
 
