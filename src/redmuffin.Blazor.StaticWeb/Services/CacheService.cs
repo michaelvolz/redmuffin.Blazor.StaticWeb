@@ -1,16 +1,13 @@
-using Microsoft.Extensions.Logging;
-using System.Text.Json;
-
 namespace redmuffin.Blazor.StaticWeb.Services;
 
 /// <summary>
-/// Implementation of ICacheService that provides namespace separation for different data types.
+///     Implementation of ICacheService that provides namespace separation for different data types.
 /// </summary>
 public class CacheService : ICacheService
 {
+    private const string NamespaceIndexKey = "cache_namespace_index";
     private readonly IBrowserStorageService _browserStorageService;
     private readonly ILogger<CacheService> _logger;
-    private const string NamespaceIndexKey = "cache_namespace_index";
 
     public CacheService(IBrowserStorageService browserStorageService, ILogger<CacheService> logger)
     {
@@ -45,10 +42,7 @@ public class CacheService : ICacheService
         var namespacedKey = GetNamespacedKey(cacheNamespace, key);
         var cacheEntry = await _browserStorageService.GetItemAsync<CacheEntry<T>>(namespacedKey, cancellationToken);
 
-        if (cacheEntry == null)
-        {
-            return default;
-        }
+        if (cacheEntry == null) return default;
 
         // Check if the item has expired
         if (cacheEntry.ExpiresAt.HasValue && DateTime.UtcNow > cacheEntry.ExpiresAt.Value)
@@ -131,20 +125,11 @@ public class CacheService : ICacheService
             {
                 totalAccessCount += cacheEntry.AccessCount;
 
-                if (cacheEntry.ExpiresAt.HasValue && DateTime.UtcNow > cacheEntry.ExpiresAt.Value)
-                {
-                    stats.ExpiredItemsCount++;
-                }
+                if (cacheEntry.ExpiresAt.HasValue && DateTime.UtcNow > cacheEntry.ExpiresAt.Value) stats.ExpiredItemsCount++;
 
-                if (stats.OldestItemTimestamp == null || cacheEntry.CachedAt < stats.OldestItemTimestamp)
-                {
-                    stats.OldestItemTimestamp = cacheEntry.CachedAt;
-                }
+                if (stats.OldestItemTimestamp == null || cacheEntry.CachedAt < stats.OldestItemTimestamp) stats.OldestItemTimestamp = cacheEntry.CachedAt;
 
-                if (stats.NewestItemTimestamp == null || cacheEntry.CachedAt > stats.NewestItemTimestamp)
-                {
-                    stats.NewestItemTimestamp = cacheEntry.CachedAt;
-                }
+                if (stats.NewestItemTimestamp == null || cacheEntry.CachedAt > stats.NewestItemTimestamp) stats.NewestItemTimestamp = cacheEntry.CachedAt;
             }
         }
 
@@ -169,17 +154,13 @@ public class CacheService : ICacheService
             stats.TotalSizeBytes += namespaceStats.TotalSizeBytes;
             stats.TotalExpiredItemsCount += namespaceStats.ExpiredItemsCount;
 
-            if (stats.OldestItemTimestamp == null || 
+            if (stats.OldestItemTimestamp == null ||
                 (namespaceStats.OldestItemTimestamp.HasValue && namespaceStats.OldestItemTimestamp < stats.OldestItemTimestamp))
-            {
                 stats.OldestItemTimestamp = namespaceStats.OldestItemTimestamp;
-            }
 
-            if (stats.NewestItemTimestamp == null || 
+            if (stats.NewestItemTimestamp == null ||
                 (namespaceStats.NewestItemTimestamp.HasValue && namespaceStats.NewestItemTimestamp > stats.NewestItemTimestamp))
-            {
                 stats.NewestItemTimestamp = namespaceStats.NewestItemTimestamp;
-            }
         }
 
         stats.QuotaUsagePercent = stats.QuotaLimitBytes > 0 ? (double)stats.TotalSizeBytes / stats.QuotaLimitBytes * 100 : 0;
@@ -212,22 +193,13 @@ public class CacheService : ICacheService
         {
             var namespacedKey = GetNamespacedKey(cacheNamespace, key);
             var cacheEntry = await _browserStorageService.GetItemAsync<CacheEntry<object>>(namespacedKey, cancellationToken);
-            
-            if (cacheEntry != null && cacheEntry.ExpiresAt.HasValue && DateTime.UtcNow > cacheEntry.ExpiresAt.Value)
-            {
-                expiredKeys.Add(key);
-            }
+
+            if (cacheEntry != null && cacheEntry.ExpiresAt.HasValue && DateTime.UtcNow > cacheEntry.ExpiresAt.Value) expiredKeys.Add(key);
         }
 
-        foreach (var key in expiredKeys)
-        {
-            await RemoveItemAsync(cacheNamespace, key, cancellationToken);
-        }
+        foreach (var key in expiredKeys) await RemoveItemAsync(cacheNamespace, key, cancellationToken);
 
-        if (expiredKeys.Count > 0)
-        {
-            _logger.LogInformation("Cleaned up {Count} expired items from namespace: {Namespace}", expiredKeys.Count, cacheNamespace);
-        }
+        if (expiredKeys.Count > 0) _logger.LogInformation("Cleaned up {Count} expired items from namespace: {Namespace}", expiredKeys.Count, cacheNamespace);
 
         return expiredKeys.Count;
     }
@@ -240,7 +212,7 @@ public class CacheService : ICacheService
     private async Task UpdateNamespaceIndexAsync(string cacheNamespace, string key, CancellationToken cancellationToken)
     {
         var namespaceIndex = await GetNamespaceIndexAsync(cancellationToken);
-        
+
         if (!namespaceIndex.TryGetValue(cacheNamespace, out var keys))
         {
             keys = new HashSet<string>();
@@ -254,14 +226,11 @@ public class CacheService : ICacheService
     private async Task RemoveFromNamespaceIndexAsync(string cacheNamespace, string key, CancellationToken cancellationToken)
     {
         var namespaceIndex = await GetNamespaceIndexAsync(cancellationToken);
-        
+
         if (namespaceIndex.TryGetValue(cacheNamespace, out var keys))
         {
             keys.Remove(key);
-            if (keys.Count == 0)
-            {
-                namespaceIndex.Remove(cacheNamespace);
-            }
+            if (keys.Count == 0) namespaceIndex.Remove(cacheNamespace);
             await _browserStorageService.SetItemAsync(NamespaceIndexKey, namespaceIndex, cancellationToken);
         }
     }
@@ -269,29 +238,13 @@ public class CacheService : ICacheService
     private async Task RemoveNamespaceFromIndexAsync(string cacheNamespace, CancellationToken cancellationToken)
     {
         var namespaceIndex = await GetNamespaceIndexAsync(cancellationToken);
-        
-        if (namespaceIndex.Remove(cacheNamespace))
-        {
-            await _browserStorageService.SetItemAsync(NamespaceIndexKey, namespaceIndex, cancellationToken);
-        }
+
+        if (namespaceIndex.Remove(cacheNamespace)) await _browserStorageService.SetItemAsync(NamespaceIndexKey, namespaceIndex, cancellationToken);
     }
 
     private async Task<Dictionary<string, HashSet<string>>> GetNamespaceIndexAsync(CancellationToken cancellationToken)
     {
-        return await _browserStorageService.GetItemAsync<Dictionary<string, HashSet<string>>>(NamespaceIndexKey, cancellationToken) 
+        return await _browserStorageService.GetItemAsync<Dictionary<string, HashSet<string>>>(NamespaceIndexKey, cancellationToken)
                ?? new Dictionary<string, HashSet<string>>();
     }
-}
-
-/// <summary>
-/// Wrapper for cached items with metadata.
-/// </summary>
-/// <typeparam name="T">Type of the cached value</typeparam>
-internal class CacheEntry<T>
-{
-    public T Value { get; set; } = default!;
-    public DateTime CachedAt { get; set; }
-    public DateTime? ExpiresAt { get; set; }
-    public DateTime LastAccessedAt { get; set; }
-    public int AccessCount { get; set; }
 }

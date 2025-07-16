@@ -1,25 +1,24 @@
 using System.Diagnostics;
-using Microsoft.Extensions.Logging;
+using System.Globalization;
 
 namespace redmuffin.Blazor.StaticWeb.Services;
 
 /// <summary>
-/// Implementation of ICacheMonitoringService for comprehensive cache monitoring and performance optimization.
+///     Implementation of ICacheMonitoringService for comprehensive cache monitoring and performance optimization.
 /// </summary>
 public class CacheMonitoringService : ICacheMonitoringService
 {
-    private readonly ICacheService _cacheService;
-    private readonly IOpenGraphImagesService _openGraphImagesService;
-    private readonly IImageValidationService _imageValidationService;
-    private readonly IBrowserStorageService _browserStorageService;
-    private readonly ILogger<CacheMonitoringService> _logger;
-
     // Performance thresholds
     private const double HighStorageUtilizationThreshold = 80.0;
     private const double CriticalStorageUtilizationThreshold = 90.0;
     private const double HighFragmentationThreshold = 30.0;
     private const double LowCacheHitRateThreshold = 60.0;
     private const double CriticalCacheHitRateThreshold = 40.0;
+    private readonly IBrowserStorageService _browserStorageService;
+    private readonly ICacheService _cacheService;
+    private readonly IImageValidationService _imageValidationService;
+    private readonly ILogger<CacheMonitoringService> _logger;
+    private readonly IOpenGraphImagesService _openGraphImagesService;
 
     public CacheMonitoringService(
         ICacheService cacheService,
@@ -42,13 +41,13 @@ public class CacheMonitoringService : ICacheMonitoringService
             _logger.LogDebug("Collecting comprehensive cache statistics");
 
             // Get overall cache statistics
-            var overallStats = await _cacheService.GetCacheStatsAsync(cancellationToken);
-            
+            var overallStats = await _cacheService.GetCacheStatsAsync(cancellationToken).ConfigureAwait(false);
+
             // Get OpenGraph cache statistics
-            var openGraphStats = await _openGraphImagesService.GetCacheStatsAsync();
-            
+            var openGraphStats = await _openGraphImagesService.GetCacheStatsAsync().ConfigureAwait(false);
+
             // Get image validation cache statistics
-            var imageValidationStats = await _imageValidationService.GetValidationCacheStatsAsync(cancellationToken);
+            var imageValidationStats = await _imageValidationService.GetValidationCacheStatsAsync(cancellationToken).ConfigureAwait(false);
 
             // Calculate cache hit/miss rates
             var totalAccesses = CalculateTotalAccesses(overallStats);
@@ -82,9 +81,9 @@ public class CacheMonitoringService : ICacheMonitoringService
         {
             _logger.LogDebug("Collecting cache health metrics");
 
-            var stats = await _cacheService.GetCacheStatsAsync(cancellationToken);
-            var storageStats = await _browserStorageService.GetStorageStatsAsync(cancellationToken);
-            
+            var stats = await _cacheService.GetCacheStatsAsync(cancellationToken).ConfigureAwait(false);
+            var storageStats = await _browserStorageService.GetStorageStatsAsync(cancellationToken).ConfigureAwait(false);
+
             var storageUtilization = stats.QuotaUsagePercent;
             var healthStatus = DetermineHealthStatus(storageUtilization, stats);
             var performanceIssues = AnalyzePerformanceIssues(stats, storageUtilization);
@@ -100,9 +99,9 @@ public class CacheMonitoringService : ICacheMonitoringService
                 CheckedAt = DateTime.UtcNow
             };
 
-            _logger.LogInformation("Cache health metrics collected: Status={HealthStatus}, StorageUtilization={StorageUtilization:F2}%", 
+            _logger.LogInformation("Cache health metrics collected: Status={HealthStatus}, StorageUtilization={StorageUtilization:F2}%",
                 result.HealthStatus, result.StorageUtilizationPercent);
-            
+
             return result;
         }
         catch (Exception ex)
@@ -122,7 +121,7 @@ public class CacheMonitoringService : ICacheMonitoringService
         {
             _logger.LogDebug("Collecting cache performance statistics for {TimeRange} hours", timeRangeHours);
 
-            var stats = await _cacheService.GetCacheStatsAsync(cancellationToken);
+            var stats = await _cacheService.GetCacheStatsAsync(cancellationToken).ConfigureAwait(false);
             var timeRange = TimeSpan.FromHours(timeRangeHours);
 
             // Note: In a real implementation, you would track these metrics over time
@@ -157,32 +156,32 @@ public class CacheMonitoringService : ICacheMonitoringService
     {
         var stopwatch = Stopwatch.StartNew();
         var result = new CacheOptimizationResult();
-        
+
         try
         {
             _logger.LogInformation("Starting cache optimization");
 
             // Get initial statistics
-            var initialStats = await _cacheService.GetCacheStatsAsync(cancellationToken);
+            var initialStats = await _cacheService.GetCacheStatsAsync(cancellationToken).ConfigureAwait(false);
             result.StorageUtilizationBefore = initialStats.QuotaUsagePercent;
 
             // Phase 1: Clean up expired items
-            var expiredCleaned = await _cacheService.CleanupExpiredItemsAsync(cancellationToken);
+            var expiredCleaned = await _cacheService.CleanupExpiredItemsAsync(cancellationToken).ConfigureAwait(false);
             result.ExpiredItemsRemoved = expiredCleaned;
-            result.ActionsPerformed.Add($"Cleaned up {expiredCleaned} expired items");
+            result.ActionsPerformed.Add($"Cleaned up {expiredCleaned.ToString(CultureInfo.InvariantCulture)} expired items");
 
             // Phase 2: Perform LRU eviction if storage is still high
-            var finalStats = await _cacheService.GetCacheStatsAsync(cancellationToken);
+            var finalStats = await _cacheService.GetCacheStatsAsync(cancellationToken).ConfigureAwait(false);
             if (finalStats.QuotaUsagePercent > HighStorageUtilizationThreshold)
             {
                 var targetSize = (long)(finalStats.QuotaLimitBytes * 0.7); // Target 70% usage
-                var evictedCount = await _browserStorageService.EvictLeastRecentlyUsedAsync(targetSize, cancellationToken);
+                var evictedCount = await _browserStorageService.EvictLeastRecentlyUsedAsync(targetSize, cancellationToken).ConfigureAwait(false);
                 result.ItemsEvicted = evictedCount;
-                result.ActionsPerformed.Add($"Evicted {evictedCount} LRU items");
+                result.ActionsPerformed.Add($"Evicted {evictedCount.ToString(CultureInfo.InvariantCulture)} LRU items");
             }
 
             // Get final statistics
-            var optimizedStats = await _cacheService.GetCacheStatsAsync(cancellationToken);
+            var optimizedStats = await _cacheService.GetCacheStatsAsync(cancellationToken).ConfigureAwait(false);
             result.StorageUtilizationAfter = optimizedStats.QuotaUsagePercent;
             result.StorageFreedBytes = initialStats.TotalSizeBytes - optimizedStats.TotalSizeBytes;
             result.IsSuccessful = true;
@@ -191,7 +190,7 @@ public class CacheMonitoringService : ICacheMonitoringService
             result.OptimizationTimeMs = stopwatch.ElapsedMilliseconds;
 
             _logger.LogInformation("Cache optimization completed successfully in {ElapsedMs}ms. " +
-                "Storage utilization: {Before:F2}% → {After:F2}%", 
+                                   "Storage utilization: {Before:F2}% → {After:F2}%",
                 result.OptimizationTimeMs, result.StorageUtilizationBefore, result.StorageUtilizationAfter);
 
             return result;
@@ -202,7 +201,7 @@ public class CacheMonitoringService : ICacheMonitoringService
             result.OptimizationTimeMs = stopwatch.ElapsedMilliseconds;
             result.IsSuccessful = false;
             result.ActionsPerformed.Add($"Optimization failed: {ex.Message}");
-            
+
             _logger.LogError(ex, "Cache optimization failed after {ElapsedMs}ms", result.OptimizationTimeMs);
             return result;
         }
@@ -214,9 +213,9 @@ public class CacheMonitoringService : ICacheMonitoringService
         {
             _logger.LogDebug("Generating cache recommendations");
 
-            var stats = await _cacheService.GetCacheStatsAsync(cancellationToken);
-            var healthMetrics = await GetCacheHealthMetricsAsync(cancellationToken);
-            
+            var stats = await _cacheService.GetCacheStatsAsync(cancellationToken).ConfigureAwait(false);
+            var healthMetrics = await GetCacheHealthMetricsAsync(cancellationToken).ConfigureAwait(false);
+
             var recommendations = new CacheRecommendations();
 
             // Storage recommendations
@@ -254,12 +253,12 @@ public class CacheMonitoringService : ICacheMonitoringService
         return stats.NamespaceStats.Values.Sum(ns => (long)(ns.TotalItems * ns.AverageAccessCount));
     }
 
-    private (double hitRate, double missRate) CalculateHitMissRates(CacheStats stats, long totalAccesses)
+    private (double HitRate, double MissRate) CalculateHitMissRates(CacheStats stats, long totalAccesses)
     {
         if (totalAccesses == 0) return (0.0, 0.0);
 
         // Estimate hit rate based on cache efficiency
-        var hitRate = Math.Min(95.0, 60.0 + (stats.TotalItems * 0.01));
+        var hitRate = Math.Min(95.0, 60.0 + stats.TotalItems * 0.01);
         var missRate = 100.0 - hitRate;
 
         return (hitRate, missRate);
@@ -277,10 +276,10 @@ public class CacheMonitoringService : ICacheMonitoringService
     {
         if (storageUtilization > CriticalStorageUtilizationThreshold)
             return CacheHealthStatus.Critical;
-        
+
         if (storageUtilization > HighStorageUtilizationThreshold)
             return CacheHealthStatus.Warning;
-        
+
         if (stats.TotalExpiredItemsCount > stats.TotalItems * 0.1)
             return CacheHealthStatus.Warning;
 
@@ -318,7 +317,7 @@ public class CacheMonitoringService : ICacheMonitoringService
     private double EstimateAverageHitRate(CacheStats stats)
     {
         // Estimate based on cache efficiency
-        return Math.Min(95.0, 60.0 + (stats.TotalItems * 0.01));
+        return Math.Min(95.0, 60.0 + stats.TotalItems * 0.01);
     }
 
     private double EstimateAverageResponseTime(CacheStats stats)
@@ -336,8 +335,7 @@ public class CacheMonitoringService : ICacheMonitoringService
     private int EstimateEvictionsCount(CacheStats stats)
     {
         // Estimate based on storage pressure
-        return stats.QuotaUsagePercent > HighStorageUtilizationThreshold ? 
-            (int)(stats.TotalItems * 0.1) : 0;
+        return stats.QuotaUsagePercent > HighStorageUtilizationThreshold ? (int)(stats.TotalItems * 0.1) : 0;
     }
 
     private int EstimateCleanupCount(CacheStats stats)
@@ -386,20 +384,12 @@ public class CacheMonitoringService : ICacheMonitoringService
 
     private void AnalyzeMaintenanceRecommendations(CacheStats stats, CacheHealthMetrics healthMetrics, CacheRecommendations recommendations)
     {
-        if (stats.TotalExpiredItemsCount > 0)
-        {
-            recommendations.MaintenanceRecommendations.Add("Run cache cleanup immediately");
-        }
+        if (stats.TotalExpiredItemsCount > 0) recommendations.MaintenanceRecommendations.Add("Run cache cleanup immediately");
 
         if (healthMetrics.StorageUtilizationPercent > HighStorageUtilizationThreshold)
-        {
             recommendations.MaintenanceRecommendations.Add("Schedule regular cache optimization");
-        }
 
-        if (healthMetrics.PerformanceIssues.Any())
-        {
-            recommendations.MaintenanceRecommendations.Add("Address performance issues identified");
-        }
+        if (healthMetrics.PerformanceIssues.Any()) recommendations.MaintenanceRecommendations.Add("Address performance issues identified");
     }
 
     private int CalculateHealthScore(CacheHealthMetrics healthMetrics, CacheStats stats)
