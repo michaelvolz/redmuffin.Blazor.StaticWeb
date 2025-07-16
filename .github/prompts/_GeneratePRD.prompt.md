@@ -1,4 +1,4 @@
----
+﻿---
 mode: 'edit'
 description: 'Generating a Product Requirements Document (PRD)'
 ---
