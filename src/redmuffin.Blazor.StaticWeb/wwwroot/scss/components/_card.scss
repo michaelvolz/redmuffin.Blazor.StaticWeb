@@ -1,0 +1,104 @@
+// =============================================================================
+// Shared Card Component Styles
+// =============================================================================
+// Foundation already provides a comprehensive card component via:
+// - foundation-card() mixin
+// - .card class with .card-divider and .card-section
+// - Full theming support via Foundation's color palette
+//
+// This file contains shared card styling consolidated from articles and videos
+// that extends Foundation's card system using proper Foundation integration.
+// =============================================================================
+
+// Foundation's card component is already enabled in foundation-root.scss:
+// @include foundation-card; (via foundation-everything mixin)
+//
+// Available Foundation card classes:
+// - .card (base card container)
+// - .card-divider (card section divider)
+// - .card-section (card content section)
+// - .card.primary, .card.secondary, etc. (themed cards)
+
+// Import Foundation for proper integration
+@use '../../lib/foundation-sites/scss/foundation' as foundation;
+
+// =============================================================================
+// Shared Card Styling (Consolidated from Articles and Videos)
+// =============================================================================
+
+// Shared card styling that extends Foundation's card component
+.card {
+    // Foundation provides the base card structure - we extend it
+    background: foundation.$white;
+    border: 1px solid foundation.$light-gray;
+    border-radius: foundation.rem-calc(8);
+    box-shadow: 0 foundation.rem-calc(2) foundation.rem-calc(4) rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: inline-block;
+    width: 100%;
+    margin-bottom: foundation.$global-margin;
+
+    &:hover {
+        transform: translateY(foundation.rem-calc(-5));
+        box-shadow: 0 foundation.rem-calc(4) foundation.rem-calc(8) rgba(0, 0, 0, 0.2);
+    }
+
+    img {
+        width: 100%;
+        height: auto;
+        border-bottom: 1px solid foundation.$light-gray;
+    }
+}
+
+// Shared card-divider styling that extends Foundation's card-divider
+.card-divider {
+    background: foundation.$light-gray;
+    display: flex;
+    align-items: center;
+    padding: foundation.rem-calc(8);
+    font-size: foundation.rem-calc(19); // Using Foundation's font sizing
+    color: foundation.$dark-gray;
+    gap: foundation.rem-calc(8);
+
+    h5 {
+        margin: 0;
+        flex: 1;
+    }
+
+    i {
+        color: foundation.$primary-color;
+    }
+}
+
+// Shared card-section styling that extends Foundation's card-section
+.card-section {
+    padding: foundation.$global-padding;
+    font-size: foundation.rem-calc(14);
+    color: foundation.$dark-gray;
+
+    p {
+        margin: 0 0 foundation.rem-calc(8);
+    }
+}
+
+// Shared responsive adjustments using Foundation's breakpoint system
+@include foundation.breakpoint(small only) {
+    .card {
+        margin-bottom: foundation.rem-calc(20);
+        
+        &:hover {
+            transform: translateY(foundation.rem-calc(-3));
+        }
+    }
+
+    .card-divider {
+        font-size: foundation.rem-calc(17);
+        padding: foundation.rem-calc(6) foundation.rem-calc(8);
+    }
+
+    .card-section {
+        padding: foundation.rem-calc(12);
+    }
+}
+

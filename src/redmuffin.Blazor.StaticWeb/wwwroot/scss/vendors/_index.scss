@@ -1,0 +1,9 @@
+// =============================================================================
+// Vendors Index
+// =============================================================================
+// This file forwards all vendor-related styles and configurations
+// using modern @forward directives for proper namespace management.
+// =============================================================================
+
+// Foundation vendor configuration
+@forward 'foundation';

@@ -1,0 +1,11 @@
+// =============================================================================
+// Base Styles Index
+// =============================================================================
+// This file forwards all base styles using the modern @forward directive.
+// Base styles include reset, typography, and global styles.
+// All base styles integrate with Foundation's system using proper @use directives.
+// =============================================================================
+
+@forward 'reset';
+@forward 'typography';
+@forward 'global';

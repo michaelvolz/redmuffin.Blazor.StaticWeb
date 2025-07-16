@@ -1,0 +1,22 @@
+// =============================================================================
+// Abstracts Index - Forward All Abstract Files
+// =============================================================================
+// This file forwards all abstract files using the modern @forward directive.
+// This allows other modules to import the entire abstracts system while
+// maintaining proper namespace isolation.
+// =============================================================================
+
+// 1. Variables - Must be forwarded first as they're used by other files
+@forward 'variables';
+
+// 2. Functions - Used by mixins and other components
+@forward 'functions';
+
+// 3. Mixins - Can use variables and functions
+@forward 'mixins';
+
+// 4. Animations - Keyframes for use throughout the project
+@forward 'animations';
+
+// 5. Placeholders - Shared placeholder selectors for extending
+@forward 'placeholders';

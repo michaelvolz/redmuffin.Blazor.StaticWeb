@@ -1,0 +1,105 @@
+// =============================================================================
+// Shimmer Loading Effect Styles
+// =============================================================================
+// This file contains shimmer loading effect styles that use Foundation's
+// animation utilities and the shimmer variables from abstracts/_variables.scss.
+// =============================================================================
+
+// Import project variables
+@use '../../abstracts/variables' as vars;
+
+// =============================================================================
+// SHIMMER LOADING EFFECT COMPONENT STYLES
+// =============================================================================
+// Base shimmer placeholder class using project variables and animations
+
+// Base shimmer placeholder class
+.shimmer-placeholder {
+  position: relative;
+  overflow: hidden;
+  background-color: vars.$shimmer-base-color;
+  background-image: linear-gradient(
+    90deg,
+    vars.$shimmer-base-color 0px,
+    vars.$shimmer-highlight-color 40px,
+    vars.$shimmer-base-color 80px
+  );
+  background-size: 200px 100%;
+  background-repeat: no-repeat;
+  animation: shimmer vars.$shimmer-duration infinite linear;
+  border-radius: vars.$shimmer-border-radius;
+
+  // Ensure accessibility - screen readers can still access content
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    z-index: 1;
+  }
+
+  // Hide content while loading
+  img {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  // Show image when loaded
+  &.loaded {
+    animation: none;
+    background: none;
+
+    img {
+      opacity: 1;
+    }
+  }
+}
+
+// Specific shimmer for video card images
+.video-card {
+  .shimmer-placeholder {
+    width: 100%;
+    // Use modern CSS aspect-ratio property for robust handling
+    aspect-ratio: 16 / 9; // Match the original 1280x720 aspect ratio
+    
+    // Fallback for browsers that don't support aspect-ratio
+    @supports not (aspect-ratio: 16 / 9) {
+      height: 0;
+      padding-bottom: 56.25%; // 16:9 fallback
+      position: relative;
+    }
+    
+    background-color: vars.$shimmer-video-base; // Subtle blue tint for video context
+    background-image: linear-gradient(
+      90deg,
+      vars.$shimmer-video-base 0px,
+      vars.$shimmer-video-highlight 40px,
+      vars.$shimmer-video-base 80px
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; // Prevent any content from spilling out
+
+    // Ensure images maintain proper aspect ratio and show full image
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain; // Show full image without cropping
+      object-position: center; // Center the image within the container
+      max-width: 100%;
+      max-height: 100%;
+      display: block; // Remove any inline spacing
+      
+      // Fallback positioning for older browsers
+      @supports not (aspect-ratio: 16 / 9) {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+    }
+  }
+}
