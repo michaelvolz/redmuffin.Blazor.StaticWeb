@@ -57,6 +57,18 @@ public partial class Videos
     [Inject]
     private NavigationManager Navigation { get; set; } = null!;
 
+    protected override async Task OnInitializedAsync()
+    {
+        // Validate injected dependencies
+        ArgumentNullException.ThrowIfNull(Http);
+        ArgumentNullException.ThrowIfNull(Logger);
+        ArgumentNullException.ThrowIfNull(Js);
+        ArgumentNullException.ThrowIfNull(Navigation);
+
+        // Load articles automatically when the page starts
+        await FetchVideosAsync().ConfigureAwait(false);
+    }
+
     // Update RainDropClientId based on environment
     private string GetRainDropClientId()
     {
@@ -145,18 +157,6 @@ public partial class Videos
         }
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        // Validate injected dependencies
-        ArgumentNullException.ThrowIfNull(Http);
-        ArgumentNullException.ThrowIfNull(Logger);
-        ArgumentNullException.ThrowIfNull(Js);
-        ArgumentNullException.ThrowIfNull(Navigation);
-
-        // Load articles automatically when the page starts
-        await FetchVideosAsync();
-    }
-
     private static string DisplayTitle(RaindropItem video)
     {
         return string.IsNullOrEmpty(video.Title) ? "No Title Available" : video.Title;
@@ -164,7 +164,10 @@ public partial class Videos
 
     private static string DisplayExcerpt(RaindropItem video)
     {
-        return string.IsNullOrEmpty(video.Excerpt) ? "No Excerpt Available" :
-            video.Excerpt.Length > 250 ? video.Excerpt.Substring(0, 250) + "..." : video.Excerpt;
+        return string.IsNullOrEmpty(video.Excerpt)
+            ? "No Excerpt Available"
+            : video.Excerpt.Length > 250
+                ? string.Concat(video.Excerpt.AsSpan(0, 250), "...")
+                : video.Excerpt;
     }
 }

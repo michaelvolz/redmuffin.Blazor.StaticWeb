@@ -75,6 +75,20 @@ public partial class Articles
     [Inject]
     private IImageValidationService ImageValidationService { get; set; } = null!;
 
+    protected override async Task OnInitializedAsync()
+    {
+        // Validate injected dependencies
+        ArgumentNullException.ThrowIfNull(Http);
+        ArgumentNullException.ThrowIfNull(Logger);
+        ArgumentNullException.ThrowIfNull(Js);
+        ArgumentNullException.ThrowIfNull(Navigation);
+        ArgumentNullException.ThrowIfNull(OpenGraphImagesService);
+        ArgumentNullException.ThrowIfNull(ImageValidationService);
+
+        // Load articles automatically when the page starts
+        await FetchArticlesAsync().ConfigureAwait(false);
+    }
+
     private void UpdateArticleState(RaindropItem article, Action<ArticleProcessingState> updateAction)
     {
         var state = GetOrCreateArticleState(article.Link);
@@ -652,20 +666,6 @@ public partial class Articles
         return "Image not available";
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        // Validate injected dependencies
-        ArgumentNullException.ThrowIfNull(Http);
-        ArgumentNullException.ThrowIfNull(Logger);
-        ArgumentNullException.ThrowIfNull(Js);
-        ArgumentNullException.ThrowIfNull(Navigation);
-        ArgumentNullException.ThrowIfNull(OpenGraphImagesService);
-        ArgumentNullException.ThrowIfNull(ImageValidationService);
-
-        // Load articles automatically when the page starts
-        await FetchArticlesAsync();
-    }
-
     private static string DisplayTitle(RaindropItem article)
     {
         return string.IsNullOrEmpty(article.Title) ? "No Title Available" : article.Title;
@@ -673,7 +673,10 @@ public partial class Articles
 
     private static string DisplayExcerpt(RaindropItem article)
     {
-        return string.IsNullOrEmpty(article.Excerpt) ? "No Excerpt Available" :
-            article.Excerpt.Length > 250 ? article.Excerpt.Substring(0, 250) + "..." : article.Excerpt;
+        return string.IsNullOrEmpty(article.Excerpt)
+            ? "No Excerpt Available"
+            : article.Excerpt.Length > 250
+                ? string.Concat(article.Excerpt.AsSpan(0, 250), "...")
+                : article.Excerpt;
     }
 }
