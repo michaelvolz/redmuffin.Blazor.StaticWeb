@@ -53,6 +53,7 @@ public partial class Articles
             "Error updating cache with validation result for article: {ArticleLink}");
 
     private readonly Dictionary<string, ArticleProcessingState> _articleStates = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, string> _imageUrlCache = new(StringComparer.OrdinalIgnoreCase);
     private List<RaindropItem>? _articleItems;
 
     private string? _errorMessage;
@@ -204,8 +205,14 @@ public partial class Articles
 
                     // Process OpenGraph images for articles requiring enhancement
                     if (_articleItems is { Count: > 0 })
+                    {
+                        // Populate image URL cache for initial render
+                        await PopulateImageUrlCacheAsync().ConfigureAwait(false);
+                        StateHasChanged();
+
                         // Don't await - process images in background
                         _ = ProcessOpenGraphImagesAsync();
+                    }
                 }
                 catch (JsonException jsonEx)
                 {
@@ -249,6 +256,21 @@ public partial class Articles
     }
 
     /// <summary>
+    ///     Populates the image URL cache with the best available image URLs for all articles.
+    ///     This ensures images are displayed immediately on initial render.
+    /// </summary>
+    private async Task PopulateImageUrlCacheAsync()
+    {
+        if (_articleItems == null) return;
+
+        foreach (var article in _articleItems)
+        {
+            var imageUrl = await GetBestImageUrlAsync(article).ConfigureAwait(false);
+            _imageUrlCache[article.Link] = imageUrl;
+        }
+    }
+
+    /// <summary>
     ///     Processes OpenGraph images for articles that require image enhancement.
     ///     This method identifies articles that need better images and processes them in batches.
     /// </summary>
@@ -262,7 +284,7 @@ public partial class Articles
         try
         {
             // Identify articles requiring image processing
-            var articlesRequiringProcessing = IdentifyArticlesRequiringImageProcessing(_articleItems);
+            var articlesRequiringProcessing = await IdentifyArticlesRequiringImageProcessingAsync(_articleItems).ConfigureAwait(false);
 
             if (!(articlesRequiringProcessing.Count > 0))
             {
@@ -334,6 +356,10 @@ public partial class Articles
             if (result.Value?.IsValidated == true && !string.IsNullOrEmpty(result.Value.ImageUrl))
             {
                 state.CompleteProcessing(result.Value);
+
+                // Update the image URL cache with the new enhanced image
+                _imageUrlCache[result.Key] = result.Value.ImageUrl;
+
                 successCount++;
             }
             else
@@ -375,7 +401,7 @@ public partial class Articles
     /// </summary>
     /// <param name="articles">List of articles to evaluate</param>
     /// <returns>List of articles that need image processing</returns>
-    private List<RaindropItem> IdentifyArticlesRequiringImageProcessing(List<RaindropItem> articles)
+    private async Task<List<RaindropItem>> IdentifyArticlesRequiringImageProcessingAsync(List<RaindropItem> articles)
     {
         var articlesRequiringProcessing = new List<RaindropItem>();
 
@@ -385,6 +411,16 @@ public partial class Articles
             if (_articleStates.TryGetValue(article.Link, out var state) &&
                 state.ProcessingPhase != ProcessingPhase.None)
                 continue;
+
+            // Check if already cached in local storage to avoid unnecessary reprocessing
+            var isCached = await OpenGraphImagesService.IsImageCachedAsync(article.Link).ConfigureAwait(false);
+            if (isCached)
+            {
+                // Update state to reflect that we have cached data
+                var cachedState = GetOrCreateArticleState(article.Link);
+                cachedState.ProcessingPhase = ProcessingPhase.Completed;
+                continue;
+            }
 
             // Process if:
             // 1. No cover image exists
@@ -405,13 +441,24 @@ public partial class Articles
     /// </summary>
     /// <param name="article">The article to get the image for</param>
     /// <returns>The best available image URL</returns>
-    private string GetBestImageUrl(RaindropItem article)
+    private async Task<string> GetBestImageUrlAsync(RaindropItem article)
     {
         // First, try to get enhanced image from state
         if (_articleStates.TryGetValue(article.Link, out var state) &&
             state.EnhancedImage?.IsValidated == true &&
             !string.IsNullOrEmpty(state.EnhancedImage.ImageUrl))
             return state.EnhancedImage.ImageUrl;
+
+        // Check if we have a cached image in local storage
+        var cachedImage = await OpenGraphImagesService.GetImageAsync(article.Link).ConfigureAwait(false);
+        if (cachedImage?.IsValidated == true && !string.IsNullOrEmpty(cachedImage.ImageUrl))
+        {
+            // Update state with cached data
+            state = GetOrCreateArticleState(article.Link);
+            state.EnhancedImage = cachedImage;
+            state.ProcessingPhase = ProcessingPhase.Completed;
+            return cachedImage.ImageUrl;
+        }
 
         // Fallback to original cover image if available
         if (!string.IsNullOrEmpty(article.Cover)) return article.Cover;
@@ -459,7 +506,7 @@ public partial class Articles
             var article = _articleItems?.FirstOrDefault(a => string.Equals(a.Link, articleLink, StringComparison.Ordinal));
             if (article != null)
             {
-                var currentImageUrl = GetBestImageUrl(article);
+                var currentImageUrl = await GetBestImageUrlAsync(article).ConfigureAwait(false);
 
                 // Validate the image in the background and update cache
                 _ = ValidateAndUpdateImageCacheAsync(currentImageUrl, articleLink, loadSuccess);
@@ -604,8 +651,8 @@ public partial class Articles
         }
 
         // Show fallback if using placeholder URL
-        var imageUrl = GetBestImageUrl(article);
-        if (imageUrl.Contains("placeholder.com", StringComparison.OrdinalIgnoreCase)) return true;
+        var imageUrl = _imageUrlCache.GetValueOrDefault(article.Link, string.Empty);
+        if (string.IsNullOrEmpty(imageUrl) || imageUrl.Contains("placeholder.com", StringComparison.OrdinalIgnoreCase)) return true;
 
         return false;
     }

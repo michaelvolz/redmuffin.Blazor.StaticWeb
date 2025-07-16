@@ -16,7 +16,7 @@ else if (_articleItems != null && _articleItems.Any())
         @foreach (var article in _articleItems)
         {
             var processingState = GetImageProcessingState(article);
-            var imageUrl = GetBestImageUrl(article);
+            var imageUrl = _imageUrlCache.ContainsKey(article.Link) ? _imageUrlCache[article.Link] : "https://via.placeholder.com/400x200?text=Loading...";
 
             <div class="card article-card @GetCardStateClass(processingState)">
                 <div class="card-divider">
