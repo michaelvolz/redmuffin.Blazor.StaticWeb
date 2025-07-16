@@ -550,7 +550,8 @@ public class OpenGraphImagesService : IOpenGraphImagesService
         result[articleResult.ArticleUrl] = null;
     }
 
-    private async Task ValidateAndCacheImagesAsync(List<(string ArticleUrl, string ImageUrl, ImageSource ImageSource)> imagesToValidate,
+    private async Task ValidateAndCacheImagesAsync(
+        List<(string ArticleUrl, string ImageUrl, ImageSource ImageSource)> imagesToValidate,
         Dictionary<string, CachedImageData?> result, CancellationToken cancellationToken)
     {
         LogStartingParallelValidation(_logger, imagesToValidate.Count, null);
