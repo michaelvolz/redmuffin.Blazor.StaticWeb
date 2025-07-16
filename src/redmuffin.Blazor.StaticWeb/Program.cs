@@ -10,12 +10,11 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(_ => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-builder.Services.AddHttpClient("DefaultHttpClient", client => {
-    client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
-});
+builder.Services.AddHttpClient("DefaultHttpClient", client => { client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress); });
 
 // Configure HttpClient for external requests with HTTPS preference
-builder.Services.AddHttpClient("ExternalHttpClient", client => {
+builder.Services.AddHttpClient("ExternalHttpClient", client =>
+{
     client.Timeout = TimeSpan.FromSeconds(30);
     client.DefaultRequestHeaders.Add("User-Agent", "redmuffin-blazor-staticweb/1.0");
     client.DefaultRequestHeaders.Add("Accept", "image/*, */*");
