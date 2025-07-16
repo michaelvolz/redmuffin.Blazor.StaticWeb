@@ -1,4 +1,4 @@
-# SCSS Module System Test Report
+﻿# SCSS Module System Test Report
 
 ## Overview
 This report documents the comprehensive testing of `@forward` and `@use` directives in the SCSS compiler used in this project.

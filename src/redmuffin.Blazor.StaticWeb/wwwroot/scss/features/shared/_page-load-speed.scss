@@ -1,52 +1,378 @@
 // =============================================================================
-// Page Load Speed Styles
+// Page Load Speed Widget Styles
 // =============================================================================
-// This file will contain page load speed optimization styles that use Foundation's
-// utilities and the spacing variables from abstracts/_variables.scss.
+// This file contains page load speed widget styles that use Foundation's
+// utilities and centralized variables from abstracts/_variables.scss.
 // =============================================================================
 
-// Page load speed styles will be moved here from the current _pageLoadSpeed.scss file
-// This is a placeholder until the migration task is completed
+// Import project variables and mixins (which include Foundation integration)
+@use '../../abstracts/variables' as vars;
+@use '../../abstracts/mixins' as mixins;
 
 // =============================================================================
-// PAGE LOAD SPEED COMPONENT STYLES
+// PAGE LOAD SPEED WIDGET COMPONENT STYLES
 // =============================================================================
-// Future home of page load speed styles using Foundation's utilities
-// and the spacing variables from abstracts/_variables.scss
+// Performance monitoring widget with modern SCSS architecture
 
-// Example structure:
-// .page-load-indicator {
-//   // Use Foundation's z-index system
-//   z-index: 9999;
-//   
-//   // Use project spacing variables
-//   padding: spacing(1);
-//   
-//   // Use Foundation's breakpoint system
-//   @include breakpoint(small down) {
-//     padding: spacing(0.5);
-//   }
-//   
-//   // Use project animations
-//   @include transition(opacity);
-//   
-//   &.loading {
-//     opacity: 1;
-//   }
-//   
-//   &.loaded {
-//     opacity: 0;
-//   }
-// }
-// 
-// .page-load-progress {
-//   // Use Foundation's progress bar component
-//   @extend .progress;
-//   
-//   .progress-meter {
-//     @extend .progress-meter;
-//     
-//     // Use project animations
-//     @include transition(width);
-//   }
-// }
+// Main widget container with fixed positioning and backdrop blur effects
+.page-speed-widget {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: vars.$page-speed-widget-z-index;
+  background: linear-gradient(135deg, vars.$page-speed-bg-primary, vars.$page-speed-bg-secondary);
+  color: vars.$page-speed-text-primary;
+  border-radius: 0 0 0 vars.$page-speed-border-radius-large;
+  cursor: pointer;
+  font-family: vars.$page-speed-font-family;
+  user-select: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  @include mixins.transition(all, vars.$page-speed-transition-medium);
+  width: vars.$page-speed-widget-width;
+  border-left: vars.$page-speed-border-width solid vars.$page-speed-brand-teal;
+  border-bottom: vars.$page-speed-border-width solid vars.$page-speed-brand-teal;
+
+  // Performance optimizations
+  contain: layout style paint;
+  will-change: transform;
+
+  &.hidden {
+    transform: translateX(100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &.collapsed {
+    width: vars.$page-speed-widget-width; // Keep same width when collapsed
+  }
+}
+
+// Widget header section with brand styling
+.widget-header {
+  @include mixins.flex-between(row);
+  padding: vars.$page-speed-padding-header vars.$page-speed-padding-main 13px;
+  border-bottom: vars.$page-speed-border-thin vars.$page-speed-border-color;
+  margin-bottom: vars.$page-speed-padding-header;
+  cursor: pointer;
+}
+
+// Widget title with brand teal color and uppercase styling
+.widget-title {
+  color: vars.$page-speed-brand-teal;
+  font-weight: vars.$page-speed-font-weight-bold;
+  font-size: vars.$page-speed-font-size-title;
+  letter-spacing: vars.$page-speed-letter-spacing-title;
+  text-transform: uppercase;
+  @include mixins.flex-center(row);
+  gap: vars.$page-speed-gap-medium;
+}
+
+// Animated pulse icon for visual feedback
+.widget-icon {
+  font-size: vars.$page-speed-gap-xlarge;
+  @include mixins.animation(pulse, vars.$page-speed-animation-pulse);
+}
+
+// Pulse animation keyframes
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+// Widget controls container
+.widget-controls {
+  @include mixins.flex-center(row);
+  gap: vars.$page-speed-gap-medium;
+}
+
+// Muted timestamp display
+.widget-time {
+  color: vars.$page-speed-text-muted;
+  font-size: vars.$page-speed-font-size-body;
+  font-weight: vars.$page-speed-font-weight-normal;
+  opacity: 0.8;
+}
+
+// Main content area with fade-in animation
+.widget-content {
+  padding: 0 vars.$page-speed-padding-main vars.$page-speed-padding-main;
+  @include mixins.animation(fadeIn, vars.$page-speed-transition-slow);
+}
+
+// Fade-in animation for content
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Two-column grid layout for metrics
+.metrics-grid {
+  @include mixins.grid-layout(2, vars.$page-speed-gap-xxlarge);
+  margin-bottom: vars.$page-speed-gap-xlarge;
+}
+
+// Individual metric group container
+.metric-group {
+  background: vars.$page-speed-overlay-color-light;
+  @include mixins.border-radius(vars.$page-speed-border-radius-medium);
+  padding: vars.$page-speed-gap-large;
+  border: 1px solid vars.$page-speed-overlay-color;
+}
+
+// Metric group title styling
+.metric-group-title {
+  color: vars.$page-speed-brand-teal;
+  font-weight: vars.$page-speed-font-weight-semibold;
+  font-size: vars.$page-speed-font-size-small;
+  text-transform: uppercase;
+  letter-spacing: vars.$page-speed-letter-spacing-group;
+  margin-bottom: vars.$page-speed-gap-medium;
+  @include mixins.flex-center(row);
+  gap: vars.$page-speed-gap-small;
+}
+
+// Individual metric item layout
+.metric-item {
+  @include mixins.flex-between(row);
+  margin-bottom: vars.$page-speed-gap-small;
+  font-size: vars.$page-speed-font-size-body;
+  line-height: 1.4;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .metric-label {
+    color: vars.$page-speed-text-secondary;
+    font-weight: vars.$page-speed-font-weight-medium;
+    min-width: 45px;
+  }
+
+  .metric-value {
+    font-weight: vars.$page-speed-font-weight-semibold;
+    text-align: right;
+    padding: 2px vars.$page-speed-gap-small;
+    @include mixins.border-radius(vars.$page-speed-border-radius-small);
+    background: vars.$page-speed-overlay-color;
+
+    // Semantic color coding for different metric types
+    &.timing {
+      color: vars.$page-speed-metric-timing;
+      background: vars.$page-speed-metric-timing-bg;
+    }
+
+    &.size {
+      color: vars.$page-speed-metric-size;
+      background: vars.$page-speed-metric-size-bg;
+    }
+
+    &.breakdown {
+      color: vars.$page-speed-metric-breakdown;
+      background: vars.$page-speed-metric-breakdown-bg;
+    }
+
+    &.ratio {
+      color: vars.$page-speed-metric-ratio;
+      background: vars.$page-speed-metric-ratio-bg;
+    }
+  }
+}
+
+// Performance breakdown section
+.performance-breakdown {
+  margin-top: vars.$page-speed-gap-xlarge;
+  padding-top: vars.$page-speed-gap-xlarge;
+  border-top: vars.$page-speed-border-thin vars.$page-speed-border-color;
+}
+
+// Responsive grid for breakdown items
+.breakdown-grid {
+  @include mixins.grid-layout(auto-fit, vars.$page-speed-gap-large);
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  font-size: vars.$page-speed-font-size-small;
+}
+
+// Individual breakdown item
+.breakdown-item {
+  text-align: center;
+}
+
+// Performance rating section
+.performance-rating {
+  margin-top: vars.$page-speed-gap-xlarge;
+  padding-top: vars.$page-speed-gap-xlarge;
+  border-top: vars.$page-speed-border-thin vars.$page-speed-border-color;
+  text-align: center;
+}
+
+// Color-coded performance rating badges
+.rating-badge {
+  @include mixins.flex-center(row);
+  gap: vars.$page-speed-gap-small;
+  padding: vars.$page-speed-gap-medium vars.$page-speed-gap-xlarge;
+  @include mixins.border-radius(vars.$page-speed-border-radius-oval);
+  font-weight: vars.$page-speed-font-weight-bold;
+  font-size: vars.$page-speed-font-size-body;
+  text-transform: uppercase;
+  letter-spacing: vars.$page-speed-letter-spacing-badge;
+  border: vars.$page-speed-border-medium currentColor;
+  background: vars.$page-speed-overlay-color;
+  @include mixins.transition(all, vars.$page-speed-transition-fast);
+  display: inline-flex;
+
+  // Performance level color variants
+  &.excellent {
+    color: vars.$page-speed-rating-excellent;
+    background: vars.$page-speed-rating-excellent-bg;
+    @include mixins.box-shadow(0, 0, 20px, 0, vars.$page-speed-rating-excellent-shadow);
+  }
+
+  &.good {
+    color: vars.$page-speed-rating-good;
+    background: vars.$page-speed-rating-good-bg;
+    @include mixins.box-shadow(0, 0, 20px, 0, vars.$page-speed-rating-good-shadow);
+  }
+
+  &.fair {
+    color: vars.$page-speed-rating-fair;
+    background: vars.$page-speed-rating-fair-bg;
+    @include mixins.box-shadow(0, 0, 20px, 0, vars.$page-speed-rating-fair-shadow);
+  }
+
+  &.poor {
+    color: vars.$page-speed-rating-poor;
+    background: vars.$page-speed-rating-poor-bg;
+    @include mixins.box-shadow(0, 0, 20px, 0, vars.$page-speed-rating-poor-shadow);
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    @include mixins.transform(translateY(-1px));
+  }
+}
+
+// Progress bar for metrics
+.metric-progress {
+  width: 100%;
+  height: vars.$page-speed-progress-height;
+  background: vars.$page-speed-progress-bg;
+  @include mixins.border-radius(2px);
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+// Animated progress bar fill
+.metric-progress-bar {
+  height: 100%;
+  @include mixins.border-radius(2px);
+  @include mixins.transition(transform, vars.$page-speed-transition-progress);
+  @include mixins.animation(progressGlow, vars.$page-speed-animation-pulse);
+  // Performance optimizations
+  transform-origin: left;
+  will-change: transform;
+}
+
+// Glowing progress bar animation
+@keyframes progressGlow {
+  0%, 100% {
+    box-shadow: 0 0 5px currentColor;
+  }
+  50% {
+    box-shadow: 0 0 10px currentColor;
+  }
+}
+
+// Toggle button for expand/collapse
+.toggle-button {
+  background: none;
+  border: none;
+  color: vars.$page-speed-text-muted;
+  cursor: pointer;
+  font-size: vars.$page-speed-gap-large;
+  padding: vars.$page-speed-button-padding;
+  @include mixins.border-radius(vars.$page-speed-border-radius-small);
+  @include mixins.transition(all, vars.$page-speed-transition-fast);
+  min-width: vars.$page-speed-button-min-width;
+  text-align: center;
+
+  &:hover {
+    color: vars.$page-speed-brand-teal;
+    background: rgba(0, 212, 170, 0.1);
+  }
+}
+
+// Refresh button with brand styling
+.refresh-button {
+  background: rgba(0, 212, 170, 0.1);
+  border: 1px solid rgba(0, 212, 170, 0.3);
+  color: vars.$page-speed-brand-teal;
+  cursor: pointer;
+  font-size: vars.$page-speed-font-size-small;
+  padding: vars.$page-speed-refresh-padding;
+  @include mixins.border-radius(vars.$page-speed-border-radius-button);
+  @include mixins.transition(all, vars.$page-speed-transition-fast);
+  @include mixins.flex-center(row);
+  gap: vars.$page-speed-border-radius-small;
+  font-family: inherit;
+
+  &:hover:not(:disabled) {
+    background: rgba(0, 212, 170, 0.2);
+    border-color: rgba(0, 212, 170, 0.5);
+    @include mixins.transform(translateY(-1px));
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+// Responsive design using Foundation's breakpoint system through mixins
+@include mixins.desktop-down(medium) {
+  .page-speed-widget {
+    width: vars.$page-speed-widget-width-mobile;
+    font-size: vars.$page-speed-font-size-mobile;
+  }
+
+  .metrics-grid {
+    @include mixins.grid-layout(1, vars.$page-speed-gap-large);
+  }
+
+  .widget-header {
+    padding: vars.$page-speed-gap-large vars.$page-speed-padding-mobile vars.$page-speed-gap-medium;
+  }
+
+  .widget-content {
+    padding: 0 vars.$page-speed-padding-mobile vars.$page-speed-padding-mobile;
+  }
+}
+
+// Accessibility: Respect user's motion preferences
+@media (prefers-reduced-motion: reduce) {
+  .page-speed-widget,
+  .widget-content,
+  .metric-progress-bar,
+  .toggle-button,
+  .rating-badge,
+  .refresh-button {
+    animation: none;
+    transition: none;
+  }
+
+  .widget-icon {
+    animation: none;
+  }
+}
