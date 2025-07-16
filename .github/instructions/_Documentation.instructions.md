@@ -1,4 +1,4 @@
-﻿# Documentation Resources for redmuffin.Blazor.StaticWeb
+# Documentation Resources for redmuffin.Blazor.StaticWeb
 
 This document provides a comprehensive guide to documentation resources for the technologies used in this project, both available through Context7 and official sources.
 

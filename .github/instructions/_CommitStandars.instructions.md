@@ -1,4 +1,4 @@
-﻿# Commit Standards - concise
+# Commit Standards - concise
 
 Format: `<type>(<scope>): <description>` (<112 chars)
 
