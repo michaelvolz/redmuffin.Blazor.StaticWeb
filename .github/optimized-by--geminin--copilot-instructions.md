@@ -1,4 +1,4 @@
-﻿# AI Assistant Rules (Ultra-Compact)
+# AI Assistant Rules (Ultra-Compact)
 
 **AI ONLY.** Humans: see `README.md`.
 

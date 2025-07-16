@@ -1,4 +1,4 @@
-﻿# AI Code Assistant Instructions
+# AI Code Assistant Instructions
 
 **FOR AI ASSISTANTS ONLY** - Tech guidelines for AI. Humans use README.md.
 

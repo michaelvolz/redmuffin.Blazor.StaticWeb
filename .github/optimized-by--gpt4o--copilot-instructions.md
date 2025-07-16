@@ -1,4 +1,4 @@
-﻿# AI Code Assistant Instructions
+# AI Code Assistant Instructions
 
 **FOR AI CODE ASSISTANTS ONLY** - This file contains technical guidelines and tool information specifically for AI assistants. Human developers should refer to README.md for project documentation.
 
