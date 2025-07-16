@@ -13,6 +13,8 @@ SCSS (Sassy CSS) is a preprocessor that enhances CSS with features like variable
 - Foundation located: `wwwroot/lib/foundation-sites/`
 - Use Foundation grid system, mixins, and responsive patterns
 - Modern CSS: Grid, Flexbox, CSS variables
+- **CRITICAL**: Use modern `@use` and `@forward` directives (NO `@import`)
+- All Foundation access through namespaces: `@use '../lib/foundation-sites/scss/foundation' as foundation;`
 
 ## 3. Architecture  Organization
 
@@ -116,17 +118,23 @@ The 7-1 pattern organizes SCSS into seven folders and one main file for clarity 
 - **vendors/**: Third-party styles (e.g., `_bootstrap.scss`).
 - **main.scss**: The entry point that imports all other files.
 
-**Import Order in `main.scss`:**
+**Modern Import Order with `@use` in `main.scss`:**
 ```scss
-@import 'abstracts/variables';
-@import 'abstracts/mixins';
-@import 'vendors/bootstrap';
-@import 'base/reset';
-@import 'base/typography';
-@import 'layout/grid';
-@import 'components/button';
-@import 'pages/home';
-@import 'themes/theme-dark';
+// Foundation must be imported first with namespace
+@use '../lib/foundation-sites/scss/foundation' as foundation;
+
+// Import abstracts with namespaces
+@use 'abstracts/variables' as vars;
+@use 'abstracts/mixins' as mixins;
+@use 'abstracts/functions' as functions;
+
+// Import other modules
+@use 'vendors';
+@use 'base';
+@use 'layout';
+@use 'components';
+@use 'features';
+@use 'utilities';
 ```
 
 #### b. SMACSS (Scalable and Modular Architecture for CSS)
@@ -198,7 +206,168 @@ scss/
 └── main.scss
 ```
 
-## 4. Coding Rules & Best Practices
+## 4. **CRITICAL**: Modern SCSS Module System (@use and @forward)
+
+### **MANDATORY**: No More @import - Use @use and @forward Only
+
+**IMPORTANT**: This project uses the modern SCSS module system. The legacy `@import` directive is **FORBIDDEN**. Use only `@use` and `@forward` directives.
+
+#### Foundation Integration Requirements
+
+**Foundation must be imported first with namespace:**
+```scss
+// ALWAYS import Foundation first in app.scss
+@use '../lib/foundation-sites/scss/foundation' as foundation;
+```
+
+**Access Foundation features through namespace:**
+```scss
+// Variables
+.example {
+  color: foundation.$primary-color;
+  margin: foundation.$global-margin;
+}
+
+// Functions
+.example {
+  font-size: foundation.rem-calc(16);
+  width: foundation.percentage(1, 3);
+}
+
+// Mixins
+.example {
+  @include foundation.breakpoint(medium) {
+    width: 50%;
+  }
+}
+```
+
+#### Module Import Patterns
+
+**1. Index Files with @forward:**
+```scss
+// abstracts/_index.scss
+@forward 'variables';
+@forward 'mixins';
+@forward 'functions';
+@forward 'animations';
+@forward 'placeholders';
+```
+
+**2. Module Dependencies with @use:**
+```scss
+// abstracts/_functions.scss
+@use 'variables' as vars;
+@use '../lib/foundation-sites/scss/foundation' as foundation;
+
+@function custom-function($value) {
+  @return foundation.rem-calc($value) + vars.$base-margin;
+}
+```
+
+**3. Main App.scss Structure:**
+```scss
+// app.scss - ACTUAL IMPLEMENTATION
+@use '../lib/foundation-sites/scss/foundation' as foundation;
+@use 'abstracts/variables' as vars;
+@use 'abstracts/mixins' as mixins;
+@use 'abstracts/functions' as functions;
+@use 'vendors';
+@use 'base';
+@use 'layout';
+@use 'components';
+@use 'features';
+@use 'utilities';
+```
+
+#### Namespace Management
+
+**Explicit Dependencies:**
+```scss
+// Each file must explicitly import what it needs
+// layout/_grid.scss
+@use '../abstracts/variables' as vars;
+@use '../abstracts/functions' as functions;
+@use '../lib/foundation-sites/scss/foundation' as foundation;
+
+.custom-grid {
+  @include foundation.grid-row();
+  padding: vars.$base-padding;
+  width: functions.percentage(1, 2);
+}
+```
+
+**Variable Scoping:**
+```scss
+// Variables are scoped to their namespace
+// WRONG - this won't work:
+.example {
+  color: $primary-color; // Error: undefined variable
+}
+
+// CORRECT - use namespace:
+.example {
+  color: vars.$primary-color; // Works
+}
+```
+
+#### Benefits of Modern Module System
+
+1. **Namespace Protection**: Prevents naming conflicts
+2. **Explicit Dependencies**: Clear what each file needs
+3. **Better Performance**: Only loads what's needed
+4. **Future-Proof**: Aligns with modern SCSS standards
+5. **Foundation Integration**: Clean namespace separation
+
+#### Rules for New Files
+
+1. **Add to Index**: Update `_index.scss` files with `@forward 'new-file';`
+2. **Import Dependencies**: Use `@use` for all dependencies
+3. **Use Namespaces**: Access variables/mixins/functions via namespace
+4. **Test Compilation**: Run `dotnet build` after changes
+5. **Foundation First**: Always import Foundation before custom modules
+
+#### Common Patterns
+
+**Component with Foundation:**
+```scss
+// components/_card.scss
+@use '../abstracts/variables' as vars;
+@use '../lib/foundation-sites/scss/foundation' as foundation;
+
+.custom-card {
+  @extend foundation.card;
+  border-color: vars.$brand-burgundy;
+  
+  @include foundation.breakpoint(medium) {
+    padding: foundation.rem-calc(20);
+  }
+}
+```
+
+**Mixin with Namespace:**
+```scss
+// abstracts/_mixins.scss
+@use 'variables' as vars;
+@use '../lib/foundation-sites/scss/foundation' as foundation;
+
+@mixin custom-button($color: vars.$primary-color) {
+  @include foundation.button();
+  background-color: $color;
+  border-radius: foundation.rem-calc(4);
+}
+```
+
+### **TESTING**: Always verify with dotnet build
+
+After any SCSS changes, run:
+```bash
+dotnet build
+```
+
+This validates the module system works correctly and catches namespace errors early.
+
+## 5. Coding Rules & Best Practices
 
 ### a. Variables
 - Use variables for values repeated at least twice or likely to change
@@ -284,7 +453,7 @@ scss/
 - For constants, use all-caps snakerized names (e.g., `$CSS_POSITIONS`)
 - Namespace distributed code (e.g., `su-` prefix)
 
-## 5. Accessibility & Quality
+## 6. Accessibility & Quality
 - WCAG 2.1 AA color contrast compliance
 - Focus states for interactive elements
 - **Minimize Specificity**: Use classes over IDs and avoid `!important`
@@ -292,30 +461,30 @@ scss/
 - **Testing**: Test compilation with SassMeister
 - **Error Handling**: Use `@error` for critical issues (e.g., missing map keys)
 
-## 6. Reusability
+## 7. Reusability
 - **Components**: Create independent, reusable components in separate partials (e.g., `_button.scss`)
 - **Partials**: Use leading underscores (e.g., `_partial.scss`) and import where needed
 - **Avoid Cross-Referencing**: Ensure components do not depend on each other's styles
 - Component styles in respective feature folders
 
-## 7. Workflow
+## 8. Workflow
 - Edit SCSS files directly
 - Import new files into main SCSS files
 - SCSS files are used for styling and can be processed by build tools as needed
 - Use dotnet build to compile SCSS files into CSS
 
-## 8. Customization
+## 9. Customization
 - Override Foundation variables before importing Foundation
 - Define colors in `_site-colors.scss`
 
-## 9. Code Formatting
+## 10. Code Formatting
 - **Indentation**: Use 2 spaces, no tabs
 - **Line Length**: Keep under 80 characters
 - **Declaration Sorting**: Use alphabetical or type-based sorting (e.g., Concentric CSS)
 - **Strings**: Use single quotes, except for `@charset` (double quotes in CSS output)
 - **Colors**: Prefer HSL, then RGB, then lowercase shortened hex
 
-## 10. Documentation
+## 11. Documentation
 - Use SassDoc for documenting reusable elements
 - **Example:**
   ```scss
@@ -324,13 +493,13 @@ scss/
   $vertical-rhythm-baseline: 16px;
   ```
 
-## 11. Tools and Methodologies
+## 12. Tools and Methodologies
 - **CSS Modules**: Use for component-based frameworks to scope styles locally
 - **BEM**: Apply Block-Element-Modifier naming for clarity (e.g., `.button--primary`)
 - **Autoprefixer**: Automate vendor prefixes for cross-browser compatibility
 - **Grid Systems**: Consider Bootstrap, Foundation, or Susy
 
-## 12. Practical Examples
+## 13. Practical Examples
 
 ### a. Reusable Component
 ```scss
@@ -355,5 +524,4 @@ scss/
 - **Simplicity**: Prioritize KISS (Keep It Simple, Stupid) over DRY when appropriate
 - **Consistency**: Adhere to a consistent styleguide
 - **Integration with C# and Blazor**: For Blazor projects, use CSS Modules or scoped CSS to align with component-based architecture, ensuring compatibility with Visual Studio 2022 workflows
-
 
