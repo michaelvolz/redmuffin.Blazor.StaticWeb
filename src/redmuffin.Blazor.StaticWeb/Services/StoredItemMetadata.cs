@@ -1,6 +1,6 @@
-namespace redmuffin.Blazor.StaticWeb.Services;
+﻿namespace redmuffin.Blazor.StaticWeb.Services;
 
-internal class StoredItemMetadata
+internal sealed class StoredItemMetadata
 {
     public DateTime CreatedAt { get; set; }
     public DateTime LastAccessed { get; set; }

@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Services;
+﻿namespace redmuffin.Blazor.StaticWeb.Services;
 
 /// <summary>
 ///     Cache usage recommendations.
@@ -8,22 +8,22 @@ public class CacheRecommendations
     /// <summary>
     ///     Recommended cache size adjustments.
     /// </summary>
-    public List<string> SizeRecommendations { get; set; } = new();
+    public IList<string> SizeRecommendations { get; set; } = new List<string>();
 
     /// <summary>
     ///     Recommended expiration policy changes.
     /// </summary>
-    public List<string> ExpirationRecommendations { get; set; } = new();
+    public IList<string> ExpirationRecommendations { get; set; } = new List<string>();
 
     /// <summary>
     ///     Recommended performance optimizations.
     /// </summary>
-    public List<string> PerformanceRecommendations { get; set; } = new();
+    public IList<string> PerformanceRecommendations { get; set; } = new List<string>();
 
     /// <summary>
     ///     Recommended maintenance actions.
     /// </summary>
-    public List<string> MaintenanceRecommendations { get; set; } = new();
+    public IList<string> MaintenanceRecommendations { get; set; } = new List<string>();
 
     /// <summary>
     ///     Overall cache health score (0-100).

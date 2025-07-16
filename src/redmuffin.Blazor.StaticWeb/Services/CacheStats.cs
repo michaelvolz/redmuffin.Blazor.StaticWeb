@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Services;
+﻿namespace redmuffin.Blazor.StaticWeb.Services;
 
 /// <summary>
 ///     Overall cache statistics across all namespaces.
@@ -33,7 +33,7 @@ public class CacheStats
     /// <summary>
     ///     Statistics for each namespace.
     /// </summary>
-    public Dictionary<string, CacheNamespaceStats> NamespaceStats { get; set; } = new();
+    public IDictionary<string, CacheNamespaceStats> NamespaceStats { get; set; } = new Dictionary<string, CacheNamespaceStats>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     ///     Total number of expired items across all namespaces.

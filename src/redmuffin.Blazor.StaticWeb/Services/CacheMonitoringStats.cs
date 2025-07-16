@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Services;
+﻿namespace redmuffin.Blazor.StaticWeb.Services;
 
 /// <summary>
 ///     Comprehensive cache monitoring statistics.
@@ -13,12 +13,12 @@ public class CacheMonitoringStats
     /// <summary>
     ///     OpenGraph image cache statistics.
     /// </summary>
-    public Dictionary<string, object> OpenGraphStats { get; set; } = new();
+    public IDictionary<string, object> OpenGraphStats { get; set; } = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     ///     Image validation cache statistics.
     /// </summary>
-    public Dictionary<string, object> ImageValidationStats { get; set; } = new();
+    public IDictionary<string, object> ImageValidationStats { get; set; } = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     ///     Cache hit rate as a percentage.

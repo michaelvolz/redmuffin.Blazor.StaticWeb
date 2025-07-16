@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Services;
+﻿namespace redmuffin.Blazor.StaticWeb.Services;
 
 /// <summary>
 ///     Cache optimization result.
@@ -43,7 +43,7 @@ public class CacheOptimizationResult
     /// <summary>
     ///     Optimization actions performed.
     /// </summary>
-    public List<string> ActionsPerformed { get; set; } = new();
+    public IList<string> ActionsPerformed { get; set; } = new List<string>();
 
     /// <summary>
     ///     Optimization timestamp.

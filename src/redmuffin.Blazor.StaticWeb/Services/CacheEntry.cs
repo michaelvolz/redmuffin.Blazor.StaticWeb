@@ -1,10 +1,10 @@
-namespace redmuffin.Blazor.StaticWeb.Services;
+﻿namespace redmuffin.Blazor.StaticWeb.Services;
 
 /// <summary>
 ///     Wrapper for cached items with metadata.
 /// </summary>
 /// <typeparam name="T">Type of the cached value</typeparam>
-internal class CacheEntry<T>
+internal sealed class CacheEntry<T>
 {
     public T Value { get; set; } = default!;
     public DateTime CachedAt { get; set; }

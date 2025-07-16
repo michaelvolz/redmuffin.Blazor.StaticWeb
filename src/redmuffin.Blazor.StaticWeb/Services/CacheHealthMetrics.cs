@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Services;
+﻿namespace redmuffin.Blazor.StaticWeb.Services;
 
 /// <summary>
 ///     Cache health metrics for monitoring system performance.
@@ -33,7 +33,7 @@ public class CacheHealthMetrics
     /// <summary>
     ///     Performance issues detected.
     /// </summary>
-    public List<string> PerformanceIssues { get; set; } = new();
+    public IList<string> PerformanceIssues { get; set; } = new List<string>();
 
     /// <summary>
     ///     Health check timestamp.
