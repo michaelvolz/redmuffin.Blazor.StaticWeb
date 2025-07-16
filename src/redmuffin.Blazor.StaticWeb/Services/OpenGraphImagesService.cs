@@ -13,6 +13,99 @@ public class OpenGraphImagesService : IOpenGraphImagesService
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IImageValidationService _imageValidationService;
     private readonly ILogger<OpenGraphImagesService> _logger;
+    private static readonly Action<ILogger, string, Exception> LogFailureToRetrieveImageFromApi =
+        LoggerMessage.Define<string>(LogLevel.Error, new EventId(0, nameof(LogFailureToRetrieveImageFromApi)),
+            "Failed to retrieve image for article: {ArticleUrl}");
+    private static readonly Action<ILogger, int, Exception?> LogMakingBatchApiCall =
+        LoggerMessage.Define<int>(LogLevel.Information, new EventId(1, nameof(LogMakingBatchApiCall)),
+            "Making batch API call for {Count} articles");
+    private static readonly Action<ILogger, int, Exception?> LogParallelValidationCompleted =
+        LoggerMessage.Define<int>(LogLevel.Information, new EventId(2, nameof(LogParallelValidationCompleted)),
+            "Completed parallel validation and batch caching for {Count} images");
+    private static readonly Action<ILogger, string, Exception> LogFailedToRetrieveCacheData =
+        LoggerMessage.Define<string>(LogLevel.Warning, new EventId(3, nameof(LogFailedToRetrieveCacheData)),
+            "Failed to retrieve cache data for article: {ArticleUrl}, falling back to API");
+    private static readonly Action<ILogger, int, Exception?> LogProcessingUniqueUrls =
+        LoggerMessage.Define<int>(LogLevel.Debug, new EventId(4, nameof(LogProcessingUniqueUrls)),
+            "Processing {Count} unique URLs for batch image retrieval");
+    private static readonly Action<ILogger, string, Exception?> LogCacheHit =
+        LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, nameof(LogCacheHit)),
+            "Cache hit for URL: {Url}");
+    private static readonly Action<ILogger, string, Exception?> LogCacheMiss =
+        LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, nameof(LogCacheMiss)),
+            "Cache miss for URL: {Url}");
+    private static readonly Action<ILogger, int, int, Exception?> LogMakingApiCallForUncachedUrls =
+        LoggerMessage.Define<int, int>(LogLevel.Information, new EventId(7, nameof(LogMakingApiCallForUncachedUrls)),
+            "Making API call for {Count} uncached URLs out of {Total} total URLs");
+    private static readonly Action<ILogger, int, Exception?> LogAllUrlsFoundInCache =
+        LoggerMessage.Define<int>(LogLevel.Information, new EventId(8, nameof(LogAllUrlsFoundInCache)),
+            "All {Count} URLs found in cache, no API calls needed");
+    private static readonly Action<ILogger, Exception> LogFailedToClearCache =
+        LoggerMessage.Define(LogLevel.Error, new EventId(9, nameof(LogFailedToClearCache)),
+            "Failed to clear cache");
+    private static readonly Action<ILogger, Exception> LogFailedToGetCacheStatistics =
+        LoggerMessage.Define(LogLevel.Error, new EventId(10, nameof(LogFailedToGetCacheStatistics)),
+            "Failed to get cache statistics");
+    private static readonly Action<ILogger, Exception> LogFailedToCleanupExpiredEntries =
+        LoggerMessage.Define(LogLevel.Error, new EventId(11, nameof(LogFailedToCleanupExpiredEntries)),
+            "Failed to cleanup expired entries");
+    private static readonly Action<ILogger, string, Exception> LogFailedToUpdateCacheEntry =
+        LoggerMessage.Define<string>(LogLevel.Error, new EventId(12, nameof(LogFailedToUpdateCacheEntry)),
+            "Failed to update cache entry for article: {ArticleUrl}");
+    private static readonly Action<ILogger, int, Exception?> LogStartingParallelValidation =
+        LoggerMessage.Define<int>(LogLevel.Information, new EventId(13, nameof(LogStartingParallelValidation)),
+            "Starting parallel validation of {Count} images");
+    private static readonly Action<ILogger, string, string, Exception?> LogImageValidationSuccessful =
+        LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(14, nameof(LogImageValidationSuccessful)),
+            "Image validation successful for {ArticleUrl}: {ImageUrl}");
+    private static readonly Action<ILogger, string, string, string, Exception?> LogImageValidationFailed =
+        LoggerMessage.Define<string, string, string>(LogLevel.Warning, new EventId(15, nameof(LogImageValidationFailed)),
+            "Image validation failed for {ArticleUrl}: {ImageUrl} - {Error}");
+    private static readonly Action<ILogger, Exception?> LogBatchApiResponseNoResults =
+        LoggerMessage.Define(LogLevel.Warning, new EventId(16, nameof(LogBatchApiResponseNoResults)),
+            "Batch API response contained no results");
+    private static readonly Action<ILogger, System.Net.HttpStatusCode, Exception?> LogBatchApiCallFailed =
+        LoggerMessage.Define<System.Net.HttpStatusCode>(LogLevel.Error, new EventId(17, nameof(LogBatchApiCallFailed)),
+            "Batch API call failed with status code: {StatusCode}");
+    private static readonly Action<ILogger, int, Exception> LogFailedToRetrieveImagesFromApi =
+        LoggerMessage.Define<int>(LogLevel.Error, new EventId(18, nameof(LogFailedToRetrieveImagesFromApi)),
+            "Failed to retrieve images from API for {Count} articles");
+    private static readonly Action<ILogger, string, Exception> LogFailedToSaveCacheData =
+        LoggerMessage.Define<string>(LogLevel.Warning, new EventId(19, nameof(LogFailedToSaveCacheData)),
+            "Failed to save cache data for article: {ArticleUrl}");
+    private static readonly Action<ILogger, int, Exception?> LogStartingBatchCacheSave =
+        LoggerMessage.Define<int>(LogLevel.Debug, new EventId(20, nameof(LogStartingBatchCacheSave)),
+            "Starting batch cache save for {Count} items");
+    private static readonly Action<ILogger, string, Exception?> LogSuccessfullyCachedImageData =
+        LoggerMessage.Define<string>(LogLevel.Trace, new EventId(21, nameof(LogSuccessfullyCachedImageData)),
+            "Successfully cached image data for article: {ArticleUrl}");
+    private static readonly Action<ILogger, string, Exception?> LogSkippingCacheSaveForExpiredData =
+        LoggerMessage.Define<string>(LogLevel.Debug, new EventId(22, nameof(LogSkippingCacheSaveForExpiredData)),
+            "Skipping cache save for expired data: {ArticleUrl}");
+    private static readonly Action<ILogger, int, int, Exception?> LogCompletedBatchCacheSave =
+        LoggerMessage.Define<int, int>(LogLevel.Information, new EventId(23, nameof(LogCompletedBatchCacheSave)),
+            "Completed batch cache save for {Count} items with max concurrency {MaxConcurrency}");
+    private static readonly Action<ILogger, int, Exception> LogFailedToBatchCacheSave =
+        LoggerMessage.Define<int>(LogLevel.Error, new EventId(24, nameof(LogFailedToBatchCacheSave)),
+            "Failed to perform batch cache save for {Count} items");
+    private static readonly Action<ILogger, int, int, Exception?> LogStartingParallelImageValidation =
+        LoggerMessage.Define<int, int>(LogLevel.Debug, new EventId(25, nameof(LogStartingParallelImageValidation)),
+            "Starting parallel image validation for {Count} URLs with max concurrency {MaxConcurrency}");
+    private static readonly Action<ILogger, string, string, long, Exception?> LogImageValidationSuccessfulDetails =
+        LoggerMessage.Define<string, string, long>(LogLevel.Trace, new EventId(26, nameof(LogImageValidationSuccessfulDetails)),
+            "Image validation successful: {ImageUrl} (Content-Type: {ContentType}, Size: {Size})");
+    private static readonly Action<ILogger, string, string, Exception?> LogImageValidationFailedDetails =
+        LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(27, nameof(LogImageValidationFailedDetails)),
+            "Image validation failed: {ImageUrl} - {Error}");
+    private static readonly Action<ILogger, string, Exception?> LogNoValidationResultFound =
+        LoggerMessage.Define<string>(LogLevel.Warning, new EventId(28, nameof(LogNoValidationResultFound)),
+            "No validation result found for image: {ImageUrl}");
+    private static readonly Action<ILogger, int, int, int, Exception?> LogParallelImageValidationCompleted =
+        LoggerMessage.Define<int, int, int>(LogLevel.Information, new EventId(29, nameof(LogParallelImageValidationCompleted)),
+            "Parallel image validation completed: {ValidCount} valid, {InvalidCount} invalid out of {Total} total");
+    private static readonly Action<ILogger, int, Exception> LogFailedToPerformParallelImageValidation =
+        LoggerMessage.Define<int>(LogLevel.Error, new EventId(30, nameof(LogFailedToPerformParallelImageValidation)),
+            "Failed to perform parallel image validation for {Count} URLs");
 
     public OpenGraphImagesService(
         IHttpClientFactory httpClientFactory,
@@ -39,7 +132,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to retrieve cache data for article: {ArticleUrl}, falling back to API", articleUrl);
+            LogFailedToRetrieveCacheData(_logger, articleUrl, ex);
             // Continue to API call - don't fail the entire operation due to cache issues
         }
 
@@ -56,7 +149,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
         if (!urlList.Any())
             return new Dictionary<string, CachedImageData?>();
 
-        _logger.LogDebug("Processing {Count} unique URLs for batch image retrieval", urlList.Count);
+        LogProcessingUniqueUrls(_logger, urlList.Count, null);
 
         // Phase 1: Batch cache lookup for all URLs
         var result = new Dictionary<string, CachedImageData?>();
@@ -68,27 +161,26 @@ public class OpenGraphImagesService : IOpenGraphImagesService
             if (cacheData != null)
             {
                 result[url] = cacheData;
-                _logger.LogDebug("Cache hit for URL: {Url}", url);
+                LogCacheHit(_logger, url, null);
             }
             else
             {
                 uncachedUrls.Add(url);
-                _logger.LogDebug("Cache miss for URL: {Url}", url);
+                LogCacheMiss(_logger, url, null);
             }
         }
 
         // Phase 2: Batch API call for uncached URLs only
         if (uncachedUrls.Any())
         {
-            _logger.LogInformation("Making API call for {Count} uncached URLs out of {Total} total URLs",
-                uncachedUrls.Count, urlList.Count);
+            LogMakingApiCallForUncachedUrls(_logger, uncachedUrls.Count, urlList.Count, null);
 
             var batchResults = await GetImagesFromApiAsync(uncachedUrls, cancellationToken).ConfigureAwait(false);
             foreach (var kvp in batchResults) result[kvp.Key] = kvp.Value;
         }
         else
         {
-            _logger.LogInformation("All {Count} URLs found in cache, no API calls needed", urlList.Count);
+            LogAllUrlsFoundInCache(_logger, urlList.Count, null);
         }
 
         return result;
@@ -158,7 +250,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to retrieve image for article: {ArticleUrl}", articleUrl);
+            LogFailureToRetrieveImageFromApi(_logger, articleUrl, ex);
         }
 
         return null;
@@ -185,7 +277,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to invalidate cache for article: {ArticleUrl}", articleUrl);
+            LogFailedToUpdateCacheEntry(_logger, articleUrl, ex);
             return false;
         }
     }
@@ -199,7 +291,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to clear cache");
+            LogFailedToClearCache(_logger, ex);
             return 0;
         }
     }
@@ -222,7 +314,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to get cache statistics");
+            LogFailedToGetCacheStatistics(_logger, ex);
             return new Dictionary<string, object>();
         }
     }
@@ -235,7 +327,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to cleanup expired entries");
+            LogFailedToCleanupExpiredEntries(_logger, ex);
             return 0;
         }
     }
@@ -254,7 +346,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to update cache entry for article: {ArticleUrl}", articleUrl);
+            LogFailedToUpdateCacheEntry(_logger, articleUrl, ex);
             return false;
         }
     }
@@ -294,7 +386,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
             var json = JsonSerializer.Serialize(batchRequest);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            _logger.LogInformation("Making batch API call for {Count} articles", articleUrls.Count);
+            LogMakingBatchApiCall(_logger, articleUrls.Count, null);
 
             // Call the Azure Function API
             var response = await httpClient.PostAsync("/api/GetOpenGraphImages", content, cancellationToken).ConfigureAwait(false);
@@ -339,7 +431,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
                     // Phase 2: Validate images in parallel
                     if (imagesToValidate.Any())
                     {
-                        _logger.LogInformation("Starting parallel validation of {Count} images", imagesToValidate.Count);
+                        LogStartingParallelValidation(_logger, imagesToValidate.Count, null);
 
                         var validationResults = await ValidateImagesInParallelAsync(
                             imagesToValidate.Select(x => x.ImageUrl).ToList(),
@@ -370,8 +462,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
                                 cacheDataBatch.Add(cacheData);
                                 result[articleUrl] = cacheData;
 
-                                _logger.LogDebug("Image validation successful for {ArticleUrl}: {ImageUrl}",
-                                    articleUrl, imageUrl);
+                                LogImageValidationSuccessful(_logger, articleUrl, imageUrl, null);
                             }
                             else
                             {
@@ -391,31 +482,29 @@ public class OpenGraphImagesService : IOpenGraphImagesService
                                 cacheDataBatch.Add(invalidCacheData);
                                 result[articleUrl] = null;
 
-                                _logger.LogWarning("Image validation failed for {ArticleUrl}: {ImageUrl} - {Error}",
-                                    articleUrl, imageUrl, validationResult?.ErrorMessage ?? "Unknown error");
+                                LogImageValidationFailed(_logger, articleUrl, imageUrl, validationResult?.ErrorMessage ?? "Unknown error", null);
                             }
                         }
 
                         // Execute batch cache updates for improved performance
                         await SaveImageBatchToCacheAsync(cacheDataBatch, cancellationToken).ConfigureAwait(false);
 
-                        _logger.LogInformation("Completed parallel validation and batch caching for {Count} images",
-                            imagesToValidate.Count);
+                        LogParallelValidationCompleted(_logger, imagesToValidate.Count, null);
                     }
                 }
                 else
                 {
-                    _logger.LogWarning("Batch API response contained no results");
+                    LogBatchApiResponseNoResults(_logger, null);
                 }
             }
             else
             {
-                _logger.LogError("Batch API call failed with status code: {StatusCode}", response.StatusCode);
+                LogBatchApiCallFailed(_logger, response.StatusCode, null);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to retrieve images from API for {Count} articles", articleUrls.Count);
+            LogFailedToRetrieveImagesFromApi(_logger, articleUrls.Count, ex);
         }
 
         // Ensure all requested URLs have entries in the result, even if they failed
@@ -436,7 +525,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to save cache data for article: {ArticleUrl}", cacheData.ArticleUrl);
+            LogFailedToSaveCacheData(_logger, cacheData.ArticleUrl, ex);
         }
     }
 
@@ -454,7 +543,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
 
         try
         {
-            _logger.LogDebug("Starting batch cache save for {Count} items", cacheDataBatch.Count);
+            LogStartingBatchCacheSave(_logger, cacheDataBatch.Count, null);
 
             // Use controlled concurrency to avoid overwhelming the browser storage
             var maxConcurrency = Math.Min(cacheDataBatch.Count, 10); // Limit concurrent cache operations
@@ -470,16 +559,16 @@ public class OpenGraphImagesService : IOpenGraphImagesService
                     {
                         await _cacheService.SetItemAsync(CacheNamespace, cacheData.ArticleUrl, cacheData, (int)expiration.TotalMinutes, cancellationToken)
                             .ConfigureAwait(false);
-                        _logger.LogTrace("Successfully cached image data for article: {ArticleUrl}", cacheData.ArticleUrl);
+                        LogSuccessfullyCachedImageData(_logger, cacheData.ArticleUrl, null);
                     }
                     else
                     {
-                        _logger.LogDebug("Skipping cache save for expired data: {ArticleUrl}", cacheData.ArticleUrl);
+                        LogSkippingCacheSaveForExpiredData(_logger, cacheData.ArticleUrl, null);
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Failed to save cache data for article: {ArticleUrl}", cacheData.ArticleUrl);
+                    LogFailedToSaveCacheData(_logger, cacheData.ArticleUrl, ex);
                 }
                 finally
                 {
@@ -489,12 +578,11 @@ public class OpenGraphImagesService : IOpenGraphImagesService
 
             await Task.WhenAll(cacheTasks).ConfigureAwait(false);
 
-            _logger.LogInformation("Completed batch cache save for {Count} items with max concurrency {MaxConcurrency}",
-                cacheDataBatch.Count, maxConcurrency);
+            LogCompletedBatchCacheSave(_logger, cacheDataBatch.Count, maxConcurrency, null);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to perform batch cache save for {Count} items", cacheDataBatch.Count);
+            LogFailedToBatchCacheSave(_logger, cacheDataBatch.Count, ex);
         }
     }
 
@@ -519,8 +607,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
             // Use the image validation service with controlled concurrency
             var maxConcurrency = Math.Min(imageUrls.Count, 8); // Limit concurrent validations
 
-            _logger.LogDebug("Starting parallel image validation for {Count} URLs with max concurrency {MaxConcurrency}",
-                imageUrls.Count, maxConcurrency);
+            LogStartingParallelImageValidation(_logger, imageUrls.Count, maxConcurrency, null);
 
             // Call the validation service which handles parallel processing internally
             var validationResults = await _imageValidationService.ValidateImagesAsync(
@@ -535,11 +622,9 @@ public class OpenGraphImagesService : IOpenGraphImagesService
                     result[imageUrl] = validationResult;
 
                     if (validationResult.IsValid)
-                        _logger.LogTrace("Image validation successful: {ImageUrl} (Content-Type: {ContentType}, Size: {Size})",
-                            imageUrl, validationResult.ContentType, validationResult.ContentLength);
+                        LogImageValidationSuccessfulDetails(_logger, imageUrl, validationResult.ContentType ?? "Unknown", validationResult.ContentLength ?? 0, null);
                     else
-                        _logger.LogDebug("Image validation failed: {ImageUrl} - {Error}",
-                            imageUrl, validationResult.ErrorMessage);
+                        LogImageValidationFailedDetails(_logger, imageUrl, validationResult.ErrorMessage ?? "Unknown error", null);
                 }
                 else
                 {
@@ -553,18 +638,17 @@ public class OpenGraphImagesService : IOpenGraphImagesService
                     };
 
                     result[imageUrl] = failedResult;
-                    _logger.LogWarning("No validation result found for image: {ImageUrl}", imageUrl);
+                    LogNoValidationResultFound(_logger, imageUrl, null);
                 }
 
             var validCount = result.Values.Count(v => v.IsValid);
             var invalidCount = result.Values.Count - validCount;
 
-            _logger.LogInformation("Parallel image validation completed: {ValidCount} valid, {InvalidCount} invalid out of {Total} total",
-                validCount, invalidCount, imageUrls.Count);
+            LogParallelImageValidationCompleted(_logger, validCount, invalidCount, imageUrls.Count, null);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to perform parallel image validation for {Count} URLs", imageUrls.Count);
+            LogFailedToPerformParallelImageValidation(_logger, imageUrls.Count, ex);
 
             // Fallback: Mark all images as invalid to avoid blocking the process
             foreach (var imageUrl in imageUrls)
