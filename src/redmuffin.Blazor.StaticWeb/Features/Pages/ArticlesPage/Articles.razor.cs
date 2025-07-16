@@ -259,7 +259,20 @@ public partial class Articles
         foreach (var article in _articleItems)
         {
             var imageUrl = await GetBestImageUrlAsync(article).ConfigureAwait(false);
-            _imageUrlCache[article.Link] = imageUrl;
+            
+            // Check if this image has been previously blocked by the browser
+            var validationResult = await ImageValidationService.ValidateImageWithCacheAsync(imageUrl).ConfigureAwait(false);
+            
+            if (!validationResult.IsValid && validationResult.ErrorMessage != null && 
+                validationResult.ErrorMessage.Contains("Browser blocked", StringComparison.OrdinalIgnoreCase))
+            {
+                // This image was previously blocked, use placeholder instead
+                _imageUrlCache[article.Link] = "https://via.placeholder.com/400x200?text=Image+Blocked";
+            }
+            else
+            {
+                _imageUrlCache[article.Link] = imageUrl;
+            }
         }
     }
 
