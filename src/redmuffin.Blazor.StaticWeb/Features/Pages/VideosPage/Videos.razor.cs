@@ -20,6 +20,7 @@ public partial class Videos
     private static readonly Action<ILogger, string, Exception> LogShimmerError =
         LoggerMessage.Define<string>(LogLevel.Warning, new EventId(3, nameof(LogShimmerError)),
             "Error stopping shimmer for element: {ElementId}");
+
     private string? _errorMessage;
     private List<RaindropItem>? _videoItems;
 
@@ -58,14 +59,14 @@ public partial class Videos
         {
             Logger.LogInformation("Starting to fetch videos from /api/RaindropListVideos");
             var response = await Http.GetAsync("/api/RaindropListVideos").ConfigureAwait(false);
-            
+
             Logger.LogInformation("Response status: {StatusCode}", response.StatusCode);
             Logger.LogInformation("Response headers: {Headers}", response.Headers.ToString());
-            
+
             var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             Logger.LogInformation("Response content length: {Length}", json.Length);
             Logger.LogInformation("Response content preview: {Preview}", json.Length > 100 ? json.Substring(0, 100) : json);
-            
+
             if (response.IsSuccessStatusCode)
             {
                 LogRawJsonResponse(Logger, json, null);
@@ -78,7 +79,7 @@ public partial class Videos
                         _errorMessage = $"Received HTML response instead of JSON. Response: {json.Substring(0, Math.Min(500, json.Length))}";
                         return;
                     }
-                    
+
                     // Use JsonTypeInfo for deserialization to avoid trimming issues
                     _videoItems = JsonSerializer.Deserialize(json, RaindropJsonSerializerContext.Default.RaindropItemList);
                 }

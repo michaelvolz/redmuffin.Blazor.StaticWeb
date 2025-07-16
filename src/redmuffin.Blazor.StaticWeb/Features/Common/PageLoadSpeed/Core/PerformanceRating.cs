@@ -8,5 +8,5 @@ public enum PerformanceRating
     Excellent,
     Good,
     Fair,
-    Poor,
+    Poor
 }

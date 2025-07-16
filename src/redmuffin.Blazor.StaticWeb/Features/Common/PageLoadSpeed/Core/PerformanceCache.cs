@@ -18,7 +18,7 @@ public readonly record struct PerformanceCache(
             <= 1000 => new PerformanceCache(PerformanceRating.Excellent, "EXCELLENT", "excellent", "🚀", 95, primaryMetric),
             <= 2500 => new PerformanceCache(PerformanceRating.Good, "GOOD", "good", "✅", 75, primaryMetric),
             <= 4000 => new PerformanceCache(PerformanceRating.Fair, "FAIR", "fair", "⚠️", 50, primaryMetric),
-            _ => new PerformanceCache(PerformanceRating.Poor, "POOR", "poor", "🐌", 25, primaryMetric),
+            _ => new PerformanceCache(PerformanceRating.Poor, "POOR", "poor", "🐌", 25, primaryMetric)
         };
     }
 }
