@@ -1,4 +1,4 @@
-﻿namespace redmuffin.Blazor.StaticWeb.Services;
+namespace redmuffin.Blazor.StaticWeb.Services;
 
 /// <summary>
 ///     Implementation of ICacheService that provides namespace separation for different data types.

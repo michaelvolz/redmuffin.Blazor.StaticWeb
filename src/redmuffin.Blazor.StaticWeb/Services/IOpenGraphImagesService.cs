@@ -1,4 +1,4 @@
-﻿using redmuffin.Blazor.StaticWeb.Common.Models;
+using redmuffin.Blazor.StaticWeb.Common.Models;
 
 namespace redmuffin.Blazor.StaticWeb.Services;
 

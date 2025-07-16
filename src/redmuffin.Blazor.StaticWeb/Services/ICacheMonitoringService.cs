@@ -1,4 +1,4 @@
-﻿namespace redmuffin.Blazor.StaticWeb.Services;
+namespace redmuffin.Blazor.StaticWeb.Services;
 
 /// <summary>
 ///     Service for comprehensive cache monitoring and performance optimization.

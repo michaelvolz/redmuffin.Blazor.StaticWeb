@@ -1,4 +1,4 @@
-﻿using Microsoft.JSInterop;
+using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Configuration;
 using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed;
 

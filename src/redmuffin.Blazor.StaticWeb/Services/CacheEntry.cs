@@ -1,4 +1,4 @@
-﻿namespace redmuffin.Blazor.StaticWeb.Services;
+namespace redmuffin.Blazor.StaticWeb.Services;
 
 /// <summary>
 ///     Wrapper for cached items with metadata.

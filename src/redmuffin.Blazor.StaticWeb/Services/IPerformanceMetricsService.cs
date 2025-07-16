@@ -1,4 +1,4 @@
-﻿using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed;
+using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed;
 
 namespace redmuffin.Blazor.StaticWeb.Services;
 

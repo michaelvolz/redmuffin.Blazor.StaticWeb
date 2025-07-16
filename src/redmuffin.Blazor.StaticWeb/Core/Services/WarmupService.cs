@@ -1,4 +1,4 @@
-﻿namespace redmuffin.Blazor.StaticWeb.Core.Services;
+namespace redmuffin.Blazor.StaticWeb.Core.Services;
 
 public class WarmupService(HttpClient httpClient) : IWarmupService
 {
