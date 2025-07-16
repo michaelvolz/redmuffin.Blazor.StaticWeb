@@ -1,4 +1,4 @@
-using redmuffin.Blazor.StaticWeb.Common.Models;
+﻿using redmuffin.Blazor.StaticWeb.Common.Models;
 
 namespace redmuffin.Blazor.StaticWeb.Services;
 
@@ -21,7 +21,7 @@ public interface IOpenGraphImagesService
     /// <param name="articleUrls">Collection of article URLs to process</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>Dictionary mapping article URLs to their cached image data</returns>
-    Task<Dictionary<string, CachedImageData?>> GetImagesAsync(IEnumerable<string> articleUrls, CancellationToken cancellationToken = default);
+    Task<IDictionary<string, CachedImageData?>> GetImagesAsync(IEnumerable<string> articleUrls, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Retrieves an image from cache if available, otherwise fetches from API.
@@ -55,7 +55,7 @@ public interface IOpenGraphImagesService
     ///     Gets cache statistics for monitoring and optimization.
     /// </summary>
     /// <returns>Dictionary containing cache statistics</returns>
-    Task<Dictionary<string, object>> GetCacheStatsAsync();
+    Task<IDictionary<string, object>> GetCacheStatsAsync();
 
     /// <summary>
     ///     Updates an existing cache entry with new data.

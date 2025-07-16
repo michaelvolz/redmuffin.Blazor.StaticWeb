@@ -1,4 +1,4 @@
-using redmuffin.Blazor.StaticWeb.Common.Models;
+﻿using redmuffin.Blazor.StaticWeb.Common.Models;
 
 namespace redmuffin.Blazor.StaticWeb.Services;
 
@@ -22,7 +22,7 @@ public interface IImageValidationService
     /// <param name="maxConcurrency">Maximum number of concurrent validation requests</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>Dictionary mapping image URLs to their validation results</returns>
-    Task<Dictionary<string, ImageValidationResult>> ValidateImagesAsync(
+    Task<IDictionary<string, ImageValidationResult>> ValidateImagesAsync(
         IEnumerable<string> imageUrls,
         int maxConcurrency = 5,
         CancellationToken cancellationToken = default);
@@ -50,5 +50,5 @@ public interface IImageValidationService
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>Dictionary containing cache statistics</returns>
-    Task<Dictionary<string, object>> GetValidationCacheStatsAsync(CancellationToken cancellationToken = default);
+    Task<IDictionary<string, object>> GetValidationCacheStatsAsync(CancellationToken cancellationToken = default);
 }

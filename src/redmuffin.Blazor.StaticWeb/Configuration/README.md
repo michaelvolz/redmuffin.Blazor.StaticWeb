@@ -1,4 +1,4 @@
-# PageLoadSpeed Configuration
+﻿# PageLoadSpeed Configuration
 
 ## Overview
 The `PageLoadSpeedConfig` class provides centralized configuration for the PageLoadSpeed component behavior.
