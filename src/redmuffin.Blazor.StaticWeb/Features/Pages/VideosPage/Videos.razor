@@ -6,13 +6,6 @@
 <h1>Programming & AI Video Hub</h1>
 <p class="subheader">This page showcases a curated collection of videos on programming, AI, .NET, C#, Blazor, and more, featuring insights from industry experts and practical tutorials.</p>
 
-<button class="button primary" @onclick="LoginWithRaindropAsync">
-    <i class="fas fa-sign-in-alt"></i> Login with Raindrop.io
-</button>
-<button class="button primary" @onclick="FetchVideosAsync">
-    <i class="fas fa-video"></i> Fetch Videos
-</button>
-
 @if (_videoItems != null && _videoItems.Any())
 {
     <div class="masonry">

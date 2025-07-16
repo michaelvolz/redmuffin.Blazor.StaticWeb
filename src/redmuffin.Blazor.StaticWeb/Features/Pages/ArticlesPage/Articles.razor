@@ -6,22 +6,6 @@
 <h1>Programming & AI Article Hub</h1>
 <p class="subheader">This page showcases a curated collection of articles on programming, AI, .NET, C#, Blazor, and more, featuring insights from industry experts and practical tutorials.</p>
 
-<button class="button primary" @onclick="FetchArticlesAsync" disabled="@_isLoading">
-    <i class="fas @(_isLoading ? "fa-spinner fa-spin" : "fa-file-text")"></i> @(_isLoading ? "Loading..." : "Fetch Articles")
-</button>
-
-@* Batch processing indicator *@
-@if (_isProcessingImages)
-{
-    <div class="batch-processing-indicator">
-        <i class="fas fa-spinner"></i>
-        <span>Processing @_processingCount of @_totalArticles articles...</span>
-        <div class="batch-progress-bar">
-            <div class="batch-progress-fill" style="width: @(_processingProgress)%"></div>
-        </div>
-    </div>
-}
-
 @if (_isLoading)
 {
     <p>Loading articles...</p>
@@ -33,32 +17,13 @@ else if (_articleItems != null && _articleItems.Any())
         {
             var processingState = GetImageProcessingState(article);
             var imageUrl = GetBestImageUrl(article);
-            var state = GetOrCreateArticleState(article.Link);
 
             <div class="card article-card @GetCardStateClass(processingState)">
                 <div class="card-divider">
                     <h5>@(string.IsNullOrEmpty(article.Title) ? "No Title Available" : article.Title)</h5>
-                    @if (processingState == "processing")
-                    {
-                        <small class="image-processing-indicator processing">
-                            <i class="fas fa-spinner"></i> Enhancing image...
-                        </small>
-                    }
-                    else if (processingState == "failed")
-                    {
-                        <small class="image-processing-indicator failed">
-                            <i class="fas fa-exclamation-triangle"></i> Enhancement failed
-                        </small>
-                    }
                 </div>
                 <div class="shimmer-placeholder @(processingState == "processing" ? "processing" : "")" id="shimmer-@article.Id">
-                    <img src="@imageUrl" alt="Article Cover" @onload="@(() => HandleImageLoadAsync($"shimmer-{article.Id}", article.Link, true))" @onerror="@(() => HandleImageLoadAsync($"shimmer-{article.Id}", article.Link, false))"/>
-                    @if (processingState == "processing")
-                    {
-                        <div class="image-processing-overlay">
-                            <i class="fas fa-spinner fa-spin"></i>
-                        </div>
-                    }
+                    <img src="@imageUrl" alt="Article Cover" @onload="@(() => HandleImageLoadAsync($"shimmer-{article.Id}", article.Link, true))" @onerror="@(() => HandleImageLoadAsync($"shimmer-{article.Id}", article.Link, false))" />
                     @if (HasFallbackPlaceholder(article))
                     {
                         <div class="fallback-placeholder-overlay">
