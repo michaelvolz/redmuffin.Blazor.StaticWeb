@@ -87,6 +87,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Chatmodes", "Chatmodes", "{
 	ProjectSection(SolutionItems) = preProject
 		.github\chatmodes\accesibility.chatmode.md = .github\chatmodes\accesibility.chatmode.md
 		.github\chatmodes\azure-principal-architect.chatmode.md = .github\chatmodes\azure-principal-architect.chatmode.md
+		.github\chatmodes\beastmode.chatmode.md = .github\chatmodes\beastmode.chatmode.md
 		.github\chatmodes\csharp-dotnet-janitor.chatmode.md = .github\chatmodes\csharp-dotnet-janitor.chatmode.md
 		.github\chatmodes\debug.chatmode.md = .github\chatmodes\debug.chatmode.md
 		.github\chatmodes\expert-dotnet-software-engineer.chatmode.md = .github\chatmodes\expert-dotnet-software-engineer.chatmode.md
