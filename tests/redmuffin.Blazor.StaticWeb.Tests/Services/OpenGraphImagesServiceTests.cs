@@ -53,7 +53,7 @@ public class OpenGraphImagesServiceTests
             .Returns(emptyCacheStats);
 
         // Act: Call the method that handles null DateTime values
-        var result = await _service.GetCacheStatsAsync();
+        var result = await _service.GetCacheStatsAsync().ConfigureAwait(false);
 
         // Assert: Verify the structure and null handling
         await Assert.That(result).IsNotNull();
@@ -85,7 +85,7 @@ public class OpenGraphImagesServiceTests
     public async Task IsImageCachedAsync_WithNullOrEmptyUrl_ReturnsFalse(string? articleUrl)
     {
         // Act
-        var result = await _service.IsImageCachedAsync(articleUrl!);
+        var result = await _service.IsImageCachedAsync(articleUrl!).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsFalse();
@@ -101,7 +101,7 @@ public class OpenGraphImagesServiceTests
     public async Task InvalidateCacheAsync_WithNullOrEmptyUrl_ReturnsFalse(string? articleUrl)
     {
         // Act
-        var result = await _service.InvalidateCacheAsync(articleUrl!);
+        var result = await _service.InvalidateCacheAsync(articleUrl!).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsFalse();
@@ -117,7 +117,7 @@ public class OpenGraphImagesServiceTests
     public async Task GetImageAsync_WithNullOrEmptyUrl_ReturnsNull(string? articleUrl)
     {
         // Act
-        var result = await _service.GetImageAsync(articleUrl!);
+        var result = await _service.GetImageAsync(articleUrl!).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsNull();
@@ -145,7 +145,7 @@ public class OpenGraphImagesServiceTests
             .Returns(cachedData);
 
         // Act
-        var result = await _service.GetImageAsync(articleUrl);
+        var result = await _service.GetImageAsync(articleUrl).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsNotNull();
@@ -165,7 +165,7 @@ public class OpenGraphImagesServiceTests
         var emptyUrls = new List<string>();
 
         // Act
-        var result = await _service.GetImagesAsync(emptyUrls);
+        var result = await _service.GetImagesAsync(emptyUrls).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsNotNull();
@@ -186,7 +186,7 @@ public class OpenGraphImagesServiceTests
             .Returns((CachedImageData?)null);
 
         // Act
-        var result = await _service.GetImagesAsync(urls);
+        var result = await _service.GetImagesAsync(urls).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsNotNull();
@@ -206,11 +206,11 @@ public class OpenGraphImagesServiceTests
         _cacheService.RemoveItemAsync("opengraph_images", articleUrl).Returns(Task.CompletedTask);
 
         // Act
-        var result = await _service.InvalidateCacheAsync(articleUrl);
+        var result = await _service.InvalidateCacheAsync(articleUrl).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsTrue();
-        await _cacheService.Received(1).RemoveItemAsync("opengraph_images", articleUrl);
+        await _cacheService.Received(1).RemoveItemAsync("opengraph_images", articleUrl).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -225,7 +225,7 @@ public class OpenGraphImagesServiceTests
             .Throws(new InvalidOperationException("Cache error"));
 
         // Act
-        var result = await _service.InvalidateCacheAsync(articleUrl);
+        var result = await _service.InvalidateCacheAsync(articleUrl).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsFalse();
@@ -241,11 +241,11 @@ public class OpenGraphImagesServiceTests
         _cacheService.ClearNamespaceAsync("opengraph_images").Returns(Task.CompletedTask);
 
         // Act
-        var result = await _service.ClearCacheAsync();
+        var result = await _service.ClearCacheAsync().ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsEqualTo(0);
-        await _cacheService.Received(1).ClearNamespaceAsync("opengraph_images");
+        await _cacheService.Received(1).ClearNamespaceAsync("opengraph_images").ConfigureAwait(false);
     }
 
     /// <summary>
@@ -259,11 +259,11 @@ public class OpenGraphImagesServiceTests
         _cacheService.CleanupExpiredItemsAsync("opengraph_images").Returns(expectedCount);
 
         // Act
-        var result = await _service.CleanupExpiredEntriesAsync();
+        var result = await _service.CleanupExpiredEntriesAsync().ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsEqualTo(expectedCount);
-        await _cacheService.Received(1).CleanupExpiredItemsAsync("opengraph_images");
+        await _cacheService.Received(1).CleanupExpiredItemsAsync("opengraph_images").ConfigureAwait(false);
     }
 
     /// <summary>
@@ -288,7 +288,7 @@ public class OpenGraphImagesServiceTests
             : null;
 
         // Act
-        var result = await _service.UpdateCacheEntryAsync(articleUrl!, imageData!);
+        var result = await _service.UpdateCacheEntryAsync(articleUrl!, imageData!).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsFalse();
@@ -313,10 +313,10 @@ public class OpenGraphImagesServiceTests
             .Returns(Task.CompletedTask);
 
         // Act
-        var result = await _service.UpdateCacheEntryAsync(articleUrl, imageData);
+        var result = await _service.UpdateCacheEntryAsync(articleUrl, imageData).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsTrue();
-        await _cacheService.Received(1).SetItemAsync("opengraph_images", articleUrl, imageData, Arg.Any<int>());
+        await _cacheService.Received(1).SetItemAsync("opengraph_images", articleUrl, imageData, Arg.Any<int>()).ConfigureAwait(false);
     }
 }

@@ -28,7 +28,7 @@ public class ImageValidationServiceTests
     public async Task ValidateImageAsync_WithNullOrEmptyUrl_ReturnsInvalid(string? imageUrl)
     {
         // Act
-        var result = await _service.ValidateImageAsync(imageUrl!);
+        var result = await _service.ValidateImageAsync(imageUrl!).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result.IsValid).IsFalse();
@@ -42,7 +42,7 @@ public class ImageValidationServiceTests
     public async Task ValidateImageWithCacheAsync_WithInvalidUrlFormat_ReturnsInvalid()
     {
         // Act
-        var result = await _service.ValidateImageWithCacheAsync("not-a-valid-url");
+        var result = await _service.ValidateImageWithCacheAsync("not-a-valid-url").ConfigureAwait(false);
 
         // Assert
         await Assert.That(result.IsValid).IsFalse();
@@ -65,7 +65,7 @@ public class ImageValidationServiceTests
         _httpClientFactory.CreateClient().Returns(new HttpClient(new TestHttpMessageHandler()) { BaseAddress = new Uri("http://example.com") });
 
         // Act
-        var results = await _service.ValidateImagesAsync(urls);
+        var results = await _service.ValidateImagesAsync(urls).ConfigureAwait(false);
 
         // Assert
         await Assert.That(results.Count).IsEqualTo(3);
@@ -81,10 +81,10 @@ public class ImageValidationServiceTests
     public async Task ClearValidationCacheAsync_ClearsBothCaches()
     {
         // Act
-        await _service.ClearValidationCacheAsync();
+        await _service.ClearValidationCacheAsync().ConfigureAwait(false);
 
         // Assert
-        await _cacheService.Received(1).ClearNamespaceAsync("image_validation");
+        await _cacheService.Received(1).ClearNamespaceAsync("image_validation").ConfigureAwait(false);
         // Hard to test _memoryCache, ensure no exceptions
     }
 }
