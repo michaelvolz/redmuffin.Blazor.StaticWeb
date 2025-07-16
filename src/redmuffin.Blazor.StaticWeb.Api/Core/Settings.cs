@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Api.Core;
+﻿namespace redmuffin.Blazor.StaticWeb.Api.Core;
 
 public class Settings
 {
