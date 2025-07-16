@@ -1,4 +1,4 @@
-﻿namespace redmuffin.Blazor.StaticWeb.Core;
+namespace redmuffin.Blazor.StaticWeb.Core;
 
 public static class StringExtensions
 {
