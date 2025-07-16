@@ -55,7 +55,9 @@ dotnet_diagnostic.sa1127.severity = none # Generic type constraints must be on s
 dotnet_diagnostic.sa1133.severity = none # Do not combine attributes
 dotnet_diagnostic.sa1134.severity = none # Attributes must be on separate lines
 dotnet_diagnostic.sa1200.severity = none # Using directives must be placed correctly
+dotnet_diagnostic.sa1204.severity = none # Static members must appear before instance members
 dotnet_diagnostic.sa1402.severity = warning # File may only contain a single type
+dotnet_diagnostic.sa1413.severity = none # Use trailing commas in multi-line initializers
 dotnet_diagnostic.sa1503.severity = none # Braces must not be omitted
 dotnet_diagnostic.sa1512.severity = none # Single-line comments must not be followed by blank lines
 dotnet_diagnostic.sa1515.severity = none # Single-line comments must be preceded by blank lines
@@ -148,7 +150,7 @@ dotnet_naming_symbols.types_and_namespaces_symbols.resharper_applicable_kinds = 
 dotnet_naming_symbols.types_and_namespaces_symbols.resharper_required_modifiers = any
 
 dotnet_naming_symbols.unity_serialized_field_symbols.applicable_accessibilities = *
-dotnet_naming_symbols.unity_serialized_field_symbols.applicable_kinds = 
+dotnet_naming_symbols.unity_serialized_field_symbols.applicable_kinds =
 dotnet_naming_symbols.unity_serialized_field_symbols.resharper_applicable_kinds = unity_serialised_field
 dotnet_naming_symbols.unity_serialized_field_symbols.resharper_required_modifiers = instance
 
