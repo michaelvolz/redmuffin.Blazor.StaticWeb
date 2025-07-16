@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -19,7 +19,7 @@ public class GetOpenGraphImages_Tests : TestBase
         _function = new GetOpenGraphImages(_logger, _httpClientFactory);
     }
 
-    private HttpRequest CreateHttpRequest(string jsonBody)
+    private static HttpRequest CreateHttpRequest(string jsonBody)
     {
         var context = new DefaultHttpContext();
         var request = context.Request;
@@ -35,8 +35,11 @@ public class GetOpenGraphImages_Tests : TestBase
         var jsonRequest = "{\"requestId\":\"req-123\",\"articles\":[{\"articleUrl\":\"http://example.com\",\"maxImages\":3}]}";
         var httpRequest = CreateHttpRequest(jsonRequest);
 
-        var httpClient = new HttpClient(new TestHttpMessageHandler()) { BaseAddress = new Uri("http://example.com") };
-        _httpClientFactory.CreateClient().Returns(httpClient);
+        using var testHandler = new TestHttpMessageHandler();
+#pragma warning disable CA2000 // Dispose objects before losing scope - HttpClient lifecycle managed by test
+        var httpClient = new HttpClient(testHandler) { BaseAddress = new Uri("http://example.com") };
+        _httpClientFactory.CreateClient().Returns(_ => httpClient);
+#pragma warning restore CA2000
 
         // Act
         var result = await _function.RunAsync(httpRequest).ConfigureAwait(false);

@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -20,6 +20,30 @@ public partial class Videos
     private static readonly Action<ILogger, string, Exception> LogShimmerError =
         LoggerMessage.Define<string>(LogLevel.Warning, new EventId(3, nameof(LogShimmerError)),
             "Error stopping shimmer for element: {ElementId}");
+
+    private static readonly Action<ILogger, Exception?> LogStartingFetchVideos =
+        LoggerMessage.Define(LogLevel.Information, new EventId(4, nameof(LogStartingFetchVideos)),
+            "Starting to fetch videos from /api/RaindropListVideos");
+
+    private static readonly Action<ILogger, int, Exception?> LogResponseStatus =
+        LoggerMessage.Define<int>(LogLevel.Information, new EventId(5, nameof(LogResponseStatus)),
+            "Response status: {StatusCode}");
+
+    private static readonly Action<ILogger, string, Exception?> LogResponseHeaders =
+        LoggerMessage.Define<string>(LogLevel.Information, new EventId(6, nameof(LogResponseHeaders)),
+            "Response headers: {Headers}");
+
+    private static readonly Action<ILogger, int, Exception?> LogResponseContentLength =
+        LoggerMessage.Define<int>(LogLevel.Information, new EventId(7, nameof(LogResponseContentLength)),
+            "Response content length: {Length}");
+
+    private static readonly Action<ILogger, string, Exception?> LogResponseContentPreview =
+        LoggerMessage.Define<string>(LogLevel.Information, new EventId(8, nameof(LogResponseContentPreview)),
+            "Response content preview: {Preview}");
+
+    private static readonly Action<ILogger, Exception> LogExceptionFetchingVideos =
+        LoggerMessage.Define(LogLevel.Error, new EventId(9, nameof(LogExceptionFetchingVideos)),
+            "Exception occurred while fetching videos");
 
     private string? _errorMessage;
     private List<RaindropItem>? _videoItems;
@@ -57,15 +81,15 @@ public partial class Videos
         _videoItems = null;
         try
         {
-            Logger.LogInformation("Starting to fetch videos from /api/RaindropListVideos");
+            LogStartingFetchVideos(Logger, null);
             var response = await Http.GetAsync("/api/RaindropListVideos").ConfigureAwait(false);
 
-            Logger.LogInformation("Response status: {StatusCode}", response.StatusCode);
-            Logger.LogInformation("Response headers: {Headers}", response.Headers.ToString());
+            LogResponseStatus(Logger, (int)response.StatusCode, null);
+            LogResponseHeaders(Logger, response.Headers.ToString(), null);
 
             var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            Logger.LogInformation("Response content length: {Length}", json.Length);
-            Logger.LogInformation("Response content preview: {Preview}", json.Length > 100 ? json.Substring(0, 100) : json);
+            LogResponseContentLength(Logger, json.Length, null);
+            LogResponseContentPreview(Logger, json.Length > 100 ? json.Substring(0, 100) : json, null);
 
             if (response.IsSuccessStatusCode)
             {
@@ -102,7 +126,7 @@ public partial class Videos
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Exception occurred while fetching videos");
+            LogExceptionFetchingVideos(Logger, ex);
             _errorMessage = $"Exception fetching videos: {ex.Message}";
         }
 

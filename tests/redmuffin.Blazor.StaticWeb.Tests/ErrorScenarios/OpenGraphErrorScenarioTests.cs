@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -72,8 +72,11 @@ public class OpenGraphErrorScenarioTests : TestBase
         _cacheService.GetItemAsync<CachedImageData>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns((CachedImageData?)null);
 
-        var httpClient = new HttpClient(new FailingHttpMessageHandler(HttpStatusCode.InternalServerError));
-        _httpClientFactory.CreateClient().Returns(httpClient);
+        using var handler = new FailingHttpMessageHandler(HttpStatusCode.InternalServerError);
+#pragma warning disable CA2000 // Dispose objects before losing scope - HttpClient lifecycle managed by test
+        var httpClient = new HttpClient(handler);
+        _httpClientFactory.CreateClient().Returns(_ => httpClient);
+#pragma warning restore CA2000
 
         // Act
         var result = await _imageService.GetImageAsync(articleUrl).ConfigureAwait(false);
@@ -90,8 +93,11 @@ public class OpenGraphErrorScenarioTests : TestBase
         _cacheService.GetItemAsync<CachedImageData>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns((CachedImageData?)null);
 
-        var httpClient = new HttpClient(new TimeoutHttpMessageHandler());
-        _httpClientFactory.CreateClient().Returns(httpClient);
+        using var handler = new TimeoutHttpMessageHandler();
+#pragma warning disable CA2000 // Dispose objects before losing scope - HttpClient lifecycle managed by test
+        var httpClient = new HttpClient(handler);
+        _httpClientFactory.CreateClient().Returns(_ => httpClient);
+#pragma warning restore CA2000
 
         // Act
         var result = await _imageService.GetImageAsync(articleUrl).ConfigureAwait(false);
@@ -108,8 +114,11 @@ public class OpenGraphErrorScenarioTests : TestBase
         _cacheService.GetItemAsync<CachedImageData>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Throws(new InvalidOperationException("Cache service error"));
 
-        var httpClient = new HttpClient(new SuccessHttpMessageHandler());
-        _httpClientFactory.CreateClient().Returns(httpClient);
+        using var handler = new SuccessHttpMessageHandler();
+#pragma warning disable CA2000 // Dispose objects before losing scope - HttpClient lifecycle managed by test
+        var httpClient = new HttpClient(handler);
+        _httpClientFactory.CreateClient().Returns(_ => httpClient);
+#pragma warning restore CA2000
 
         // Act & Assert - Should not throw exception, but may return null due to cache write failure
         var result = await _imageService.GetImageAsync(articleUrl).ConfigureAwait(false);
@@ -148,8 +157,11 @@ public class OpenGraphErrorScenarioTests : TestBase
         _cacheService.GetItemAsync<CachedImageData>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns((CachedImageData?)null);
 
-        var httpClient = new HttpClient(new SuccessHttpMessageHandler());
-        _httpClientFactory.CreateClient().Returns(httpClient);
+        using var handler = new SuccessHttpMessageHandler();
+#pragma warning disable CA2000 // Dispose objects before losing scope - HttpClient lifecycle managed by test
+        var httpClient = new HttpClient(handler);
+        _httpClientFactory.CreateClient().Returns(_ => httpClient);
+#pragma warning restore CA2000
 
         // Act
         var result = await _imageService.GetImagesAsync(urls).ConfigureAwait(false);
@@ -169,8 +181,11 @@ public class OpenGraphErrorScenarioTests : TestBase
         _cacheService.GetItemAsync<CachedImageData>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns((CachedImageData?)null);
 
-        var httpClient = new HttpClient(new SuccessHttpMessageHandler());
-        _httpClientFactory.CreateClient().Returns(httpClient);
+        using var handler = new SuccessHttpMessageHandler();
+#pragma warning disable CA2000 // Dispose objects before losing scope - HttpClient lifecycle managed by test
+        var httpClient = new HttpClient(handler);
+        _httpClientFactory.CreateClient().Returns(_ => httpClient);
+#pragma warning restore CA2000
 
         // Setup image validation to fail
         _imageValidationService.ValidateImagesAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
@@ -301,8 +316,11 @@ public class OpenGraphErrorScenarioTests : TestBase
         _cacheService.GetItemAsync<CachedImageData>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns((CachedImageData?)null);
 
-        var httpClient = new HttpClient(new PartialFailureHttpMessageHandler());
-        _httpClientFactory.CreateClient().Returns(httpClient);
+        using var handler = new PartialFailureHttpMessageHandler();
+#pragma warning disable CA2000 // Dispose objects before losing scope - HttpClient lifecycle managed by test
+        var httpClient = new HttpClient(handler);
+        _httpClientFactory.CreateClient().Returns(_ => httpClient);
+#pragma warning restore CA2000
 
         // Setup image validation to fail for all images
         _imageValidationService.ValidateImagesAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
@@ -329,8 +347,11 @@ public class OpenGraphErrorScenarioTests : TestBase
         _cacheService.GetItemAsync<CachedImageData>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns((CachedImageData?)null);
 
-        var httpClient = new HttpClient(new SuccessHttpMessageHandler());
-        _httpClientFactory.CreateClient().Returns(httpClient);
+        using var handler = new SuccessHttpMessageHandler();
+#pragma warning disable CA2000 // Dispose objects before losing scope - HttpClient lifecycle managed by test
+        var httpClient = new HttpClient(handler);
+        _httpClientFactory.CreateClient().Returns(_ => httpClient);
+#pragma warning restore CA2000
 
         // Setup image validation to throw exception
         _imageValidationService.ValidateImagesAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<int>(), Arg.Any<CancellationToken>())

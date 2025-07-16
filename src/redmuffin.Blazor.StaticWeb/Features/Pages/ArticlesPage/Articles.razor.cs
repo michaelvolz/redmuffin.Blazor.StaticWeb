@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -32,7 +32,27 @@ public partial class Articles
         LoggerMessage.Define<int, int>(LogLevel.Information, new EventId(5, nameof(LogImageProcessingCompleted)),
             "Completed processing OpenGraph images: {SuccessCount} successful, {FailedCount} failed");
 
-    private readonly Dictionary<string, ArticleProcessingState> _articleStates = new();
+    private static readonly Action<ILogger, Exception?> LogNoArticlesRequireProcessing =
+        LoggerMessage.Define(LogLevel.Debug, new EventId(6, nameof(LogNoArticlesRequireProcessing)),
+            "No articles require OpenGraph image processing");
+
+    private static readonly Action<ILogger, Exception> LogProcessingOpenGraphImagesError =
+        LoggerMessage.Define(LogLevel.Error, new EventId(7, nameof(LogProcessingOpenGraphImagesError)),
+            "Error processing OpenGraph images");
+
+    private static readonly Action<ILogger, string, Exception> LogImageLoadEventError =
+        LoggerMessage.Define<string>(LogLevel.Error, new EventId(8, nameof(LogImageLoadEventError)),
+            "Error handling image load event for article: {ArticleLink}");
+
+    private static readonly Action<ILogger, string, string, Exception> LogImageValidationError =
+        LoggerMessage.Define<string, string>(LogLevel.Error, new EventId(9, nameof(LogImageValidationError)),
+            "Error validating image for article: {ArticleLink}, ImageUrl: {ImageUrl}");
+
+    private static readonly Action<ILogger, string, Exception> LogCacheUpdateError =
+        LoggerMessage.Define<string>(LogLevel.Error, new EventId(10, nameof(LogCacheUpdateError)),
+            "Error updating cache with validation result for article: {ArticleLink}");
+
+    private readonly Dictionary<string, ArticleProcessingState> _articleStates = new(StringComparer.OrdinalIgnoreCase);
     private List<RaindropItem>? _articleItems;
 
     private string? _errorMessage;
@@ -50,7 +70,6 @@ public partial class Articles
 
     [Inject]
     private NavigationManager Navigation { get; set; } = null!;
-
 
     [Inject]
     private IOpenGraphImagesService OpenGraphImagesService { get; set; } = null!;
@@ -149,84 +168,111 @@ public partial class Articles
 
             if (!(articlesRequiringProcessing.Count > 0))
             {
-                Logger.LogDebug("No articles require OpenGraph image processing");
+                LogNoArticlesRequireProcessing(Logger, null);
                 return;
             }
 
-            // Initialize progress tracking
-            _processingCount = articlesRequiringProcessing.Count;
-            _totalArticles = _articleItems.Count;
-            _processingProgress = 0;
-
-            LogImageProcessingStarted(Logger, articlesRequiringProcessing.Count, _articleItems.Count, null);
-
-            // Initialize article processing states
-            foreach (var article in articlesRequiringProcessing)
-            {
-                var state = GetOrCreateArticleState(article.Link);
-                state.StartProcessing();
-            }
-
-            // Trigger UI update to show processing states
+            // Initialize tracking and states
+            InitializeProcessingTracking(articlesRequiringProcessing.Count, _articleItems.Count);
+            InitializeArticleStates(articlesRequiringProcessing);
             StateHasChanged();
 
-            // Extract URLs for batch processing
+            // Process images
             var urlsToProcess = articlesRequiringProcessing.Select(a => a.Link).ToList();
-
-            // Process images in batch
             var results = await OpenGraphImagesService.GetImagesAsync(urlsToProcess).ConfigureAwait(false);
 
-            // Update article states with processing results
-            var successCount = 0;
-            var failedCount = 0;
-            var processedCount = 0;
-
-            foreach (var result in results)
-            {
-                var state = GetOrCreateArticleState(result.Key);
-
-                if (result.Value?.IsValidated == true && !string.IsNullOrEmpty(result.Value.ImageUrl))
-                {
-                    state.CompleteProcessing(result.Value);
-                    successCount++;
-                }
-                else
-                {
-                    var errorMessage = "Unknown processing error";
-                    var fallbackReason = DetermineFallbackReason(result.Key, result.Value);
-                    state.FailProcessing(errorMessage, fallbackReason);
-                    failedCount++;
-                }
-
-                // Update progress
-                processedCount++;
-                _processingProgress = (double)processedCount / _processingCount * 100;
-
-                // Trigger incremental UI updates for smooth progress
-                if (processedCount % 2 == 0 || processedCount == _processingCount) StateHasChanged();
-            }
+            // Process results
+            var (successCount, failedCount) = ProcessImageResults(results);
 
             LogImageProcessingCompleted(Logger, successCount, failedCount, null);
 
-            // Final UI update with completed state
+            // Final UI update
             _processingProgress = 100;
             StateHasChanged();
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error processing OpenGraph images");
-
-            // Update all processing states to failed
-            foreach (var state in _articleStates.Values)
-                if (state.ProcessingPhase == ProcessingPhase.Processing)
-                    state.FailProcessing(ex.Message, "Processing error");
-
-            StateHasChanged();
+            HandleProcessingError(ex);
         }
         finally
         {
             _isProcessingImages = false;
         }
+    }
+
+    /// <summary>
+    ///     Initializes progress tracking for image processing.
+    /// </summary>
+    private void InitializeProcessingTracking(int processingCount, int totalCount)
+    {
+        _processingCount = processingCount;
+        _totalArticles = totalCount;
+        _processingProgress = 0;
+        LogImageProcessingStarted(Logger, processingCount, totalCount, null);
+    }
+
+    /// <summary>
+    ///     Initializes article processing states.
+    /// </summary>
+    private void InitializeArticleStates(List<RaindropItem> articles)
+    {
+        foreach (var article in articles)
+        {
+            var state = GetOrCreateArticleState(article.Link);
+            state.StartProcessing();
+        }
+    }
+
+    /// <summary>
+    ///     Processes image results and updates article states.
+    /// </summary>
+    private (int SuccessCount, int FailedCount) ProcessImageResults(IDictionary<string, CachedImageData?> results)
+    {
+        var successCount = 0;
+        var failedCount = 0;
+        var processedCount = 0;
+
+        foreach (var result in results)
+        {
+            var state = GetOrCreateArticleState(result.Key);
+
+            if (result.Value?.IsValidated == true && !string.IsNullOrEmpty(result.Value.ImageUrl))
+            {
+                state.CompleteProcessing(result.Value);
+                successCount++;
+            }
+            else
+            {
+                var errorMessage = "Unknown processing error";
+                var fallbackReason = DetermineFallbackReason(result.Key, result.Value);
+                state.FailProcessing(errorMessage, fallbackReason);
+                failedCount++;
+            }
+
+            // Update progress
+            processedCount++;
+            _processingProgress = (double)processedCount / _processingCount * 100;
+
+            // Trigger incremental UI updates for smooth progress
+            if (processedCount % 2 == 0 || processedCount == _processingCount) StateHasChanged();
+        }
+
+        return (successCount, failedCount);
+    }
+
+    /// <summary>
+    ///     Handles processing errors by updating states and UI.
+    /// </summary>
+    private void HandleProcessingError(Exception ex)
+    {
+        LogProcessingOpenGraphImagesError(Logger, ex);
+
+        // Update all processing states to failed
+        foreach (var state in _articleStates.Values)
+            if (state.ProcessingPhase == ProcessingPhase.Processing)
+                state.FailProcessing(ex.Message, "Processing error");
+
+        StateHasChanged();
     }
 
     /// <summary>
@@ -420,7 +466,7 @@ public partial class Articles
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error handling image load event for article: {ArticleLink}", articleLink);
+            LogImageLoadEventError(Logger, articleLink, ex);
         }
     }
 
@@ -471,7 +517,7 @@ public partial class Articles
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error validating image for article: {ArticleLink}, ImageUrl: {ImageUrl}", articleLink, imageUrl);
+            LogImageValidationError(Logger, articleLink, imageUrl, ex);
 
             // Update state to reflect validation error
             var state = GetOrCreateArticleState(articleLink);
@@ -513,7 +559,7 @@ public partial class Articles
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error updating cache with validation result for article: {ArticleLink}", articleLink);
+            LogCacheUpdateError(Logger, articleLink, ex);
         }
     }
 

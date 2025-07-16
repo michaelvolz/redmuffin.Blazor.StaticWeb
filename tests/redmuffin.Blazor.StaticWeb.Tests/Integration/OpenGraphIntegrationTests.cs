@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using redmuffin.Blazor.StaticWeb.Common.Models;
 using redmuffin.Blazor.StaticWeb.Services;
 
@@ -187,10 +187,12 @@ public class TestHttpClientFactory : IHttpClientFactory
 {
     public HttpClient CreateClient(string name)
     {
+#pragma warning disable CA2000 // Dispose objects before losing scope - HttpClient lifecycle is managed by the caller
         return new HttpClient(new TestHttpMessageHandler())
         {
             BaseAddress = new Uri("https://example.com")
         };
+#pragma warning restore CA2000
     }
 }
 
@@ -207,7 +209,7 @@ public class MockImageValidationService : IImageValidationService
         }).ConfigureAwait(false);
     }
 
-    public async Task<Dictionary<string, ImageValidationResult>> ValidateImagesAsync(IEnumerable<string> imageUrls, int maxConcurrency = 5,
+    public async Task<IDictionary<string, ImageValidationResult>> ValidateImagesAsync(IEnumerable<string> imageUrls, int maxConcurrency = 5,
         CancellationToken cancellationToken = default)
     {
         var result = new Dictionary<string, ImageValidationResult>();
@@ -233,7 +235,7 @@ public class MockImageValidationService : IImageValidationService
         return Task.CompletedTask;
     }
 
-    public async Task<Dictionary<string, object>> GetValidationCacheStatsAsync(CancellationToken cancellationToken = default)
+    public async Task<IDictionary<string, object>> GetValidationCacheStatsAsync(CancellationToken cancellationToken = default)
     {
         return await Task.FromResult(new Dictionary<string, object>()).ConfigureAwait(false);
     }

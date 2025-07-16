@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using NSubstitute;
 using redmuffin.Blazor.StaticWeb.Common.Models;
 using redmuffin.Blazor.StaticWeb.Services;
@@ -6,7 +6,7 @@ using redmuffin.Blazor.StaticWeb.Tests.Helpers;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Services;
 
-public class ImageValidationServiceTests
+public class ImageValidationServiceTests : IDisposable
 {
     private readonly ICacheService _cacheService = Substitute.For<ICacheService>();
     private readonly IHttpClientFactory _httpClientFactory = Substitute.For<IHttpClientFactory>();
@@ -16,6 +16,12 @@ public class ImageValidationServiceTests
     public ImageValidationServiceTests()
     {
         _service = new ImageValidationService(_httpClientFactory, _cacheService, _logger);
+    }
+
+    public void Dispose()
+    {
+        _service?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>
@@ -62,7 +68,11 @@ public class ImageValidationServiceTests
         _cacheService.GetItemAsync<ImageValidationResult>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns((ImageValidationResult?)null);
 
-        _httpClientFactory.CreateClient().Returns(new HttpClient(new TestHttpMessageHandler()) { BaseAddress = new Uri("http://example.com") });
+        using var testHandler = new TestHttpMessageHandler();
+#pragma warning disable CA2000 // Dispose objects before losing scope - HttpClient lifecycle managed by test
+        var httpClient = new HttpClient(testHandler) { BaseAddress = new Uri("http://example.com") };
+        _httpClientFactory.CreateClient().Returns(_ => httpClient);
+#pragma warning restore CA2000
 
         // Act
         var results = await _service.ValidateImagesAsync(urls).ConfigureAwait(false);

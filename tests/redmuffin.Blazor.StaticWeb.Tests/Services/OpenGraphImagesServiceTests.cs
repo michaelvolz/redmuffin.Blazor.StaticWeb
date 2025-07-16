@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using redmuffin.Blazor.StaticWeb.Common.Enums;
@@ -6,27 +6,35 @@ using redmuffin.Blazor.StaticWeb.Common.Models;
 using redmuffin.Blazor.StaticWeb.Services;
 
 #pragma warning disable VSTHRD200
+#pragma warning disable CA2000 // Dispose objects before losing scope - False positive with NSubstitute
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Services;
 
 /// <summary>
 ///     Unit tests for OpenGraphImagesService with focus on null value handling and caching logic.
 /// </summary>
-public class OpenGraphImagesServiceTests
+public class OpenGraphImagesServiceTests : IDisposable
 {
     private readonly ICacheService _cacheService = Substitute.For<ICacheService>();
     private readonly IHttpClientFactory _httpClientFactory = Substitute.For<IHttpClientFactory>();
     private readonly IImageValidationService _imageValidationService = Substitute.For<IImageValidationService>();
     private readonly ILogger<OpenGraphImagesService> _logger = Substitute.For<ILogger<OpenGraphImagesService>>();
     private readonly OpenGraphImagesService _service;
+    private readonly HttpClient _httpClient;
 
     public OpenGraphImagesServiceTests()
     {
         // Setup default HttpClient mock
-        var httpClient = new HttpClient();
-        _httpClientFactory.CreateClient().Returns(httpClient);
+        _httpClient = new HttpClient();
+        _httpClientFactory.CreateClient().Returns(_ => _httpClient);
 
         _service = new OpenGraphImagesService(_httpClientFactory, _cacheService, _imageValidationService, _logger);
+    }
+
+    public void Dispose()
+    {
+        _httpClient?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>

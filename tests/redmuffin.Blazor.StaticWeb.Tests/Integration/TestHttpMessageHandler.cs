@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Text;
 using System.Text.Json;
 using redmuffin.Blazor.StaticWeb.Common.Enums;
@@ -10,6 +10,10 @@ public class TestHttpMessageHandler : HttpMessageHandler
 {
     private readonly List<HttpRequestMessage> _requests = new();
     private readonly Dictionary<string, HttpResponseMessage> _responses = new();
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
 
     public IReadOnlyList<HttpRequestMessage> Requests => _requests.AsReadOnly();
 
@@ -21,10 +25,7 @@ public class TestHttpMessageHandler : HttpMessageHandler
         if (request.RequestUri?.AbsolutePath == "/api/GetOpenGraphImages")
         {
             var requestContent = request.Content != null ? await request.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false) : "";
-            var batchRequest = JsonSerializer.Deserialize<BatchImageRequest>(requestContent, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var batchRequest = JsonSerializer.Deserialize<BatchImageRequest>(requestContent, JsonOptions);
 
             var response = new BatchImageResponse
             {
