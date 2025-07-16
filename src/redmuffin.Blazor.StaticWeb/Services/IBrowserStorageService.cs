@@ -92,4 +92,12 @@ public interface IBrowserStorageService
     /// </summary>
     /// <returns>Quota limit in bytes</returns>
     long GetQuotaLimit();
+
+    /// <summary>
+    ///     Completely clears all localStorage data including both cached items and the storage index.
+    ///     This is a more thorough clear operation than ClearAsync which only clears managed storage.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Number of items cleared</returns>
+    Task<int> ClearAllStorageAsync(CancellationToken cancellationToken = default);
 }

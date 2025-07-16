@@ -40,6 +40,10 @@ public class BrowserStorageService(ILocalStorageService localStorage, ILogger<Br
         LoggerMessage.Define<int>(LogLevel.Information, new EventId(7, nameof(LogStorageOptimizationExpiredOnly)),
             "Storage optimization completed using only expired item cleanup: {ExpiredCount}");
 
+    private static readonly Action<ILogger, int, Exception?> LogAllStorageCleared =
+        LoggerMessage.Define<int>(LogLevel.Information, new EventId(8, nameof(LogAllStorageCleared)),
+            "All localStorage data cleared. Total items removed: {ItemCount}");
+
     private long _quotaLimit = 1024 * 1024 * 10; // 10 MB default quota limit
 
     private static string ComputeHash(string input)
@@ -231,6 +235,20 @@ public class BrowserStorageService(ILocalStorageService localStorage, ILogger<Br
 
         LogCleanedUpExpiredItems(logger, expiredKeys.Count, null);
         return expiredKeys.Count;
+    }
+
+    public async Task<int> ClearAllStorageAsync(CancellationToken cancellationToken = default)
+    {
+        // Get the current count of items before clearing
+        var itemCount = await localStorage.LengthAsync(cancellationToken).ConfigureAwait(false);
+
+        // Clear all localStorage data completely
+        await localStorage.ClearAsync(cancellationToken).ConfigureAwait(false);
+
+        // Log the operation
+        LogAllStorageCleared(logger, itemCount, null);
+
+        return itemCount;
     }
 
     private async Task EnsureQuotaAsync(CancellationToken cancellationToken = default)
