@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Core;
+﻿namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Core;
 
 /// <summary>
 ///     Comprehensive performance metrics container
