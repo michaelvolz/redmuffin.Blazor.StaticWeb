@@ -176,13 +176,6 @@ public partial class Articles
         await FetchArticlesAsync().ConfigureAwait(false);
     }
 
-    private void UpdateArticleState(RaindropItem article, Action<ArticleProcessingState> updateAction)
-    {
-        var state = GetOrCreateArticleState(article.Link);
-        updateAction(state);
-        StateHasChanged();
-    }
-
     private async Task FetchArticlesAsync()
     {
         _errorMessage = null;
