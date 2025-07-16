@@ -56,14 +56,29 @@ public partial class Videos
         _videoItems = null;
         try
         {
+            Logger.LogInformation("Starting to fetch videos from /api/RaindropListVideos");
             var response = await Http.GetAsync("/api/RaindropListVideos").ConfigureAwait(false);
+            
+            Logger.LogInformation("Response status: {StatusCode}", response.StatusCode);
+            Logger.LogInformation("Response headers: {Headers}", response.Headers.ToString());
+            
+            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            Logger.LogInformation("Response content length: {Length}", json.Length);
+            Logger.LogInformation("Response content preview: {Preview}", json.Length > 100 ? json.Substring(0, 100) : json);
+            
             if (response.IsSuccessStatusCode)
             {
-                var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 LogRawJsonResponse(Logger, json, null);
 
                 try
                 {
+                    // Check if the response starts with '<' which indicates HTML instead of JSON
+                    if (json.TrimStart().StartsWith('<'))
+                    {
+                        _errorMessage = $"Received HTML response instead of JSON. Response: {json.Substring(0, Math.Min(500, json.Length))}";
+                        return;
+                    }
+                    
                     // Use JsonTypeInfo for deserialization to avoid trimming issues
                     _videoItems = JsonSerializer.Deserialize(json, RaindropJsonSerializerContext.Default.RaindropItemList);
                 }
@@ -75,17 +90,18 @@ public partial class Videos
                         jsonEx.LineNumber?.ToString(CultureInfo.InvariantCulture),
                         jsonEx.BytePositionInLine?.ToString(CultureInfo.InvariantCulture),
                         jsonEx);
-                    _errorMessage = "Error deserializing JSON: " + jsonEx.Message;
+                    _errorMessage = $"Error deserializing JSON: {jsonEx.Message}. Response content: {json.Substring(0, Math.Min(500, json.Length))}";
                     return;
                 }
             }
             else
             {
-                _errorMessage = $"Error fetching videos: {response.StatusCode} - {await response.Content.ReadAsStringAsync().ConfigureAwait(false)}";
+                _errorMessage = $"Error fetching videos: {response.StatusCode} - {json}";
             }
         }
         catch (Exception ex)
         {
+            Logger.LogError(ex, "Exception occurred while fetching videos");
             _errorMessage = $"Exception fetching videos: {ex.Message}";
         }
 
