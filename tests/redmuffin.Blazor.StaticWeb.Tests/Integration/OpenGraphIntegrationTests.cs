@@ -33,7 +33,7 @@ public class OpenGraphIntegrationTests : TestBase
         };
 
         // Act
-        var images = await _imageService.GetImagesAsync(articleUrls);
+        var images = await _imageService.GetImagesAsync(articleUrls).ConfigureAwait(false);
 
         // Assert
         await Assert.That(images).IsNotNull();
@@ -53,10 +53,10 @@ public class OpenGraphIntegrationTests : TestBase
         };
 
         // Act - First call should populate cache
-        var firstCallImages = await _imageService.GetImagesAsync(articleUrls);
+        var firstCallImages = await _imageService.GetImagesAsync(articleUrls).ConfigureAwait(false);
 
         // Act - Second call should use cache
-        var secondCallImages = await _imageService.GetImagesAsync(articleUrls);
+        var secondCallImages = await _imageService.GetImagesAsync(articleUrls).ConfigureAwait(false);
 
         // Assert
         await Assert.That(firstCallImages).IsNotNull();
@@ -82,7 +82,7 @@ public class OpenGraphIntegrationTests : TestBase
         };
 
         // Act
-        var images = await _imageService.GetImagesAsync(articleUrls);
+        var images = await _imageService.GetImagesAsync(articleUrls).ConfigureAwait(false);
 
         // Assert
         await Assert.That(images).IsNotNull();
@@ -101,7 +101,7 @@ public class OpenGraphIntegrationTests : TestBase
         var articleUrl = "https://example.com/single-article";
 
         // Act
-        var image = await _imageService.GetImageAsync(articleUrl);
+        var image = await _imageService.GetImageAsync(articleUrl).ConfigureAwait(false);
 
         // Assert
         await Assert.That(image).IsNotNull();
@@ -121,10 +121,10 @@ public class OpenGraphIntegrationTests : TestBase
         };
 
         // Act - First populate cache
-        await _imageService.GetImagesAsync(articleUrls);
+        await _imageService.GetImagesAsync(articleUrls).ConfigureAwait(false);
 
         // Act - Get cache stats
-        var stats = await _imageService.GetCacheStatsAsync();
+        var stats = await _imageService.GetCacheStatsAsync().ConfigureAwait(false);
 
         // Assert
         await Assert.That(stats).IsNotNull();
@@ -140,16 +140,16 @@ public class OpenGraphIntegrationTests : TestBase
         var articleUrl = "https://example.com/article-to-invalidate";
 
         // Act - First populate cache
-        await _imageService.GetImageAsync(articleUrl);
+        await _imageService.GetImageAsync(articleUrl).ConfigureAwait(false);
 
         // Verify cache contains data
-        var isCachedBefore = await _imageService.IsImageCachedAsync(articleUrl);
+        var isCachedBefore = await _imageService.IsImageCachedAsync(articleUrl).ConfigureAwait(false);
 
         // Act - Invalidate cache
-        var invalidated = await _imageService.InvalidateCacheAsync(articleUrl);
+        var invalidated = await _imageService.InvalidateCacheAsync(articleUrl).ConfigureAwait(false);
 
         // Verify cache is cleared
-        var isCachedAfter = await _imageService.IsImageCachedAsync(articleUrl);
+        var isCachedAfter = await _imageService.IsImageCachedAsync(articleUrl).ConfigureAwait(false);
 
         // Assert
         await Assert.That(isCachedBefore).IsTrue();
@@ -168,13 +168,13 @@ public class OpenGraphIntegrationTests : TestBase
         };
 
         // Act - First populate cache
-        await _imageService.GetImagesAsync(articleUrls);
+        await _imageService.GetImagesAsync(articleUrls).ConfigureAwait(false);
 
         // Act - Clear all cache
-        var clearedCount = await _imageService.ClearCacheAsync();
+        var clearedCount = await _imageService.ClearCacheAsync().ConfigureAwait(false);
 
         // Verify cache is cleared
-        var statsAfterClear = await _imageService.GetCacheStatsAsync();
+        var statsAfterClear = await _imageService.GetCacheStatsAsync().ConfigureAwait(false);
 
         // Assert
         await Assert.That(clearedCount).IsEqualTo(0); // MockCacheService returns 0
@@ -204,7 +204,7 @@ public class MockImageValidationService : IImageValidationService
             IsValid = true,
             ContentType = "image/jpeg",
             ContentLength = 1024
-        });
+        }).ConfigureAwait(false);
     }
 
     public async Task<Dictionary<string, ImageValidationResult>> ValidateImagesAsync(IEnumerable<string> imageUrls, int maxConcurrency = 5,
@@ -219,13 +219,13 @@ public class MockImageValidationService : IImageValidationService
                 ContentType = "image/jpeg",
                 ContentLength = 1024
             };
-        return await Task.FromResult(result);
+        return await Task.FromResult(result).ConfigureAwait(false);
     }
 
     public async Task<ImageValidationResult> ValidateImageWithCacheAsync(string imageUrl, int cacheExpirationMinutes = 60,
         CancellationToken cancellationToken = default)
     {
-        return await ValidateImageAsync(imageUrl, cancellationToken);
+        return await ValidateImageAsync(imageUrl, cancellationToken).ConfigureAwait(false);
     }
 
     public Task ClearValidationCacheAsync(CancellationToken cancellationToken = default)
@@ -235,6 +235,6 @@ public class MockImageValidationService : IImageValidationService
 
     public async Task<Dictionary<string, object>> GetValidationCacheStatsAsync(CancellationToken cancellationToken = default)
     {
-        return await Task.FromResult(new Dictionary<string, object>());
+        return await Task.FromResult(new Dictionary<string, object>()).ConfigureAwait(false);
     }
 }

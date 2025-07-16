@@ -20,7 +20,7 @@ public class TestHttpMessageHandler : HttpMessageHandler
         // Mock the GetOpenGraphImages API response
         if (request.RequestUri?.AbsolutePath == "/api/GetOpenGraphImages")
         {
-            var requestContent = request.Content != null ? await request.Content.ReadAsStringAsync(cancellationToken) : "";
+            var requestContent = request.Content != null ? await request.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false) : "";
             var batchRequest = JsonSerializer.Deserialize<BatchImageRequest>(requestContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
