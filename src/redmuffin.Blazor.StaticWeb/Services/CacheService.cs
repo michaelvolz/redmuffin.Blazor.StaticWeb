@@ -9,6 +9,17 @@ public class CacheService : ICacheService
     private readonly IBrowserStorageService _browserStorageService;
     private readonly ILogger<CacheService> _logger;
 
+    // LoggerMessage delegates for better performance
+    private static readonly Action<ILogger, string, Exception?> LogCacheNamespaceCleared =
+        LoggerMessage.Define<string>(LogLevel.Information, new EventId(1, nameof(LogCacheNamespaceCleared)),
+            "Cleared cache namespace: {Namespace}");
+    private static readonly Action<ILogger, int, Exception?> LogExpiredItemsCleanedUp =
+        LoggerMessage.Define<int>(LogLevel.Information, new EventId(2, nameof(LogExpiredItemsCleanedUp)),
+            "Cleaned up {TotalCount} expired items across all namespaces");
+    private static readonly Action<ILogger, int, string, Exception?> LogNamespaceExpiredItemsCleanedUp =
+        LoggerMessage.Define<int, string>(LogLevel.Information, new EventId(3, nameof(LogNamespaceExpiredItemsCleanedUp)),
+            "Cleaned up {Count} expired items from namespace: {Namespace}");
+
     public CacheService(IBrowserStorageService browserStorageService, ILogger<CacheService> logger)
     {
         _browserStorageService = browserStorageService ?? throw new ArgumentNullException(nameof(browserStorageService));
@@ -98,7 +109,7 @@ public class CacheService : ICacheService
         }
 
         await RemoveNamespaceFromIndexAsync(cacheNamespace, cancellationToken).ConfigureAwait(false);
-        _logger.LogInformation("Cleared cache namespace: {Namespace}", cacheNamespace);
+        LogCacheNamespaceCleared(_logger, cacheNamespace, null);
     }
 
     public async Task<CacheNamespaceStats> GetNamespaceStatsAsync(string cacheNamespace, CancellationToken cancellationToken = default)
@@ -178,7 +189,7 @@ public class CacheService : ICacheService
             totalCleanedUp += cleanedUp;
         }
 
-        _logger.LogInformation("Cleaned up {TotalCount} expired items across all namespaces", totalCleanedUp);
+        LogExpiredItemsCleanedUp(_logger, totalCleanedUp, null);
         return totalCleanedUp;
     }
 
@@ -199,7 +210,7 @@ public class CacheService : ICacheService
 
         foreach (var key in expiredKeys) await RemoveItemAsync(cacheNamespace, key, cancellationToken).ConfigureAwait(false);
 
-        if (expiredKeys.Count > 0) _logger.LogInformation("Cleaned up {Count} expired items from namespace: {Namespace}", expiredKeys.Count, cacheNamespace);
+        if (expiredKeys.Count > 0) LogNamespaceExpiredItemsCleanedUp(_logger, expiredKeys.Count, cacheNamespace, null);
 
         return expiredKeys.Count;
     }
