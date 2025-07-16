@@ -9,7 +9,7 @@
 ========================================= */
 
 // Import our centralized variables
-@import 'variables';
+@use 'variables' as vars;
 
 /* ======================================
     MediaQuery Debugger
@@ -34,7 +34,7 @@ body:after {
 
 /* Default (0px - 375px): Small Phones (e.g., iPhone SE) / Foundation 'small' (0px) */
 @media only screen and (min-width: 0px) {
-    #mainNavigation { margin-bottom: $debug-nav-spacing; } // Using centralized spacing variable
+    #mainNavigation { margin-bottom: vars.$debug-nav-spacing; } // Using centralized spacing variable
     body:after {
         content: "0-375px: Small Phones (iPhone SE) / F: small";
         background-color: hsla(0, 70%, 50%, 0.4); /* Hue 0 */
@@ -44,7 +44,7 @@ body:after {
 
 /* 376px - 430px: Standard Phones (e.g., iPhone 15) */
 @media only screen and (min-width: 376px) {
-    #mainNavigation { margin-bottom: $debug-nav-spacing; } // Using centralized spacing variable
+    #mainNavigation { margin-bottom: vars.$debug-nav-spacing; } // Using centralized spacing variable
     body:after {
         content: "376-430px: Standard Phones (iPhone 15)";
         background-color: hsla(45, 70%, 50%, 0.4); /* Hue 45 */
@@ -54,7 +54,7 @@ body:after {
 
 /* 431px - 639px: Large Phones / Small Tablets */
 @media only screen and (min-width: 431px) {
-    #mainNavigation { margin-bottom: $debug-nav-spacing; } // Using centralized spacing variable
+    #mainNavigation { margin-bottom: vars.$debug-nav-spacing; } // Using centralized spacing variable
     body:after {
         content: "431-639px: Large Phones / Small Tablets";
         background-color: hsla(90, 70%, 50%, 0.4); /* Hue 90 */
@@ -64,7 +64,7 @@ body:after {
 
 /* 640px - 768px: Foundation 'medium' (640px) / iPad Mini portrait */
 @media only screen and (min-width: 640px) {
-    #mainNavigation { margin-bottom: $debug-nav-spacing; } // Using centralized spacing variable
+    #mainNavigation { margin-bottom: vars.$debug-nav-spacing; } // Using centralized spacing variable
     body:after {
         content: "640-768px: F: medium / iPad Mini portrait";
         background-color: hsla(135, 70%, 50%, 0.4); /* Hue 135 */
@@ -74,7 +74,7 @@ body:after {
 
 /* 769px - 1023px: Tablets (e.g., iPad Air/Pro portrait) */
 @media only screen and (min-width: 769px) {
-    #mainNavigation { margin-bottom: $debug-nav-spacing; } // Using centralized spacing variable
+    #mainNavigation { margin-bottom: vars.$debug-nav-spacing; } // Using centralized spacing variable
     body:after {
         content: "769-1023px: Tablets (iPad Air/Pro portrait)";
         background-color: hsla(180, 70%, 50%, 0.4); /* Hue 180 */
@@ -84,7 +84,7 @@ body:after {
 
 /* 1024px - 1199px: Foundation 'large' (1024px) / Small Desktops / Large Tablets landscape */
 @media only screen and (min-width: 1024px) {
-    #mainNavigation { margin-bottom: $debug-nav-spacing; } // Using centralized spacing variable
+    #mainNavigation { margin-bottom: vars.$debug-nav-spacing; } // Using centralized spacing variable
     body:after {
         content: "1024-1199px: F: large / Small Desktops";
         background-color: hsla(225, 70%, 50%, 0.4); /* Hue 225 */
@@ -94,7 +94,7 @@ body:after {
 
 /* 1200px - 1439px: Foundation 'xlarge' (1200px) / Standard Desktops */
 @media only screen and (min-width: 1200px) {
-    #mainNavigation { margin-bottom: $debug-nav-spacing; } // Using centralized spacing variable
+    #mainNavigation { margin-bottom: vars.$debug-nav-spacing; } // Using centralized spacing variable
     body:after {
         content: "1200-1439px: F: xlarge / Standard Desktops";
         background-color: hsla(270, 70%, 50%, 0.4); /* Hue 270 */
@@ -104,7 +104,7 @@ body:after {
 
 /* 1440px and up: Foundation 'xxlarge' (1440px) / Large Desktops */
 @media only screen and (min-width: 1440px) {
-    #mainNavigation { margin-bottom: $debug-nav-spacing; } // Using centralized spacing variable
+    #mainNavigation { margin-bottom: vars.$debug-nav-spacing; } // Using centralized spacing variable
     body:after {
         content: "1440px+: F: xxlarge / Large Desktops";
         background-color: hsla(315, 70%, 50%, 0.4); /* Hue 315 */

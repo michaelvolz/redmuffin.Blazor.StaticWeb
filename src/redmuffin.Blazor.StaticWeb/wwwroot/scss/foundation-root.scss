@@ -1,36 +1,32 @@
 @charset "utf-8";
 
 // Import our centralized variables first
-@import "variables";
+@use "abstracts/variables" as vars;
 
 // Import Foundation with our custom variables available
-@import "../lib/foundation-sites/scss/foundation";
-
-// Import legacy site colors (will be phased out in favor of variables)
-@import "_site-colors.scss";
+@use "../lib/foundation-sites/scss/foundation";
 
 // Foundation color palette configuration
+// All colors are now consolidated in abstracts/_variables.scss
 $foundation-palette: ( 
-    "primary": $steel-blue, 
-    "secondary": $ultra-violet, 
-    "success": $yellow-green, 
-    "warning": $sunglow, 
-    "alert": $bittersweet,
-    "burgundy": $brand-burgundy,
-    "black": $brand-black,
-    "white": $brand-white
+    "primary": vars.$steel-blue, 
+    "secondary": vars.$ultra-violet, 
+    "success": vars.$yellow-green, 
+    "warning": vars.$sunglow, 
+    "alert": vars.$bittersweet,
+    "burgundy": vars.$brand-burgundy,
+    "black": vars.$brand-black,
+    "white": vars.$brand-white
 );
 
 // Include Foundation with prototype spacing utilities enabled
-@include foundation-everything(true, true);
+@include foundation.foundation-everything(true, true);
 
 // Include Foundation's prototype spacing utilities for easier layout
-@include foundation-prototype-spacing;
+@include foundation.foundation-prototype-spacing;
 
-html, body {
-    background-color: white;
-}
-
-h1 {
-    outline: 0px;
-}
+// =============================================================================
+// FOUNDATION OVERRIDES
+// =============================================================================
+// This section is for Foundation-specific overrides only.
+// Global styles should be placed in base/_global.scss instead.
