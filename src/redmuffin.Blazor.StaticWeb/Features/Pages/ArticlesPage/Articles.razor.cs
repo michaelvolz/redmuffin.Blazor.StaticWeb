@@ -665,4 +665,15 @@ public partial class Articles
         // Load articles automatically when the page starts
         await FetchArticlesAsync();
     }
+
+    private static string DisplayTitle(RaindropItem article)
+    {
+        return string.IsNullOrEmpty(article.Title) ? "No Title Available" : article.Title;
+    }
+
+    private static string DisplayExcerpt(RaindropItem article)
+    {
+        return string.IsNullOrEmpty(article.Excerpt) ? "No Excerpt Available" :
+            article.Excerpt.Length > 250 ? article.Excerpt.Substring(0, 250) + "..." : article.Excerpt;
+    }
 }

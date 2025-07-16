@@ -20,7 +20,7 @@ else if (_articleItems != null && _articleItems.Any())
 
             <div class="card article-card @GetCardStateClass(processingState)">
                 <div class="card-divider">
-                    <h5>@(string.IsNullOrEmpty(article.Title) ? "No Title Available" : article.Title)</h5>
+                    <h5>@DisplayTitle(article)</h5>
                 </div>
                 <div class="shimmer-placeholder @(processingState == "processing" ? "processing" : "")" id="shimmer-@article.Id">
                     <img src="@imageUrl" alt="Article Cover" @onload="@(() => HandleImageLoadAsync($"shimmer-{article.Id}", article.Link, true))" @onerror="@(() => HandleImageLoadAsync($"shimmer-{article.Id}", article.Link, false))" />
@@ -33,7 +33,7 @@ else if (_articleItems != null && _articleItems.Any())
                     }
                 </div>
                 <div class="card-section">
-                    <p>@(string.IsNullOrEmpty(article.Excerpt) ? "No Excerpt Available" : article.Excerpt.Length > 250 ? article.Excerpt.Substring(0, 250) + "..." : article.Excerpt)</p>
+                    <p>@DisplayExcerpt(article)</p>
                     <p><i class="fas fa-calendar-alt"></i> Created: @article.Created.ToString("yyyy-MM-dd")</p>
                     <a href="@article.Link" target="_blank" class="button"><i class="fas fa-external-link-alt"></i> Read Article</a>
                 </div>

@@ -156,4 +156,15 @@ public partial class Videos
         // Load articles automatically when the page starts
         await FetchVideosAsync();
     }
+
+    private static string DisplayTitle(RaindropItem video)
+    {
+        return string.IsNullOrEmpty(video.Title) ? "No Title Available" : video.Title;
+    }
+
+    private static string DisplayExcerpt(RaindropItem video)
+    {
+        return string.IsNullOrEmpty(video.Excerpt) ? "No Excerpt Available" :
+            video.Excerpt.Length > 250 ? video.Excerpt.Substring(0, 250) + "..." : video.Excerpt;
+    }
 }
