@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using redmuffin.Blazor.StaticWeb.Common.Models;
 using redmuffin.Blazor.StaticWeb.Services;

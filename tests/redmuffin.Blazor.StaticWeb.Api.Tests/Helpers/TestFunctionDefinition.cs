@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using JetBrains.Annotations;
 using Microsoft.Azure.Functions.Worker;
 using redmuffin.Blazor.StaticWeb.Api.Functions;

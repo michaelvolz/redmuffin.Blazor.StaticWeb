@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using redmuffin.Blazor.StaticWeb.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Integration;

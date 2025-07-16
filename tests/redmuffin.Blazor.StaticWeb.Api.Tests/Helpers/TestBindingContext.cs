@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker;
 
 namespace redmuffin.Blazor.StaticWeb.Api.Tests.Helpers;
 
