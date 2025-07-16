@@ -19,6 +19,56 @@ public class CacheMonitoringService : ICacheMonitoringService
     private readonly IImageValidationService _imageValidationService;
     private readonly ILogger<CacheMonitoringService> _logger;
     private readonly IOpenGraphImagesService _openGraphImagesService;
+    
+    // LoggerMessage delegates for better performance
+    private static readonly Action<ILogger, Exception?> LogCollectingComprehensiveStats =
+        LoggerMessage.Define(LogLevel.Debug, new EventId(1, nameof(LogCollectingComprehensiveStats)),
+            "Collecting comprehensive cache statistics");
+    private static readonly Action<ILogger, Exception?> LogComprehensiveStatsCollected =
+        LoggerMessage.Define(LogLevel.Information, new EventId(2, nameof(LogComprehensiveStatsCollected)),
+            "Comprehensive cache statistics collected successfully");
+    private static readonly Action<ILogger, Exception> LogFailedToCollectStats =
+        LoggerMessage.Define(LogLevel.Error, new EventId(3, nameof(LogFailedToCollectStats)),
+            "Failed to collect comprehensive cache statistics");
+    private static readonly Action<ILogger, Exception?> LogCollectingHealthMetrics =
+        LoggerMessage.Define(LogLevel.Debug, new EventId(4, nameof(LogCollectingHealthMetrics)),
+            "Collecting cache health metrics");
+    private static readonly Action<ILogger, Exception> LogFailedToCollectHealthMetrics =
+        LoggerMessage.Define(LogLevel.Error, new EventId(5, nameof(LogFailedToCollectHealthMetrics)),
+            "Failed to collect cache health metrics");
+    private static readonly Action<ILogger, int, Exception?> LogCollectingPerformanceStats =
+        LoggerMessage.Define<int>(LogLevel.Debug, new EventId(6, nameof(LogCollectingPerformanceStats)),
+            "Collecting cache performance statistics for {TimeRange} hours");
+    private static readonly Action<ILogger, int, Exception?> LogPerformanceStatsCollected =
+        LoggerMessage.Define<int>(LogLevel.Information, new EventId(7, nameof(LogPerformanceStatsCollected)),
+            "Cache performance statistics collected for {TimeRange} hours");
+    private static readonly Action<ILogger, Exception> LogFailedToCollectPerformanceStats =
+        LoggerMessage.Define(LogLevel.Error, new EventId(8, nameof(LogFailedToCollectPerformanceStats)),
+            "Failed to collect cache performance statistics");
+    private static readonly Action<ILogger, Exception?> LogStartingCacheOptimization =
+        LoggerMessage.Define(LogLevel.Information, new EventId(9, nameof(LogStartingCacheOptimization)),
+            "Starting cache optimization");
+    private static readonly Action<ILogger, Exception> LogCacheOptimizationFailed =
+        LoggerMessage.Define(LogLevel.Error, new EventId(10, nameof(LogCacheOptimizationFailed)),
+            "Cache optimization failed after {ElapsedMs}ms");
+    private static readonly Action<ILogger, Exception?> LogGeneratingCacheRecommendations =
+        LoggerMessage.Define(LogLevel.Debug, new EventId(11, nameof(LogGeneratingCacheRecommendations)),
+            "Generating cache recommendations");
+    private static readonly Action<ILogger, int, Exception?> LogCacheRecommendationsGenerated =
+        LoggerMessage.Define<int>(LogLevel.Information, new EventId(12, nameof(LogCacheRecommendationsGenerated)),
+            "Cache recommendations generated with health score: {HealthScore}");
+    private static readonly Action<ILogger, Exception> LogFailedToGenerateRecommendations =
+        LoggerMessage.Define(LogLevel.Error, new EventId(13, nameof(LogFailedToGenerateRecommendations)),
+            "Failed to generate cache recommendations");
+    private static readonly Action<ILogger, CacheHealthStatus, double, Exception?> LogCacheHealthMetricsCollected =
+        LoggerMessage.Define<CacheHealthStatus, double>(LogLevel.Information, new EventId(14, nameof(LogCacheHealthMetricsCollected)),
+            "Cache health metrics collected: Status={HealthStatus}, StorageUtilization={StorageUtilization:F2}%");
+    private static readonly Action<ILogger, long, double, double, Exception?> LogCacheOptimizationCompleted =
+        LoggerMessage.Define<long, double, double>(LogLevel.Information, new EventId(15, nameof(LogCacheOptimizationCompleted)),
+            "Cache optimization completed successfully in {ElapsedMs}ms. Storage utilization: {Before:F2}% → {After:F2}%");
+    private static readonly Action<ILogger, long, Exception> LogCacheOptimizationFailedWithTime =
+        LoggerMessage.Define<long>(LogLevel.Error, new EventId(16, nameof(LogCacheOptimizationFailedWithTime)),
+            "Cache optimization failed after {ElapsedMs}ms");
 
     public CacheMonitoringService(
         ICacheService cacheService,
@@ -38,7 +88,7 @@ public class CacheMonitoringService : ICacheMonitoringService
     {
         try
         {
-            _logger.LogDebug("Collecting comprehensive cache statistics");
+            LogCollectingComprehensiveStats(_logger, null);
 
             // Get overall cache statistics
             var overallStats = await _cacheService.GetCacheStatsAsync(cancellationToken).ConfigureAwait(false);
@@ -65,12 +115,12 @@ public class CacheMonitoringService : ICacheMonitoringService
                 CollectedAt = DateTime.UtcNow
             };
 
-            _logger.LogInformation("Comprehensive cache statistics collected successfully");
+            LogComprehensiveStatsCollected(_logger, null);
             return result;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to collect comprehensive cache statistics");
+            LogFailedToCollectStats(_logger, ex);
             return new CacheMonitoringStats(); // Return empty stats on error
         }
     }
@@ -79,7 +129,7 @@ public class CacheMonitoringService : ICacheMonitoringService
     {
         try
         {
-            _logger.LogDebug("Collecting cache health metrics");
+            LogCollectingHealthMetrics(_logger, null);
 
             var stats = await _cacheService.GetCacheStatsAsync(cancellationToken).ConfigureAwait(false);
             var storageStats = await _browserStorageService.GetStorageStatsAsync(cancellationToken).ConfigureAwait(false);
@@ -99,14 +149,13 @@ public class CacheMonitoringService : ICacheMonitoringService
                 CheckedAt = DateTime.UtcNow
             };
 
-            _logger.LogInformation("Cache health metrics collected: Status={HealthStatus}, StorageUtilization={StorageUtilization:F2}%",
-                result.HealthStatus, result.StorageUtilizationPercent);
+            LogCacheHealthMetricsCollected(_logger, result.HealthStatus, result.StorageUtilizationPercent, null);
 
             return result;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to collect cache health metrics");
+            LogFailedToCollectHealthMetrics(_logger, ex);
             return new CacheHealthMetrics
             {
                 HealthStatus = CacheHealthStatus.Error,
@@ -119,7 +168,7 @@ public class CacheMonitoringService : ICacheMonitoringService
     {
         try
         {
-            _logger.LogDebug("Collecting cache performance statistics for {TimeRange} hours", timeRangeHours);
+            LogCollectingPerformanceStats(_logger, timeRangeHours, null);
 
             var stats = await _cacheService.GetCacheStatsAsync(cancellationToken).ConfigureAwait(false);
             var timeRange = TimeSpan.FromHours(timeRangeHours);
@@ -138,12 +187,12 @@ public class CacheMonitoringService : ICacheMonitoringService
                 CollectedAt = DateTime.UtcNow
             };
 
-            _logger.LogInformation("Cache performance statistics collected for {TimeRange} hours", timeRangeHours);
+            LogPerformanceStatsCollected(_logger, timeRangeHours, null);
             return result;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to collect cache performance statistics");
+            LogFailedToCollectPerformanceStats(_logger, ex);
             return new CachePerformanceStats
             {
                 TimeRange = TimeSpan.FromHours(timeRangeHours),
@@ -159,7 +208,7 @@ public class CacheMonitoringService : ICacheMonitoringService
 
         try
         {
-            _logger.LogInformation("Starting cache optimization");
+            LogStartingCacheOptimization(_logger, null);
 
             // Get initial statistics
             var initialStats = await _cacheService.GetCacheStatsAsync(cancellationToken).ConfigureAwait(false);
@@ -189,9 +238,7 @@ public class CacheMonitoringService : ICacheMonitoringService
             stopwatch.Stop();
             result.OptimizationTimeMs = stopwatch.ElapsedMilliseconds;
 
-            _logger.LogInformation("Cache optimization completed successfully in {ElapsedMs}ms. " +
-                                   "Storage utilization: {Before:F2}% → {After:F2}%",
-                result.OptimizationTimeMs, result.StorageUtilizationBefore, result.StorageUtilizationAfter);
+            LogCacheOptimizationCompleted(_logger, result.OptimizationTimeMs, result.StorageUtilizationBefore, result.StorageUtilizationAfter, null);
 
             return result;
         }
@@ -202,7 +249,7 @@ public class CacheMonitoringService : ICacheMonitoringService
             result.IsSuccessful = false;
             result.ActionsPerformed.Add($"Optimization failed: {ex.Message}");
 
-            _logger.LogError(ex, "Cache optimization failed after {ElapsedMs}ms", result.OptimizationTimeMs);
+            LogCacheOptimizationFailedWithTime(_logger, result.OptimizationTimeMs, ex);
             return result;
         }
     }
@@ -211,7 +258,7 @@ public class CacheMonitoringService : ICacheMonitoringService
     {
         try
         {
-            _logger.LogDebug("Generating cache recommendations");
+            LogGeneratingCacheRecommendations(_logger, null);
 
             var stats = await _cacheService.GetCacheStatsAsync(cancellationToken).ConfigureAwait(false);
             var healthMetrics = await GetCacheHealthMetricsAsync(cancellationToken).ConfigureAwait(false);
@@ -233,12 +280,12 @@ public class CacheMonitoringService : ICacheMonitoringService
             // Calculate overall health score
             recommendations.HealthScore = CalculateHealthScore(healthMetrics, stats);
 
-            _logger.LogInformation("Cache recommendations generated with health score: {HealthScore}", recommendations.HealthScore);
+            LogCacheRecommendationsGenerated(_logger, recommendations.HealthScore, null);
             return recommendations;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to generate cache recommendations");
+            LogFailedToGenerateRecommendations(_logger, ex);
             return new CacheRecommendations
             {
                 MaintenanceRecommendations = new List<string> { $"Error generating recommendations: {ex.Message}" },
