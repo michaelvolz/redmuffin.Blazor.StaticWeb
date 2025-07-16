@@ -1,4 +1,4 @@
-﻿namespace redmuffin.Blazor.StaticWeb.Core.Layout;
+namespace redmuffin.Blazor.StaticWeb.Core.Layout;
 
 public partial class NavMenu
 {

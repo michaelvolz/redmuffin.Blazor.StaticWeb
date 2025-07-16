@@ -1,4 +1,4 @@
-﻿using Markdig;
+using Markdig;
 using Microsoft.AspNetCore.Components;
 
 namespace redmuffin.Blazor.StaticWeb.Features.Pages.MarkdownExamplesPage;

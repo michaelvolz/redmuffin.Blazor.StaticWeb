@@ -1,4 +1,4 @@
-﻿namespace redmuffin.Blazor.StaticWeb.Features.Pages.IconsPage;
+namespace redmuffin.Blazor.StaticWeb.Features.Pages.IconsPage;
 
 public partial class Icons
 {

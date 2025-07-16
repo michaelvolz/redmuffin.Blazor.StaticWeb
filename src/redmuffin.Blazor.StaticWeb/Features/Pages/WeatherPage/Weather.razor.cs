@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Json;
+using System.Net.Http.Json;
 using System.Text.Json;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;

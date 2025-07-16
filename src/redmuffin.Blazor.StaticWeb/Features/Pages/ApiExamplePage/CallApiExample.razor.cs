@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace redmuffin.Blazor.StaticWeb.Features.Pages.ApiExamplePage;
 
