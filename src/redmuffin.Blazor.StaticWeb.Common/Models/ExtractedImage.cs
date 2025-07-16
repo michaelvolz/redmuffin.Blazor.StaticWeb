@@ -1,4 +1,4 @@
-using redmuffin.Blazor.StaticWeb.Common.Enums;
+﻿using redmuffin.Blazor.StaticWeb.Common.Enums;
 
 namespace redmuffin.Blazor.StaticWeb.Common.Models;
 

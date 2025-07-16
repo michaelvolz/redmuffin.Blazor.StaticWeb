@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Common.Models;
+﻿namespace redmuffin.Blazor.StaticWeb.Common.Models;
 
 /// <summary>
 ///     Represents the result of a batch image retrieval operation
