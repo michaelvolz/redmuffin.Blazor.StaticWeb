@@ -381,9 +381,8 @@ public partial class Articles
         LogProcessingOpenGraphImagesError(Logger, ex);
 
         // Update all processing states to failed
-        foreach (var state in _articleStates.Values)
-            if (state.ProcessingPhase == ProcessingPhase.Processing)
-                state.FailProcessing(ex.Message, "Processing error");
+        foreach (var state in _articleStates.Values.Where(state => state.ProcessingPhase == ProcessingPhase.Processing))
+            state.FailProcessing(ex.Message, "Processing error");
 
         StateHasChanged();
     }
@@ -454,10 +453,9 @@ public partial class Articles
         }
 
         // Fallback to original cover image if available
-        if (!string.IsNullOrEmpty(article.Cover)) return article.Cover;
-
-        // Last resort: return a placeholder
-        return "https://via.placeholder.com/400x200?text=No+Image+Available";
+        return !string.IsNullOrEmpty(article.Cover)
+            ? article.Cover
+            : "https://via.placeholder.com/400x200?text=No+Image+Available"; // Last resort: return a placeholder
     }
 
     /// <summary>
@@ -561,7 +559,6 @@ public partial class Articles
                 state.ValidationState = ImageValidationState.Validated;
 
                 // Update cache with validation confirmation
-                await UpdateCacheWithValidationResultAsync(imageUrl, articleLink, validationResult).ConfigureAwait(false);
             }
             else
             {
@@ -571,8 +568,9 @@ public partial class Articles
                 if (loadSuccess) state.SetFallbackReason("Image validation failed: " + validationResult.ErrorMessage);
 
                 // Update cache to reflect validation failure
-                await UpdateCacheWithValidationResultAsync(imageUrl, articleLink, validationResult).ConfigureAwait(false);
             }
+
+            await UpdateCacheWithValidationResultAsync(articleLink, validationResult).ConfigureAwait(false);
 
             // Trigger UI update to reflect validation state changes
             StateHasChanged();
@@ -593,10 +591,9 @@ public partial class Articles
     /// <summary>
     ///     Updates the cache with validation results to improve future performance.
     /// </summary>
-    /// <param name="imageUrl">The validated image URL</param>
     /// <param name="articleLink">The article link associated with the image</param>
     /// <param name="validationResult">The validation result</param>
-    private async Task UpdateCacheWithValidationResultAsync(string imageUrl, string articleLink, ImageValidationResult validationResult)
+    private async Task UpdateCacheWithValidationResultAsync(string articleLink, ImageValidationResult validationResult)
     {
         try
         {
@@ -645,9 +642,8 @@ public partial class Articles
 
         // Show fallback if using placeholder URL
         var imageUrl = _imageUrlCache.GetValueOrDefault(article.Link, string.Empty);
-        if (string.IsNullOrEmpty(imageUrl) || imageUrl.Contains("placeholder.com", StringComparison.OrdinalIgnoreCase)) return true;
 
-        return false;
+        return string.IsNullOrEmpty(imageUrl) || imageUrl.Contains("placeholder.com", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -675,11 +671,10 @@ public partial class Articles
     /// <returns>The article processing state</returns>
     private ArticleProcessingState GetOrCreateArticleState(string articleLink)
     {
-        if (!_articleStates.TryGetValue(articleLink, out var state))
-        {
-            state = new ArticleProcessingState();
-            _articleStates[articleLink] = state;
-        }
+        if (_articleStates.TryGetValue(articleLink, out var state)) return state;
+
+        state = new ArticleProcessingState();
+        _articleStates[articleLink] = state;
 
         return state;
     }
@@ -710,13 +705,10 @@ public partial class Articles
 
         // Find the article to check original cover
         var article = _articleItems?.FirstOrDefault(a => string.Equals(a.Link, articleLink, StringComparison.Ordinal));
-        if (article != null)
-        {
-            if (string.IsNullOrEmpty(article.Cover)) return "No image available";
+        if (article == null) return "Image not available";
 
-            if (IsCoverImageSuspicious(article.Cover)) return "Placeholder image";
-        }
+        if (string.IsNullOrEmpty(article.Cover)) return "No image available";
 
-        return "Image not available";
+        return IsCoverImageSuspicious(article.Cover) ? "Placeholder image" : "Image not available";
     }
 }
