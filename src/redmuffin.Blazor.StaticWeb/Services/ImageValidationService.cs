@@ -38,6 +38,10 @@ public class ImageValidationService : IImageValidationService, IDisposable
         LoggerMessage.Define<string>(LogLevel.Error, new EventId(6, nameof(LogUnexpectedErrorDuringValidation)),
             "Unexpected error during image validation: {ImageUrl}");
 
+    private static readonly Action<ILogger, string, string, Exception?> LogBrowserBlockedImage =
+        LoggerMessage.Define<string, string>(LogLevel.Warning, new EventId(7, nameof(LogBrowserBlockedImage)),
+            "Browser blocked image: {ImageUrl}, Reason: {BlockReason}");
+
     private readonly ICacheService _cacheService;
     private readonly SemaphoreSlim _concurrentRequestsSemaphore = new(10, 10);
     private readonly IHttpClientFactory _httpClientFactory;
@@ -87,6 +91,17 @@ public class ImageValidationService : IImageValidationService, IDisposable
             ImageUrl = imageUrl,
             IsValid = false,
             ErrorMessage = errorMessage,
+            ValidatedAt = DateTime.UtcNow
+        };
+    }
+
+    private static ImageValidationResult CreateBrowserBlockedValidationResult(string imageUrl, string blockReason)
+    {
+        return new ImageValidationResult
+        {
+            ImageUrl = imageUrl,
+            IsValid = false,
+            ErrorMessage = $"Browser blocked: {blockReason}",
             ValidatedAt = DateTime.UtcNow
         };
     }
@@ -246,6 +261,20 @@ public class ImageValidationService : IImageValidationService, IDisposable
             LogFailedToGetValidationCacheStats(_logger, ex);
             return new Dictionary<string, object>(StringComparer.Ordinal);
         }
+    }
+
+    public async Task RecordBrowserBlockedImageAsync(string imageUrl, string blockReason, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+            return;
+
+        LogBrowserBlockedImage(_logger, imageUrl, blockReason, null);
+
+        var blockedResult = CreateBrowserBlockedValidationResult(imageUrl, blockReason);
+
+        // Cache the blocked result to prevent future attempts
+        await _cacheService.SetItemAsync(CacheNamespace, imageUrl, blockedResult, CacheExpirationHours * 60, cancellationToken).ConfigureAwait(false);
+        _memoryCache.TryAdd(imageUrl, blockedResult);
     }
 
     private async Task<ImageValidationResult> PerformHttpHeadValidationAsync(

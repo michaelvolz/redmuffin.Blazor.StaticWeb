@@ -239,4 +239,9 @@ public class MockImageValidationService : IImageValidationService
     {
         return await Task.FromResult(new Dictionary<string, object>()).ConfigureAwait(false);
     }
+
+    public Task RecordBrowserBlockedImageAsync(string imageUrl, string blockReason, CancellationToken cancellationToken = default)
+    {
+        return Task.CompletedTask;
+    }
 }

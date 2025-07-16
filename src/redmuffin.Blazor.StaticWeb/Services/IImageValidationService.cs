@@ -51,4 +51,14 @@ public interface IImageValidationService
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>Dictionary containing cache statistics</returns>
     Task<IDictionary<string, object>> GetValidationCacheStatsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Records that an image was blocked by the browser due to CORS, SameSite, or other security policies.
+    ///     This creates a cached validation result to prevent repeated attempts to load the blocked image.
+    /// </summary>
+    /// <param name="imageUrl">The image URL that was blocked</param>
+    /// <param name="blockReason">The reason the image was blocked (e.g., 'CORS policy', 'SameSite policy')</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>Task representing the cache operation</returns>
+    Task RecordBrowserBlockedImageAsync(string imageUrl, string blockReason, CancellationToken cancellationToken = default);
 }

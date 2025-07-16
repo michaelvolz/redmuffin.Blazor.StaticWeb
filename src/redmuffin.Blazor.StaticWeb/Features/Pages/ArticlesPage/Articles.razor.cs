@@ -547,6 +547,19 @@ public partial class Articles
             // Get article state for updates
             var state = GetOrCreateArticleState(articleLink);
 
+            // If browser failed to load the image, record it as blocked instead of attempting HTTP validation
+            if (!loadSuccess)
+            {
+                // Record this as a browser-blocked image to prevent future HTTP validation attempts
+                await ImageValidationService.RecordBrowserBlockedImageAsync(imageUrl, "Browser load failed (likely CORS/SameSite blocking)").ConfigureAwait(false);
+
+                state.ValidationState = ImageValidationState.Failed;
+                state.SetFallbackReason("Browser blocked image (CORS/SameSite policy)");
+
+                StateHasChanged();
+                return;
+            }
+
             // Update validation state to indicate validation is in progress
             state.ValidationState = ImageValidationState.Validating;
 
