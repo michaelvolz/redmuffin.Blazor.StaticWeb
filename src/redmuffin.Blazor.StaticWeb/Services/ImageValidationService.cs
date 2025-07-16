@@ -1,4 +1,5 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
+using System.Globalization;
 using redmuffin.Blazor.StaticWeb.Common.Models;
 
 namespace redmuffin.Blazor.StaticWeb.Services;
@@ -6,7 +7,7 @@ namespace redmuffin.Blazor.StaticWeb.Services;
 /// <summary>
 ///     Service for validating image URLs using HTTP HEAD requests to ensure they're accessible and valid.
 /// </summary>
-public class ImageValidationService : IImageValidationService
+public class ImageValidationService : IImageValidationService, IDisposable
 {
     private const string CacheNamespace = "image_validation";
     private const int CacheExpirationHours = 1; // 1 hour for image validation results
@@ -15,8 +16,8 @@ public class ImageValidationService : IImageValidationService
     private readonly SemaphoreSlim _concurrentRequestsSemaphore = new(10, 10);
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<ImageValidationService> _logger;
-    private readonly ConcurrentDictionary<string, ImageValidationResult> _memoryCache = new();
-    
+    private readonly ConcurrentDictionary<string, ImageValidationResult> _memoryCache = new(StringComparer.Ordinal);
+
     // LoggerMessage delegates
     private static readonly Action<ILogger, string, string, Exception?> LogUpgradedHttpToHttps =
         LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(1, nameof(LogUpgradedHttpToHttps)),
@@ -64,7 +65,7 @@ public class ImageValidationService : IImageValidationService
         // Change HTTP to HTTPS if possible for better security and CORS compliance
         if (imageUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
         {
-            imageUrl = "https://" + imageUrl.Substring(7);
+            imageUrl = string.Concat("https://", imageUrl.AsSpan(7));
             LogUpgradedHttpToHttps(_logger, originalUrl, imageUrl, null);
         }
 
@@ -88,13 +89,13 @@ public class ImageValidationService : IImageValidationService
         }
     }
 
-    public async Task<Dictionary<string, ImageValidationResult>> ValidateImagesAsync(
+    public async Task<IDictionary<string, ImageValidationResult>> ValidateImagesAsync(
         IEnumerable<string> imageUrls,
         int maxConcurrency = 5,
         CancellationToken cancellationToken = default)
     {
-        var results = new ConcurrentDictionary<string, ImageValidationResult>();
-        var semaphore = new SemaphoreSlim(maxConcurrency, maxConcurrency);
+        var results = new ConcurrentDictionary<string, ImageValidationResult>(StringComparer.Ordinal);
+        using var semaphore = new SemaphoreSlim(maxConcurrency, maxConcurrency);
 
         var tasks = imageUrls.Select(async url =>
         {
@@ -111,7 +112,7 @@ public class ImageValidationService : IImageValidationService
         });
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
-        return results.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        return results.ToDictionary(kvp => kvp.Key, kvp => kvp.Value, StringComparer.Ordinal);
     }
 
     public async Task<ImageValidationResult> ValidateImageWithCacheAsync(
@@ -169,28 +170,34 @@ public class ImageValidationService : IImageValidationService
         }
     }
 
-    public async Task<Dictionary<string, object>> GetValidationCacheStatsAsync(CancellationToken cancellationToken = default)
+    public async Task<IDictionary<string, object>> GetValidationCacheStatsAsync(CancellationToken cancellationToken = default)
     {
         try
         {
             var stats = await _cacheService.GetNamespaceStatsAsync(CacheNamespace, cancellationToken).ConfigureAwait(false);
-            return new Dictionary<string, object>
+            return new Dictionary<string, object>(StringComparer.Ordinal)
             {
                 ["Namespace"] = stats.Namespace,
                 ["TotalEntries"] = stats.TotalItems,
                 ["TotalSizeBytes"] = stats.TotalSizeBytes,
                 ["ExpiredEntries"] = stats.ExpiredItemsCount,
                 ["MemoryCacheCount"] = _memoryCache.Count,
-                ["OldestItemTimestamp"] = stats.OldestItemTimestamp?.ToString() ?? "N/A",
-                ["NewestItemTimestamp"] = stats.NewestItemTimestamp?.ToString() ?? "N/A",
+                ["OldestItemTimestamp"] = stats.OldestItemTimestamp?.ToString(CultureInfo.InvariantCulture) ?? "N/A",
+                ["NewestItemTimestamp"] = stats.NewestItemTimestamp?.ToString(CultureInfo.InvariantCulture) ?? "N/A",
                 ["AverageAccessCount"] = stats.AverageAccessCount
             };
         }
         catch (Exception ex)
         {
             LogFailedToGetValidationCacheStats(_logger, ex);
-            return new Dictionary<string, object>();
+            return new Dictionary<string, object>(StringComparer.Ordinal);
         }
+    }
+
+    public void Dispose()
+    {
+        _concurrentRequestsSemaphore?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     private async Task<ImageValidationResult> PerformHttpHeadValidationAsync(
@@ -200,69 +207,75 @@ public class ImageValidationService : IImageValidationService
     {
         try
         {
-            var httpClient = _httpClientFactory.CreateClient("ExternalHttpClient");
-            // Override timeout if needed (ExternalHttpClient has 30s default)
-            if (httpClient.Timeout.TotalMilliseconds > DefaultTimeoutMs) httpClient.Timeout = TimeSpan.FromMilliseconds(DefaultTimeoutMs);
-
-            var request = new HttpRequestMessage(HttpMethod.Head, uri);
-
-            using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-
-            var result = new ImageValidationResult
-            {
-                ImageUrl = imageUrl,
-                IsValid = response.IsSuccessStatusCode,
-                StatusCode = response.StatusCode,
-                ContentType = response.Content?.Headers?.ContentType?.MediaType ?? string.Empty,
-                ContentLength = response.Content?.Headers?.ContentLength,
-                ValidatedAt = DateTime.UtcNow,
-                ResponseTimeMs = 0 // Could implement timing if needed,
-            };
-
-            if (!response.IsSuccessStatusCode)
-            {
-                result.ErrorMessage = $"HTTP {response.StatusCode}: {response.ReasonPhrase}";
-            }
-            else if (result.ContentType != null && !result.ContentType.StartsWith("image/"))
-            {
-                result.IsValid = false;
-                result.ErrorMessage = $"Content type '{result.ContentType}' is not an image";
-            }
-
-            return result;
+            var response = await SendHttpHeadRequestAsync(uri, cancellationToken).ConfigureAwait(false);
+            return CreateValidationResult(response, imageUrl);
         }
         catch (HttpRequestException ex)
         {
             LogHttpRequestFailed(_logger, imageUrl, ex);
-            return new ImageValidationResult
-            {
-                ImageUrl = imageUrl,
-                IsValid = false,
-                ErrorMessage = $"HTTP request failed: {ex.Message}",
-                ValidatedAt = DateTime.UtcNow
-            };
+            return CreateFailedValidationResult(imageUrl, $"HTTP request failed: {ex.Message}");
         }
         catch (TaskCanceledException ex)
         {
             LogImageValidationTimedOut(_logger, imageUrl, ex);
-            return new ImageValidationResult
-            {
-                ImageUrl = imageUrl,
-                IsValid = false,
-                ErrorMessage = "Request timed out",
-                ValidatedAt = DateTime.UtcNow
-            };
+            return CreateFailedValidationResult(imageUrl, "Request timed out");
         }
         catch (Exception ex)
         {
             LogUnexpectedErrorDuringValidation(_logger, imageUrl, ex);
-            return new ImageValidationResult
-            {
-                ImageUrl = imageUrl,
-                IsValid = false,
-                ErrorMessage = $"Validation failed: {ex.Message}",
-                ValidatedAt = DateTime.UtcNow
-            };
+            return CreateFailedValidationResult(imageUrl, $"Validation failed: {ex.Message}");
         }
+    }
+
+    private async Task<HttpResponseMessage> SendHttpHeadRequestAsync(Uri uri, CancellationToken cancellationToken)
+    {
+        var httpClient = _httpClientFactory.CreateClient("ExternalHttpClient");
+        // Override timeout if needed (ExternalHttpClient has 30s default)
+        if (httpClient.Timeout.TotalMilliseconds > DefaultTimeoutMs) httpClient.Timeout = TimeSpan.FromMilliseconds(DefaultTimeoutMs);
+
+        using var request = new HttpRequestMessage(HttpMethod.Head, uri);
+        return await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static ImageValidationResult CreateValidationResult(HttpResponseMessage response, string imageUrl)
+    {
+        var result = new ImageValidationResult
+        {
+            ImageUrl = imageUrl,
+            IsValid = response.IsSuccessStatusCode,
+            StatusCode = response.StatusCode,
+            ContentType = response.Content?.Headers?.ContentType?.MediaType ?? string.Empty,
+            ContentLength = response.Content?.Headers?.ContentLength,
+            ValidatedAt = DateTime.UtcNow,
+            ResponseTimeMs = 0
+        };
+
+        if (!response.IsSuccessStatusCode)
+        {
+            result.ErrorMessage = $"HTTP {response.StatusCode}: {response.ReasonPhrase}";
+        }
+        else if (!IsValidContentType(result.ContentType))
+        {
+            result.IsValid = false;
+            result.ErrorMessage = $"Content type '{result.ContentType}' is not an image";
+        }
+
+        return result;
+    }
+
+    private static ImageValidationResult CreateFailedValidationResult(string imageUrl, string errorMessage)
+    {
+        return new ImageValidationResult
+        {
+            ImageUrl = imageUrl,
+            IsValid = false,
+            ErrorMessage = errorMessage,
+            ValidatedAt = DateTime.UtcNow
+        };
+    }
+
+    private static bool IsValidContentType(string? contentType)
+    {
+        return contentType != null && contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
     }
 }
