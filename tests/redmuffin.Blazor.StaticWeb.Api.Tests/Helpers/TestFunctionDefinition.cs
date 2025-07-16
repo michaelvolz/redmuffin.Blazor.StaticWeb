@@ -8,11 +8,11 @@ namespace redmuffin.Blazor.StaticWeb.Api.Tests.Helpers;
 
 public class TestFunctionDefinition(string functionId) : FunctionDefinition
 {
-	public override IImmutableDictionary<string, BindingMetadata> InputBindings => ImmutableDictionary<string, BindingMetadata>.Empty;
-	public override IImmutableDictionary<string, BindingMetadata> OutputBindings => ImmutableDictionary<string, BindingMetadata>.Empty;
-	[UsedImplicitly] public override ImmutableArray<FunctionParameter> Parameters { get; }
-	public override string PathToAssembly => Assembly.GetExecutingAssembly().Location;
-	public override string EntryPoint => typeof(RaindropListVideos).FullName!;
-	public override string Id { get; } = functionId;
-	public override string Name { get; } = functionId;
+    public override IImmutableDictionary<string, BindingMetadata> InputBindings => ImmutableDictionary<string, BindingMetadata>.Empty;
+    public override IImmutableDictionary<string, BindingMetadata> OutputBindings => ImmutableDictionary<string, BindingMetadata>.Empty;
+    [UsedImplicitly] public override ImmutableArray<FunctionParameter> Parameters { get; }
+    public override string PathToAssembly => Assembly.GetExecutingAssembly().Location;
+    public override string EntryPoint => typeof(RaindropListVideos).FullName!;
+    public override string Id { get; } = functionId;
+    public override string Name { get; } = functionId;
 }

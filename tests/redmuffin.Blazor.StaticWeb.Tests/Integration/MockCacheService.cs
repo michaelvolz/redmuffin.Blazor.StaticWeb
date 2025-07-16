@@ -16,20 +16,15 @@ public class MockCacheService : ICacheService
 
     public Task<T?> GetItemAsync<T>(string cacheNamespace, string key, CancellationToken cancellationToken = default)
     {
-        if (_cache.TryGetValue(cacheNamespace, out var namespaceDict) && 
+        if (_cache.TryGetValue(cacheNamespace, out var namespaceDict) &&
             namespaceDict.TryGetValue(key, out var value))
-        {
             return Task.FromResult((T?)value);
-        }
         return Task.FromResult(default(T));
     }
 
     public Task RemoveItemAsync(string cacheNamespace, string key, CancellationToken cancellationToken = default)
     {
-        if (_cache.TryGetValue(cacheNamespace, out var namespaceDict))
-        {
-            namespaceDict.TryRemove(key, out _);
-        }
+        if (_cache.TryGetValue(cacheNamespace, out var namespaceDict)) namespaceDict.TryRemove(key, out _);
         return Task.CompletedTask;
     }
 
@@ -41,8 +36,8 @@ public class MockCacheService : ICacheService
 
     public Task<IEnumerable<string>> GetKeysAsync(string cacheNamespace, CancellationToken cancellationToken = default)
     {
-        var keys = _cache.TryGetValue(cacheNamespace, out var namespaceDict) 
-            ? namespaceDict.Keys.AsEnumerable() 
+        var keys = _cache.TryGetValue(cacheNamespace, out var namespaceDict)
+            ? namespaceDict.Keys.AsEnumerable()
             : Enumerable.Empty<string>();
         return Task.FromResult(keys);
     }

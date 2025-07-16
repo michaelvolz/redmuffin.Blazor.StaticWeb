@@ -11,38 +11,38 @@ namespace redmuffin.Blazor.StaticWeb.Api.Tests.Functions;
 
 public class RaindropListVideos_Tests : TestBase
 {
-	[Test]
-	public async Task Run_ReturnsOkWithJsonResponse_Async()
-	{
-		// Arrange
-		var logger = NullLogger<RaindropListVideos>.Instance;
+    [Test]
+    public async Task Run_ReturnsOkWithJsonResponse_Async()
+    {
+        // Arrange
+        var logger = NullLogger<RaindropListVideos>.Instance;
 
-		var testToken = Configuration["Values:RainDropTestToken"];
-		if (string.IsNullOrWhiteSpace(testToken)) Assert.Fail("RainDropTestToken is null or whitespace.");
+        var testToken = Configuration["Values:RainDropTestToken"];
+        if (string.IsNullOrWhiteSpace(testToken)) Assert.Fail("RainDropTestToken is null or whitespace.");
 
-		var settings = Options.Create(new Settings { RainDropTestToken = testToken });
-		var functionContext = new TestFunctionContext(nameof(RaindropListVideos));
-		var httpClientFactory = functionContext.InstanceServices.GetRequiredService<IHttpClientFactory>();
-		var function = new RaindropListVideos(logger, settings, httpClientFactory);
-		var request = new TestHttpRequestData(functionContext);
+        var settings = Options.Create(new Settings { RainDropTestToken = testToken });
+        var functionContext = new TestFunctionContext(nameof(RaindropListVideos));
+        var httpClientFactory = functionContext.InstanceServices.GetRequiredService<IHttpClientFactory>();
+        var function = new RaindropListVideos(logger, settings, httpClientFactory);
+        var request = new TestHttpRequestData(functionContext);
 
-		TestHttpResponseData? response = null;
-		try
-		{
-			// Act
-			response = (TestHttpResponseData)await function.RunAsync(request).ConfigureAwait(false);
+        TestHttpResponseData? response = null;
+        try
+        {
+            // Act
+            response = (TestHttpResponseData)await function.RunAsync(request).ConfigureAwait(false);
 
-			// Assert
-			await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.OK);
-			var responseBody = response.GetBodyAsString();
-			JsonDocument.Parse(responseBody); // Verify response is valid JSON
+            // Assert
+            await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.OK);
+            var responseBody = response.GetBodyAsString();
+            JsonDocument.Parse(responseBody); // Verify response is valid JSON
 
-			await Assert.That(responseBody).Contains("youtube");
-		}
-		finally
-		{
-			// Cleanup
-			if (response is IAsyncDisposable asyncDisposableResponse) await asyncDisposableResponse.DisposeAsync().ConfigureAwait(false);
-		}
-	}
+            await Assert.That(responseBody).Contains("youtube");
+        }
+        finally
+        {
+            // Cleanup
+            if (response is IAsyncDisposable asyncDisposableResponse) await asyncDisposableResponse.DisposeAsync().ConfigureAwait(false);
+        }
+    }
 }

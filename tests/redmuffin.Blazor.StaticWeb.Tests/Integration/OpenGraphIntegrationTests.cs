@@ -1,17 +1,13 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using TUnit.Core;
-using TUnit.Assertions;
 using Microsoft.Extensions.DependencyInjection;
-using redmuffin.Blazor.StaticWeb.Services;
 using redmuffin.Blazor.StaticWeb.Common.Models;
+using redmuffin.Blazor.StaticWeb.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Integration;
 
 public class OpenGraphIntegrationTests : TestBase
 {
-    private readonly ServiceProvider _serviceProvider;
     private readonly OpenGraphImagesService _imageService;
+    private readonly ServiceProvider _serviceProvider;
 
     public OpenGraphIntegrationTests()
     {
@@ -42,12 +38,9 @@ public class OpenGraphIntegrationTests : TestBase
         // Assert
         await Assert.That(images).IsNotNull();
         await Assert.That(images.Count).IsEqualTo(2);
-        
+
         // Verify that each URL has a corresponding result
-        foreach (var url in articleUrls)
-        {
-            await Assert.That(images.ContainsKey(url)).IsTrue();
-        }
+        foreach (var url in articleUrls) await Assert.That(images.ContainsKey(url)).IsTrue();
     }
 
     [Test]
@@ -61,7 +54,7 @@ public class OpenGraphIntegrationTests : TestBase
 
         // Act - First call should populate cache
         var firstCallImages = await _imageService.GetImagesAsync(articleUrls);
-        
+
         // Act - Second call should use cache
         var secondCallImages = await _imageService.GetImagesAsync(articleUrls);
 
@@ -69,11 +62,11 @@ public class OpenGraphIntegrationTests : TestBase
         await Assert.That(firstCallImages).IsNotNull();
         await Assert.That(secondCallImages).IsNotNull();
         await Assert.That(firstCallImages.Count).IsEqualTo(secondCallImages.Count);
-        
+
         // Verify cached data is returned
         var firstResult = firstCallImages["https://example.com/article1"];
         var secondResult = secondCallImages["https://example.com/article1"];
-        
+
         await Assert.That(firstResult).IsNotNull();
         await Assert.That(secondResult).IsNotNull();
         await Assert.That(firstResult!.ImageUrl).IsEqualTo(secondResult!.ImageUrl);
@@ -94,7 +87,7 @@ public class OpenGraphIntegrationTests : TestBase
         // Assert
         await Assert.That(images).IsNotNull();
         await Assert.That(images.Count).IsEqualTo(1);
-        
+
         var result = images["https://example.com/article-with-image"];
         await Assert.That(result).IsNotNull();
         await Assert.That(result!.IsValidated).IsTrue();
@@ -129,7 +122,7 @@ public class OpenGraphIntegrationTests : TestBase
 
         // Act - First populate cache
         await _imageService.GetImagesAsync(articleUrls);
-        
+
         // Act - Get cache stats
         var stats = await _imageService.GetCacheStatsAsync();
 
@@ -148,13 +141,13 @@ public class OpenGraphIntegrationTests : TestBase
 
         // Act - First populate cache
         await _imageService.GetImageAsync(articleUrl);
-        
+
         // Verify cache contains data
         var isCachedBefore = await _imageService.IsImageCachedAsync(articleUrl);
-        
+
         // Act - Invalidate cache
         var invalidated = await _imageService.InvalidateCacheAsync(articleUrl);
-        
+
         // Verify cache is cleared
         var isCachedAfter = await _imageService.IsImageCachedAsync(articleUrl);
 
@@ -176,10 +169,10 @@ public class OpenGraphIntegrationTests : TestBase
 
         // Act - First populate cache
         await _imageService.GetImagesAsync(articleUrls);
-        
+
         // Act - Clear all cache
         var clearedCount = await _imageService.ClearCacheAsync();
-        
+
         // Verify cache is cleared
         var statsAfterClear = await _imageService.GetCacheStatsAsync();
 
@@ -214,11 +207,11 @@ public class MockImageValidationService : IImageValidationService
         });
     }
 
-    public async Task<Dictionary<string, ImageValidationResult>> ValidateImagesAsync(IEnumerable<string> imageUrls, int maxConcurrency = 5, CancellationToken cancellationToken = default)
+    public async Task<Dictionary<string, ImageValidationResult>> ValidateImagesAsync(IEnumerable<string> imageUrls, int maxConcurrency = 5,
+        CancellationToken cancellationToken = default)
     {
         var result = new Dictionary<string, ImageValidationResult>();
         foreach (var url in imageUrls)
-        {
             result[url] = new ImageValidationResult
             {
                 ImageUrl = url,
@@ -226,11 +219,11 @@ public class MockImageValidationService : IImageValidationService
                 ContentType = "image/jpeg",
                 ContentLength = 1024
             };
-        }
         return await Task.FromResult(result);
     }
 
-    public async Task<ImageValidationResult> ValidateImageWithCacheAsync(string imageUrl, int cacheExpirationMinutes = 60, CancellationToken cancellationToken = default)
+    public async Task<ImageValidationResult> ValidateImageWithCacheAsync(string imageUrl, int cacheExpirationMinutes = 60,
+        CancellationToken cancellationToken = default)
     {
         return await ValidateImageAsync(imageUrl, cancellationToken);
     }

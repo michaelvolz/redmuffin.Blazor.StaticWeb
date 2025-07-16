@@ -1,27 +1,25 @@
-using System.Net;
-
 namespace redmuffin.Blazor.StaticWeb.Tests.Helpers;
 
 /// <summary>
-/// A test HTTP message handler that allows controlling HTTP responses in unit tests
+///     A test HTTP message handler that allows controlling HTTP responses in unit tests
 /// </summary>
 public class TestHttpMessageHandler : HttpMessageHandler
 {
-    private HttpResponseMessage? _response;
     private Exception? _exception;
+    private HttpResponseMessage? _response;
 
     /// <summary>
-    /// Gets the last HTTP request that was sent through this handler
+    ///     Gets the last HTTP request that was sent through this handler
     /// </summary>
     public HttpRequestMessage? LastRequest { get; private set; }
 
     /// <summary>
-    /// Gets the content of the last HTTP request as a string
+    ///     Gets the content of the last HTTP request as a string
     /// </summary>
     public string? LastRequestContent { get; private set; }
 
     /// <summary>
-    /// Sets the response that should be returned for HTTP requests
+    ///     Sets the response that should be returned for HTTP requests
     /// </summary>
     /// <param name="response">The HTTP response to return</param>
     public void SetResponse(HttpResponseMessage response)
@@ -31,7 +29,7 @@ public class TestHttpMessageHandler : HttpMessageHandler
     }
 
     /// <summary>
-    /// Sets an exception that should be thrown for HTTP requests
+    ///     Sets an exception that should be thrown for HTTP requests
     /// </summary>
     /// <param name="exception">The exception to throw</param>
     public void SetException(Exception exception)
@@ -41,7 +39,7 @@ public class TestHttpMessageHandler : HttpMessageHandler
     }
 
     /// <summary>
-    /// Handles the HTTP request and returns the configured response or throws the configured exception
+    ///     Handles the HTTP request and returns the configured response or throws the configured exception
     /// </summary>
     /// <param name="request">The HTTP request</param>
     /// <param name="cancellationToken">Cancellation token</param>
@@ -52,20 +50,11 @@ public class TestHttpMessageHandler : HttpMessageHandler
         LastRequest = request;
 
         // Capture request content if available
-        if (request.Content != null)
-        {
-            LastRequestContent = await request.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        }
+        if (request.Content != null) LastRequestContent = await request.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
-        if (_exception != null)
-        {
-            throw _exception;
-        }
+        if (_exception != null) throw _exception;
 
-        if (_response != null)
-        {
-            return _response;
-        }
+        if (_response != null) return _response;
 
         throw new InvalidOperationException("No response or exception configured for TestHttpMessageHandler");
     }

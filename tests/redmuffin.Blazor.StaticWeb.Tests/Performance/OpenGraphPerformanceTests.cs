@@ -1,18 +1,15 @@
 using System.Diagnostics;
-using System.Threading.Tasks;
-using TUnit.Core;
-using TUnit.Assertions;
 using Microsoft.Extensions.DependencyInjection;
-using redmuffin.Blazor.StaticWeb.Services;
 using redmuffin.Blazor.StaticWeb.Common.Models;
+using redmuffin.Blazor.StaticWeb.Services;
 using redmuffin.Blazor.StaticWeb.Tests.Integration;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Performance;
 
 public class OpenGraphPerformanceTests : TestBase
 {
-    private readonly ServiceProvider _serviceProvider;
     private readonly OpenGraphImagesService _imageService;
+    private readonly ServiceProvider _serviceProvider;
 
     public OpenGraphPerformanceTests()
     {
@@ -51,10 +48,7 @@ public class OpenGraphPerformanceTests : TestBase
         var stopwatch = Stopwatch.StartNew();
 
         // Act
-        for (int i = 0; i < 100; i++)
-        {
-            await _imageService.GetImageAsync(articleUrl);
-        }
+        for (var i = 0; i < 100; i++) await _imageService.GetImageAsync(articleUrl);
         stopwatch.Stop();
 
         // Assert
@@ -81,17 +75,17 @@ public class OpenGraphPerformanceTests : TestBase
     {
         // Arrange
         var articleUrls = Enumerable.Range(1, 50).Select(i => $"https://example.com/cache-test{i}").ToList();
-        
+
         // Act & Assert - First call (cache miss)
         var firstCallStopwatch = Stopwatch.StartNew();
         await _imageService.GetImagesAsync(articleUrls);
         firstCallStopwatch.Stop();
-        
+
         // Act & Assert - Second call (cache hit)
         var secondCallStopwatch = Stopwatch.StartNew();
         await _imageService.GetImagesAsync(articleUrls);
         secondCallStopwatch.Stop();
-        
+
         // Assert - Second call should be significantly faster
         await Assert.That(secondCallStopwatch.ElapsedMilliseconds).IsLessThan(firstCallStopwatch.ElapsedMilliseconds / 2);
     }
@@ -101,13 +95,13 @@ public class OpenGraphPerformanceTests : TestBase
     {
         // Arrange
         var articleUrls = Enumerable.Range(1, 10).Select(i => $"https://example.com/stats-test{i}").ToList();
-        
+
         // Act
         await _imageService.GetImagesAsync(articleUrls);
         var stopwatch = Stopwatch.StartNew();
         var stats = await _imageService.GetCacheStatsAsync();
         stopwatch.Stop();
-        
+
         // Assert
         await Assert.That(stopwatch.ElapsedMilliseconds).IsLessThan(100); // Cache stats should be fast
         await Assert.That(stats).IsNotNull();
@@ -121,16 +115,13 @@ public class OpenGraphPerformanceTests : TestBase
         var articleUrl = "https://example.com/parallel-test";
         await _imageService.GetImageAsync(articleUrl); // Populate cache
         var stopwatch = Stopwatch.StartNew();
-        
+
         // Act - Make 100 concurrent requests
-        var tasks = Enumerable.Range(0, 100).Select(async _ => 
-        {
-            return await _imageService.GetImageAsync(articleUrl);
-        });
-        
+        var tasks = Enumerable.Range(0, 100).Select(async _ => { return await _imageService.GetImageAsync(articleUrl); });
+
         var results = await Task.WhenAll(tasks);
         stopwatch.Stop();
-        
+
         // Assert
         await Assert.That(stopwatch.ElapsedMilliseconds).IsLessThan(1000); // Should handle concurrent access efficiently
         await Assert.That(results.All(r => r != null)).IsTrue();
@@ -144,16 +135,13 @@ public class OpenGraphPerformanceTests : TestBase
         var articleUrls = Enumerable.Range(1, 50).Select(i => $"https://example.com/invalidation-test{i}").ToList();
         await _imageService.GetImagesAsync(articleUrls); // Populate cache
         var stopwatch = Stopwatch.StartNew();
-        
+
         // Act - Invalidate multiple entries
-        var invalidationTasks = articleUrls.Select(async url => 
-        {
-            return await _imageService.InvalidateCacheAsync(url);
-        });
-        
+        var invalidationTasks = articleUrls.Select(async url => { return await _imageService.InvalidateCacheAsync(url); });
+
         await Task.WhenAll(invalidationTasks);
         stopwatch.Stop();
-        
+
         // Assert
         await Assert.That(stopwatch.ElapsedMilliseconds).IsLessThan(1000); // Invalidation should be fast
     }
@@ -183,11 +171,11 @@ public class MockImageValidationService : IImageValidationService
         });
     }
 
-    public async Task<Dictionary<string, ImageValidationResult>> ValidateImagesAsync(IEnumerable<string> imageUrls, int maxConcurrency = 5, CancellationToken cancellationToken = default)
+    public async Task<Dictionary<string, ImageValidationResult>> ValidateImagesAsync(IEnumerable<string> imageUrls, int maxConcurrency = 5,
+        CancellationToken cancellationToken = default)
     {
         var result = new Dictionary<string, ImageValidationResult>();
         foreach (var url in imageUrls)
-        {
             result[url] = new ImageValidationResult
             {
                 ImageUrl = url,
@@ -195,11 +183,11 @@ public class MockImageValidationService : IImageValidationService
                 ContentType = "image/jpeg",
                 ContentLength = 1024
             };
-        }
         return await Task.FromResult(result);
     }
 
-    public async Task<ImageValidationResult> ValidateImageWithCacheAsync(string imageUrl, int cacheExpirationMinutes = 60, CancellationToken cancellationToken = default)
+    public async Task<ImageValidationResult> ValidateImageWithCacheAsync(string imageUrl, int cacheExpirationMinutes = 60,
+        CancellationToken cancellationToken = default)
     {
         return await ValidateImageAsync(imageUrl, cancellationToken);
     }
@@ -214,4 +202,3 @@ public class MockImageValidationService : IImageValidationService
         return await Task.FromResult(new Dictionary<string, object>());
     }
 }
-

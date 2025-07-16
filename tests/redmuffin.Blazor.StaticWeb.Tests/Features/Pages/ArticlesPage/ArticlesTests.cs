@@ -1,16 +1,17 @@
+using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
-using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
+using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.ArticlesPage;
 
 public class ArticlesTests
 {
-    private readonly ILogger<Articles> _logger;
     private readonly IJSRuntime _jsRuntime;
+    private readonly ILogger<Articles> _logger;
     private readonly NavigationManager _navigationManager;
 
     public ArticlesTests()
@@ -18,13 +19,13 @@ public class ArticlesTests
         // Setup mock dependencies
         var services = new ServiceCollection();
         services.AddLogging();
-        
+
         var serviceProvider = services.BuildServiceProvider();
         _logger = serviceProvider.GetRequiredService<ILogger<Articles>>();
-        
+
         // Mock JSRuntime
         _jsRuntime = new MockJSRuntime();
-        
+
         // Mock NavigationManager
         _navigationManager = new MockNavigationManager();
     }
@@ -69,17 +70,17 @@ public class ArticlesTests
     {
         // Arrange
         var articlesType = typeof(Articles);
-        
+
         // Act
-        var loggerProperty = articlesType.GetProperty("Logger", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var jsProperty = articlesType.GetProperty("Js", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var navigationProperty = articlesType.GetProperty("Navigation", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var loggerProperty = articlesType.GetProperty("Logger", BindingFlags.NonPublic | BindingFlags.Instance);
+        var jsProperty = articlesType.GetProperty("Js", BindingFlags.NonPublic | BindingFlags.Instance);
+        var navigationProperty = articlesType.GetProperty("Navigation", BindingFlags.NonPublic | BindingFlags.Instance);
 
         // Assert
         await Assert.That(loggerProperty).IsNotNull();
         await Assert.That(jsProperty).IsNotNull();
         await Assert.That(navigationProperty).IsNotNull();
-        
+
         // Check for Inject attributes
         await Assert.That(loggerProperty!.GetCustomAttributes(typeof(InjectAttribute), false)).IsNotEmpty();
         await Assert.That(jsProperty!.GetCustomAttributes(typeof(InjectAttribute), false)).IsNotEmpty();
@@ -107,27 +108,24 @@ public class ArticlesTests
     // Helper methods for testing private members
     private static void SetPrivateProperty<T>(object obj, string propertyName, T value)
     {
-        var property = obj.GetType().GetProperty(propertyName, 
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var property = obj.GetType().GetProperty(propertyName,
+            BindingFlags.NonPublic | BindingFlags.Instance);
         property?.SetValue(obj, value);
     }
 
     private static T GetPrivateField<T>(object obj, string fieldName)
     {
-        var field = obj.GetType().GetField(fieldName, 
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var field = obj.GetType().GetField(fieldName,
+            BindingFlags.NonPublic | BindingFlags.Instance);
         return (T)field!.GetValue(obj)!;
     }
 
     private static async Task InvokePrivateMethodAsync(object obj, string methodName, params object[] parameters)
     {
-        var method = obj.GetType().GetMethod(methodName, 
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var method = obj.GetType().GetMethod(methodName,
+            BindingFlags.NonPublic | BindingFlags.Instance);
         var result = method!.Invoke(obj, parameters);
-        if (result is Task task)
-        {
-            await task.ConfigureAwait(false);
-        }
+        if (result is Task task) await task.ConfigureAwait(false);
     }
 }
 
@@ -151,7 +149,7 @@ public class MockJSRuntime : IJSRuntime
 
 public class MockNavigationManager : NavigationManager
 {
-    public MockNavigationManager() : base()
+    public MockNavigationManager()
     {
         Initialize("https://localhost/", "https://localhost/");
     }

@@ -1,15 +1,15 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
-using redmuffin.Blazor.StaticWeb.Common.Models;
 using redmuffin.Blazor.StaticWeb.Common.Enums;
+using redmuffin.Blazor.StaticWeb.Common.Models;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Integration;
 
 public class TestHttpMessageHandler : HttpMessageHandler
 {
-    private readonly Dictionary<string, HttpResponseMessage> _responses = new();
     private readonly List<HttpRequestMessage> _requests = new();
+    private readonly Dictionary<string, HttpResponseMessage> _responses = new();
 
     public IReadOnlyList<HttpRequestMessage> Requests => _requests.AsReadOnly();
 
@@ -56,10 +56,7 @@ public class TestHttpMessageHandler : HttpMessageHandler
         }
 
         // Default response for other requests
-        if (_responses.TryGetValue(request.RequestUri?.ToString() ?? "", out var mockResponse))
-        {
-            return mockResponse;
-        }
+        if (_responses.TryGetValue(request.RequestUri?.ToString() ?? "", out var mockResponse)) return mockResponse;
 
         return new HttpResponseMessage(HttpStatusCode.NotFound);
     }

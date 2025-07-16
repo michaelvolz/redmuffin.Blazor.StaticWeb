@@ -1,21 +1,15 @@
 using Microsoft.Extensions.Logging;
+using NSubstitute;
 using redmuffin.Blazor.StaticWeb.Common.Models;
 using redmuffin.Blazor.StaticWeb.Services;
 using redmuffin.Blazor.StaticWeb.Tests.Helpers;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using TUnit.Core;
-using TUnit.Assertions;
-using NSubstitute;
-using System.Net.Http;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Services;
 
 public class ImageValidationServiceTests
 {
-    private readonly IHttpClientFactory _httpClientFactory = Substitute.For<IHttpClientFactory>();
     private readonly ICacheService _cacheService = Substitute.For<ICacheService>();
+    private readonly IHttpClientFactory _httpClientFactory = Substitute.For<IHttpClientFactory>();
     private readonly ILogger<ImageValidationService> _logger = Substitute.For<ILogger<ImageValidationService>>();
     private readonly ImageValidationService _service;
 
@@ -25,7 +19,7 @@ public class ImageValidationServiceTests
     }
 
     /// <summary>
-    /// Tests ValidateImageAsync with null/empty URL input.
+    ///     Tests ValidateImageAsync with null/empty URL input.
     /// </summary>
     [Test]
     [Arguments(null)]
@@ -42,7 +36,7 @@ public class ImageValidationServiceTests
     }
 
     /// <summary>
-    /// Tests ValidateImageWithCacheAsync with invalid URL format.
+    ///     Tests ValidateImageWithCacheAsync with invalid URL format.
     /// </summary>
     [Test]
     public async Task ValidateImageWithCacheAsync_WithInvalidUrlFormat_ReturnsInvalid()
@@ -56,7 +50,7 @@ public class ImageValidationServiceTests
     }
 
     /// <summary>
-    /// Tests ValidateImagesAsync with mixed URLs.
+    ///     Tests ValidateImagesAsync with mixed URLs.
     /// </summary>
     [Test]
     public async Task ValidateImagesAsync_WithMixedUrls_ReturnsResultsForEachUrl()
@@ -81,7 +75,7 @@ public class ImageValidationServiceTests
     }
 
     /// <summary>
-    /// Tests ClearValidationCacheAsync clears memory and persistent cache.
+    ///     Tests ClearValidationCacheAsync clears memory and persistent cache.
     /// </summary>
     [Test]
     public async Task ClearValidationCacheAsync_ClearsBothCaches()
@@ -94,4 +88,3 @@ public class ImageValidationServiceTests
         // Hard to test _memoryCache, ensure no exceptions
     }
 }
-

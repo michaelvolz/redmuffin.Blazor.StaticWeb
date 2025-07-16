@@ -4,6 +4,6 @@ namespace redmuffin.Blazor.StaticWeb.Api.Tests.Helpers;
 
 public class TestTraceContext : TraceContext
 {
-	public override string TraceParent => null!;
-	public override string TraceState => null!;
+    public override string TraceParent => null!;
+    public override string TraceState => null!;
 }

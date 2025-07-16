@@ -1,34 +1,29 @@
 using System.Net;
-using System.Threading.Tasks;
-using TUnit.Core;
-using TUnit.Assertions;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using redmuffin.Blazor.StaticWeb.Services;
-using redmuffin.Blazor.StaticWeb.Common.Models;
-using redmuffin.Blazor.StaticWeb.Common.Enums;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+using redmuffin.Blazor.StaticWeb.Common.Models;
+using redmuffin.Blazor.StaticWeb.Services;
 using redmuffin.Blazor.StaticWeb.Tests.Integration;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.ErrorScenarios;
 
 public class OpenGraphErrorScenarioTests : TestBase
 {
-    private readonly ServiceProvider _serviceProvider;
-    private readonly OpenGraphImagesService _imageService;
-    private readonly IHttpClientFactory _httpClientFactory;
     private readonly ICacheService _cacheService;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly OpenGraphImagesService _imageService;
     private readonly IImageValidationService _imageValidationService;
+    private readonly ServiceProvider _serviceProvider;
 
     public OpenGraphErrorScenarioTests()
     {
         var services = new ServiceCollection();
-        
+
         _httpClientFactory = Substitute.For<IHttpClientFactory>();
         _cacheService = Substitute.For<ICacheService>();
         _imageValidationService = Substitute.For<IImageValidationService>();
-        
+
         services.AddSingleton(_httpClientFactory);
         services.AddSingleton(_cacheService);
         services.AddSingleton(_imageValidationService);
@@ -181,8 +176,8 @@ public class OpenGraphErrorScenarioTests : TestBase
         _imageValidationService.ValidateImagesAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
             .Returns(new Dictionary<string, ImageValidationResult>
             {
-                ["https://example.com/image1.jpg"] = new ImageValidationResult { IsValid = false, ErrorMessage = "Image not found" },
-                ["https://example.com/image2.jpg"] = new ImageValidationResult { IsValid = false, ErrorMessage = "Image not accessible" }
+                ["https://example.com/image1.jpg"] = new() { IsValid = false, ErrorMessage = "Image not found" },
+                ["https://example.com/image2.jpg"] = new() { IsValid = false, ErrorMessage = "Image not accessible" }
             });
 
         // Act
@@ -313,8 +308,8 @@ public class OpenGraphErrorScenarioTests : TestBase
         _imageValidationService.ValidateImagesAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
             .Returns(new Dictionary<string, ImageValidationResult>
             {
-                ["https://example.com/image1.jpg"] = new ImageValidationResult { IsValid = false, ErrorMessage = "404 Not Found" },
-                ["https://example.com/image2.jpg"] = new ImageValidationResult { IsValid = false, ErrorMessage = "403 Forbidden" }
+                ["https://example.com/image1.jpg"] = new() { IsValid = false, ErrorMessage = "404 Not Found" },
+                ["https://example.com/image2.jpg"] = new() { IsValid = false, ErrorMessage = "403 Forbidden" }
             });
 
         // Act
