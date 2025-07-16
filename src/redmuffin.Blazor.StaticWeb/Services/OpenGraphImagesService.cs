@@ -1,3 +1,4 @@
+﻿using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using redmuffin.Blazor.StaticWeb.Common.Enums;
@@ -13,6 +14,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IImageValidationService _imageValidationService;
     private readonly ILogger<OpenGraphImagesService> _logger;
+    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
     private static readonly Action<ILogger, string, Exception> LogFailureToRetrieveImageFromApi =
         LoggerMessage.Define<string>(LogLevel.Error, new EventId(0, nameof(LogFailureToRetrieveImageFromApi)),
             "Failed to retrieve image for article: {ArticleUrl}");
@@ -140,19 +142,19 @@ public class OpenGraphImagesService : IOpenGraphImagesService
         return await GetImageFromCacheOrApiAsync(articleUrl, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<Dictionary<string, CachedImageData?>> GetImagesAsync(IEnumerable<string> articleUrls, CancellationToken cancellationToken = default)
+    public async Task<IDictionary<string, CachedImageData?>> GetImagesAsync(IEnumerable<string> articleUrls, CancellationToken cancellationToken = default)
     {
         if (articleUrls == null)
-            return new Dictionary<string, CachedImageData?>();
+            return new Dictionary<string, CachedImageData?>(StringComparer.OrdinalIgnoreCase);
 
-        var urlList = articleUrls.Where(url => !string.IsNullOrWhiteSpace(url)).Distinct().ToList();
-        if (!urlList.Any())
-            return new Dictionary<string, CachedImageData?>();
+        var urlList = articleUrls.Where(url => !string.IsNullOrWhiteSpace(url)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        if (urlList.Count == 0)
+            return new Dictionary<string, CachedImageData?>(StringComparer.OrdinalIgnoreCase);
 
         LogProcessingUniqueUrls(_logger, urlList.Count, null);
 
         // Phase 1: Batch cache lookup for all URLs
-        var result = new Dictionary<string, CachedImageData?>();
+        var result = new Dictionary<string, CachedImageData?>(StringComparer.OrdinalIgnoreCase);
         var uncachedUrls = new List<string>();
 
         foreach (var url in urlList)
@@ -171,7 +173,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
         }
 
         // Phase 2: Batch API call for uncached URLs only
-        if (uncachedUrls.Any())
+        if (uncachedUrls.Count > 0)
         {
             LogMakingApiCallForUncachedUrls(_logger, uncachedUrls.Count, urlList.Count, null);
 
@@ -190,70 +192,18 @@ public class OpenGraphImagesService : IOpenGraphImagesService
     {
         try
         {
-            // Create API request to get image
-            var httpClient = _httpClientFactory.CreateClient("DefaultHttpClient");
-            httpClient.DefaultRequestHeaders.Add("User-Agent", "redmuffin-blazor-staticweb/1.0");
+            var response = await CallOpenGraphApiAsync(articleUrl, cancellationToken).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+                return null;
 
-            // Create batch request for single article
-            var batchRequest = new BatchImageRequest
-            {
-                Articles = new List<ArticleImageRequest>
-                {
-                    new()
-                    {
-                        ArticleUrl = articleUrl,
-                        ValidateImages = true,
-                        MaxImages = 1
-                    }
-                },
-                MaxConcurrency = 1,
-                UseCache = false // We're handling cache at service level
-            };
-
-            var json = JsonSerializer.Serialize(batchRequest);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            // Call the Azure Function API
-            var response = await httpClient.PostAsync("/api/GetOpenGraphImages", content, cancellationToken).ConfigureAwait(false);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-                var batchResponse = JsonSerializer.Deserialize<BatchImageResponse>(responseContent, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-
-                if (batchResponse?.Results?.Any() == true)
-                {
-                    var articleResult = batchResponse.Results.First();
-                    if (articleResult.IsSuccess && !string.IsNullOrEmpty(articleResult.PrimaryImageUrl))
-                    {
-                        var cacheData = new CachedImageData
-                        {
-                            ArticleUrl = articleUrl,
-                            ImageUrl = articleResult.PrimaryImageUrl,
-                            ImageSource = articleResult.PrimaryImageSource,
-                            IsValidated = true,
-                            CachedAt = DateTime.UtcNow,
-                            ExpiresAt = DateTime.UtcNow.AddHours(CacheExpirationHours),
-                            LastAccessedAt = DateTime.UtcNow,
-                            AccessCount = 1
-                        };
-
-                        await _cacheService.SetItemAsync(CacheNamespace, articleUrl, cacheData, CacheExpirationHours * 60, cancellationToken)
-                            .ConfigureAwait(false);
-                        return cacheData;
-                    }
-                }
-            }
+            var batchResponse = await DeserializeApiResponseAsync(response, cancellationToken).ConfigureAwait(false);
+            return await ProcessSingleImageResultAsync(articleUrl, batchResponse, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             LogFailureToRetrieveImageFromApi(_logger, articleUrl, ex);
+            return null;
         }
-
-        return null;
     }
 
     public async Task<bool> IsImageCachedAsync(string articleUrl)
@@ -296,26 +246,26 @@ public class OpenGraphImagesService : IOpenGraphImagesService
         }
     }
 
-    public async Task<Dictionary<string, object>> GetCacheStatsAsync()
+    public async Task<IDictionary<string, object>> GetCacheStatsAsync()
     {
         try
         {
             var stats = await _cacheService.GetNamespaceStatsAsync(CacheNamespace).ConfigureAwait(false);
-            return new Dictionary<string, object>
+            return new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
             {
                 ["Namespace"] = stats.Namespace,
                 ["TotalItems"] = stats.TotalItems,
                 ["TotalSizeBytes"] = stats.TotalSizeBytes,
                 ["ExpiredItemsCount"] = stats.ExpiredItemsCount,
-                ["OldestItemTimestamp"] = stats.OldestItemTimestamp?.ToString() ?? "N/A",
-                ["NewestItemTimestamp"] = stats.NewestItemTimestamp?.ToString() ?? "N/A",
+                ["OldestItemTimestamp"] = stats.OldestItemTimestamp?.ToString(CultureInfo.InvariantCulture) ?? "N/A",
+                ["NewestItemTimestamp"] = stats.NewestItemTimestamp?.ToString(CultureInfo.InvariantCulture) ?? "N/A",
                 ["AverageAccessCount"] = stats.AverageAccessCount
             };
         }
         catch (Exception ex)
         {
             LogFailedToGetCacheStatistics(_logger, ex);
-            return new Dictionary<string, object>();
+            return new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         }
     }
 
@@ -351,6 +301,74 @@ public class OpenGraphImagesService : IOpenGraphImagesService
         }
     }
 
+    private async Task<HttpResponseMessage> CallOpenGraphApiAsync(string articleUrl, CancellationToken cancellationToken)
+    {
+        var httpClient = _httpClientFactory.CreateClient("DefaultHttpClient");
+        httpClient.DefaultRequestHeaders.Add("User-Agent", "redmuffin-blazor-staticweb/1.0");
+
+        var batchRequest = CreateSingleArticleRequest(articleUrl);
+        var json = JsonSerializer.Serialize(batchRequest);
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        return await httpClient.PostAsync("/api/GetOpenGraphImages", content, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static BatchImageRequest CreateSingleArticleRequest(string articleUrl)
+    {
+        return new BatchImageRequest
+        {
+            Articles = new List<ArticleImageRequest>
+            {
+                new()
+                {
+                    ArticleUrl = articleUrl,
+                    ValidateImages = true,
+                    MaxImages = 1
+                }
+            },
+            MaxConcurrency = 1,
+            UseCache = false // We're handling cache at service level
+        };
+    }
+
+    private static async Task<BatchImageResponse?> DeserializeApiResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        return JsonSerializer.Deserialize<BatchImageResponse>(responseContent, JsonOptions);
+    }
+
+    private async Task<CachedImageData?> ProcessSingleImageResultAsync(string articleUrl, BatchImageResponse? batchResponse, CancellationToken cancellationToken)
+    {
+        if (batchResponse?.Results?.Count > 0)
+        {
+            var articleResult = batchResponse.Results.First();
+            if (articleResult.IsSuccess && !string.IsNullOrEmpty(articleResult.PrimaryImageUrl))
+            {
+                var cacheData = CreateCachedImageData(articleUrl, articleResult);
+                await _cacheService.SetItemAsync(CacheNamespace, articleUrl, cacheData, CacheExpirationHours * 60, cancellationToken)
+                    .ConfigureAwait(false);
+                return cacheData;
+            }
+        }
+
+        return null;
+    }
+
+    private static CachedImageData CreateCachedImageData(string articleUrl, ArticleImageResponse articleResult)
+    {
+        return new CachedImageData
+        {
+            ArticleUrl = articleUrl,
+            ImageUrl = articleResult.PrimaryImageUrl!,
+            ImageSource = articleResult.PrimaryImageSource,
+            IsValidated = true,
+            CachedAt = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow.AddHours(CacheExpirationHours),
+            LastAccessedAt = DateTime.UtcNow,
+            AccessCount = 1
+        };
+    }
+
     /// <summary>
     ///     Retrieves images from the API for multiple URLs in a single batch request,
     ///     then validates them in parallel with proper error handling.
@@ -358,144 +376,20 @@ public class OpenGraphImagesService : IOpenGraphImagesService
     /// <param name="articleUrls">List of article URLs to process</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>Dictionary mapping article URLs to their cached image data</returns>
-    private async Task<Dictionary<string, CachedImageData?>> GetImagesFromApiAsync(IList<string> articleUrls, CancellationToken cancellationToken = default)
+    private async Task<Dictionary<string, CachedImageData?>> GetImagesFromApiAsync(List<string> articleUrls, CancellationToken cancellationToken = default)
     {
-        var result = new Dictionary<string, CachedImageData?>();
+        var result = new Dictionary<string, CachedImageData?>(StringComparer.OrdinalIgnoreCase);
 
-        if (!articleUrls.Any())
+        if (articleUrls.Count == 0)
             return result;
 
         try
         {
-            var httpClient = _httpClientFactory.CreateClient("DefaultHttpClient");
-            httpClient.DefaultRequestHeaders.Add("User-Agent", "redmuffin-blazor-staticweb/1.0");
-
-            // Create batch request for multiple articles
-            var batchRequest = new BatchImageRequest
-            {
-                Articles = articleUrls.Select(url => new ArticleImageRequest
-                {
-                    ArticleUrl = url,
-                    ValidateImages = false, // We'll validate separately for better control
-                    MaxImages = 1
-                }).ToList(),
-                MaxConcurrency = Math.Min(articleUrls.Count, 5), // Limit concurrent requests
-                UseCache = false // We're handling cache at service level,
-            };
-
-            var json = JsonSerializer.Serialize(batchRequest);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            LogMakingBatchApiCall(_logger, articleUrls.Count, null);
-
-            // Call the Azure Function API
-            var response = await httpClient.PostAsync("/api/GetOpenGraphImages", content, cancellationToken).ConfigureAwait(false);
+            var response = await CallBatchApiAsync(articleUrls, cancellationToken).ConfigureAwait(false);
 
             if (response.IsSuccessStatusCode)
             {
-                var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-                var batchResponse = JsonSerializer.Deserialize<BatchImageResponse>(responseContent, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-
-                if (batchResponse?.Results?.Any() == true)
-                {
-                    // Phase 1: Collect successful results for validation
-                    var imagesToValidate = new List<(string ArticleUrl, string ImageUrl, ImageSource ImageSource)>();
-
-                    foreach (var articleResult in batchResponse.Results)
-                        if (articleResult.IsSuccess && !string.IsNullOrEmpty(articleResult.PrimaryImageUrl))
-                        {
-                            imagesToValidate.Add((articleResult.ArticleUrl, articleResult.PrimaryImageUrl, articleResult.PrimaryImageSource));
-                        }
-                        else
-                        {
-                            // Cache failed results immediately to avoid repeated API calls
-                            var failedCacheData = new CachedImageData
-                            {
-                                ArticleUrl = articleResult.ArticleUrl,
-                                ImageUrl = string.Empty,
-                                ImageSource = ImageSource.None,
-                                IsValidated = false,
-                                CachedAt = DateTime.UtcNow,
-                                ExpiresAt = DateTime.UtcNow.AddHours(2), // Shorter cache for failed results
-                                LastAccessedAt = DateTime.UtcNow,
-                                AccessCount = 1
-                            };
-
-                            await SaveImageToCacheAsync(failedCacheData).ConfigureAwait(false);
-                            result[articleResult.ArticleUrl] = null;
-                        }
-
-                    // Phase 2: Validate images in parallel
-                    if (imagesToValidate.Any())
-                    {
-                        LogStartingParallelValidation(_logger, imagesToValidate.Count, null);
-
-                        var validationResults = await ValidateImagesInParallelAsync(
-                            imagesToValidate.Select(x => x.ImageUrl).ToList(),
-                            cancellationToken).ConfigureAwait(false);
-
-                        // Phase 3: Process validation results and prepare batch cache updates
-                        var cacheDataBatch = new List<CachedImageData>();
-
-                        foreach (var (articleUrl, imageUrl, imageSource) in imagesToValidate)
-                        {
-                            var validationResult = validationResults.GetValueOrDefault(imageUrl);
-
-                            if (validationResult?.IsValid == true)
-                            {
-                                // Valid image - cache with full expiration
-                                var cacheData = new CachedImageData
-                                {
-                                    ArticleUrl = articleUrl,
-                                    ImageUrl = imageUrl,
-                                    ImageSource = imageSource,
-                                    IsValidated = true,
-                                    CachedAt = DateTime.UtcNow,
-                                    ExpiresAt = DateTime.UtcNow.AddHours(24), // Cache for 24 hours
-                                    LastAccessedAt = DateTime.UtcNow,
-                                    AccessCount = 1
-                                };
-
-                                cacheDataBatch.Add(cacheData);
-                                result[articleUrl] = cacheData;
-
-                                LogImageValidationSuccessful(_logger, articleUrl, imageUrl, null);
-                            }
-                            else
-                            {
-                                // Invalid image - cache with shorter expiration
-                                var invalidCacheData = new CachedImageData
-                                {
-                                    ArticleUrl = articleUrl,
-                                    ImageUrl = imageUrl,
-                                    ImageSource = imageSource,
-                                    IsValidated = false,
-                                    CachedAt = DateTime.UtcNow,
-                                    ExpiresAt = DateTime.UtcNow.AddHours(6), // Shorter cache for invalid images
-                                    LastAccessedAt = DateTime.UtcNow,
-                                    AccessCount = 1
-                                };
-
-                                cacheDataBatch.Add(invalidCacheData);
-                                result[articleUrl] = null;
-
-                                LogImageValidationFailed(_logger, articleUrl, imageUrl, validationResult?.ErrorMessage ?? "Unknown error", null);
-                            }
-                        }
-
-                        // Execute batch cache updates for improved performance
-                        await SaveImageBatchToCacheAsync(cacheDataBatch, cancellationToken).ConfigureAwait(false);
-
-                        LogParallelValidationCompleted(_logger, imagesToValidate.Count, null);
-                    }
-                }
-                else
-                {
-                    LogBatchApiResponseNoResults(_logger, null);
-                }
+                await ProcessBatchApiResponseAsync(response, result, cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -513,6 +407,136 @@ public class OpenGraphImagesService : IOpenGraphImagesService
                 result[url] = null;
 
         return result;
+    }
+
+    private async Task<HttpResponseMessage> CallBatchApiAsync(List<string> articleUrls, CancellationToken cancellationToken)
+    {
+        var httpClient = _httpClientFactory.CreateClient("DefaultHttpClient");
+        httpClient.DefaultRequestHeaders.Add("User-Agent", "redmuffin-blazor-staticweb/1.0");
+
+        // Create batch request for multiple articles
+        var batchRequest = new BatchImageRequest
+        {
+            Articles = articleUrls.Select(url => new ArticleImageRequest
+            {
+                ArticleUrl = url,
+                ValidateImages = false, // We'll validate separately for better control
+                MaxImages = 1
+            }).ToList(),
+            MaxConcurrency = Math.Min(articleUrls.Count, 5), // Limit concurrent requests
+            UseCache = false // We're handling cache at service level,
+        };
+
+        var json = JsonSerializer.Serialize(batchRequest);
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        LogMakingBatchApiCall(_logger, articleUrls.Count, null);
+
+        // Call the Azure Function API
+        return await httpClient.PostAsync("/api/GetOpenGraphImages", content, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task ProcessBatchApiResponseAsync(HttpResponseMessage response, Dictionary<string, CachedImageData?> result, CancellationToken cancellationToken)
+    {
+        var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        var batchResponse = JsonSerializer.Deserialize<BatchImageResponse>(responseContent, JsonOptions);
+
+        if (batchResponse?.Results?.Count > 0)
+        {
+            await ProcessBatchResultsAsync(batchResponse.Results.ToList(), result, cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            LogBatchApiResponseNoResults(_logger, null);
+        }
+    }
+
+    private async Task ProcessBatchResultsAsync(List<ArticleImageResponse> results, Dictionary<string, CachedImageData?> result, CancellationToken cancellationToken)
+    {
+        // Phase 1: Collect successful results for validation
+        var imagesToValidate = new List<(string ArticleUrl, string ImageUrl, ImageSource ImageSource)>();
+
+        foreach (var articleResult in results)
+            if (articleResult.IsSuccess && !string.IsNullOrEmpty(articleResult.PrimaryImageUrl))
+            {
+                imagesToValidate.Add((articleResult.ArticleUrl, articleResult.PrimaryImageUrl, articleResult.PrimaryImageSource));
+            }
+            else
+            {
+                await CacheFailedResultAsync(articleResult, result).ConfigureAwait(false);
+            }
+
+        // Phase 2: Validate images in parallel
+        if (imagesToValidate.Count > 0)
+        {
+            await ValidateAndCacheImagesAsync(imagesToValidate, result, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private async Task CacheFailedResultAsync(ArticleImageResponse articleResult, Dictionary<string, CachedImageData?> result)
+    {
+        // Cache failed results immediately to avoid repeated API calls
+        var failedCacheData = new CachedImageData
+        {
+            ArticleUrl = articleResult.ArticleUrl,
+            ImageUrl = string.Empty,
+            ImageSource = ImageSource.None,
+            IsValidated = false,
+            CachedAt = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow.AddHours(2), // Shorter cache for failed results
+            LastAccessedAt = DateTime.UtcNow,
+            AccessCount = 1
+        };
+
+        await SaveImageToCacheAsync(failedCacheData).ConfigureAwait(false);
+        result[articleResult.ArticleUrl] = null;
+    }
+
+    private async Task ValidateAndCacheImagesAsync(List<(string ArticleUrl, string ImageUrl, ImageSource ImageSource)> imagesToValidate, Dictionary<string, CachedImageData?> result, CancellationToken cancellationToken)
+    {
+        LogStartingParallelValidation(_logger, imagesToValidate.Count, null);
+
+        var validationResults = await ValidateImagesInParallelAsync(
+            imagesToValidate.Select(x => x.ImageUrl).ToList(),
+            cancellationToken).ConfigureAwait(false);
+
+        // Process validation results and prepare batch cache updates
+        var cacheDataBatch = new List<CachedImageData>();
+
+        foreach (var (articleUrl, imageUrl, imageSource) in imagesToValidate)
+        {
+            var validationResult = validationResults.GetValueOrDefault(imageUrl);
+            var cacheData = CreateCacheDataForValidationResult(articleUrl, imageUrl, imageSource, validationResult);
+
+            cacheDataBatch.Add(cacheData);
+            result[articleUrl] = validationResult?.IsValid == true ? cacheData : null;
+
+            if (validationResult?.IsValid == true)
+                LogImageValidationSuccessful(_logger, articleUrl, imageUrl, null);
+            else
+                LogImageValidationFailed(_logger, articleUrl, imageUrl, validationResult?.ErrorMessage ?? "Unknown error", null);
+        }
+
+        // Execute batch cache updates for improved performance
+        await SaveImageBatchToCacheAsync(cacheDataBatch, cancellationToken).ConfigureAwait(false);
+
+        LogParallelValidationCompleted(_logger, imagesToValidate.Count, null);
+    }
+
+    private static CachedImageData CreateCacheDataForValidationResult(string articleUrl, string imageUrl, ImageSource imageSource, ImageValidationResult? validationResult)
+    {
+        var isValid = validationResult?.IsValid == true;
+        return new CachedImageData
+        {
+            ArticleUrl = articleUrl,
+            ImageUrl = imageUrl,
+            ImageSource = imageSource,
+            IsValidated = isValid,
+            CachedAt = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow.AddHours(isValid ? 24 : 6), // 24h for valid, 6h for invalid
+            LastAccessedAt = DateTime.UtcNow,
+            AccessCount = 1
+        };
     }
 
     private async Task SaveImageToCacheAsync(CachedImageData cacheData)
@@ -536,9 +560,9 @@ public class OpenGraphImagesService : IOpenGraphImagesService
     /// <param name="cacheDataBatch">List of cache data to save</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>Task representing the batch cache operation</returns>
-    private async Task SaveImageBatchToCacheAsync(IList<CachedImageData> cacheDataBatch, CancellationToken cancellationToken = default)
+    private async Task SaveImageBatchToCacheAsync(List<CachedImageData> cacheDataBatch, CancellationToken cancellationToken = default)
     {
-        if (!cacheDataBatch.Any())
+        if (cacheDataBatch.Count == 0)
             return;
 
         try
@@ -547,7 +571,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
 
             // Use controlled concurrency to avoid overwhelming the browser storage
             var maxConcurrency = Math.Min(cacheDataBatch.Count, 10); // Limit concurrent cache operations
-            var semaphore = new SemaphoreSlim(maxConcurrency, maxConcurrency);
+            using var semaphore = new SemaphoreSlim(maxConcurrency, maxConcurrency);
 
             var cacheTasks = cacheDataBatch.Select(async cacheData =>
             {
@@ -586,7 +610,6 @@ public class OpenGraphImagesService : IOpenGraphImagesService
         }
     }
 
-
     /// <summary>
     ///     Validates multiple image URLs in parallel using the image validation service.
     /// </summary>
@@ -594,74 +617,95 @@ public class OpenGraphImagesService : IOpenGraphImagesService
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>Dictionary mapping image URLs to their validation results</returns>
     private async Task<Dictionary<string, ImageValidationResult>> ValidateImagesInParallelAsync(
-        IList<string> imageUrls,
+        List<string> imageUrls,
         CancellationToken cancellationToken = default)
     {
-        var result = new Dictionary<string, ImageValidationResult>();
+        var result = new Dictionary<string, ImageValidationResult>(StringComparer.OrdinalIgnoreCase);
 
-        if (!imageUrls.Any())
+        if (imageUrls.Count == 0)
             return result;
 
         try
         {
-            // Use the image validation service with controlled concurrency
-            var maxConcurrency = Math.Min(imageUrls.Count, 8); // Limit concurrent validations
-
-            LogStartingParallelImageValidation(_logger, imageUrls.Count, maxConcurrency, null);
-
-            // Call the validation service which handles parallel processing internally
-            var validationResults = await _imageValidationService.ValidateImagesAsync(
-                imageUrls,
-                maxConcurrency,
-                cancellationToken).ConfigureAwait(false);
-
-            // Process results with comprehensive error handling
-            foreach (var imageUrl in imageUrls)
-                if (validationResults.TryGetValue(imageUrl, out var validationResult))
-                {
-                    result[imageUrl] = validationResult;
-
-                    if (validationResult.IsValid)
-                        LogImageValidationSuccessfulDetails(_logger, imageUrl, validationResult.ContentType ?? "Unknown", validationResult.ContentLength ?? 0, null);
-                    else
-                        LogImageValidationFailedDetails(_logger, imageUrl, validationResult.ErrorMessage ?? "Unknown error", null);
-                }
-                else
-                {
-                    // Create a failed validation result for missing entries
-                    var failedResult = new ImageValidationResult
-                    {
-                        ImageUrl = imageUrl,
-                        IsValid = false,
-                        ErrorMessage = "Validation result not found",
-                        ValidatedAt = DateTime.UtcNow
-                    };
-
-                    result[imageUrl] = failedResult;
-                    LogNoValidationResultFound(_logger, imageUrl, null);
-                }
-
-            var validCount = result.Values.Count(v => v.IsValid);
-            var invalidCount = result.Values.Count - validCount;
-
-            LogParallelImageValidationCompleted(_logger, validCount, invalidCount, imageUrls.Count, null);
+            var validationResults = await CallValidationServiceAsync(imageUrls, cancellationToken).ConfigureAwait(false);
+            ProcessValidationResults(imageUrls, validationResults, result);
+            LogValidationSummary(result, imageUrls.Count);
         }
         catch (Exception ex)
         {
             LogFailedToPerformParallelImageValidation(_logger, imageUrls.Count, ex);
-
-            // Fallback: Mark all images as invalid to avoid blocking the process
-            foreach (var imageUrl in imageUrls)
-                if (!result.ContainsKey(imageUrl))
-                    result[imageUrl] = new ImageValidationResult
-                    {
-                        ImageUrl = imageUrl,
-                        IsValid = false,
-                        ErrorMessage = $"Validation failed due to system error: {ex.Message}",
-                        ValidatedAt = DateTime.UtcNow
-                    };
+            CreateFallbackValidationResults(imageUrls, result, ex);
         }
 
         return result;
+    }
+
+    private async Task<Dictionary<string, ImageValidationResult>> CallValidationServiceAsync(
+        List<string> imageUrls,
+        CancellationToken cancellationToken)
+    {
+        // Use the image validation service with controlled concurrency
+        var maxConcurrency = Math.Min(imageUrls.Count, 8); // Limit concurrent validations
+
+        LogStartingParallelImageValidation(_logger, imageUrls.Count, maxConcurrency, null);
+
+        // Call the validation service which handles parallel processing internally
+        var result = await _imageValidationService.ValidateImagesAsync(
+            imageUrls,
+            maxConcurrency,
+            cancellationToken).ConfigureAwait(false);
+        return new Dictionary<string, ImageValidationResult>(result, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private void ProcessValidationResults(
+        List<string> imageUrls,
+        Dictionary<string, ImageValidationResult> validationResults,
+        Dictionary<string, ImageValidationResult> result)
+    {
+        foreach (var imageUrl in imageUrls)
+            if (validationResults.TryGetValue(imageUrl, out var validationResult))
+            {
+                result[imageUrl] = validationResult;
+
+                if (validationResult.IsValid)
+                    LogImageValidationSuccessfulDetails(_logger, imageUrl, validationResult.ContentType ?? "Unknown", validationResult.ContentLength ?? 0, null);
+                else
+                    LogImageValidationFailedDetails(_logger, imageUrl, validationResult.ErrorMessage ?? "Unknown error", null);
+            }
+            else
+            {
+                result[imageUrl] = CreateFailedValidationResult(imageUrl, "Validation result not found");
+                LogNoValidationResultFound(_logger, imageUrl, null);
+            }
+    }
+
+    private static ImageValidationResult CreateFailedValidationResult(string imageUrl, string errorMessage)
+    {
+        return new ImageValidationResult
+        {
+            ImageUrl = imageUrl,
+            IsValid = false,
+            ErrorMessage = errorMessage,
+            ValidatedAt = DateTime.UtcNow
+        };
+    }
+
+    private void LogValidationSummary(Dictionary<string, ImageValidationResult> result, int totalCount)
+    {
+        var validCount = result.Values.Count(v => v.IsValid);
+        var invalidCount = result.Values.Count - validCount;
+
+        LogParallelImageValidationCompleted(_logger, validCount, invalidCount, totalCount, null);
+    }
+
+    private static void CreateFallbackValidationResults(
+        List<string> imageUrls,
+        Dictionary<string, ImageValidationResult> result,
+        Exception ex)
+    {
+        // Fallback: Mark all images as invalid to avoid blocking the process
+        foreach (var imageUrl in imageUrls)
+            if (!result.ContainsKey(imageUrl))
+                result[imageUrl] = CreateFailedValidationResult(imageUrl, $"Validation failed due to system error: {ex.Message}");
     }
 }

@@ -1,5 +1,6 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Globalization;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -22,6 +23,10 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
     // Static collections for rate limiting and circuit breaker
     private static readonly ConcurrentDictionary<string, RateLimitTracker> RateLimitTrackers = new(StringComparer.OrdinalIgnoreCase);
     private static readonly ConcurrentDictionary<string, CircuitBreakerState> CircuitBreakers = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
     private readonly ILogger<GetOpenGraphImages> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -95,10 +100,7 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
             var requestBody = await ReadRequestBodyWithValidationAsync(request, functionCts.Token).ConfigureAwait(false);
             if (requestBody == null) return new BadRequestObjectResult("Request body is empty or too large");
 
-            var batchRequest = JsonSerializer.Deserialize<BatchImageRequest>(requestBody, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var batchRequest = JsonSerializer.Deserialize<BatchImageRequest>(requestBody, JsonOptions);
 
             if (batchRequest == null) return new BadRequestObjectResult("Invalid request format");
 
@@ -146,7 +148,7 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
         LogParallelProcessingStart(batchRequest);
 
         var tasks = CreateProcessingTasks(batchRequest, semaphore);
-        var cts = new CancellationTokenSource(batchRequest.BatchTimeoutMs);
+        using var cts = new CancellationTokenSource(batchRequest.BatchTimeoutMs);
 
         try
         {
@@ -181,7 +183,7 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
         };
     }
 
-    private SemaphoreSlim CreateSemaphore(BatchImageRequest batchRequest)
+    private static SemaphoreSlim CreateSemaphore(BatchImageRequest batchRequest)
     {
         return new SemaphoreSlim(batchRequest.MaxConcurrency, batchRequest.MaxConcurrency);
     }
@@ -209,29 +211,29 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
     private void HandleTimeoutException(BatchImageResponse response, BatchImageRequest batchRequest)
     {
         response.IsSuccess = false;
-        response.ErrorMessages.Add($"Batch processing timed out after {batchRequest.BatchTimeoutMs}ms");
+        response.ErrorMessages.Add($"Batch processing timed out after {batchRequest.BatchTimeoutMs.ToString(CultureInfo.InvariantCulture)}ms");
         LogRequestTimedOut(_logger, batchRequest.BatchTimeoutMs, batchRequest.RequestId);
     }
 
     private void HandleCanceledException(BatchImageResponse response, BatchImageRequest batchRequest)
     {
         response.IsSuccess = false;
-        response.ErrorMessages.Add($"Batch processing was cancelled due to timeout after {batchRequest.BatchTimeoutMs}ms");
+        response.ErrorMessages.Add($"Batch processing was cancelled due to timeout after {batchRequest.BatchTimeoutMs.ToString(CultureInfo.InvariantCulture)}ms");
         LogRequestTimedOut(_logger, batchRequest.BatchTimeoutMs, batchRequest.RequestId);
     }
 
-    private void HandleGeneralException(BatchImageResponse response, Exception ex)
+    private static void HandleGeneralException(BatchImageResponse response, Exception ex)
     {
         response.IsSuccess = false;
         response.ErrorMessages.Add($"Batch processing failed: {ex.Message}");
     }
 
-    private void FinalizeResponse(BatchImageResponse response)
+    private static void FinalizeResponse(BatchImageResponse response)
     {
         response.ProcessedAt = DateTime.UtcNow;
     }
 
-    private long CapturePeakMemory()
+    private static long CapturePeakMemory()
     {
         var initialMemory = GC.GetTotalMemory(false);
         var endMemory = GC.GetTotalMemory(false);
@@ -255,65 +257,97 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
     private async Task<ArticleImageResponse> ProcessSingleArticleAsync(ArticleImageRequest articleRequest, BatchImageRequest batchRequest)
     {
         var stopwatch = Stopwatch.StartNew();
-        var response = new ArticleImageResponse
-        {
-            ArticleUrl = articleRequest.ArticleUrl,
-            ProcessedAt = DateTime.UtcNow
-        };
+        var response = InitializeArticleResponse(articleRequest);
 
         try
         {
-            // Create HTTP client with timeout
-            using var httpClient = _httpClientFactory.CreateClient();
-            httpClient.Timeout = TimeSpan.FromMilliseconds(batchRequest.ArticleTimeoutMs);
-            httpClient.DefaultRequestHeaders.Add("User-Agent", batchRequest.UserAgent);
-
-            // Fetch the HTML content with comprehensive error handling
-            var htmlContent = await FetchHtmlContentWithRetryAsync(httpClient, articleRequest.ArticleUrl).ConfigureAwait(false);
-            if (string.IsNullOrWhiteSpace(htmlContent))
-            {
-                response.ErrorMessage = "Failed to fetch HTML content or content is empty";
-                return response;
-            }
-
-            // Parse HTML and extract images
-            var extractedImages = await ExtractImagesFromHtmlAsync(htmlContent, articleRequest.ArticleUrl).ConfigureAwait(false);
-            response.ExtractedImages = extractedImages.Take(batchRequest.MaxImagesPerArticle).ToList();
-
-            // Set primary image (highest priority)
-            var primaryImage = response.ExtractedImages.OrderBy(i => i.Priority).FirstOrDefault();
-            if (primaryImage != null)
-            {
-                response.PrimaryImageUrl = primaryImage.ImageUrl;
-                response.PrimaryImageSource = primaryImage.Source;
-                response.IsSuccess = true;
-            }
-            else
-            {
-                response.ErrorMessage = "No images found in the article";
-            }
-
-            LogArticleProcessingSuccess(_logger, response.ExtractedImages.Count, articleRequest.ArticleUrl, (int)stopwatch.ElapsedMilliseconds);
+            using var httpClient = CreateHttpClient(batchRequest);
+            await ProcessArticleContentAsync(httpClient, articleRequest, batchRequest, response, stopwatch).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
-            response.ErrorMessage = $"HTTP request failed: {ex.Message}";
-            LogArticleProcessingFailed(_logger, articleRequest.ArticleUrl, ex.Message);
+            HandleHttpRequestException(response, articleRequest, ex);
         }
         catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
         {
-            response.ErrorMessage = $"Request timed out after {batchRequest.ArticleTimeoutMs}ms";
-            LogArticleProcessingFailed(_logger, articleRequest.ArticleUrl, response.ErrorMessage);
+            HandleTimeoutException(response, articleRequest, batchRequest);
         }
         catch (Exception ex)
         {
-            response.ErrorMessage = $"Unexpected error: {ex.Message}";
-            LogArticleProcessingFailed(_logger, articleRequest.ArticleUrl, ex.Message);
+            HandleGeneralException(response, articleRequest, ex);
         }
 
         stopwatch.Stop();
         response.ProcessingTimeMs = (int)stopwatch.ElapsedMilliseconds;
         return response;
+    }
+
+    private static ArticleImageResponse InitializeArticleResponse(ArticleImageRequest articleRequest)
+    {
+        return new ArticleImageResponse
+        {
+            ArticleUrl = articleRequest.ArticleUrl,
+            ProcessedAt = DateTime.UtcNow
+        };
+    }
+
+    private HttpClient CreateHttpClient(BatchImageRequest batchRequest)
+    {
+        var httpClient = _httpClientFactory.CreateClient();
+        httpClient.Timeout = TimeSpan.FromMilliseconds(batchRequest.ArticleTimeoutMs);
+        httpClient.DefaultRequestHeaders.Add("User-Agent", batchRequest.UserAgent);
+        return httpClient;
+    }
+
+    private async Task ProcessArticleContentAsync(HttpClient httpClient, ArticleImageRequest articleRequest,
+        BatchImageRequest batchRequest, ArticleImageResponse response, Stopwatch stopwatch)
+    {
+        var htmlContent = await FetchHtmlContentWithRetryAsync(httpClient, articleRequest.ArticleUrl).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(htmlContent))
+        {
+            response.ErrorMessage = "Failed to fetch HTML content or content is empty";
+            return;
+        }
+
+        await ExtractAndSetImagesAsync(htmlContent, articleRequest, batchRequest, response).ConfigureAwait(false);
+        LogArticleProcessingSuccess(_logger, response.ExtractedImages.Count, articleRequest.ArticleUrl, (int)stopwatch.ElapsedMilliseconds);
+    }
+
+    private static async Task ExtractAndSetImagesAsync(string htmlContent, ArticleImageRequest articleRequest,
+        BatchImageRequest batchRequest, ArticleImageResponse response)
+    {
+        var extractedImages = await ExtractImagesFromHtmlAsync(htmlContent, articleRequest.ArticleUrl).ConfigureAwait(false);
+        response.ExtractedImages = extractedImages.Take(batchRequest.MaxImagesPerArticle).ToList();
+
+        var primaryImage = response.ExtractedImages.OrderBy(i => i.Priority).FirstOrDefault();
+        if (primaryImage != null)
+        {
+            response.PrimaryImageUrl = primaryImage.ImageUrl;
+            response.PrimaryImageSource = primaryImage.Source;
+            response.IsSuccess = true;
+        }
+        else
+        {
+            response.ErrorMessage = "No images found in the article";
+        }
+    }
+
+    private void HandleHttpRequestException(ArticleImageResponse response, ArticleImageRequest articleRequest, HttpRequestException ex)
+    {
+        response.ErrorMessage = $"HTTP request failed: {ex.Message}";
+        LogArticleProcessingFailed(_logger, articleRequest.ArticleUrl, ex.Message);
+    }
+
+    private void HandleTimeoutException(ArticleImageResponse response, ArticleImageRequest articleRequest, BatchImageRequest batchRequest)
+    {
+        response.ErrorMessage = $"Request timed out after {batchRequest.ArticleTimeoutMs.ToString(CultureInfo.InvariantCulture)}ms";
+        LogArticleProcessingFailed(_logger, articleRequest.ArticleUrl, response.ErrorMessage);
+    }
+
+    private void HandleGeneralException(ArticleImageResponse response, ArticleImageRequest articleRequest, Exception ex)
+    {
+        response.ErrorMessage = $"Unexpected error: {ex.Message}";
+        LogArticleProcessingFailed(_logger, articleRequest.ArticleUrl, ex.Message);
     }
 
     private async Task<string?> FetchHtmlContentAsync(HttpClient httpClient, string url)
@@ -338,7 +372,7 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
         }
     }
 
-    private async Task<List<ExtractedImage>> ExtractImagesFromHtmlAsync(string htmlContent, string baseUrl)
+    private static async Task<List<ExtractedImage>> ExtractImagesFromHtmlAsync(string htmlContent, string baseUrl)
     {
         var extractedImages = new List<ExtractedImage>();
 
@@ -371,7 +405,7 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
         return extractedImages;
     }
 
-    private void ExtractOpenGraphImages(IHtmlDocument document, List<ExtractedImage> extractedImages, string baseUrl)
+    private static void ExtractOpenGraphImages(IHtmlDocument document, List<ExtractedImage> extractedImages, string baseUrl)
     {
         // Define Open Graph image properties in priority order
         var ogImageProperties = new[]
@@ -399,7 +433,7 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
                         if (!extractedImages.Any(img =>
                                 string.Equals(img.ImageUrl, absoluteUrl, StringComparison.Ordinal) && img.Source == ImageSource.OpenGraph))
                         {
-                            var metadata = new Dictionary<string, string>
+                            var metadata = new Dictionary<string, string>(StringComparer.Ordinal)
                             {
                                 { "property", property },
                                 { "content", imageUrl }
@@ -424,7 +458,7 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
     /// <summary>
     ///     Adds related Open Graph metadata for an image URL.
     /// </summary>
-    private void AddOpenGraphMetadata(IHtmlDocument document, Dictionary<string, string> metadata, string imageUrl)
+    private static void AddOpenGraphMetadata(IHtmlDocument document, Dictionary<string, string> metadata, string imageUrl)
     {
         // Try to find width and height for this specific image
         var widthElement = document.QuerySelector("meta[property='og:image:width'][content]");
@@ -441,7 +475,7 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
         if (typeElement != null) metadata["type"] = typeElement.GetAttribute("content") ?? string.Empty;
     }
 
-    private void ExtractTwitterCardImages(IHtmlDocument document, List<ExtractedImage> extractedImages, string baseUrl)
+    private static void ExtractTwitterCardImages(IHtmlDocument document, List<ExtractedImage> extractedImages, string baseUrl)
     {
         var twitterImageElements = document.QuerySelectorAll("meta[name^='twitter:image']");
         var priority = 100;
@@ -458,7 +492,7 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
                         ImageUrl = absoluteUrl,
                         Source = ImageSource.Twitter,
                         Priority = priority++,
-                        Metadata = new Dictionary<string, string>
+                        Metadata = new Dictionary<string, string>(StringComparer.Ordinal)
                         {
                             { "name", element.GetAttribute("name") ?? string.Empty },
                             { "content", imageUrl }
@@ -468,7 +502,7 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
         }
     }
 
-    private void ExtractAppleTouchIcons(IHtmlDocument document, List<ExtractedImage> extractedImages, string baseUrl)
+    private static void ExtractAppleTouchIcons(IHtmlDocument document, List<ExtractedImage> extractedImages, string baseUrl)
     {
         var appleIconElements = document.QuerySelectorAll("link[rel*='apple-touch-icon']");
         var priority = 200;
@@ -487,7 +521,7 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
                         ImageUrl = absoluteUrl,
                         Source = ImageSource.Apple,
                         Priority = priority++,
-                        Metadata = new Dictionary<string, string>
+                        Metadata = new Dictionary<string, string>(StringComparer.Ordinal)
                         {
                             { "rel", element.GetAttribute("rel") ?? string.Empty },
                             { "sizes", sizes },
@@ -499,7 +533,7 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
         }
     }
 
-    private void ExtractFavicons(IHtmlDocument document, List<ExtractedImage> extractedImages, string baseUrl)
+    private static void ExtractFavicons(IHtmlDocument document, List<ExtractedImage> extractedImages, string baseUrl)
     {
         var faviconElements = document.QuerySelectorAll("link[rel*='icon']");
         var priority = 300;
@@ -516,7 +550,7 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
                         ImageUrl = absoluteUrl,
                         Source = ImageSource.Favicon,
                         Priority = priority++,
-                        Metadata = new Dictionary<string, string>
+                        Metadata = new Dictionary<string, string>(StringComparer.Ordinal)
                         {
                             { "rel", element.GetAttribute("rel") ?? string.Empty },
                             { "type", element.GetAttribute("type") ?? string.Empty },
@@ -527,7 +561,7 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
         }
     }
 
-    private void ExtractGenericMetaImages(IHtmlDocument document, List<ExtractedImage> extractedImages, string baseUrl)
+    private static void ExtractGenericMetaImages(IHtmlDocument document, List<ExtractedImage> extractedImages, string baseUrl)
     {
         var genericImageElements = document.QuerySelectorAll("meta[name='image'], meta[property='image']");
         var priority = 400;
@@ -544,7 +578,7 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
                         ImageUrl = absoluteUrl,
                         Source = ImageSource.Generic,
                         Priority = priority++,
-                        Metadata = new Dictionary<string, string>
+                        Metadata = new Dictionary<string, string>(StringComparer.Ordinal)
                         {
                             { "name", element.GetAttribute("name") ?? string.Empty },
                             { "property", element.GetAttribute("property") ?? string.Empty },
@@ -563,68 +597,103 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
         var domain = GetDomainFromUrl(url);
         if (string.IsNullOrEmpty(domain)) return null;
 
-        // Check circuit breaker
-        if (IsCircuitBreakerOpen(domain)) return null;
-
-        // Check rate limiting
-        if (!await CheckRateLimitAsync(domain).ConfigureAwait(false)) return null;
+        if (!await CanMakeRequestAsync(domain).ConfigureAwait(false)) return null;
 
         for (var attempt = 1; attempt <= maxRetries; attempt++)
-            try
-            {
-                if (attempt > 1)
-                {
-                    LogRequestRetry(_logger, url, attempt, maxRetries);
-                    await Task.Delay(GetRetryDelay(attempt)).ConfigureAwait(false);
-                }
+        {
+            if (attempt > 1) await DelayBeforeRetryAsync(url, attempt, maxRetries).ConfigureAwait(false);
 
-                var response = await httpClient.GetAsync(url).ConfigureAwait(false);
+            var result = await TryFetchHtmlContentAsync(httpClient, url, domain, attempt, maxRetries).ConfigureAwait(false);
+            if (result != null || string.IsNullOrEmpty(result)) return string.IsNullOrEmpty(result) ? null : result;
+        }
 
-                if (response.IsSuccessStatusCode)
-                {
-                    // Reset circuit breaker on success
-                    ResetCircuitBreaker(domain);
-                    return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                }
+        return null;
+    }
 
-                // Handle different HTTP status codes
-                var shouldRetry = ShouldRetryBasedOnStatusCode(response.StatusCode);
-                if (!shouldRetry || attempt == maxRetries)
-                {
-                    LogHttpRequestFailed(_logger, url, response.StatusCode, response.ReasonPhrase ?? "Unknown error");
+    private async Task<bool> CanMakeRequestAsync(string domain)
+    {
+        if (IsCircuitBreakerOpen(domain)) return false;
+        return await CheckRateLimitAsync(domain).ConfigureAwait(false);
+    }
 
-                    if (IsServerError(response.StatusCode)) IncrementCircuitBreakerFailures(domain);
+    private async Task DelayBeforeRetryAsync(string url, int attempt, int maxRetries)
+    {
+        LogRequestRetry(_logger, url, attempt, maxRetries);
+        await Task.Delay(GetRetryDelay(attempt)).ConfigureAwait(false);
+    }
 
-                    return null;
-                }
-            }
-            catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
-            {
-                if (attempt == maxRetries)
-                {
-                    LogHttpRequestFailed(_logger, url, HttpStatusCode.RequestTimeout, "Request timed out");
-                    IncrementCircuitBreakerFailures(domain);
-                    return null;
-                }
-            }
-            catch (HttpRequestException ex)
-            {
-                if (attempt == maxRetries)
-                {
-                    LogHttpRequestFailed(_logger, url, HttpStatusCode.InternalServerError, ex.Message);
-                    IncrementCircuitBreakerFailures(domain);
-                    return null;
-                }
-            }
-            catch (Exception ex)
-            {
-                if (attempt == maxRetries)
-                {
-                    LogHttpRequestFailed(_logger, url, HttpStatusCode.InternalServerError, ex.Message);
-                    IncrementCircuitBreakerFailures(domain);
-                    return null;
-                }
-            }
+    private async Task<string?> TryFetchHtmlContentAsync(HttpClient httpClient, string url, string domain, int attempt, int maxRetries)
+    {
+        try
+        {
+            var response = await httpClient.GetAsync(url).ConfigureAwait(false);
+            return await HandleHttpResponseAsync(response, url, domain, attempt, maxRetries).ConfigureAwait(false);
+        }
+        catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
+        {
+            return HandleTimeoutException(url, domain, attempt, maxRetries);
+        }
+        catch (HttpRequestException ex)
+        {
+            return HandleHttpRequestException(url, domain, attempt, maxRetries, ex);
+        }
+        catch (Exception ex)
+        {
+            return HandleGeneralException(url, domain, attempt, maxRetries, ex);
+        }
+    }
+
+    private async Task<string?> HandleHttpResponseAsync(HttpResponseMessage response, string url, string domain, int attempt, int maxRetries)
+    {
+        if (response.IsSuccessStatusCode)
+        {
+            ResetCircuitBreaker(domain);
+            return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        }
+
+        var shouldRetry = ShouldRetryBasedOnStatusCode(response.StatusCode);
+        if (!shouldRetry || attempt == maxRetries)
+        {
+            LogHttpRequestFailed(_logger, url, response.StatusCode, response.ReasonPhrase ?? "Unknown error");
+            if (IsServerError(response.StatusCode)) IncrementCircuitBreakerFailures(domain);
+            return string.Empty;
+        }
+
+        return null;
+    }
+
+    private string? HandleTimeoutException(string url, string domain, int attempt, int maxRetries)
+    {
+        if (attempt == maxRetries)
+        {
+            LogHttpRequestFailed(_logger, url, HttpStatusCode.RequestTimeout, "Request timed out");
+            IncrementCircuitBreakerFailures(domain);
+            return string.Empty;
+        }
+
+        return null;
+    }
+
+    private string? HandleHttpRequestException(string url, string domain, int attempt, int maxRetries, HttpRequestException ex)
+    {
+        if (attempt == maxRetries)
+        {
+            LogHttpRequestFailed(_logger, url, HttpStatusCode.InternalServerError, ex.Message);
+            IncrementCircuitBreakerFailures(domain);
+            return string.Empty;
+        }
+
+        return null;
+    }
+
+    private string? HandleGeneralException(string url, string domain, int attempt, int maxRetries, Exception ex)
+    {
+        if (attempt == maxRetries)
+        {
+            LogHttpRequestFailed(_logger, url, HttpStatusCode.InternalServerError, ex.Message);
+            IncrementCircuitBreakerFailures(domain);
+            return string.Empty;
+        }
 
         return null;
     }
@@ -663,7 +732,8 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
         if (state.IsOpen)
         {
             // Check if we should attempt to close the circuit breaker
-            if (DateTime.UtcNow > state.OpenedAt.AddMinutes(5)) // 5-minute timeout
+            // 5-minute timeout
+            if (DateTime.UtcNow > state.OpenedAt.AddMinutes(5))
             {
                 state.IsOpen = false;
                 state.FailureCount = 0;
@@ -741,10 +811,13 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
     /// </summary>
     private static int GetRetryDelay(int attempt)
     {
-        var baseDelay = 1000; // 1 second
+        // 1 second base delay
+        var baseDelay = 1000;
         var delay = baseDelay * Math.Pow(2, attempt - 1);
-        var jitter = new Random().Next(0, 500); // Add jitter to prevent thundering herd
-        return (int)Math.Min(delay + jitter, 30000); // Max 30 seconds
+        // Add jitter to prevent thundering herd
+        var jitter = System.Security.Cryptography.RandomNumberGenerator.GetInt32(0, 500);
+        // Max 30 seconds
+        return (int)Math.Min(delay + jitter, 30000);
     }
 
     /// <summary>
@@ -817,19 +890,35 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
     /// <summary>
     ///     Validates the batch request for required fields, limits, and security.
     /// </summary>
-    private ValidationResult ValidateBatchRequest(BatchImageRequest request)
+    private static ValidationResult ValidateBatchRequest(BatchImageRequest request)
     {
         var result = new ValidationResult { IsValid = true };
 
-        // Validate basic requirements
+        if (!ValidateBasicRequirements(request, result)) return result;
+
+        ValidateRequestLimits(request, result);
+        ValidateTimeoutValues(request, result);
+        ValidateRequestMetadata(request, result);
+        ValidateArticles(request, result);
+
+        if (result.Errors.Count > 0) result.IsValid = false;
+        return result;
+    }
+
+    private static bool ValidateBasicRequirements(BatchImageRequest request, ValidationResult result)
+    {
         if (request.Articles == null || request.Articles.Count == 0)
         {
             result.IsValid = false;
             result.Errors.Add("No articles provided for processing");
-            return result;
+            return false;
         }
 
-        // Validate request limits
+        return true;
+    }
+
+    private static void ValidateRequestLimits(BatchImageRequest request, ValidationResult result)
+    {
         if (request.Articles.Count > 100)
         {
             result.IsValid = false;
@@ -842,102 +931,105 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
             result.Errors.Add("MaxConcurrency must be between 1 and 20");
         }
 
-        // Validate timeout values
-        if (request.BatchTimeoutMs < 10000 || request.BatchTimeoutMs > 600000) // 10 seconds to 10 minutes
-        {
-            result.IsValid = false;
-            result.Errors.Add("BatchTimeoutMs must be between 10,000 and 600,000 milliseconds");
-        }
-
-        if (request.ArticleTimeoutMs < 5000 || request.ArticleTimeoutMs > 120000) // 5 seconds to 2 minutes
-        {
-            result.IsValid = false;
-            result.Errors.Add("ArticleTimeoutMs must be between 5,000 and 120,000 milliseconds");
-        }
-
         if (request.MaxImagesPerArticle <= 0 || request.MaxImagesPerArticle > 10)
         {
             result.IsValid = false;
             result.Errors.Add("MaxImagesPerArticle must be between 1 and 10");
         }
+    }
 
-        // Validate RequestId
+    private static void ValidateTimeoutValues(BatchImageRequest request, ValidationResult result)
+    {
+        // 10 seconds to 10 minutes
+        if (request.BatchTimeoutMs < 10000 || request.BatchTimeoutMs > 600000)
+        {
+            result.IsValid = false;
+            result.Errors.Add("BatchTimeoutMs must be between 10,000 and 600,000 milliseconds");
+        }
+
+        // 5 seconds to 2 minutes
+        if (request.ArticleTimeoutMs < 5000 || request.ArticleTimeoutMs > 120000)
+        {
+            result.IsValid = false;
+            result.Errors.Add("ArticleTimeoutMs must be between 5,000 and 120,000 milliseconds");
+        }
+    }
+
+    private static void ValidateRequestMetadata(BatchImageRequest request, ValidationResult result)
+    {
         if (string.IsNullOrWhiteSpace(request.RequestId) || request.RequestId.Length > 100)
         {
             result.IsValid = false;
             result.Errors.Add("RequestId must be provided and cannot exceed 100 characters");
         }
 
-        // Validate User-Agent
         if (string.IsNullOrWhiteSpace(request.UserAgent) || request.UserAgent.Length > 200)
         {
             result.IsValid = false;
             result.Errors.Add("UserAgent must be provided and cannot exceed 200 characters");
         }
+    }
 
-        // Validate individual article requests
+    private static void ValidateArticles(BatchImageRequest request, ValidationResult result)
+    {
         for (var i = 0; i < request.Articles.Count; i++)
         {
             var article = request.Articles[i];
             var articleErrors = ValidateArticleRequest(article, i);
             result.Errors.AddRange(articleErrors);
         }
-
-        if (result.Errors.Count > 0) result.IsValid = false;
-
-        return result;
     }
 
     /// <summary>
     ///     Validates an individual article request.
     /// </summary>
-    private List<string> ValidateArticleRequest(ArticleImageRequest article, int index)
+    private static List<string> ValidateArticleRequest(ArticleImageRequest article, int index)
     {
         var errors = new List<string>();
 
         // Validate ArticleUrl
         if (string.IsNullOrWhiteSpace(article.ArticleUrl))
         {
-            errors.Add($"Article[{index}]: ArticleUrl is required");
+            errors.Add($"Article[{index.ToString(CultureInfo.InvariantCulture)}]: ArticleUrl is required");
         }
         else
         {
             // Validate URL format and security
             if (!Uri.TryCreate(article.ArticleUrl, UriKind.Absolute, out var uri))
             {
-                errors.Add($"Article[{index}]: ArticleUrl is not a valid URL");
+                errors.Add($"Article[{index.ToString(CultureInfo.InvariantCulture)}]: ArticleUrl is not a valid URL");
             }
             else
             {
                 // Security validation: only allow HTTP/HTTPS
                 if (!string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.InvariantCultureIgnoreCase) && !string.Equals(uri.Scheme, Uri.UriSchemeHttps,
-                        StringComparison.Ordinal)) errors.Add($"Article[{index}]: Only HTTP and HTTPS URLs are allowed");
+                        StringComparison.Ordinal)) errors.Add($"Article[{index.ToString(CultureInfo.InvariantCulture)}]: Only HTTP and HTTPS URLs are allowed");
 
                 // Block potentially dangerous domains
                 var host = uri.Host.ToLowerInvariant();
                 if (string.Equals(host, "localhost", StringComparison.InvariantCultureIgnoreCase) ||
                     string.Equals(host, "127.0.0.1", StringComparison.Ordinal) ||
-                    host.StartsWith("192.168.") ||
-                    host.StartsWith("10."))
-                    errors.Add($"Article[{index}]: Internal/local network URLs are not allowed");
+                    host.StartsWith("192.168.", StringComparison.Ordinal) ||
+                    host.StartsWith("10.", StringComparison.Ordinal))
+                    errors.Add($"Article[{index.ToString(CultureInfo.InvariantCulture)}]: Internal/local network URLs are not allowed");
 
                 // URL length validation
-                if (article.ArticleUrl.Length > 2000) errors.Add($"Article[{index}]: ArticleUrl cannot exceed 2000 characters");
+                if (article.ArticleUrl.Length > 2000) errors.Add($"Article[{index.ToString(CultureInfo.InvariantCulture)}]: ArticleUrl cannot exceed 2000 characters");
             }
         }
 
         // Validate optional fields
-        if (article.ArticleTitle != null && article.ArticleTitle.Length > 500) errors.Add($"Article[{index}]: ArticleTitle cannot exceed 500 characters");
+        if (article.ArticleTitle != null && article.ArticleTitle.Length > 500) errors.Add($"Article[{index.ToString(CultureInfo.InvariantCulture)}]: ArticleTitle cannot exceed 500 characters");
 
         if (article.ArticleDescription != null && article.ArticleDescription.Length > 1000)
-            errors.Add($"Article[{index}]: ArticleDescription cannot exceed 1000 characters");
+            errors.Add($"Article[{index.ToString(CultureInfo.InvariantCulture)}]: ArticleDescription cannot exceed 1000 characters");
 
-        if (article.UserAgent != null && article.UserAgent.Length > 200) errors.Add($"Article[{index}]: UserAgent cannot exceed 200 characters");
+        if (article.UserAgent != null && article.UserAgent.Length > 200) errors.Add($"Article[{index.ToString(CultureInfo.InvariantCulture)}]: UserAgent cannot exceed 200 characters");
 
         // Validate timeout values
-        if (article.TimeoutMs < 5000 || article.TimeoutMs > 120000) errors.Add($"Article[{index}]: TimeoutMs must be between 5,000 and 120,000 milliseconds");
+        if (article.TimeoutMs < 5000 || article.TimeoutMs > 120000) errors.Add($"Article[{index.ToString(CultureInfo.InvariantCulture)}]: TimeoutMs must be between 5,000 and 120,000 milliseconds");
 
-        if (article.MaxImages <= 0 || article.MaxImages > 10) errors.Add($"Article[{index}]: MaxImages must be between 1 and 10");
+        if (article.MaxImages <= 0 || article.MaxImages > 10) errors.Add($"Article[{index.ToString(CultureInfo.InvariantCulture)}]: MaxImages must be between 1 and 10");
 
         return errors;
     }
@@ -945,7 +1037,7 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
     /// <summary>
     ///     Tracks rate limiting for a domain.
     /// </summary>
-    private class RateLimitTracker
+    private sealed class RateLimitTracker
     {
         public List<DateTime> RequestTimes { get; } = new();
     }
@@ -953,7 +1045,7 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
     /// <summary>
     ///     Tracks circuit breaker state for a domain.
     /// </summary>
-    private class CircuitBreakerState
+    private sealed class CircuitBreakerState
     {
         public int FailureCount { get; set; }
         public bool IsOpen { get; set; }
@@ -963,7 +1055,7 @@ public partial class GetOpenGraphImages(ILogger<GetOpenGraphImages> logger, IHtt
     /// <summary>
     ///     Represents the result of request validation.
     /// </summary>
-    private class ValidationResult
+    private sealed class ValidationResult
     {
         public bool IsValid { get; set; }
         public List<string> Errors { get; } = new();

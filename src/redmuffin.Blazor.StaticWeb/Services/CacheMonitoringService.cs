@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Globalization;
 
 namespace redmuffin.Blazor.StaticWeb.Services;
@@ -12,14 +12,15 @@ public class CacheMonitoringService : ICacheMonitoringService
     private const double HighStorageUtilizationThreshold = 80.0;
     private const double CriticalStorageUtilizationThreshold = 90.0;
     private const double HighFragmentationThreshold = 30.0;
-    private const double LowCacheHitRateThreshold = 60.0;
-    private const double CriticalCacheHitRateThreshold = 40.0;
+    // Commented out as these are not currently used
+    // private const double LowCacheHitRateThreshold = 60.0;
+    // private const double CriticalCacheHitRateThreshold = 40.0;
     private readonly IBrowserStorageService _browserStorageService;
     private readonly ICacheService _cacheService;
     private readonly IImageValidationService _imageValidationService;
     private readonly ILogger<CacheMonitoringService> _logger;
     private readonly IOpenGraphImagesService _openGraphImagesService;
-    
+
     // LoggerMessage delegates for better performance
     private static readonly Action<ILogger, Exception?> LogCollectingComprehensiveStats =
         LoggerMessage.Define(LogLevel.Debug, new EventId(1, nameof(LogCollectingComprehensiveStats)),
@@ -50,7 +51,7 @@ public class CacheMonitoringService : ICacheMonitoringService
             "Starting cache optimization");
     private static readonly Action<ILogger, Exception> LogCacheOptimizationFailed =
         LoggerMessage.Define(LogLevel.Error, new EventId(10, nameof(LogCacheOptimizationFailed)),
-            "Cache optimization failed after {ElapsedMs}ms");
+            "Cache optimization failed");
     private static readonly Action<ILogger, Exception?> LogGeneratingCacheRecommendations =
         LoggerMessage.Define(LogLevel.Debug, new EventId(11, nameof(LogGeneratingCacheRecommendations)),
             "Generating cache recommendations");
@@ -294,24 +295,24 @@ public class CacheMonitoringService : ICacheMonitoringService
         }
     }
 
-    private long CalculateTotalAccesses(CacheStats stats)
+    private static long CalculateTotalAccesses(CacheStats stats)
     {
         // Estimate total accesses based on namespace statistics
         return stats.NamespaceStats.Values.Sum(ns => (long)(ns.TotalItems * ns.AverageAccessCount));
     }
 
-    private (double HitRate, double MissRate) CalculateHitMissRates(CacheStats stats, long totalAccesses)
+    private static (double HitRate, double MissRate) CalculateHitMissRates(CacheStats stats, long totalAccesses)
     {
         if (totalAccesses == 0) return (0.0, 0.0);
 
         // Estimate hit rate based on cache efficiency
-        var hitRate = Math.Min(95.0, 60.0 + stats.TotalItems * 0.01);
+        var hitRate = Math.Min(95.0, 60.0 + (stats.TotalItems * 0.01));
         var missRate = 100.0 - hitRate;
 
         return (hitRate, missRate);
     }
 
-    private double CalculateAverageAccessTime(CacheStats stats)
+    private static double CalculateAverageAccessTime(CacheStats stats)
     {
         // Estimate average access time based on storage utilization
         var baseTime = 1.0; // Base access time in milliseconds
@@ -319,7 +320,7 @@ public class CacheMonitoringService : ICacheMonitoringService
         return baseTime * (1.0 + utilizationFactor);
     }
 
-    private CacheHealthStatus DetermineHealthStatus(double storageUtilization, CacheStats stats)
+    private static CacheHealthStatus DetermineHealthStatus(double storageUtilization, CacheStats stats)
     {
         if (storageUtilization > CriticalStorageUtilizationThreshold)
             return CacheHealthStatus.Critical;
@@ -333,26 +334,26 @@ public class CacheMonitoringService : ICacheMonitoringService
         return CacheHealthStatus.Healthy;
     }
 
-    private List<string> AnalyzePerformanceIssues(CacheStats stats, double storageUtilization)
+    private static List<string> AnalyzePerformanceIssues(CacheStats stats, double storageUtilization)
     {
         var issues = new List<string>();
 
         if (storageUtilization > CriticalStorageUtilizationThreshold)
-            issues.Add($"Critical storage utilization: {storageUtilization:F2}%");
+            issues.Add($"Critical storage utilization: {storageUtilization.ToString("F2", CultureInfo.InvariantCulture)}%");
         else if (storageUtilization > HighStorageUtilizationThreshold)
-            issues.Add($"High storage utilization: {storageUtilization:F2}%");
+            issues.Add($"High storage utilization: {storageUtilization.ToString("F2", CultureInfo.InvariantCulture)}%");
 
         if (stats.TotalExpiredItemsCount > 0)
-            issues.Add($"{stats.TotalExpiredItemsCount} expired items need cleanup");
+            issues.Add($"{stats.TotalExpiredItemsCount.ToString(CultureInfo.InvariantCulture)} expired items need cleanup");
 
         var fragmentationPercent = CalculateFragmentationPercent(stats);
         if (fragmentationPercent > HighFragmentationThreshold)
-            issues.Add($"High cache fragmentation: {fragmentationPercent:F2}%");
+            issues.Add($"High cache fragmentation: {fragmentationPercent.ToString("F2", CultureInfo.InvariantCulture)}%");
 
         return issues;
     }
 
-    private double CalculateFragmentationPercent(CacheStats stats)
+    private static double CalculateFragmentationPercent(CacheStats stats)
     {
         if (stats.TotalItems == 0) return 0.0;
 
@@ -361,37 +362,37 @@ public class CacheMonitoringService : ICacheMonitoringService
         return Math.Min(100.0, expiredRatio * 100.0);
     }
 
-    private double EstimateAverageHitRate(CacheStats stats)
+    private static double EstimateAverageHitRate(CacheStats stats)
     {
         // Estimate based on cache efficiency
-        return Math.Min(95.0, 60.0 + stats.TotalItems * 0.01);
+        return Math.Min(95.0, 60.0 + (stats.TotalItems * 0.01));
     }
 
-    private double EstimateAverageResponseTime(CacheStats stats)
+    private static double EstimateAverageResponseTime(CacheStats stats)
     {
         return CalculateAverageAccessTime(stats);
     }
 
-    private long EstimateTotalOperations(CacheStats stats, int timeRangeHours)
+    private static long EstimateTotalOperations(CacheStats stats, int timeRangeHours)
     {
         // Estimate based on current activity
         var operationsPerHour = stats.TotalItems * 10; // Rough estimate
         return operationsPerHour * timeRangeHours;
     }
 
-    private int EstimateEvictionsCount(CacheStats stats)
+    private static int EstimateEvictionsCount(CacheStats stats)
     {
         // Estimate based on storage pressure
         return stats.QuotaUsagePercent > HighStorageUtilizationThreshold ? (int)(stats.TotalItems * 0.1) : 0;
     }
 
-    private int EstimateCleanupCount(CacheStats stats)
+    private static int EstimateCleanupCount(CacheStats stats)
     {
         // Estimate based on expired items
         return stats.TotalExpiredItemsCount > 0 ? 1 : 0;
     }
 
-    private void AnalyzeStorageRecommendations(CacheStats stats, CacheRecommendations recommendations)
+    private static void AnalyzeStorageRecommendations(CacheStats stats, CacheRecommendations recommendations)
     {
         if (stats.QuotaUsagePercent > CriticalStorageUtilizationThreshold)
         {
@@ -405,7 +406,7 @@ public class CacheMonitoringService : ICacheMonitoringService
         }
     }
 
-    private void AnalyzeExpirationRecommendations(CacheStats stats, CacheRecommendations recommendations)
+    private static void AnalyzeExpirationRecommendations(CacheStats stats, CacheRecommendations recommendations)
     {
         if (stats.TotalExpiredItemsCount > stats.TotalItems * 0.1)
         {
@@ -414,7 +415,7 @@ public class CacheMonitoringService : ICacheMonitoringService
         }
     }
 
-    private void AnalyzePerformanceRecommendations(CacheHealthMetrics healthMetrics, CacheRecommendations recommendations)
+    private static void AnalyzePerformanceRecommendations(CacheHealthMetrics healthMetrics, CacheRecommendations recommendations)
     {
         if (healthMetrics.IsMemoryPressureHigh)
         {
@@ -429,7 +430,7 @@ public class CacheMonitoringService : ICacheMonitoringService
         }
     }
 
-    private void AnalyzeMaintenanceRecommendations(CacheStats stats, CacheHealthMetrics healthMetrics, CacheRecommendations recommendations)
+    private static void AnalyzeMaintenanceRecommendations(CacheStats stats, CacheHealthMetrics healthMetrics, CacheRecommendations recommendations)
     {
         if (stats.TotalExpiredItemsCount > 0) recommendations.MaintenanceRecommendations.Add("Run cache cleanup immediately");
 
@@ -439,7 +440,7 @@ public class CacheMonitoringService : ICacheMonitoringService
         if (healthMetrics.PerformanceIssues.Any()) recommendations.MaintenanceRecommendations.Add("Address performance issues identified");
     }
 
-    private int CalculateHealthScore(CacheHealthMetrics healthMetrics, CacheStats stats)
+    private static int CalculateHealthScore(CacheHealthMetrics healthMetrics, CacheStats stats)
     {
         var score = 100;
 

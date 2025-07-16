@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Services;
+﻿namespace redmuffin.Blazor.StaticWeb.Services;
 
 /// <summary>
 ///     Implementation of ICacheService that provides namespace separation for different data types.
@@ -226,7 +226,7 @@ public class CacheService : ICacheService
 
         if (!namespaceIndex.TryGetValue(cacheNamespace, out var keys))
         {
-            keys = new HashSet<string>();
+            keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             namespaceIndex[cacheNamespace] = keys;
         }
 
@@ -256,6 +256,6 @@ public class CacheService : ICacheService
     private async Task<Dictionary<string, HashSet<string>>> GetNamespaceIndexAsync(CancellationToken cancellationToken)
     {
         return await _browserStorageService.GetItemAsync<Dictionary<string, HashSet<string>>>(NamespaceIndexKey, cancellationToken).ConfigureAwait(false)
-               ?? new Dictionary<string, HashSet<string>>();
+               ?? new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
     }
 }
