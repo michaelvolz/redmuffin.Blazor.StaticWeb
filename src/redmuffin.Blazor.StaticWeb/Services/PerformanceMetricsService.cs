@@ -5,20 +5,28 @@ using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed;
 namespace redmuffin.Blazor.StaticWeb.Services;
 
 /// <summary>
-/// Service implementation for collecting web performance metrics via JavaScript interop
+///     Service implementation for collecting web performance metrics via JavaScript interop
 /// </summary>
 public class PerformanceMetricsService(IJSRuntime jsRuntime) : IPerformanceMetricsService, IAsyncDisposable
 {
     private readonly SemaphoreSlim _semaphore = new(1, 1);
     private bool _disposed;
 
+    public ValueTask DisposeAsync()
+    {
+        if (_disposed) return ValueTask.CompletedTask;
+
+        _disposed = true;
+
+        _semaphore.Dispose();
+        GC.SuppressFinalize(this);
+        return ValueTask.CompletedTask;
+    }
+
     /// <inheritdoc />
     public async Task<PageLoadSpeed.PageLoadMetrics?> GetMetricsAsync(CancellationToken cancellationToken = default)
     {
-        if (_disposed)
-        {
-            return null;
-        }
+        if (_disposed) return null;
 
         try
         {
@@ -28,7 +36,8 @@ public class PerformanceMetricsService(IJSRuntime jsRuntime) : IPerformanceMetri
             await _semaphore.WaitAsync(cts.Token).ConfigureAwait(false);
             try
             {
-                var functionExists = await jsRuntime.InvokeAsync<bool>("eval", cts.Token, "typeof window.getPageLoadMetrics === 'function'").ConfigureAwait(false);
+                var functionExists = await jsRuntime.InvokeAsync<bool>("eval", cts.Token, "typeof window.getPageLoadMetrics === 'function'")
+                    .ConfigureAwait(false);
 
                 if (functionExists)
                 {
@@ -56,10 +65,7 @@ public class PerformanceMetricsService(IJSRuntime jsRuntime) : IPerformanceMetri
     /// <inheritdoc />
     public async ValueTask<bool> IsJavaScriptAvailableAsync()
     {
-        if (_disposed)
-        {
-            return false;
-        }
+        if (_disposed) return false;
 
         try
         {
@@ -74,10 +80,7 @@ public class PerformanceMetricsService(IJSRuntime jsRuntime) : IPerformanceMetri
     /// <inheritdoc />
     public async Task<double[]?> GetLegacyTimingAsync(CancellationToken cancellationToken = default)
     {
-        if (_disposed)
-        {
-            return null;
-        }
+        if (_disposed) return null;
 
         try
         {
@@ -87,7 +90,8 @@ public class PerformanceMetricsService(IJSRuntime jsRuntime) : IPerformanceMetri
             await _semaphore.WaitAsync(cts.Token).ConfigureAwait(false);
             try
             {
-                var functionExists = await jsRuntime.InvokeAsync<bool>("eval", cts.Token, "typeof window.getPageLoadTimes === 'function'").ConfigureAwait(false);
+                var functionExists = await jsRuntime.InvokeAsync<bool>("eval", cts.Token, "typeof window.getPageLoadTimes === 'function'")
+                    .ConfigureAwait(false);
 
                 if (functionExists)
                 {
@@ -133,7 +137,7 @@ public class PerformanceMetricsService(IJSRuntime jsRuntime) : IPerformanceMetri
                 DecodedSizeFormatted = "Unknown",
                 ServerResponseTime = 0,
                 DomProcessingTime = 0,
-                ResourceLoadTime = 0,
+                ResourceLoadTime = 0
             };
         }
         catch (Exception)
@@ -154,22 +158,8 @@ public class PerformanceMetricsService(IJSRuntime jsRuntime) : IPerformanceMetri
                 DecodedSizeFormatted = "Unknown",
                 ServerResponseTime = 0,
                 DomProcessingTime = 0,
-                ResourceLoadTime = 0,
+                ResourceLoadTime = 0
             };
         }
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        if (_disposed)
-        {
-            return ValueTask.CompletedTask;
-        }
-
-        _disposed = true;
-
-        _semaphore.Dispose();
-        GC.SuppressFinalize(this);
-        return ValueTask.CompletedTask;
     }
 }

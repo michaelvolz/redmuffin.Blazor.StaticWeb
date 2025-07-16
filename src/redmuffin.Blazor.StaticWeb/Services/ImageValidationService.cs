@@ -1,24 +1,21 @@
 using System.Collections.Concurrent;
-using System.Net;
-using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb.Common.Models;
 
 namespace redmuffin.Blazor.StaticWeb.Services;
 
 /// <summary>
-/// Service for validating image URLs using HTTP HEAD requests to ensure they're accessible and valid.
+///     Service for validating image URLs using HTTP HEAD requests to ensure they're accessible and valid.
 /// </summary>
 public class ImageValidationService : IImageValidationService
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ICacheService _cacheService;
-    private readonly ILogger<ImageValidationService> _logger;
-    private readonly ConcurrentDictionary<string, ImageValidationResult> _memoryCache = new();
-    private readonly SemaphoreSlim _concurrentRequestsSemaphore = new(10, 10);
-
     private const string CacheNamespace = "image_validation";
     private const int CacheExpirationHours = 1; // 1 hour for image validation results
     private const int DefaultTimeoutMs = 10000; // 10 seconds
+    private readonly ICacheService _cacheService;
+    private readonly SemaphoreSlim _concurrentRequestsSemaphore = new(10, 10);
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<ImageValidationService> _logger;
+    private readonly ConcurrentDictionary<string, ImageValidationResult> _memoryCache = new();
 
     public ImageValidationService(
         IHttpClientFactory httpClientFactory,
@@ -33,7 +30,6 @@ public class ImageValidationService : IImageValidationService
     public async Task<ImageValidationResult> ValidateImageAsync(string imageUrl, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(imageUrl))
-        {
             return new ImageValidationResult
             {
                 ImageUrl = imageUrl,
@@ -41,11 +37,10 @@ public class ImageValidationService : IImageValidationService
                 ErrorMessage = "Image URL is null or empty",
                 ValidatedAt = DateTime.UtcNow
             };
-        }
 
         // Store original URL for reference
-        string originalUrl = imageUrl;
-        
+        var originalUrl = imageUrl;
+
         // Change HTTP to HTTPS if possible for better security and CORS compliance
         if (imageUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
         {
@@ -54,7 +49,6 @@ public class ImageValidationService : IImageValidationService
         }
 
         if (!Uri.TryCreate(imageUrl, UriKind.Absolute, out var uri))
-        {
             return new ImageValidationResult
             {
                 ImageUrl = imageUrl,
@@ -62,12 +56,11 @@ public class ImageValidationService : IImageValidationService
                 ErrorMessage = "Invalid URL format",
                 ValidatedAt = DateTime.UtcNow
             };
-        }
 
-        await _concurrentRequestsSemaphore.WaitAsync(cancellationToken);
+        await _concurrentRequestsSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            return await PerformHttpHeadValidationAsync(imageUrl, uri, cancellationToken);
+            return await PerformHttpHeadValidationAsync(imageUrl, uri, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -76,8 +69,8 @@ public class ImageValidationService : IImageValidationService
     }
 
     public async Task<Dictionary<string, ImageValidationResult>> ValidateImagesAsync(
-        IEnumerable<string> imageUrls, 
-        int maxConcurrency = 5, 
+        IEnumerable<string> imageUrls,
+        int maxConcurrency = 5,
         CancellationToken cancellationToken = default)
     {
         var results = new ConcurrentDictionary<string, ImageValidationResult>();
@@ -85,10 +78,10 @@ public class ImageValidationService : IImageValidationService
 
         var tasks = imageUrls.Select(async url =>
         {
-            await semaphore.WaitAsync(cancellationToken);
+            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                var result = await ValidateImageAsync(url, cancellationToken);
+                var result = await ValidateImageAsync(url, cancellationToken).ConfigureAwait(false);
                 results.TryAdd(url, result);
             }
             finally
@@ -97,17 +90,16 @@ public class ImageValidationService : IImageValidationService
             }
         });
 
-        await Task.WhenAll(tasks);
+        await Task.WhenAll(tasks).ConfigureAwait(false);
         return results.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
     }
 
     public async Task<ImageValidationResult> ValidateImageWithCacheAsync(
-        string imageUrl, 
-        int cacheExpirationMinutes = 60, 
+        string imageUrl,
+        int cacheExpirationMinutes = 60,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(imageUrl))
-        {
             return new ImageValidationResult
             {
                 ImageUrl = imageUrl,
@@ -115,18 +107,15 @@ public class ImageValidationService : IImageValidationService
                 ErrorMessage = "Image URL is null or empty",
                 ValidatedAt = DateTime.UtcNow
             };
-        }
 
         // Check memory cache first
-        if (_memoryCache.TryGetValue(imageUrl, out var memoryCachedResult) && 
+        if (_memoryCache.TryGetValue(imageUrl, out var memoryCachedResult) &&
             memoryCachedResult.ValidatedAt.AddMinutes(cacheExpirationMinutes) > DateTime.UtcNow)
-        {
             return memoryCachedResult;
-        }
 
         // Check persistent cache
-        var cachedResult = await _cacheService.GetItemAsync<ImageValidationResult>(CacheNamespace, imageUrl, cancellationToken);
-        if (cachedResult != null && 
+        var cachedResult = await _cacheService.GetItemAsync<ImageValidationResult>(CacheNamespace, imageUrl, cancellationToken).ConfigureAwait(false);
+        if (cachedResult != null &&
             cachedResult.ValidatedAt.AddMinutes(cacheExpirationMinutes) > DateTime.UtcNow)
         {
             // Update memory cache
@@ -135,10 +124,10 @@ public class ImageValidationService : IImageValidationService
         }
 
         // Perform validation
-        var result = await ValidateImageAsync(imageUrl, cancellationToken);
-        
+        var result = await ValidateImageAsync(imageUrl, cancellationToken).ConfigureAwait(false);
+
         // Cache the result
-        await _cacheService.SetItemAsync(CacheNamespace, imageUrl, result, CacheExpirationHours * 60, cancellationToken);
+        await _cacheService.SetItemAsync(CacheNamespace, imageUrl, result, CacheExpirationHours * 60, cancellationToken).ConfigureAwait(false);
         _memoryCache.TryAdd(imageUrl, result);
 
         return result;
@@ -152,7 +141,7 @@ public class ImageValidationService : IImageValidationService
             _memoryCache.Clear();
 
             // Clear persistent cache
-            await _cacheService.ClearNamespaceAsync(CacheNamespace);
+            await _cacheService.ClearNamespaceAsync(CacheNamespace, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -164,7 +153,7 @@ public class ImageValidationService : IImageValidationService
     {
         try
         {
-            var stats = await _cacheService.GetNamespaceStatsAsync(CacheNamespace);
+            var stats = await _cacheService.GetNamespaceStatsAsync(CacheNamespace, cancellationToken).ConfigureAwait(false);
             return new Dictionary<string, object>
             {
                 ["Namespace"] = stats.Namespace,
@@ -185,23 +174,20 @@ public class ImageValidationService : IImageValidationService
     }
 
     private async Task<ImageValidationResult> PerformHttpHeadValidationAsync(
-        string imageUrl, 
-        Uri uri, 
+        string imageUrl,
+        Uri uri,
         CancellationToken cancellationToken)
     {
         try
         {
             var httpClient = _httpClientFactory.CreateClient("ExternalHttpClient");
             // Override timeout if needed (ExternalHttpClient has 30s default)
-            if (httpClient.Timeout.TotalMilliseconds > DefaultTimeoutMs)
-            {
-                httpClient.Timeout = TimeSpan.FromMilliseconds(DefaultTimeoutMs);
-            }
+            if (httpClient.Timeout.TotalMilliseconds > DefaultTimeoutMs) httpClient.Timeout = TimeSpan.FromMilliseconds(DefaultTimeoutMs);
 
             var request = new HttpRequestMessage(HttpMethod.Head, uri);
-            
-            using var response = await httpClient.SendAsync(request, cancellationToken);
-            
+
+            using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
             var result = new ImageValidationResult
             {
                 ImageUrl = imageUrl,
@@ -210,7 +196,7 @@ public class ImageValidationService : IImageValidationService
                 ContentType = response.Content?.Headers?.ContentType?.MediaType ?? string.Empty,
                 ContentLength = response.Content?.Headers?.ContentLength,
                 ValidatedAt = DateTime.UtcNow,
-                ResponseTimeMs = 0 // Could implement timing if needed
+                ResponseTimeMs = 0 // Could implement timing if needed,
             };
 
             if (!response.IsSuccessStatusCode)
@@ -259,5 +245,4 @@ public class ImageValidationService : IImageValidationService
             };
         }
     }
-
 }
