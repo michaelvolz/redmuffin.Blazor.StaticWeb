@@ -38,7 +38,7 @@ public class OpenGraphErrorScenarioTests : TestBase
     public async Task GetImageAsync_WithNullUrl_ShouldReturnNull()
     {
         // Act
-        var result = await _imageService.GetImageAsync(null!);
+        var result = await _imageService.GetImageAsync(null!).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsNull();
@@ -48,7 +48,7 @@ public class OpenGraphErrorScenarioTests : TestBase
     public async Task GetImageAsync_WithEmptyUrl_ShouldReturnNull()
     {
         // Act
-        var result = await _imageService.GetImageAsync("");
+        var result = await _imageService.GetImageAsync("").ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsNull();
@@ -58,7 +58,7 @@ public class OpenGraphErrorScenarioTests : TestBase
     public async Task GetImageAsync_WithWhitespaceUrl_ShouldReturnNull()
     {
         // Act
-        var result = await _imageService.GetImageAsync("   ");
+        var result = await _imageService.GetImageAsync("   ").ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsNull();
@@ -76,7 +76,7 @@ public class OpenGraphErrorScenarioTests : TestBase
         _httpClientFactory.CreateClient().Returns(httpClient);
 
         // Act
-        var result = await _imageService.GetImageAsync(articleUrl);
+        var result = await _imageService.GetImageAsync(articleUrl).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsNull();
@@ -94,7 +94,7 @@ public class OpenGraphErrorScenarioTests : TestBase
         _httpClientFactory.CreateClient().Returns(httpClient);
 
         // Act
-        var result = await _imageService.GetImageAsync(articleUrl);
+        var result = await _imageService.GetImageAsync(articleUrl).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsNull();
@@ -112,7 +112,7 @@ public class OpenGraphErrorScenarioTests : TestBase
         _httpClientFactory.CreateClient().Returns(httpClient);
 
         // Act & Assert - Should not throw exception, but may return null due to cache write failure
-        var result = await _imageService.GetImageAsync(articleUrl);
+        var result = await _imageService.GetImageAsync(articleUrl).ConfigureAwait(false);
         // The service should handle the error gracefully and not crash
         // Result may be null if both cache read and write operations fail
         await Assert.That(result).IsNull(); // Cache failures prevent successful operation
@@ -122,7 +122,7 @@ public class OpenGraphErrorScenarioTests : TestBase
     public async Task GetImagesAsync_WithEmptyList_ShouldReturnEmptyDictionary()
     {
         // Act
-        var result = await _imageService.GetImagesAsync(new List<string>());
+        var result = await _imageService.GetImagesAsync(new List<string>()).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsNotNull();
@@ -133,7 +133,7 @@ public class OpenGraphErrorScenarioTests : TestBase
     public async Task GetImagesAsync_WithNullList_ShouldReturnEmptyDictionary()
     {
         // Act
-        var result = await _imageService.GetImagesAsync(null!);
+        var result = await _imageService.GetImagesAsync(null!).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsNotNull();
@@ -152,7 +152,7 @@ public class OpenGraphErrorScenarioTests : TestBase
         _httpClientFactory.CreateClient().Returns(httpClient);
 
         // Act
-        var result = await _imageService.GetImagesAsync(urls);
+        var result = await _imageService.GetImagesAsync(urls).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsNotNull();
@@ -181,7 +181,7 @@ public class OpenGraphErrorScenarioTests : TestBase
             });
 
         // Act
-        var result = await _imageService.GetImagesAsync(urls);
+        var result = await _imageService.GetImagesAsync(urls).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsNotNull();
@@ -193,18 +193,18 @@ public class OpenGraphErrorScenarioTests : TestBase
     public async Task IsImageCachedAsync_WithInvalidUrl_ShouldReturnFalse()
     {
         // Act & Assert
-        await Assert.That(await _imageService.IsImageCachedAsync(null!)).IsFalse();
-        await Assert.That(await _imageService.IsImageCachedAsync("")).IsFalse();
-        await Assert.That(await _imageService.IsImageCachedAsync("   ")).IsFalse();
+        await Assert.That(await _imageService.IsImageCachedAsync(null!).ConfigureAwait(false)).IsFalse();
+        await Assert.That(await _imageService.IsImageCachedAsync("").ConfigureAwait(false)).IsFalse();
+        await Assert.That(await _imageService.IsImageCachedAsync("   ").ConfigureAwait(false)).IsFalse();
     }
 
     [Test]
     public async Task InvalidateCacheAsync_WithInvalidUrl_ShouldReturnFalse()
     {
         // Act & Assert
-        await Assert.That(await _imageService.InvalidateCacheAsync(null!)).IsFalse();
-        await Assert.That(await _imageService.InvalidateCacheAsync("")).IsFalse();
-        await Assert.That(await _imageService.InvalidateCacheAsync("   ")).IsFalse();
+        await Assert.That(await _imageService.InvalidateCacheAsync(null!).ConfigureAwait(false)).IsFalse();
+        await Assert.That(await _imageService.InvalidateCacheAsync("").ConfigureAwait(false)).IsFalse();
+        await Assert.That(await _imageService.InvalidateCacheAsync("   ").ConfigureAwait(false)).IsFalse();
     }
 
     [Test]
@@ -216,7 +216,7 @@ public class OpenGraphErrorScenarioTests : TestBase
             .Throws(new InvalidOperationException("Cache service error"));
 
         // Act
-        var result = await _imageService.InvalidateCacheAsync(articleUrl);
+        var result = await _imageService.InvalidateCacheAsync(articleUrl).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsFalse();
@@ -230,7 +230,7 @@ public class OpenGraphErrorScenarioTests : TestBase
             .Throws(new InvalidOperationException("Cache service error"));
 
         // Act
-        var result = await _imageService.GetCacheStatsAsync();
+        var result = await _imageService.GetCacheStatsAsync().ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsNotNull();
@@ -245,7 +245,7 @@ public class OpenGraphErrorScenarioTests : TestBase
             .Throws(new InvalidOperationException("Cache service error"));
 
         // Act
-        var result = await _imageService.ClearCacheAsync();
+        var result = await _imageService.ClearCacheAsync().ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsEqualTo(0);
@@ -259,7 +259,7 @@ public class OpenGraphErrorScenarioTests : TestBase
             .Throws(new InvalidOperationException("Cache service error"));
 
         // Act
-        var result = await _imageService.CleanupExpiredEntriesAsync();
+        var result = await _imageService.CleanupExpiredEntriesAsync().ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsEqualTo(0);
@@ -269,7 +269,7 @@ public class OpenGraphErrorScenarioTests : TestBase
     public async Task UpdateCacheEntryAsync_WithNullData_ShouldReturnFalse()
     {
         // Act
-        var result = await _imageService.UpdateCacheEntryAsync("https://example.com", null!);
+        var result = await _imageService.UpdateCacheEntryAsync("https://example.com", null!).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsFalse();
@@ -287,7 +287,7 @@ public class OpenGraphErrorScenarioTests : TestBase
         };
 
         // Act
-        var result = await _imageService.UpdateCacheEntryAsync("https://example.com", expiredData);
+        var result = await _imageService.UpdateCacheEntryAsync("https://example.com", expiredData).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsTrue(); // Should still return true, but won't actually cache
@@ -313,7 +313,7 @@ public class OpenGraphErrorScenarioTests : TestBase
             });
 
         // Act
-        var result = await _imageService.GetImagesAsync(urls);
+        var result = await _imageService.GetImagesAsync(urls).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsNotNull();
@@ -337,7 +337,7 @@ public class OpenGraphErrorScenarioTests : TestBase
             .Throws(new HttpRequestException("Network error"));
 
         // Act
-        var result = await _imageService.GetImagesAsync(urls);
+        var result = await _imageService.GetImagesAsync(urls).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsNotNull();
