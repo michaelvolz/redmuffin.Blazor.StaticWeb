@@ -4,7 +4,7 @@ using Blazored.LocalStorage;
 
 namespace redmuffin.Blazor.StaticWeb.Services;
 
-public class BrowserStorageService : IBrowserStorageService
+public class BrowserStorageService(ILocalStorageService localStorage, ILogger<BrowserStorageService> logger) : IBrowserStorageService
 {
     private const string IndexKey = "browser_storage_index";
     private const double EvictionThreshold = 0.85; // Start eviction when 85% full
@@ -40,20 +40,7 @@ public class BrowserStorageService : IBrowserStorageService
         LoggerMessage.Define<int>(LogLevel.Information, new EventId(7, nameof(LogStorageOptimizationExpiredOnly)),
             "Storage optimization completed using only expired item cleanup: {ExpiredCount}");
 
-    private readonly ILocalStorageService _localStorage;
-    private readonly ILogger<BrowserStorageService> _logger;
     private long _quotaLimit = 1024 * 1024 * 10; // 10 MB default quota limit
-
-    public BrowserStorageService(ILocalStorageService localStorage, ILogger<BrowserStorageService> logger)
-    {
-        _localStorage = localStorage;
-        _logger = logger;
-    }
-
-    private static string GetMetadataKey(string key)
-    {
-        return key + "_meta";
-    }
 
     private static string ComputeHash(string input)
     {
@@ -79,7 +66,7 @@ public class BrowserStorageService : IBrowserStorageService
     public async Task SetItemAsync<T>(string key, T value, CancellationToken cancellationToken = default)
     {
         var hashedKey = ComputeHash(key);
-        await _localStorage.SetItemAsync(hashedKey, value, cancellationToken).ConfigureAwait(false);
+        await localStorage.SetItemAsync(hashedKey, value, cancellationToken).ConfigureAwait(false);
         await UpdateIndexAsync(hashedKey, cancellationToken).ConfigureAwait(false);
         await EnsureQuotaAsync(cancellationToken).ConfigureAwait(false);
     }
@@ -95,7 +82,7 @@ public class BrowserStorageService : IBrowserStorageService
             if (metadata.ExpiresAt.HasValue && DateTime.UtcNow > metadata.ExpiresAt.Value)
             {
                 // Item is expired, remove it
-                await _localStorage.RemoveItemAsync(hashedKey, cancellationToken).ConfigureAwait(false);
+                await localStorage.RemoveItemAsync(hashedKey, cancellationToken).ConfigureAwait(false);
                 await RemoveFromIndexAsync(hashedKey, cancellationToken).ConfigureAwait(false);
                 return default;
             }
@@ -103,13 +90,13 @@ public class BrowserStorageService : IBrowserStorageService
             if (!metadata.ExpiresAt.HasValue && IsExpired(metadata.CreatedAt, DefaultExpirationTime))
             {
                 // Legacy item is expired, remove it
-                await _localStorage.RemoveItemAsync(hashedKey, cancellationToken).ConfigureAwait(false);
+                await localStorage.RemoveItemAsync(hashedKey, cancellationToken).ConfigureAwait(false);
                 await RemoveFromIndexAsync(hashedKey, cancellationToken).ConfigureAwait(false);
                 return default;
             }
         }
 
-        var value = await _localStorage.GetItemAsync<T?>(hashedKey, cancellationToken).ConfigureAwait(false);
+        var value = await localStorage.GetItemAsync<T?>(hashedKey, cancellationToken).ConfigureAwait(false);
         if (value != null) await UpdateIndexAsync(hashedKey, cancellationToken, true).ConfigureAwait(false);
 
         return value;
@@ -118,25 +105,25 @@ public class BrowserStorageService : IBrowserStorageService
     public async Task RemoveItemAsync(string key, CancellationToken cancellationToken = default)
     {
         var hashedKey = ComputeHash(key);
-        await _localStorage.RemoveItemAsync(hashedKey, cancellationToken).ConfigureAwait(false);
+        await localStorage.RemoveItemAsync(hashedKey, cancellationToken).ConfigureAwait(false);
         await RemoveFromIndexAsync(hashedKey, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<bool> ContainsKeyAsync(string key, CancellationToken cancellationToken = default)
     {
         var hashedKey = ComputeHash(key);
-        return await _localStorage.ContainKeyAsync(hashedKey, cancellationToken).ConfigureAwait(false);
+        return await localStorage.ContainKeyAsync(hashedKey, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<IEnumerable<string>> GetKeysAsync(CancellationToken cancellationToken = default)
     {
-        return await _localStorage.KeysAsync(cancellationToken).ConfigureAwait(false);
+        return await localStorage.KeysAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task ClearAsync(CancellationToken cancellationToken = default)
     {
-        await _localStorage.ClearAsync(cancellationToken).ConfigureAwait(false);
-        await _localStorage.RemoveItemAsync(IndexKey, cancellationToken).ConfigureAwait(false);
+        await localStorage.ClearAsync(cancellationToken).ConfigureAwait(false);
+        await localStorage.RemoveItemAsync(IndexKey, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<StorageStats> GetStorageStatsAsync(CancellationToken cancellationToken = default)
@@ -153,20 +140,19 @@ public class BrowserStorageService : IBrowserStorageService
             var size = await GetItemSizeAsync(key, cancellationToken).ConfigureAwait(false);
             totalSize += size;
 
-            if (index.TryGetValue(key, out var item))
-            {
-                if (item.ExpiresAt.HasValue && DateTime.UtcNow > item.ExpiresAt.Value)
-                    expiredCount++;
-                else if (!item.ExpiresAt.HasValue && IsExpired(item.CreatedAt, DefaultExpirationTime)) expiredCount++;
+            if (!index.TryGetValue(key, out var item)) continue;
 
-                if (oldest == null || item.CreatedAt < oldest) oldest = item.CreatedAt;
-                if (newest == null || item.CreatedAt > newest) newest = item.CreatedAt;
-            }
+            if ((item.ExpiresAt.HasValue && DateTime.UtcNow > item.ExpiresAt.Value) ||
+                (!item.ExpiresAt.HasValue && IsExpired(item.CreatedAt, DefaultExpirationTime)))
+                expiredCount++;
+
+            if (oldest == null || item.CreatedAt < oldest) oldest = item.CreatedAt;
+            if (newest == null || item.CreatedAt > newest) newest = item.CreatedAt;
         }
 
         return new StorageStats
         {
-            TotalItems = await _localStorage.LengthAsync(cancellationToken).ConfigureAwait(false),
+            TotalItems = await localStorage.LengthAsync(cancellationToken).ConfigureAwait(false),
             TotalSizeBytes = totalSize,
             QuotaLimitBytes = _quotaLimit,
             QuotaUsagePercent = (double)totalSize / _quotaLimit * 100,
@@ -179,10 +165,8 @@ public class BrowserStorageService : IBrowserStorageService
 
     public async Task<long> GetItemSizeAsync(string key, CancellationToken cancellationToken = default)
     {
-        var item = await _localStorage.GetItemAsync<string>(key, cancellationToken).ConfigureAwait(false);
-        if (item != null) return Encoding.UTF8.GetByteCount(item);
-
-        return 0;
+        var item = await localStorage.GetItemAsync<string>(key, cancellationToken).ConfigureAwait(false);
+        return item != null ? Encoding.UTF8.GetByteCount(item) : 0;
     }
 
     public async Task<int> EvictLeastRecentlyUsedAsync(long targetSizeBytes, CancellationToken cancellationToken = default)
@@ -212,16 +196,16 @@ public class BrowserStorageService : IBrowserStorageService
         {
             if (currentSize <= targetSizeBytes) break;
 
-            await _localStorage.RemoveItemAsync(item.Key, cancellationToken).ConfigureAwait(false);
+            await localStorage.RemoveItemAsync(item.Key, cancellationToken).ConfigureAwait(false);
             await RemoveFromIndexAsync(item.Key, cancellationToken).ConfigureAwait(false);
             currentSize -= item.Size;
             evictedCount++;
 
-            LogEvictedLRUItem(_logger, item.Key, item.Size, item.LastAccessed, null);
+            LogEvictedLRUItem(logger, item.Key, item.Size, item.LastAccessed, null);
         }
 
         if (evictedCount > 0)
-            LogLRUEvictionCompleted(_logger, evictedCount, sortedItems.Take(evictedCount).Sum(item => item.Size), null);
+            LogLRUEvictionCompleted(logger, evictedCount, sortedItems.Take(evictedCount).Sum(item => item.Size), null);
 
         return evictedCount;
     }
@@ -231,24 +215,21 @@ public class BrowserStorageService : IBrowserStorageService
         var index = await GetIndexAsync(cancellationToken).ConfigureAwait(false);
         var expiredKeys = new List<string>();
 
-        foreach (var kvp in index)
-        {
-            var metadata = kvp.Value;
+        foreach (var (key, metadata) in index)
             if (metadata.ExpiresAt.HasValue && DateTime.UtcNow > metadata.ExpiresAt.Value)
-                expiredKeys.Add(kvp.Key);
+                expiredKeys.Add(key);
             else if (!metadata.ExpiresAt.HasValue && IsExpired(metadata.CreatedAt, DefaultExpirationTime))
                 // Handle legacy items without ExpiresAt
-                expiredKeys.Add(kvp.Key);
-        }
+                expiredKeys.Add(key);
 
         foreach (var key in expiredKeys)
         {
-            await _localStorage.RemoveItemAsync(key, cancellationToken).ConfigureAwait(false);
+            await localStorage.RemoveItemAsync(key, cancellationToken).ConfigureAwait(false);
             await RemoveFromIndexAsync(key, cancellationToken).ConfigureAwait(false);
-            LogRemovedExpiredItem(_logger, key, null);
+            LogRemovedExpiredItem(logger, key, null);
         }
 
-        LogCleanedUpExpiredItems(_logger, expiredKeys.Count, null);
+        LogCleanedUpExpiredItems(logger, expiredKeys.Count, null);
         return expiredKeys.Count;
     }
 
@@ -261,7 +242,7 @@ public class BrowserStorageService : IBrowserStorageService
         if (quotaUsagePercent >= EvictionThreshold)
         {
             var targetSize = (long)(_quotaLimit * EvictionTarget);
-            LogStorageApproachingCapacity(_logger, quotaUsagePercent, EvictionTarget, null);
+            LogStorageApproachingCapacity(logger, quotaUsagePercent, EvictionTarget, null);
 
             // First, clean up expired items
             var expiredCount = await CleanupExpiredItemsAsync(cancellationToken).ConfigureAwait(false);
@@ -273,11 +254,11 @@ public class BrowserStorageService : IBrowserStorageService
             if (totalSize > targetSize)
             {
                 var evictedCount = await EvictLeastRecentlyUsedAsync(targetSize, cancellationToken).ConfigureAwait(false);
-                LogStorageOptimizationCompleted(_logger, expiredCount, evictedCount, null);
+                LogStorageOptimizationCompleted(logger, expiredCount, evictedCount, null);
             }
             else
             {
-                LogStorageOptimizationExpiredOnly(_logger, expiredCount, null);
+                LogStorageOptimizationExpiredOnly(logger, expiredCount, null);
             }
         }
     }
@@ -307,18 +288,18 @@ public class BrowserStorageService : IBrowserStorageService
             // Initialize LastAccessed to CreatedAt if not set
             index[key].LastAccessed = index[key].CreatedAt;
 
-        await _localStorage.SetItemAsync(IndexKey, index, cancellationToken).ConfigureAwait(false);
+        await localStorage.SetItemAsync(IndexKey, index, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task RemoveFromIndexAsync(string key, CancellationToken cancellationToken = default)
     {
         var index = await GetIndexAsync(cancellationToken).ConfigureAwait(false);
-        if (index.Remove(key)) await _localStorage.SetItemAsync(IndexKey, index, cancellationToken).ConfigureAwait(false);
+        if (index.Remove(key)) await localStorage.SetItemAsync(IndexKey, index, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<Dictionary<string, StoredItemMetadata>> GetIndexAsync(CancellationToken cancellationToken = default)
     {
-        return await _localStorage.GetItemAsync<Dictionary<string, StoredItemMetadata>>(IndexKey, cancellationToken).ConfigureAwait(false) ??
+        return await localStorage.GetItemAsync<Dictionary<string, StoredItemMetadata>>(IndexKey, cancellationToken).ConfigureAwait(false) ??
                new Dictionary<string, StoredItemMetadata>(StringComparer.OrdinalIgnoreCase);
     }
 }
