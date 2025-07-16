@@ -1,4 +1,4 @@
-﻿namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Core;
+namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Core;
 
 /// <summary>
 ///     Cached performance calculations to avoid repeated computations

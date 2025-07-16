@@ -1,4 +1,4 @@
-﻿namespace redmuffin.Blazor.StaticWeb.Configuration;
+namespace redmuffin.Blazor.StaticWeb.Configuration;
 
 /// <summary>
 ///     Configuration settings for the PageLoadSpeed component

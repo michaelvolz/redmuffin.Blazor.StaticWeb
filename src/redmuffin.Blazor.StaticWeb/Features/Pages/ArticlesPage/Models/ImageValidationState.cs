@@ -1,4 +1,4 @@
-﻿namespace redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Models;
+namespace redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Models;
 
 /// <summary>
 ///     Defines the image validation states for image URL verification.
