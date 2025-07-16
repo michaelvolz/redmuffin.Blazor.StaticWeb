@@ -1,4 +1,4 @@
-# SCSS Modernization Summary
+﻿# SCSS Modernization Summary
 
 ## Overview
 Successfully updated all SCSS files to use modern `@use` and `@forward` syntax instead of the deprecated `@import` statements.

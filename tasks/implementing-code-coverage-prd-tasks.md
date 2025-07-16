@@ -1,4 +1,4 @@
-## Relevant Files
+﻿## Relevant Files
 
 ### Configuration Files
 - `Directory.Build.props` - Global MSBuild properties for code coverage configuration.

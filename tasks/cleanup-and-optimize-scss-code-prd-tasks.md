@@ -1,4 +1,4 @@
-## Relevant Files
+﻿## Relevant Files
 
 ### Blazor Components
 - `src/redmuffin.Blazor.StaticWeb/wwwroot/scss/app.scss` - Main SCSS entry point file.
