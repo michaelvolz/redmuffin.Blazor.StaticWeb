@@ -1,265 +1,169 @@
 ﻿# AI Code Assistant Instructions
 
-**FOR AI CODE ASSISTANTS ONLY** - This file contains technical guidelines and tool information specifically for AI assistants. Human developers should refer to README.md for project documentation.
+**FOR AI ASSISTANTS ONLY** - Tech guidelines for AI. Humans use README.md.
 
-## Project Architecture Overview
-- **Frontend**: Blazor WebAssembly (.NET 9) with feature-based organization
-- **Backend**: Azure Functions (.NET 8) using isolated worker model
-- **Shared**: Common library (.NET 9) for models and utilities
-- **IDE**: Visual Studio 2022 with .NET 9 SDK
-- **Language**: C# 13 (preview features enabled)
-- **Testing**: TUnit framework (NOT xUnit/NUnit/MSTest)
-- **Build**: WebAssembly optimizations enabled via Directory.Build.props
-- **Deployment**: Azure Static Web Apps with CSP and caching configurations
+## Project
+**Frontend**: Blazor WebAssembly (.NET 9), feature-based  
+**Backend**: Azure Functions (.NET 8), isolated worker  
+**Testing**: TUnit (`[Test]`, `[Arguments]`) - NOT xUnit/NUnit/MSTest  
+**Language**: C# 13 preview, WebAssembly optimizations  
+**Build**: `WasmStripILAfterAOT=true`, `InvariantGlobalization=true`, `PublishTrimmed=true`  
+**Deployment**: Azure Static Web Apps with CSP, caching configs
 
-## Key Dependencies 
+## Dependencies
+**Blazored.LocalStorage**, **Markdig**, **Microsoft.Azure.Functions.Worker**, **TUnit**, **Zurb Foundation** (CDN), **Analyzers** (Roslynator, StyleCop, Meziantou, VSThreading), **FontAwesome** (CDN), **BuildWebCompiler2022** (SCSS), **Coverlet**
 
-- **Blazored.LocalStorage**: Client-side storage for Blazor WebAssembly
-- **Markdig**: Markdown parsing and rendering
-- **Microsoft.Azure.Functions.Worker**: Azure Functions isolated worker model
-- **TUnit**: Modern testing framework with `[Test]` and `[Arguments]` attributes
-- **Zurb Foundation**: UI framework via CDN (libman.json)
-- **Roslynator Analyzers**: Provides refactorings, analyzers, and code fixes.
-- **StyleCop Analyzers**: Focuses on style and consistency rules for C# development.
-- **Meziantou Analyzers**: Adds diagnostics for performance, security, and best practices.
-- **VSThreading Analyzers**: Encourages best practices for multithreading and async operations.
-- **FontAwesome**: Icons via CDN (libman.json)
-- **BuildWebCompiler2022**: SCSS compilation (debug mode only)
-- **Coverlet**: Code coverage collection with MSBuild integration
+## ?? CRITICAL: ZERO TOLERANCE FOR BUILD WARNINGS
 
-**Build Optimizations (Directory.Build.props):**
+**ABSOLUTE REQUIREMENT**: Build warnings in C# files are **STRICTLY FORBIDDEN**. Prevention is **MANDATORY**, not optional.
 
-- **WebAssembly**: `WasmStripILAfterAOT=true`, `InvariantGlobalization=true`, `PublishTrimmed=true`
-- **Security**: `CheckForOverflowUnderflow=true`, nullable reference types enabled
-- **Analyzers**: Comprehensive integration of Roslynator, StyleCop, Meziantou, and VSThreading analyzers
-- **C# Language**: Preview features enabled (`LangVersion=preview`)
-- **Coverage**: Centralized exclusions for generated files and dependencies
+### MANDATORY PREVENTION
+- **BEFORE creating/editing ANY C# file**: Review rules below and implement correctly from start
+- **NO warning generation allowed**: Write code that complies with all analyzer rules immediately
+- **PREVENTION > FIXING**: Do NOT create warnings then fix - create compliant code initially
+- **CONTINUOUS COMPLIANCE**: Every line of C# code must follow all rules without exception
 
-## 1. Test-Driven Development (TDD)
+### ENFORCEMENT REQUIREMENTS
+- **MANDATORY CHECK**: After ANY C# file edit, IMMEDIATELY run `get_errors` tool to verify zero warnings
+- **ZERO WARNINGS POLICY**: If ANY warning appears, IMMEDIATELY fix before proceeding to next task
+- **BUILD VERIFICATION**: Use `run_build` tool to confirm workspace-wide warning-free state
+- **NO EXCEPTIONS**: Only IL2111 (Blazor auto-generated) warnings are permitted - ALL others forbidden
 
-### TDD Cycle (Red-Green-Refactor)
-- **Red:** Write a failing test first that defines desired behavior
-- **Green:** Write minimal code to make the test pass
-- **Refactor:** Improve code quality while keeping tests green
+### ANALYZER RULES (ZERO TOLERANCE)
 
-### TDD Workflow for AI Assistants
-1. **Before any new feature/method:**
-   - Write failing TUnit test(s) first
-   - Run `dotnet test` to confirm failure (Red)
-   - Implement minimal code to pass test (Green)
-   - Refactor for quality/performance while tests remain green
+| Rule | **MANDATORY COMPLIANCE** |
+|------|--------------------------|
+| **StyleCop** | **?? CRITICAL - ENFORCE IMMEDIATELY** |
+| SA1402 | ONE type per file - NO exceptions |
+| SA1208/1210 | Order usings: System first, then alphabetical - ALWAYS |
+| SA1201-1214 | Member order: fields?properties?constructors?methods, public?internal?protected?private - STRICT |
+| SA1413 | Trailing commas in multi-line initializers - REQUIRED |
+| SA1028 | Remove ALL trailing whitespace - ZERO tolerance |
+| SA1500 | Opening brace on new line - MANDATORY |
+| SA1507 | NO multiple blank lines - ENFORCE |
+| SA1508 | NO blank line before closing brace - STRICT |
+| **Meziantou** | **?? CRITICAL - ENFORCE IMMEDIATELY** |
+| MA0016 | Use `IEnumerable<T>`, `IList<T>` abstractions - REQUIRED |
+| MA0002/0006/0074 | Specify `StringComparison.OrdinalIgnoreCase` - MANDATORY |
+| MA0004 | Use `ConfigureAwait(false)` in library code - REQUIRED |
+| MA0048 | File name MUST match type name - STRICT |
+| MA0051 | Methods <60 lines - ENFORCE |
+| MA0053 | Make class sealed when possible - REQUIRED |
+| **Microsoft** | **?? CRITICAL - ENFORCE IMMEDIATELY** |
+| CA1845 | Use `AsSpan()` instead of `Substring()` - MANDATORY |
+| CA1854 | Use `TryGetValue` for Dictionary - REQUIRED |
+| CA1869 | Cache `JsonSerializerOptions` instances - STRICT |
+| CA1848 | Use LoggerMessage delegates - REQUIRED |
+| CA2007 | Use `ConfigureAwait(false)` - MANDATORY |
+| CA2016 | Forward `CancellationToken` parameters - REQUIRED |
+| CA1805 | Remove explicit default initialization - STRICT |
+| CA1822 | Mark members static when possible - ENFORCE |
 
-2. **TDD Best Practices:**
-   - One test per behavior/requirement
-   - Tests should be independent and isolated
-   - Use descriptive test names with underscores (e.g., `Should_Return_Valid_User_When_Id_Exists`)
-   - Test edge cases and error conditions
-   - Mock external dependencies using constructor injection
+### ONLY PERMITTED WARNING
+**IL2111**: Safe to ignore (Blazor WebAssembly auto-generated `App_razor.g.cs` trimming optimization) - ALL others FORBIDDEN
 
-3. **Test Behavior, Not Implementation:**
-   - **Test the Contract**: Focus on testing public interfaces, parameters, and return values
-   - **Avoid Internal Logic**: Do not test private methods or internal implementation details
-   - **Stable Over Time**: Test what is stable (public API) rather than what changes frequently (internal logic)
-   - **Refactor-Safe Tests**: Tests should survive refactoring when behavior remains unchanged
-   - **Design for Testability**: If code cannot be validated through public interface, refactor to make it more testable
+## TDD Workflow
+**Red-Green-Refactor**: Write failing test ? implement ? refactor  
+**Before features**: Write failing TUnit test ? `dotnet test` ? implement ? refactor  
+**Test naming**: `Should_Return_Valid_User_When_Id_Exists` (underscores only in tests)  
+**Test behavior, not implementation**: Public interfaces/contracts only  
+**Mock dependencies**: Constructor injection for isolation  
+**Test structure**: Arrange-Act-Assert pattern
 
-### TDD with Blazor Components
-- Test component parameters, events, and rendering
-- Use `TestContext` for component testing
-- Mock services injected into components
-- Test user interactions and state changes
-
-## 2. Dependency Injection Best Practices
-
-### Constructor Injection (Preferred)
 ```csharp
-public class UserService
-{
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<UserService> _logger;
+[Test, Arguments(null), Arguments("")]
+public async Task Should_Throw_When_Invalid_Id(string invalidId) { /*...*/ }
+```
 
-    public UserService(IHttpClientFactory httpClientFactory, ILogger<UserService> logger)
-    {
-        _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
+## Dependency Injection
+**Constructor injection required** with null validation:
+```csharp
+public UserService(IHttpClientFactory httpClientFactory, ILogger<UserService> logger)
+{
+    _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+    _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 }
 ```
 
-**Important:** Only inject HttpClient/IHttpClientFactory when the service actually needs to make HTTP requests. Do not include these dependencies unless there is a genuine requirement for external API calls or HTTP communication.
+**Important**: Only inject `HttpClient`/`IHttpClientFactory` when service actually needs HTTP requests
 
-### Blazor Component DI Pattern
+**Blazor components**:
 ```csharp
 public partial class UserProfile : ComponentBase
 {
     [Inject] private IUserService UserService { get; set; } = default!;
-    [Inject] private ILogger<UserProfile> Logger { get; set; } = default!;
     [Inject] private ILocalStorageService LocalStorage { get; set; } = default!;
     
-    // Always validate injected services in OnInitialized if critical
     protected override async Task OnInitializedAsync()
     {
         ArgumentNullException.ThrowIfNull(UserService);
-        // Component logic
     }
 }
 ```
 
-### Service Registration Patterns
-- **Singleton:** `services.AddSingleton<IService, Service>()` - Shared instance
-- **Scoped:** `services.AddScoped<IService, Service>()` - Per request/circuit
-- **Transient:** `services.AddTransient<IService, Service>()` - New instance each time
+**Service lifetimes**: Singleton (shared), Scoped (per request/circuit), Transient (new each time)
 
-### DI Guidelines for AI Assistants
-1. **Always prefer constructor injection** over property/method injection
-2. **Validate constructor parameters** with null checks or ArgumentNullException.ThrowIfNull
-3. **Use interfaces** for all injected dependencies to enable testing
-4. **Avoid service locator pattern** - inject what you need directly
-5. **Design for testability** - constructor injection enables easy mocking
+## Standards
+**Private fields**: `_` prefix | **var**: Only when type apparent | **Line length**: 160 chars | **Braces**: Always use | **Null checks**: `ArgumentNullException.ThrowIfNull()`
 
-## 3. Coding Standards
-- **Private Fields:** Use `_` prefix for private fields
-- **var Usage:** Only when type is clearly apparent (e.g., `var items = new List<string>()`)
-- **Line Length:** 160 characters maximum
-- **Braces:** Always use braces, even for single-line statements
+## UI & Styling
+**Framework**: Zurb Foundation only  
+**SCSS ONLY**: All styles in `wwwroot/scss/` - NEVER modify CSS directly  
+**Component styles**: NEVER use `.razor.css` - use SCSS partials with `_` prefix  
+**SCSS partials**: Must start with `_`, included in `app.scss` for auto-compilation  
+**JavaScript**: Minimal - prefer C#/Blazor, use `IJSRuntime.InvokeAsync<T>()`, NO JS for CSS  
+**Accessibility**: WCAG 2.1 AA compliance, semantic HTML, ARIA roles  
+**Performance**: Lazy loading, virtualization for large lists, optimize assets  
+**Images**: WebP/AVIF, `loading="lazy"`, `srcset`
 
-## 4. UI & Styling
-- **Framework:** Zurb Foundation for all UI/layout
-- **SCSS Only:** All styles must be implemented in SCSS files in `wwwroot/scss/` folder
-- **CSS Files:** Never modify CSS files directly - they are auto-generated from SCSS
-- **Component Styles:** NEVER use `.razor.css` files - use SCSS partials instead
-- **SCSS Partials:** All SCSS partial files must start with an underscore (_) and be included in `app.scss` for automatic compilation
-- **SCSS Compilation:** Files are automatically compiled when included in `app.scss` - no manual compilation needed
-- **Styling Architecture:** Create semantic SCSS partials for component groups (e.g., `_ArticleImageDisplay.scss` for article image components)
-- **Responsive:** Foundation grid/utilities or custom SCSS
-- **Accessibility:** Semantic HTML, ARIA roles, keyboard navigation, WCAG 2.1 AA compliance, proper color contrast
-- **Performance:** Optimize assets (bundling, minification), lazy loading, virtualization for large lists
-- **Modern CSS:** Grid, Flexbox, variables, nesting, dark mode support
-- **Images:** WebP/AVIF, `loading="lazy"`, `srcset`
-- **JavaScript:** Minimal - prefer C#/Blazor, JS interop only when necessary
-- **No JavaScript for CSS:** Never use JavaScript for CSS styling or manipulation. Use modern CSS features instead (since this site only needs to run on evergreen browsers)
-- **JS Interop:** Use `IJSRuntime.InvokeAsync<T>()`, dispose JS object references
-- **Security:** Sanitize inputs, enforce CSP, secure cookies, RBAC
+## Security & API
+**Input validation**: Always validate/sanitize | **XSS/CSRF**: Use Blazor built-ins | **Secrets**: Never expose in client | **API**: `IHttpClientFactory` only for actual HTTP needs | **CSP**: In `staticwebapp.config.json` - allows 'unsafe-inline' for styles, restricts scripts | **Azure Functions**: Isolated worker with DI | **Authentication**: ASP.NET Core Identity, RBAC
 
-## 5. Security & API
-- **Input Validation:** Always validate/sanitize user input
-- **XSS/CSRF:** Use Blazor built-ins and best practices
-- **Secrets:** Never expose in client code
-- **API:** Use `IHttpClientFactory` for HTTP calls only when actually needed for external API communication, prefer minimal APIs
-- **CSP:** Configured in `staticwebapp.config.json` - allows 'unsafe-inline' for styles, restricts scripts
-- **Azure Functions:** Use isolated worker model with dependency injection
-- **Authentication:** ASP.NET Core Identity, role-based access control
+## Modern C#
+Primary Constructors: `public class Person(string name, int age)` | Collection Expressions: `int[] nums = [1,2,3];` | Default Lambda: `(x, y=5) => x+y` | Alias Types: `using IntPair = (int, int);` | params Collections: `params ReadOnlySpan<T>` | ref readonly: `void M(ref readonly int x)` | Inline Arrays: `[InlineArray(10)]` | New Lock: `var l = new Lock(); using(l.EnterScope())`
 
-## 6. Testing & Documentation (Enhanced with TDD)
+## File Organization
+**Features**: `src/redmuffin.Blazor.StaticWeb/Features/` - Feature-based with pages/components  
+**Static**: `src/redmuffin.Blazor.StaticWeb/wwwroot/` - CSS, SCSS, JS, sample data, libraries  
+**Tests**: `tests/` - Mirror structure with TUnit projects  
+**Scripts**: `scripts/` - PowerShell automation  
+**Config**: `.github/` - Workflows, instructions, prompts, chatmodes
 
-### TDD-First Development
-- **Write tests before implementation** using Red-Green-Refactor cycle
-- **Test structure:** Arrange-Act-Assert pattern
-- **Mock dependencies** using constructor injection for isolation
-- **Test naming:** Use underscores in test method names for readability: `Should_Return_True_If_UserId_Exists` format (underscores only in test methods, not in production code)
-- **Test Behavior, Not Implementation:** Focus on testing public contracts and interfaces, not internal logic or private methods
+**Key dirs**: `.github/instructions/` (tech standards), `.github/prompts/` (AI prompts), `.github/chatmodes/` (AI modes), `src/.../Features/` (components), `src/.../Api/` (Azure Functions), `src/.../Common/` (shared)
 
-### TUnit Testing Patterns with DI
+## AI Guidelines
+
+### Development Workflow
+**Pre-commit**: `dotnet test` must pass without errors (warnings OK) - stop commit if test errors exist  
+**Git commits**: Batch by SRP for quality messages  
+**File editing**: One file at a time, track progress ("Edit 2 of 5")  
+**Unclear items**: Ask questions, wait for answers before continuing  
+**Large changes**: Outline plan, get approval, incremental edits, keep buildable
+
+### Tools & Coverage
+**Coverage**: `scripts/Generate-CoverageReport.ps1` | `scripts/View-CoverageReport.ps1`  
+**Config**: Coverlet MSBuild integration, exclusions in `.coverletrc`/`Directory.Build.props`  
+**Output**: HTML (unified/branded), XML, JSON, Cobertura to `coverage/`  
+**Build**: Use `run_build` tool to verify changes
+
+### External Tools
+**Context7 MCP**: `resolve-library-id` ? `get-library-docs` (current docs over training data)  
+**Fetch MCP**: URL?markdown conversion for docs/repos/tutorials  
+**Brave Search**: `brave_web_search`/`brave_local_search` (2,000 queries/month)  
+**Sequential Thinking**: Complex problem-solving with dynamic adaptation
+
+### Repository Info
+**Owner**: `michaelvolz` | **Name**: `redmuffin.Blazor.StaticWeb`  
+**Encoding**: UTF8 with BOM for Markdown  
+**Exclude samples**: `wwwroot/sample-data/markdown-cheat-sheet.md`, `wwwroot/Example.md`
+
+### Tech Instructions (`.github/instructions/`)
+**Core**: Blazor (`.razor`), C# (`.cs`), PowerShell (`.ps1`), SCSS (`.scss`), Markdown (`.md`)  
+**Architecture**: REST APIs, Azure Functions, GitHub Actions, Performance, Commit Standards
+
+### Essential Examples
 ```csharp
-[Test]
-public async Task Should_Return_User_When_Valid_Id_Provided()
-{
-    // Arrange
-    var mockHttpClient = new Mock<HttpClient>();
-    var mockLogger = new Mock<ILogger<UserService>>();
-    var userService = new UserService(mockHttpClient.Object, mockLogger.Object);
-    var userId = "valid-id";
-
-    // Act
-    var result = await userService.GetUserAsync(userId);
-
-    // Assert
-    result.Should().NotBeNull();
-    result.Id.Should().Be(userId);
-}
-
-[Test]
-[Arguments(null)]
-[Arguments("")]
-[Arguments("   ")]
-public async Task Should_Throw_Argument_Exception_When_Invalid_Id_Provided(string invalidId)
-{
-    // Arrange
-    var mockHttpClient = new Mock<HttpClient>();
-    var mockLogger = new Mock<ILogger<UserService>>();
-    var userService = new UserService(mockHttpClient.Object, mockLogger.Object);
-
-    // Act & Assert
-    await Assert.ThrowsAsync<ArgumentException>(() => userService.GetUserAsync(invalidId));
-}
-```
-
-### Component Testing with DI
-```csharp
-[Test]
-public void Should_Render_UserProfile_When_User_Loaded()
-{
-    // Arrange
-    using var ctx = new TestContext();
-    var mockUserService = new Mock<IUserService>();
-    mockUserService.Setup(x => x.GetCurrentUserAsync()).ReturnsAsync(new User { Name = "John" });
-    ctx.Services.AddSingleton(mockUserService.Object);
-
-    // Act
-    var component = ctx.RenderComponent<UserProfile>();
-
-    // Assert
-    component.Find("h1").TextContent.Should().Contain("John");
-}
-```
-
-- **Code Coverage:** Coverlet + ReportGenerator with PowerShell automation (see AI Operational Guidelines section)
-- **Documentation:** XML docs for public APIs, update README/Wiki/OpenAPI
-
-## Code Examples
-
-**TDD Example with Dependency Injection:**
-```csharp
-// 1. RED: Write failing test first
-[Test]
-public async Task Should_Validate_User_Credentials()
-{
-    // Arrange
-    var mockAuthService = new Mock<IAuthService>();
-    var mockLogger = new Mock<ILogger<LoginComponent>>();
-    var loginComponent = new LoginComponent(mockAuthService.Object, mockLogger.Object);
-    
-    // Act
-    var result = await loginComponent.ValidateLoginAsync("user", "pass");
-    
-    // Assert
-    result.Should().BeTrue();
-}
-
-// 2. GREEN: Implement minimal code to pass
-public partial class LoginComponent : ComponentBase
-{
-    private readonly IAuthService _authService;
-    private readonly ILogger<LoginComponent> _logger;
-    
-    public LoginComponent(IAuthService authService, ILogger<LoginComponent> logger)
-    {
-        _authService = authService ?? throw new ArgumentNullException(nameof(authService));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
-    
-    public async Task<bool> ValidateLoginAsync(string username, string password)
-    {
-        return await _authService.ValidateAsync(username, password);
-    }
-}
-
-// 3. REFACTOR: Improve while keeping tests green
-```
-
-**Blazor Component Structure:**
-```csharp
-// Features/Pages/ExamplePage/Example.razor.cs
+// Blazor Component with full DI pattern
 public partial class Example : ComponentBase
 {
     [Inject] private ILocalStorageService LocalStorage { get; set; } = default!;
@@ -267,292 +171,49 @@ public partial class Example : ComponentBase
     
     protected override async Task OnInitializedAsync()
     {
+        ArgumentNullException.ThrowIfNull(LocalStorage);
         // Component initialization
     }
 }
-```
 
-**TUnit Test Pattern:**
-```csharp
-[Test]
-public async Task Should_Return_Expected_Result()
-{
-    // Test
-}
-
-[Test]
-[Arguments("input1", "expected1")]
-[Arguments("input2", "expected2")]
-public async Task Should_Handle_Multiple_Inputs(string input, string expected)
-{
-    // Data-driven test
-}
-```
-
-**Azure Function Pattern:**
-```csharp
+// Azure Function (.NET 8, isolated worker)
 [Function("FunctionName")]
 public async Task<HttpResponseData> Run(
     [HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestData req)
 {
     // Function implementation
 }
+
+// TUnit Test with mocking
+[Test]
+public async Task Should_Return_User_When_Valid_Id_Provided()
+{
+    // Arrange
+    var mockHttpClient = new Mock<HttpClient>();
+    var mockLogger = new Mock<ILogger<UserService>>();
+    var userService = new UserService(mockHttpClient.Object, mockLogger.Object);
+    
+    // Act
+    var result = await userService.GetUserAsync("valid-id");
+    
+    // Assert
+    result.Should().NotBeNull();
+}
+
+// Component Testing with DI
+[Test]
+public void Should_Render_UserProfile_When_User_Loaded()
+{
+    using var ctx = new TestContext();
+    var mockUserService = new Mock<IUserService>();
+    ctx.Services.AddSingleton(mockUserService.Object);
+    
+    var component = ctx.RenderComponent<UserProfile>();
+    component.Find("h1").TextContent.Should().Contain("Expected");
+}
 ```
 
-## 7. Modern C# Features (12/13)
-| Feature | Example |
-|---------|---------|
-| Primary Constructors | `public class Person(string name, int age) { ... }` |
-| Collection Expressions | `int[] nums = [1,2,3];` |
-| Default Lambda Params | `Func<int,int,int> add = (x, y=5) => x+y;` |
-| ref readonly Parameters | `void M(ref readonly int x) { ... }` |
-| Alias Any Type | `using IntPair = (int, int);` |
-| Inline Arrays | `[InlineArray(10)] struct Buffer { ... }` |
-| params Collections | `void M(params ReadOnlySpan<T> items) { ... }` |
-| New Lock Object | `var l = new Lock(); using(l.EnterScope()) { ... }` |
-| New Escape Sequence | `char esc = '\e';` |
-| Method Group Natural Type | `var act = (string s) => ...;` |
-| Implicit Index Access | `buffer = { [^1]=0 }` |
-| ref/unsafe in Iterators | `async Task M() { ref int x = ...; }` |
-| Partial Properties | `public partial string Name { get; set; }` |
-| Overload Priority | `[OverloadResolutionPriority(1)] void M(int a) {}` |
-
-## 8. File & Directory Organization
-- **Features:** `src/redmuffin.Blazor.StaticWeb/Features/` - Feature-based organization with pages and components
-- **Static Assets:** `src/redmuffin.Blazor.StaticWeb/wwwroot/` - CSS, SCSS, JS, sample data, and libraries
-- **Tests:** `tests/` - Mirror main project structure with TUnit test projects
-- **Scripts:** `scripts/` - PowerShell scripts for build, coverage, and utilities
-- **Configuration:** `.github/` - GitHub workflows, instructions, prompts, and chatmodes
-
-**Key Directories:**
-- `.github/instructions/` - Technology-specific coding standards and best practices
-- `.github/prompts/` - Reusable AI prompts for development workflows
-- `.github/chatmodes/` - Specialized AI assistant modes for different roles
-- `src/redmuffin.Blazor.StaticWeb/Features/` - Feature-based Blazor components and pages
-- `src/redmuffin.Blazor.StaticWeb.Api/` - Azure Functions backend API
-- `src/redmuffin.Blazor.StaticWeb.Common/` - Shared models and utilities
-- `tests/` - TUnit test projects mirroring source structure
-
-## 9. Best Practices (Enhanced)
-
-### TDD Principles
-- **Test First:** Write tests before implementation
-- **Small Steps:** Make minimal changes to pass tests
-- **Continuous Refactoring:** Improve code while tests remain green
-- **Fast Feedback:** Keep test execution time minimal
-- **Behavior-Focused:** Test public contracts and interfaces, not internal implementation details
-
-### Dependency Injection Principles
-- **Dependency Inversion:** Depend on abstractions, not concretions
-- **Constructor Injection:** Preferred method for required dependencies
-- **Single Responsibility:** Each service should have one reason to change
-- **Interface Segregation:** Create small, focused interfaces
-
-### Integration Guidelines
-- Combine TDD with DI for highly testable code
-- Mock external dependencies in unit tests
-- Use integration tests to verify DI container configuration
-- Design services with constructor injection for easy mocking
-
-### General Best Practices
-- Develop modular, reusable, testable components
-- Favor strongly-typed parameters over dynamic
-- Handle exceptions with try/catch or error boundaries (`<ErrorBoundary>`)
-- Reference code with filename and line numbers
-- Prefer C#/Blazor over JavaScript/HTML unless required
-- Keep builds and tests passing before merging
-- Use `StateHasChanged()` sparingly, prefer parameter binding
-- Implement `IDisposable` for event subscriptions and timers
-
-## 10. AI Operational Guidelines
-
-### Known Build Warnings
-
-**IL2111 Warnings (Expected and Safe to Ignore):**
-The following IL2111 warnings are expected during Blazor WebAssembly compilation and do not indicate issues with the code:
-
-```
-warning IL2111: Method 'Microsoft.AspNetCore.Components.LayoutView.Layout.set' with parameters or return value with `DynamicallyAccessedMembersAttribute` is accessed via reflection. Trimmer can't guarantee availability of the requirements of the method.
-```
-
-**Context:** These warnings occur in generated Razor files (`App_razor.g.cs`) and are related to Blazor's internal layout handling mechanism. They are:
-- **Safe to ignore** - Do not affect application functionality
-- **Expected behavior** - Part of Blazor's compilation process
-- **Generated code** - Not under developer control
-- **Framework-level** - Related to ASP.NET Core Components trimming optimization
-
-**Action:** No action required. These warnings can be safely ignored during development and deployment.
-
-### Build Warning Prevention Guidelines
-
-This section provides comprehensive guidelines to prevent common build warnings and maintain a clean, warning-free codebase. Following these practices ensures better code quality, maintainability, and compliance with project standards.
-
-#### StyleCop Analyzer Guidelines
-
-**File Organization:**
-- **SA1402: File may only contain a single type** - Keep one class, interface, or enum per file for better organization
-- **SA1208/SA1210: Using directive ordering** - Order using directives alphabetically, with System namespaces first
-
-**Member Ordering (SA1201-SA1214):**
-- **Fields** → **Properties** → **Constructors** → **Methods** → **Nested types**
-- **public** → **internal** → **protected** → **private** (SA1202)
-- **const** → **static readonly** → **readonly** → **regular fields** (SA1203)
-- **static members** before **instance members** (SA1204)
-- **readonly fields** before **non-readonly fields** (SA1214)
-
-**Code Formatting:**
-- **SA1413: Use trailing comma in multi-line initializers** - Always add trailing commas for cleaner diffs
-- **SA1513: Closing brace should be followed by blank line** - Improve readability with proper spacing
-- **SA1500: Braces for multi-line statements should not share line** - Opening brace on new line
-- **SA1507: No multiple blank lines in a row** - Use single blank lines for separation
-- **SA1508: No blank line before closing brace** - Remove unnecessary whitespace
-- **SA1028: Remove trailing whitespace** - Clean up lines to prevent formatting issues
-- **SA1108: No embedded comments in block statements** - Keep comments separate from code blocks
-
-#### Meziantou Analyzer Guidelines
-
-**Collection Usage:**
-- **MA0016: Prefer collection abstractions** - Use `IEnumerable<T>`, `ICollection<T>`, `IList<T>` instead of concrete types like `List<T>`
-
-**String Operations:**
-- **MA0002: Use IEqualityComparer<string> overloads** - Specify string comparison behavior explicitly
-- **MA0006: Use string.Equals instead of == operators** - Use `string.Equals(a, b, StringComparison.OrdinalIgnoreCase)`
-- **MA0074: Use StringComparison parameter** - Always specify comparison type for `StartsWith()`, `EndsWith()`, etc.
-- **MA0076: Avoid culture-sensitive ToString in interpolated strings** - Use `.ToString(CultureInfo.InvariantCulture)`
-
-**Async/Await Patterns:**
-- **MA0004: Use ConfigureAwait(false)** - Always use `.ConfigureAwait(false)` in library code to prevent deadlocks
-
-**Code Quality:**
-- **MA0048: File name must match type name** - Ensure file names match the primary type they contain
-- **MA0051: Method is too long** - Keep methods under 60 lines; refactor longer methods
-- **MA0053: Make class sealed** - Seal classes not intended for inheritance
-
-#### Microsoft Code Analysis Guidelines
-
-**Performance Optimizations:**
-- **CA1845: Use span-based string.Concat** - Use `AsSpan()` instead of `Substring()` for better performance
-- **CA1854: Use TryGetValue for Dictionary access** - Avoid double lookups with `ContainsKey()` + indexer
-- **CA1869: Cache JsonSerializerOptions** - Reuse `JsonSerializerOptions` instances instead of creating new ones
-- **CA1848: Use LoggerMessage delegates** - Use compiled logging for better performance
-
-**Async Best Practices:**
-- **CA2007: Use ConfigureAwait on awaited tasks** - Always use `.ConfigureAwait(false)` in library code
-- **CA2016: Forward CancellationToken parameter** - Pass `CancellationToken` to async methods that support it
-
-**Security:**
-- **CA5394: Use cryptographically secure random generators** - Use `RandomNumberGenerator` instead of `Random` for security-sensitive operations
-
-**Code Quality:**
-- **CA1805: Remove explicit default value initialization** - Remove redundant `= false`, `= 0`, etc.
-- **CA1822: Mark members as static** - Make methods static when they don't access instance data
-- **CA1852: Seal types** - Seal internal types that aren't inherited from
-
-#### Compiler Warning Guidelines
-
-**Variable Usage:**
-- **CS0219: Remove unused variables** - Clean up assigned but unused variables
-- **CS1998: Add await to async methods** - Either add `await` operators or make method synchronous
-
-#### Quick Reference Checklist
-
-**Before submitting code, verify:**
-- [ ] One type per file (SA1402)
-- [ ] Using directives ordered alphabetically (SA1208/SA1210)
-- [ ] Proper member ordering: fields → properties → constructors → methods (SA1201-SA1214)
-- [ ] Trailing commas in multi-line initializers (SA1413)
-- [ ] No trailing whitespace (SA1028)
-- [ ] Use collection abstractions (IEnumerable<T>, IList<T>) instead of concrete types (MA0016)
-- [ ] Specify StringComparison in string operations (MA0002, MA0006, MA0074)
-- [ ] Use ConfigureAwait(false) in library code (MA0004, CA2007)
-- [ ] Methods under 60 lines (MA0051)
-- [ ] Remove unused variables (CS0219)
-- [ ] Use TryGetValue for Dictionary access (CA1854)
-- [ ] Cache JsonSerializerOptions instances (CA1869)
-- [ ] Forward CancellationToken parameters (CA2016)
-
-### Technology-Specific Instructions
-Consult these instruction files based on the file types you're working with:
-
-**Core Technologies:**
-- **Blazor** (`*.razor`, `*.razor.cs`) → [Blazor.instructions.md](.github/instructions/Blazor.instructions.md)
-- **C#** (`*.cs`) → [CSharp.instructions.md](.github/instructions/CSharp.instructions.md)
-- **PowerShell** (`*.ps1`, `*.psm1`, `*.psd1`) → [Powershell.instructions.md](.github/instructions/Powershell.instructions.md)
-- **SCSS** (`*.scss`) → [_SCSS.instructions.md](.github/instructions/_SCSS.instructions.md)
-- **Markdown** (`*.md`) → [markdown.instructions.md](.github/instructions/markdown.instructions.md)
-
-**Architecture & APIs:**
-- **REST APIs** (`*.cs`, `*.json`) → [aspnet-rest-apis.instructions.md](.github/instructions/aspnet-rest-apis.instructions.md)
-- **Azure Functions** → [_AzureFunctionsProgrammingBestPractices.instructions.md](.github/instructions/_AzureFunctionsProgrammingBestPractices.instructions.md)
-
-**Development Workflow:**
-- **GitHub Actions** (all files) → [github-actions-ci-cd-best-practices.instructions.md](.github/instructions/github-actions-ci-cd-best-practices.instructions.md)
-- **Performance** (all files) → [performance-optimization.instructions.md](.github/instructions/performance-optimization.instructions.md)
-- **Commit Standards** → [_CommitStandars.instructions.md](.github/instructions/_CommitStandars.instructions.md)
-- **General Documentation Resources** → [_Documentation.instructions.md](.github/instructions/_Documentation.instructions.md)
-
-### TDD Workflow for AI Assistants
-1. **Before implementing any new feature:**
-   - Ask: "What should this feature do?" (requirements clarification)
-   - Write failing test(s) that define expected behavior
-   - Run `dotnet test` to confirm red state
-   - Implement minimal code to achieve green state
-   - Refactor while maintaining green state
-
-2. **When modifying existing code:**
-   - Ensure existing tests pass before changes
-   - Add new tests for new behaviors
-   - Refactor with confidence knowing tests will catch regressions
-
-3. **Testing Strategy:**
-   - Unit tests for business logic with mocked dependencies
-   - Integration tests for component interactions
-   - End-to-end tests for critical user flows
-   - Always test edge cases and error conditions
-   - **Focus on Behavior:** Test public interfaces, parameters, and return values - not internal implementation
-   - **Refactor-Safe Tests:** Write tests that survive refactoring when public behavior remains unchanged
-
-### Dependency Injection Guidelines
-1. **Service Design:** Design services with single responsibility
-2. **Interface Segregation:** Create focused interfaces for better testability
-3. **Lifecycle Management:** Choose appropriate service lifetimes
-4. **Testing:** Always design services with constructor injection for easy mocking
-
-### Development Workflow
-- **Pre-commit Testing:** Before any git commit, run `dotnet test` and ensure it passes without errors (warnings are acceptable)
-  - If test errors exist, the commit must be stopped until errors are resolved
-  - This ensures code quality and prevents breaking changes in the repository
-- When asked to git commit something do it in batches for SRP to produce the best possible commit messages
-- When anything is unclear ask questions and stop and wait for all the answers before continuing
-- Offer PowerShell scripts for complex/data-intensive tasks
-- **Code Coverage Automation:** PowerShell scripts for test coverage
-  - Generate: `scripts/Generate-CoverageReport.ps1` | View: `scripts/View-CoverageReport.ps1`
-  - Config: Coverlet MSBuild integration, exclusions in .coverletrc/Directory.Build.props
-  - Output: HTML (unified/branded), XML, JSON, Cobertura formats to `coverage/`
-- **Context7 MCP:** Up-to-date documentation retrieval
-  - Tools: `resolve-library-id` → `get-library-docs` (always call resolve first)
-  - Prioritizes current docs over training data for .NET/Blazor/Azure/TUnit
-  - Auto-detects libraries in conversation for relevant documentation
-- **Fetch MCP:** Web content retrieval
-  - Converts URLs to markdown (HTML/JSON/MD/text formats)
-  - Use for: API docs, GitHub repos, tutorials, specifications
-  - Handles content truncation and pagination
-- **Brave Search MCP:** Web and local search
-  - Tools: `brave_web_search` (general), `brave_local_search` (businesses)
-  - Params: query (required), count (max 20), offset (max 9), auto-fallback
-  - Use for: Recent info, news, API changes | Free tier: 2,000 queries/month
-- **Sequential Thinking MCP:** Structured problem-solving
-  - Tool: `sequentialthinking` with dynamic adaptation and revision capability
-  - Use for: Complex coding, architecture planning, debugging, feature design
-  - Can adjust total thoughts and revise previous steps as understanding evolves
-- **Workflow:**
-  - Edit one file at a time to avoid conflicts
-  - For large changes: outline plan, get approval, make incremental edits
-  - Track progress (e.g., "Edit 2 of 5"), pause for clarification when blocked
-  - Keep code buildable at each stage
-- **Standards:** Follow all coding/testing practices, prefer Blazor over JavaScript
-- **Repository:** Owner: `michaelvolz`, Name: `redmuffin.Blazor.StaticWeb`
-- **File Encoding**: Always use UTF8 with BOM for Markdown files
-- **Exclude sample files**: Don't use these files when working, they are only dummy files:
-    - `src\redmuffin.Blazor.StaticWeb\wwwroot\sample-data\markdown-cheat-sheet.md`
-    - `src\redmuffin.Blazor.StaticWeb\wwwroot\Example.md `
+### Best Practices
+**TDD**: Test first, small steps, continuous refactoring, fast feedback, behavior-focused  
+**DI**: Dependency inversion, constructor injection, single responsibility, interface segregation  
+**General**: Modular/reusable/testable components, strongly-typed parameters, handle exceptions with try/catch or `<ErrorBoundary>`, prefer C#/Blazor over JS, use `StateHasChanged()` sparingly, implement `IDisposable` for subscriptions/timers

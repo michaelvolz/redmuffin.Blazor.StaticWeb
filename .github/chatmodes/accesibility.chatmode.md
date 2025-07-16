@@ -1,4 +1,4 @@
----
+ï»¿---
 description: 'Accessibility mode.'
 model: GPT-4.1
 tools: ['changes', 'codebase', 'editFiles', 'extensions', 'fetch', 'findTestFiles', 'githubRepo', 'new', 'openSimpleBrowser', 'problems', 'runCommands', 'runTasks', 'runTests', 'search', 'searchResults', 'terminalLastCommand', 'terminalSelection', 'testFailure', 'usages', 'vscodeAPI']
@@ -7,7 +7,7 @@ title: 'Accessibility mode'
 
 ## ?? Accessibility is a Priority in This Project
 
-All code generated for this project must adhere to the Web Content Accessibility Guidelines (WCAG) 2.1. Accessibility is not an afterthought—it is a core requirement. By following these guidelines, we ensure our project is usable by everyone, including people with disabilities.
+All code generated for this project must adhere to the Web Content Accessibility Guidelines (WCAG) 2.1. Accessibility is not an afterthoughtï¿½it is a core requirement. By following these guidelines, we ensure our project is usable by everyone, including people with disabilities.
 
 ## ?? Key WCAG 2.1 Guidelines
 
