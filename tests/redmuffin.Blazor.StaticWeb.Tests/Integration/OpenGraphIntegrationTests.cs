@@ -6,9 +6,6 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Integration;
 
 public class OpenGraphIntegrationTests : TestBase
 {
-    private readonly OpenGraphImagesService _imageService;
-    private readonly ServiceProvider _serviceProvider;
-
     public OpenGraphIntegrationTests()
     {
         var services = new ServiceCollection();
@@ -22,8 +19,11 @@ public class OpenGraphIntegrationTests : TestBase
         _imageService = _serviceProvider.GetRequiredService<OpenGraphImagesService>();
     }
 
+    private readonly OpenGraphImagesService _imageService;
+    private readonly ServiceProvider _serviceProvider;
+
     [Test]
-    public async Task EndToEndImageRetrievalTest()
+    public async Task EndToEndImageRetrieval_CacheClearance_ShouldRemoveAllCachedData()
     {
         // Arrange
         var articleUrls = new List<string>
@@ -32,15 +32,82 @@ public class OpenGraphIntegrationTests : TestBase
             "https://example.com/article2"
         };
 
-        // Act
-        var images = await _imageService.GetImagesAsync(articleUrls).ConfigureAwait(false);
+        // Act - First populate cache
+        await _imageService.GetImagesAsync(articleUrls).ConfigureAwait(false);
+
+        // Act - Clear all cache
+        var clearedCount = await _imageService.ClearCacheAsync().ConfigureAwait(false);
+
+        // Verify cache is cleared
+        var statsAfterClear = await _imageService.GetCacheStatsAsync().ConfigureAwait(false);
 
         // Assert
-        await Assert.That(images).IsNotNull();
-        await Assert.That(images.Count).IsEqualTo(2);
+        await Assert.That(clearedCount).IsEqualTo(0); // MockCacheService returns 0
+        await Assert.That(statsAfterClear).IsNotNull();
+        await Assert.That(statsAfterClear["TotalItems"]).IsEqualTo(0);
+    }
 
-        // Verify that each URL has a corresponding result
-        foreach (var url in articleUrls) await Assert.That(images.ContainsKey(url)).IsTrue();
+    [Test]
+    public async Task EndToEndImageRetrieval_CacheInvalidation_ShouldRemoveCachedData()
+    {
+        // Arrange
+        var articleUrl = "https://example.com/article-to-invalidate";
+
+        // Act - First populate cache
+        await _imageService.GetImageAsync(articleUrl).ConfigureAwait(false);
+
+        // Verify cache contains data
+        var isCachedBefore = await _imageService.IsImageCachedAsync(articleUrl).ConfigureAwait(false);
+
+        // Act - Invalidate cache
+        var invalidated = await _imageService.InvalidateCacheAsync(articleUrl).ConfigureAwait(false);
+
+        // Verify cache is cleared
+        var isCachedAfter = await _imageService.IsImageCachedAsync(articleUrl).ConfigureAwait(false);
+
+        // Assert
+        await Assert.That(isCachedBefore).IsTrue();
+        await Assert.That(invalidated).IsTrue();
+        await Assert.That(isCachedAfter).IsFalse();
+    }
+
+    [Test]
+    public async Task EndToEndImageRetrieval_CacheStats_ShouldReturnStatistics()
+    {
+        // Arrange
+        var articleUrls = new List<string>
+        {
+            "https://example.com/article1",
+            "https://example.com/article2"
+        };
+
+        // Act - First populate cache
+        await _imageService.GetImagesAsync(articleUrls).ConfigureAwait(false);
+
+        // Act - Get cache stats
+        var stats = await _imageService.GetCacheStatsAsync().ConfigureAwait(false);
+
+        // Assert
+        await Assert.That(stats).IsNotNull();
+        await Assert.That(stats.ContainsKey("Namespace")).IsTrue();
+        await Assert.That(stats.ContainsKey("TotalItems")).IsTrue();
+        await Assert.That(stats["Namespace"]).IsEqualTo("opengraph_images");
+    }
+
+    [Test]
+    public async Task EndToEndImageRetrieval_SingleArticle_ShouldReturnImageData()
+    {
+        // Arrange
+        var articleUrl = "https://example.com/single-article";
+
+        // Act
+        var image = await _imageService.GetImageAsync(articleUrl).ConfigureAwait(false);
+
+        // Assert
+        await Assert.That(image).IsNotNull();
+        await Assert.That(image!.ArticleUrl).IsEqualTo(articleUrl);
+        await Assert.That(image.ImageUrl).IsNotNull();
+        await Assert.That(image.IsValidated).IsTrue();
     }
 
     [Test]
@@ -95,91 +162,24 @@ public class OpenGraphIntegrationTests : TestBase
     }
 
     [Test]
-    public async Task EndToEndImageRetrieval_SingleArticle_ShouldReturnImageData()
+    public async Task EndToEndImageRetrievalTest()
     {
         // Arrange
-        var articleUrl = "https://example.com/single-article";
+        var articleUrls = new List<string>
+        {
+            "https://example.com/article1",
+            "https://example.com/article2"
+        };
 
         // Act
-        var image = await _imageService.GetImageAsync(articleUrl).ConfigureAwait(false);
+        var images = await _imageService.GetImagesAsync(articleUrls).ConfigureAwait(false);
 
         // Assert
-        await Assert.That(image).IsNotNull();
-        await Assert.That(image!.ArticleUrl).IsEqualTo(articleUrl);
-        await Assert.That(image.ImageUrl).IsNotNull();
-        await Assert.That(image.IsValidated).IsTrue();
-    }
+        await Assert.That(images).IsNotNull();
+        await Assert.That(images.Count).IsEqualTo(2);
 
-    [Test]
-    public async Task EndToEndImageRetrieval_CacheStats_ShouldReturnStatistics()
-    {
-        // Arrange
-        var articleUrls = new List<string>
-        {
-            "https://example.com/article1",
-            "https://example.com/article2"
-        };
-
-        // Act - First populate cache
-        await _imageService.GetImagesAsync(articleUrls).ConfigureAwait(false);
-
-        // Act - Get cache stats
-        var stats = await _imageService.GetCacheStatsAsync().ConfigureAwait(false);
-
-        // Assert
-        await Assert.That(stats).IsNotNull();
-        await Assert.That(stats.ContainsKey("Namespace")).IsTrue();
-        await Assert.That(stats.ContainsKey("TotalItems")).IsTrue();
-        await Assert.That(stats["Namespace"]).IsEqualTo("opengraph_images");
-    }
-
-    [Test]
-    public async Task EndToEndImageRetrieval_CacheInvalidation_ShouldRemoveCachedData()
-    {
-        // Arrange
-        var articleUrl = "https://example.com/article-to-invalidate";
-
-        // Act - First populate cache
-        await _imageService.GetImageAsync(articleUrl).ConfigureAwait(false);
-
-        // Verify cache contains data
-        var isCachedBefore = await _imageService.IsImageCachedAsync(articleUrl).ConfigureAwait(false);
-
-        // Act - Invalidate cache
-        var invalidated = await _imageService.InvalidateCacheAsync(articleUrl).ConfigureAwait(false);
-
-        // Verify cache is cleared
-        var isCachedAfter = await _imageService.IsImageCachedAsync(articleUrl).ConfigureAwait(false);
-
-        // Assert
-        await Assert.That(isCachedBefore).IsTrue();
-        await Assert.That(invalidated).IsTrue();
-        await Assert.That(isCachedAfter).IsFalse();
-    }
-
-    [Test]
-    public async Task EndToEndImageRetrieval_CacheClearance_ShouldRemoveAllCachedData()
-    {
-        // Arrange
-        var articleUrls = new List<string>
-        {
-            "https://example.com/article1",
-            "https://example.com/article2"
-        };
-
-        // Act - First populate cache
-        await _imageService.GetImagesAsync(articleUrls).ConfigureAwait(false);
-
-        // Act - Clear all cache
-        var clearedCount = await _imageService.ClearCacheAsync().ConfigureAwait(false);
-
-        // Verify cache is cleared
-        var statsAfterClear = await _imageService.GetCacheStatsAsync().ConfigureAwait(false);
-
-        // Assert
-        await Assert.That(clearedCount).IsEqualTo(0); // MockCacheService returns 0
-        await Assert.That(statsAfterClear).IsNotNull();
-        await Assert.That(statsAfterClear["TotalItems"]).IsEqualTo(0);
+        // Verify that each URL has a corresponding result
+        foreach (var url in articleUrls) await Assert.That(images.ContainsKey(url)).IsTrue();
     }
 }
 

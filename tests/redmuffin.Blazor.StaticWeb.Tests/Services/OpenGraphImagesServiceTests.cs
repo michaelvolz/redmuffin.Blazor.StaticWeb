@@ -15,13 +15,6 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Services;
 /// </summary>
 public class OpenGraphImagesServiceTests : IDisposable
 {
-    private readonly ICacheService _cacheService = Substitute.For<ICacheService>();
-    private readonly HttpClient _httpClient;
-    private readonly IHttpClientFactory _httpClientFactory = Substitute.For<IHttpClientFactory>();
-    private readonly IImageValidationService _imageValidationService = Substitute.For<IImageValidationService>();
-    private readonly ILogger<OpenGraphImagesService> _logger = Substitute.For<ILogger<OpenGraphImagesService>>();
-    private readonly OpenGraphImagesService _service;
-
     public OpenGraphImagesServiceTests()
     {
         // Setup default HttpClient mock
@@ -35,6 +28,48 @@ public class OpenGraphImagesServiceTests : IDisposable
     {
         _httpClient?.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    private readonly ICacheService _cacheService = Substitute.For<ICacheService>();
+    private readonly HttpClient _httpClient;
+    private readonly IHttpClientFactory _httpClientFactory = Substitute.For<IHttpClientFactory>();
+    private readonly IImageValidationService _imageValidationService = Substitute.For<IImageValidationService>();
+    private readonly ILogger<OpenGraphImagesService> _logger = Substitute.For<ILogger<OpenGraphImagesService>>();
+    private readonly OpenGraphImagesService _service;
+
+    /// <summary>
+    ///     Tests CleanupExpiredEntriesAsync calls the cache service.
+    /// </summary>
+    [Test]
+    public async Task CleanupExpiredEntriesAsync_CallsCacheService()
+    {
+        // Arrange
+        var expectedCount = 5;
+        _cacheService.CleanupExpiredItemsAsync("opengraph_images").Returns(expectedCount);
+
+        // Act
+        var result = await _service.CleanupExpiredEntriesAsync().ConfigureAwait(false);
+
+        // Assert
+        await Assert.That(result).IsEqualTo(expectedCount);
+        await _cacheService.Received(1).CleanupExpiredItemsAsync("opengraph_images").ConfigureAwait(false);
+    }
+
+    /// <summary>
+    ///     Tests ClearCacheAsync calls the cache service.
+    /// </summary>
+    [Test]
+    public async Task ClearCacheAsync_CallsCacheService()
+    {
+        // Arrange
+        _cacheService.ClearNamespaceAsync("opengraph_images").Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _service.ClearCacheAsync().ConfigureAwait(false);
+
+        // Assert
+        await Assert.That(result).IsEqualTo(0);
+        await _cacheService.Received(1).ClearNamespaceAsync("opengraph_images").ConfigureAwait(false);
     }
 
     /// <summary>
@@ -84,54 +119,6 @@ public class OpenGraphImagesServiceTests : IDisposable
     }
 
     /// <summary>
-    ///     Tests IsImageCachedAsync with null/empty URL input.
-    /// </summary>
-    [Test]
-    [Arguments(null)]
-    [Arguments("")]
-    [Arguments("   ")]
-    public async Task IsImageCachedAsync_WithNullOrEmptyUrl_ReturnsFalse(string? articleUrl)
-    {
-        // Act
-        var result = await _service.IsImageCachedAsync(articleUrl!).ConfigureAwait(false);
-
-        // Assert
-        await Assert.That(result).IsFalse();
-    }
-
-    /// <summary>
-    ///     Tests InvalidateCacheAsync with null/empty URL input.
-    /// </summary>
-    [Test]
-    [Arguments(null)]
-    [Arguments("")]
-    [Arguments("   ")]
-    public async Task InvalidateCacheAsync_WithNullOrEmptyUrl_ReturnsFalse(string? articleUrl)
-    {
-        // Act
-        var result = await _service.InvalidateCacheAsync(articleUrl!).ConfigureAwait(false);
-
-        // Assert
-        await Assert.That(result).IsFalse();
-    }
-
-    /// <summary>
-    ///     Tests GetImageAsync with null/empty URL input.
-    /// </summary>
-    [Test]
-    [Arguments(null)]
-    [Arguments("")]
-    [Arguments("   ")]
-    public async Task GetImageAsync_WithNullOrEmptyUrl_ReturnsNull(string? articleUrl)
-    {
-        // Act
-        var result = await _service.GetImageAsync(articleUrl!).ConfigureAwait(false);
-
-        // Assert
-        await Assert.That(result).IsNull();
-    }
-
-    /// <summary>
     ///     Tests GetImageAsync with valid URL that exists in cache.
     /// </summary>
     [Test]
@@ -161,6 +148,22 @@ public class OpenGraphImagesServiceTests : IDisposable
         await Assert.That(result.ImageUrl).IsEqualTo("https://example.com/image.jpg");
         await Assert.That(result.ImageSource).IsEqualTo(ImageSource.OpenGraph);
         await Assert.That(result.IsValidated).IsTrue();
+    }
+
+    /// <summary>
+    ///     Tests GetImageAsync with null/empty URL input.
+    /// </summary>
+    [Test]
+    [Arguments(null)]
+    [Arguments("")]
+    [Arguments("   ")]
+    public async Task GetImageAsync_WithNullOrEmptyUrl_ReturnsNull(string? articleUrl)
+    {
+        // Act
+        var result = await _service.GetImageAsync(articleUrl!).ConfigureAwait(false);
+
+        // Assert
+        await Assert.That(result).IsNull();
     }
 
     /// <summary>
@@ -204,24 +207,6 @@ public class OpenGraphImagesServiceTests : IDisposable
     }
 
     /// <summary>
-    ///     Tests InvalidateCacheAsync with valid URL.
-    /// </summary>
-    [Test]
-    public async Task InvalidateCacheAsync_WithValidUrl_CallsRemoveAndReturnsTrue()
-    {
-        // Arrange
-        var articleUrl = "https://example.com/article";
-        _cacheService.RemoveItemAsync("opengraph_images", articleUrl).Returns(Task.CompletedTask);
-
-        // Act
-        var result = await _service.InvalidateCacheAsync(articleUrl).ConfigureAwait(false);
-
-        // Assert
-        await Assert.That(result).IsTrue();
-        await _cacheService.Received(1).RemoveItemAsync("opengraph_images", articleUrl).ConfigureAwait(false);
-    }
-
-    /// <summary>
     ///     Tests InvalidateCacheAsync when cache service throws exception.
     /// </summary>
     [Test]
@@ -240,38 +225,53 @@ public class OpenGraphImagesServiceTests : IDisposable
     }
 
     /// <summary>
-    ///     Tests ClearCacheAsync calls the cache service.
+    ///     Tests InvalidateCacheAsync with null/empty URL input.
     /// </summary>
     [Test]
-    public async Task ClearCacheAsync_CallsCacheService()
+    [Arguments(null)]
+    [Arguments("")]
+    [Arguments("   ")]
+    public async Task InvalidateCacheAsync_WithNullOrEmptyUrl_ReturnsFalse(string? articleUrl)
     {
-        // Arrange
-        _cacheService.ClearNamespaceAsync("opengraph_images").Returns(Task.CompletedTask);
-
         // Act
-        var result = await _service.ClearCacheAsync().ConfigureAwait(false);
+        var result = await _service.InvalidateCacheAsync(articleUrl!).ConfigureAwait(false);
 
         // Assert
-        await Assert.That(result).IsEqualTo(0);
-        await _cacheService.Received(1).ClearNamespaceAsync("opengraph_images").ConfigureAwait(false);
+        await Assert.That(result).IsFalse();
     }
 
     /// <summary>
-    ///     Tests CleanupExpiredEntriesAsync calls the cache service.
+    ///     Tests InvalidateCacheAsync with valid URL.
     /// </summary>
     [Test]
-    public async Task CleanupExpiredEntriesAsync_CallsCacheService()
+    public async Task InvalidateCacheAsync_WithValidUrl_CallsRemoveAndReturnsTrue()
     {
         // Arrange
-        var expectedCount = 5;
-        _cacheService.CleanupExpiredItemsAsync("opengraph_images").Returns(expectedCount);
+        var articleUrl = "https://example.com/article";
+        _cacheService.RemoveItemAsync("opengraph_images", articleUrl).Returns(Task.CompletedTask);
 
         // Act
-        var result = await _service.CleanupExpiredEntriesAsync().ConfigureAwait(false);
+        var result = await _service.InvalidateCacheAsync(articleUrl).ConfigureAwait(false);
 
         // Assert
-        await Assert.That(result).IsEqualTo(expectedCount);
-        await _cacheService.Received(1).CleanupExpiredItemsAsync("opengraph_images").ConfigureAwait(false);
+        await Assert.That(result).IsTrue();
+        await _cacheService.Received(1).RemoveItemAsync("opengraph_images", articleUrl).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    ///     Tests IsImageCachedAsync with null/empty URL input.
+    /// </summary>
+    [Test]
+    [Arguments(null)]
+    [Arguments("")]
+    [Arguments("   ")]
+    public async Task IsImageCachedAsync_WithNullOrEmptyUrl_ReturnsFalse(string? articleUrl)
+    {
+        // Act
+        var result = await _service.IsImageCachedAsync(articleUrl!).ConfigureAwait(false);
+
+        // Assert
+        await Assert.That(result).IsFalse();
     }
 
     /// <summary>

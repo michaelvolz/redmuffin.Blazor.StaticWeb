@@ -10,10 +10,6 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.ArticlesPage;
 
 public class ArticlesTests
 {
-    private readonly IJSRuntime _jsRuntime;
-    private readonly ILogger<Articles> _logger;
-    private readonly NavigationManager _navigationManager;
-
     public ArticlesTests()
     {
         // Setup mock dependencies
@@ -28,6 +24,33 @@ public class ArticlesTests
 
         // Mock NavigationManager
         _navigationManager = new MockNavigationManager();
+    }
+
+    private readonly IJSRuntime _jsRuntime;
+    private readonly ILogger<Articles> _logger;
+    private readonly NavigationManager _navigationManager;
+
+    // Helper methods for testing private members
+    private static void SetPrivateProperty<T>(object obj, string propertyName, T value)
+    {
+        var property = obj.GetType().GetProperty(propertyName,
+            BindingFlags.NonPublic | BindingFlags.Instance);
+        property?.SetValue(obj, value);
+    }
+
+    private static T GetPrivateField<T>(object obj, string fieldName)
+    {
+        var field = obj.GetType().GetField(fieldName,
+            BindingFlags.NonPublic | BindingFlags.Instance);
+        return (T)field!.GetValue(obj)!;
+    }
+
+    private static async Task InvokePrivateMethodAsync(object obj, string methodName, params object[] parameters)
+    {
+        var method = obj.GetType().GetMethod(methodName,
+            BindingFlags.NonPublic | BindingFlags.Instance);
+        var result = method!.Invoke(obj, parameters);
+        if (result is Task task) await task.ConfigureAwait(false);
     }
 
     [Test]
@@ -103,29 +126,6 @@ public class ArticlesTests
 
         // Assert
         await Assert.That(mockJsRuntime.InvokedMethods).Contains("eval");
-    }
-
-    // Helper methods for testing private members
-    private static void SetPrivateProperty<T>(object obj, string propertyName, T value)
-    {
-        var property = obj.GetType().GetProperty(propertyName,
-            BindingFlags.NonPublic | BindingFlags.Instance);
-        property?.SetValue(obj, value);
-    }
-
-    private static T GetPrivateField<T>(object obj, string fieldName)
-    {
-        var field = obj.GetType().GetField(fieldName,
-            BindingFlags.NonPublic | BindingFlags.Instance);
-        return (T)field!.GetValue(obj)!;
-    }
-
-    private static async Task InvokePrivateMethodAsync(object obj, string methodName, params object[] parameters)
-    {
-        var method = obj.GetType().GetMethod(methodName,
-            BindingFlags.NonPublic | BindingFlags.Instance);
-        var result = method!.Invoke(obj, parameters);
-        if (result is Task task) await task.ConfigureAwait(false);
     }
 }
 

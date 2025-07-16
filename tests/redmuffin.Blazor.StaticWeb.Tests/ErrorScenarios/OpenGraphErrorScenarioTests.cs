@@ -10,12 +10,6 @@ namespace redmuffin.Blazor.StaticWeb.Tests.ErrorScenarios;
 
 public class OpenGraphErrorScenarioTests : TestBase
 {
-    private readonly ICacheService _cacheService;
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly OpenGraphImagesService _imageService;
-    private readonly IImageValidationService _imageValidationService;
-    private readonly ServiceProvider _serviceProvider;
-
     public OpenGraphErrorScenarioTests()
     {
         var services = new ServiceCollection();
@@ -34,34 +28,53 @@ public class OpenGraphErrorScenarioTests : TestBase
         _imageService = _serviceProvider.GetRequiredService<OpenGraphImagesService>();
     }
 
+    private readonly ICacheService _cacheService;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly OpenGraphImagesService _imageService;
+    private readonly IImageValidationService _imageValidationService;
+    private readonly ServiceProvider _serviceProvider;
+
     [Test]
-    public async Task GetImageAsync_WithNullUrl_ShouldReturnNull()
+    public async Task CleanupExpiredEntriesAsync_WhenCacheServiceThrows_ShouldReturnZero()
     {
+        // Arrange
+        _cacheService.CleanupExpiredItemsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Throws(new InvalidOperationException("Cache service error"));
+
         // Act
-        var result = await _imageService.GetImageAsync(null!).ConfigureAwait(false);
+        var result = await _imageService.CleanupExpiredEntriesAsync().ConfigureAwait(false);
 
         // Assert
-        await Assert.That(result).IsNull();
+        await Assert.That(result).IsEqualTo(0);
     }
 
     [Test]
-    public async Task GetImageAsync_WithEmptyUrl_ShouldReturnNull()
+    public async Task ClearCacheAsync_WhenCacheServiceThrows_ShouldReturnZero()
     {
+        // Arrange
+        _cacheService.ClearNamespaceAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Throws(new InvalidOperationException("Cache service error"));
+
         // Act
-        var result = await _imageService.GetImageAsync("").ConfigureAwait(false);
+        var result = await _imageService.ClearCacheAsync().ConfigureAwait(false);
 
         // Assert
-        await Assert.That(result).IsNull();
+        await Assert.That(result).IsEqualTo(0);
     }
 
     [Test]
-    public async Task GetImageAsync_WithWhitespaceUrl_ShouldReturnNull()
+    public async Task GetCacheStatsAsync_WhenCacheServiceThrows_ShouldReturnEmptyDictionary()
     {
+        // Arrange
+        _cacheService.GetNamespaceStatsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Throws(new InvalidOperationException("Cache service error"));
+
         // Act
-        var result = await _imageService.GetImageAsync("   ").ConfigureAwait(false);
+        var result = await _imageService.GetCacheStatsAsync().ConfigureAwait(false);
 
         // Assert
-        await Assert.That(result).IsNull();
+        await Assert.That(result).IsNotNull();
+        await Assert.That(result.Count).IsEqualTo(0);
     }
 
     [Test]
@@ -128,184 +141,33 @@ public class OpenGraphErrorScenarioTests : TestBase
     }
 
     [Test]
-    public async Task GetImagesAsync_WithEmptyList_ShouldReturnEmptyDictionary()
+    public async Task GetImageAsync_WithEmptyUrl_ShouldReturnNull()
     {
         // Act
-        var result = await _imageService.GetImagesAsync(new List<string>()).ConfigureAwait(false);
+        var result = await _imageService.GetImageAsync("").ConfigureAwait(false);
 
         // Assert
-        await Assert.That(result).IsNotNull();
-        await Assert.That(result.Count).IsEqualTo(0);
+        await Assert.That(result).IsNull();
     }
 
     [Test]
-    public async Task GetImagesAsync_WithNullList_ShouldReturnEmptyDictionary()
+    public async Task GetImageAsync_WithNullUrl_ShouldReturnNull()
     {
         // Act
-        var result = await _imageService.GetImagesAsync(null!).ConfigureAwait(false);
+        var result = await _imageService.GetImageAsync(null!).ConfigureAwait(false);
 
         // Assert
-        await Assert.That(result).IsNotNull();
-        await Assert.That(result.Count).IsEqualTo(0);
+        await Assert.That(result).IsNull();
     }
 
     [Test]
-    public async Task GetImagesAsync_WithMixedValidAndInvalidUrls_ShouldFilterInvalidUrls()
-    {
-        // Arrange
-        var urls = new List<string> { "https://valid.com", "", "https://valid2.com", null!, "   " };
-        _cacheService.GetItemAsync<CachedImageData>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns((CachedImageData?)null);
-
-        using var handler = new SuccessHttpMessageHandler();
-#pragma warning disable CA2000 // Dispose objects before losing scope - HttpClient lifecycle managed by test
-        var httpClient = new HttpClient(handler);
-        _httpClientFactory.CreateClient().Returns(_ => httpClient);
-#pragma warning restore CA2000
-
-        // Act
-        var result = await _imageService.GetImagesAsync(urls).ConfigureAwait(false);
-
-        // Assert
-        await Assert.That(result).IsNotNull();
-        await Assert.That(result.Count).IsEqualTo(2); // Only valid URLs should be processed
-        await Assert.That(result.ContainsKey("https://valid.com")).IsTrue();
-        await Assert.That(result.ContainsKey("https://valid2.com")).IsTrue();
-    }
-
-    [Test]
-    public async Task GetImagesAsync_WhenImageValidationFails_ShouldReturnNullForFailedUrls()
-    {
-        // Arrange
-        var urls = new List<string> { "https://example.com/article1", "https://example.com/article2" };
-        _cacheService.GetItemAsync<CachedImageData>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns((CachedImageData?)null);
-
-        using var handler = new SuccessHttpMessageHandler();
-#pragma warning disable CA2000 // Dispose objects before losing scope - HttpClient lifecycle managed by test
-        var httpClient = new HttpClient(handler);
-        _httpClientFactory.CreateClient().Returns(_ => httpClient);
-#pragma warning restore CA2000
-
-        // Setup image validation to fail
-        _imageValidationService.ValidateImagesAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
-            .Returns(new Dictionary<string, ImageValidationResult>
-            {
-                ["https://example.com/image1.jpg"] = new() { IsValid = false, ErrorMessage = "Image not found" },
-                ["https://example.com/image2.jpg"] = new() { IsValid = false, ErrorMessage = "Image not accessible" }
-            });
-
-        // Act
-        var result = await _imageService.GetImagesAsync(urls).ConfigureAwait(false);
-
-        // Assert
-        await Assert.That(result).IsNotNull();
-        await Assert.That(result.Count).IsEqualTo(2);
-        await Assert.That(result.Values.All(v => v == null)).IsTrue(); // All should be null due to validation failure
-    }
-
-    [Test]
-    public async Task IsImageCachedAsync_WithInvalidUrl_ShouldReturnFalse()
-    {
-        // Act & Assert
-        await Assert.That(await _imageService.IsImageCachedAsync(null!).ConfigureAwait(false)).IsFalse();
-        await Assert.That(await _imageService.IsImageCachedAsync("").ConfigureAwait(false)).IsFalse();
-        await Assert.That(await _imageService.IsImageCachedAsync("   ").ConfigureAwait(false)).IsFalse();
-    }
-
-    [Test]
-    public async Task InvalidateCacheAsync_WithInvalidUrl_ShouldReturnFalse()
-    {
-        // Act & Assert
-        await Assert.That(await _imageService.InvalidateCacheAsync(null!).ConfigureAwait(false)).IsFalse();
-        await Assert.That(await _imageService.InvalidateCacheAsync("").ConfigureAwait(false)).IsFalse();
-        await Assert.That(await _imageService.InvalidateCacheAsync("   ").ConfigureAwait(false)).IsFalse();
-    }
-
-    [Test]
-    public async Task InvalidateCacheAsync_WhenCacheServiceThrows_ShouldReturnFalse()
-    {
-        // Arrange
-        var articleUrl = "https://example.com/article";
-        _cacheService.RemoveItemAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Throws(new InvalidOperationException("Cache service error"));
-
-        // Act
-        var result = await _imageService.InvalidateCacheAsync(articleUrl).ConfigureAwait(false);
-
-        // Assert
-        await Assert.That(result).IsFalse();
-    }
-
-    [Test]
-    public async Task GetCacheStatsAsync_WhenCacheServiceThrows_ShouldReturnEmptyDictionary()
-    {
-        // Arrange
-        _cacheService.GetNamespaceStatsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Throws(new InvalidOperationException("Cache service error"));
-
-        // Act
-        var result = await _imageService.GetCacheStatsAsync().ConfigureAwait(false);
-
-        // Assert
-        await Assert.That(result).IsNotNull();
-        await Assert.That(result.Count).IsEqualTo(0);
-    }
-
-    [Test]
-    public async Task ClearCacheAsync_WhenCacheServiceThrows_ShouldReturnZero()
-    {
-        // Arrange
-        _cacheService.ClearNamespaceAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Throws(new InvalidOperationException("Cache service error"));
-
-        // Act
-        var result = await _imageService.ClearCacheAsync().ConfigureAwait(false);
-
-        // Assert
-        await Assert.That(result).IsEqualTo(0);
-    }
-
-    [Test]
-    public async Task CleanupExpiredEntriesAsync_WhenCacheServiceThrows_ShouldReturnZero()
-    {
-        // Arrange
-        _cacheService.CleanupExpiredItemsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Throws(new InvalidOperationException("Cache service error"));
-
-        // Act
-        var result = await _imageService.CleanupExpiredEntriesAsync().ConfigureAwait(false);
-
-        // Assert
-        await Assert.That(result).IsEqualTo(0);
-    }
-
-    [Test]
-    public async Task UpdateCacheEntryAsync_WithNullData_ShouldReturnFalse()
+    public async Task GetImageAsync_WithWhitespaceUrl_ShouldReturnNull()
     {
         // Act
-        var result = await _imageService.UpdateCacheEntryAsync("https://example.com", null!).ConfigureAwait(false);
+        var result = await _imageService.GetImageAsync("   ").ConfigureAwait(false);
 
         // Assert
-        await Assert.That(result).IsFalse();
-    }
-
-    [Test]
-    public async Task UpdateCacheEntryAsync_WithExpiredData_ShouldReturnTrue()
-    {
-        // Arrange
-        var expiredData = new CachedImageData
-        {
-            ArticleUrl = "https://example.com",
-            ImageUrl = "https://example.com/image.jpg",
-            ExpiresAt = DateTime.UtcNow.AddDays(-1) // Expired
-        };
-
-        // Act
-        var result = await _imageService.UpdateCacheEntryAsync("https://example.com", expiredData).ConfigureAwait(false);
-
-        // Assert
-        await Assert.That(result).IsTrue(); // Should still return true, but won't actually cache
+        await Assert.That(result).IsNull();
     }
 
     [Test]
@@ -340,6 +202,37 @@ public class OpenGraphErrorScenarioTests : TestBase
     }
 
     [Test]
+    public async Task GetImagesAsync_WhenImageValidationFails_ShouldReturnNullForFailedUrls()
+    {
+        // Arrange
+        var urls = new List<string> { "https://example.com/article1", "https://example.com/article2" };
+        _cacheService.GetItemAsync<CachedImageData>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns((CachedImageData?)null);
+
+        using var handler = new SuccessHttpMessageHandler();
+#pragma warning disable CA2000 // Dispose objects before losing scope - HttpClient lifecycle managed by test
+        var httpClient = new HttpClient(handler);
+        _httpClientFactory.CreateClient().Returns(_ => httpClient);
+#pragma warning restore CA2000
+
+        // Setup image validation to fail
+        _imageValidationService.ValidateImagesAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(new Dictionary<string, ImageValidationResult>
+            {
+                ["https://example.com/image1.jpg"] = new() { IsValid = false, ErrorMessage = "Image not found" },
+                ["https://example.com/image2.jpg"] = new() { IsValid = false, ErrorMessage = "Image not accessible" }
+            });
+
+        // Act
+        var result = await _imageService.GetImagesAsync(urls).ConfigureAwait(false);
+
+        // Assert
+        await Assert.That(result).IsNotNull();
+        await Assert.That(result.Count).IsEqualTo(2);
+        await Assert.That(result.Values.All(v => v == null)).IsTrue(); // All should be null due to validation failure
+    }
+
+    [Test]
     public async Task GetImagesAsync_WhenImageValidationServiceThrows_ShouldHandleGracefully()
     {
         // Arrange
@@ -364,5 +257,112 @@ public class OpenGraphErrorScenarioTests : TestBase
         await Assert.That(result).IsNotNull();
         await Assert.That(result.Count).IsEqualTo(1);
         await Assert.That(result.Values.All(v => v == null)).IsTrue(); // Should return null due to validation failure
+    }
+
+    [Test]
+    public async Task GetImagesAsync_WithEmptyList_ShouldReturnEmptyDictionary()
+    {
+        // Act
+        var result = await _imageService.GetImagesAsync(new List<string>()).ConfigureAwait(false);
+
+        // Assert
+        await Assert.That(result).IsNotNull();
+        await Assert.That(result.Count).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task GetImagesAsync_WithMixedValidAndInvalidUrls_ShouldFilterInvalidUrls()
+    {
+        // Arrange
+        var urls = new List<string> { "https://valid.com", "", "https://valid2.com", null!, "   " };
+        _cacheService.GetItemAsync<CachedImageData>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns((CachedImageData?)null);
+
+        using var handler = new SuccessHttpMessageHandler();
+#pragma warning disable CA2000 // Dispose objects before losing scope - HttpClient lifecycle managed by test
+        var httpClient = new HttpClient(handler);
+        _httpClientFactory.CreateClient().Returns(_ => httpClient);
+#pragma warning restore CA2000
+
+        // Act
+        var result = await _imageService.GetImagesAsync(urls).ConfigureAwait(false);
+
+        // Assert
+        await Assert.That(result).IsNotNull();
+        await Assert.That(result.Count).IsEqualTo(2); // Only valid URLs should be processed
+        await Assert.That(result.ContainsKey("https://valid.com")).IsTrue();
+        await Assert.That(result.ContainsKey("https://valid2.com")).IsTrue();
+    }
+
+    [Test]
+    public async Task GetImagesAsync_WithNullList_ShouldReturnEmptyDictionary()
+    {
+        // Act
+        var result = await _imageService.GetImagesAsync(null!).ConfigureAwait(false);
+
+        // Assert
+        await Assert.That(result).IsNotNull();
+        await Assert.That(result.Count).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task InvalidateCacheAsync_WhenCacheServiceThrows_ShouldReturnFalse()
+    {
+        // Arrange
+        var articleUrl = "https://example.com/article";
+        _cacheService.RemoveItemAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Throws(new InvalidOperationException("Cache service error"));
+
+        // Act
+        var result = await _imageService.InvalidateCacheAsync(articleUrl).ConfigureAwait(false);
+
+        // Assert
+        await Assert.That(result).IsFalse();
+    }
+
+    [Test]
+    public async Task InvalidateCacheAsync_WithInvalidUrl_ShouldReturnFalse()
+    {
+        // Act & Assert
+        await Assert.That(await _imageService.InvalidateCacheAsync(null!).ConfigureAwait(false)).IsFalse();
+        await Assert.That(await _imageService.InvalidateCacheAsync("").ConfigureAwait(false)).IsFalse();
+        await Assert.That(await _imageService.InvalidateCacheAsync("   ").ConfigureAwait(false)).IsFalse();
+    }
+
+    [Test]
+    public async Task IsImageCachedAsync_WithInvalidUrl_ShouldReturnFalse()
+    {
+        // Act & Assert
+        await Assert.That(await _imageService.IsImageCachedAsync(null!).ConfigureAwait(false)).IsFalse();
+        await Assert.That(await _imageService.IsImageCachedAsync("").ConfigureAwait(false)).IsFalse();
+        await Assert.That(await _imageService.IsImageCachedAsync("   ").ConfigureAwait(false)).IsFalse();
+    }
+
+    [Test]
+    public async Task UpdateCacheEntryAsync_WithExpiredData_ShouldReturnTrue()
+    {
+        // Arrange
+        var expiredData = new CachedImageData
+        {
+            ArticleUrl = "https://example.com",
+            ImageUrl = "https://example.com/image.jpg",
+            ExpiresAt = DateTime.UtcNow.AddDays(-1) // Expired
+        };
+
+        // Act
+        var result = await _imageService.UpdateCacheEntryAsync("https://example.com", expiredData).ConfigureAwait(false);
+
+        // Assert
+        await Assert.That(result).IsTrue(); // Should still return true, but won't actually cache
+    }
+
+    [Test]
+    public async Task UpdateCacheEntryAsync_WithNullData_ShouldReturnFalse()
+    {
+        // Act
+        var result = await _imageService.UpdateCacheEntryAsync("https://example.com", null!).ConfigureAwait(false);
+
+        // Assert
+        await Assert.That(result).IsFalse();
     }
 }

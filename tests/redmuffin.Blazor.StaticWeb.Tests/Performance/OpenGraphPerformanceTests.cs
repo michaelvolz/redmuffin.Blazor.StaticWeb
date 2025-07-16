@@ -8,9 +8,6 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Performance;
 
 public class OpenGraphPerformanceTests : TestBase
 {
-    private readonly OpenGraphImagesService _imageService;
-    private readonly ServiceProvider _serviceProvider;
-
     public OpenGraphPerformanceTests()
     {
         var services = new ServiceCollection();
@@ -22,6 +19,24 @@ public class OpenGraphPerformanceTests : TestBase
 
         _serviceProvider = services.BuildServiceProvider();
         _imageService = _serviceProvider.GetRequiredService<OpenGraphImagesService>();
+    }
+
+    private readonly OpenGraphImagesService _imageService;
+    private readonly ServiceProvider _serviceProvider;
+
+    [Test]
+    public async Task BatchProcessing_LargeDataSet_ShouldMaintainPerformance()
+    {
+        // Arrange
+        var largeArticleUrls = Enumerable.Range(1, 1000).Select(i => $"https://example.com/large-article{i}").ToList();
+        var stopwatch = Stopwatch.StartNew();
+
+        // Act
+        await _imageService.GetImagesAsync(largeArticleUrls).ConfigureAwait(false);
+        stopwatch.Stop();
+
+        // Assert
+        await Assert.That(stopwatch.ElapsedMilliseconds).IsLessThan(10000); // Expect under 10 seconds for 1000 articles
     }
 
     [Test]
@@ -37,37 +52,6 @@ public class OpenGraphPerformanceTests : TestBase
 
         // Assert
         await Assert.That(stopwatch.ElapsedMilliseconds).IsLessThan(3000); // Expect under 3 seconds
-    }
-
-    [Test]
-    public async Task CacheRetrieval_ShouldBeEfficientForMultipleCalls()
-    {
-        // Arrange
-        var articleUrl = "https://example.com/cached-article";
-        await _imageService.GetImageAsync(articleUrl).ConfigureAwait(false); // Populate cache
-        var stopwatch = Stopwatch.StartNew();
-
-        // Act
-        for (var i = 0; i < 100; i++) await _imageService.GetImageAsync(articleUrl).ConfigureAwait(false);
-        stopwatch.Stop();
-
-        // Assert
-        await Assert.That(stopwatch.ElapsedMilliseconds).IsLessThan(500); // Expect under 500 ms for 100 accesses
-    }
-
-    [Test]
-    public async Task BatchProcessing_LargeDataSet_ShouldMaintainPerformance()
-    {
-        // Arrange
-        var largeArticleUrls = Enumerable.Range(1, 1000).Select(i => $"https://example.com/large-article{i}").ToList();
-        var stopwatch = Stopwatch.StartNew();
-
-        // Act
-        await _imageService.GetImagesAsync(largeArticleUrls).ConfigureAwait(false);
-        stopwatch.Stop();
-
-        // Assert
-        await Assert.That(stopwatch.ElapsedMilliseconds).IsLessThan(10000); // Expect under 10 seconds for 1000 articles
     }
 
     [Test]
@@ -88,6 +72,40 @@ public class OpenGraphPerformanceTests : TestBase
 
         // Assert - Second call should be significantly faster
         await Assert.That(secondCallStopwatch.ElapsedMilliseconds).IsLessThan(firstCallStopwatch.ElapsedMilliseconds / 2);
+    }
+
+    [Test]
+    public async Task CacheInvalidation_ShouldNotSignificantlyImpactPerformance()
+    {
+        // Arrange
+        var articleUrls = Enumerable.Range(1, 50).Select(i => $"https://example.com/invalidation-test{i}").ToList();
+        await _imageService.GetImagesAsync(articleUrls).ConfigureAwait(false); // Populate cache
+        var stopwatch = Stopwatch.StartNew();
+
+        // Act - Invalidate multiple entries
+        var invalidationTasks = articleUrls.Select(async url => await _imageService.InvalidateCacheAsync(url).ConfigureAwait(false));
+
+        await Task.WhenAll(invalidationTasks).ConfigureAwait(false);
+        stopwatch.Stop();
+
+        // Assert
+        await Assert.That(stopwatch.ElapsedMilliseconds).IsLessThan(1000); // Invalidation should be fast
+    }
+
+    [Test]
+    public async Task CacheRetrieval_ShouldBeEfficientForMultipleCalls()
+    {
+        // Arrange
+        var articleUrl = "https://example.com/cached-article";
+        await _imageService.GetImageAsync(articleUrl).ConfigureAwait(false); // Populate cache
+        var stopwatch = Stopwatch.StartNew();
+
+        // Act
+        for (var i = 0; i < 100; i++) await _imageService.GetImageAsync(articleUrl).ConfigureAwait(false);
+        stopwatch.Stop();
+
+        // Assert
+        await Assert.That(stopwatch.ElapsedMilliseconds).IsLessThan(500); // Expect under 500 ms for 100 accesses
     }
 
     [Test]
@@ -126,24 +144,6 @@ public class OpenGraphPerformanceTests : TestBase
         await Assert.That(stopwatch.ElapsedMilliseconds).IsLessThan(1000); // Should handle concurrent access efficiently
         await Assert.That(results.All(r => r != null)).IsTrue();
         await Assert.That(results.All(r => r!.ImageUrl != null)).IsTrue();
-    }
-
-    [Test]
-    public async Task CacheInvalidation_ShouldNotSignificantlyImpactPerformance()
-    {
-        // Arrange
-        var articleUrls = Enumerable.Range(1, 50).Select(i => $"https://example.com/invalidation-test{i}").ToList();
-        await _imageService.GetImagesAsync(articleUrls).ConfigureAwait(false); // Populate cache
-        var stopwatch = Stopwatch.StartNew();
-
-        // Act - Invalidate multiple entries
-        var invalidationTasks = articleUrls.Select(async url => await _imageService.InvalidateCacheAsync(url).ConfigureAwait(false));
-
-        await Task.WhenAll(invalidationTasks).ConfigureAwait(false);
-        stopwatch.Stop();
-
-        // Assert
-        await Assert.That(stopwatch.ElapsedMilliseconds).IsLessThan(1000); // Invalidation should be fast
     }
 }
 

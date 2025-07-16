@@ -18,6 +18,21 @@ public class TestHttpMessageHandler : HttpMessageHandler
 
     public IReadOnlyList<HttpRequestMessage> Requests => _requests.AsReadOnly();
 
+    public void SetResponse(string url, HttpResponseMessage response)
+    {
+        _responses[url] = response;
+    }
+
+    public void ClearResponses()
+    {
+        _responses.Clear();
+    }
+
+    public void ClearRequests()
+    {
+        _requests.Clear();
+    }
+
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         _requests.Add(request);
@@ -61,20 +76,5 @@ public class TestHttpMessageHandler : HttpMessageHandler
         if (_responses.TryGetValue(request.RequestUri?.ToString() ?? "", out var mockResponse)) return mockResponse;
 
         return new HttpResponseMessage(HttpStatusCode.NotFound);
-    }
-
-    public void SetResponse(string url, HttpResponseMessage response)
-    {
-        _responses[url] = response;
-    }
-
-    public void ClearResponses()
-    {
-        _responses.Clear();
-    }
-
-    public void ClearRequests()
-    {
-        _requests.Clear();
     }
 }

@@ -6,22 +6,13 @@ namespace redmuffin.Blazor.StaticWeb.Tests.ErrorScenarios;
 /// <summary>
 ///     HTTP message handler that always returns failures for testing error scenarios
 /// </summary>
-public class FailingHttpMessageHandler : HttpMessageHandler
+public class FailingHttpMessageHandler(HttpStatusCode statusCode, string reasonPhrase = "Error") : HttpMessageHandler
 {
-    private readonly string _reasonPhrase;
-    private readonly HttpStatusCode _statusCode;
-
-    public FailingHttpMessageHandler(HttpStatusCode statusCode, string reasonPhrase = "Error")
-    {
-        _statusCode = statusCode;
-        _reasonPhrase = reasonPhrase;
-    }
-
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var response = new HttpResponseMessage(_statusCode)
+        var response = new HttpResponseMessage(statusCode)
         {
-            ReasonPhrase = _reasonPhrase,
+            ReasonPhrase = reasonPhrase,
             RequestMessage = request
         };
 

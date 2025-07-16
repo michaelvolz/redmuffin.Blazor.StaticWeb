@@ -8,11 +8,6 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Services;
 
 public class ImageValidationServiceTests : IDisposable
 {
-    private readonly ICacheService _cacheService = Substitute.For<ICacheService>();
-    private readonly IHttpClientFactory _httpClientFactory = Substitute.For<IHttpClientFactory>();
-    private readonly ILogger<ImageValidationService> _logger = Substitute.For<ILogger<ImageValidationService>>();
-    private readonly ImageValidationService _service;
-
     public ImageValidationServiceTests()
     {
         _service = new ImageValidationService(_httpClientFactory, _cacheService, _logger);
@@ -22,6 +17,25 @@ public class ImageValidationServiceTests : IDisposable
     {
         _service?.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    private readonly ICacheService _cacheService = Substitute.For<ICacheService>();
+    private readonly IHttpClientFactory _httpClientFactory = Substitute.For<IHttpClientFactory>();
+    private readonly ILogger<ImageValidationService> _logger = Substitute.For<ILogger<ImageValidationService>>();
+    private readonly ImageValidationService _service;
+
+    /// <summary>
+    ///     Tests ClearValidationCacheAsync clears memory and persistent cache.
+    /// </summary>
+    [Test]
+    public async Task ClearValidationCacheAsync_ClearsBothCaches()
+    {
+        // Act
+        await _service.ClearValidationCacheAsync().ConfigureAwait(false);
+
+        // Assert
+        await _cacheService.Received(1).ClearNamespaceAsync("image_validation").ConfigureAwait(false);
+        // Hard to test _memoryCache, ensure no exceptions
     }
 
     /// <summary>
@@ -39,20 +53,6 @@ public class ImageValidationServiceTests : IDisposable
         // Assert
         await Assert.That(result.IsValid).IsFalse();
         await Assert.That(result.ErrorMessage).IsEqualTo("Image URL is null or empty");
-    }
-
-    /// <summary>
-    ///     Tests ValidateImageWithCacheAsync with invalid URL format.
-    /// </summary>
-    [Test]
-    public async Task ValidateImageWithCacheAsync_WithInvalidUrlFormat_ReturnsInvalid()
-    {
-        // Act
-        var result = await _service.ValidateImageWithCacheAsync("not-a-valid-url").ConfigureAwait(false);
-
-        // Assert
-        await Assert.That(result.IsValid).IsFalse();
-        await Assert.That(result.ErrorMessage).IsEqualTo("Invalid URL format");
     }
 
     /// <summary>
@@ -85,16 +85,16 @@ public class ImageValidationServiceTests : IDisposable
     }
 
     /// <summary>
-    ///     Tests ClearValidationCacheAsync clears memory and persistent cache.
+    ///     Tests ValidateImageWithCacheAsync with invalid URL format.
     /// </summary>
     [Test]
-    public async Task ClearValidationCacheAsync_ClearsBothCaches()
+    public async Task ValidateImageWithCacheAsync_WithInvalidUrlFormat_ReturnsInvalid()
     {
         // Act
-        await _service.ClearValidationCacheAsync().ConfigureAwait(false);
+        var result = await _service.ValidateImageWithCacheAsync("not-a-valid-url").ConfigureAwait(false);
 
         // Assert
-        await _cacheService.Received(1).ClearNamespaceAsync("image_validation").ConfigureAwait(false);
-        // Hard to test _memoryCache, ensure no exceptions
+        await Assert.That(result.IsValid).IsFalse();
+        await Assert.That(result.ErrorMessage).IsEqualTo("Invalid URL format");
     }
 }
