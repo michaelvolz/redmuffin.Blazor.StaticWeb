@@ -38,12 +38,8 @@ public class CreatorReferenceConverter : JsonConverter<CreatorReference?>
         ArgumentNullException.ThrowIfNull(writer);
 
         if (value != null)
-        {
             JsonSerializer.Serialize(writer, value, options);
-        }
         else
-        {
             writer.WriteNullValue();
-        }
     }
 }

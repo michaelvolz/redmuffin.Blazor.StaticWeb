@@ -3,8 +3,8 @@ using Microsoft.Extensions.Logging;
 namespace redmuffin.Blazor.StaticWeb.Common;
 
 /// <summary>
-/// High-performance logger wrapper that adds a prefix to all log messages.
-/// Optimized to avoid unnecessary string allocations and delegate closures.
+///     High-performance logger wrapper that adds a prefix to all log messages.
+///     Optimized to avoid unnecessary string allocations and delegate closures.
 /// </summary>
 public sealed class PrefixedLogger(ILogger logger, string prefix) : ILogger
 {
@@ -24,10 +24,7 @@ public sealed class PrefixedLogger(ILogger logger, string prefix) : ILogger
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
         // Early exit if logging is disabled for this level
-        if (!_logger.IsEnabled(logLevel))
-        {
-            return;
-        }
+        if (!_logger.IsEnabled(logLevel)) return;
 
         ArgumentNullException.ThrowIfNull(formatter);
 
@@ -36,7 +33,7 @@ public sealed class PrefixedLogger(ILogger logger, string prefix) : ILogger
     }
 
     /// <summary>
-    /// Wrapper struct to hold prefix and original state without allocating a closure.
+    ///     Wrapper struct to hold prefix and original state without allocating a closure.
     /// </summary>
     private readonly struct PrefixedState<TState>(string prefix, TState state)
     {
@@ -45,7 +42,7 @@ public sealed class PrefixedLogger(ILogger logger, string prefix) : ILogger
     }
 
     /// <summary>
-    /// Static formatter to avoid delegate allocation on every log call.
+    ///     Static formatter to avoid delegate allocation on every log call.
     /// </summary>
     private static class PrefixedFormatter<TState>
     {

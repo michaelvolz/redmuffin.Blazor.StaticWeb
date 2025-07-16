@@ -14,9 +14,9 @@ namespace redmuffin.Blazor.StaticWeb.Common.Raindrop;
 [JsonSerializable(typeof(List<Highlight>))]
 public partial class RaindropJsonSerializerContext : JsonSerializerContext
 {
-	public static JsonSerializerOptions DefaultOptions { get; } = new JsonSerializerOptions
-	{
-		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-		WriteIndented = false,
-	};
+    public static JsonSerializerOptions DefaultOptions { get; } = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = false,
+    };
 }

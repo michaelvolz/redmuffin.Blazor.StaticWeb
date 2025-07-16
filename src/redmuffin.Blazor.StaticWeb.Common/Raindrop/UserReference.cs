@@ -4,9 +4,9 @@ namespace redmuffin.Blazor.StaticWeb.Common.Raindrop;
 
 public class UserReference
 {
-	[JsonPropertyName("$ref")]
-	public string? Ref { get; set; } = null;
+    [JsonPropertyName("$ref")]
+    public string? Ref { get; set; } = null;
 
-	[JsonPropertyName("$id")]
-	public long? Id { get; set; } = null;
+    [JsonPropertyName("$id")]
+    public long? Id { get; set; } = null;
 }
