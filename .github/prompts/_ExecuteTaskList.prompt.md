@@ -1,4 +1,4 @@
-﻿---
+---
 mode: 'edit'
 description: 'Execute Task List'
 ---
