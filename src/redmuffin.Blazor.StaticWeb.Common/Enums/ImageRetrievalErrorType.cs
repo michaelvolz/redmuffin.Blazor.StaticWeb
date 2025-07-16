@@ -1,4 +1,4 @@
-﻿namespace redmuffin.Blazor.StaticWeb.Common.Enums;
+namespace redmuffin.Blazor.StaticWeb.Common.Enums;
 
 /// <summary>
 ///     Represents different types of errors that can occur during image retrieval

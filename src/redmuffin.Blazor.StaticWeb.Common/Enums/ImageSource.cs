@@ -1,4 +1,4 @@
-﻿namespace redmuffin.Blazor.StaticWeb.Common.Enums;
+namespace redmuffin.Blazor.StaticWeb.Common.Enums;
 
 /// <summary>
 ///     Represents the source of an image extracted from web content.

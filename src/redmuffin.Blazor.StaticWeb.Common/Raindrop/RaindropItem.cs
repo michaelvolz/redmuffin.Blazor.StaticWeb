@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 
 namespace redmuffin.Blazor.StaticWeb.Common.Raindrop;

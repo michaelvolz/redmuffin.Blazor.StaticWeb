@@ -1,4 +1,4 @@
-﻿namespace redmuffin.Blazor.StaticWeb.Common.Models;
+namespace redmuffin.Blazor.StaticWeb.Common.Models;
 
 /// <summary>
 ///     Represents the response containing batch image processing results for multiple articles.

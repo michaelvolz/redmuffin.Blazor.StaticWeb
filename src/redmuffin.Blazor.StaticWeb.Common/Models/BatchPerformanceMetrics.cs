@@ -1,4 +1,4 @@
-﻿namespace redmuffin.Blazor.StaticWeb.Common.Models;
+namespace redmuffin.Blazor.StaticWeb.Common.Models;
 
 /// <summary>
 ///     Represents performance metrics for a batch operation.
