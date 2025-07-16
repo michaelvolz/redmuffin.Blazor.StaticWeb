@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 
 namespace redmuffin.Blazor.StaticWeb.Api.Tests;

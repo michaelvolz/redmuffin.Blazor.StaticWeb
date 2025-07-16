@@ -1,4 +1,4 @@
-using redmuffin.Blazor.StaticWeb.Core;
+﻿using redmuffin.Blazor.StaticWeb.Core;
 
 #pragma warning disable VSTHRD200
 
