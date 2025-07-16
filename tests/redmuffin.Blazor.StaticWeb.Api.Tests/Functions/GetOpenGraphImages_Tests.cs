@@ -39,7 +39,7 @@ public class GetOpenGraphImages_Tests : TestBase
         _httpClientFactory.CreateClient().Returns(httpClient);
 
         // Act
-        var result = await _function.RunAsync(httpRequest);
+        var result = await _function.RunAsync(httpRequest).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsNotNull();
@@ -53,7 +53,7 @@ public class GetOpenGraphImages_Tests : TestBase
         var httpRequest = CreateHttpRequest(jsonRequest);
 
         // Act
-        var result = await _function.RunAsync(httpRequest);
+        var result = await _function.RunAsync(httpRequest).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsNotNull();
@@ -68,7 +68,7 @@ public class GetOpenGraphImages_Tests : TestBase
         var httpRequest = CreateHttpRequest(jsonRequest);
 
         // Act
-        var result = await _function.RunAsync(httpRequest);
+        var result = await _function.RunAsync(httpRequest).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsNotNull();
