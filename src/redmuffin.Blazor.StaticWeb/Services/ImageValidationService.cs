@@ -16,6 +16,26 @@ public class ImageValidationService : IImageValidationService
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<ImageValidationService> _logger;
     private readonly ConcurrentDictionary<string, ImageValidationResult> _memoryCache = new();
+    
+    // LoggerMessage delegates
+    private static readonly Action<ILogger, string, string, Exception?> LogUpgradedHttpToHttps =
+        LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(1, nameof(LogUpgradedHttpToHttps)),
+            "Upgraded HTTP to HTTPS: {OriginalUrl} → {HttpsUrl}");
+    private static readonly Action<ILogger, Exception> LogFailedToClearValidationCache =
+        LoggerMessage.Define(LogLevel.Error, new EventId(2, nameof(LogFailedToClearValidationCache)),
+            "Failed to clear validation cache");
+    private static readonly Action<ILogger, Exception> LogFailedToGetValidationCacheStats =
+        LoggerMessage.Define(LogLevel.Error, new EventId(3, nameof(LogFailedToGetValidationCacheStats)),
+            "Failed to get validation cache statistics");
+    private static readonly Action<ILogger, string, Exception> LogHttpRequestFailed =
+        LoggerMessage.Define<string>(LogLevel.Warning, new EventId(4, nameof(LogHttpRequestFailed)),
+            "HTTP request failed for image validation: {ImageUrl}");
+    private static readonly Action<ILogger, string, Exception> LogImageValidationTimedOut =
+        LoggerMessage.Define<string>(LogLevel.Warning, new EventId(5, nameof(LogImageValidationTimedOut)),
+            "Image validation timed out: {ImageUrl}");
+    private static readonly Action<ILogger, string, Exception> LogUnexpectedErrorDuringValidation =
+        LoggerMessage.Define<string>(LogLevel.Error, new EventId(6, nameof(LogUnexpectedErrorDuringValidation)),
+            "Unexpected error during image validation: {ImageUrl}");
 
     public ImageValidationService(
         IHttpClientFactory httpClientFactory,
@@ -45,7 +65,7 @@ public class ImageValidationService : IImageValidationService
         if (imageUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
         {
             imageUrl = "https://" + imageUrl.Substring(7);
-            _logger.LogDebug("Upgraded HTTP to HTTPS: {OriginalUrl} → {HttpsUrl}", originalUrl, imageUrl);
+            LogUpgradedHttpToHttps(_logger, originalUrl, imageUrl, null);
         }
 
         if (!Uri.TryCreate(imageUrl, UriKind.Absolute, out var uri))
@@ -145,7 +165,7 @@ public class ImageValidationService : IImageValidationService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to clear validation cache");
+            LogFailedToClearValidationCache(_logger, ex);
         }
     }
 
@@ -168,7 +188,7 @@ public class ImageValidationService : IImageValidationService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to get validation cache statistics");
+            LogFailedToGetValidationCacheStats(_logger, ex);
             return new Dictionary<string, object>();
         }
     }
@@ -213,7 +233,7 @@ public class ImageValidationService : IImageValidationService
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogWarning(ex, "HTTP request failed for image validation: {ImageUrl}", imageUrl);
+            LogHttpRequestFailed(_logger, imageUrl, ex);
             return new ImageValidationResult
             {
                 ImageUrl = imageUrl,
@@ -224,7 +244,7 @@ public class ImageValidationService : IImageValidationService
         }
         catch (TaskCanceledException ex)
         {
-            _logger.LogWarning(ex, "Image validation timed out: {ImageUrl}", imageUrl);
+            LogImageValidationTimedOut(_logger, imageUrl, ex);
             return new ImageValidationResult
             {
                 ImageUrl = imageUrl,
@@ -235,7 +255,7 @@ public class ImageValidationService : IImageValidationService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error during image validation: {ImageUrl}", imageUrl);
+            LogUnexpectedErrorDuringValidation(_logger, imageUrl, ex);
             return new ImageValidationResult
             {
                 ImageUrl = imageUrl,
