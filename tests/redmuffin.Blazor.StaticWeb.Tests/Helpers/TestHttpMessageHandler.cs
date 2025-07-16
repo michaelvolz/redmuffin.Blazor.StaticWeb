@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Tests.Helpers;
+﻿namespace redmuffin.Blazor.StaticWeb.Tests.Helpers;
 
 /// <summary>
 ///     A test HTTP message handler that allows controlling HTTP responses in unit tests
