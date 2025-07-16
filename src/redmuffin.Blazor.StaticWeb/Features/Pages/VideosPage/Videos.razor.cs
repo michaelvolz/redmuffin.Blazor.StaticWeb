@@ -57,6 +57,20 @@ public partial class Videos
     [Inject]
     private NavigationManager Navigation { get; set; } = null!;
 
+    private static string DisplayTitle(RaindropItem video)
+    {
+        return string.IsNullOrEmpty(video.Title) ? "No Title Available" : video.Title;
+    }
+
+    private static string DisplayExcerpt(RaindropItem video)
+    {
+        return string.IsNullOrEmpty(video.Excerpt)
+            ? "No Excerpt Available"
+            : video.Excerpt.Length > 250
+                ? string.Concat(video.Excerpt.AsSpan(0, 250), "...")
+                : video.Excerpt;
+    }
+
     protected override async Task OnInitializedAsync()
     {
         // Validate injected dependencies
@@ -155,19 +169,5 @@ public partial class Videos
         {
             LogShimmerError(Logger, elementId, ex);
         }
-    }
-
-    private static string DisplayTitle(RaindropItem video)
-    {
-        return string.IsNullOrEmpty(video.Title) ? "No Title Available" : video.Title;
-    }
-
-    private static string DisplayExcerpt(RaindropItem video)
-    {
-        return string.IsNullOrEmpty(video.Excerpt)
-            ? "No Excerpt Available"
-            : video.Excerpt.Length > 250
-                ? string.Concat(video.Excerpt.AsSpan(0, 250), "...")
-                : video.Excerpt;
     }
 }

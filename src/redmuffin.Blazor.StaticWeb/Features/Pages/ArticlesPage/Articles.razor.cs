@@ -75,6 +75,92 @@ public partial class Articles
     [Inject]
     private IImageValidationService ImageValidationService { get; set; } = null!;
 
+    /// <summary>
+    ///     Determines if a cover image URL is suspicious and likely needs replacement.
+    /// </summary>
+    /// <param name="coverUrl">The cover image URL to evaluate</param>
+    /// <returns>True if the image is suspicious and should be replaced</returns>
+    private static bool IsCoverImageSuspicious(string coverUrl)
+    {
+        if (string.IsNullOrEmpty(coverUrl))
+            return true;
+
+        // Check for common placeholder patterns
+        var suspiciousPatterns = new[]
+        {
+            "placeholder",
+            "default",
+            "no-image",
+            "missing",
+            "avatar",
+            "profile",
+            "blank",
+            "generic",
+            "thumb",
+            "1x1",
+            "pixel"
+        };
+
+        var lowerUrl = coverUrl.ToLowerInvariant();
+        return suspiciousPatterns.Any(pattern => lowerUrl.Contains(pattern));
+    }
+
+    /// <summary>
+    ///     Determines if an article should have its image enhanced even if it has a cover image.
+    /// </summary>
+    /// <param name="article">The article to evaluate</param>
+    /// <returns>True if the article should be enhanced</returns>
+    private static bool ShouldEnhanceImage(RaindropItem article)
+    {
+        // Always try to enhance if no cover image
+        if (string.IsNullOrEmpty(article.Cover))
+            return true;
+
+        // Enhance articles from specific domains known to have better OpenGraph images
+        var domainsToEnhance = new[]
+        {
+            "github.com",
+            "medium.com",
+            "dev.to",
+            "hashnode.com",
+            "stackoverflow.com",
+            "docs.microsoft.com",
+            "devblogs.microsoft.com"
+        };
+
+        return domainsToEnhance.Any(domain => article.Link.Contains(domain, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    ///     Gets the CSS class for the article card based on its processing state.
+    /// </summary>
+    /// <param name="processingState">The processing state of the article</param>
+    /// <returns>CSS class name for the card state</returns>
+    private static string GetCardStateClass(string processingState)
+    {
+        return processingState switch
+        {
+            "processing" => "image-processing",
+            "enhanced" => "image-enhanced",
+            "failed" => "image-failed",
+            _ => string.Empty
+        };
+    }
+
+    private static string DisplayTitle(RaindropItem article)
+    {
+        return string.IsNullOrEmpty(article.Title) ? "No Title Available" : article.Title;
+    }
+
+    private static string DisplayExcerpt(RaindropItem article)
+    {
+        return string.IsNullOrEmpty(article.Excerpt)
+            ? "No Excerpt Available"
+            : article.Excerpt.Length > 250
+                ? string.Concat(article.Excerpt.AsSpan(0, 250), "...")
+                : article.Excerpt;
+    }
+
     protected override async Task OnInitializedAsync()
     {
         // Validate injected dependencies
@@ -315,62 +401,6 @@ public partial class Articles
     }
 
     /// <summary>
-    ///     Determines if a cover image URL is suspicious and likely needs replacement.
-    /// </summary>
-    /// <param name="coverUrl">The cover image URL to evaluate</param>
-    /// <returns>True if the image is suspicious and should be replaced</returns>
-    private static bool IsCoverImageSuspicious(string coverUrl)
-    {
-        if (string.IsNullOrEmpty(coverUrl))
-            return true;
-
-        // Check for common placeholder patterns
-        var suspiciousPatterns = new[]
-        {
-            "placeholder",
-            "default",
-            "no-image",
-            "missing",
-            "avatar",
-            "profile",
-            "blank",
-            "generic",
-            "thumb",
-            "1x1",
-            "pixel"
-        };
-
-        var lowerUrl = coverUrl.ToLowerInvariant();
-        return suspiciousPatterns.Any(pattern => lowerUrl.Contains(pattern));
-    }
-
-    /// <summary>
-    ///     Determines if an article should have its image enhanced even if it has a cover image.
-    /// </summary>
-    /// <param name="article">The article to evaluate</param>
-    /// <returns>True if the article should be enhanced</returns>
-    private static bool ShouldEnhanceImage(RaindropItem article)
-    {
-        // Always try to enhance if no cover image
-        if (string.IsNullOrEmpty(article.Cover))
-            return true;
-
-        // Enhance articles from specific domains known to have better OpenGraph images
-        var domainsToEnhance = new[]
-        {
-            "github.com",
-            "medium.com",
-            "dev.to",
-            "hashnode.com",
-            "stackoverflow.com",
-            "docs.microsoft.com",
-            "devblogs.microsoft.com"
-        };
-
-        return domainsToEnhance.Any(domain => article.Link.Contains(domain, StringComparison.OrdinalIgnoreCase));
-    }
-
-    /// <summary>
     ///     Gets the best available image URL for an article, prioritizing enhanced images.
     /// </summary>
     /// <param name="article">The article to get the image for</param>
@@ -406,22 +436,6 @@ public partial class Articles
                 _ => "none"
             };
         return "none";
-    }
-
-    /// <summary>
-    ///     Gets the CSS class for the article card based on its processing state.
-    /// </summary>
-    /// <param name="processingState">The processing state of the article</param>
-    /// <returns>CSS class name for the card state</returns>
-    private static string GetCardStateClass(string processingState)
-    {
-        return processingState switch
-        {
-            "processing" => "image-processing",
-            "enhanced" => "image-enhanced",
-            "failed" => "image-failed",
-            _ => string.Empty
-        };
     }
 
     /// <summary>
@@ -664,19 +678,5 @@ public partial class Articles
         }
 
         return "Image not available";
-    }
-
-    private static string DisplayTitle(RaindropItem article)
-    {
-        return string.IsNullOrEmpty(article.Title) ? "No Title Available" : article.Title;
-    }
-
-    private static string DisplayExcerpt(RaindropItem article)
-    {
-        return string.IsNullOrEmpty(article.Excerpt)
-            ? "No Excerpt Available"
-            : article.Excerpt.Length > 250
-                ? string.Concat(article.Excerpt.AsSpan(0, 250), "...")
-                : article.Excerpt;
     }
 }

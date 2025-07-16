@@ -12,18 +12,18 @@ public partial class App
 
     [Inject] private IWarmupService WarmupService { get; set; } = default!;
 
+    private static Task HandleNavigationAsync(NavigationContext args)
+    {
+        // Ensure the layout type is preserved for trimming
+        _ = typeof(MainLayout);
+        return Task.CompletedTask;
+    }
+
     protected override async Task OnInitializedAsync()
     {
         // Fire-and-forget warm-up of Azure Functions
         _ = Task.Run(async () => await WarmupService.WarmupAsync().ConfigureAwait(false));
 
         await base.OnInitializedAsync().ConfigureAwait(false);
-    }
-
-    private static Task HandleNavigationAsync(NavigationContext args)
-    {
-        // Ensure the layout type is preserved for trimming
-        _ = typeof(MainLayout);
-        return Task.CompletedTask;
     }
 }

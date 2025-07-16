@@ -23,7 +23,7 @@ else if (_articleItems != null && _articleItems.Any())
                     <h5>@DisplayTitle(article)</h5>
                 </div>
                 <div class="shimmer-placeholder @(processingState == "processing" ? "processing" : "")" id="shimmer-@article.Id">
-                    <img src="@imageUrl" alt="Article Cover" @onload="@(() => HandleImageLoadAsync($"shimmer-{article.Id}", article.Link, true))" @onerror="@(() => HandleImageLoadAsync($"shimmer-{article.Id}", article.Link, false))" />
+                    <img src="@imageUrl" alt="Article Cover" @onload="@(() => HandleImageLoadAsync($"shimmer-{article.Id}", article.Link, true))" @onerror="@(() => HandleImageLoadAsync($"shimmer-{article.Id}", article.Link, false))"/>
                     @if (HasFallbackPlaceholder(article))
                     {
                         <div class="fallback-placeholder-overlay">
