@@ -550,8 +550,8 @@ public partial class Articles
             // Update validation state to indicate validation is in progress
             state.ValidationState = ImageValidationState.Validating;
 
-            // Perform HTTP HEAD validation
-            var validationResult = await ImageValidationService.ValidateImageAsync(imageUrl).ConfigureAwait(false);
+            // Perform HTTP HEAD validation with caching
+            var validationResult = await ImageValidationService.ValidateImageWithCacheAsync(imageUrl).ConfigureAwait(false);
 
             // Update article state based on validation result
             if (validationResult.IsValid)
@@ -614,7 +614,7 @@ public partial class Articles
             }
 
             // The ImageValidationService handles its own cache management
-            // No additional action needed as ValidateImageAsync already caches the result
+            // No additional action needed as ValidateImageWithCacheAsync already caches the result
         }
         catch (Exception ex)
         {
