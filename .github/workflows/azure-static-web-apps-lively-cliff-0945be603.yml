@@ -174,10 +174,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: |
-            package-lock.json
-            package.json
 
       # OPTIMIZATION: Install Azure SWA CLI with improved error handling and caching
       - name: Install Azure Static Web Apps CLI
