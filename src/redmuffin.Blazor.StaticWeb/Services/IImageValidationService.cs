@@ -61,4 +61,13 @@ public interface IImageValidationService
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>Task representing the cache operation</returns>
     Task RecordBrowserBlockedImageAsync(string imageUrl, string blockReason, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Gets a cached validation result for an image URL without triggering HTTP requests.
+    ///     This method only checks the cache and returns null if no cached result exists.
+    /// </summary>
+    /// <param name="imageUrl">The image URL to check</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>Cached validation result if available, null otherwise</returns>
+    Task<ImageValidationResult?> GetCachedValidationResultAsync(string imageUrl, CancellationToken cancellationToken = default);
 }

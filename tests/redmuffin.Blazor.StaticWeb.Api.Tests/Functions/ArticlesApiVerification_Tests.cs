@@ -133,7 +133,7 @@ public class ArticlesApiVerification_Tests : TestBase
             Console.WriteLine($"  - collectionId: {(firstItem.TryGetProperty("collectionId", out var collectionId) ? collectionId.ToString() : "missing")}");
             Console.WriteLine($"  - created: {(firstItem.TryGetProperty("created", out var created) ? created.GetString() : "missing")}");
             Console.WriteLine(
-                $"  - excerpt: {(firstItem.TryGetProperty("excerpt", out var excerpt) ? (excerpt.GetString() is string excStr && excStr.Length > 50 ? string.Concat(excStr.AsSpan(0, 50), "...") : excerpt.GetString()) : "missing")}");
+                $"  - excerpt: {(firstItem.TryGetProperty("excerpt", out var excerpt) ? excerpt.GetString() is string excStr && excStr.Length > 50 ? string.Concat(excStr.AsSpan(0, 50), "...") : excerpt.GetString() : "missing")}");
 
             // Test deserialization with existing model
             try

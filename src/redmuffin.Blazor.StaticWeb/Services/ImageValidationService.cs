@@ -277,6 +277,27 @@ public class ImageValidationService : IImageValidationService, IDisposable
         _memoryCache.TryAdd(imageUrl, blockedResult);
     }
 
+    public async Task<ImageValidationResult?> GetCachedValidationResultAsync(string imageUrl, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+            return null;
+
+        // Check memory cache first
+        if (_memoryCache.TryGetValue(imageUrl, out var memoryCachedResult))
+            return memoryCachedResult;
+
+        // Check persistent cache
+        var cachedResult = await _cacheService.GetItemAsync<ImageValidationResult>(CacheNamespace, imageUrl, cancellationToken).ConfigureAwait(false);
+        if (cachedResult != null)
+        {
+            // Update memory cache
+            _memoryCache.TryAdd(imageUrl, cachedResult);
+            return cachedResult;
+        }
+
+        return null;
+    }
+
     private async Task<ImageValidationResult> PerformHttpHeadValidationAsync(
         string imageUrl,
         Uri uri,
