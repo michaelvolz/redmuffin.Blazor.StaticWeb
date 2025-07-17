@@ -4,7 +4,7 @@
     "static-web-app": {
       "appLocation": "src\\redmuffin.Blazor.StaticWeb",
       "apiLocation": "src\\redmuffin.Blazor.StaticWeb.Api",
-      "outputLocation": "bin\\wwwroot",
+      "outputLocation": "wwwroot",
       "apiLanguage": "dotnetisolated",
       "apiVersion": "8.0",
       "appBuildCommand": "dotnet publish -c Release -o bin",
