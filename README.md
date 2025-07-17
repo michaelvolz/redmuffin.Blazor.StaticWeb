@@ -612,29 +612,29 @@ redmuffin.Blazor.StaticWeb/
 - **[LightMock.Generator](https://github.com/anton-yashin/LightMock.Generator)**  
   High-performance compile-time mocking library for .NET, providing superior speed and AOT compatibility. **LightMock.Generator is the primary mocking framework** - NSubstitute is deprecated and will be phased out.
 
-#### Why LightMock.Generator Over NSubstitute?
+  #### Why LightMock.Generator Over NSubstitute?
 
-LightMock.Generator offers significant advantages over NSubstitute, making it the preferred choice for modern .NET testing:
+  LightMock.Generator offers significant advantages over NSubstitute, making it the preferred choice for modern .NET testing:
 
-1. **Compile-Time Generation**:
-   - **Zero Runtime Overhead**: Mocks are generated at compile time, eliminating runtime reflection
-   - **AOT Compatibility**: Full support for Native AOT compilation and trimming
-   - **Better Performance**: Significantly faster execution compared to reflection-based mocking
+  1. **Compile-Time Generation**:
+     - **Zero Runtime Overhead**: Mocks are generated at compile time, eliminating runtime reflection
+     - **AOT Compatibility**: Full support for Native AOT compilation and trimming
+     - **Better Performance**: Significantly faster execution compared to reflection-based mocking
 
-2. **Type Safety**:
-   - **Compile-Time Validation**: Mock setup errors are caught at compile time
-   - **IntelliSense Support**: Full IDE support with autocomplete and refactoring
-   - **Strongly Typed**: All mock interactions are strongly typed
+  2. **Type Safety**:
+     - **Compile-Time Validation**: Mock setup errors are caught at compile time
+     - **IntelliSense Support**: Full IDE support with autocomplete and refactoring
+     - **Strongly Typed**: All mock interactions are strongly typed
 
-3. **Modern .NET Optimizations**:
-   - **Source Generation**: Leverages C# source generators for efficient code generation
-   - **Trimming Ready**: Works seamlessly with .NET trimming and size optimization
-   - **Performance Critical**: Designed for high-performance scenarios
+  3. **Modern .NET Optimizations**:
+     - **Source Generation**: Leverages C# source generators for efficient code generation
+     - **Trimming Ready**: Works seamlessly with .NET trimming and size optimization
+     - **Performance Critical**: Designed for high-performance scenarios
 
-4. **Migration Path**:
-   - **Familiar API**: Similar API surface to existing mocking libraries
-   - **Gradual Transition**: Existing NSubstitute tests can be migrated incrementally
-   - **Consistent Patterns**: Maintains established testing patterns and conventions
+  4. **Migration Path**:
+     - **Familiar API**: Similar API surface to existing mocking libraries
+     - **Gradual Transition**: Existing NSubstitute tests can be migrated incrementally
+     - **Consistent Patterns**: Maintains established testing patterns and conventions
 
 ### Build and Analysis Tools
 
