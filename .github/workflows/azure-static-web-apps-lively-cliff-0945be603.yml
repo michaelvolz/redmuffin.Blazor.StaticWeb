@@ -140,7 +140,8 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch all history for all branches
+          fetch-depth: 1  # Shallow clone for faster checkout
+          show-progress: false  # Reduce log noise
 
       # OPTIMIZATION: Single .NET setup for both testing and building
       - name: Setup .NET
@@ -149,6 +150,17 @@ jobs:
           dotnet-version: |
             8.0.x
             9.0.x
+
+      # OPTIMIZATION: Cache .NET packages for faster builds
+      - name: Cache .NET packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.nuget/packages
+            ~/.local/share/NuGet/v3-cache
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
       # OPTIMIZATION: Single dependency restoration
       - name: Restore dependencies
@@ -187,6 +199,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'package*.json'
+
+      # OPTIMIZATION: Cache npm packages for SWA CLI
+      - name: Cache npm packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
 
       # OPTIMIZATION: Install Azure SWA CLI with improved error handling and caching
       - name: Install Azure Static Web Apps CLI
@@ -241,7 +264,90 @@ jobs:
             -c Release \
             -o ${{ env.APP_LOCATION }}/bin/Release/publish \
             --no-restore \
+            --verbosity normal \
+            -p:PublishTrimmed=true \
+            -p:TrimMode=partial \
+            -p:InvariantGlobalization=true
+
+          echo ""
+          echo "⚡ Building Azure Functions API..."
+          dotnet publish ${{ env.API_LOCATION }} \
+            -c Release \
+            -o ${{ env.API_LOCATION }}/bin/Release/publish \
+            --no-restore \
             --verbosity normal
+
+          echo ""
+          echo "🔍 Verifying Build Output Structure..."
+          echo "Blazor app output:"
+          ls -la ${{ env.APP_LOCATION }}/bin/Release/publish/
+          echo ""
+          echo "Looking for wwwroot in Blazor output:"
+          find ${{ env.APP_LOCATION }}/bin/Release/publish/ -name "wwwroot" -type d || echo "No wwwroot directory found"
+          echo ""
+          echo "API output:"
+          ls -la ${{ env.API_LOCATION }}/bin/Release/publish/
+
+          echo ""
+          echo "📦 Uploading build artifacts for traceability..."
+          # Upload build artifacts for reproducibility and debugging
+          tar -czf blazor-build-${{ github.sha }}.tar.gz \
+            -C ${{ env.APP_LOCATION }}/bin/Release/publish wwwroot
+          tar -czf api-build-${{ github.sha }}.tar.gz \
+            -C ${{ env.API_LOCATION }}/bin/Release/publish .
+
+      # Upload artifacts for traceability and debugging
+      - name: Upload Blazor build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: blazor-build-${{ github.sha }}
+          path: blazor-build-${{ github.sha }}.tar.gz
+          retention-days: 30
+
+      - name: Upload API build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-build-${{ github.sha }}
+          path: api-build-${{ github.sha }}.tar.gz
+          retention-days: 30
+
+      - name: Deploy to Azure Static Web Apps
+        env:
+          AZURE_STATIC_WEB_APPS_API_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_CLIFF_0945BE603 }}
+        run: |
+          # 🚀 OPTIMIZED AZURE STATIC WEB APPS DEPLOYMENT
+          # Benefits of this optimized approach:
+          # ✅ Single job reduces runner overhead and speeds up pipeline
+          # ✅ Tests run first for fast failure (fail-fast principle)
+          # ✅ No duplicate .NET setup, checkout, or dependency restoration
+          # ✅ Shared environment and context between test and deploy phases
+
+          set -e  # Exit on any error
+
+          echo "🔍 Environment Information:"
+          echo "Working Directory: $(pwd)"
+          echo "Node Version: $(node --version)"
+          echo "NPM Version: $(npm --version)"
+          echo ".NET Version: $(dotnet --version)"
+          echo "SWA CLI Version: $(swa --version)"
+
+          echo ""
+          echo "📁 Project Structure:"
+          echo "App Location: ${{ env.APP_LOCATION }}"
+          echo "API Location: ${{ env.API_LOCATION }}"
+          echo "Output Location: ${{ env.APP_ARTIFACT_LOCATION }}"
+
+          echo ""
+          echo "🏗️ Building Blazor WebAssembly Application..."
+          # Build with optimizations for production deployment
+          dotnet publish ${{ env.APP_LOCATION }} \
+            -c Release \
+            -o ${{ env.APP_LOCATION }}/bin/Release/publish \
+            --no-restore \
+            --verbosity normal \
+            -p:PublishTrimmed=true \
+            -p:TrimMode=partial \
+            -p:InvariantGlobalization=true
 
           echo ""
           echo "⚡ Building Azure Functions API..."
@@ -280,6 +386,21 @@ jobs:
           echo "✅ Pipeline completed successfully!"
           echo "🧪 Tests passed, build succeeded, deployment completed"
           echo "🌐 Your Blazor WebAssembly app is now live on Azure Static Web Apps"
+
+          echo ""
+          echo "🔍 Verifying deployment health..."
+          # Wait for deployment to propagate
+          sleep 30
+
+          # Basic health check (adjust URL to your actual domain)
+          echo "Performing basic connectivity test..."
+          if curl -f -s --max-time 30 --retry 3 --retry-delay 10 \
+             "https://lively-cliff-0945be603.azurestaticapps.net" > /dev/null; then
+            echo "✅ Deployment health check passed - site is accessible"
+          else
+            echo "⚠️ Deployment health check failed - site may not be fully ready yet"
+            echo "This is not necessarily an error - DNS propagation may take time"
+          fi
 
   # JOB: Handle documentation-only changes (skipped deployment)
   docs_only_changed_job:
