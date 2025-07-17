@@ -163,7 +163,7 @@ Primary Constructors: `public class Person(string name, int age)` | Collection E
 
 ### 📍 Repository Info
 **Owner**: `michaelvolz` | **Name**: `redmuffin.Blazor.StaticWeb`
-**Encoding**: UTF8 with BOM for Markdown  
+**Encoding**: UTF8 without BOM for Markdown  
 **Exclude samples**: `wwwroot/sample-data/markdown-cheat-sheet.md`, `wwwroot/Example.md`
 
 ### 📚 Tech Instructions (`.github/instructions/`)
