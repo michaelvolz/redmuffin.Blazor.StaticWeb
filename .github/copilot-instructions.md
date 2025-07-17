@@ -13,21 +13,21 @@
 ## 📦 Dependencies
 **Blazored.LocalStorage**, **Markdig**, **Microsoft.Azure.Functions.Worker**, **TUnit**, **Zurb Foundation** (CDN), **Analyzers** (Roslynator, StyleCop, Meziantou, VSThreading), **FontAwesome** (CDN), **BuildWebCompiler2022** (SCSS), **Coverlet**
 
-## 🚨 CRITICAL: ZERO TOLERANCE FOR BUILD WARNINGS
+## 🚨 CRITICAL: ZERO BUILD WARNINGS POLICY
 
-**ABSOLUTE REQUIREMENT**: Build warnings in C# files are **STRICTLY FORBIDDEN**. Prevention is **MANDATORY**, not optional.
+**MANDATORY WORKFLOW**: EVERY C# edit → `dotnet clean && dotnet build --no-restore --verbosity quiet` → fix ALL warnings → continue
 
-### MANDATORY PREVENTION
-- **BEFORE creating/editing ANY C# file**: Review rules below and implement correctly from start
-- **NO warning generation allowed**: Write code that complies with all analyzer rules immediately
-- **PREVENTION > FIXING**: Do NOT create warnings then fix - create compliant code initially
-- **CONTINUOUS COMPLIANCE**: Every line of C# code must follow all rules without exception
+**PREVENTION CHECKLIST** (Apply to ALL C# code):
+- `ConfigureAwait(false)` on ALL awaits
+- `ArgumentNullException.ThrowIfNull()` for ALL parameters
+- `using` statements: System first, then alphabetical
+- Member order: fields→properties→constructors→methods
+- `IDisposable` for ANY disposable fields
+- `LoggerMessage` delegates (NOT `Logger.LogError()`)
+- Remove ALL trailing whitespace
+- ONE blank line maximum between members
 
-### ENFORCEMENT REQUIREMENTS
-- **MANDATORY CHECK**: After ANY C# file edit, IMMEDIATELY run `get_errors` tool to verify zero warnings
-- **ZERO WARNINGS POLICY**: If ANY warning appears, IMMEDIATELY fix before proceeding to next task
-- **BUILD VERIFICATION**: Use `run_build` tool to confirm workspace-wide warning-free state
-- **NO EXCEPTIONS**: Only IL2111 (Blazor auto-generated) warnings are permitted - ALL others forbidden
+**ENFORCEMENT**: Run `dotnet clean && dotnet build --no-restore --verbosity quiet` after EVERY C# file change. Zero warnings required (except IL2111).
 
 ### ANALYZER RULES (ZERO TOLERANCE)
 
@@ -134,6 +134,7 @@ Primary Constructors: `public class Person(string name, int age)` | Collection E
 ## 🤖 AI Guidelines
 
 ### 🔄 Development Workflow
+**MANDATORY**: After EVERY C# file change: `dotnet clean && dotnet build --no-restore --verbosity quiet` → Fix ALL warnings → Continue
 **Pre-commit**: `dotnet test` must pass without errors (warnings OK) - stop commit if test errors exist
 **Git commits**: Batch by SRP for quality messages  
 **File editing**: One file at a time, track progress ("Edit 2 of 5")  
