@@ -255,12 +255,15 @@ jobs:
 
           echo ""
           echo "📦 Deploying to Azure Static Web Apps..."
-          # FIXED: For Blazor WebAssembly, the published output IS the wwwroot content
-          # The publish process outputs the web-ready files directly in the publish folder
+          # FIXED: Bypass swa-cli.config.json and use explicit parameters
+          # The config file expects different paths than our custom build process
+          # Force SWA CLI to ignore config file and use our explicit paths
           swa deploy \
             --app-location ${{ env.APP_LOCATION }}/bin/Release/publish \
             --api-location ${{ env.API_LOCATION }}/bin/Release/publish \
             --deployment-token $AZURE_STATIC_WEB_APPS_API_TOKEN \
+            --env production \
+            --no-use-keychain \
             --verbose
 
           echo ""
