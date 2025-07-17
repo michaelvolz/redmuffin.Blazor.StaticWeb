@@ -251,16 +251,16 @@ jobs:
 
           echo ""
           echo "📦 Deploying to Azure Static Web Apps..."
-          # FIXED: Bypass swa-cli.config.json and use explicit parameters
-          # The config file expects different paths than our custom build process
-          # Force SWA CLI to ignore config file and use our explicit paths
+          # FIXED: Use explicit parameters to override swa-cli.config.json
+          # The explicit --app-location, --api-location, and --output-location parameters
+          # should take precedence over the config file settings
           swa deploy \
             --app-location ${{ env.APP_LOCATION }}/bin/Release/publish \
             --api-location ${{ env.API_LOCATION }}/bin/Release/publish \
+            --output-location wwwroot \
             --deployment-token $AZURE_STATIC_WEB_APPS_API_TOKEN \
             --env production \
             --no-use-keychain \
-            --no-config \
             --verbose
 
           echo ""
