@@ -188,22 +188,22 @@ jobs:
           # ✅ Tests run first for fast failure (fail-fast principle)
           # ✅ No duplicate .NET setup, checkout, or dependency restoration
           # ✅ Shared environment and context between test and deploy phases
-          
+
           set -e  # Exit on any error
-          
+
           echo "🔍 Environment Information:"
           echo "Working Directory: $(pwd)"
           echo "Node Version: $(node --version)"
           echo "NPM Version: $(npm --version)"
           echo ".NET Version: $(dotnet --version)"
           echo "SWA CLI Version: $(swa --version)"
-          
+
           echo ""
           echo "📁 Project Structure:"
           echo "App Location: ${{ env.APP_LOCATION }}"
           echo "API Location: ${{ env.API_LOCATION }}"
           echo "Output Location: ${{ env.APP_ARTIFACT_LOCATION }}"
-          
+
           echo ""
           echo "🏗️ Building Blazor WebAssembly Application..."
           # Build with optimizations for production deployment
@@ -212,7 +212,7 @@ jobs:
             -o ${{ env.APP_LOCATION }}/bin/Release/publish \
             --no-restore \
             --verbosity normal
-          
+
           echo ""
           echo "⚡ Building Azure Functions API..."
           dotnet publish ${{ env.API_LOCATION }} \
@@ -220,7 +220,7 @@ jobs:
             -o ${{ env.API_LOCATION }}/bin/Release/publish \
             --no-restore \
             --verbosity normal
-          
+
           echo ""
           echo "📦 Deploying to Azure Static Web Apps..."
           # Deploy using SWA CLI with our custom build outputs
@@ -229,7 +229,7 @@ jobs:
             --api-location ${{ env.API_LOCATION }}/bin/Release/publish \
             --deployment-token $AZURE_STATIC_WEB_APPS_API_TOKEN \
             --verbose
-          
+
           echo ""
           echo "✅ Pipeline completed successfully!"
           echo "🧪 Tests passed, build succeeded, deployment completed"
