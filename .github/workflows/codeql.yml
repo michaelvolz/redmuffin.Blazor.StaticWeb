@@ -33,9 +33,10 @@ jobs:
       - name: Check if only documentation files changed
         id: check
         run: |
-          # Define documentation files to skip analysis for
+          # Define files to skip CodeQL analysis for (documentation and non-deployed files)
           # Add new files to this list as needed (one per line)
           DOC_FILES=(
+            # Documentation files
             "README.md"
             "CHANGELOG.md"
             "docs/*.md"
@@ -44,7 +45,14 @@ jobs:
             ".github/instructions/*.md"
             ".github/prompts/*.md"
             ".github/chatmodes/*.md"
-            # Add more documentation files here as needed
+            # Test projects (source files are committed but don't affect security analysis)
+            "tests/**/*"
+            # Build and development tools (committed but don't need security analysis)
+            "scripts/**/*"
+            ".editorconfig"
+            ".mcp.json"
+            ".coverletrc"
+            # Add more non-code files here as needed
           )
 
           # Build regex pattern from file list
@@ -88,7 +96,7 @@ jobs:
 
           # If only doc files changed and they exist in the changed files list, skip analysis
           if [[ $DOC_FILES_CHANGED -gt 0 && $DOC_FILES_CHANGED -eq $TOTAL_CHANGED ]]; then
-            echo "Only documentation files changed, skipping CodeQL analysis"
+            echo "Only documentation and non-code files changed, skipping CodeQL analysis"
             echo "should_skip=true" >> $GITHUB_OUTPUT
           else
             echo "Code files changed, proceeding with CodeQL analysis"
@@ -105,8 +113,14 @@ jobs:
     steps:
       - name: Skip CodeQL Analysis
         run: |
-          echo "Only documentation files ($CHANGED_FILES) changed."
-          echo "Skipping CodeQL analysis as no code changes were detected."
+          echo "📝 Only documentation and non-code files changed."
+          echo "⏭️ Skipping CodeQL security analysis as no code changes were detected."
+          echo ""
+          echo "💡 WHAT THIS MEANS FOR YOU:"
+          echo "   • Security analysis is skipped to save time and resources"
+          echo "   • Documentation changes don't introduce security vulnerabilities"
+          echo "   • Your codebase security posture remains unchanged"
+          echo "   • Scheduled CodeQL analysis will still run weekly on Wednesdays"
 
   analyze:
     needs: [check_changes]
@@ -145,9 +159,9 @@ jobs:
         # Use 'java-kotlin' to analyze code written in Java, Kotlin or both
         # Use 'javascript-typescript' to analyze code written in JavaScript, TypeScript or both
         # To learn more about changing the languages that are analyzed or customizing the build mode for your analysis,
-        # see https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/customizing-your-advanced-setup-for-code-scanning.
+        # see https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning.customizing-your-advanced-setup-for-code-scanning.
         # If you are analyzing a compiled language, you can modify the 'build-mode' for that language to customize how
-        # your codebase is analyzed, see https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/codeql-code-scanning-for-compiled-languages
+        # your codebase is analyzed, see https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning.codeql-code-scanning-for-compiled-languages
     steps:
     - name: Log analysis decision
       run: |
