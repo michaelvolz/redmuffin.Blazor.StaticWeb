@@ -111,6 +111,19 @@ jobs:
             echo "should_skip=false" >> $GITHUB_OUTPUT
           fi
 
+  # JOB: Dependency vulnerability scanning
+  dependency_scan:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+
   test_and_build_job:
     needs: check_changes
     if: |
