@@ -5,16 +5,6 @@ namespace redmuffin.Blazor.StaticWeb.Features.Pages.CacheResetPage;
 
 public partial class CacheReset
 {
-    private bool _isProcessing;
-    private bool _resetCompleted;
-    private bool _hasError;
-    private string _errorMessage = string.Empty;
-    private int _itemsCleared;
-
-    [Inject] private IBrowserStorageService BrowserStorageService { get; set; } = default!;
-    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
-    [Inject] private ILogger<CacheReset> Logger { get; set; } = default!;
-
     private static readonly Action<ILogger, Exception?> LogCacheResetStarted =
         LoggerMessage.Define(LogLevel.Information, new EventId(1, nameof(LogCacheResetStarted)),
             "Starting cache reset operation");
@@ -26,6 +16,15 @@ public partial class CacheReset
     private static readonly Action<ILogger, Exception?> LogCacheResetError =
         LoggerMessage.Define(LogLevel.Error, new EventId(3, nameof(LogCacheResetError)),
             "Error occurred during cache reset");
+
+    private bool _isProcessing;
+    private bool _resetCompleted;
+    private bool _hasError;
+    private string _errorMessage = string.Empty;
+    private int _itemsCleared;
+    [Inject] private IBrowserStorageService BrowserStorageService { get; set; } = default!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] private ILogger<CacheReset> Logger { get; set; } = default!;
 
     private async Task ConfirmResetAsync()
     {
