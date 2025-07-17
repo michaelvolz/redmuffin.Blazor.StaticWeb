@@ -242,7 +242,7 @@ jobs:
         with:
           path: |
             ~/.npm
-            /usr/local/lib/node_modules
+            ~/.config/yarn
           key: ${{ runner.os }}-npm-global-swa-cli-${{ hashFiles('.github/workflows/azure-static-web-apps-*.yml') }}
           restore-keys: |
             ${{ runner.os }}-npm-global-swa-cli-
