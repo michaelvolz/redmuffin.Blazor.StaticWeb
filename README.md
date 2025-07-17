@@ -577,37 +577,37 @@ redmuffin.Blazor.StaticWeb/
 - **[TUnit](https://github.com/thomhurst/TUnit)**  
   Modern, fast, and flexible .NET testing framework with parallel execution and comprehensive assertion library.
 
-#### Why TUnit Over xUnit?
+  #### Why TUnit Over xUnit?
 
-TUnit offers several advantages over xUnit, making it a compelling choice for modern .NET testing:
+  TUnit offers several advantages over xUnit, making it a compelling choice for modern .NET testing:
 
-1. **Performance**:
-   - **Source Generation**: Utilizes source-generated tests to eliminate runtime reflection, significantly improving performance.
-   - **Faster Execution**: Tests execute up to 10x faster in TUnit compared to xUnit due to better optimization.
+  1. **Performance**:
+     - **Source Generation**: Utilizes source-generated tests to eliminate runtime reflection, significantly improving performance.
+     - **Faster Execution**: Tests execute up to 10x faster in TUnit compared to xUnit due to better optimization.
 
-2. **Parallel Execution**:
-   - **Flexible Parallelism**: Provides granular control over test parallelism with custom attributes like `[NotInParallel]` and ParallelLimiter.
-   - **Intelligent Scheduling**: Offers enhanced control over test order and parallel execution.
+  2. **Parallel Execution**:
+     - **Flexible Parallelism**: Provides granular control over test parallelism with custom attributes like `[NotInParallel]` and ParallelLimiter.
+     - **Intelligent Scheduling**: Offers enhanced control over test order and parallel execution.
 
-3. **Modern Architecture**:
-   - **Native AOT Support**: Full support for Ahead-Of-Time (AOT) compilation and trimming, making it ideal for modern .NET applications.
+  3. **Modern Architecture**:
+     - **Native AOT Support**: Full support for Ahead-Of-Time (AOT) compilation and trimming, making it ideal for modern .NET applications.
 
-4. **Advanced Test Control**:
-   - **Test Dependencies**: Supports dependency chains with `[DependsOn]`, allowing structured integration testing without turning off parallelism.
-   - **Retry Logic**: Built-in retry mechanisms for specific test scenarios.
+  4. **Advanced Test Control**:
+     - **Test Dependencies**: Supports dependency chains with `[DependsOn]`, allowing structured integration testing without turning off parallelism.
+     - **Retry Logic**: Built-in retry mechanisms for specific test scenarios.
 
-5. **Better Setup and Teardown**:
-   - **Enhanced Lifecycle Methods**: Offers multiple setup and teardown methods with improved management and reduced issues.
+  5. **Better Setup and Teardown**:
+     - **Enhanced Lifecycle Methods**: Offers multiple setup and teardown methods with improved management and reduced issues.
 
-6. **Compile-Time Safety**:
-   - **Type Safe Assertions**: Ensures more reliable tests with compile-time assertion checks.
+  6. **Compile-Time Safety**:
+     - **Type Safe Assertions**: Ensures more reliable tests with compile-time assertion checks.
 
-7. **Extensibility**:
-   - **Customization**: Extensively customizable with support for diverse data sources, attributes, and test behavior.
-   - **IDE Integration**: Seamless support with major IDEs, improving developer experience and test management.
+  7. **Extensibility**:
+     - **Customization**: Extensively customizable with support for diverse data sources, attributes, and test behavior.
+     - **IDE Integration**: Seamless support with major IDEs, improving developer experience and test management.
 
-8. **Rich Data Features**:
-   - **Fluent Assertions**: Utilizes fluent async assertions and provides detailed test metadata for expressive test writing.
+  8. **Rich Data Features**:
+     - **Fluent Assertions**: Utilizes fluent async assertions and provides detailed test metadata for expressive test writing.
 
 - **[LightMock.Generator](https://github.com/anton-yashin/LightMock.Generator)**  
   High-performance compile-time mocking library for .NET, providing superior speed and AOT compatibility. **LightMock.Generator is the primary mocking framework** - NSubstitute is deprecated and will be phased out.
