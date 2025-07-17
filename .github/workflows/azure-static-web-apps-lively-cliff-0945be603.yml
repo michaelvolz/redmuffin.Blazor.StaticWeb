@@ -323,7 +323,7 @@ jobs:
           # Basic health check (adjust URL to your actual domain)
           echo "Performing basic connectivity test..."
           if curl -f -s --max-time 30 --retry 3 --retry-delay 10 \
-             "https://lively-cliff-0945be603.azurestaticapps.net" > /dev/null; then
+             "https://redmuffin.net" > /dev/null; then
             echo "✅ Deployment health check passed - site is accessible"
           else
             echo "⚠️ Deployment health check failed - site may not be fully ready yet"
