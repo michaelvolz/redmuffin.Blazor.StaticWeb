@@ -222,10 +222,22 @@ jobs:
             --verbosity normal
 
           echo ""
+          echo "🔍 Verifying Build Output Structure..."
+          echo "Blazor app output:"
+          ls -la ${{ env.APP_LOCATION }}/bin/Release/publish/
+          echo ""
+          echo "Looking for wwwroot in Blazor output:"
+          find ${{ env.APP_LOCATION }}/bin/Release/publish/ -name "wwwroot" -type d || echo "No wwwroot directory found"
+          echo ""
+          echo "API output:"
+          ls -la ${{ env.API_LOCATION }}/bin/Release/publish/
+
+          echo ""
           echo "📦 Deploying to Azure Static Web Apps..."
-          # Deploy using SWA CLI with our custom build outputs
+          # FIXED: For Blazor WebAssembly, the published output IS the wwwroot content
+          # The publish process outputs the web-ready files directly in the publish folder
           swa deploy \
-            --app-location ${{ env.APP_LOCATION }}/bin/Release/publish/${{ env.APP_ARTIFACT_LOCATION }} \
+            --app-location ${{ env.APP_LOCATION }}/bin/Release/publish \
             --api-location ${{ env.API_LOCATION }}/bin/Release/publish \
             --deployment-token $AZURE_STATIC_WEB_APPS_API_TOKEN \
             --verbose
