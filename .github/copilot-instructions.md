@@ -6,6 +6,7 @@
 **Frontend**: Blazor WebAssembly (.NET 9), feature-based  
 **Backend**: Azure Functions (.NET 8), isolated worker  
 **Testing**: TUnit (`[Test]`, `[Arguments]`) - NOT xUnit/NUnit/MSTest  
+**Mocking**: LightMock.Generator ONLY - NSubstitute deprecated
 **Language**: C# 13 preview, WebAssembly optimizations  
 **Build**: `WasmStripILAfterAOT=true`, `InvariantGlobalization=true`, `PublishTrimmed=true`  
 **Deployment**: Azure Static Web Apps with CSP, caching configs
@@ -69,6 +70,13 @@
 **Test behavior, not implementation**: Public interfaces/contracts only  
 **Mock dependencies**: Constructor injection for isolation  
 **Test structure**: Arrange-Act-Assert pattern
+
+## 🎭 LightMock.Generator
+**PRIMARY MOCKING FRAMEWORK** - NSubstitute deprecated, will be removed
+
+**Mock naming**: Use `Mock` suffix: `var userServiceMock = new Mock<IUserService>();`
+**Usage**: `new Mock<IInterface>()` → setup → pass `.Object` to constructor
+**Benefits**: Compile-time generation, zero runtime overhead, AOT compatible
 
 ```csharp
 [Test, Arguments(null), Arguments("")]
@@ -185,20 +193,20 @@ public async Task<HttpResponseData> Run(
     // Function implementation
 }
 
-// TUnit Test with mocking
+// TUnit Test with LightMock.Generator
 [Test]
 public async Task Should_Return_User_When_Valid_Id_Provided()
 {
     // Arrange
-    var mockHttpClient = new Mock<HttpClient>();
-    var mockLogger = new Mock<ILogger<UserService>>();
-    var userService = new UserService(mockHttpClient.Object, mockLogger.Object);
+    var httpClientMock = new Mock<HttpClient>();
+    var loggerMock = new Mock<ILogger<UserService>>();
+    var userService = new UserService(httpClientMock.Object, loggerMock.Object);
     
     // Act
     var result = await userService.GetUserAsync("valid-id");
     
     // Assert
-    result.Should().NotBeNull();
+    await Assert.That(result).IsNotNull();
 }
 
 // Component Testing with DI
@@ -206,11 +214,11 @@ public async Task Should_Return_User_When_Valid_Id_Provided()
 public void Should_Render_UserProfile_When_User_Loaded()
 {
     using var ctx = new TestContext();
-    var mockUserService = new Mock<IUserService>();
-    ctx.Services.AddSingleton(mockUserService.Object);
+    var userServiceMock = new Mock<IUserService>();
+    ctx.Services.AddSingleton(userServiceMock.Object);
     
     var component = ctx.RenderComponent<UserProfile>();
-    component.Find("h1").TextContent.Should().Contain("Expected");
+    await Assert.That(component.Find("h1").TextContent).Contains("Expected");
 }
 ```
 

@@ -74,7 +74,7 @@ Suitable for experimentation, learning, and development environments.
 
 ### Development & Quality
 - **Modern C# (C# 12/13) features** - Primary constructors, collection expressions, ref readonly parameters
-- **Comprehensive Testing** - TUnit framework with NSubstitute mocking
+- **Comprehensive Testing** - TUnit framework with LightMock.Generator mocking
 - **Code Coverage** - Automated coverage reports with Coverlet and ReportGenerator
 - **PowerShell Automation** - Scripts for coverage report generation and viewing
 - **SCSS Styling Only** - All styling should be done using SCSS files in the `wwwroot/scss/` directory.
@@ -346,7 +346,7 @@ This project embraces **[Test-Driven Development](https://martinfowler.com/bliki
 - **Constructor Injection**: Design services with dependency injection for easy testing
 - **Component Testing**: Use `TestContext` for testing Blazor components
 - **API Testing**: Test Azure Functions with HTTP triggers and dependency injection
-- **Mocking**: Use NSubstitute for creating test doubles
+- **Mocking**: Use LightMock.Generator for creating test doubles
 
 #### Tools and Automation
 
@@ -609,8 +609,32 @@ TUnit offers several advantages over xUnit, making it a compelling choice for mo
 8. **Rich Data Features**:
    - **Fluent Assertions**: Utilizes fluent async assertions and provides detailed test metadata for expressive test writing.
 
-- **[NSubstitute](https://nsubstitute.github.io/)**  
-  Friendly mocking library for .NET, used for creating test doubles and simplifying unit tests.
+- **[LightMock.Generator](https://github.com/anton-yashin/LightMock.Generator)**  
+  High-performance compile-time mocking library for .NET, providing superior speed and AOT compatibility. **LightMock.Generator is the primary mocking framework** - NSubstitute is deprecated and will be phased out.
+
+#### Why LightMock.Generator Over NSubstitute?
+
+LightMock.Generator offers significant advantages over NSubstitute, making it the preferred choice for modern .NET testing:
+
+1. **Compile-Time Generation**:
+   - **Zero Runtime Overhead**: Mocks are generated at compile time, eliminating runtime reflection
+   - **AOT Compatibility**: Full support for Native AOT compilation and trimming
+   - **Better Performance**: Significantly faster execution compared to reflection-based mocking
+
+2. **Type Safety**:
+   - **Compile-Time Validation**: Mock setup errors are caught at compile time
+   - **IntelliSense Support**: Full IDE support with autocomplete and refactoring
+   - **Strongly Typed**: All mock interactions are strongly typed
+
+3. **Modern .NET Optimizations**:
+   - **Source Generation**: Leverages C# source generators for efficient code generation
+   - **Trimming Ready**: Works seamlessly with .NET trimming and size optimization
+   - **Performance Critical**: Designed for high-performance scenarios
+
+4. **Migration Path**:
+   - **Familiar API**: Similar API surface to existing mocking libraries
+   - **Gradual Transition**: Existing NSubstitute tests can be migrated incrementally
+   - **Consistent Patterns**: Maintains established testing patterns and conventions
 
 ### Build and Analysis Tools
 
@@ -751,7 +775,7 @@ This project is licensed under the [Unlicense](https://unlicense.org/).
 - [Markdig](https://github.com/xoofx/markdig) for Markdown processing
 - [Zurb Foundation](https://get.foundation/) for the CSS framework
 - [TUnit](https://github.com/thomhurst/TUnit) for the modern testing framework
-- [NSubstitute](https://nsubstitute.github.io/) for mocking capabilities
+- [LightMock.Generator](https://github.com/anton-yashin/LightMock.Generator) for high-performance mocking capabilities
 - [Blazored.LocalStorage](https://github.com/Blazored/LocalStorage) for browser storage integration
 - [GitHub Copilot](https://github.com/features/copilot) for AI code assistance
 - [Visual Studio](https://visualstudio.microsoft.com/) for development environment
