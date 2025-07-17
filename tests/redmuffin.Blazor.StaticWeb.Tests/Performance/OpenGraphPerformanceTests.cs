@@ -208,4 +208,15 @@ public class MockImageValidationService : IImageValidationService
     {
         return Task.CompletedTask;
     }
+
+    public async Task<ImageValidationResult?> GetCachedValidationResultAsync(string imageUrl, CancellationToken cancellationToken = default)
+    {
+        return await Task.FromResult(new ImageValidationResult
+        {
+            ImageUrl = imageUrl,
+            IsValid = true,
+            ContentType = "image/jpeg",
+            ContentLength = 1024
+        }).ConfigureAwait(false);
+    }
 }

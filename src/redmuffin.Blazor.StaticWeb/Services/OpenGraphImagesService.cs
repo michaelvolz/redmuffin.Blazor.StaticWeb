@@ -11,7 +11,6 @@ public class OpenGraphImagesService : IOpenGraphImagesService
 {
     private const string CacheNamespace = "opengraph_images";
     private const int CacheExpirationHours = 24;
-    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     private static readonly Action<ILogger, string, Exception> LogFailureToRetrieveImageFromApi =
         LoggerMessage.Define<string>(LogLevel.Error, new EventId(0, nameof(LogFailureToRetrieveImageFromApi)),
@@ -175,7 +174,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
     private static async Task<BatchImageResponse?> DeserializeApiResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
         var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        return JsonSerializer.Deserialize<BatchImageResponse>(responseContent, JsonOptions);
+        return JsonSerializer.Deserialize(responseContent, OpenGraphJsonSerializerContext.Default.BatchImageResponse);
     }
 
     private static CachedImageData CreateCachedImageData(string articleUrl, ArticleImageResponse articleResult)
@@ -418,7 +417,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
         httpClient.DefaultRequestHeaders.Add("User-Agent", "redmuffin-blazor-staticweb/1.0");
 
         var batchRequest = CreateSingleArticleRequest(articleUrl);
-        var json = JsonSerializer.Serialize(batchRequest);
+        var json = JsonSerializer.Serialize(batchRequest, OpenGraphJsonSerializerContext.Default.BatchImageRequest);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         return await httpClient.PostAsync("/api/GetOpenGraphImages", content, cancellationToken).ConfigureAwait(false);
@@ -494,7 +493,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
             UseCache = false // We're handling cache at service level,
         };
 
-        var json = JsonSerializer.Serialize(batchRequest);
+        var json = JsonSerializer.Serialize(batchRequest, OpenGraphJsonSerializerContext.Default.BatchImageRequest);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         LogMakingBatchApiCall(_logger, articleUrls.Count, null);
@@ -507,7 +506,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
         CancellationToken cancellationToken)
     {
         var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        var batchResponse = JsonSerializer.Deserialize<BatchImageResponse>(responseContent, JsonOptions);
+        var batchResponse = JsonSerializer.Deserialize(responseContent, OpenGraphJsonSerializerContext.Default.BatchImageResponse);
 
         if (batchResponse?.Results?.Count > 0)
             await ProcessBatchResultsAsync(batchResponse.Results.ToList(), result, cancellationToken).ConfigureAwait(false);
