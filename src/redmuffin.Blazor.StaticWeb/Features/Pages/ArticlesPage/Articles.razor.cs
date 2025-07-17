@@ -9,7 +9,7 @@ using redmuffin.Blazor.StaticWeb.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage;
 
-public partial class Articles
+public partial class Articles : IDisposable
 {
     // LoggerMessage delegates for better performance
     private static readonly Action<ILogger, string, Exception?> LogRawJsonResponse =
@@ -54,11 +54,13 @@ public partial class Articles
 
     private readonly Dictionary<string, ArticleProcessingState> _articleStates = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> _imageUrlCache = new(StringComparer.OrdinalIgnoreCase);
+    private readonly SemaphoreSlim _validationSemaphore = new(6, 6); // Limit concurrent validations
     private List<RaindropItem>? _articleItems;
 
     private string? _errorMessage;
     private bool _isLoading;
     private bool _isProcessingImages;
+    private bool _isValidatingImages;
     private int _processingCount;
 
     [Inject]
@@ -162,6 +164,24 @@ public partial class Articles
                 : article.Excerpt;
     }
 
+    /// <summary>
+    ///     Updates the article state based on validation results.
+    /// </summary>
+    private static void UpdateStateFromValidationResult(ArticleProcessingState state, ImageValidationResult validationResult, bool loadSuccess)
+    {
+        if (validationResult.IsValid)
+        {
+            state.ValidationState = ImageValidationState.Validated;
+        }
+        else
+        {
+            state.ValidationState = ImageValidationState.Failed;
+
+            // If validation failed but browser load succeeded, mark as suspicious
+            if (loadSuccess) state.SetFallbackReason("Image validation failed: " + validationResult.ErrorMessage);
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         // Validate injected dependencies
@@ -250,7 +270,7 @@ public partial class Articles
 
     /// <summary>
     ///     Populates the image URL cache with the best available image URLs for all articles.
-    ///     This ensures images are displayed immediately on initial render.
+    ///     This ensures images are displayed immediately on initial render without waiting for validation.
     /// </summary>
     private async Task PopulateImageUrlCacheAsync()
     {
@@ -258,21 +278,129 @@ public partial class Articles
 
         foreach (var article in _articleItems)
         {
-            var imageUrl = await GetBestImageUrlAsync(article).ConfigureAwait(false);
-            
-            // Check if this image has been previously blocked by the browser
-            var validationResult = await ImageValidationService.ValidateImageWithCacheAsync(imageUrl).ConfigureAwait(false);
-            
-            if (!validationResult.IsValid && validationResult.ErrorMessage != null && 
-                validationResult.ErrorMessage.Contains("Browser blocked", StringComparison.OrdinalIgnoreCase))
+            var imageUrl = GetBestImageUrl(article);
+
+            // Check cache for validation results (no network requests)
+            var cachedValidation = await ImageValidationService.GetCachedValidationResultAsync(imageUrl).ConfigureAwait(false);
+
+            if (cachedValidation != null && !cachedValidation.IsValid &&
+                cachedValidation.ErrorMessage != null &&
+                cachedValidation.ErrorMessage.Contains("Browser blocked", StringComparison.OrdinalIgnoreCase))
+                // Use placeholder for blocked images
+                _imageUrlCache[article.Link] =
+                    "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1IiBzdHJva2U9IiNkZGQiIHN0cm9rZS13aWR0aD0iMiIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM5OTkiPkltYWdlIEJsb2NrZWQ8L3RleHQ+Cjwvc3ZnPg==";
+            else
+                // Use the best available image URL
+                _imageUrlCache[article.Link] = imageUrl;
+        }
+
+        // Start background validation for uncached images (don't await)
+        _ = ValidateImagesInBackgroundAsync();
+    }
+
+    /// <summary>
+    ///     Validates images in the background that are not cached.
+    ///     This method runs in parallel with controlled concurrency to avoid overwhelming the server.
+    /// </summary>
+    private async Task ValidateImagesInBackgroundAsync()
+    {
+        if (_articleItems == null || _isValidatingImages)
+            return;
+
+        _isValidatingImages = true;
+
+        try
+        {
+            // Collect images that need validation
+            var imagesToValidate = new List<(string ImageUrl, string ArticleLink)>();
+
+            foreach (var article in _articleItems)
             {
-                // This image was previously blocked, use data URI placeholder instead
-                _imageUrlCache[article.Link] = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1IiBzdHJva2U9IiNkZGQiIHN0cm9rZS13aWR0aD0iMiIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM5OTkiPkltYWdlIEJsb2NrZWQ8L3RleHQ+Cjwvc3ZnPg==";
+                var imageUrl = GetBestImageUrl(article);
+
+                // Skip if already cached or is a placeholder
+                if (imageUrl.Contains("placeholder.com", StringComparison.OrdinalIgnoreCase) ||
+                    imageUrl.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var cachedValidation = await ImageValidationService.GetCachedValidationResultAsync(imageUrl).ConfigureAwait(false);
+                if (cachedValidation == null) imagesToValidate.Add((imageUrl, article.Link));
+            }
+
+            if (imagesToValidate.Count == 0)
+                return;
+
+            // Process validations in parallel with controlled concurrency
+            var validationTasks = imagesToValidate.Select(async item =>
+            {
+                await _validationSemaphore.WaitAsync().ConfigureAwait(false);
+                try
+                {
+                    await ValidateImageWithProgressiveUpdateAsync(item.ImageUrl, item.ArticleLink).ConfigureAwait(false);
+                }
+                finally
+                {
+                    _validationSemaphore.Release();
+                }
+            });
+
+            await Task.WhenAll(validationTasks).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            // Log the error but don't fail the entire process
+            LogProcessingOpenGraphImagesError(Logger, ex);
+        }
+        finally
+        {
+            _isValidatingImages = false;
+        }
+    }
+
+    /// <summary>
+    ///     Validates a single image and updates the UI progressively.
+    /// </summary>
+    private async Task ValidateImageWithProgressiveUpdateAsync(string imageUrl, string articleLink)
+    {
+        try
+        {
+            var state = GetOrCreateArticleState(articleLink);
+            state.ValidationState = ImageValidationState.Validating;
+
+            // Trigger UI update to show validation in progress
+            StateHasChanged();
+
+            var validationResult = await ImageValidationService.ValidateImageWithCacheAsync(imageUrl, 60, CancellationToken.None).ConfigureAwait(false);
+
+            if (validationResult.IsValid)
+            {
+                state.ValidationState = ImageValidationState.Validated;
             }
             else
             {
-                _imageUrlCache[article.Link] = imageUrl;
+                state.ValidationState = ImageValidationState.Failed;
+                state.SetFallbackReason("Image validation failed: " + validationResult.ErrorMessage);
+
+                // Update cache with placeholder if validation failed
+                _imageUrlCache[articleLink] =
+                    "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1IiBzdHJva2U9IiNkZGQiIHN0cm9rZS13aWR0aD0iMiIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM5OTkiPkltYWdlIEZhaWxlZDwvdGV4dD4KPC9zdmc+";
             }
+
+            // Update cache with validation results
+            await UpdateCacheWithValidationResultAsync(articleLink, validationResult).ConfigureAwait(false);
+
+            // Trigger UI update to reflect validation results
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            LogImageValidationError(Logger, articleLink, imageUrl, ex);
+
+            var state = GetOrCreateArticleState(articleLink);
+            state.ValidationState = ImageValidationState.Failed;
+            state.SetFallbackReason("Validation error: " + ex.Message);
+
+            StateHasChanged();
         }
     }
 
@@ -442,28 +570,18 @@ public partial class Articles
     }
 
     /// <summary>
-    ///     Gets the best available image URL for an article, prioritizing enhanced images.
+    ///     Gets the best available image URL for an article, prioritizing cached enhanced images.
+    ///     This method uses only cached data and doesn't trigger network requests.
     /// </summary>
     /// <param name="article">The article to get the image for</param>
     /// <returns>The best available image URL</returns>
-    private async Task<string> GetBestImageUrlAsync(RaindropItem article)
+    private string GetBestImageUrl(RaindropItem article)
     {
         // First, try to get enhanced image from state
         if (_articleStates.TryGetValue(article.Link, out var state) &&
             state.EnhancedImage?.IsValidated == true &&
             !string.IsNullOrEmpty(state.EnhancedImage.ImageUrl))
             return state.EnhancedImage.ImageUrl;
-
-        // Check if we have a cached image in local storage
-        var cachedImage = await OpenGraphImagesService.GetImageAsync(article.Link).ConfigureAwait(false);
-        if (cachedImage?.IsValidated == true && !string.IsNullOrEmpty(cachedImage.ImageUrl))
-        {
-            // Update state with cached data
-            state = GetOrCreateArticleState(article.Link);
-            state.EnhancedImage = cachedImage;
-            state.ProcessingPhase = ProcessingPhase.Completed;
-            return cachedImage.ImageUrl;
-        }
 
         // Fallback to original cover image if available
         return !string.IsNullOrEmpty(article.Cover)
@@ -510,7 +628,7 @@ public partial class Articles
             var article = _articleItems?.FirstOrDefault(a => string.Equals(a.Link, articleLink, StringComparison.Ordinal));
             if (article != null)
             {
-                var currentImageUrl = await GetBestImageUrlAsync(article).ConfigureAwait(false);
+                var currentImageUrl = GetBestImageUrl(article);
 
                 // Validate the image in the background and update cache
                 _ = ValidateAndUpdateImageCacheAsync(currentImageUrl, articleLink, loadSuccess);
@@ -557,61 +675,71 @@ public partial class Articles
             // Skip validation for placeholder URLs
             if (imageUrl.Contains("placeholder.com", StringComparison.OrdinalIgnoreCase)) return;
 
-            // Get article state for updates
             var state = GetOrCreateArticleState(articleLink);
 
-            // If browser failed to load the image, record it as blocked instead of attempting HTTP validation
+            // Handle browser load failure
             if (!loadSuccess)
             {
-                // Record this as a browser-blocked image to prevent future HTTP validation attempts
-                await ImageValidationService.RecordBrowserBlockedImageAsync(imageUrl, "Browser load failed (likely CORS/SameSite blocking)").ConfigureAwait(false);
-
-                state.ValidationState = ImageValidationState.Failed;
-                state.SetFallbackReason("Browser blocked image (CORS/SameSite policy)");
-
-                StateHasChanged();
+                await HandleBrowserLoadFailureAsync(imageUrl, state).ConfigureAwait(false);
                 return;
             }
 
-            // Update validation state to indicate validation is in progress
-            state.ValidationState = ImageValidationState.Validating;
-
-            // Perform HTTP HEAD validation with caching
-            var validationResult = await ImageValidationService.ValidateImageWithCacheAsync(imageUrl).ConfigureAwait(false);
-
-            // Update article state based on validation result
-            if (validationResult.IsValid)
-            {
-                state.ValidationState = ImageValidationState.Validated;
-
-                // Update cache with validation confirmation
-            }
-            else
-            {
-                state.ValidationState = ImageValidationState.Failed;
-
-                // If validation failed but browser load succeeded, mark as suspicious
-                if (loadSuccess) state.SetFallbackReason("Image validation failed: " + validationResult.ErrorMessage);
-
-                // Update cache to reflect validation failure
-            }
-
-            await UpdateCacheWithValidationResultAsync(articleLink, validationResult).ConfigureAwait(false);
-
-            // Trigger UI update to reflect validation state changes
-            StateHasChanged();
+            // Perform validation and update state
+            await PerformImageValidationAsync(imageUrl, articleLink, state, loadSuccess).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            LogImageValidationError(Logger, articleLink, imageUrl, ex);
-
-            // Update state to reflect validation error
-            var state = GetOrCreateArticleState(articleLink);
-            state.ValidationState = ImageValidationState.Failed;
-            state.SetFallbackReason("Validation error: " + ex.Message);
-
-            StateHasChanged();
+            HandleValidationError(ex, articleLink, imageUrl);
         }
+    }
+
+    /// <summary>
+    ///     Handles browser load failure by recording the image as blocked.
+    /// </summary>
+    private async Task HandleBrowserLoadFailureAsync(string imageUrl, ArticleProcessingState state)
+    {
+        // Record this as a browser-blocked image to prevent future HTTP validation attempts
+        await ImageValidationService.RecordBrowserBlockedImageAsync(imageUrl, "Browser load failed (likely CORS/SameSite blocking)").ConfigureAwait(false);
+
+        state.ValidationState = ImageValidationState.Failed;
+        state.SetFallbackReason("Browser blocked image (CORS/SameSite policy)");
+
+        StateHasChanged();
+    }
+
+    /// <summary>
+    ///     Performs HTTP validation and updates the article state.
+    /// </summary>
+    private async Task PerformImageValidationAsync(string imageUrl, string articleLink, ArticleProcessingState state, bool loadSuccess)
+    {
+        // Update validation state to indicate validation is in progress
+        state.ValidationState = ImageValidationState.Validating;
+
+        // Perform HTTP HEAD validation with caching
+        var validationResult = await ImageValidationService.ValidateImageWithCacheAsync(imageUrl, 60, CancellationToken.None).ConfigureAwait(false);
+
+        // Update article state based on validation result
+        UpdateStateFromValidationResult(state, validationResult, loadSuccess);
+
+        await UpdateCacheWithValidationResultAsync(articleLink, validationResult).ConfigureAwait(false);
+
+        // Trigger UI update to reflect validation state changes
+        StateHasChanged();
+    }
+
+    /// <summary>
+    ///     Handles validation errors by updating the article state.
+    /// </summary>
+    private void HandleValidationError(Exception ex, string articleLink, string imageUrl)
+    {
+        LogImageValidationError(Logger, articleLink, imageUrl, ex);
+
+        // Update state to reflect validation error
+        var state = GetOrCreateArticleState(articleLink);
+        state.ValidationState = ImageValidationState.Failed;
+        state.SetFallbackReason("Validation error: " + ex.Message);
+
+        StateHasChanged();
     }
 
     /// <summary>
@@ -736,5 +864,14 @@ public partial class Articles
         if (string.IsNullOrEmpty(article.Cover)) return "No image available";
 
         return IsCoverImageSuspicious(article.Cover) ? "Placeholder image" : "Image not available";
+    }
+
+    /// <summary>
+    ///     Disposes of resources used by the component.
+    /// </summary>
+    public void Dispose()
+    {
+        _validationSemaphore?.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
