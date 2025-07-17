@@ -1,7 +1,5 @@
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using LightMock;
-using LightMock.Generator;
 using redmuffin.Blazor.StaticWeb.Common.Models;
 using redmuffin.Blazor.StaticWeb.Services;
 using redmuffin.Blazor.StaticWeb.Tests.Helpers;
@@ -98,50 +96,5 @@ public class ImageValidationServiceTests : IDisposable
         // Assert
         await Assert.That(result.IsValid).IsFalse();
         await Assert.That(result.ErrorMessage).IsEqualTo("Invalid URL format");
-    }
-}
-
-/// <summary>
-///     Tests using LightMock.Generator for comparison with NSubstitute.
-///     Following the Mock suffix naming conventions.
-/// </summary>
-public class ImageValidationServiceTestsLightMock : IDisposable
-{
-    private readonly Mock<ICacheService> _cacheServiceMock;
-    private readonly Mock<IHttpClientFactory> _httpClientFactoryMock;
-    private readonly Mock<ILogger<ImageValidationService>> _loggerMock;
-    private readonly ImageValidationService _service;
-
-    public ImageValidationServiceTestsLightMock()
-    {
-        _cacheServiceMock = new Mock<ICacheService>();
-        _httpClientFactoryMock = new Mock<IHttpClientFactory>();
-        _loggerMock = new Mock<ILogger<ImageValidationService>>();
-        
-        _service = new ImageValidationService(
-            _httpClientFactoryMock.Object,
-            _cacheServiceMock.Object,
-            _loggerMock.Object
-        );
-    }
-
-    public void Dispose()
-    {
-        _service?.Dispose();
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    ///     Tests ClearValidationCacheAsync clears memory and persistent cache using LightMock.Generator.
-    /// </summary>
-    [Test]
-    public async Task ClearValidationCacheAsync_ClearsBothCaches_LightMock()
-    {
-        // Act
-        await _service.ClearValidationCacheAsync().ConfigureAwait(false);
-
-        // Assert
-        _cacheServiceMock.Assert(f => f.ClearNamespaceAsync("image_validation", The<CancellationToken>.IsAnyValue));
-        // Hard to test _memoryCache, ensure no exceptions
     }
 }
