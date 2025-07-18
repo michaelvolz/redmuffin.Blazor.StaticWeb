@@ -160,34 +160,29 @@ jobs:
         with:
           node-version: '18'
 
-      # OPTIMIZATION: Cache Azure SWA CLI to avoid repeated installations
+      # OPTIMIZATION: Cache Azure SWA CLI global installation
       - name: Cache Azure Static Web Apps CLI
         id: cache-swa-cli
         uses: actions/cache@v4
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-swa-cli-${{ hashFiles('.github/workflows/azure-static-web-apps-lively-cliff-0945be603.yml') }}
+          path: |
+            ~/.npm
+            /usr/local/lib/node_modules/@azure/static-web-apps-cli
+          key: ${{ runner.os }}-swa-cli-v1
           restore-keys: |
             ${{ runner.os }}-swa-cli-
 
-      # OPTIMIZATION: Install Azure SWA CLI with improved error handling and caching
+      # OPTIMIZATION: Install Azure SWA CLI only if not cached
       - name: Install Azure Static Web Apps CLI
         if: steps.cache-swa-cli.outputs.cache-hit != 'true'
         run: |
-          # 🚀 OPTIMIZED NPM INSTALLATION
-          # Suppress deprecated package warnings (they're harmless for our use case)
-          # These warnings are from transitive dependencies in @azure/static-web-apps-cli
-          # and don't affect functionality
-
           echo "📦 Installing Azure Static Web Apps CLI..."
-          echo "ℹ️  Note: Any deprecation warnings are harmless and can be ignored"
-          echo ""
-
-          # Install with suppressed warnings for cleaner output
+          echo "ℹ️  Installing latest version for optimal performance"
+          
+          # Install with error handling
           npm install -g @azure/static-web-apps-cli --silent 2>/dev/null || \
           npm install -g @azure/static-web-apps-cli
-
-          echo ""
+          
           echo "✅ Azure Static Web Apps CLI installed successfully"
 
       # OPTIMIZATION: Verify SWA CLI is available (whether from cache or fresh install)
