@@ -33,11 +33,11 @@ jobs:
   check_changes:
     runs-on: ubuntu-latest
     outputs:
-      should_skip: ${{ steps.check.outputs.should_skip }}
+      should_skip: ${{ steps.skip_output.outputs.should_skip }}
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 1  # Shallow clone for faster checkout
+          fetch-depth: 2  # Fetch current + previous commit (sufficient for most cases)
           show-progress: false  # Reduce log noise
 
       - name: Check if only documentation files changed
@@ -58,35 +58,11 @@ jobs:
             .editorconfig
             .mcp.json
             .coverletrc
-          files_yaml: |
-            docs:
-              - 'README.md'
-              - 'CHANGELOG.md'
-              - 'docs/**/*.md'
-              - 'tasks/**/*.md'
-              - '.github/copilot-instructions.md'
-              - '.github/instructions/**/*.md'
-              - '.github/prompts/**/*.md'
-              - '.github/chatmodes/**/*.md'
-            tests:
-              - 'tests/**/*'
-            tools:
-              - 'scripts/**/*'
-              - '.editorconfig'
-              - '.mcp.json'
-              - '.coverletrc'
 
-      - name: Determine if deployment should be skipped
-        id: skip_check
+      - name: Set skip output
+        id: skip_output
         run: |
-          # Check if any files were changed
-          if [[ "${{ steps.check.outputs.any_changed }}" == "false" ]]; then
-            echo "No files changed - not skipping deploy"
-            echo "should_skip=false" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          # Check if only documentation and non-deployed files changed
+          # Use the changed-files action's built-in logic instead of complex shell script
           if [[ "${{ steps.check.outputs.only_changed }}" == "true" ]]; then
             echo "Only documentation and non-deployed files changed, skipping deployment"
             echo "should_skip=true" >> $GITHUB_OUTPUT
