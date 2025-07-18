@@ -25,7 +25,6 @@ AI assistants should refer to .github/copilot-instructions.md for technical guid
 [![Maintenance](https://img.shields.io/badge/Maintained-yes-green.svg)](https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb/graphs/commit-activity)
 [![GitHub commit activity](https://img.shields.io/github/commit-activity/m/michaelvolz/redmuffin.Blazor.StaticWeb)](https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb/graphs/commit-activity)
 
-
 ## Project Status
 
 **Alpha/Preview Release** - This project is in early development. While functional, expect:
