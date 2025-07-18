@@ -139,14 +139,14 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      # TESTING PHASE: Fast fail if tests don't pass
+      # TESTING PHASE: Fast fail if tests don't pass with parallel execution
       # Note: Tests automatically use environment variables set in the job environment
       # No local.settings.json file needed as TestBase class uses AddEnvironmentVariables()
       - name: Run tests
         run: |
-          echo "🧪 Running TUnit Tests..."
+          echo "🧪 Running TUnit Tests in parallel..."
           echo "ℹ️  Tests will automatically use environment variables in CI/CD environment"
-          dotnet test --no-restore --verbosity minimal --logger trx --results-directory TestResults /p:CollectCoverage=false
+          dotnet test --no-restore --verbosity quiet --logger trx --results-directory TestResults /p:CollectCoverage=false /p:VSTestParallel=true
           if [ $? -ne 0 ]; then
             echo "❌ Tests failed! Stopping deployment."
             exit 1
@@ -230,7 +230,8 @@ jobs:
             -o ${{ env.APP_LOCATION }}/bin/Release/publish \
             --no-restore \
             --no-dependencies \
-            --verbosity minimal
+            --verbosity quiet \
+            --nologo
 
           echo ""
           echo "⚡ Building Azure Functions API..."
@@ -239,18 +240,19 @@ jobs:
             -o ${{ env.API_LOCATION }}/bin/Release/publish \
             --no-restore \
             --no-dependencies \
-            --verbosity minimal
+            --verbosity quiet \
+            --nologo
 
           echo ""
           echo "🔍 Verifying Build Output Structure..."
           echo "Blazor app output:"
-          ls -la ${{ env.APP_LOCATION }}/bin/Release/publish/
+          ls -la ${{ env.APP_LOCATION }}/bin/Release/publish/ | head -5
           echo ""
           echo "Looking for wwwroot in Blazor output:"
           find ${{ env.APP_LOCATION }}/bin/Release/publish/ -name "wwwroot" -type d || echo "No wwwroot directory found"
           echo ""
           echo "API output:"
-          ls -la ${{ env.API_LOCATION }}/bin/Release/publish/
+          ls -la ${{ env.API_LOCATION }}/bin/Release/publish/ | head -5
 
           echo ""
           echo "📦 Deploying to Azure Static Web Apps..."
@@ -264,7 +266,7 @@ jobs:
             --deployment-token $AZURE_STATIC_WEB_APPS_API_TOKEN \
             --env production \
             --no-use-keychain \
-            --verbose
+            --print-config
 
           echo ""
           echo "✅ Pipeline completed successfully!"
@@ -275,10 +277,10 @@ jobs:
       - name: Verify deployment health
         run: |
           echo "🔍 Verifying deployment health..."
-          sleep 10  # Further reduced wait time
+          sleep 5  # Minimum required wait time
 
           echo "Performing basic connectivity test..."
-          if curl -f -s --max-time 10 --retry 1 --retry-delay 3 \
+          if curl -f -s --max-time 5 --retry 1 --retry-delay 2 \
              "https://redmuffin.net" > /dev/null; then
             echo "✅ Deployment health check passed - site is accessible"
           else
