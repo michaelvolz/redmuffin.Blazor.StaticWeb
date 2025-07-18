@@ -136,36 +136,12 @@ jobs:
         with:
           node-version: '18'
 
-      # OPTIMIZATION: Cache Azure SWA CLI global installation
-      - name: Cache Azure Static Web Apps CLI
-        id: cache-swa-cli
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.npm
-            /usr/local/lib/node_modules/@azure/static-web-apps-cli
-          key: ${{ runner.os }}-swa-cli-v1
-          restore-keys: |
-            ${{ runner.os }}-swa-cli-
-
-      # OPTIMIZATION: Install Azure SWA CLI only if not cached
+      # Install Azure Static Web Apps CLI (simple, reliable approach)
       - name: Install Azure Static Web Apps CLI
-        if: steps.cache-swa-cli.outputs.cache-hit != 'true'
         run: |
           echo "📦 Installing Azure Static Web Apps CLI..."
-          echo "ℹ️  Installing latest version for optimal performance"
-          
-          # Install with error handling
-          npm install -g @azure/static-web-apps-cli --silent 2>/dev/null || \
-          npm install -g @azure/static-web-apps-cli
-          
+          npm install -g @azure/static-web-apps-cli --silent --no-audit --no-fund
           echo "✅ Azure Static Web Apps CLI installed successfully"
-
-      # OPTIMIZATION: Verify SWA CLI is available (whether from cache or fresh install)
-      - name: Verify Azure Static Web Apps CLI
-        run: |
-          echo "SWA CLI Version: $(swa --version)"
-          echo "✅ Azure Static Web Apps CLI is ready"
 
       - name: Build and Deploy to Azure Static Web Apps
         env:
