@@ -504,8 +504,12 @@ public partial class Articles : IDisposable
             {
                 state.CompleteProcessing(result.Value);
 
-                // Update the image URL cache with the new enhanced image
-                _imageUrlCache[result.Key] = result.Value.ImageUrl;
+                // Only update cache if no browser-confirmed image exists for this article
+                var currentCacheUrl = _imageUrlCache.GetValueOrDefault(result.Key, string.Empty);
+                if (!_browserConfirmedImages.Contains(currentCacheUrl))
+                {
+                    _imageUrlCache[result.Key] = result.Value.ImageUrl;
+                }
 
                 successCount++;
             }
