@@ -136,12 +136,28 @@ jobs:
         with:
           node-version: '18'
 
-      # Install Azure Static Web Apps CLI (simple, reliable approach)
+      # Cache npm for faster CLI installation
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-swa-cli-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-swa-cli-
+            ${{ runner.os }}-npm-
+
+      # Install Azure Static Web Apps CLI (with caching)
       - name: Install Azure Static Web Apps CLI
         run: |
           echo "📦 Installing Azure Static Web Apps CLI..."
-          npm install -g @azure/static-web-apps-cli --silent --no-audit --no-fund
-          echo "✅ Azure Static Web Apps CLI installed successfully"
+          # Check if already installed
+          if command -v swa &> /dev/null; then
+            echo "✅ SWA CLI already available: $(swa --version)"
+          else
+            echo "Installing SWA CLI..."
+            npm install -g @azure/static-web-apps-cli --silent --no-audit --no-fund
+            echo "✅ Azure Static Web Apps CLI installed successfully"
+          fi
 
       - name: Build and Deploy to Azure Static Web Apps
         env:
