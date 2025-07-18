@@ -144,9 +144,10 @@ jobs:
       # No local.settings.json file needed as TestBase class uses AddEnvironmentVariables()
       - name: Run tests
         run: |
-          echo "🧪 Running TUnit Tests in parallel..."
+          echo "🧪 Running TUnit Tests..."
           echo "ℹ️  Tests will automatically use environment variables in CI/CD environment"
-          dotnet test --no-restore --verbosity quiet --logger trx --results-directory TestResults /p:CollectCoverage=false /p:VSTestParallel=true
+          echo "ℹ️  TUnit runs tests in parallel by default - no additional configuration needed"
+          dotnet test --no-restore --verbosity quiet --logger trx --results-directory TestResults /p:CollectCoverage=false
           if [ $? -ne 0 ]; then
             echo "❌ Tests failed! Stopping deployment."
             exit 1
