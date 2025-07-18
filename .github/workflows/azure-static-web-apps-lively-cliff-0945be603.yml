@@ -42,7 +42,7 @@ jobs:
           
       - name: Check if only documentation files changed
         id: check
-        uses: tj-actions/changed-files@v40
+        uses: tj-actions/changed-files@v46
         with:
           files: |
             README.md
@@ -104,6 +104,7 @@ jobs:
     name: Test, Build and Deploy
     env:
       # Environment variables for Azure Functions testing
+      # These will be automatically picked up by the improved TestBase class
       Values__RainDropClientId: ${{ secrets.RAINDROP_CLIENT_ID }}
       Values__RainDropClientSecret: ${{ secrets.RAINDROP_CLIENT_SECRET }}
       Values__RainDropTestToken: ${{ secrets.RAINDROP_TEST_TOKEN }}
@@ -126,9 +127,10 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      # TESTING PHASE: Run tests first to fail fast
+      # TESTING PHASE: Create test configuration for Azure Functions (local development)
       - name: Create test configuration
         run: |
+          # Create configuration for Azure Functions API (used by the actual functions)
           mkdir -p src/redmuffin.Blazor.StaticWeb.Api
           cat > src/redmuffin.Blazor.StaticWeb.Api/local.settings.json << 'EOF'
           {
@@ -142,11 +144,14 @@ jobs:
             }
           }
           EOF
+          
+          echo "✅ Configuration created. Tests will use environment variables (CI/CD) or local.settings.json (local dev)."
 
       # TESTING PHASE: Fast fail if tests don't pass
       - name: Run tests
         run: |
           echo "🧪 Running TUnit Tests..."
+          echo "ℹ️  Tests will automatically use environment variables in CI/CD environment"
           dotnet test --no-restore --verbosity normal
           if [ $? -ne 0 ]; then
             echo "❌ Tests failed! Stopping deployment."
