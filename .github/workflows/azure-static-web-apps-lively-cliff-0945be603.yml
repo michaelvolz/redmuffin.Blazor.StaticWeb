@@ -39,7 +39,7 @@ jobs:
         with:
           fetch-depth: 1  # Shallow clone for faster checkout
           show-progress: false  # Reduce log noise
-          
+
       - name: Check if only documentation files changed
         id: check
         uses: tj-actions/changed-files@v46
@@ -75,7 +75,7 @@ jobs:
               - '.editorconfig'
               - '.mcp.json'
               - '.coverletrc'
-              
+
       - name: Determine if deployment should be skipped
         id: skip_check
         run: |
@@ -85,7 +85,7 @@ jobs:
             echo "should_skip=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-          
+
           # Check if only documentation and non-deployed files changed
           if [[ "${{ steps.check.outputs.only_changed }}" == "true" ]]; then
             echo "Only documentation and non-deployed files changed, skipping deployment"
@@ -104,7 +104,10 @@ jobs:
     name: Test, Build and Deploy
     env:
       # Environment variables for Azure Functions testing
-      # These will be automatically picked up by the improved TestBase class
+      # These are automatically picked up by:
+      # - TestBase class via AddEnvironmentVariables() for tests
+      # - Settings class via Environment.GetEnvironmentVariable() for Azure Functions
+      # No local.settings.json file needed in CI/CD - optimized for faster execution
       Values__RainDropClientId: ${{ secrets.RAINDROP_CLIENT_ID }}
       Values__RainDropClientSecret: ${{ secrets.RAINDROP_CLIENT_SECRET }}
       Values__RainDropTestToken: ${{ secrets.RAINDROP_TEST_TOKEN }}
@@ -127,27 +130,9 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      # TESTING PHASE: Create test configuration for Azure Functions (local development)
-      - name: Create test configuration
-        run: |
-          # Create configuration for Azure Functions API (used by the actual functions)
-          mkdir -p src/redmuffin.Blazor.StaticWeb.Api
-          cat > src/redmuffin.Blazor.StaticWeb.Api/local.settings.json << 'EOF'
-          {
-            "IsEncrypted": false,
-            "Values": {
-              "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-              "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
-              "RainDropClientId": "${{ secrets.RAINDROP_CLIENT_ID }}",
-              "RainDropClientSecret": "${{ secrets.RAINDROP_CLIENT_SECRET }}",
-              "RainDropTestToken": "${{ secrets.RAINDROP_TEST_TOKEN }}"
-            }
-          }
-          EOF
-          
-          echo "✅ Configuration created. Tests will use environment variables (CI/CD) or local.settings.json (local dev)."
-
       # TESTING PHASE: Fast fail if tests don't pass
+      # Note: Tests automatically use environment variables set in the job environment
+      # No local.settings.json file needed as TestBase class uses AddEnvironmentVariables()
       - name: Run tests
         run: |
           echo "🧪 Running TUnit Tests..."
@@ -195,6 +180,7 @@ jobs:
           # ✅ Tests run first for fast failure (fail-fast principle)
           # ✅ No duplicate .NET setup, checkout, or dependency restoration
           # ✅ Shared environment and context between test and deploy phases
+          # ✅ No local.settings.json file creation - uses environment variables directly
 
           set -e  # Exit on any error
 
