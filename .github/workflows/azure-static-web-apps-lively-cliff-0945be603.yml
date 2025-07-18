@@ -125,7 +125,6 @@ jobs:
           dotnet-version: |
             8.0.x
             9.0.x
-          cache: true
 
       # OPTIMIZATION: Cache NuGet packages for faster subsequent builds
       - name: Cache NuGet packages
@@ -147,7 +146,7 @@ jobs:
         run: |
           echo "🧪 Running TUnit Tests..."
           echo "ℹ️  Tests will automatically use environment variables in CI/CD environment"
-          dotnet test --no-restore --no-build --verbosity minimal --logger trx --results-directory TestResults
+          dotnet test --no-restore --verbosity minimal --logger trx --results-directory TestResults /p:CollectCoverage=false
           if [ $? -ne 0 ]; then
             echo "❌ Tests failed! Stopping deployment."
             exit 1
@@ -159,8 +158,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: '.github/workflows/azure-static-web-apps-lively-cliff-0945be603.yml'
 
       # OPTIMIZATION: Cache Azure SWA CLI to avoid repeated installations
       - name: Cache Azure Static Web Apps CLI
