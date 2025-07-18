@@ -1,6 +1,6 @@
 {
   "platform": {
-    "apiRuntime": "dotnet:8.0"
+    "apiRuntime": "dotnet-isolated:8.0"
   },
   "globalHeaders": {
     "Content-Security-Policy": "default-src 'self'; connect-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src * data:; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com;",
