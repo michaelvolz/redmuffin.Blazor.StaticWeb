@@ -125,6 +125,16 @@ jobs:
           dotnet-version: |
             8.0.x
             9.0.x
+          cache: true
+
+      # OPTIMIZATION: Cache NuGet packages for faster subsequent builds
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
       # OPTIMIZATION: Single dependency restoration
       - name: Restore dependencies
@@ -137,7 +147,7 @@ jobs:
         run: |
           echo "🧪 Running TUnit Tests..."
           echo "ℹ️  Tests will automatically use environment variables in CI/CD environment"
-          dotnet test --no-restore --verbosity normal
+          dotnet test --no-restore --no-build --verbosity minimal --logger trx --results-directory TestResults
           if [ $? -ne 0 ]; then
             echo "❌ Tests failed! Stopping deployment."
             exit 1
@@ -149,9 +159,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: '.github/workflows/azure-static-web-apps-lively-cliff-0945be603.yml'
+
+      # OPTIMIZATION: Cache Azure SWA CLI to avoid repeated installations
+      - name: Cache Azure Static Web Apps CLI
+        id: cache-swa-cli
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-swa-cli-${{ hashFiles('.github/workflows/azure-static-web-apps-lively-cliff-0945be603.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-swa-cli-
 
       # OPTIMIZATION: Install Azure SWA CLI with improved error handling and caching
       - name: Install Azure Static Web Apps CLI
+        if: steps.cache-swa-cli.outputs.cache-hit != 'true'
         run: |
           # 🚀 OPTIMIZED NPM INSTALLATION
           # Suppress deprecated package warnings (they're harmless for our use case)
@@ -168,7 +191,12 @@ jobs:
 
           echo ""
           echo "✅ Azure Static Web Apps CLI installed successfully"
-          echo "Version: $(swa --version)"
+
+      # OPTIMIZATION: Verify SWA CLI is available (whether from cache or fresh install)
+      - name: Verify Azure Static Web Apps CLI
+        run: |
+          echo "SWA CLI Version: $(swa --version)"
+          echo "✅ Azure Static Web Apps CLI is ready"
 
       - name: Build and Deploy to Azure Static Web Apps
         env:
@@ -204,7 +232,8 @@ jobs:
             -c Release \
             -o ${{ env.APP_LOCATION }}/bin/Release/publish \
             --no-restore \
-            --verbosity normal
+            --no-dependencies \
+            --verbosity minimal
 
           echo ""
           echo "⚡ Building Azure Functions API..."
@@ -212,7 +241,8 @@ jobs:
             -c Release \
             -o ${{ env.API_LOCATION }}/bin/Release/publish \
             --no-restore \
-            --verbosity normal
+            --no-dependencies \
+            --verbosity minimal
 
           echo ""
           echo "🔍 Verifying Build Output Structure..."
@@ -248,14 +278,15 @@ jobs:
       - name: Verify deployment health
         run: |
           echo "🔍 Verifying deployment health..."
-          sleep 15  # Reduced wait time
+          sleep 10  # Further reduced wait time
 
           echo "Performing basic connectivity test..."
-          if curl -f -s --max-time 15 --retry 2 --retry-delay 5 \
+          if curl -f -s --max-time 10 --retry 1 --retry-delay 3 \
              "https://redmuffin.net" > /dev/null; then
             echo "✅ Deployment health check passed - site is accessible"
           else
             echo "⚠️ Site may not be fully ready yet - this is normal for new deployments"
+            echo "ℹ️  You can manually verify at: https://redmuffin.net"
           fi
 
   # JOB: Handle documentation-only changes (skipped deployment)

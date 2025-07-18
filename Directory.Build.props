@@ -10,6 +10,12 @@
     <ExcludeFromCodeCoverage>**/Migrations/**;**/obj/**;**/bin/**;**/wwwroot/**;**/node_modules/**</ExcludeFromCodeCoverage>
   </PropertyGroup>
 
+  <!-- NuGet Package Lock Files for better CI/CD caching -->
+  <PropertyGroup>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <NuGetLockFilePath>$(MSBuildProjectDirectory)\packages.lock.json</NuGetLockFilePath>
+  </PropertyGroup>
+
   <PropertyGroup>
     <Version>$(Version)</Version>
     <Authors>Michael A. Volz</Authors>
