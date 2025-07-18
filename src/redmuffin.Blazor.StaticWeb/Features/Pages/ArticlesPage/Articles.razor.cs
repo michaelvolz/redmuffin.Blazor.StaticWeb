@@ -54,6 +54,7 @@ public partial class Articles : IDisposable
 
     private readonly Dictionary<string, ArticleProcessingState> _articleStates = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> _imageUrlCache = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _browserConfirmedImages = new(StringComparer.OrdinalIgnoreCase);
     private readonly SemaphoreSlim _validationSemaphore = new(6, 6); // Limit concurrent validations
     private List<RaindropItem>? _articleItems;
 
@@ -201,6 +202,10 @@ public partial class Articles : IDisposable
         _errorMessage = null;
         _articleItems = null;
         _isLoading = true;
+
+        // Clear browser-confirmed images when fetching new articles
+        _browserConfirmedImages.Clear();
+
         StateHasChanged();
 
         try
@@ -211,33 +216,7 @@ public partial class Articles : IDisposable
                 var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 LogRawJsonResponse(Logger, json, null);
 
-                try
-                {
-                    // Use JsonTypeInfo for deserialization to avoid trimming issues
-                    _articleItems = JsonSerializer.Deserialize(json, RaindropJsonSerializerContext.Default.RaindropItemList);
-
-                    // Process OpenGraph images for articles requiring enhancement
-                    if (_articleItems is { Count: > 0 })
-                    {
-                        // Populate image URL cache for initial render
-                        await PopulateImageUrlCacheAsync().ConfigureAwait(false);
-                        StateHasChanged();
-
-                        // Don't await - process images in background
-                        _ = ProcessOpenGraphImagesAsync();
-                    }
-                }
-                catch (JsonException jsonEx)
-                {
-                    LogJsonDeserializationError(
-                        Logger,
-                        jsonEx.Path?.ToString(CultureInfo.InvariantCulture),
-                        jsonEx.LineNumber?.ToString(CultureInfo.InvariantCulture),
-                        jsonEx.BytePositionInLine?.ToString(CultureInfo.InvariantCulture),
-                        jsonEx);
-                    _errorMessage = "Error deserializing JSON: " + jsonEx.Message;
-                    return;
-                }
+                await ProcessSuccessfulResponseAsync(json).ConfigureAwait(false);
             }
             else
             {
@@ -254,6 +233,36 @@ public partial class Articles : IDisposable
         }
 
         StateHasChanged();
+    }
+
+    private async Task ProcessSuccessfulResponseAsync(string json)
+    {
+        try
+        {
+            // Use JsonTypeInfo for deserialization to avoid trimming issues
+            _articleItems = JsonSerializer.Deserialize(json, RaindropJsonSerializerContext.Default.RaindropItemList);
+
+            // Process OpenGraph images for articles requiring enhancement
+            if (_articleItems is { Count: > 0 })
+            {
+                // Populate image URL cache for initial render
+                await PopulateImageUrlCacheAsync().ConfigureAwait(false);
+                StateHasChanged();
+
+                // Don't await - process images in background
+                _ = ProcessOpenGraphImagesAsync();
+            }
+        }
+        catch (JsonException jsonEx)
+        {
+            LogJsonDeserializationError(
+                Logger,
+                jsonEx.Path?.ToString(CultureInfo.InvariantCulture),
+                jsonEx.LineNumber?.ToString(CultureInfo.InvariantCulture),
+                jsonEx.BytePositionInLine?.ToString(CultureInfo.InvariantCulture),
+                jsonEx);
+            _errorMessage = "Error deserializing JSON: " + jsonEx.Message;
+        }
     }
 
     private async Task StopShimmerAsync(string elementId)
@@ -318,9 +327,10 @@ public partial class Articles : IDisposable
             {
                 var imageUrl = GetBestImageUrl(article);
 
-                // Skip if already cached or is a placeholder
+                // Skip if already cached, is a placeholder, or is browser-confirmed
                 if (imageUrl.Contains("placeholder.com", StringComparison.OrdinalIgnoreCase) ||
-                    imageUrl.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                    imageUrl.StartsWith("data:", StringComparison.OrdinalIgnoreCase) ||
+                    _browserConfirmedImages.Contains(imageUrl))
                     continue;
 
                 var cachedValidation = await ImageValidationService.GetCachedValidationResultAsync(imageUrl).ConfigureAwait(false);
@@ -381,9 +391,12 @@ public partial class Articles : IDisposable
                 state.ValidationState = ImageValidationState.Failed;
                 state.SetFallbackReason("Image validation failed: " + validationResult.ErrorMessage);
 
-                // Update cache with placeholder if validation failed
-                _imageUrlCache[articleLink] =
-                    "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1IiBzdHJva2U9IiNkZGQiIHN0cm9rZS13aWR0aD0iMiIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM5OTkiPkltYWdlIEZhaWxlZDwvdGV4dD4KPC9zdmc+";
+                // Only update cache with placeholder if the image is not browser-confirmed
+                if (!_browserConfirmedImages.Contains(imageUrl))
+                {
+                    _imageUrlCache[articleLink] =
+                        "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1IiBzdHJva2U9IiNkZGQiIHN0cm9rZS13aWR0aD0iMiIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM5OTkiPkltYWdlIEZhaWxlZDwvdGV4dD4KPC9zdmc+";
+                }
             }
 
             // Update cache with validation results
@@ -647,6 +660,16 @@ public partial class Articles : IDisposable
             {
                 // Image loaded successfully, update validation state
                 state.ValidationState = ImageValidationState.Validated;
+
+                // Mark this image as browser-confirmed to prevent cache overwrites
+                if (article != null)
+                {
+                    var currentImageUrl = GetBestImageUrl(article);
+                    if (!string.IsNullOrEmpty(currentImageUrl) && !currentImageUrl.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _browserConfirmedImages.Add(currentImageUrl);
+                    }
+                }
             }
 
             // Stop shimmer effect
