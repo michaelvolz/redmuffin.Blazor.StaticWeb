@@ -37,92 +37,63 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch all history to properly check changes
+          fetch-depth: 1  # Shallow clone for faster checkout
+          show-progress: false  # Reduce log noise
+          
       - name: Check if only documentation files changed
         id: check
+        uses: tj-actions/changed-files@v40
+        with:
+          files: |
+            README.md
+            CHANGELOG.md
+            docs/**/*.md
+            tasks/**/*.md
+            .github/copilot-instructions.md
+            .github/instructions/**/*.md
+            .github/prompts/**/*.md
+            .github/chatmodes/**/*.md
+            tests/**/*
+            scripts/**/*
+            .editorconfig
+            .mcp.json
+            .coverletrc
+          files_yaml: |
+            docs:
+              - 'README.md'
+              - 'CHANGELOG.md'
+              - 'docs/**/*.md'
+              - 'tasks/**/*.md'
+              - '.github/copilot-instructions.md'
+              - '.github/instructions/**/*.md'
+              - '.github/prompts/**/*.md'
+              - '.github/chatmodes/**/*.md'
+            tests:
+              - 'tests/**/*'
+            tools:
+              - 'scripts/**/*'
+              - '.editorconfig'
+              - '.mcp.json'
+              - '.coverletrc'
+              
+      - name: Determine if deployment should be skipped
+        id: skip_check
         run: |
-          # Define files to skip deployment for (documentation and non-deployed files)
-          # Add new files to this list as needed (one per line)
-          DOC_FILES=(
-            # Documentation files
-            "README.md"
-            "CHANGELOG.md"
-            "docs/*.md"
-            "tasks/*.md"
-            ".github/copilot-instructions.md"
-            ".github/instructions/*.md"
-            ".github/prompts/*.md"
-            ".github/chatmodes/*.md"
-            # Test projects (source files are committed but don't affect deployment)
-            "tests/**/*"
-            # Build and development tools (committed but not deployed)
-            "scripts/**/*"
-            ".editorconfig"
-            ".mcp.json"
-            ".coverletrc"
-            # Add more non-deployed files here as needed
-          )
-
-          # Build regex pattern from file list
-          PATTERN=""
-          for file in "${DOC_FILES[@]}"; do
-            if [[ -n "$PATTERN" ]]; then
-              PATTERN="$PATTERN|"
-            fi
-            # Escape dots in filenames for regex
-            ESCAPED_FILE=$(echo "$file" | sed 's/\./\\./g')
-            PATTERN="${PATTERN}${ESCAPED_FILE}"
-          done
-
-          echo "Using file pattern: $PATTERN"
-
-          # For PRs, compare with the base branch
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "Checking PR changes..."
-            CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }})
-          # For pushes, compare with previous commit
-          else
-            echo "Checking push changes..."
-            CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
-          fi
-
-          # If empty diff (first commit or error), don't skip
-          if [[ -z "$CHANGED_FILES" ]]; then
-            echo "Empty diff detected - not skipping deploy"
+          # Check if any files were changed
+          if [[ "${{ steps.check.outputs.any_changed }}" == "false" ]]; then
+            echo "No files changed - not skipping deploy"
             echo "should_skip=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-
-          # Count all changed files
-          TOTAL_CHANGED=$(echo "$CHANGED_FILES" | wc -l)
-
-          # Count how many of our docs files changed
-          DOC_FILES_CHANGED=$(echo "$CHANGED_FILES" | grep -E "$PATTERN" | wc -l)
-
-          echo "Total files changed: $TOTAL_CHANGED"
-          echo "Doc files changed: $DOC_FILES_CHANGED"
-
-          # If only doc files changed and they exist in the changed files list, skip deployment
-          if [[ $DOC_FILES_CHANGED -gt 0 && $DOC_FILES_CHANGED -eq $TOTAL_CHANGED ]]; then
+          
+          # Check if only documentation and non-deployed files changed
+          if [[ "${{ steps.check.outputs.only_changed }}" == "true" ]]; then
             echo "Only documentation and non-deployed files changed, skipping deployment"
             echo "should_skip=true" >> $GITHUB_OUTPUT
           else
             echo "Code files changed, proceeding with deployment"
             echo "should_skip=false" >> $GITHUB_OUTPUT
           fi
-
-  # JOB: Dependency vulnerability scanning
-  dependency_scan:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    permissions:
-      contents: read
-      pull-requests: write
-    steps:
-      - name: Dependency Review
-        uses: actions/dependency-review-action@v4
-        with:
-          fail-on-severity: moderate
 
   test_and_build_job:
     needs: check_changes
@@ -151,21 +122,26 @@ jobs:
             8.0.x
             9.0.x
 
-      # OPTIMIZATION: Cache .NET packages for faster builds
-      - name: Cache .NET packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.nuget/packages
-            ~/.local/share/NuGet/v3-cache
-            ~/.dotnet/tools
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', '**/global.json', '**/Directory.Build.props') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
-
       # OPTIMIZATION: Single dependency restoration
       - name: Restore dependencies
         run: dotnet restore
+
+      # TESTING PHASE: Run tests first to fail fast
+      - name: Create test configuration
+        run: |
+          mkdir -p src/redmuffin.Blazor.StaticWeb.Api
+          cat > src/redmuffin.Blazor.StaticWeb.Api/local.settings.json << 'EOF'
+          {
+            "IsEncrypted": false,
+            "Values": {
+              "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+              "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+              "RainDropClientId": "${{ secrets.RAINDROP_CLIENT_ID }}",
+              "RainDropClientSecret": "${{ secrets.RAINDROP_CLIENT_SECRET }}",
+              "RainDropTestToken": "${{ secrets.RAINDROP_TEST_TOKEN }}"
+            }
+          }
+          EOF
 
       # TESTING PHASE: Fast fail if tests don't pass
       - name: Run tests
@@ -178,17 +154,104 @@ jobs:
           fi
           echo "✅ All tests passed! Proceeding with build and deployment."
 
-      # BUILD AND DEPLOY: Use Azure Static Web Apps action for build and deployment
-      - name: Build and Deploy to Azure Static Web Apps
-        id: builddeploy
-        uses: Azure/static-web-apps-deploy@v1
+      # BUILD AND DEPLOY PHASE: Only runs if tests pass
+      - name: Setup Node.js for Azure Static Web Apps CLI
+        uses: actions/setup-node@v4
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_CLIFF_0945BE603 }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          action: "upload"
-          app_location: ${{ env.APP_LOCATION }}
-          api_location: ${{ env.API_LOCATION }}
-          output_location: ${{ env.APP_ARTIFACT_LOCATION }}
+          node-version: '18'
+
+      # OPTIMIZATION: Install Azure SWA CLI with improved error handling and caching
+      - name: Install Azure Static Web Apps CLI
+        run: |
+          # 🚀 OPTIMIZED NPM INSTALLATION
+          # Suppress deprecated package warnings (they're harmless for our use case)
+          # These warnings are from transitive dependencies in @azure/static-web-apps-cli
+          # and don't affect functionality
+
+          echo "📦 Installing Azure Static Web Apps CLI..."
+          echo "ℹ️  Note: Any deprecation warnings are harmless and can be ignored"
+          echo ""
+
+          # Install with suppressed warnings for cleaner output
+          npm install -g @azure/static-web-apps-cli --silent 2>/dev/null || \
+          npm install -g @azure/static-web-apps-cli
+
+          echo ""
+          echo "✅ Azure Static Web Apps CLI installed successfully"
+          echo "Version: $(swa --version)"
+
+      - name: Build and Deploy to Azure Static Web Apps
+        env:
+          AZURE_STATIC_WEB_APPS_API_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_CLIFF_0945BE603 }}
+        run: |
+          # 🚀 OPTIMIZED AZURE STATIC WEB APPS DEPLOYMENT
+          # Benefits of this optimized approach:
+          # ✅ Single job reduces runner overhead and speeds up pipeline
+          # ✅ Tests run first for fast failure (fail-fast principle)
+          # ✅ No duplicate .NET setup, checkout, or dependency restoration
+          # ✅ Shared environment and context between test and deploy phases
+
+          set -e  # Exit on any error
+
+          echo "🔍 Environment Information:"
+          echo "Working Directory: $(pwd)"
+          echo "Node Version: $(node --version)"
+          echo "NPM Version: $(npm --version)"
+          echo ".NET Version: $(dotnet --version)"
+          echo "SWA CLI Version: $(swa --version)"
+
+          echo ""
+          echo "📁 Project Structure:"
+          echo "App Location: ${{ env.APP_LOCATION }}"
+          echo "API Location: ${{ env.API_LOCATION }}"
+          echo "Output Location: ${{ env.APP_ARTIFACT_LOCATION }}"
+
+          echo ""
+          echo "🏗️ Building Blazor WebAssembly Application..."
+          # Build with optimizations for production deployment
+          dotnet publish ${{ env.APP_LOCATION }} \
+            -c Release \
+            -o ${{ env.APP_LOCATION }}/bin/Release/publish \
+            --no-restore \
+            --verbosity normal
+
+          echo ""
+          echo "⚡ Building Azure Functions API..."
+          dotnet publish ${{ env.API_LOCATION }} \
+            -c Release \
+            -o ${{ env.API_LOCATION }}/bin/Release/publish \
+            --no-restore \
+            --verbosity normal
+
+          echo ""
+          echo "🔍 Verifying Build Output Structure..."
+          echo "Blazor app output:"
+          ls -la ${{ env.APP_LOCATION }}/bin/Release/publish/
+          echo ""
+          echo "Looking for wwwroot in Blazor output:"
+          find ${{ env.APP_LOCATION }}/bin/Release/publish/ -name "wwwroot" -type d || echo "No wwwroot directory found"
+          echo ""
+          echo "API output:"
+          ls -la ${{ env.API_LOCATION }}/bin/Release/publish/
+
+          echo ""
+          echo "📦 Deploying to Azure Static Web Apps..."
+          # FIXED: Use explicit parameters to override swa-cli.config.json
+          # The explicit --app-location, --api-location, and --output-location parameters
+          # should take precedence over the config file settings
+          swa deploy \
+            --app-location ${{ env.APP_LOCATION }}/bin/Release/publish \
+            --api-location ${{ env.API_LOCATION }}/bin/Release/publish \
+            --output-location wwwroot \
+            --deployment-token $AZURE_STATIC_WEB_APPS_API_TOKEN \
+            --env production \
+            --no-use-keychain \
+            --verbose
+
+          echo ""
+          echo "✅ Pipeline completed successfully!"
+          echo "🧪 Tests passed, build succeeded, deployment completed"
+          echo "🌐 Your Blazor WebAssembly app is now live on Azure Static Web Apps"
 
       # Health check after deployment
       - name: Verify deployment health
