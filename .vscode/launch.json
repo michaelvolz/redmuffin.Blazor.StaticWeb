@@ -3,53 +3,44 @@
     "configurations": [
         {
             "name": "Full Stack Development",
-            "type": "coreclr",
+            "type": "pwa-chrome",
             "request": "launch",
             "preLaunchTask": "start-full-stack",
-            "program": "${workspaceFolder}/src/redmuffin.Blazor.StaticWeb/bin/Debug/net9.0/redmuffin.Blazor.StaticWeb.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}/src/redmuffin.Blazor.StaticWeb",
-            "stopAtEntry": false,
-            "serverReadyAction": {
-                "action": "openExternally",
-                "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
-                "uriFormat": "http://localhost:4280"
-            },
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
+            "url": "http://localhost:4280",
+            "webRoot": "${workspaceFolder}/src/redmuffin.Blazor.StaticWeb",
+            "sourceMapPathOverrides": {
+                "webpack:///src/*": "${webRoot}/*"
             }
         },
         {
             "name": "Launch and Debug Standalone Blazor WebAssembly App",
-            "type": "blazorwasm",
+            "type": "pwa-chrome",
             "request": "launch",
-            "cwd": "${workspaceFolder}/src/redmuffin.Blazor.StaticWeb"
+            "url": "http://localhost:5233",
+            "webRoot": "${workspaceFolder}/src/redmuffin.Blazor.StaticWeb",
+            "preLaunchTask": "start-blazor-app"
         },
         {
-            "name": "Attach to .NET Functions",
-            "type": "coreclr",
-            "request": "attach",
-            "processId": "${command:azureFunctions.pickProcess}"
+            "name": "Debug Functions",
+            "type": "pwa-node",
+            "request": "launch",
+            "preLaunchTask": "func: host start"
         },
         {
-            "name": "Debug Functions (.NET Isolated)",
-            "type": "coreclr",
+            "name": "Debug SWA Launcher",
+            "type": "pwa-node",
             "request": "launch",
-            "program": "${workspaceFolder}/src/redmuffin.Blazor.StaticWeb.Api/bin/Debug/net8.0/redmuffin.Blazor.StaticWeb.Api.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}/src/redmuffin.Blazor.StaticWeb.Api",
-            "stopAtEntry": false,
-            "console": "internalConsole"
+            "preLaunchTask": "run swa-launcher"
         }
     ],
     "compounds": [
         {
             "name": "Blazor WebAssembly + Functions API",
-            "configurations": ["Launch and Debug Standalone Blazor WebAssembly App", "Debug Functions (.NET Isolated)"]
+            "configurations": ["Launch and Debug Standalone Blazor WebAssembly App", "Debug Functions"]
         },
         {
             "name": "Full Stack (Blazor + Functions + SWA)",
-            "configurations": ["Launch and Debug Standalone Blazor WebAssembly App", "Debug Functions (.NET Isolated)"],
+            "configurations": ["Full Stack Development"],
             "preLaunchTask": "start-full-stack"
         }
     ]

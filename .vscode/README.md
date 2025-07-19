@@ -36,11 +36,20 @@ This will:
 
 The following tasks are available:
 
-- **start-full-stack**: Starts all three components in sequence
+- **start-full-stack**: Main task that triggers the full-stack startup through a dependency chain
 - **start-blazor-app**: Starts the Blazor WebAssembly app
 - **func: host start**: Starts the Azure Functions API
-- **run swa-launcher**: Starts the SWA CLI proxy using the SwaLauncher project
+- **run swa-launcher**: Starts the SWA CLI proxy using the SwaLauncher project (depends on Blazor app and Functions API)
 - **run swa cli**: Starts the SWA CLI proxy directly
+
+### Task Dependency Chain
+
+The tasks are configured with a dependency chain to ensure proper startup order:
+
+1. **start-full-stack** depends on → **run swa-launcher**
+2. **run swa-launcher** depends on → **start-blazor-app** and **func: host start**
+
+This ensures that the SWA CLI proxy only starts after both the Blazor app and Functions API are running.
 
 ## Troubleshooting
 
@@ -56,4 +65,16 @@ If you encounter issues:
    - 7071 (Functions API)
    - 4280 (SWA CLI proxy)
 
-3. If the SWA CLI proxy fails to connect, make sure both the Blazor app and Functions API are running first.
+3. If the SWA CLI proxy fails to connect:
+   - The dependency chain should ensure proper startup order
+   - If issues persist, try running each task individually in order: first `start-blazor-app`, then `func: host start`, and finally `run swa-launcher`
+
+4. If tasks hang or don't complete properly:
+   - Stop all running tasks using the Terminal panel's trash icon
+   - Check the terminal output for each task to identify specific errors
+   - Verify that the pattern matching in the problem matchers is working correctly (look for "Now listening on:" for Blazor, "Host started" for Functions)
+
+5. To manually verify each component:
+   - Blazor app: http://localhost:5233 should show the application
+   - Functions API: http://localhost:7071/api/HelloWorld should return a response
+   - SWA CLI proxy: http://localhost:4280 should show the application with API integration
