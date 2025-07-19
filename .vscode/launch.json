@@ -2,16 +2,55 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Full Stack Development",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "start-full-stack",
+            "program": "${workspaceFolder}/src/redmuffin.Blazor.StaticWeb/bin/Debug/net9.0/redmuffin.Blazor.StaticWeb.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/redmuffin.Blazor.StaticWeb",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+                "uriFormat": "http://localhost:4280"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        },
+        {
             "name": "Launch and Debug Standalone Blazor WebAssembly App",
             "type": "blazorwasm",
             "request": "launch",
-            "cwd": "${workspaceFolder}/src/redmuffin.Blazor.Static"
+            "cwd": "${workspaceFolder}/src/redmuffin.Blazor.StaticWeb"
         },
         {
             "name": "Attach to .NET Functions",
             "type": "coreclr",
             "request": "attach",
             "processId": "${command:azureFunctions.pickProcess}"
+        },
+        {
+            "name": "Debug Functions (.NET Isolated)",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/redmuffin.Blazor.StaticWeb.Api/bin/Debug/net8.0/redmuffin.Blazor.StaticWeb.Api.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/redmuffin.Blazor.StaticWeb.Api",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Blazor WebAssembly + Functions API",
+            "configurations": ["Launch and Debug Standalone Blazor WebAssembly App", "Debug Functions (.NET Isolated)"]
+        },
+        {
+            "name": "Full Stack (Blazor + Functions + SWA)",
+            "configurations": ["Launch and Debug Standalone Blazor WebAssembly App", "Debug Functions (.NET Isolated)"],
+            "preLaunchTask": "start-full-stack"
         }
     ]
 }

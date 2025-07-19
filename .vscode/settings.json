@@ -4,5 +4,12 @@
     "azureFunctions.projectLanguage": "C#",
     "azureFunctions.projectRuntime": "~4",
     "debug.internalConsoleOptions": "neverOpen",
-    "azureFunctions.preDeployTask": "publish (functions)"
+    "azureFunctions.preDeployTask": "publish (functions)",
+    "dotnet.defaultSolution": "redmuffin.Blazor.StaticWeb.sln",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": { "source.fixAll": true },
+    "files.trimTrailingWhitespace": true,
+    "omnisharp.enableRoslynAnalyzers": true,
+    "omnisharp.enableEditorConfigSupport": true,
+    "blazorwasm.trace": "verbose"
 }

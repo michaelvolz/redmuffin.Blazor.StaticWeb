@@ -2,6 +2,63 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "start-full-stack",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "start-blazor-app",
+                "func: host start",
+                "run swa-launcher"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "start-blazor-app",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "run",
+                "--project",
+                "${workspaceFolder}/src/redmuffin.Blazor.StaticWeb/redmuffin.Blazor.StaticWeb.csproj"
+            ],
+            "problemMatcher": "$msCompile",
+            "isBackground": true
+        },
+        {
+            "label": "run swa-launcher",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "run",
+                "--project",
+                "${workspaceFolder}/src/SwaLauncher/SwaLauncher.csproj"
+            ],
+            "problemMatcher": "$msCompile",
+            "isBackground": true
+        },
+        {
+            "label": "run swa cli",
+            "command": "swa",
+            "type": "shell",
+            "args": [
+                "start",
+                "http://localhost:5233",
+                "--api-location",
+                "http://localhost:7071/api"
+            ],
+            "problemMatcher": [],
+            "isBackground": true
+        },
+        {
+            "label": "run tests",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "test",
+                "${workspaceFolder}/redmuffin.Blazor.StaticWeb.sln"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
             "label": "build",
             "command": "dotnet",
             "type": "process",
@@ -104,14 +161,15 @@
             }
         },
         {
-            "type": "func",
+            "label": "func: host start",
+            "type": "shell",
             "dependsOn": "build (functions)",
             "options": {
                 "cwd": "${workspaceFolder}/src\\redmuffin.Blazor.StaticWeb.Api/bin/Debug/net8.0"
             },
-            "command": "host start",
+            "command": "func host start",
             "isBackground": true,
-            "problemMatcher": "$func-dotnet-watch"
+            "problemMatcher": "$msCompile"
         }
     ]
 }
