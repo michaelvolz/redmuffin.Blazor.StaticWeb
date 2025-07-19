@@ -2,14 +2,12 @@ using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using redmuffin.Blazor.StaticWeb.Common.Models;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Models;
-using redmuffin.Blazor.StaticWeb.Services;
+using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage;
 
-public partial class Articles : IDisposable
+public partial class Articles
 {
     // LoggerMessage delegates for better performance
     private static readonly Action<ILogger, string, Exception?> LogRawJsonResponse =
@@ -24,45 +22,15 @@ public partial class Articles : IDisposable
         LoggerMessage.Define<string>(LogLevel.Warning, new EventId(3, nameof(LogShimmerError)),
             "Error stopping shimmer for element: {ElementId}");
 
-    private static readonly Action<ILogger, int, int, Exception?> LogImageProcessingStarted =
-        LoggerMessage.Define<int, int>(LogLevel.Information, new EventId(4, nameof(LogImageProcessingStarted)),
-            "Started processing OpenGraph images for {ProcessingCount} out of {TotalCount} articles");
-
-    private static readonly Action<ILogger, int, int, Exception?> LogImageProcessingCompleted =
-        LoggerMessage.Define<int, int>(LogLevel.Information, new EventId(5, nameof(LogImageProcessingCompleted)),
-            "Completed processing OpenGraph images: {SuccessCount} successful, {FailedCount} failed");
-
-    private static readonly Action<ILogger, Exception?> LogNoArticlesRequireProcessing =
-        LoggerMessage.Define(LogLevel.Debug, new EventId(6, nameof(LogNoArticlesRequireProcessing)),
-            "No articles require OpenGraph image processing");
-
-    private static readonly Action<ILogger, Exception> LogProcessingOpenGraphImagesError =
-        LoggerMessage.Define(LogLevel.Error, new EventId(7, nameof(LogProcessingOpenGraphImagesError)),
-            "Error processing OpenGraph images");
-
-    private static readonly Action<ILogger, string, Exception> LogImageLoadEventError =
-        LoggerMessage.Define<string>(LogLevel.Error, new EventId(8, nameof(LogImageLoadEventError)),
-            "Error handling image load event for article: {ArticleLink}");
-
-    private static readonly Action<ILogger, string, string, Exception> LogImageValidationError =
-        LoggerMessage.Define<string, string>(LogLevel.Error, new EventId(9, nameof(LogImageValidationError)),
-            "Error validating image for article: {ArticleLink}, ImageUrl: {ImageUrl}");
-
-    private static readonly Action<ILogger, string, Exception> LogCacheUpdateError =
-        LoggerMessage.Define<string>(LogLevel.Error, new EventId(10, nameof(LogCacheUpdateError)),
-            "Error updating cache with validation result for article: {ArticleLink}");
-
-    private readonly Dictionary<string, ArticleProcessingState> _articleStates = new(StringComparer.OrdinalIgnoreCase);
+    // Simple state management - only what we need
     private readonly Dictionary<string, string> _imageUrlCache = new(StringComparer.OrdinalIgnoreCase);
-    private readonly HashSet<string> _browserConfirmedImages = new(StringComparer.OrdinalIgnoreCase);
-    private readonly SemaphoreSlim _validationSemaphore = new(6, 6); // Limit concurrent validations
     private List<RaindropItem>? _articleItems;
 
     private string? _errorMessage;
     private bool _isLoading;
-    private bool _isProcessingImages;
-    private bool _isValidatingImages;
-    private int _processingCount;
+
+    [Inject]
+    private HttpClient Http { get; set; } = null!;
 
     [Inject]
     private ILogger<Articles> Logger { get; set; } = null!;
@@ -74,81 +42,16 @@ public partial class Articles : IDisposable
     private NavigationManager Navigation { get; set; } = null!;
 
     [Inject]
-    private IOpenGraphImagesService OpenGraphImagesService { get; set; } = null!;
-
-    [Inject]
-    private IImageValidationService ImageValidationService { get; set; } = null!;
+    private ISimpleImageValidationService SimpleImageValidationService { get; set; } = null!;
 
     /// <summary>
-    ///     Determines if a cover image URL is suspicious and likely needs replacement.
+    ///     Gets the default placeholder SVG for articles without images.
     /// </summary>
-    /// <param name="coverUrl">The cover image URL to evaluate</param>
-    /// <returns>True if the image is suspicious and should be replaced</returns>
-    private static bool IsCoverImageSuspicious(string coverUrl)
+    /// <returns>Base64-encoded SVG placeholder</returns>
+    private static string GetDefaultPlaceholder()
     {
-        if (string.IsNullOrEmpty(coverUrl))
-            return true;
-
-        // Check for common placeholder patterns
-        var suspiciousPatterns = new[]
-        {
-            "placeholder",
-            "default",
-            "no-image",
-            "missing",
-            "avatar",
-            "profile",
-            "blank",
-            "generic",
-            "thumb",
-            "1x1",
-            "pixel"
-        };
-
-        var lowerUrl = coverUrl.ToLowerInvariant();
-        return suspiciousPatterns.Any(pattern => lowerUrl.Contains(pattern));
-    }
-
-    /// <summary>
-    ///     Determines if an article should have its image enhanced even if it has a cover image.
-    /// </summary>
-    /// <param name="article">The article to evaluate</param>
-    /// <returns>True if the article should be enhanced</returns>
-    private static bool ShouldEnhanceImage(RaindropItem article)
-    {
-        // Always try to enhance if no cover image
-        if (string.IsNullOrEmpty(article.Cover))
-            return true;
-
-        // Enhance articles from specific domains known to have better OpenGraph images
-        var domainsToEnhance = new[]
-        {
-            "github.com",
-            "medium.com",
-            "dev.to",
-            "hashnode.com",
-            "stackoverflow.com",
-            "docs.microsoft.com",
-            "devblogs.microsoft.com"
-        };
-
-        return domainsToEnhance.Any(domain => article.Link.Contains(domain, StringComparison.OrdinalIgnoreCase));
-    }
-
-    /// <summary>
-    ///     Gets the CSS class for the article card based on its processing state.
-    /// </summary>
-    /// <param name="processingState">The processing state of the article</param>
-    /// <returns>CSS class name for the card state</returns>
-    private static string GetCardStateClass(string processingState)
-    {
-        return processingState switch
-        {
-            "processing" => "image-processing",
-            "enhanced" => "image-enhanced",
-            "failed" => "image-failed",
-            _ => string.Empty
-        };
+        return
+            "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1IiBzdHJva2U9IiNkZGQiIHN0cm9rZS13aWR0aD0iMiIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM5OTkiPk5vIEltYWdlIEF2YWlsYWJsZTwvdGV4dD4KPC9zdmc+";
     }
 
     private static string DisplayTitle(RaindropItem article)
@@ -165,24 +68,6 @@ public partial class Articles : IDisposable
                 : article.Excerpt;
     }
 
-    /// <summary>
-    ///     Updates the article state based on validation results.
-    /// </summary>
-    private static void UpdateStateFromValidationResult(ArticleProcessingState state, ImageValidationResult validationResult, bool loadSuccess)
-    {
-        if (validationResult.IsValid)
-        {
-            state.ValidationState = ImageValidationState.Validated;
-        }
-        else
-        {
-            state.ValidationState = ImageValidationState.Failed;
-
-            // If validation failed but browser load succeeded, mark as suspicious
-            if (loadSuccess) state.SetFallbackReason("Image validation failed: " + validationResult.ErrorMessage);
-        }
-    }
-
     protected override async Task OnInitializedAsync()
     {
         // Validate injected dependencies
@@ -190,11 +75,23 @@ public partial class Articles : IDisposable
         ArgumentNullException.ThrowIfNull(Logger);
         ArgumentNullException.ThrowIfNull(Js);
         ArgumentNullException.ThrowIfNull(Navigation);
-        ArgumentNullException.ThrowIfNull(OpenGraphImagesService);
-        ArgumentNullException.ThrowIfNull(ImageValidationService);
+        ArgumentNullException.ThrowIfNull(SimpleImageValidationService);
 
         // Load articles automatically when the page starts
         await FetchArticlesAsync().ConfigureAwait(false);
+    }
+
+    protected string GetFallbackReason(RaindropItem article)
+    {
+        var imageUrl = _imageUrlCache.GetValueOrDefault(article.Link, string.Empty);
+
+        if (string.IsNullOrEmpty(imageUrl))
+            return "No image available";
+
+        if (imageUrl.StartsWith("data:image/svg+xml", StringComparison.OrdinalIgnoreCase))
+            return "Image failed to load";
+
+        return "Image not available";
     }
 
     private async Task FetchArticlesAsync()
@@ -203,8 +100,8 @@ public partial class Articles : IDisposable
         _articleItems = null;
         _isLoading = true;
 
-        // Clear browser-confirmed images when fetching new articles
-        _browserConfirmedImages.Clear();
+        // Clear image cache when fetching new articles
+        _imageUrlCache.Clear();
 
         StateHasChanged();
 
@@ -242,15 +139,11 @@ public partial class Articles : IDisposable
             // Use JsonTypeInfo for deserialization to avoid trimming issues
             _articleItems = JsonSerializer.Deserialize(json, RaindropJsonSerializerContext.Default.RaindropItemList);
 
-            // Process OpenGraph images for articles requiring enhancement
+            // Populate image URL cache for initial render
             if (_articleItems is { Count: > 0 })
             {
-                // Populate image URL cache for initial render
                 await PopulateImageUrlCacheAsync().ConfigureAwait(false);
                 StateHasChanged();
-
-                // Don't await - process images in background
-                _ = ProcessOpenGraphImagesAsync();
             }
         }
         catch (JsonException jsonEx)
@@ -262,6 +155,130 @@ public partial class Articles : IDisposable
                 jsonEx.BytePositionInLine?.ToString(CultureInfo.InvariantCulture),
                 jsonEx);
             _errorMessage = "Error deserializing JSON: " + jsonEx.Message;
+        }
+    }
+
+    /// <summary>
+    ///     Populates the image URL cache for all articles using a cache-first approach.
+    ///     This method provides immediate image URLs for rendering while queuing background validation.
+    /// </summary>
+    private async Task PopulateImageUrlCacheAsync()
+    {
+        if (_articleItems == null) return;
+
+        var backgroundValidationTasks = new List<Task>();
+
+        foreach (var article in _articleItems)
+        {
+            var imageUrl = await GetImageUrlAsync(article).ConfigureAwait(false);
+            _imageUrlCache[article.Link] = imageUrl;
+
+            // If we got a placeholder or the image wasn't cached, start background validation
+            if (!string.IsNullOrEmpty(article.Cover) &&
+                (imageUrl.StartsWith("data:image/svg+xml", StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(imageUrl, article.Cover, StringComparison.Ordinal)))
+            {
+                // Fire-and-forget background validation
+                var backgroundTask = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await ValidateImageInBackgroundAsync(article).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogWarning(ex, "Background validation failed for article: {ArticleLink}", article.Link);
+                    }
+                });
+                backgroundValidationTasks.Add(backgroundTask);
+            }
+        }
+
+        // Don't wait for background tasks to complete - they'll update the UI when done
+        if (backgroundValidationTasks.Count > 0) Logger.LogDebug("Started {TaskCount} background validation tasks", backgroundValidationTasks.Count);
+    }
+
+    /// <summary>
+    ///     Gets the best available image URL for an article, checking cache first.
+    ///     This method integrates with the SimpleImageValidationService for optimal performance.
+    /// </summary>
+    /// <param name="article">The article to get the image URL for</param>
+    /// <returns>A valid image URL or a placeholder if the image is not available</returns>
+    private async Task<string> GetImageUrlAsync(RaindropItem article)
+    {
+        // If no cover image, return placeholder immediately
+        if (string.IsNullOrEmpty(article.Cover)) return await SimpleImageValidationService.GetImageUrlOrPlaceholderAsync(string.Empty).ConfigureAwait(false);
+
+        // Use the service to get the best URL (cached or validated)
+        var imageUrl = await SimpleImageValidationService.GetImageUrlOrPlaceholderAsync(article.Cover).ConfigureAwait(false);
+
+        // If the service returned a different URL (placeholder), trigger UI update
+        if (!string.Equals(imageUrl, article.Cover, StringComparison.Ordinal))
+            // Schedule a UI update on the next tick to reflect the placeholder
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(1).ConfigureAwait(false); // Small delay to avoid blocking
+                await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+            });
+
+        return imageUrl;
+    }
+
+    /// <summary>
+    ///     Gets the image URL for an article from the cache.
+    ///     This method is used by the UI for rendering.
+    /// </summary>
+    /// <param name="article">The article to get the image URL for</param>
+    /// <returns>The cached image URL or a default placeholder</returns>
+    private string GetImageUrl(RaindropItem article)
+    {
+        return _imageUrlCache.GetValueOrDefault(article.Link, GetDefaultPlaceholder());
+    }
+
+    /// <summary>
+    ///     Validates an image in the background and updates the UI when complete.
+    ///     This method runs in a fire-and-forget manner for optimal performance.
+    /// </summary>
+    /// <param name="article">The article to validate</param>
+    private async Task ValidateImageInBackgroundAsync(RaindropItem article)
+    {
+        if (string.IsNullOrEmpty(article.Cover)) return;
+
+        try
+        {
+            // Perform actual validation
+            var result = await SimpleImageValidationService.ValidateImageAsync(article.Cover).ConfigureAwait(false);
+
+            // Get the appropriate URL based on validation result
+            var imageUrl = result.IsValid
+                ? article.Cover
+                : await SimpleImageValidationService.GetImageUrlOrPlaceholderAsync(article.Cover).ConfigureAwait(false);
+
+            // Update cache only if the validation result is different from current cache
+            var currentCachedUrl = _imageUrlCache.GetValueOrDefault(article.Link, string.Empty);
+            if (!string.Equals(currentCachedUrl, imageUrl, StringComparison.Ordinal))
+            {
+                _imageUrlCache[article.Link] = imageUrl;
+
+                // Trigger UI update on the main thread
+                await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+
+                Logger.LogDebug(
+                    "Background validation completed for article: {ArticleLink}, Valid: {IsValid}",
+                    article.Link,
+                    result.IsValid);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Background validation failed for article: {ArticleLink}", article.Link);
+
+            // On error, ensure we have a placeholder
+            var placeholder = await SimpleImageValidationService.GetImageUrlOrPlaceholderAsync(string.Empty).ConfigureAwait(false);
+            _imageUrlCache[article.Link] = placeholder;
+
+            // Trigger UI update on the main thread
+            await InvokeAsync(StateHasChanged).ConfigureAwait(false);
         }
     }
 
@@ -277,628 +294,31 @@ public partial class Articles : IDisposable
         }
     }
 
-    /// <summary>
-    ///     Populates the image URL cache with the best available image URLs for all articles.
-    ///     This ensures images are displayed immediately on initial render without waiting for validation.
-    /// </summary>
-    private async Task PopulateImageUrlCacheAsync()
-    {
-        if (_articleItems == null) return;
-
-        foreach (var article in _articleItems)
-        {
-            var imageUrl = GetBestImageUrl(article);
-
-            // Check cache for validation results (no network requests)
-            var cachedValidation = await ImageValidationService.GetCachedValidationResultAsync(imageUrl).ConfigureAwait(false);
-
-            if (cachedValidation != null && !cachedValidation.IsValid &&
-                cachedValidation.ErrorMessage != null &&
-                cachedValidation.ErrorMessage.Contains("Browser blocked", StringComparison.OrdinalIgnoreCase))
-                // Use placeholder for blocked images
-                _imageUrlCache[article.Link] =
-                    "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1IiBzdHJva2U9IiNkZGQiIHN0cm9rZS13aWR0aD0iMiIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM5OTkiPkltYWdlIEJsb2NrZWQ8L3RleHQ+Cjwvc3ZnPg==";
-            else
-                // Use the best available image URL
-                _imageUrlCache[article.Link] = imageUrl;
-        }
-
-        // Start background validation for uncached images (don't await)
-        _ = ValidateImagesInBackgroundAsync();
-    }
-
-    /// <summary>
-    ///     Validates images in the background that are not cached.
-    ///     This method runs in parallel with controlled concurrency to avoid overwhelming the server.
-    /// </summary>
-    private async Task ValidateImagesInBackgroundAsync()
-    {
-        if (_articleItems == null || _isValidatingImages)
-            return;
-
-        _isValidatingImages = true;
-
-        try
-        {
-            // Collect images that need validation
-            var imagesToValidate = new List<(string ImageUrl, string ArticleLink)>();
-
-            foreach (var article in _articleItems)
-            {
-                var imageUrl = GetBestImageUrl(article);
-
-                // Skip if already cached, is a placeholder, or is browser-confirmed
-                if (imageUrl.Contains("placeholder.com", StringComparison.OrdinalIgnoreCase) ||
-                    imageUrl.StartsWith("data:", StringComparison.OrdinalIgnoreCase) ||
-                    _browserConfirmedImages.Contains(imageUrl))
-                    continue;
-
-                var cachedValidation = await ImageValidationService.GetCachedValidationResultAsync(imageUrl).ConfigureAwait(false);
-                if (cachedValidation == null) imagesToValidate.Add((imageUrl, article.Link));
-            }
-
-            if (imagesToValidate.Count == 0)
-                return;
-
-            // Process validations in parallel with controlled concurrency
-            var validationTasks = imagesToValidate.Select(async item =>
-            {
-                await _validationSemaphore.WaitAsync().ConfigureAwait(false);
-                try
-                {
-                    await ValidateImageWithProgressiveUpdateAsync(item.ImageUrl, item.ArticleLink).ConfigureAwait(false);
-                }
-                finally
-                {
-                    _validationSemaphore.Release();
-                }
-            });
-
-            await Task.WhenAll(validationTasks).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            // Log the error but don't fail the entire process
-            LogProcessingOpenGraphImagesError(Logger, ex);
-        }
-        finally
-        {
-            _isValidatingImages = false;
-        }
-    }
-
-    /// <summary>
-    ///     Validates a single image and updates the UI progressively.
-    /// </summary>
-    private async Task ValidateImageWithProgressiveUpdateAsync(string imageUrl, string articleLink)
-    {
-        try
-        {
-            var state = GetOrCreateArticleState(articleLink);
-            state.ValidationState = ImageValidationState.Validating;
-
-            // Trigger UI update to show validation in progress
-            StateHasChanged();
-
-            var validationResult = await ImageValidationService.ValidateImageWithCacheAsync(imageUrl, 60, CancellationToken.None).ConfigureAwait(false);
-
-            if (validationResult.IsValid)
-            {
-                state.ValidationState = ImageValidationState.Validated;
-            }
-            else
-            {
-                state.ValidationState = ImageValidationState.Failed;
-                state.SetFallbackReason("Image validation failed: " + validationResult.ErrorMessage);
-
-                // Only update cache with placeholder if the image is not browser-confirmed
-                if (!_browserConfirmedImages.Contains(imageUrl))
-                {
-                    _imageUrlCache[articleLink] =
-                        "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1IiBzdHJva2U9IiNkZGQiIHN0cm9rZS13aWR0aD0iMiIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM5OTkiPkltYWdlIEZhaWxlZDwvdGV4dD4KPC9zdmc+";
-                }
-            }
-
-            // Update cache with validation results
-            await UpdateCacheWithValidationResultAsync(articleLink, validationResult).ConfigureAwait(false);
-
-            // Trigger UI update to reflect validation results
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            LogImageValidationError(Logger, articleLink, imageUrl, ex);
-
-            var state = GetOrCreateArticleState(articleLink);
-            state.ValidationState = ImageValidationState.Failed;
-            state.SetFallbackReason("Validation error: " + ex.Message);
-
-            StateHasChanged();
-        }
-    }
-
-    /// <summary>
-    ///     Processes OpenGraph images for articles that require image enhancement.
-    ///     This method identifies articles that need better images and processes them in batches.
-    /// </summary>
-    private async Task ProcessOpenGraphImagesAsync()
-    {
-        if (_articleItems == null || _isProcessingImages)
-            return;
-
-        _isProcessingImages = true;
-
-        try
-        {
-            // Identify articles requiring image processing
-            var articlesRequiringProcessing = await IdentifyArticlesRequiringImageProcessingAsync(_articleItems).ConfigureAwait(false);
-
-            if (!(articlesRequiringProcessing.Count > 0))
-            {
-                LogNoArticlesRequireProcessing(Logger, null);
-                return;
-            }
-
-            // Initialize tracking and states
-            InitializeProcessingTracking(articlesRequiringProcessing.Count, _articleItems.Count);
-            InitializeArticleStates(articlesRequiringProcessing);
-            StateHasChanged();
-
-            // Process images
-            var urlsToProcess = articlesRequiringProcessing.Select(a => a.Link).ToList();
-            var results = await OpenGraphImagesService.GetImagesAsync(urlsToProcess).ConfigureAwait(false);
-
-            // Process results
-            var (successCount, failedCount) = ProcessImageResults(results);
-
-            LogImageProcessingCompleted(Logger, successCount, failedCount, null);
-
-            // Final UI update
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            HandleProcessingError(ex);
-        }
-        finally
-        {
-            _isProcessingImages = false;
-        }
-    }
-
-    /// <summary>
-    ///     Initializes progress tracking for image processing.
-    /// </summary>
-    private void InitializeProcessingTracking(int processingCount, int totalCount)
-    {
-        _processingCount = processingCount;
-        LogImageProcessingStarted(Logger, processingCount, totalCount, null);
-    }
-
-    /// <summary>
-    ///     Initializes article processing states.
-    /// </summary>
-    private void InitializeArticleStates(List<RaindropItem> articles)
-    {
-        foreach (var article in articles)
-        {
-            var state = GetOrCreateArticleState(article.Link);
-            state.StartProcessing();
-        }
-    }
-
-    /// <summary>
-    ///     Processes image results and updates article states.
-    /// </summary>
-    private (int SuccessCount, int FailedCount) ProcessImageResults(IDictionary<string, CachedImageData?> results)
-    {
-        var successCount = 0;
-        var failedCount = 0;
-        var processedCount = 0;
-
-        foreach (var result in results)
-        {
-            var state = GetOrCreateArticleState(result.Key);
-
-            if (result.Value?.IsValidated == true && !string.IsNullOrEmpty(result.Value.ImageUrl))
-            {
-                state.CompleteProcessing(result.Value);
-
-                // Only update cache if no browser-confirmed image exists for this article
-                var currentCacheUrl = _imageUrlCache.GetValueOrDefault(result.Key, string.Empty);
-                if (!_browserConfirmedImages.Contains(currentCacheUrl))
-                {
-                    _imageUrlCache[result.Key] = result.Value.ImageUrl;
-                }
-
-                successCount++;
-            }
-            else
-            {
-                var errorMessage = "Unknown processing error";
-                var fallbackReason = DetermineFallbackReason(result.Key, result.Value);
-                state.FailProcessing(errorMessage, fallbackReason);
-                failedCount++;
-            }
-
-            // Update progress
-            processedCount++;
-
-            // Trigger incremental UI updates for smooth progress
-            if (processedCount % 2 == 0 || processedCount == _processingCount) StateHasChanged();
-        }
-
-        return (successCount, failedCount);
-    }
-
-    /// <summary>
-    ///     Handles processing errors by updating states and UI.
-    /// </summary>
-    private void HandleProcessingError(Exception ex)
-    {
-        LogProcessingOpenGraphImagesError(Logger, ex);
-
-        // Update all processing states to failed
-        foreach (var state in _articleStates.Values.Where(state => state.ProcessingPhase == ProcessingPhase.Processing))
-            state.FailProcessing(ex.Message, "Processing error");
-
-        StateHasChanged();
-    }
-
-    /// <summary>
-    ///     Identifies articles that require OpenGraph image processing.
-    ///     Articles need processing if they have broken/missing cover images or can benefit from enhancement.
-    /// </summary>
-    /// <param name="articles">List of articles to evaluate</param>
-    /// <returns>List of articles that need image processing</returns>
-    private async Task<List<RaindropItem>> IdentifyArticlesRequiringImageProcessingAsync(List<RaindropItem> articles)
-    {
-        var articlesRequiringProcessing = new List<RaindropItem>();
-
-        foreach (var article in articles)
-        {
-            // Skip if already processed or processing
-            if (_articleStates.TryGetValue(article.Link, out var state) &&
-                state.ProcessingPhase != ProcessingPhase.None)
-                continue;
-
-            // Check if already cached in local storage to avoid unnecessary reprocessing
-            var isCached = await OpenGraphImagesService.IsImageCachedAsync(article.Link).ConfigureAwait(false);
-            if (isCached)
-            {
-                // Update state to reflect that we have cached data
-                var cachedState = GetOrCreateArticleState(article.Link);
-                cachedState.ProcessingPhase = ProcessingPhase.Completed;
-                continue;
-            }
-
-            // Process if:
-            // 1. No cover image exists
-            // 2. Cover image is likely broken (generic placeholder patterns)
-            // 3. Cover image is from a CDN known to have issues
-            var needsProcessing = string.IsNullOrEmpty(article.Cover) ||
-                                  IsCoverImageSuspicious(article.Cover) ||
-                                  ShouldEnhanceImage(article);
-
-            if (needsProcessing) articlesRequiringProcessing.Add(article);
-        }
-
-        return articlesRequiringProcessing;
-    }
-
-    /// <summary>
-    ///     Gets the best available image URL for an article, prioritizing cached enhanced images.
-    ///     This method uses only cached data and doesn't trigger network requests.
-    /// </summary>
-    /// <param name="article">The article to get the image for</param>
-    /// <returns>The best available image URL</returns>
-    private string GetBestImageUrl(RaindropItem article)
-    {
-        // First, try to get enhanced image from state
-        if (_articleStates.TryGetValue(article.Link, out var state) &&
-            state.EnhancedImage?.IsValidated == true &&
-            !string.IsNullOrEmpty(state.EnhancedImage.ImageUrl))
-            return state.EnhancedImage.ImageUrl;
-
-        // Fallback to original cover image if available
-        return !string.IsNullOrEmpty(article.Cover)
-            ? article.Cover
-            : "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1IiBzdHJva2U9IiNkZGQiIHN0cm9rZS13aWR0aD0iMiIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM5OTkiPk5vIEltYWdlIEF2YWlsYWJsZTwvdGV4dD4KPC9zdmc+";
-    }
-
-    /// <summary>
-    ///     Gets the processing state for an article's image.
-    /// </summary>
-    /// <param name="article">The article to get the state for</param>
-    /// <returns>Processing state: "processing", "enhanced", "failed", or "none"</returns>
-    private string GetImageProcessingState(RaindropItem article)
-    {
-        if (_articleStates.TryGetValue(article.Link, out var state))
-            return state.ProcessingPhase switch
-            {
-                ProcessingPhase.Processing => "processing",
-                ProcessingPhase.Completed => "enhanced",
-                ProcessingPhase.Failed => "failed",
-                _ => "none"
-            };
-        return "none";
-    }
-
-    /// <summary>
-    ///     Handles image load/error events and updates load states for fallback placeholder management.
-    ///     This method integrates image validation and cache updates with UI rendering.
-    /// </summary>
-    /// <param name="elementId">The ID of the shimmer element</param>
-    /// <param name="articleLink">The link of the article</param>
-    /// <param name="loadSuccess">Whether the image loaded successfully</param>
     private async Task HandleImageLoadAsync(string elementId, string articleLink, bool loadSuccess)
     {
         try
         {
-            // Get or create article state
-            var state = GetOrCreateArticleState(articleLink);
-
-            // Update image load state
-            state.SetImageLoadState(loadSuccess ? ImageLoadState.Loaded : ImageLoadState.Failed);
-
-            // Get the current image URL being displayed
-            var article = _articleItems?.FirstOrDefault(a => string.Equals(a.Link, articleLink, StringComparison.Ordinal));
-            if (article != null)
-            {
-                var currentImageUrl = GetBestImageUrl(article);
-
-                // Validate the image in the background and update cache
-                _ = ValidateAndUpdateImageCacheAsync(currentImageUrl, articleLink, loadSuccess);
-            }
-
-            // Handle load failure scenarios
             if (!loadSuccess)
             {
-                var fallbackReason = DetermineFallbackReason(articleLink);
-                state.SetFallbackReason(fallbackReason);
-
-                // Update validation state to reflect failure
-                state.ValidationState = ImageValidationState.Failed;
-            }
-            else
-            {
-                // Image loaded successfully, update validation state
-                state.ValidationState = ImageValidationState.Validated;
-
-                // Mark this image as browser-confirmed to prevent cache overwrites
-                if (article != null)
-                {
-                    var currentImageUrl = GetBestImageUrl(article);
-                    if (!string.IsNullOrEmpty(currentImageUrl) && !currentImageUrl.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
-                    {
-                        _browserConfirmedImages.Add(currentImageUrl);
-                    }
-                }
+                // Replace with placeholder if image failed to load
+                var placeholder = await SimpleImageValidationService.GetImageUrlOrPlaceholderAsync(_imageUrlCache.GetValueOrDefault(articleLink, string.Empty))
+                    .ConfigureAwait(false);
+                _imageUrlCache[articleLink] = placeholder;
+                StateHasChanged();
             }
 
             // Stop shimmer effect
             await StopShimmerAsync(elementId).ConfigureAwait(false);
-
-            // Update UI to reflect new state
-            StateHasChanged();
         }
         catch (Exception ex)
         {
-            LogImageLoadEventError(Logger, articleLink, ex);
+            Logger.LogWarning(ex, "Error handling image load for article: {ArticleLink}", articleLink);
         }
     }
 
-    /// <summary>
-    ///     Validates an image URL and updates the cache with validation results.
-    ///     This method runs in the background to maintain UI responsiveness.
-    /// </summary>
-    /// <param name="imageUrl">The image URL to validate</param>
-    /// <param name="articleLink">The article link associated with the image</param>
-    /// <param name="loadSuccess">Whether the image loaded successfully in the browser</param>
-    private async Task ValidateAndUpdateImageCacheAsync(string imageUrl, string articleLink, bool loadSuccess)
-    {
-        try
-        {
-            // Skip validation for placeholder URLs
-            if (imageUrl.Contains("placeholder.com", StringComparison.OrdinalIgnoreCase)) return;
-
-            var state = GetOrCreateArticleState(articleLink);
-
-            // Handle browser load failure
-            if (!loadSuccess)
-            {
-                await HandleBrowserLoadFailureAsync(imageUrl, state).ConfigureAwait(false);
-                return;
-            }
-
-            // Perform validation and update state
-            await PerformImageValidationAsync(imageUrl, articleLink, state, loadSuccess).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            HandleValidationError(ex, articleLink, imageUrl);
-        }
-    }
-
-    /// <summary>
-    ///     Handles browser load failure by recording the image as blocked.
-    /// </summary>
-    private async Task HandleBrowserLoadFailureAsync(string imageUrl, ArticleProcessingState state)
-    {
-        // Record this as a browser-blocked image to prevent future HTTP validation attempts
-        await ImageValidationService.RecordBrowserBlockedImageAsync(imageUrl, "Browser load failed (likely CORS/SameSite blocking)").ConfigureAwait(false);
-
-        state.ValidationState = ImageValidationState.Failed;
-        state.SetFallbackReason("Browser blocked image (CORS/SameSite policy)");
-
-        StateHasChanged();
-    }
-
-    /// <summary>
-    ///     Performs HTTP validation and updates the article state.
-    /// </summary>
-    private async Task PerformImageValidationAsync(string imageUrl, string articleLink, ArticleProcessingState state, bool loadSuccess)
-    {
-        // Update validation state to indicate validation is in progress
-        state.ValidationState = ImageValidationState.Validating;
-
-        // Perform HTTP HEAD validation with caching
-        var validationResult = await ImageValidationService.ValidateImageWithCacheAsync(imageUrl, 60, CancellationToken.None).ConfigureAwait(false);
-
-        // Update article state based on validation result
-        UpdateStateFromValidationResult(state, validationResult, loadSuccess);
-
-        await UpdateCacheWithValidationResultAsync(articleLink, validationResult).ConfigureAwait(false);
-
-        // Trigger UI update to reflect validation state changes
-        StateHasChanged();
-    }
-
-    /// <summary>
-    ///     Handles validation errors by updating the article state.
-    /// </summary>
-    private void HandleValidationError(Exception ex, string articleLink, string imageUrl)
-    {
-        LogImageValidationError(Logger, articleLink, imageUrl, ex);
-
-        // Update state to reflect validation error
-        var state = GetOrCreateArticleState(articleLink);
-        state.ValidationState = ImageValidationState.Failed;
-        state.SetFallbackReason("Validation error: " + ex.Message);
-
-        StateHasChanged();
-    }
-
-    /// <summary>
-    ///     Updates the cache with validation results to improve future performance.
-    /// </summary>
-    /// <param name="articleLink">The article link associated with the image</param>
-    /// <param name="validationResult">The validation result</param>
-    private async Task UpdateCacheWithValidationResultAsync(string articleLink, ImageValidationResult validationResult)
-    {
-        try
-        {
-            // Check if this is an enhanced image from OpenGraph processing
-            if (_articleStates.TryGetValue(articleLink, out var state) && state.EnhancedImage != null)
-            {
-                // Update the cached image data with validation results
-                state.EnhancedImage.IsValidated = validationResult.IsValid;
-                state.EnhancedImage.LastAccessedAt = DateTime.UtcNow;
-                state.EnhancedImage.AccessCount++;
-
-                // Update the cache through the OpenGraph service
-                if (validationResult.IsValid)
-                    await OpenGraphImagesService.UpdateCacheEntryAsync(articleLink, state.EnhancedImage).ConfigureAwait(false);
-                else
-                    // If validation failed, consider invalidating the cache entry
-                    await OpenGraphImagesService.InvalidateCacheAsync(articleLink).ConfigureAwait(false);
-            }
-
-            // The ImageValidationService handles its own cache management
-            // No additional action needed as ValidateImageWithCacheAsync already caches the result
-        }
-        catch (Exception ex)
-        {
-            LogCacheUpdateError(Logger, articleLink, ex);
-        }
-    }
-
-    /// <summary>
-    ///     Determines if an article should show a fallback placeholder.
-    /// </summary>
-    /// <param name="article">The article to check</param>
-    /// <returns>True if fallback placeholder should be shown</returns>
     private bool HasFallbackPlaceholder(RaindropItem article)
     {
-        if (_articleStates.TryGetValue(article.Link, out var state))
-        {
-            // Show fallback if image failed to load
-            if (state.ImageLoadState == ImageLoadState.Failed) return true;
-
-            // Show fallback if processing failed and no original cover image
-            if (state.ProcessingPhase == ProcessingPhase.Failed &&
-                string.IsNullOrEmpty(article.Cover))
-                return true;
-        }
-
-        // Show fallback if using placeholder URL
         var imageUrl = _imageUrlCache.GetValueOrDefault(article.Link, string.Empty);
-
-        return string.IsNullOrEmpty(imageUrl) || imageUrl.Contains("placeholder.com", StringComparison.OrdinalIgnoreCase);
-    }
-
-    /// <summary>
-    ///     Gets the fallback reason message for an article.
-    /// </summary>
-    /// <param name="article">The article to get the reason for</param>
-    /// <returns>Fallback reason message</returns>
-    private string GetFallbackReason(RaindropItem article)
-    {
-        // Return cached reason if available from state
-        if (_articleStates.TryGetValue(article.Link, out var state) &&
-            !string.IsNullOrEmpty(state.FallbackReason))
-            return state.FallbackReason;
-
-        // Determine reason based on current state
-        var reason = DetermineFallbackReason(article.Link);
-        state?.SetFallbackReason(reason);
-        return reason;
-    }
-
-    /// <summary>
-    ///     Gets or creates an article processing state for the given article link.
-    /// </summary>
-    /// <param name="articleLink">The article link to get or create state for</param>
-    /// <returns>The article processing state</returns>
-    private ArticleProcessingState GetOrCreateArticleState(string articleLink)
-    {
-        if (_articleStates.TryGetValue(articleLink, out var state)) return state;
-
-        state = new ArticleProcessingState();
-        _articleStates[articleLink] = state;
-
-        return state;
-    }
-
-    /// <summary>
-    ///     Determines the fallback reason for an article based on its current state.
-    /// </summary>
-    /// <param name="articleLink">The article link</param>
-    /// <param name="cachedImageData">The cached image data if available</param>
-    /// <returns>Fallback reason message</returns>
-    private string DetermineFallbackReason(string articleLink, CachedImageData? cachedImageData = null)
-    {
-        // If we have cached data, use it to determine the reason
-        if (cachedImageData != null)
-        {
-            if (!cachedImageData.IsValidated) return "Image not verified";
-
-            if (string.IsNullOrEmpty(cachedImageData.ImageUrl)) return "No image found";
-        }
-
-        // Check article state for more specific reasons
-        if (_articleStates.TryGetValue(articleLink, out var articleState))
-        {
-            if (articleState.ProcessingPhase == ProcessingPhase.Failed) return articleState.ErrorMessage ?? "Enhancement failed";
-
-            if (articleState.ImageLoadState == ImageLoadState.Failed) return "Image unavailable";
-        }
-
-        // Find the article to check original cover
-        var article = _articleItems?.FirstOrDefault(a => string.Equals(a.Link, articleLink, StringComparison.Ordinal));
-        if (article == null) return "Image not available";
-
-        if (string.IsNullOrEmpty(article.Cover)) return "No image available";
-
-        return IsCoverImageSuspicious(article.Cover) ? "Placeholder image" : "Image not available";
-    }
-
-    /// <summary>
-    ///     Disposes of resources used by the component.
-    /// </summary>
-    public void Dispose()
-    {
-        _validationSemaphore?.Dispose();
-        GC.SuppressFinalize(this);
+        return string.IsNullOrEmpty(imageUrl) || imageUrl.StartsWith("data:image/svg+xml", StringComparison.OrdinalIgnoreCase);
     }
 }

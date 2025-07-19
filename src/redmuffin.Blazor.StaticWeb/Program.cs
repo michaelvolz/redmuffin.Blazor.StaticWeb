@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using redmuffin.Blazor.StaticWeb;
 using redmuffin.Blazor.StaticWeb.Core.Services;
+using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Services;
 using redmuffin.Blazor.StaticWeb.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -28,5 +29,6 @@ builder.Services.AddScoped<IWarmupService, WarmupService>();
 builder.Services.AddScoped<IPerformanceMetricsService, PerformanceMetricsService>();
 builder.Services.AddScoped<IImageValidationService, ImageValidationService>();
 builder.Services.AddScoped<IOpenGraphImagesService, OpenGraphImagesService>();
+builder.Services.AddScoped<ISimpleImageValidationService, SimpleImageValidationService>();
 
 await builder.Build().RunAsync().ConfigureAwait(false);

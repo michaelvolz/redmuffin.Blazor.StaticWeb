@@ -1,5 +1,4 @@
 @page "/articles"
-@inject HttpClient Http
 
 <PageTitle>Programming & AI Article Hub</PageTitle>
 
@@ -15,14 +14,13 @@ else if (_articleItems != null && _articleItems.Any())
     <div class="masonry">
         @foreach (var article in _articleItems)
         {
-            var processingState = GetImageProcessingState(article);
-            var imageUrl = _imageUrlCache.ContainsKey(article.Link) ? _imageUrlCache[article.Link] : "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1IiBzdHJva2U9IiNkZGQiIHN0cm9rZS13aWR0aD0iMiIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM5OTkiPkltYWdlIExvYWRpbmcuLi48L3RleHQ+Cjwvc3ZnPg==";
+            var imageUrl = GetImageUrl(article);
 
-            <div class="card article-card @GetCardStateClass(processingState)">
+            <div class="card article-card">
                 <div class="card-divider">
                     <h5>@DisplayTitle(article)</h5>
                 </div>
-                <div class="shimmer-placeholder @(processingState == "processing" ? "processing" : "")" id="shimmer-@article.Id">
+                <div class="shimmer-placeholder" id="shimmer-@article.Id">
                     <img src="@imageUrl" alt="Article Cover" @onload="@(() => HandleImageLoadAsync($"shimmer-{article.Id}", article.Link, true))" @onerror="@(() => HandleImageLoadAsync($"shimmer-{article.Id}", article.Link, false))"/>
                     @if (HasFallbackPlaceholder(article))
                     {
