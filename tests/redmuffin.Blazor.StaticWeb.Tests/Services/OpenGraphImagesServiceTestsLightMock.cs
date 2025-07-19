@@ -1,27 +1,37 @@
+using LightMock;
+using LightMock.Generator;
 using Microsoft.Extensions.Logging;
-using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 using redmuffin.Blazor.StaticWeb.Common.Enums;
 using redmuffin.Blazor.StaticWeb.Common.Models;
 using redmuffin.Blazor.StaticWeb.Services;
 
-#pragma warning disable VSTHRD200
-#pragma warning disable CA2000 // Dispose objects before losing scope - False positive with NSubstitute
+// ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Services;
 
 /// <summary>
-///     Unit tests for OpenGraphImagesService with focus on null value handling and caching logic.
+///     Unit tests for OpenGraphImagesService using LightMock.Generator.
+///     Migrated from NSubstitute to standardize mocking framework.
+///     Focus on null value handling and caching logic.
 /// </summary>
-public class OpenGraphImagesServiceTests : IDisposable
+public class OpenGraphImagesServiceTestsLightMock : IDisposable
 {
-    public OpenGraphImagesServiceTests()
+    public OpenGraphImagesServiceTestsLightMock()
     {
+        _cacheServiceMock = new Mock<ICacheService>();
+        _httpClientFactoryMock = new Mock<IHttpClientFactory>();
+        _imageValidationServiceMock = new Mock<IImageValidationService>();
+        _loggerMock = new Mock<ILogger<OpenGraphImagesService>>();
+
         // Setup default HttpClient mock
         _httpClient = new HttpClient();
-        _httpClientFactory.CreateClient().Returns(_ => _httpClient);
+        _httpClientFactoryMock.Arrange(f => f.CreateClient()).Returns(() => _httpClient);
 
-        _service = new OpenGraphImagesService(_httpClientFactory, _cacheService, _imageValidationService, _logger);
+        _service = new OpenGraphImagesService(
+            _httpClientFactoryMock.Object,
+            _cacheServiceMock.Object,
+            _imageValidationServiceMock.Object,
+            _loggerMock.Object);
     }
 
     public void Dispose()
@@ -30,11 +40,11 @@ public class OpenGraphImagesServiceTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    private readonly ICacheService _cacheService = Substitute.For<ICacheService>();
+    private readonly Mock<ICacheService> _cacheServiceMock;
+    private readonly Mock<IHttpClientFactory> _httpClientFactoryMock;
+    private readonly Mock<IImageValidationService> _imageValidationServiceMock;
+    private readonly Mock<ILogger<OpenGraphImagesService>> _loggerMock;
     private readonly HttpClient _httpClient;
-    private readonly IHttpClientFactory _httpClientFactory = Substitute.For<IHttpClientFactory>();
-    private readonly IImageValidationService _imageValidationService = Substitute.For<IImageValidationService>();
-    private readonly ILogger<OpenGraphImagesService> _logger = Substitute.For<ILogger<OpenGraphImagesService>>();
     private readonly OpenGraphImagesService _service;
 
     /// <summary>
@@ -45,14 +55,14 @@ public class OpenGraphImagesServiceTests : IDisposable
     {
         // Arrange
         var expectedCount = 5;
-        _cacheService.CleanupExpiredItemsAsync("opengraph_images").Returns(expectedCount);
+        _cacheServiceMock.Arrange(f => f.CleanupExpiredItemsAsync("opengraph_images", CancellationToken.None)).Returns(Task.FromResult(expectedCount));
 
         // Act
         var result = await _service.CleanupExpiredEntriesAsync().ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsEqualTo(expectedCount);
-        await _cacheService.Received(1).CleanupExpiredItemsAsync("opengraph_images").ConfigureAwait(false);
+        _cacheServiceMock.Assert(f => f.CleanupExpiredItemsAsync("opengraph_images", CancellationToken.None));
     }
 
     /// <summary>
@@ -62,14 +72,14 @@ public class OpenGraphImagesServiceTests : IDisposable
     public async Task ClearCacheAsync_CallsCacheService()
     {
         // Arrange
-        _cacheService.ClearNamespaceAsync("opengraph_images").Returns(Task.CompletedTask);
+        _cacheServiceMock.Arrange(f => f.ClearNamespaceAsync("opengraph_images", CancellationToken.None)).Returns(Task.CompletedTask);
 
         // Act
         var result = await _service.ClearCacheAsync().ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsEqualTo(0);
-        await _cacheService.Received(1).ClearNamespaceAsync("opengraph_images").ConfigureAwait(false);
+        _cacheServiceMock.Assert(f => f.ClearNamespaceAsync("opengraph_images", CancellationToken.None));
     }
 
     /// <summary>
@@ -92,8 +102,8 @@ public class OpenGraphImagesServiceTests : IDisposable
             AverageAccessCount = 0.0
         };
 
-        _cacheService.GetNamespaceStatsAsync("opengraph_images")
-            .Returns(emptyCacheStats);
+        _cacheServiceMock.Arrange(f => f.GetNamespaceStatsAsync("opengraph_images", CancellationToken.None))
+            .Returns(Task.FromResult(emptyCacheStats));
 
         // Act: Call the method that handles null DateTime values
         var result = await _service.GetCacheStatsAsync().ConfigureAwait(false);
@@ -136,8 +146,8 @@ public class OpenGraphImagesServiceTests : IDisposable
             ExpiresAt = DateTime.UtcNow.AddHours(1)
         };
 
-        _cacheService.GetItemAsync<CachedImageData>("opengraph_images", articleUrl)
-            .Returns(cachedData);
+        _cacheServiceMock.Arrange(f => f.GetItemAsync<CachedImageData>("opengraph_images", articleUrl, CancellationToken.None))
+            .Returns(Task.FromResult<CachedImageData?>(cachedData));
 
         // Act
         var result = await _service.GetImageAsync(articleUrl).ConfigureAwait(false);
@@ -193,8 +203,8 @@ public class OpenGraphImagesServiceTests : IDisposable
         var urls = new List<string> { "https://example.com/article1", "", "https://example.com/article2", "   ", "https://example.com/article1" };
 
         // Mock cache returns null for all URLs (cache miss)
-        _cacheService.GetItemAsync<CachedImageData>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns((CachedImageData?)null);
+        _cacheServiceMock.Arrange(f => f.GetItemAsync<CachedImageData>("opengraph_images", The<string>.IsAnyValue, CancellationToken.None))
+            .Returns(Task.FromResult<CachedImageData?>(null));
 
         // Act
         var result = await _service.GetImagesAsync(urls).ConfigureAwait(false);
@@ -214,8 +224,8 @@ public class OpenGraphImagesServiceTests : IDisposable
     {
         // Arrange
         var articleUrl = "https://example.com/article";
-        _cacheService.RemoveItemAsync("opengraph_images", articleUrl)
-            .Throws(new InvalidOperationException("Cache error"));
+        _cacheServiceMock.Arrange(f => f.RemoveItemAsync("opengraph_images", articleUrl, CancellationToken.None))
+            .Returns(() => Task.FromException(new InvalidOperationException("Cache error")));
 
         // Act
         var result = await _service.InvalidateCacheAsync(articleUrl).ConfigureAwait(false);
@@ -248,14 +258,14 @@ public class OpenGraphImagesServiceTests : IDisposable
     {
         // Arrange
         var articleUrl = "https://example.com/article";
-        _cacheService.RemoveItemAsync("opengraph_images", articleUrl).Returns(Task.CompletedTask);
+        _cacheServiceMock.Arrange(f => f.RemoveItemAsync("opengraph_images", articleUrl, CancellationToken.None)).Returns(Task.CompletedTask);
 
         // Act
         var result = await _service.InvalidateCacheAsync(articleUrl).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsTrue();
-        await _cacheService.Received(1).RemoveItemAsync("opengraph_images", articleUrl).ConfigureAwait(false);
+        _cacheServiceMock.Assert(f => f.RemoveItemAsync("opengraph_images", articleUrl, CancellationToken.None));
     }
 
     /// <summary>
@@ -317,7 +327,7 @@ public class OpenGraphImagesServiceTests : IDisposable
             ExpiresAt = DateTime.UtcNow.AddHours(1)
         };
 
-        _cacheService.SetItemAsync("opengraph_images", articleUrl, imageData, Arg.Any<int>())
+        _cacheServiceMock.Arrange(f => f.SetItemAsync("opengraph_images", articleUrl, imageData, The<int?>.IsAnyValue, CancellationToken.None))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -325,6 +335,6 @@ public class OpenGraphImagesServiceTests : IDisposable
 
         // Assert
         await Assert.That(result).IsTrue();
-        await _cacheService.Received(1).SetItemAsync("opengraph_images", articleUrl, imageData, Arg.Any<int>()).ConfigureAwait(false);
+        _cacheServiceMock.Assert(f => f.SetItemAsync("opengraph_images", articleUrl, imageData, The<int?>.IsAnyValue, CancellationToken.None));
     }
 }

@@ -1,16 +1,31 @@
+using LightMock;
+using LightMock.Generator;
 using Microsoft.Extensions.Logging;
-using NSubstitute;
 using redmuffin.Blazor.StaticWeb.Common.Models;
 using redmuffin.Blazor.StaticWeb.Services;
 using redmuffin.Blazor.StaticWeb.Tests.Helpers;
 
+// ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
+
 namespace redmuffin.Blazor.StaticWeb.Tests.Services;
 
-public class ImageValidationServiceTests : IDisposable
+/// <summary>
+///     Tests for ImageValidationService using LightMock.Generator.
+///     Migrated from NSubstitute to standardize mocking framework.
+/// </summary>
+public class ImageValidationServiceTestsNewLightMock : IDisposable
 {
-    public ImageValidationServiceTests()
+    public ImageValidationServiceTestsNewLightMock()
     {
-        _service = new ImageValidationService(_httpClientFactory, _cacheService, _logger);
+        _cacheServiceMock = new Mock<ICacheService>();
+        _httpClientFactoryMock = new Mock<IHttpClientFactory>();
+        _loggerMock = new Mock<ILogger<ImageValidationService>>();
+
+        _service = new ImageValidationService(
+            _httpClientFactoryMock.Object,
+            _cacheServiceMock.Object,
+            _loggerMock.Object
+        );
     }
 
     public void Dispose()
@@ -19,9 +34,9 @@ public class ImageValidationServiceTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    private readonly ICacheService _cacheService = Substitute.For<ICacheService>();
-    private readonly IHttpClientFactory _httpClientFactory = Substitute.For<IHttpClientFactory>();
-    private readonly ILogger<ImageValidationService> _logger = Substitute.For<ILogger<ImageValidationService>>();
+    private readonly Mock<ICacheService> _cacheServiceMock;
+    private readonly Mock<IHttpClientFactory> _httpClientFactoryMock;
+    private readonly Mock<ILogger<ImageValidationService>> _loggerMock;
     private readonly ImageValidationService _service;
 
     /// <summary>
@@ -34,7 +49,7 @@ public class ImageValidationServiceTests : IDisposable
         await _service.ClearValidationCacheAsync().ConfigureAwait(false);
 
         // Assert
-        await _cacheService.Received(1).ClearNamespaceAsync("image_validation").ConfigureAwait(false);
+        _cacheServiceMock.Assert(f => f.ClearNamespaceAsync("image_validation", The<CancellationToken>.IsAnyValue));
         // Hard to test _memoryCache, ensure no exceptions
     }
 
@@ -65,13 +80,13 @@ public class ImageValidationServiceTests : IDisposable
         var urls = new List<string> { "https://example.com/image1.jpg", "", "https://example.com/image2.jpg" };
 
         // Mock the validation to return valid results
-        _cacheService.GetItemAsync<ImageValidationResult>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns((ImageValidationResult?)null);
+        _cacheServiceMock.Arrange(f => f.GetItemAsync<ImageValidationResult>(The<string>.IsAnyValue, The<string>.IsAnyValue, The<CancellationToken>.IsAnyValue))
+            .Returns(Task.FromResult((ImageValidationResult?)null));
 
         using var testHandler = new TestHttpMessageHandler();
 #pragma warning disable CA2000 // Dispose objects before losing scope - HttpClient lifecycle managed by test
         var httpClient = new HttpClient(testHandler) { BaseAddress = new Uri("http://example.com") };
-        _httpClientFactory.CreateClient().Returns(_ => httpClient);
+        _httpClientFactoryMock.Arrange(f => f.CreateClient()).Returns(() => httpClient);
 #pragma warning restore CA2000
 
         // Act

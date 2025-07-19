@@ -57,7 +57,7 @@ public class ArticlesTests
     public async Task Articles_Component_ShouldHaveCorrectInitialState()
     {
         // Arrange
-        using var articlesComponent = new Articles();
+        var articlesComponent = new Articles();
         SetPrivateProperty(articlesComponent, "Logger", _logger);
         SetPrivateProperty(articlesComponent, "Js", _jsRuntime);
         SetPrivateProperty(articlesComponent, "Navigation", _navigationManager);
@@ -77,7 +77,7 @@ public class ArticlesTests
     public async Task Articles_Component_ShouldHaveCorrectPageTitle()
     {
         // Arrange & Act
-        using var articlesComponent = new Articles();
+        var articlesComponent = new Articles();
         SetPrivateProperty(articlesComponent, "Logger", _logger);
         SetPrivateProperty(articlesComponent, "Js", _jsRuntime);
         SetPrivateProperty(articlesComponent, "Navigation", _navigationManager);
@@ -114,7 +114,7 @@ public class ArticlesTests
     public async Task StopShimmerAsync_WithValidElementId_ShouldInvokeJavaScript()
     {
         // Arrange
-        using var articlesComponent = new Articles();
+        var articlesComponent = new Articles();
         var mockJsRuntime = new MockJSRuntime();
         SetPrivateProperty(articlesComponent, "Logger", _logger);
         SetPrivateProperty(articlesComponent, "Js", mockJsRuntime);
