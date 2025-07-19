@@ -1,5 +1,5 @@
 ---
-mode: 'edit'
+mode: 'agent'
 description: 'Execute Task List'
 ---
 # Execute Task List

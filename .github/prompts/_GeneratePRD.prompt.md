@@ -1,5 +1,5 @@
 ---
-mode: 'edit'
+mode: 'agent'
 description: 'Generating a Product Requirements Document (PRD)'
 ---
 # Generating a Product Requirements Document (PRD)

@@ -45,6 +45,18 @@ private readonly Mock<IUserService> _userService; // unclear
 private readonly Mock<IUserService> _fakeUserService; // inconsistent
 ```
 
+### Critical: Optional Parameters (CS0854 Fix)
+**ALWAYS specify ALL parameters explicitly for interfaces with optional parameters:**
+```csharp
+// ❌ FAILS: CS0854 error
+_mock.Arrange(f => f.GetAsync("key")).Returns(Task.FromResult(data));
+
+// ✅ WORKS: Explicit parameters
+_mock.Arrange(f => f.GetAsync("key", CancellationToken.None)).Returns(Task.FromResult(data));
+_mock.Arrange(f => f.SetAsync("key", data, null, CancellationToken.None)).Returns(Task.CompletedTask);
+```
+**Pattern**: Use `CancellationToken.None`, `null`, `The<T>.IsAnyValue` for optional params
+
 ### Usage Pattern
 ```csharp
 public class ServiceTests : IDisposable

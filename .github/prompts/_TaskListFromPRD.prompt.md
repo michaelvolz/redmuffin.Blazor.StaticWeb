@@ -1,5 +1,5 @@
 ---
-mode: 'edit'
+mode: 'agent'
 description: 'Generating a Task List from a PRD'
 ---
 # Generating a Task List from a PRD

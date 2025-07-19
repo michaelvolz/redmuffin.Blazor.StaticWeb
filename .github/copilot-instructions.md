@@ -78,6 +78,15 @@
 **Usage**: `new Mock<IInterface>()` → setup → pass `.Object` to constructor
 **Benefits**: Compile-time generation, zero runtime overhead, AOT compatible
 
+**🔧 CRITICAL: Optional Parameters Solution**
+**CS0854 Fix**: ALWAYS specify ALL parameters explicitly in `Arrange()`/`Assert()` calls:
+```csharp
+// ❌ FAILS: _mock.Arrange(f => f.GetAsync("key"))  
+// ✅ WORKS: _mock.Arrange(f => f.GetAsync("key", CancellationToken.None))
+// ✅ WORKS: _mock.Arrange(f => f.SetAsync("key", value, null, CancellationToken.None))
+```
+**Pattern**: `CancellationToken.None`, `null`, `The<T>.IsAnyValue` for optional params
+
 ```csharp
 [Test, Arguments(null), Arguments("")]
 public async Task Should_Throw_When_Invalid_Id(string invalidId) { /*...*/ }

@@ -96,6 +96,14 @@ applyTo: '**/*.cs'
 - Show how to test authentication and authorization logic.
 - Explain test-driven development principles as applied to API development.
 
+### LightMock.Generator with Optional Parameters
+**CRITICAL CS0854 Solution**: Always specify ALL parameters explicitly for interfaces with optional parameters:
+```csharp
+// ❌ FAILS: _mock.Arrange(f => f.GetAsync("key"))
+// ✅ WORKS: _mock.Arrange(f => f.GetAsync("key", CancellationToken.None))
+```
+Use `CancellationToken.None`, `null`, `The<T>.IsAnyValue` for optional params in both Arrange() and Assert() calls.
+
 ## Performance Optimization
 
 - Guide users on implementing caching strategies (in-memory, distributed, response caching).

@@ -348,6 +348,41 @@ This project embraces **[Test-Driven Development](https://martinfowler.com/bliki
 - **API Testing**: Test Azure Functions with HTTP triggers and dependency injection
 - **Mocking**: Use LightMock.Generator for creating test doubles
 
+#### LightMock.Generator with Optional Parameters
+
+This project successfully uses **LightMock.Generator** for mocking, including with interfaces that have optional parameters. A common compilation issue (CS0854) occurs when interfaces contain optional parameters like `CancellationToken cancellationToken = default`. Here's the proven solution:
+
+**❌ Problem: CS0854 Compilation Error**
+```csharp
+// This fails with "expression tree may not contain optional arguments"
+_mockService.Arrange(f => f.GetItemAsync<T>("namespace", "key"))
+            .Returns(Task.FromResult<T>(expectedValue));
+```
+
+**✅ Solution: Explicit Parameter Specification**
+```csharp
+// Always specify ALL parameters explicitly, including optional ones
+_mockService.Arrange(f => f.GetItemAsync<T>("namespace", "key", CancellationToken.None))
+            .Returns(Task.FromResult<T>(expectedValue));
+
+// For nullable parameters, use appropriate defaults
+_mockService.Arrange(f => f.SetItemAsync("ns", "key", value, null, CancellationToken.None))
+            .Returns(Task.CompletedTask);
+
+// For any-value matching with optional parameters
+_mockService.Arrange(f => f.GetItemAsync<T>("ns", The<string>.IsAnyValue, CancellationToken.None))
+            .Returns(Task.FromResult<T>(default));
+```
+
+**Key Insights:**
+- LightMock.Generator cannot handle ANY interface method with optional parameters in expression trees
+- Always provide explicit values for ALL parameters, even optional ones
+- Use `CancellationToken.None`, `null`, or `The<T>.IsAnyValue` as appropriate
+- This pattern works universally for all optional parameter scenarios
+- Applies to both `Arrange()` and `Assert()` calls
+
+This solution enables mocking of modern .NET interfaces that commonly use optional `CancellationToken` parameters.
+
 #### Tools and Automation
 
 - **Visual Studio Integration**: Run tests directly from IDE with full debugging support
