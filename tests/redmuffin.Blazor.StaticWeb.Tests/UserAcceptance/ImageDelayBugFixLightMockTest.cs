@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage;
+using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Models;
 using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Services;
 using redmuffin.Blazor.StaticWeb.Services;
 
@@ -83,7 +84,34 @@ public sealed class ImageDelayBugFixLightMockTest : IDisposable
     }
 
     [Test]
-    public async Task GetImageUrlAsync_Should_Return_Placeholder_For_Empty_Cover()
+    public async Task GetCachedImageUrlAsync_Should_Return_Placeholder_For_Cached_Invalid_Result()
+    {
+        // Arrange
+        var article = new RaindropItem
+        {
+            Id = 1,
+            Link = "https://example.com/article1",
+            Cover = "https://example.com/blocked-image.jpg",
+            Title = "Test Article",
+            Excerpt = "Test excerpt",
+            Created = DateTime.UtcNow
+        };
+
+        // Setup mock to return invalid cached result
+        var invalidResult = ImageValidationResult.Failure("CORS blocked");
+        _mockImageValidationService.Arrange(x => x.GetCachedResultAsync(
+                "https://example.com/blocked-image.jpg", The<CancellationToken>.IsAnyValue))
+            .Returns(Task.FromResult<ImageValidationResult?>(invalidResult));
+
+        // Act
+        var result = await InvokePrivateMethodAsync<string>(_articlesComponent, "GetCachedImageUrlAsync", article).ConfigureAwait(false);
+
+        // Assert - Should return placeholder for cached invalid result
+        await Assert.That(result).StartsWith("data:image/svg+xml;base64,");
+    }
+
+    [Test]
+    public async Task GetCachedImageUrlAsync_Should_Return_Placeholder_For_Empty_Cover()
     {
         // Arrange
         var article = new RaindropItem
@@ -96,20 +124,20 @@ public sealed class ImageDelayBugFixLightMockTest : IDisposable
             Created = DateTime.UtcNow
         };
 
-        // Setup mock to return placeholder for empty URL
-        _mockImageValidationService.Arrange(x => x.GetImageUrlOrPlaceholderAsync(
+        // Setup mock to return null for empty URL (no cache entry)
+        _mockImageValidationService.Arrange(x => x.GetCachedResultAsync(
                 The<string>.IsAnyValue, The<CancellationToken>.IsAnyValue))
-            .Returns(Task.FromResult("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4="));
+            .Returns(Task.FromResult<ImageValidationResult?>(null));
 
         // Act
-        var result = await InvokePrivateMethodAsync<string>(_articlesComponent, "GetImageUrlAsync", article).ConfigureAwait(false);
+        var result = await InvokePrivateMethodAsync<string>(_articlesComponent, "GetCachedImageUrlAsync", article).ConfigureAwait(false);
 
-        // Assert
+        // Assert - Should return default placeholder for empty cover
         await Assert.That(result).StartsWith("data:image/svg+xml;base64,");
     }
 
     [Test]
-    public async Task GetImageUrlAsync_Should_Use_Service_For_Valid_Cover()
+    public async Task GetCachedImageUrlAsync_Should_Use_Cached_Valid_Result()
     {
         // Arrange
         var article = new RaindropItem
@@ -122,15 +150,42 @@ public sealed class ImageDelayBugFixLightMockTest : IDisposable
             Created = DateTime.UtcNow
         };
 
-        // Setup mock to return the original URL when called with any string
-        _mockImageValidationService.Arrange(x => x.GetImageUrlOrPlaceholderAsync(
-                The<string>.IsAnyValue, The<CancellationToken>.IsAnyValue))
-            .Returns<string, CancellationToken>((url, token) => Task.FromResult(url));
+        // Setup mock to return valid cached result
+        var validResult = ImageValidationResult.Success();
+        _mockImageValidationService.Arrange(x => x.GetCachedResultAsync(
+                "https://example.com/image1.jpg", The<CancellationToken>.IsAnyValue))
+            .Returns(Task.FromResult<ImageValidationResult?>(validResult));
 
         // Act
-        var result = await InvokePrivateMethodAsync<string>(_articlesComponent, "GetImageUrlAsync", article).ConfigureAwait(false);
+        var result = await InvokePrivateMethodAsync<string>(_articlesComponent, "GetCachedImageUrlAsync", article).ConfigureAwait(false);
 
-        // Assert
+        // Assert - Should return original URL for valid cached result
+        await Assert.That(result).IsEqualTo("https://example.com/image1.jpg");
+    }
+
+    [Test]
+    public async Task GetCachedImageUrlAsync_Should_Use_Original_Cover_When_No_Cache()
+    {
+        // Arrange
+        var article = new RaindropItem
+        {
+            Id = 1,
+            Link = "https://example.com/article1",
+            Cover = "https://example.com/image1.jpg",
+            Title = "Test Article",
+            Excerpt = "Test excerpt",
+            Created = DateTime.UtcNow
+        };
+
+        // Setup mock to return null (no cache entry)
+        _mockImageValidationService.Arrange(x => x.GetCachedResultAsync(
+                The<string>.IsAnyValue, The<CancellationToken>.IsAnyValue))
+            .Returns(Task.FromResult<ImageValidationResult?>(null));
+
+        // Act
+        var result = await InvokePrivateMethodAsync<string>(_articlesComponent, "GetCachedImageUrlAsync", article).ConfigureAwait(false);
+
+        // Assert - Should return original cover when no cache entry exists
         await Assert.That(result).IsEqualTo("https://example.com/image1.jpg");
     }
 }
