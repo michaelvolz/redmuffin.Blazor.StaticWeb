@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -67,7 +68,7 @@ public partial class Articles
     private static string GetDefaultPlaceholder()
     {
         return
-            "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1IiBzdHJva2U9IiNkZGQiIHN0cm9rZS13aWR0aD0iMiIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM5OTkiPk5vIEltYWdlIEF2YWlsYWJsZTwvdGV4dD4KPC9zdmc+";
+            "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1IiBzdHJva2U9IiNkZGQiIHN0cm9rZS13aWR0aD0iMiIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvcnQtc2l6ZT0iMTYiIGZpbGw9IiM5OTkiPk5vIEltYWdlIEF2YWlsYWJsZTwvdGV4dD4KPC9zdmc+";
     }
 
     private static string DisplayTitle(RaindropItem article)
@@ -82,6 +83,29 @@ public partial class Articles
             : article.Excerpt.Length > 250
                 ? string.Concat(article.Excerpt.AsSpan(0, 250), "...")
                 : article.Excerpt;
+    }
+
+    /// <summary>
+    ///     Generates a simple SVG placeholder with the failure reason.
+    /// </summary>
+    private static string GenerateSimplePlaceholder(string reason)
+    {
+        // Standard failure reasons mapping
+        var displayReason = reason switch
+        {
+            var r when r.Contains("CORS", StringComparison.OrdinalIgnoreCase) => "CORS blocked",
+            var r when r.Contains("404", StringComparison.OrdinalIgnoreCase) => "Image not found",
+            var r when r.Contains("timeout", StringComparison.OrdinalIgnoreCase) => "Network error",
+            var r when r.Contains("content type", StringComparison.OrdinalIgnoreCase) => "Invalid format",
+            _ => "Image not available"
+        };
+
+        var svg = $@"<svg width=""400"" height=""200"" xmlns=""http://www.w3.org/2000/svg"">
+  <rect width=""100%"" height=""100%"" fill=""#f5f5f5"" stroke=""#ddd"" stroke-width=""2""/>
+  <text x=""50%"" y=""50%"" dominant-baseline=""middle"" text-anchor=""middle"" font-family=""Arial, sans-serif"" font-size=""16"" fill=""#999"">{displayReason}</text>
+</svg>";
+
+        return "data:image/svg+xml;base64," + Convert.ToBase64String(Encoding.UTF8.GetBytes(svg));
     }
 
     protected override Task OnInitializedAsync()
@@ -175,8 +199,9 @@ public partial class Articles
     }
 
     /// <summary>
-    ///     Populates the image URL cache for all articles using a cache-first approach.
-    ///     This method provides immediate image URLs for rendering while queuing background validation.
+    ///     Populates the image URL cache for all articles using ONLY cached values.
+    ///     This method never triggers network requests, ensuring fast page loads.
+    ///     Background validation is started for uncached images.
     /// </summary>
     private async Task PopulateImageUrlCacheAsync()
     {
@@ -186,27 +211,28 @@ public partial class Articles
 
         foreach (var article in _articleItems)
         {
-            var imageUrl = await GetImageUrlAsync(article).ConfigureAwait(false);
+            // Use only cached values - no network requests during initial render
+            var imageUrl = await GetCachedImageUrlAsync(article).ConfigureAwait(false);
             _imageUrlCache[article.Link] = imageUrl;
 
-            // If we got a placeholder or the image wasn't cached, start background validation
+            // If we don't have a cached valid result, start background validation
             if (string.IsNullOrEmpty(article.Cover) ||
-                (!imageUrl.StartsWith("data:image/svg+xml", StringComparison.OrdinalIgnoreCase) &&
-                 !string.Equals(imageUrl, article.Cover, StringComparison.Ordinal))) continue;
-
-            // Fire-and-forget background validation
-            var backgroundTask = Task.Run(async () =>
+                imageUrl.StartsWith("data:image/svg+xml", StringComparison.OrdinalIgnoreCase))
             {
-                try
+                // Fire-and-forget background validation
+                var backgroundTask = Task.Run(async () =>
                 {
-                    await ValidateImageInBackgroundAsync(article).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    LogBackgroundValidationFailed(Logger, article.Link, ex);
-                }
-            });
-            backgroundValidationTasks.Add(backgroundTask);
+                    try
+                    {
+                        await ValidateImageInBackgroundAsync(article).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogBackgroundValidationFailed(Logger, article.Link, ex);
+                    }
+                });
+                backgroundValidationTasks.Add(backgroundTask);
+            }
         }
 
         // Don't wait for background tasks to complete - they'll update the UI when done
@@ -214,29 +240,26 @@ public partial class Articles
     }
 
     /// <summary>
-    ///     Gets the best available image URL for an article, checking cache first.
-    ///     This method integrates with the SimpleImageValidationService for optimal performance.
+    ///     Gets the cached image URL for an article without triggering network requests.
+    ///     Returns the original cover image if cached as valid, or a placeholder if cached as invalid or not cached.
     /// </summary>
     /// <param name="article">The article to get the image URL for</param>
-    /// <returns>A valid image URL or a placeholder if the image is not available</returns>
-    private async Task<string> GetImageUrlAsync(RaindropItem article)
+    /// <returns>A cached image URL or placeholder</returns>
+    private async Task<string> GetCachedImageUrlAsync(RaindropItem article)
     {
         // If no cover image, return placeholder immediately
-        if (string.IsNullOrEmpty(article.Cover)) return await SimpleImageValidationService.GetImageUrlOrPlaceholderAsync(string.Empty).ConfigureAwait(false);
+        if (string.IsNullOrEmpty(article.Cover))
+            return GetDefaultPlaceholder();
 
-        // Use the service to get the best URL (cached or validated)
-        var imageUrl = await SimpleImageValidationService.GetImageUrlOrPlaceholderAsync(article.Cover).ConfigureAwait(false);
+        // Check cache ONLY - no network requests
+        var cachedResult = await SimpleImageValidationService.GetCachedResultAsync(article.Cover).ConfigureAwait(false);
 
-        // If the service returned a different URL (placeholder), trigger UI update
-        if (!string.Equals(imageUrl, article.Cover, StringComparison.Ordinal))
-            // Schedule a UI update on the next tick to reflect the placeholder
-            _ = Task.Run(async () =>
-            {
-                await Task.Delay(1).ConfigureAwait(false); // Small delay to avoid blocking
-                await InvokeAsync(StateHasChanged).ConfigureAwait(false);
-            });
+        if (cachedResult != null)
+            // Use cached validation result
+            return cachedResult.IsValid ? article.Cover : GenerateSimplePlaceholder(cachedResult.FailureReason ?? "Image not available");
 
-        return imageUrl;
+        // No cached result - use original cover image for now, background validation will handle it
+        return article.Cover;
     }
 
     /// <summary>
@@ -267,7 +290,7 @@ public partial class Articles
             // Get the appropriate URL based on validation result
             var imageUrl = result.IsValid
                 ? article.Cover
-                : await SimpleImageValidationService.GetImageUrlOrPlaceholderAsync(article.Cover).ConfigureAwait(false);
+                : GenerateSimplePlaceholder(result.FailureReason ?? "Image not available");
 
             // Update cache only if the validation result is different from current cache
             var currentCachedUrl = _imageUrlCache.GetValueOrDefault(article.Link, string.Empty);
@@ -286,7 +309,7 @@ public partial class Articles
             LogBackgroundValidationFailed(Logger, article.Link, ex);
 
             // On error, ensure we have a placeholder
-            var placeholder = await SimpleImageValidationService.GetImageUrlOrPlaceholderAsync(string.Empty).ConfigureAwait(false);
+            var placeholder = GenerateSimplePlaceholder("Validation error");
             _imageUrlCache[article.Link] = placeholder;
 
             // Trigger UI update on the main thread
@@ -313,8 +336,7 @@ public partial class Articles
             if (!loadSuccess)
             {
                 // Replace with placeholder if image failed to load
-                var placeholder = await SimpleImageValidationService.GetImageUrlOrPlaceholderAsync(_imageUrlCache.GetValueOrDefault(articleLink, string.Empty))
-                    .ConfigureAwait(false);
+                var placeholder = GenerateSimplePlaceholder("Image load failed");
                 _imageUrlCache[articleLink] = placeholder;
                 StateHasChanged();
             }
