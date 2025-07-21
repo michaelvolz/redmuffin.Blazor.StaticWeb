@@ -88,7 +88,10 @@
     <VSThreadingAnalyzersVersion>17.14.15</VSThreadingAnalyzersVersion>
     <RoslynatorVersion>4.13.1</RoslynatorVersion>
     <StyleCopAnalyzersVersion>1.2.0-beta.556</StyleCopAnalyzersVersion>
+    <!--<MicrosoftAspNetCoreComponentsAnalyzersVersion>9.0.6</MicrosoftAspNetCoreComponentsAnalyzersVersion>-->
+    <AsyncFixerVersion>1.6.0</AsyncFixerVersion>
   </PropertyGroup>
+
   <!-- JetBrains.Annotations for all configurations (not just Debug) -->
   <ItemGroup Condition="'$(IsTestProject)' != 'true'">
     <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsAnnotationsVersion)" />
@@ -120,11 +123,19 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <!--<PackageReference Include="Microsoft.AspNetCore.Components.Analyzers"
+                      Version="$(MicrosoftAspNetCoreComponentsAnalyzersVersion)">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>-->
+    <PackageReference Include="AsyncFixer" Version="$(AsyncFixerVersion)">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <!-- Minimal analyzer set for test projects -->
   <ItemGroup Condition="'$(IsTestProject)' == 'true'">
     <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsAnnotationsVersion)" />
   </ItemGroup>
-
 </Project>
