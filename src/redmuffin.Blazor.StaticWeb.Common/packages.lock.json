@@ -20,6 +20,12 @@
         "resolved": "2.0.202",
         "contentHash": "VDsrL0SRYoR6t975NExCRgZzGIYudgIETUAPnyMG17sr9I9OzNGzpwX1dHOPSd8Ue28ltnNiOL3czLmNdQngYA=="
       },
+      "Microsoft.AspNetCore.Components.Analyzers": {
+        "type": "Direct",
+        "requested": "[9.0.6, )",
+        "resolved": "9.0.6",
+        "contentHash": "UXMjbezwMMoL21L20OB1BLGF9M1BFPzdWiezaiZSBG55z36BEXvs8hetKw7PiuytOdUqWFI1wkPd3MD9jpeKAw=="
+      },
       "Microsoft.Extensions.Logging": {
         "type": "Direct",
         "requested": "[9.0.6, )",

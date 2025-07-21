@@ -42,6 +42,12 @@
           "Microsoft.Extensions.Logging.ApplicationInsights": "2.23.0"
         }
       },
+      "Microsoft.AspNetCore.Components.Analyzers": {
+        "type": "Direct",
+        "requested": "[9.0.6, )",
+        "resolved": "9.0.6",
+        "contentHash": "UXMjbezwMMoL21L20OB1BLGF9M1BFPzdWiezaiZSBG55z36BEXvs8hetKw7PiuytOdUqWFI1wkPd3MD9jpeKAw=="
+      },
       "Microsoft.Azure.Functions.Worker": {
         "type": "Direct",
         "requested": "[2.0.0, )",

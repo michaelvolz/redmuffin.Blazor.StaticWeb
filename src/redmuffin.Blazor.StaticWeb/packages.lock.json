@@ -41,6 +41,12 @@
         "resolved": "2.0.202",
         "contentHash": "VDsrL0SRYoR6t975NExCRgZzGIYudgIETUAPnyMG17sr9I9OzNGzpwX1dHOPSd8Ue28ltnNiOL3czLmNdQngYA=="
       },
+      "Microsoft.AspNetCore.Components.Analyzers": {
+        "type": "Direct",
+        "requested": "[9.0.6, )",
+        "resolved": "9.0.6",
+        "contentHash": "UXMjbezwMMoL21L20OB1BLGF9M1BFPzdWiezaiZSBG55z36BEXvs8hetKw7PiuytOdUqWFI1wkPd3MD9jpeKAw=="
+      },
       "Microsoft.AspNetCore.Components.Authorization": {
         "type": "Direct",
         "requested": "[9.0.0, )",
@@ -156,11 +162,6 @@
           "Microsoft.AspNetCore.Authorization": "9.0.0",
           "Microsoft.AspNetCore.Components.Analyzers": "9.0.0"
         }
-      },
-      "Microsoft.AspNetCore.Components.Analyzers": {
-        "type": "Transitive",
-        "resolved": "9.0.0",
-        "contentHash": "maOE1qlJ9hf1Fb7PhFLw9bgP9mWckuDOcn1uKNt9/msdJG2YHl3cPRHojYa6CxliGHIXL8Da4qPgeUc4CaOoeg=="
       },
       "Microsoft.AspNetCore.Components.Forms": {
         "type": "Transitive",
