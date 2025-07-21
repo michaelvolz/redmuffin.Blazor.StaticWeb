@@ -2,6 +2,8 @@ using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using redmuffin.Blazor.StaticWeb;
+using redmuffin.Blazor.StaticWeb.Common.Abstractions;
+using redmuffin.Blazor.StaticWeb.Common.Services;
 using redmuffin.Blazor.StaticWeb.Core.Services;
 using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Services;
 using redmuffin.Blazor.StaticWeb.Services;
@@ -30,5 +32,8 @@ builder.Services.AddScoped<IPerformanceMetricsService, PerformanceMetricsService
 builder.Services.AddScoped<IImageValidationService, ImageValidationService>();
 builder.Services.AddScoped<IOpenGraphImagesService, OpenGraphImagesService>();
 builder.Services.AddScoped<ISimpleImageValidationService, SimpleImageValidationService>();
+
+// Register delay provider for production (real delays for UX)
+builder.Services.AddScoped<IDelayProvider, ProductionDelayProvider>();
 
 await builder.Build().RunAsync().ConfigureAwait(false);

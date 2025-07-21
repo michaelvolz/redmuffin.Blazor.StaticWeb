@@ -22,6 +22,22 @@ public partial class Articles
         LoggerMessage.Define<string>(LogLevel.Warning, new EventId(3, nameof(LogShimmerError)),
             "Error stopping shimmer for element: {ElementId}");
 
+    private static readonly Action<ILogger, string, Exception?> LogBackgroundValidationFailed =
+        LoggerMessage.Define<string>(LogLevel.Warning, new EventId(4, nameof(LogBackgroundValidationFailed)),
+            "Background validation failed for article: {ArticleLink}");
+
+    private static readonly Action<ILogger, int, Exception?> LogBackgroundTasksStarted =
+        LoggerMessage.Define<int>(LogLevel.Debug, new EventId(5, nameof(LogBackgroundTasksStarted)),
+            "Started {TaskCount} background validation tasks");
+
+    private static readonly Action<ILogger, string, bool, Exception?> LogBackgroundValidationCompleted =
+        LoggerMessage.Define<string, bool>(LogLevel.Debug, new EventId(6, nameof(LogBackgroundValidationCompleted)),
+            "Background validation completed for article: {ArticleLink}, Valid: {IsValid}");
+
+    private static readonly Action<ILogger, string, Exception> LogImageLoadHandlingError =
+        LoggerMessage.Define<string>(LogLevel.Warning, new EventId(7, nameof(LogImageLoadHandlingError)),
+            "Error handling image load for article: {ArticleLink}");
+
     // Simple state management - only what we need
     private readonly Dictionary<string, string> _imageUrlCache = new(StringComparer.OrdinalIgnoreCase);
     private List<RaindropItem>? _articleItems;
@@ -68,7 +84,7 @@ public partial class Articles
                 : article.Excerpt;
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
         // Validate injected dependencies
         ArgumentNullException.ThrowIfNull(Http);
@@ -78,7 +94,7 @@ public partial class Articles
         ArgumentNullException.ThrowIfNull(SimpleImageValidationService);
 
         // Load articles automatically when the page starts
-        await FetchArticlesAsync().ConfigureAwait(false);
+        return FetchArticlesAsync();
     }
 
     protected string GetFallbackReason(RaindropItem article)
@@ -174,28 +190,27 @@ public partial class Articles
             _imageUrlCache[article.Link] = imageUrl;
 
             // If we got a placeholder or the image wasn't cached, start background validation
-            if (!string.IsNullOrEmpty(article.Cover) &&
-                (imageUrl.StartsWith("data:image/svg+xml", StringComparison.OrdinalIgnoreCase) ||
-                 string.Equals(imageUrl, article.Cover, StringComparison.Ordinal)))
+            if (string.IsNullOrEmpty(article.Cover) ||
+                (!imageUrl.StartsWith("data:image/svg+xml", StringComparison.OrdinalIgnoreCase) &&
+                 !string.Equals(imageUrl, article.Cover, StringComparison.Ordinal))) continue;
+
+            // Fire-and-forget background validation
+            var backgroundTask = Task.Run(async () =>
             {
-                // Fire-and-forget background validation
-                var backgroundTask = Task.Run(async () =>
+                try
                 {
-                    try
-                    {
-                        await ValidateImageInBackgroundAsync(article).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogWarning(ex, "Background validation failed for article: {ArticleLink}", article.Link);
-                    }
-                });
-                backgroundValidationTasks.Add(backgroundTask);
-            }
+                    await ValidateImageInBackgroundAsync(article).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    LogBackgroundValidationFailed(Logger, article.Link, ex);
+                }
+            });
+            backgroundValidationTasks.Add(backgroundTask);
         }
 
         // Don't wait for background tasks to complete - they'll update the UI when done
-        if (backgroundValidationTasks.Count > 0) Logger.LogDebug("Started {TaskCount} background validation tasks", backgroundValidationTasks.Count);
+        if (backgroundValidationTasks.Count > 0) LogBackgroundTasksStarted(Logger, backgroundValidationTasks.Count, null);
     }
 
     /// <summary>
@@ -263,15 +278,12 @@ public partial class Articles
                 // Trigger UI update on the main thread
                 await InvokeAsync(StateHasChanged).ConfigureAwait(false);
 
-                Logger.LogDebug(
-                    "Background validation completed for article: {ArticleLink}, Valid: {IsValid}",
-                    article.Link,
-                    result.IsValid);
+                LogBackgroundValidationCompleted(Logger, article.Link, result.IsValid, null);
             }
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, "Background validation failed for article: {ArticleLink}", article.Link);
+            LogBackgroundValidationFailed(Logger, article.Link, ex);
 
             // On error, ensure we have a placeholder
             var placeholder = await SimpleImageValidationService.GetImageUrlOrPlaceholderAsync(string.Empty).ConfigureAwait(false);
@@ -312,7 +324,7 @@ public partial class Articles
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, "Error handling image load for article: {ArticleLink}", articleLink);
+            LogImageLoadHandlingError(Logger, articleLink, ex);
         }
     }
 

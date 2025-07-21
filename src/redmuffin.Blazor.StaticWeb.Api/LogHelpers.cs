@@ -3,14 +3,14 @@ using Microsoft.Extensions.Logging;
 namespace redmuffin.Blazor.StaticWeb.Api;
 
 /// <summary>
-///     LoggerMessage helpers for better performance
+///     LoggerMessage helpers for better performance using partial class pattern.
 /// </summary>
-public static class LogHelpers
+public static partial class LogHelpers
 {
-    private static readonly Action<ILogger, Exception?> LogTestMessageInternal =
-        LoggerMessage.Define(LogLevel.Information, new EventId(1, "LogTestMessage"),
-            "This is a test log message.");
-
+    /// <summary>
+    ///     Logs a test message for validation purposes.
+    /// </summary>
+    /// <param name="logger">The logger instance.</param>
     public static void LogTestMessage(ILogger logger)
     {
         LogTestMessageInternal(logger, null);

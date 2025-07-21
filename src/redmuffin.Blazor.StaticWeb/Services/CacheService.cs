@@ -88,13 +88,13 @@ public class CacheService : ICacheService
         await RemoveFromNamespaceIndexAsync(cacheNamespace, key, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<bool> ContainsKeyAsync(string cacheNamespace, string key, CancellationToken cancellationToken = default)
+    public Task<bool> ContainsKeyAsync(string cacheNamespace, string key, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(cacheNamespace);
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
 
         var namespacedKey = GetNamespacedKey(cacheNamespace, key);
-        return await _browserStorageService.ContainsKeyAsync(namespacedKey, cancellationToken).ConfigureAwait(false);
+        return _browserStorageService.ContainsKeyAsync(namespacedKey, cancellationToken);
     }
 
     public async Task<IEnumerable<string>> GetKeysAsync(string cacheNamespace, CancellationToken cancellationToken = default)

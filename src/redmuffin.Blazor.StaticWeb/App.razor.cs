@@ -19,11 +19,11 @@ public partial class App
         return Task.CompletedTask;
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
         // Fire-and-forget warm-up of Azure Functions
-        _ = Task.Run(async () => await WarmupService.WarmupAsync().ConfigureAwait(false));
+        _ = Task.Run(() => WarmupService.WarmupAsync());
 
-        await base.OnInitializedAsync().ConfigureAwait(false);
+        return base.OnInitializedAsync();
     }
 }

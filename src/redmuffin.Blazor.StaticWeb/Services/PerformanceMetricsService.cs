@@ -24,7 +24,7 @@ public class PerformanceMetricsService(IJSRuntime jsRuntime) : IPerformanceMetri
     }
 
     /// <inheritdoc />
-    public async Task<PageLoadSpeed.PageLoadMetrics?> GetMetricsAsync(CancellationToken cancellationToken = default)
+    public async Task<LoadSpeed.PageLoadMetrics?> GetMetricsAsync(CancellationToken cancellationToken = default)
     {
         if (_disposed) return null;
 
@@ -41,7 +41,7 @@ public class PerformanceMetricsService(IJSRuntime jsRuntime) : IPerformanceMetri
 
                 if (functionExists)
                 {
-                    var metrics = await jsRuntime.InvokeAsync<PageLoadSpeed.PageLoadMetrics>("getPageLoadMetrics", cts.Token).ConfigureAwait(false);
+                    var metrics = await jsRuntime.InvokeAsync<LoadSpeed.PageLoadMetrics>("getPageLoadMetrics", cts.Token).ConfigureAwait(false);
                     return metrics;
                 }
 
@@ -117,12 +117,12 @@ public class PerformanceMetricsService(IJSRuntime jsRuntime) : IPerformanceMetri
     }
 
     /// <inheritdoc />
-    public async Task<PageLoadSpeed.PageLoadMetrics> GetFallbackTimingAsync()
+    public async Task<LoadSpeed.PageLoadMetrics> GetFallbackTimingAsync()
     {
         try
         {
             var now = await jsRuntime.InvokeAsync<double>("performance.now").ConfigureAwait(false);
-            return new PageLoadSpeed.PageLoadMetrics
+            return new LoadSpeed.PageLoadMetrics
             {
                 TimeToFirstByte = Math.Round(now * 0.3, 1),
                 DomContentLoaded = Math.Round(now * 0.8, 1),
@@ -143,7 +143,7 @@ public class PerformanceMetricsService(IJSRuntime jsRuntime) : IPerformanceMetri
         catch (Exception)
         {
             var estimatedTime = DateTime.Now.Millisecond + 100;
-            return new PageLoadSpeed.PageLoadMetrics
+            return new LoadSpeed.PageLoadMetrics
             {
                 TimeToFirstByte = estimatedTime * 0.3,
                 DomContentLoaded = estimatedTime * 0.8,

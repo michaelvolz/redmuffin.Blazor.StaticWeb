@@ -12,7 +12,7 @@ public interface IPerformanceMetricsService
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>Performance metrics or null if unavailable</returns>
-    Task<PageLoadSpeed.PageLoadMetrics?> GetMetricsAsync(CancellationToken cancellationToken = default);
+    Task<LoadSpeed.PageLoadMetrics?> GetMetricsAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Checks if JavaScript performance APIs are available
@@ -31,5 +31,5 @@ public interface IPerformanceMetricsService
     ///     Gets fallback timing estimates when APIs are unavailable
     /// </summary>
     /// <returns>Estimated timing metrics</returns>
-    Task<PageLoadSpeed.PageLoadMetrics> GetFallbackTimingAsync();
+    Task<LoadSpeed.PageLoadMetrics> GetFallbackTimingAsync();
 }

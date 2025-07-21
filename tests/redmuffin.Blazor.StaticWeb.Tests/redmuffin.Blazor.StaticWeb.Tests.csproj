@@ -1,10 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <!-- Conditional AoT Compilation: Enable in CI/CD or when explicitly requested -->
+    <!-- CI Environments: GitHub Actions, Azure DevOps, Jenkins, etc. -->
+    <!-- Manual Override: Set AOT_TESTS=true environment variable to force AoT -->
+    <!-- Development Default: AoT disabled for faster local builds (9.4s vs 11.1s) -->
+    <RunAOTCompilation Condition="'$(CI)' == 'true' OR '$(GITHUB_ACTIONS)' == 'true' OR '$(AOT_TESTS)' == 'true'">true</RunAOTCompilation>
+    <RunAOTCompilation Condition="'$(CI)' != 'true' AND '$(GITHUB_ACTIONS)' != 'true' AND '$(AOT_TESTS)' != 'true'">false</RunAOTCompilation>
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
@@ -25,6 +32,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="bunit" Version="1.40.0" />
     <PackageReference Include="LightMock.Generator" Version="1.2.2" />
     <PackageReference Include="TUnit" Version="0.25.21" />
     <PackageReference Include="Microsoft.Testing.Platform" Version="1.7.3" />
@@ -32,6 +40,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="TUnit.Assertions" Version="0.25.21" />
   </ItemGroup>
 
   <ItemGroup>

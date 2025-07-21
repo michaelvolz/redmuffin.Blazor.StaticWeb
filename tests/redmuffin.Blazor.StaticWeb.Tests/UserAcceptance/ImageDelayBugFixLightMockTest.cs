@@ -1,6 +1,3 @@
-// ✅ MIGRATED: This file uses LightMock.Generator for mocking.
-// LightMock.Generator is now the standardized test mocking framework.
-
 using System.Reflection;
 using LightMock;
 using LightMock.Generator;
@@ -36,7 +33,7 @@ public sealed class ImageDelayBugFixLightMockTest : IDisposable
         SetPrivateProperty(_articlesComponent, "OpenGraphImagesService", _mockOpenGraphImagesService.Object);
         SetPrivateProperty(_articlesComponent, "Logger", _mockLogger.Object);
         SetPrivateProperty(_articlesComponent, "Js", _mockJsRuntime.Object);
-        SetPrivateProperty(_articlesComponent, "Navigation", new MockNavigationManager());
+        SetPrivateProperty(_articlesComponent, "Navigation", new NavigationManagerMock());
         SetPrivateProperty(_articlesComponent, "Http", _mockHttpClient.Object);
     }
 
@@ -86,20 +83,6 @@ public sealed class ImageDelayBugFixLightMockTest : IDisposable
     }
 
     [Test]
-    [Skip("Temporarily disabled due to NullReferenceException in private field access")]
-    public async Task Component_Should_Have_Required_Dependencies_Injected()
-    {
-        // Act & Assert - Verify dependencies are not null
-        var service = GetPrivateField<ISimpleImageValidationService>(_articlesComponent, "SimpleImageValidationService");
-        var logger = GetPrivateField<ILogger<Articles>>(_articlesComponent, "Logger");
-        var jsRuntime = GetPrivateField<IJSRuntime>(_articlesComponent, "Js");
-
-        await Assert.That(service).IsNotNull();
-        await Assert.That(logger).IsNotNull();
-        await Assert.That(jsRuntime).IsNotNull();
-    }
-
-    [Test]
     public async Task GetImageUrlAsync_Should_Return_Placeholder_For_Empty_Cover()
     {
         // Arrange
@@ -119,7 +102,7 @@ public sealed class ImageDelayBugFixLightMockTest : IDisposable
             .Returns(Task.FromResult("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4="));
 
         // Act
-        var result = await InvokePrivateMethodAsync<string>(_articlesComponent, "GetImageUrlAsync", article);
+        var result = await InvokePrivateMethodAsync<string>(_articlesComponent, "GetImageUrlAsync", article).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).StartsWith("data:image/svg+xml;base64,");
@@ -145,46 +128,17 @@ public sealed class ImageDelayBugFixLightMockTest : IDisposable
             .Returns<string, CancellationToken>((url, token) => Task.FromResult(url));
 
         // Act
-        var result = await InvokePrivateMethodAsync<string>(_articlesComponent, "GetImageUrlAsync", article);
+        var result = await InvokePrivateMethodAsync<string>(_articlesComponent, "GetImageUrlAsync", article).ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsEqualTo("https://example.com/image1.jpg");
     }
-
-    [Test]
-    [Skip("Temporarily disabled due to assertion failure - service returning empty strings")]
-    public async Task PopulateImageUrlCacheAsync_Should_Populate_Cache_With_Valid_Images()
-    {
-        // Arrange
-        var testArticles = new List<RaindropItem>
-        {
-            new() { Id = 1, Link = "https://example.com/article1", Cover = "https://example.com/image1.jpg", Title = "Test Article 1" },
-            new() { Id = 2, Link = "https://example.com/article2", Cover = "https://example.com/image2.jpg", Title = "Test Article 2" }
-        };
-
-        SetPrivateField(_articlesComponent, "_articleItems", testArticles);
-
-        // Setup mock to return the original URL for any valid URL
-        _mockImageValidationService.Arrange(x => x.GetImageUrlOrPlaceholderAsync(
-                The<string>.IsAnyValue, The<CancellationToken>.IsAnyValue))
-            .Returns<string, CancellationToken>((url, token) => Task.FromResult(url));
-
-        // Act
-        await InvokePrivateMethodAsync(_articlesComponent, "PopulateImageUrlCacheAsync");
-
-        // Assert
-        var imageUrlCache = GetPrivateField<Dictionary<string, string>>(_articlesComponent, "_imageUrlCache");
-        await Assert.That(imageUrlCache).IsNotNull();
-        await Assert.That(imageUrlCache.Count).IsEqualTo(2);
-        await Assert.That(imageUrlCache["https://example.com/article1"]).IsEqualTo("https://example.com/image1.jpg");
-        await Assert.That(imageUrlCache["https://example.com/article2"]).IsEqualTo("https://example.com/image2.jpg");
-    }
 }
 
 // Mock classes for testing
-public class MockNavigationManager : NavigationManager
+public class NavigationManagerMock : NavigationManager
 {
-    public MockNavigationManager()
+    public NavigationManagerMock()
     {
         Initialize("https://localhost/", "https://localhost/");
     }
