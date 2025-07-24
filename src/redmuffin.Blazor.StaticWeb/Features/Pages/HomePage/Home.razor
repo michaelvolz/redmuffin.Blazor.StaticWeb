@@ -1,24 +1,84 @@
 @page "/"
-@inject NavigationManager Navigation
 
 <PageTitle>Home</PageTitle>
 
-<h1>redmuffin.StaticWeb <i class="fa fa-rocket" style="font-size: 0.75em;" aria-hidden="true"></i></h1>
+@* Skip navigation link for keyboard users *@
+<a href="#main-content" class="skip-link visually-hidden" aria-label="Skip to main content">Skip to main content</a>
 
-<div style="font-size:2rem;">
-    😀 😃 😄 😁 😆 😅 😂 🤣 😊 😇
-    🙂 🙃 😉 😌 😍 🥰 😘 😗 😙 😚
-</div>
+@* Main content landmark *@
+<main id="main-content" role="main" aria-labelledby="page-heading">
+    @* Application heading with proper heading hierarchy *@
+    <h1 id="page-heading" tabindex="-1">
+        redmuffin.StaticWeb
+        <i class="fa fa-rocket" style="font-size: 0.75em;" aria-hidden="true"></i>
+    </h1>
 
-@code {
+    @* Emoji display section with accessibility support *@
+    <section aria-labelledby="emoji-heading" class="emoji-section">
+        <h2 id="emoji-heading" class="visually-hidden">Emoji Display</h2>
+        <div style="font-size:2rem;" role="img" aria-label="Collection of happy face emojis">
+            😀 😃 😄 😁 😆 😅 😂 🤣 😊 😇
+            🙂 🙃 😉 😌 😍 🥰 😘 😗 😙 😚
+        </div>
+    </section>
 
-    protected override void OnInitialized()
-    {
-        var uri = new Uri(Navigation.Uri);
-        if (uri.Host == "localhost" && uri.Port != 4280)
-        {
-            Navigation.NavigateTo("http://localhost:4280", true);
-        }
-    }
+    @* Interactive controls section *@
+    <section aria-labelledby="controls-heading" class="controls-section">
+        <h2 id="controls-heading" class="visually-hidden">Interactive Controls</h2>
 
-}
+        @* Primary action button with accessibility features *@
+        <button type="button"
+                class="primary-button"
+                aria-describedby="button-description"
+                @onclick="HandleClickAsync">
+            Click me
+        </button>
+        <div id="button-description" class="visually-hidden">
+            Performs a demo API call and logs the result
+        </div>
+
+        @* Form example for accessibility testing *@
+        <form @onsubmit="HandleFormSubmitAsync" @onsubmit:preventDefault="true" aria-labelledby="demo-form-heading">
+            <h3 id="demo-form-heading" class="visually-hidden">Demo Form</h3>
+
+            <div class="form-group">
+                <label for="demo-input">Demo Input:</label>
+                <input type="text"
+                       id="demo-input"
+                       name="demoInput"
+                       @bind="DemoInputValue"
+                       aria-describedby="demo-input-help"
+                       placeholder="Enter some text" />
+                <div id="demo-input-help" class="help-text">
+                    This is a demo input field for accessibility testing
+                </div>
+            </div>
+
+            <button type="submit"
+                    aria-describedby="submit-description">
+                Submit Form
+            </button>
+            <div id="submit-description" class="visually-hidden">
+                Submits the demo form and logs the input value
+            </div>
+        </form>
+    </section>
+
+    @* Status/announcement region for screen readers *@
+    <div id="status-region"
+         role="status"
+         aria-live="polite"
+         aria-atomic="true"
+         class="visually-hidden">
+        @StatusMessage
+    </div>
+
+    @* Alert region for important messages *@
+    <div id="alert-region"
+         role="alert"
+         aria-live="assertive"
+         aria-atomic="true"
+         class="visually-hidden">
+        @AlertMessage
+    </div>
+</main>

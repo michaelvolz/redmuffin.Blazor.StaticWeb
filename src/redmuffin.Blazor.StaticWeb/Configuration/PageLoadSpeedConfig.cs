@@ -1,12 +1,12 @@
 namespace redmuffin.Blazor.StaticWeb.Configuration;
 
 /// <summary>
-///     Configuration settings for the PageLoadSpeed component
+///     Configuration settings for the LoadSpeed component
 /// </summary>
 public static class PageLoadSpeedConfig
 {
     /// <summary>
-    ///     Controls whether the PageLoadSpeed component is enabled
+    ///     Controls whether the LoadSpeed component is enabled
     ///     Set to true to enable the component, false to disable it entirely
     /// </summary>
     public static bool IsEnabled { get; set; } = true;

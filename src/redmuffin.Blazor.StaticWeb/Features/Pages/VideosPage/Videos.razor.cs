@@ -71,16 +71,15 @@ public partial class Videos
                 : video.Excerpt;
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
         // Validate injected dependencies
-        ArgumentNullException.ThrowIfNull(Http);
         ArgumentNullException.ThrowIfNull(Logger);
         ArgumentNullException.ThrowIfNull(Js);
         ArgumentNullException.ThrowIfNull(Navigation);
 
         // Load articles automatically when the page starts
-        await FetchVideosAsync().ConfigureAwait(false);
+        return FetchVideosAsync();
     }
 
     // Update RainDropClientId based on environment

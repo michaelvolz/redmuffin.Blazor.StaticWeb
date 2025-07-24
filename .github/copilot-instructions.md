@@ -16,7 +16,7 @@
 
 ## 🚨 CRITICAL: ZERO BUILD WARNINGS POLICY
 
-**MANDATORY WORKFLOW**: EVERY C# edit → `dotnet clean && dotnet build --no-restore --verbosity quiet` → fix ALL warnings → continue
+**MANDATORY WORKFLOW**: EVERY completed C# edit  → `dotnet clean && dotnet build --no-restore --verbosity quiet` → fix ALL warnings → continue
 
 **PREVENTION CHECKLIST** (Apply to ALL C# code):
 - `ConfigureAwait(false)` on ALL awaits
@@ -63,13 +63,188 @@
 ### ONLY PERMITTED WARNING
 **IL2111**: Safe to ignore (Blazor WebAssembly auto-generated `App_razor.g.cs` trimming optimization) - ALL others FORBIDDEN
 
-## 🧪 TDD Workflow
+### DOCUMENTATION WARNINGS: Visual Studio Only
+**SA1623/SA1615**: Fix if existing documentation, skip if undocumented (Visual Studio may show these when terminal doesn't)
+
+## 🧩 MANDATORY: Partial Class Organization Standards
+
+### BLAZOR COMPONENTS: Split by Concern
+**Pattern**: `ComponentName.razor.cs` (main) + `ComponentName.Logging.cs` (LoggerMessage ONLY)
+```csharp
+// Home.razor.cs - Business logic, lifecycle, properties, events
+public partial class Home : ComponentBase
+{
+    [Inject] public required ILogger<Home> Logger { get; set; }
+    private async Task HandleClickAsync()
+    {
+        LogButtonClicked(Logger, null); // Reference logging partial
+        // Business logic...
+    }
+}
+
+// Home.Logging.cs - LoggerMessage delegates ONLY
+public partial class Home
+{
+    private static readonly Action<ILogger, Exception?> LogButtonClicked =
+        LoggerMessage.Define(LogLevel.Information, new EventId(5, nameof(LogButtonClicked)),
+            "Button clicked");
+}
+```
+
+### SERVICES/CLASSES: Split by Concern
+**Pattern**: `ServiceName.cs` (main) + `ServiceName.Logging.cs` (LoggerMessage ONLY)
+```csharp
+// UserService.cs - Business logic, methods, properties
+public partial class UserService : IUserService
+{
+    private readonly ILogger<UserService> _logger;
+    public async Task<User> GetUserAsync(string id)
+    {
+        LogUserRequested(_logger, id, null); // Reference logging partial
+        // Service logic...
+    }
+}
+
+// UserService.Logging.cs - LoggerMessage delegates ONLY
+public partial class UserService
+{
+    private static readonly Action<ILogger, string, Exception?> LogUserRequested =
+        LoggerMessage.Define<string>(LogLevel.Information, new EventId(1, nameof(LogUserRequested)),
+            "User requested: {UserId}");
+}
+```
+
+### TEST CLASSES: Split by Concern
+**Pattern**: `TestClassName.cs` ([Test] methods ONLY) + `TestClassName.Helpers.cs` (TestScope, mocks, utilities)
+```csharp
+// HomeTests.cs - [Test] methods ONLY
+public partial class HomeTests
+{
+    [Test]
+    public async Task Home_ButtonClick_LogsExpectedEvent()
+    {
+        // Arrange
+        using var scope = CreateTestScope();
+        var component = scope.Context.RenderComponent<HomePage>();
+        
+        // Act & Assert
+        await button.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
+        await Assert.That(scope.Logger.LogEntries.Any(entry => 
+            entry.Message.Contains("Button clicked"))).IsTrue();
+    }
+}
+
+// HomeTests.Helpers.cs - Infrastructure ONLY
+public partial class HomeTests
+{
+    public sealed class TestScope(string baseUri = "http://localhost:5000/") : IDisposable
+    {
+        public TestContext Context { get; } = new();
+        public NavigationManagerMock NavigationManager { get; } = new(baseUri);
+        public TestLogger<HomePage> Logger { get; } = new();
+        // TestScope infrastructure...
+    }
+    
+    private static TestScope CreateTestScope() => new TestScope().WithStandardServices();
+    // Helper methods, mocks, utilities...
+}
+```
+
+### FILE NAMING CONVENTION
+```
+Components:
+├── Home.razor.cs                 # Main component logic
+└── Home.Logging.cs              # LoggerMessage delegates
+
+Services:
+├── UserService.cs               # Main service logic
+└── UserService.Logging.cs       # LoggerMessage delegates
+
+Tests:
+├── HomeTests.cs                 # [Test] methods only
+└── HomeTests.Helpers.cs         # TestScope, mocks, utilities
+```
+
+### MIGRATION PRIORITIES
+1. **✅ Components**: Already established with Home.Logging.cs pattern
+2. **🔄 Services**: Migrate existing services with LoggerMessage (like LogHelpers.cs)
+3. **🎯 Tests**: Split large test files (HomeTests.cs) into main + helpers
+4. **📝 New Code**: ALL new classes must follow partial class standards
+
+### BENEFITS
+- **✅ Cleaner Main Files**: Business logic without logging clutter
+- **✅ Focused Test Files**: Only actual tests in main file
+- **✅ Better Organization**: Clear separation of concerns
+- **✅ Easier Maintenance**: Infrastructure changes isolated
+- **✅ Consistent Standards**: Uniform pattern across solution
+
+## 🧪 TDD Workflow + MANDATORY Testing Patterns
+
 **Red-Green-Refactor**: Write failing test → implement → refactor
 **Before features**: Write failing TUnit test → `dotnet test` → implement → refactor
-**Test naming**: `Should_Return_Valid_User_When_Id_Exists` (underscores only in tests)  
+**Test naming**: `Component_Behavior_ExpectedOutcome` (underscores only in tests)  
 **Test behavior, not implementation**: Public interfaces/contracts only  
 **Mock dependencies**: Constructor injection for isolation  
 **Test structure**: Arrange-Act-Assert pattern
+
+### MANDATORY: TestScope Architecture (ALL Test Classes)
+```csharp
+/// <summary>
+///     Modern test scope that encapsulates all test resources with automatic disposal.
+///     Uses C# 13 primary constructor pattern for clean, professional resource management.
+/// </summary>
+public sealed class TestScope(string baseUri = "http://localhost:5000/") : IDisposable
+{
+    public TestContext Context { get; } = new();
+    public NavigationManagerMock NavigationManager { get; } = new(baseUri);
+    public TestLogger<T> Logger { get; } = new();
+
+    // Fluent builder methods for service configuration
+    public TestScope WithStandardServices() { /* setup */ return this; }
+    public TestScope WithFailingHttpClient() { /* setup */ return this; }
+    public TestScope WithJSInterop(JSRuntimeMode mode = JSRuntimeMode.Strict) { /* setup */ return this; }
+    
+    public void Dispose() => Context?.Dispose();
+}
+
+// Factory methods for common scenarios
+private static TestScope CreateTestScope() => new TestScope().WithStandardServices();
+```
+
+### MANDATORY: TUnit Fluent Chaining
+**✅ USE CHAINING FOR**: Same object/property assertions, logically sequential validations
+**⚠️ USE Assert.Multiple FOR**: Different objects, unrelated concerns
+
+```csharp
+// ✅ OPTIMAL: Chain related assertions on same object
+await Assert.That(component.Markup).IsNotNull().And.Contains("expected").And.Contains("more");
+
+// ✅ OPTIMAL: Use Assert.Multiple for unrelated concerns
+using (Assert.Multiple())
+{
+    await Assert.That(component.Find("h1")).IsNotNull();  // DOM structure
+    await Assert.That(scope.Logger.LogEntries.Any(entry => entry.Message.Contains("logged"))).IsTrue();  // Logging
+}
+
+// ❌ NEVER: Separate assertions on same object
+using (Assert.Multiple())
+{
+    await Assert.That(component.Markup).IsNotNull();
+    await Assert.That(component.Markup).Contains("text");  // WRONG
+}
+```
+
+### MANDATORY: Test Quality Checklist
+**Before committing ANY test:**
+- [ ] ConfigureAwait(false) on all async calls
+- [ ] TestScope pattern with fluent configuration
+- [ ] TUnit chaining for related assertions
+- [ ] Clear AAA structure with comments
+- [ ] Single responsibility principle
+- [ ] Zero build warnings compliance
+- [ ] Resource disposal via using statements
+- [ ] Comprehensive error scenario testing
+- [ ] Partial class structure: Tests in main, helpers in .Helpers.cs
 
 ## 🎭 LightMock.Generator
 **PRIMARY MOCKING FRAMEWORK** - NSubstitute deprecated, will be removed
@@ -151,7 +326,7 @@ Primary Constructors: `public class Person(string name, int age)` | Collection E
 ## 🤖 AI Guidelines
 
 ### 🔄 Development Workflow
-**MANDATORY**: After EVERY C# file change: `dotnet clean && dotnet build --no-restore --verbosity quiet` → Fix ALL warnings → Continue
+**MANDATORY**: After EVERY major C# file change: `dotnet clean && dotnet build --no-restore --verbosity quiet` → Fix ALL warnings → Continue
 **Pre-commit**: `dotnet test` must pass without errors (warnings OK) - stop commit if test errors exist
 **Git commits**: Batch by SRP for quality messages  
 **File editing**: One file at a time, track progress ("Edit 2 of 5")  
@@ -167,7 +342,7 @@ Primary Constructors: `public class Person(string name, int age)` | Collection E
 ### 🌐 External Tools
 **Context7 MCP**: `resolve-library-id` → `get-library-docs` (current docs over training data)
 **Fetch MCP**: URL→markdown conversion for docs/repos/tutorials
-**Brave Search**: `brave_web_search`/`brave_local_search` (2,000 queries/month)  
+**Brave Search**: `brave_web_search` (2,000 queries/month)  
 **Sequential Thinking**: Complex problem-solving with dynamic adaptation
 
 ### 📍 Repository Info
@@ -181,7 +356,7 @@ Primary Constructors: `public class Person(string name, int age)` | Collection E
 
 ### 💡 Essential Examples
 ```csharp
-// Blazor Component with full DI pattern
+// Blazor Component with full DI pattern + partial class structure
 public partial class Example : ComponentBase
 {
     [Inject] private ILocalStorageService LocalStorage { get; set; } = default!;
@@ -202,31 +377,27 @@ public async Task<HttpResponseData> Run(
     // Function implementation
 }
 
-// TUnit Test with LightMock.Generator
+// TUnit Test with TestScope Architecture + Partial Class Pattern
 [Test]
-public async Task Should_Return_User_When_Valid_Id_Provided()
+public async Task Component_Behavior_ExpectedOutcome()
 {
     // Arrange
-    var httpClientMock = new Mock<HttpClient>();
-    var loggerMock = new Mock<ILogger<UserService>>();
-    var userService = new UserService(httpClientMock.Object, loggerMock.Object);
+    using var scope = CreateTestScope(); // From .Helpers.cs partial
     
     // Act
-    var result = await userService.GetUserAsync("valid-id");
+    var component = scope.Context.RenderComponent<MyComponent>();
+    await button.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
     
-    // Assert
-    await Assert.That(result).IsNotNull();
+    // Assert - Use chaining for related assertions
+    await Assert.That(component.Markup).IsNotNull().And.Contains("expected");
 }
 
-// Component Testing with DI
+// Component Testing with TestScope
 [Test]
 public void Should_Render_UserProfile_When_User_Loaded()
 {
-    using var ctx = new TestContext();
-    var userServiceMock = new Mock<IUserService>();
-    ctx.Services.AddSingleton(userServiceMock.Object);
-    
-    var component = ctx.RenderComponent<UserProfile>();
+    using var scope = CreateTestScope();
+    var component = scope.Context.RenderComponent<UserProfile>();
     await Assert.That(component.Find("h1").TextContent).Contains("Expected");
 }
 ```
@@ -234,4 +405,6 @@ public void Should_Render_UserProfile_When_User_Loaded()
 ### ⭐ Best Practices
 **TDD**: Test first, small steps, continuous refactoring, fast feedback, behavior-focused
 **DI**: Dependency inversion, constructor injection, single responsibility, interface segregation  
+**Testing**: TestScope architecture, TUnit fluent chaining, comprehensive error scenarios, zero warnings compliance, partial class organization
+**Partial Classes**: Components, services, and tests MUST follow established partial class patterns for clean separation of concerns
 **General**: Modular/reusable/testable components, strongly-typed parameters, handle exceptions with try/catch or `<ErrorBoundary>`, prefer C#/Blazor over JS, use `StateHasChanged()` sparingly, implement `IDisposable` for subscriptions/timers

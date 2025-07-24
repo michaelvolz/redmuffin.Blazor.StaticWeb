@@ -20,6 +20,9 @@
 @use 'features/shared/index' as shared;     // Shared features
 @use 'utilities/index' as utils;     // Utility classes
 
+// Import accessibility styles
+@use 'accessibility';                // Accessibility utility classes and enhancements
+
 // =============================================================================
 // All styles are now properly organized in their respective modules:
 // - Form validation styles → base/global
@@ -29,4 +32,5 @@
 // - Scrollbar styles → base/global
 // - Navigation overrides → components/navigation
 // - Legacy imports → converted to modern @use system
+// - Accessibility styles → accessibility partial
 // =============================================================================

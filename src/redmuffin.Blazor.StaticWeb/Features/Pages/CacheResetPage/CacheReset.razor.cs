@@ -26,23 +26,23 @@ public partial class CacheReset
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
     [Inject] private ILogger<CacheReset> Logger { get; set; } = default!;
 
-    private async Task ConfirmResetAsync()
+    private Task ConfirmResetAsync()
     {
-        await PerformCacheResetAsync().ConfigureAwait(false);
+        return PerformCacheResetAsync();
     }
 
-    private async Task TryResetAgainAsync()
+    private Task TryResetAgainAsync()
     {
         _hasError = false;
         _errorMessage = string.Empty;
-        await PerformCacheResetAsync().ConfigureAwait(false);
+        return PerformCacheResetAsync();
     }
 
-    private async Task ResetAgainAsync()
+    private Task ResetAgainAsync()
     {
         _resetCompleted = false;
         _itemsCleared = 0;
-        await PerformCacheResetAsync().ConfigureAwait(false);
+        return PerformCacheResetAsync();
     }
 
     private async Task PerformCacheResetAsync()
