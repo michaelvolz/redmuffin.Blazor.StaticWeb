@@ -12,7 +12,10 @@ To guide an AI assistant in creating a detailed, step-by-step task list in Markd
 
 - **Format:** Markdown (`.md`)
 - **Location:** `/tasks/`
-- **Filename:** `[file-name]-prd-tasks.md` (e.g., `user-profile-editing-prd-tasks.md`)
+- **Filename:** `PRD-XXX-ShortTitle-ToDo.md` where:
+  - `XXX` is a three-digit number that matches the corresponding PRD file
+  - `ShortTitle` matches the short title from the PRD file
+  - Example: If PRD is `PRD-002-AuthSystem.md`, task list is `PRD-002-AuthSystem-ToDo.md`
 
 ## Process
 
@@ -23,7 +26,7 @@ To guide an AI assistant in creating a detailed, step-by-step task list in Markd
 5.  **Phase 2: Generate Sub-Tasks:** Once the user confirms, break down each parent task into smaller, actionable sub-tasks necessary to complete the parent task. Ensure sub-tasks logically follow from the parent task and cover the implementation details implied by the PRD.
 6.  **Identify Relevant Files:** Based on the tasks and PRD, identify potential files that will need to be created or modified. List these under the `Relevant Files` section, including corresponding test files if applicable.
 7.  **Generate Final Output:** Combine the parent tasks, sub-tasks, relevant files, and notes into the final Markdown structure.
-8.  **Save Task List:** Save the generated document in the `/tasks/` directory with the filename `[file-name]-prd.md`, where `[file-name]` matches the base name of the input PRD file (e.g., if the input was `user-profile-editing-prd.md`, the output is `user-profile-editing-prd-tasks.md`).
+8.  **Save Task List:** Save the generated document in the `/tasks/` directory with the filename `PRD-XXX-ShortTitle-ToDo.md`, where `XXX` and `ShortTitle` match the corresponding PRD file (e.g., if the input was `PRD-002-AuthSystem.md`, the output is `PRD-002-AuthSystem-ToDo.md`).
 
 ## Output Format
 
@@ -35,7 +38,7 @@ The generated task list _must_ follow this structure:
 ### Blazor Components
 - `src/redmuffin.Blazor.StaticWeb/Features/[FeatureName]/[ComponentName].razor` - Main Blazor component for [feature description].
 - `src/redmuffin.Blazor.StaticWeb/Features/[FeatureName]/[ComponentName].razor.cs` - Code-behind for [ComponentName] component.
-- `src/redmuffin.Blazor.StaticWeb/Features/[FeatureName]/[ComponentName].razor.css` - Component-specific styles (if needed).
+
 - `src/redmuffin.Blazor.StaticWeb/Features/[FeatureName]/Components/[SubComponent].razor` - Child component for [specific functionality].
 
 ### Azure Functions (API)
@@ -46,8 +49,8 @@ The generated task list _must_ follow this structure:
 - `src/redmuffin.Blazor.StaticWeb.Common/DTOs/[DtoName].cs` - Data transfer objects for API communication.
 
 ### Styles
-- `src/redmuffin.Blazor.StaticWeb/wwwroot/css/[feature-name].css` - Feature-specific CSS styles.
-- `src/redmuffin.Blazor.StaticWeb/wwwroot/scss/[feature-name].scss` - SCSS source files.
+- `src/redmuffin.Blazor.StaticWeb/wwwroot/scss/features/[feature-name]/[component-name].scss` - Feature-specific SCSS using `@use` directives.
+- `src/redmuffin.Blazor.StaticWeb/wwwroot/scss/features/[feature-name]/_index.scss` - Feature SCSS index file.
 
 ### JavaScript (if needed)
 - `src/redmuffin.Blazor.StaticWeb/wwwroot/js/[feature-name].js` - JavaScript for complex client-side interactions.
@@ -59,11 +62,15 @@ The generated task list _must_ follow this structure:
 ### Notes
 
 - Tests use TUnit framework with `[Test]` attribute for test methods and `[Arguments]` for data-driven tests.
+- Mocking uses LightMock.Generator ONLY (NSubstitute deprecated).
+- Use `dotnet clean && dotnet build --no-restore --verbosity quiet` to verify zero build warnings (except IL2111).
 - Use `dotnet test` to run all tests or `dotnet test --filter "FullyQualifiedName~[TestClassName]"` for specific test classes.
 - Blazor components follow feature-based organization under `src/redmuffin.Blazor.StaticWeb/Features/`.
 - Azure Functions use isolated worker model with dependency injection.
 - Use Zurb Foundation classes for consistent UI styling.
-- Component styling can be scoped using `.razor.css` files or global SCSS.
+- Component styling uses feature-based SCSS with `@use` directives.
+- All async methods must use `ConfigureAwait(false)` and proper error handling.
+- Follow StyleCop/Meziantou analyzer rules for code quality.
 
 ## Tasks
 
@@ -80,11 +87,13 @@ The generated task list _must_ follow this structure:
 This task list is for a Blazor WebAssembly .NET 9 application with the following characteristics:
 *   **Frontend:** Blazor WebAssembly with Zurb Foundation for UI
 *   **Backend:** Azure Functions (.NET 8) for API endpoints  
-*   **Testing:** TUnit framework (NOT NUnit/xUnit/MSTest)
+*   **Testing:** TUnit framework with `[Test]` attribute (NOT NUnit/xUnit/MSTest)
+*   **Mocking:** LightMock.Generator ONLY (NSubstitute deprecated)
 *   **Architecture:** Feature-based organization under `src/redmuffin.Blazor.StaticWeb/Features/`
-*   **Styling:** SCSS with Foundation framework, component-scoped CSS
+*   **Styling:** SCSS with Foundation framework using `@use` directives
 *   **Storage:** Browser-based storage via `Blazored.LocalStorage` and `IJSRuntime`
-*   **Build:** .NET 9 with WebAssembly optimizations enabled
+*   **Build:** .NET 9 with WebAssembly optimizations (`WasmStripILAfterAOT=true`, `InvariantGlobalization=true`, `PublishTrimmed=true`)
+*   **Code Quality:** Zero build warnings policy (except IL2111), StyleCop/Meziantou analyzers enforced
 *   **Project Structure:** 
     - Main Blazor app: `src/redmuffin.Blazor.StaticWeb/`
     - Azure Functions API: `src/redmuffin.Blazor.StaticWeb.Api/`

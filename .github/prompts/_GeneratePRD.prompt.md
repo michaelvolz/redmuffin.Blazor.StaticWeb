@@ -13,7 +13,10 @@ To guide an AI assistant in creating a detailed Product Requirements Document (P
 1.  **Receive Initial Prompt:** The user provides a brief description or request for a new feature or functionality.
 2.  **Ask Clarifying Questions:** Before writing the PRD, the AI *must* ask clarifying questions to gather sufficient detail. The goal is to understand the "what" and "why" of the feature, not necessarily the "how" (which the developer will figure out).
 3.  **Generate PRD:** Based on the initial prompt and the user's answers to the clarifying questions, generate a PRD using the structure outlined below.
-4.  **Save PRD:** Save the generated document as `[feature-name]-prd.md` inside the `/tasks` directory.
+4.  **Save PRD:** Save the generated document as `PRD-XXX-ShortTitle.md` inside the `/tasks` directory, where:
+    - `XXX` is a three-digit number that increments based on the highest numbered PRD file in the target folder
+    - `ShortTitle` is a concise, descriptive title derived from the feature (e.g., `AuthSystem`, `PaymentModule`)
+    - If no PRD files exist, start with `001`
 
 ## Clarifying Questions (Examples)
 
@@ -47,14 +50,18 @@ The generated PRD should include the following sections:
     *   Azure Functions API endpoints if needed (`src/redmuffin.Blazor.StaticWeb.Api/`)
     *   Client-side storage using `Blazored.LocalStorage` or `IJSRuntime`
     *   Use of `HttpClient` for API calls
-    *   SCSS/CSS styling with Zurb Foundation
+    *   SCSS styling with Zurb Foundation using `@use` directives
+    *   Feature-based SCSS organization under `wwwroot/scss/features/`
 8.  **Success Metrics:** How will the success of this feature be measured? (e.g., "Increase user engagement by 10%", "Reduce support tickets related to X").
 9.  **Implementation Notes:** Blazor-specific guidance:
     *   Component placement in feature directories
     *   Parameter binding and event callbacks
     *   Lifecycle methods (`OnInitializedAsync`, `OnParametersSetAsync`)
     *   State management approaches
-    *   Testing considerations using TUnit
+    *   Testing considerations using TUnit framework with `[Test]` attribute
+    *   Mocking with LightMock.Generator (NSubstitute deprecated)
+    *   Code quality standards (StyleCop/Meziantou analyzers)
+    *   Async/await patterns with `ConfigureAwait(false)`
 10. **Open Questions:** List any remaining questions or areas needing further clarification.
 
 ## Target Audience
@@ -66,17 +73,24 @@ Assume the primary reader of the PRD is a **junior developer** familiar with Bla
 This PRD is for a Blazor WebAssembly .NET 9 application with the following characteristics:
 *   **Frontend:** Blazor WebAssembly with Zurb Foundation for UI
 *   **Backend:** Azure Functions (.NET 8) for API endpoints
-*   **Testing:** TUnit framework (NOT NUnit/xUnit)
+*   **Testing:** TUnit framework with `[Test]` attribute (NOT NUnit/xUnit/MSTest)
+*   **Mocking:** LightMock.Generator ONLY (NSubstitute deprecated)
 *   **Architecture:** Feature-based organization under `src/redmuffin.Blazor.StaticWeb/Features/`
-*   **Styling:** SCSS with Foundation framework
+*   **Styling:** SCSS with Foundation framework using `@use` directives
 *   **Storage:** Browser-based storage via `Blazored.LocalStorage` and `IJSRuntime`
-*   **Build:** .NET 9 with WebAssembly optimizations enabled
+*   **Build:** .NET 9 with WebAssembly optimizations (`WasmStripILAfterAOT=true`, `InvariantGlobalization=true`, `PublishTrimmed=true`)
+*   **Code Quality:** Zero build warnings policy (except IL2111), StyleCop/Meziantou analyzers enforced
+*   **Project Structure:** 
+    - Main Blazor app: `src/redmuffin.Blazor.StaticWeb/`
+    - Azure Functions API: `src/redmuffin.Blazor.StaticWeb.Api/`
+    - Shared models/DTOs: `src/redmuffin.Blazor.StaticWeb.Common/`
+    - Tests: `tests/redmuffin.Blazor.StaticWeb.Tests/` and `tests/redmuffin.Blazor.StaticWeb.Api.Tests/`
 
 ## Output
 
 *   **Format:** Markdown (`.md`)
 *   **Location:** `/tasks/`
-*   **Filename:** `[feature-name]-prd.md`
+*   **Filename:** `PRD-XXX-ShortTitle.md` (e.g., `PRD-003-AuthSystem.md`)
 
 ## Final instructions
 
