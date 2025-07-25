@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb.Common.Abstractions;
 using redmuffin.Blazor.StaticWeb.Common.Services;
 using HomePage = redmuffin.Blazor.StaticWeb.Features.Pages.HomePage.Home;
-using BUnitContext = Bunit.TestContext;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.NewTests.Features.Home;
 
@@ -55,7 +54,7 @@ public partial class HomeTests
     /// </summary>
     public sealed class TestScope(string baseUri = "http://localhost:5000/") : IDisposable
     {
-        public BUnitContext BUnitContext { get; } = new();
+        public BunitContext BUnitContext { get; } = new();
         public NavigationManagerMock NavigationManager { get; } = new(baseUri);
         public TestLogger<HomePage> Logger { get; } = new();
 
@@ -275,13 +274,8 @@ public partial class HomeTests
     /// <summary>
     ///     Mock ClaimsIdentity for testing authorization scenarios.
     /// </summary>
-    public sealed class MockClaimsIdentity : ClaimsIdentity
+    public sealed class MockClaimsIdentity(string? name = null, string? authenticationType = null) : ClaimsIdentity(CreateClaims(name), authenticationType)
     {
-        public MockClaimsIdentity(string? name = null, string? authenticationType = null)
-            : base(CreateClaims(name), authenticationType)
-        {
-        }
-
         public override bool IsAuthenticated => !string.IsNullOrEmpty(AuthenticationType);
 
         private static IEnumerable<Claim> CreateClaims(string? name)

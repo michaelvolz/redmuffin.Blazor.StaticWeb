@@ -16,7 +16,7 @@ public partial class HomeTests
     {
         // Arrange
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
         var submitButton = component.Find("button[type='submit']");
 
         // Ensure input is empty for validation test
@@ -37,7 +37,7 @@ public partial class HomeTests
     {
         // Arrange & Act
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify form structure follows accessibility best practices
         using (Assert.Multiple())
@@ -60,7 +60,7 @@ public partial class HomeTests
     {
         // Arrange & Act
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify ARIA live regions are properly configured
         using (Assert.Multiple())
@@ -84,7 +84,7 @@ public partial class HomeTests
     {
         // Arrange & Act
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify buttons have proper accessibility descriptions
         using (Assert.Multiple())
@@ -112,7 +112,7 @@ public partial class HomeTests
     {
         // Arrange & Act
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify form accessibility compliance
         using (Assert.Multiple())
@@ -139,7 +139,7 @@ public partial class HomeTests
     {
         // Arrange & Act
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify proper heading hierarchy (h1 -> h2 -> h3)
         using (Assert.Multiple())
@@ -165,7 +165,7 @@ public partial class HomeTests
     {
         // Arrange & Act
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify ARIA landmarks and roles are properly implemented
         using (Assert.Multiple())
@@ -194,7 +194,7 @@ public partial class HomeTests
     {
         // Arrange & Act
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify skip link exists and has proper accessibility attributes
         var skipLink = component.Find("a.skip-link");
@@ -212,7 +212,7 @@ public partial class HomeTests
     {
         // Arrange & Act
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify decorative icons are hidden from screen readers
         var rocketIcon = component.Find("i.fa-rocket");
@@ -224,7 +224,7 @@ public partial class HomeTests
     {
         // Arrange & Act
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify keyboard navigation elements are present
         using (Assert.Multiple())
@@ -248,7 +248,7 @@ public partial class HomeTests
     {
         // Arrange & Act
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify semantic HTML structure compliance
         using (Assert.Multiple())
@@ -277,7 +277,7 @@ public partial class HomeTests
     {
         // Arrange
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
         var button = component.Find("button.primary-button");
 
         // Act - Trigger button click which demonstrates ARIA live region functionality
@@ -294,7 +294,7 @@ public partial class HomeTests
     {
         // Arrange & Act
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify visually hidden elements exist for screen readers
         using (Assert.Multiple())
@@ -322,7 +322,7 @@ public partial class HomeTests
             .WithFailingHttpClient();
 
         // Act
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
         var button = component.Find("button");
 
         // Clear logs and trigger HTTP failure
@@ -341,94 +341,12 @@ public partial class HomeTests
         }
     }
 
-    // ========================================
-    // ADVANCED NON-OBVIOUS SCENARIOS - TASK 5.5 IMPLEMENTATION ✅
-    // ========================================
-    // These tests cover sophisticated edge cases, resource management, memory leak prevention,
-    // and complex interaction patterns that are often missed in standard testing.
-    // Research-based scenarios covering real-world production issues.
-
-    [Test]
-    public async Task Home_AdvancedScenarios_ComponentDisposalPatterns_PreventMemoryLeaks()
-    {
-        // Arrange - Test that component disposal properly cleans up resources
-        TestScope? disposedScope = null;
-        HomePage? componentInstance = null;
-
-        // Act - Create and dispose component in controlled manner
-        {
-            using var scope = CreateTestScope();
-            var component = scope.BUnitContext.RenderComponent<HomePage>();
-            componentInstance = component.Instance;
-            disposedScope = scope;
-        } // Scope disposes here
-
-        // Assert - Verify component and scope are properly disposed without memory leaks
-        using (Assert.Multiple())
-        {
-            await Assert.That(disposedScope).IsNotNull(); // Scope existed
-            await Assert.That(componentInstance).IsNotNull(); // Component existed
-            // In production, would verify no event handlers leak, no timer leaks, etc.
-            // This pattern tests disposal infrastructure without relying on GC timing
-        }
-    }
-
-    [Test]
-    public async Task Home_AdvancedScenarios_RapidStateChanges_MaintainDataIntegrity()
-    {
-        // Arrange
-        using var scope = CreateTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
-        var submitButton = component.Find("button[type='submit']");
-        var input = component.Find("input#demo-input");
-
-        // Act - Rapid successive state changes to test race conditions
-        await input.ChangeAsync(new ChangeEventArgs { Value = "test1" }).ConfigureAwait(false);
-        await input.ChangeAsync(new ChangeEventArgs { Value = "test2" }).ConfigureAwait(false);
-        await input.ChangeAsync(new ChangeEventArgs { Value = "final" }).ConfigureAwait(false);
-        await submitButton.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
-
-        // Assert - Final state should be consistent despite rapid changes
-        using (Assert.Multiple())
-        {
-            await Assert.That(component.Instance.DemoInputValue).IsEqualTo(string.Empty); // Cleared after submit
-            await Assert.That(scope.Logger.LogEntries.Any(entry =>
-                entry.Message.Contains("Form submitted") && entry.Message.Contains("final"))).IsTrue();
-        }
-    }
-
-    [Test]
-    public async Task Home_AdvancedScenarios_StateHasChangedCalls_OptimizedRenderCycles()
-    {
-        // Arrange
-        using var scope = CreateTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
-        var button = component.Find("button.primary-button");
-
-        // Clear initial render logs
-        scope.Logger.LogEntries.Clear();
-
-        // Act - Trigger action that calls StateHasChanged multiple times
-        await button.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
-
-        // Assert - Verify render optimization (component should handle multiple StateHasChanged calls efficiently)
-        using (Assert.Multiple())
-        {
-            // Component should render without excessive re-renders
-            await Assert.That(component.Markup).IsNotNull().And.Contains("redmuffin.StaticWeb");
-
-            // Verify the action completed (indicates StateHasChanged worked properly)
-            await Assert.That(scope.Logger.LogEntries.Any(entry =>
-                entry.Message.Contains("Button clicked"))).IsTrue();
-        }
-    }
-
     [Test]
     public async Task Home_AdvancedScenarios_AsyncExceptionPropagation_DoesNotCrashComponent()
     {
         // Arrange
         using var scope = CreateFailingHttpTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
         var button = component.Find("button.primary-button");
 
         // Act - Trigger async operation that throws exceptions
@@ -454,11 +372,103 @@ public partial class HomeTests
     }
 
     [Test]
+    public async Task Home_AdvancedScenarios_BrowserSecurityPolicies_GracefulDegradation()
+    {
+        // Arrange - Simulate browser security restrictions (CORS, CSP, etc.)
+        using var scope = CreateTestScope();
+        scope.BUnitContext.JSInterop.Setup<bool>("window.crypto.getRandomValues")
+            .SetException(new JSException("Access denied by security policy"));
+
+        // Act - Component should render despite browser security restrictions
+        var component = scope.BUnitContext.Render<HomePage>();
+
+        // Assert - Component gracefully handles security restrictions
+        using (Assert.Multiple())
+        {
+            // Component renders successfully despite JS restrictions
+            await Assert.That(component.Markup).IsNotNull().And.Contains("redmuffin.StaticWeb");
+
+            // Core functionality remains available
+            var button = component.Find("button.primary-button");
+            await Assert.That(button).IsNotNull();
+            await Assert.That(button.TextContent.Trim()).IsEqualTo("Click me");
+        }
+    }
+
+    // ========================================
+    // ADVANCED NON-OBVIOUS SCENARIOS - TASK 5.5 IMPLEMENTATION ✅
+    // ========================================
+    // These tests cover sophisticated edge cases, resource management, memory leak prevention,
+    // and complex interaction patterns that are often missed in standard testing.
+    // Research-based scenarios covering real-world production issues.
+
+    [Test]
+    public async Task Home_AdvancedScenarios_ComponentDisposalPatterns_PreventMemoryLeaks()
+    {
+        // Arrange - Test that component disposal properly cleans up resources
+        TestScope? disposedScope = null;
+        HomePage? componentInstance = null;
+
+        // Act - Create and dispose component in controlled manner
+        {
+            using var scope = CreateTestScope();
+            var component = scope.BUnitContext.Render<HomePage>();
+            componentInstance = component.Instance;
+            disposedScope = scope;
+        } // Scope disposes here
+
+        // Assert - Verify component and scope are properly disposed without memory leaks
+        using (Assert.Multiple())
+        {
+            await Assert.That(disposedScope).IsNotNull(); // Scope existed
+            await Assert.That(componentInstance).IsNotNull(); // Component existed
+            // In production, would verify no event handlers leak, no timer leaks, etc.
+            // This pattern tests disposal infrastructure without relying on GC timing
+        }
+    }
+
+    [Test]
+    public async Task Home_AdvancedScenarios_ComponentParameterValidation_HandlesInvalidValues()
+    {
+        // Arrange - Test component resilience to invalid parameter values
+        using var scope = CreateTestScope();
+
+        // Setup invalid cascading parameters
+        scope.BUnitContext.Services.AddCascadingValue<string>("AppTheme", _ => "invalid-theme-value");
+        var invalidPreferences = new Dictionary<string, object>
+        {
+            ["null-value"] = null!,
+            ["empty-string"] = "",
+            ["negative-number"] = -1
+        };
+        scope.BUnitContext.Services.AddCascadingValue<IDictionary<string, object>>("UserPreferences", _ => invalidPreferences);
+
+        // Act
+        var component = scope.BUnitContext.Render<HomePage>();
+
+        // Assert - Component should handle invalid parameter values gracefully
+        using (Assert.Multiple())
+        {
+            // Component should use default theme for invalid value
+            await Assert.That(component.Instance.GetThemeClass()).IsEqualTo("theme-default");
+
+            // Should handle null and invalid preference values gracefully
+            await Assert.That(component.Instance.GetUserPreference("null-value")).IsNull();
+            await Assert.That(component.Instance.GetUserPreference("empty-string")).IsEqualTo("");
+            await Assert.That(component.Instance.GetUserPreference("negative-number")).IsEqualTo(-1);
+            await Assert.That(component.Instance.GetUserPreference("nonexistent")).IsNull();
+
+            // Component should still render successfully
+            await Assert.That(component.Markup).IsNotNull().And.Contains("redmuffin.StaticWeb");
+        }
+    }
+
+    [Test]
     public async Task Home_AdvancedScenarios_ConcurrentAsyncOperations_NoRaceConditions()
     {
         // Arrange
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
         var primaryButton = component.Find("button.primary-button");
         var submitButton = component.Find("button[type='submit']");
         var input = component.Find("input#demo-input");
@@ -488,106 +498,11 @@ public partial class HomeTests
     }
 
     [Test]
-    public async Task Home_AdvancedScenarios_BrowserSecurityPolicies_GracefulDegradation()
-    {
-        // Arrange - Simulate browser security restrictions (CORS, CSP, etc.)
-        using var scope = CreateTestScope();
-        scope.BUnitContext.JSInterop.Setup<bool>("window.crypto.getRandomValues")
-            .SetException(new JSException("Access denied by security policy"));
-
-        // Act - Component should render despite browser security restrictions
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
-
-        // Assert - Component gracefully handles security restrictions
-        using (Assert.Multiple())
-        {
-            // Component renders successfully despite JS restrictions
-            await Assert.That(component.Markup).IsNotNull().And.Contains("redmuffin.StaticWeb");
-
-            // Core functionality remains available
-            var button = component.Find("button.primary-button");
-            await Assert.That(button).IsNotNull();
-            await Assert.That(button.TextContent.Trim()).IsEqualTo("Click me");
-        }
-    }
-
-    [Test]
-    public async Task Home_AdvancedScenarios_ComponentParameterValidation_HandlesInvalidValues()
-    {
-        // Arrange - Test component resilience to invalid parameter values
-        using var scope = CreateTestScope();
-        
-        // Setup invalid cascading parameters
-        scope.BUnitContext.Services.AddCascadingValue<string>("AppTheme", _ => "invalid-theme-value");
-        var invalidPreferences = new Dictionary<string, object>
-        {
-            ["null-value"] = null!,
-            ["empty-string"] = "",
-            ["negative-number"] = -1
-        };
-        scope.BUnitContext.Services.AddCascadingValue<IDictionary<string, object>>("UserPreferences", _ => invalidPreferences);
-
-        // Act
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
-
-        // Assert - Component should handle invalid parameter values gracefully
-        using (Assert.Multiple())
-        {
-            // Component should use default theme for invalid value
-            await Assert.That(component.Instance.GetThemeClass()).IsEqualTo("theme-default");
-
-            // Should handle null and invalid preference values gracefully
-            await Assert.That(component.Instance.GetUserPreference("null-value")).IsNull();
-            await Assert.That(component.Instance.GetUserPreference("empty-string")).IsEqualTo("");
-            await Assert.That(component.Instance.GetUserPreference("negative-number")).IsEqualTo(-1);
-            await Assert.That(component.Instance.GetUserPreference("nonexistent")).IsNull();
-
-            // Component should still render successfully
-            await Assert.That(component.Markup).IsNotNull().And.Contains("redmuffin.StaticWeb");
-        }
-    }
-
-    [Test]
-    public async Task Home_AdvancedScenarios_LongRunningOperations_ComponentRemainsFunctional()
-    {
-        // Arrange
-        using var scope = CreateTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
-        var button = component.Find("button.primary-button");
-
-        // Act - Trigger operation and immediately interact with component again
-        var longRunningTask = button.ClickAsync(new MouseEventArgs());
-        
-        // While the first operation is running, try other operations
-        var input = component.Find("input#demo-input");
-        await input.ChangeAsync(new ChangeEventArgs { Value = "while-busy" }).ConfigureAwait(false);
-
-        var submitButton = component.Find("button[type='submit']");
-        await submitButton.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
-
-        // Wait for the long-running operation to complete
-        await longRunningTask.ConfigureAwait(false);
-
-        // Assert - Component should handle overlapping operations gracefully
-        using (Assert.Multiple())
-        {
-            // Both operations should have been logged
-            await Assert.That(scope.Logger.LogEntries.Any(entry =>
-                entry.Message.Contains("Button clicked"))).IsTrue();
-            await Assert.That(scope.Logger.LogEntries.Any(entry =>
-                entry.Message.Contains("Form submitted") && entry.Message.Contains("while-busy"))).IsTrue();
-
-            // Component should remain stable and functional
-            await Assert.That(component.Markup).IsNotNull().And.Contains("redmuffin.StaticWeb");
-        }
-    }
-
-    [Test]
     public async Task Home_AdvancedScenarios_FormValidation_EdgeCases_HandledCorrectly()
     {
         // Arrange
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
         var input = component.Find("input#demo-input");
         var submitButton = component.Find("button[type='submit']");
 
@@ -620,6 +535,41 @@ public partial class HomeTests
     }
 
     [Test]
+    public async Task Home_AdvancedScenarios_LongRunningOperations_ComponentRemainsFunctional()
+    {
+        // Arrange
+        using var scope = CreateTestScope();
+        var component = scope.BUnitContext.Render<HomePage>();
+        var button = component.Find("button.primary-button");
+
+        // Act - Trigger operation and immediately interact with component again
+        var longRunningTask = button.ClickAsync(new MouseEventArgs());
+
+        // While the first operation is running, try other operations
+        var input = component.Find("input#demo-input");
+        await input.ChangeAsync(new ChangeEventArgs { Value = "while-busy" }).ConfigureAwait(false);
+
+        var submitButton = component.Find("button[type='submit']");
+        await submitButton.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
+
+        // Wait for the long-running operation to complete
+        await longRunningTask.ConfigureAwait(false);
+
+        // Assert - Component should handle overlapping operations gracefully
+        using (Assert.Multiple())
+        {
+            // Both operations should have been logged
+            await Assert.That(scope.Logger.LogEntries.Any(entry =>
+                entry.Message.Contains("Button clicked"))).IsTrue();
+            await Assert.That(scope.Logger.LogEntries.Any(entry =>
+                entry.Message.Contains("Form submitted") && entry.Message.Contains("while-busy"))).IsTrue();
+
+            // Component should remain stable and functional
+            await Assert.That(component.Markup).IsNotNull().And.Contains("redmuffin.StaticWeb");
+        }
+    }
+
+    [Test]
     public async Task Home_AdvancedScenarios_MemoryManagement_NoEventHandlerLeaks()
     {
         // Arrange - Test that component properly manages event handler cleanup
@@ -630,7 +580,7 @@ public partial class HomeTests
         for (var i = 0; i < 5; i++)
         {
             var scope = CreateTestScope();
-            var component = scope.BUnitContext.RenderComponent<HomePage>();
+            var component = scope.BUnitContext.Render<HomePage>();
             componentInstances.Add(component.Instance);
             scopes.Add(scope);
 
@@ -640,22 +590,69 @@ public partial class HomeTests
         }
 
         // Dispose all scopes
-        foreach (var scope in scopes)
-        {
-            scope.Dispose();
-        }
+        foreach (var scope in scopes) scope.Dispose();
 
         // Assert - Memory management test (in production, this would check for actual memory leaks)
         using (Assert.Multiple())
         {
             await Assert.That(componentInstances.Count).IsEqualTo(5);
             await Assert.That(scopes.Count).IsEqualTo(5);
-            
+
             // In a real memory leak test, we would verify:
             // - Event handlers are properly unregistered
             // - No references to disposed components remain
             // - Timers and subscriptions are cleaned up
             // This test validates the disposal pattern infrastructure
+        }
+    }
+
+    [Test]
+    public async Task Home_AdvancedScenarios_RapidStateChanges_MaintainDataIntegrity()
+    {
+        // Arrange
+        using var scope = CreateTestScope();
+        var component = scope.BUnitContext.Render<HomePage>();
+        var submitButton = component.Find("button[type='submit']");
+        var input = component.Find("input#demo-input");
+
+        // Act - Rapid successive state changes to test race conditions
+        await input.ChangeAsync(new ChangeEventArgs { Value = "test1" }).ConfigureAwait(false);
+        await input.ChangeAsync(new ChangeEventArgs { Value = "test2" }).ConfigureAwait(false);
+        await input.ChangeAsync(new ChangeEventArgs { Value = "final" }).ConfigureAwait(false);
+        await submitButton.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
+
+        // Assert - Final state should be consistent despite rapid changes
+        using (Assert.Multiple())
+        {
+            await Assert.That(component.Instance.DemoInputValue).IsEqualTo(string.Empty); // Cleared after submit
+            await Assert.That(scope.Logger.LogEntries.Any(entry =>
+                entry.Message.Contains("Form submitted") && entry.Message.Contains("final"))).IsTrue();
+        }
+    }
+
+    [Test]
+    public async Task Home_AdvancedScenarios_StateHasChangedCalls_OptimizedRenderCycles()
+    {
+        // Arrange
+        using var scope = CreateTestScope();
+        var component = scope.BUnitContext.Render<HomePage>();
+        var button = component.Find("button.primary-button");
+
+        // Clear initial render logs
+        scope.Logger.LogEntries.Clear();
+
+        // Act - Trigger action that calls StateHasChanged multiple times
+        await button.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
+
+        // Assert - Verify render optimization (component should handle multiple StateHasChanged calls efficiently)
+        using (Assert.Multiple())
+        {
+            // Component should render without excessive re-renders
+            await Assert.That(component.Markup).IsNotNull().And.Contains("redmuffin.StaticWeb");
+
+            // Verify the action completed (indicates StateHasChanged worked properly)
+            await Assert.That(scope.Logger.LogEntries.Any(entry =>
+                entry.Message.Contains("Button clicked"))).IsTrue();
         }
     }
 
@@ -668,7 +665,7 @@ public partial class HomeTests
         scope.BUnitContext.Services.AddCascadingValue<Task<AuthenticationState>>(_ => authState);
 
         // Act
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify authenticated user state
         using (Assert.Multiple())
@@ -689,24 +686,22 @@ public partial class HomeTests
             var initialAuthState = CreateMockAuthenticationState(false);
             initialScope.BUnitContext.Services.AddCascadingValue<Task<AuthenticationState>>(_ => initialAuthState);
 
-            var component = initialScope.BUnitContext.RenderComponent<HomePage>();
+            var component = initialScope.BUnitContext.Render<HomePage>();
             await Assert.That(component.Instance.IsAuthenticated).IsFalse();
         }
 
         // Test updated authenticated state in a separate scope
-        using (var updatedScope = CreateTestScope())
+        using var updatedScope = CreateTestScope();
+        var newAuthState = CreateMockAuthenticationState(true, "newuser@example.com");
+        updatedScope.BUnitContext.Services.AddCascadingValue<Task<AuthenticationState>>(_ => newAuthState);
+
+        var updatedComponent = updatedScope.BUnitContext.Render<HomePage>();
+
+        // Assert - Verify updated authentication state
+        using (Assert.Multiple())
         {
-            var newAuthState = CreateMockAuthenticationState(true, "newuser@example.com");
-            updatedScope.BUnitContext.Services.AddCascadingValue<Task<AuthenticationState>>(_ => newAuthState);
-
-            var updatedComponent = updatedScope.BUnitContext.RenderComponent<HomePage>();
-
-            // Assert - Verify updated authentication state
-            using (Assert.Multiple())
-            {
-                await Assert.That(updatedComponent.Instance.IsAuthenticated).IsTrue();
-                await Assert.That(updatedComponent.Instance.CurrentUserName).IsEqualTo("newuser@example.com");
-            }
+            await Assert.That(updatedComponent.Instance.IsAuthenticated).IsTrue();
+            await Assert.That(updatedComponent.Instance.CurrentUserName).IsEqualTo("newuser@example.com");
         }
     }
 
@@ -728,7 +723,7 @@ public partial class HomeTests
         scope.BUnitContext.Services.AddCascadingValue<Task<AuthenticationState>>(_ => authState);
 
         // Act
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify both authorization and cascading parameters work together
         using (Assert.Multiple())
@@ -758,7 +753,7 @@ public partial class HomeTests
         // Don't provide AuthenticationState cascading value (it will be null)
 
         // Act
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify null authentication state is handled gracefully
         using (Assert.Multiple())
@@ -779,7 +774,7 @@ public partial class HomeTests
         scope.BUnitContext.Services.AddCascadingValue<Task<AuthenticationState>>(_ => authState);
 
         // Act
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify unauthenticated user state
         using (Assert.Multiple())
@@ -796,7 +791,7 @@ public partial class HomeTests
     {
         // Arrange
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
         var button = component.Find("button");
 
         scope.Logger.LogEntries.Clear();
@@ -822,7 +817,7 @@ public partial class HomeTests
         scope.BUnitContext.Services.AddCascadingValue<string>("AppTheme", _ => "dark");
 
         // Act
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify theme parameter is correctly processed
         using (Assert.Multiple())
@@ -841,17 +836,15 @@ public partial class HomeTests
         using (var lightScope = CreateTestScope())
         {
             lightScope.BUnitContext.Services.AddCascadingValue<string>("AppTheme", _ => "light");
-            var lightComponent = lightScope.BUnitContext.RenderComponent<HomePage>();
+            var lightComponent = lightScope.BUnitContext.Render<HomePage>();
             await Assert.That(lightComponent.Instance.GetThemeClass()).IsEqualTo("theme-light");
         }
 
         // Test high-contrast theme in a separate scope
-        using (var contrastScope = CreateTestScope())
-        {
-            contrastScope.BUnitContext.Services.AddCascadingValue<string>("AppTheme", _ => "high-contrast");
-            var contrastComponent = contrastScope.BUnitContext.RenderComponent<HomePage>();
-            await Assert.That(contrastComponent.Instance.GetThemeClass()).IsEqualTo("theme-high-contrast");
-        }
+        using var contrastScope = CreateTestScope();
+        contrastScope.BUnitContext.Services.AddCascadingValue<string>("AppTheme", _ => "high-contrast");
+        var contrastComponent = contrastScope.BUnitContext.Render<HomePage>();
+        await Assert.That(contrastComponent.Instance.GetThemeClass()).IsEqualTo("theme-high-contrast");
     }
 
     [Test]
@@ -862,7 +855,7 @@ public partial class HomeTests
         // Don't set UserPreferences cascading value (it will be null)
 
         // Act
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify null preferences are handled gracefully
         using (Assert.Multiple())
@@ -888,7 +881,7 @@ public partial class HomeTests
         scope.BUnitContext.Services.AddCascadingValue<IDictionary<string, object>>("UserPreferences", _ => userPreferences);
 
         // Act
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify user preferences are accessible
         using (Assert.Multiple())
@@ -906,7 +899,7 @@ public partial class HomeTests
     {
         // Arrange
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Act & Assert - Verify core DOM structure exists (single structural concern)
         using (Assert.Multiple())
@@ -922,7 +915,7 @@ public partial class HomeTests
     {
         // Arrange
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
         var button = component.Find("button");
 
         // Act - Trigger concurrent operations
@@ -949,7 +942,7 @@ public partial class HomeTests
     {
         // Arrange & Act
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify text content is correct (single content concern)
         using (Assert.Multiple())
@@ -966,7 +959,7 @@ public partial class HomeTests
     {
         // Arrange & Act
         using var scope = CreateTestScope();
-        var markup = scope.BUnitContext.RenderComponent<HomePage>().Markup;
+        var markup = scope.BUnitContext.Render<HomePage>().Markup;
 
         // Assert - Verify emoji content (single emoji rendering concern)
         // ✅ OPTIMIZED: Chain multiple related Contains assertions on same markup
@@ -978,7 +971,7 @@ public partial class HomeTests
     {
         // Arrange
         using var scope = CreateFailingHttpTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
         var button = component.Find("button");
 
         // Act - Trigger error, then test recovery
@@ -1004,7 +997,7 @@ public partial class HomeTests
     {
         // Arrange
         using var scope = CreateFailingHttpTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
         var button = component.Find("button");
 
         // Act - Trigger failing operation, then test recovery
@@ -1037,7 +1030,7 @@ public partial class HomeTests
     {
         // Arrange
         using var scope = CreateFailingHttpTestScope();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
         var button = component.Find("button");
 
         scope.Logger.LogEntries.Clear();
@@ -1060,7 +1053,7 @@ public partial class HomeTests
         using var scope = CreateTestScope().WithJSInterop();
 
         // In strict mode, any unexpected JS call would throw - component should render without JS calls
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Component renders successfully in strict JS interop mode
         await Assert.That(component.Find("h1").TextContent).Contains("redmuffin.StaticWeb");
@@ -1077,7 +1070,7 @@ public partial class HomeTests
             .SetException(new JSException("Function not defined"));
 
         // Act & Assert - Component should render successfully despite JS errors
-        await Assert.That(scope.BUnitContext.RenderComponent<HomePage>().Markup).Contains("redmuffin.StaticWeb");
+        await Assert.That(scope.BUnitContext.Render<HomePage>().Markup).Contains("redmuffin.StaticWeb");
     }
 
     [Test]
@@ -1089,7 +1082,7 @@ public partial class HomeTests
         // Setup JS interop calls that simulate timeout behavior
         scope.BUnitContext.JSInterop.Setup<string>("setTimeout").SetResult("timeout_handled");
 
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Act & Assert - Component should handle JS timeout scenarios gracefully
         await Assert.That(component.Markup).Contains("Click me");
@@ -1102,7 +1095,7 @@ public partial class HomeTests
         using var scope = CreateTestScope().WithJSInterop(JSRuntimeMode.Loose);
 
         // Act & Assert - Component should render successfully in loose mode (default behavior)
-        await Assert.That(scope.BUnitContext.RenderComponent<HomePage>().Find("button.primary-button").TextContent.Trim()).IsEqualTo("Click me");
+        await Assert.That(scope.BUnitContext.Render<HomePage>().Find("button.primary-button").TextContent.Trim()).IsEqualTo("Click me");
     }
 
     [Test]
@@ -1114,7 +1107,7 @@ public partial class HomeTests
         // Setup specific JS interop expectations
         scope.BUnitContext.JSInterop.Setup<bool>("console.log").SetResult(true);
 
-        scope.BUnitContext.RenderComponent<HomePage>();
+        scope.BUnitContext.Render<HomePage>();
 
         // Act & Assert - Verify that expected JS functions are NOT called when component renders
         // (Since our Home component doesn't currently use JS interop, no calls should be made)
@@ -1126,7 +1119,7 @@ public partial class HomeTests
     {
         // Arrange & Act
         using var scope = CreateTestScope();
-        scope.BUnitContext.RenderComponent<HomePage>();
+        scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify event IDs are properly configured (single logging configuration concern)
         using (Assert.Multiple())
@@ -1144,7 +1137,7 @@ public partial class HomeTests
         using var scope = CreateTestScope();
 
         // Act - Render component to trigger all lifecycle methods
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify all lifecycle events were logged
         using (Assert.Multiple())
@@ -1168,7 +1161,7 @@ public partial class HomeTests
     {
         // Arrange & Act
         using var scope = CreateTestScope();
-        scope.BUnitContext.RenderComponent<HomePage>();
+        scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify lifecycle logging (single lifecycle concern)
         using (Assert.Multiple())
@@ -1186,7 +1179,7 @@ public partial class HomeTests
         using var scope = CreateTestScope();
 
         // Act - Render component and immediately trigger multiple operations
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
         var button = component.Find("button");
 
         // Trigger multiple button clicks concurrently to test async operation handling
@@ -1214,7 +1207,7 @@ public partial class HomeTests
     {
         // Arrange & Act
         using var scope = new TestScope("http://localhost:3000/").WithThrowingNavigation();
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify component resilience to navigation errors (single resilience concern)
         await Assert.That(component.Find("h1").TextContent).Contains("redmuffin.StaticWeb");
@@ -1225,7 +1218,7 @@ public partial class HomeTests
     {
         // Arrange & Act
         using var scope = new TestScope("http://localhost:3000/").WithThrowingNavigation();
-        scope.BUnitContext.RenderComponent<HomePage>();
+        scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify navigation error logging (single error logging concern)
         using (Assert.Multiple())
@@ -1244,7 +1237,7 @@ public partial class HomeTests
         using var scope = CreateTestScope();
 
         // Act - Render component and trigger re-render
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
         var button = component.Find("button");
         await button.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
 
@@ -1265,7 +1258,7 @@ public partial class HomeTests
         using var scope = new TestScope("http://localhost:3000/").WithThrowingNavigation();
 
         // The component should render even if navigation throws an exception
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Component should render despite navigation failure and log the error
         using (Assert.Multiple())
@@ -1290,7 +1283,7 @@ public partial class HomeTests
         using var scope = CreateTestScope();
 
         // Act - Render component which will trigger OnParametersSetAsync
-        var component = scope.BUnitContext.RenderComponent<HomePage>();
+        var component = scope.BUnitContext.Render<HomePage>();
 
         // Assert - Component should complete initialization successfully
         // even with async operations in OnParametersSetAsync
@@ -1310,7 +1303,7 @@ public partial class HomeTests
     {
         // Arrange & Act
         using var scope = CreateTestScope("http://localhost:4280/");
-        scope.BUnitContext.RenderComponent<HomePage>();
+        scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify no redirection occurs (single navigation concern)
         await Assert.That(scope.NavigationManager.NavigatedTo).IsNull();
@@ -1321,7 +1314,7 @@ public partial class HomeTests
     {
         // Arrange & Act
         using var scope = CreateTestScope("http://localhost:3000/");
-        scope.BUnitContext.RenderComponent<HomePage>();
+        scope.BUnitContext.Render<HomePage>();
 
         // Assert - Verify redirection behavior (single navigation concern)
         await Assert.That(scope.NavigationManager.NavigatedTo).IsEqualTo("http://localhost:4280");

@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using redmuffin.Blazor.StaticWeb.Common.Abstractions;
 using redmuffin.Blazor.StaticWeb.Common.Services;
 using redmuffin.Blazor.StaticWeb.Features.Pages.HomePage;
-using TestContext = Bunit.TestContext;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.NewTests.Integration;
 
@@ -22,7 +21,7 @@ public class HomePageIntegrationTests
     /// </summary>
     public sealed class TestScope(string baseUri = "http://localhost:5000/") : IDisposable
     {
-        public TestContext Context { get; } = new();
+        public BunitContext Context { get; } = new();
         public NavigationManagerMock NavigationManager { get; } = new(baseUri);
 
         /// <summary>
@@ -70,7 +69,7 @@ public class HomePageIntegrationTests
     {
         // Arrange
         using var scope = CreatePortSpecificTestScope("http://localhost:4280/");
-        var component = scope.Context.RenderComponent<Home>();
+        var component = scope.Context.Render<Home>();
 
         // Act & Assert - Use chaining for related markup assertions
         using (Assert.Multiple())
@@ -88,7 +87,7 @@ public class HomePageIntegrationTests
         using var scope = CreatePortSpecificTestScope("http://localhost:4280/");
 
         // Act
-        scope.Context.RenderComponent<Home>();
+        scope.Context.Render<Home>();
 
         // Assert - Verify no redirection occurs (single navigation concern)
         await Assert.That(scope.NavigationManager.NavigatedTo).IsNull();
@@ -99,7 +98,7 @@ public class HomePageIntegrationTests
     {
         // Arrange
         using var scope = CreateIntegrationTestScope();
-        var component = scope.Context.RenderComponent<Home>();
+        var component = scope.Context.Render<Home>();
 
         // Assert - Verify PageTitle component functionality
         using (Assert.Multiple())
@@ -119,7 +118,7 @@ public class HomePageIntegrationTests
         using var scope = CreateIntegrationTestScope();
 
         // Act
-        scope.Context.RenderComponent<Home>();
+        scope.Context.Render<Home>();
 
         // Assert - Verify redirection behavior (single navigation concern)
         await Assert.That(scope.NavigationManager.NavigatedTo).IsEqualTo("http://localhost:4280");
@@ -130,7 +129,7 @@ public class HomePageIntegrationTests
     {
         // Arrange
         using var scope = CreateIntegrationTestScope();
-        var component = scope.Context.RenderComponent<Home>();
+        var component = scope.Context.Render<Home>();
 
         // Assert - Verify successful rendering and structure
         using (Assert.Multiple())
