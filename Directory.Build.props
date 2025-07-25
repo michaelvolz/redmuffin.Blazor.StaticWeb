@@ -83,19 +83,13 @@
 
   <!-- Package versions centralized -->
   <PropertyGroup>
-    <JetBrainsAnnotationsVersion>2025.1.0-eap1</JetBrainsAnnotationsVersion>
-    <MeziantouAnalyzerVersion>2.0.202</MeziantouAnalyzerVersion>
+    <MeziantouAnalyzerVersion>2.0.205</MeziantouAnalyzerVersion>
     <VSThreadingAnalyzersVersion>17.14.15</VSThreadingAnalyzersVersion>
     <RoslynatorVersion>4.13.1</RoslynatorVersion>
     <StyleCopAnalyzersVersion>1.2.0-beta.556</StyleCopAnalyzersVersion>
     <MicrosoftAspNetCoreComponentsAnalyzersVersion>9.0.6</MicrosoftAspNetCoreComponentsAnalyzersVersion>
     <AsyncFixerVersion>1.6.0</AsyncFixerVersion>
   </PropertyGroup>
-
-  <!-- JetBrains.Annotations for all configurations (not just Debug) -->
-  <ItemGroup Condition="'$(IsTestProject)' != 'true'">
-    <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsAnnotationsVersion)" />
-  </ItemGroup>
 
   <!-- Analyzer packages - Debug configuration only -->
   <ItemGroup Condition="'$(IsTestProject)' != 'true' And '$(Configuration)'=='Debug'">
@@ -134,8 +128,4 @@
     </PackageReference>
   </ItemGroup>
 
-  <!-- Minimal analyzer set for test projects -->
-  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
-    <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsAnnotationsVersion)" />
-  </ItemGroup>
 </Project>

@@ -27,7 +27,6 @@ $testParams = @(
     'test',
     '--configuration', 'Release',    # Build in Release mode only
     '--no-restore',                 # Skip package restore
-    '--no-build',                   # Skip build if already built
     '--nologo',                     # Reduce noise in output
     '-maxCpuCount',                 # Use all available CPUs
     '--verbosity', 'minimal',       # Minimal but useful output
