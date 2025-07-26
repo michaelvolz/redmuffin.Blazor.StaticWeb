@@ -22,10 +22,7 @@ public sealed class ArticleProcessingState
     /// </summary>
     public ImageLoadState ImageLoadState { get; set; } = ImageLoadState.None;
 
-    /// <summary>
-    ///     Gets or sets the OpenGraph image processing state.
-    /// </summary>
-    public OpenGraphProcessingState OpenGraphState { get; set; } = OpenGraphProcessingState.None;
+
 
     /// <summary>
     ///     Gets or sets the image validation state.
@@ -33,9 +30,9 @@ public sealed class ArticleProcessingState
     public ImageValidationState ValidationState { get; set; } = ImageValidationState.None;
 
     /// <summary>
-    ///     Gets or sets the cached enhanced image data.
+    ///     Gets or sets the enhanced image URL.
     /// </summary>
-    public CachedImageData? EnhancedImage { get; set; }
+    public string? EnhancedImageUrl { get; set; }
 
     /// <summary>
     ///     Gets or sets the fallback reason when image processing fails.
@@ -93,14 +90,13 @@ public sealed class ArticleProcessingState
     ///     Gets whether the article processing was successful.
     /// </summary>
     public bool IsSuccessful => ProcessingPhase == ProcessingPhase.Completed &&
-                                EnhancedImage?.IsValidated == true &&
-                                !string.IsNullOrEmpty(EnhancedImage.ImageUrl);
+                                !string.IsNullOrEmpty(EnhancedImageUrl);
 
     /// <summary>
     ///     Gets whether a fallback placeholder should be shown.
     /// </summary>
     public bool ShouldShowFallback => ImageLoadState == ImageLoadState.Failed ||
-                                      (ProcessingPhase == ProcessingPhase.Failed && EnhancedImage == null);
+                                      (ProcessingPhase == ProcessingPhase.Failed && string.IsNullOrEmpty(EnhancedImageUrl));
 
     /// <summary>
     ///     Gets the CSS class for the article card based on current state.
@@ -157,13 +153,13 @@ public sealed class ArticleProcessingState
     }
 
     /// <summary>
-    ///     Updates the state to completed phase with enhanced image data.
+    ///     Updates the state to completed phase with enhanced image URL.
     /// </summary>
-    /// <param name="enhancedImage">The enhanced image data</param>
-    public void CompleteProcessing(CachedImageData? enhancedImage)
+    /// <param name="enhancedImageUrl">The enhanced image URL</param>
+    public void CompleteProcessing(string? enhancedImageUrl)
     {
         ProcessingPhase = ProcessingPhase.Completed;
-        EnhancedImage = enhancedImage;
+        EnhancedImageUrl = enhancedImageUrl;
         ProcessingCompletedAt = DateTime.UtcNow;
         ErrorMessage = null;
     }
