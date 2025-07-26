@@ -20,11 +20,9 @@
                          @onerror="@(() => HandleImageLoadAsync($"shimmer-{video.Id}", video.Link, false))"/>
                     @if (HasFallbackPlaceholder(video))
                     {
-                        <div class="fallback-overlay">
-                            <div class="fallback-content">
-                                <i class="fas fa-image fallback-icon"></i>
-                                <span class="fallback-text">@GetFallbackReason(video)</span>
-                            </div>
+                        <div class="fallback-placeholder-overlay">
+                            <i class="fas fa-image"></i>
+                            <span>@GetFallbackReason(video)</span>
                         </div>
                     }
                 </div>
