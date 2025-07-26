@@ -215,7 +215,7 @@ public sealed class SimpleImageValidationService : ISimpleImageValidationService
     /// </summary>
     private async Task<ImageValidationResult> PerformHttpValidationAsync(string imageUrl, Uri uri, CancellationToken cancellationToken)
     {
-        var httpClient = _httpClientFactory.CreateClient("ExternalHttpClient");
+        using var httpClient = _httpClientFactory.CreateClient();
         httpClient.Timeout = TimeSpan.FromMilliseconds(DefaultTimeoutMs);
 
         using var request = new HttpRequestMessage(HttpMethod.Head, uri);

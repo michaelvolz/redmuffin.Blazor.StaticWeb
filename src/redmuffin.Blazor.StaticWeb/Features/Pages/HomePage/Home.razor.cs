@@ -81,18 +81,6 @@ public partial class Home : ComponentBase
 
     protected override void OnInitialized()
     {
-        try
-        {
-            var uri = new Uri(Navigation.Uri);
-            if (string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase) && uri.Port != 4280)
-                Navigation.NavigateTo("http://localhost:4280", true);
-        }
-        catch (Exception ex)
-        {
-            // Log the navigation error but continue with component initialization
-            LogNavigationFailed(Logger, ex);
-        }
-
         LogOnInitializedCalled(Logger, null);
     }
 

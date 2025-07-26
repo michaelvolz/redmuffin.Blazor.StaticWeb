@@ -15,15 +15,18 @@ public partial class Weather : ComponentBase
     [UsedImplicitly] private WeatherForecast[]? _forecasts;
 
     [Inject] private ILogger<Weather> Logger { get; set; } = null!;
+    [Inject] private IHttpClientFactory HttpClientFactory { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
+        ArgumentNullException.ThrowIfNull(HttpClientFactory);
 #pragma warning disable CA1848
         Logger.LogWarning("Weather OnInitializedAsync(v1)");
 #pragma warning restore CA1848
 
+        using var httpClient = HttpClientFactory.CreateClient();
 #pragma warning disable IL2026
-        _forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json", JsonOptions).ConfigureAwait(false);
+        _forecasts = await httpClient.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json", JsonOptions).ConfigureAwait(false);
 #pragma warning restore IL2026
     }
 

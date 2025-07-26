@@ -1,42 +1,35 @@
-using System.Globalization;
+using System.Linq;
 using System.Text;
-using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Services;
+using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage;
 
 public partial class Articles
 {
     // LoggerMessage delegates for better performance
-    private static readonly Action<ILogger, string, Exception?> LogRawJsonResponse =
-        LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, nameof(LogRawJsonResponse)),
-            "Raw JSON Response: {JsonResponse}");
-
-    private static readonly Action<ILogger, string?, string?, string?, Exception> LogJsonDeserializationError =
-        LoggerMessage.Define<string?, string?, string?>(LogLevel.Error, new EventId(2, nameof(LogJsonDeserializationError)),
-            "JSON Deserialization Error. Path: {Path}, LineNumber: {LineNumber}, BytePositionInLine: {BytePositionInLine}");
 
     private static readonly Action<ILogger, string, Exception> LogShimmerError =
-        LoggerMessage.Define<string>(LogLevel.Warning, new EventId(3, nameof(LogShimmerError)),
+        LoggerMessage.Define<string>(LogLevel.Warning, new EventId(1, nameof(LogShimmerError)),
             "Error stopping shimmer for element: {ElementId}");
 
     private static readonly Action<ILogger, string, Exception?> LogBackgroundValidationFailed =
-        LoggerMessage.Define<string>(LogLevel.Warning, new EventId(4, nameof(LogBackgroundValidationFailed)),
+        LoggerMessage.Define<string>(LogLevel.Warning, new EventId(2, nameof(LogBackgroundValidationFailed)),
             "Background validation failed for article: {ArticleLink}");
 
     private static readonly Action<ILogger, int, Exception?> LogBackgroundTasksStarted =
-        LoggerMessage.Define<int>(LogLevel.Debug, new EventId(5, nameof(LogBackgroundTasksStarted)),
+        LoggerMessage.Define<int>(LogLevel.Debug, new EventId(3, nameof(LogBackgroundTasksStarted)),
             "Started {TaskCount} background validation tasks");
 
     private static readonly Action<ILogger, string, bool, Exception?> LogBackgroundValidationCompleted =
-        LoggerMessage.Define<string, bool>(LogLevel.Debug, new EventId(6, nameof(LogBackgroundValidationCompleted)),
+        LoggerMessage.Define<string, bool>(LogLevel.Debug, new EventId(4, nameof(LogBackgroundValidationCompleted)),
             "Background validation completed for article: {ArticleLink}, Valid: {IsValid}");
 
     private static readonly Action<ILogger, string, Exception> LogImageLoadHandlingError =
-        LoggerMessage.Define<string>(LogLevel.Warning, new EventId(7, nameof(LogImageLoadHandlingError)),
+        LoggerMessage.Define<string>(LogLevel.Warning, new EventId(5, nameof(LogImageLoadHandlingError)),
             "Error handling image load for article: {ArticleLink}");
 
     // Simple state management - only what we need
@@ -45,9 +38,6 @@ public partial class Articles
 
     private string? _errorMessage;
     private bool _isLoading;
-
-    [Inject]
-    private HttpClient Http { get; set; } = null!;
 
     [Inject]
     private ILogger<Articles> Logger { get; set; } = null!;
@@ -60,6 +50,9 @@ public partial class Articles
 
     [Inject]
     private ISimpleImageValidationService SimpleImageValidationService { get; set; } = null!;
+
+    [Inject]
+    private IRaindropAPI RaindropAPI { get; set; } = null!;
 
     /// <summary>
     ///     Gets the default placeholder SVG for articles without images.
@@ -111,11 +104,11 @@ public partial class Articles
     protected override Task OnInitializedAsync()
     {
         // Validate injected dependencies
-        ArgumentNullException.ThrowIfNull(Http);
         ArgumentNullException.ThrowIfNull(Logger);
         ArgumentNullException.ThrowIfNull(Js);
         ArgumentNullException.ThrowIfNull(Navigation);
         ArgumentNullException.ThrowIfNull(SimpleImageValidationService);
+        ArgumentNullException.ThrowIfNull(RaindropAPI);
 
         // Load articles automatically when the page starts
         return FetchArticlesAsync();
@@ -147,17 +140,14 @@ public partial class Articles
 
         try
         {
-            var response = await Http.GetAsync("/api/RaindropListArticles").ConfigureAwait(false);
-            if (response.IsSuccessStatusCode)
-            {
-                var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                LogRawJsonResponse(Logger, json, null);
+            var articles = await RaindropAPI.GetArticlesAsync(CancellationToken.None).ConfigureAwait(false);
+            _articleItems = articles.ToList();
 
-                await ProcessSuccessfulResponseAsync(json).ConfigureAwait(false);
-            }
-            else
+            // Populate image URL cache for initial render
+            if (_articleItems is { Count: > 0 })
             {
-                _errorMessage = $"Error fetching articles: {response.StatusCode} - {await response.Content.ReadAsStringAsync().ConfigureAwait(false)}";
+                await PopulateImageUrlCacheAsync().ConfigureAwait(false);
+                StateHasChanged();
             }
         }
         catch (Exception ex)
@@ -170,32 +160,6 @@ public partial class Articles
         }
 
         StateHasChanged();
-    }
-
-    private async Task ProcessSuccessfulResponseAsync(string json)
-    {
-        try
-        {
-            // Use JsonTypeInfo for deserialization to avoid trimming issues
-            _articleItems = JsonSerializer.Deserialize(json, RaindropJsonSerializerContext.Default.RaindropItemList);
-
-            // Populate image URL cache for initial render
-            if (_articleItems is { Count: > 0 })
-            {
-                await PopulateImageUrlCacheAsync().ConfigureAwait(false);
-                StateHasChanged();
-            }
-        }
-        catch (JsonException jsonEx)
-        {
-            LogJsonDeserializationError(
-                Logger,
-                jsonEx.Path?.ToString(CultureInfo.InvariantCulture),
-                jsonEx.LineNumber?.ToString(CultureInfo.InvariantCulture),
-                jsonEx.BytePositionInLine?.ToString(CultureInfo.InvariantCulture),
-                jsonEx);
-            _errorMessage = "Error deserializing JSON: " + jsonEx.Message;
-        }
     }
 
     /// <summary>

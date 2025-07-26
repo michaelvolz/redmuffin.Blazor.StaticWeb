@@ -7,9 +7,13 @@ public partial class MarkdownExamples : ComponentBase
 {
     private MarkupString _markdownText = new("n/a");
 
+    [Inject] private IHttpClientFactory HttpClientFactory { get; set; } = default!;
+
     protected override async Task OnInitializedAsync()
     {
+        ArgumentNullException.ThrowIfNull(HttpClientFactory);
         var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-        if (Http != null) _markdownText = new MarkupString(Markdown.ToHtml(await Http.GetStringAsync("Example.md").ConfigureAwait(false), pipeline));
+        using var httpClient = HttpClientFactory.CreateClient();
+        _markdownText = new MarkupString(Markdown.ToHtml(await httpClient.GetStringAsync("Example.md").ConfigureAwait(false), pipeline));
     }
 }

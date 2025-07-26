@@ -31,23 +31,19 @@ public partial class Home
         LoggerMessage.Define(LogLevel.Error, new EventId(7, nameof(LogApiCallFailed)),
             "Dummy API call failed");
 
-    private static readonly Action<ILogger, Exception> LogNavigationFailed =
-        LoggerMessage.Define(LogLevel.Error, new EventId(8, nameof(LogNavigationFailed)),
-            "Navigation failed during OnInitialized");
-
     private static readonly Action<ILogger, string, Exception?> LogFormSubmitted =
-        LoggerMessage.Define<string>(LogLevel.Information, new EventId(9, nameof(LogFormSubmitted)),
+        LoggerMessage.Define<string>(LogLevel.Information, new EventId(8, nameof(LogFormSubmitted)),
             "Form submitted with value: {InputValue}");
 
     private static readonly Action<ILogger, string, Exception?> LogCascadingParameterChanged =
-        LoggerMessage.Define<string>(LogLevel.Information, new EventId(10, nameof(LogCascadingParameterChanged)),
+        LoggerMessage.Define<string>(LogLevel.Information, new EventId(9, nameof(LogCascadingParameterChanged)),
             "Cascading parameter changed: {ParameterName}");
 
     private static readonly Action<ILogger, string, Exception?> LogAuthorizationStateChanged =
-        LoggerMessage.Define<string>(LogLevel.Information, new EventId(11, nameof(LogAuthorizationStateChanged)),
+        LoggerMessage.Define<string>(LogLevel.Information, new EventId(10, nameof(LogAuthorizationStateChanged)),
             "Authorization state changed: {IsAuthenticated}");
 
     private static readonly Action<ILogger, Exception> LogAuthenticationFailure =
-        LoggerMessage.Define(LogLevel.Warning, new EventId(12, nameof(LogAuthenticationFailure)),
+        LoggerMessage.Define(LogLevel.Warning, new EventId(11, nameof(LogAuthenticationFailure)),
             "Failed to retrieve authentication state");
 }
