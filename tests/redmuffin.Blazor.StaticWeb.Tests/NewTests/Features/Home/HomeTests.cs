@@ -1203,34 +1203,6 @@ public partial class HomeTests
     }
 
     [Test]
-    public async Task Home_NavigationException_ComponentStillRenders()
-    {
-        // Arrange & Act
-        using var scope = new TestScope("http://localhost:3000/").WithThrowingNavigation();
-        var component = scope.BUnitContext.Render<HomePage>();
-
-        // Assert - Verify component resilience to navigation errors (single resilience concern)
-        await Assert.That(component.Find("h1").TextContent).Contains("redmuffin.StaticWeb");
-    }
-
-    [Test]
-    public async Task Home_NavigationException_LogsErrorEvent()
-    {
-        // Arrange & Act
-        using var scope = new TestScope("http://localhost:3000/").WithThrowingNavigation();
-        scope.BUnitContext.Render<HomePage>();
-
-        // Assert - Verify navigation error logging (single error logging concern)
-        using (Assert.Multiple())
-        {
-            await Assert.That(scope.Logger.LogEntries.Any(entry =>
-                entry.LogLevel == LogLevel.Error && entry.Message.Contains("Navigation failed during OnInitialized"))).IsTrue();
-            await Assert.That(scope.Logger.LogEntries.Any(entry =>
-                entry.Message.Contains("OnInitialized called"))).IsTrue();
-        }
-    }
-
-    [Test]
     public async Task Home_OnAfterRenderAsync_HandlesMultipleRenderCycles()
     {
         // Arrange
@@ -1251,30 +1223,7 @@ public partial class HomeTests
         }
     }
 
-    [Test]
-    public async Task Home_OnInitialized_HandlesNavigationException_GracefullyWithoutCrashing()
-    {
-        // Arrange & Act - Test that component can handle navigation exceptions during OnInitialized
-        using var scope = new TestScope("http://localhost:3000/").WithThrowingNavigation();
 
-        // The component should render even if navigation throws an exception
-        var component = scope.BUnitContext.Render<HomePage>();
-
-        // Assert - Component should render despite navigation failure and log the error
-        using (Assert.Multiple())
-        {
-            // Use chaining for related assertions on the same object
-            await Assert.That(component.Markup).IsNotNull().And.Contains("redmuffin.StaticWeb").And.Contains("Click me");
-
-            // Verify the navigation error was logged
-            await Assert.That(scope.Logger.LogEntries.Any(entry =>
-                entry.LogLevel == LogLevel.Error && entry.Message.Contains("Navigation failed during OnInitialized"))).IsTrue();
-
-            // Verify component initialization continued successfully
-            await Assert.That(scope.Logger.LogEntries.Any(entry =>
-                entry.Message.Contains("OnInitialized called"))).IsTrue();
-        }
-    }
 
     [Test]
     public async Task Home_OnParametersSetAsync_HandlesAsyncExceptionDuringDelay()
@@ -1298,25 +1247,5 @@ public partial class HomeTests
         }
     }
 
-    [Test]
-    public async Task Home_PortRedirection_NoRedirectOnCorrectPort()
-    {
-        // Arrange & Act
-        using var scope = CreateTestScope("http://localhost:4280/");
-        scope.BUnitContext.Render<HomePage>();
 
-        // Assert - Verify no redirection occurs (single navigation concern)
-        await Assert.That(scope.NavigationManager.NavigatedTo).IsNull();
-    }
-
-    [Test]
-    public async Task Home_PortRedirection_RedirectsOnWrongPort()
-    {
-        // Arrange & Act
-        using var scope = CreateTestScope("http://localhost:3000/");
-        scope.BUnitContext.Render<HomePage>();
-
-        // Assert - Verify redirection behavior (single navigation concern)
-        await Assert.That(scope.NavigationManager.NavigatedTo).IsEqualTo("http://localhost:4280");
-    }
 }

@@ -143,16 +143,32 @@ public partial class HomeTests
     // Mock NavigationManager for testing
     public class NavigationManagerMock : NavigationManager
     {
+        public string? NavigatedTo { get; private set; }
+        public bool NavigationCalled { get; private set; }
+        public NavigationOptions? LastNavigationOptions { get; private set; }
+        
         public NavigationManagerMock(string baseUri)
         {
             Initialize(baseUri, baseUri);
         }
 
-        public string? NavigatedTo { get; private set; }
-
         protected override void NavigateToCore(string uri, NavigationOptions options)
         {
             NavigatedTo = uri;
+            NavigationCalled = true;
+            LastNavigationOptions = options;
+            
+            // Debug logging
+            Console.WriteLine($"NavigationManagerMock.NavigateToCore called:");
+            Console.WriteLine($"  - URI: {uri}");
+            Console.WriteLine($"  - Options: ForceLoad={options.ForceLoad}, ReplaceHistoryEntry={options.ReplaceHistoryEntry}");
+        }
+        
+        public void Reset()
+        {
+            NavigatedTo = null;
+            NavigationCalled = false;
+            LastNavigationOptions = null;
         }
     }
 
@@ -259,15 +275,24 @@ public partial class HomeTests
 
     public class FaultyNavigationManagerMock : NavigationManager
     {
+        public string? NavigatedTo { get; private set; }
+        public bool NavigationCalled { get; private set; }
+        
         public FaultyNavigationManagerMock(string baseUri)
         {
             Initialize(baseUri, baseUri);
         }
 
-        protected override void NavigateToCore(string uri, bool forceLoad)
+        protected override void NavigateToCore(string uri, NavigationOptions options)
         {
             // Log the navigation attempt but don't throw to allow component to render
             // This simulates a navigation that fails silently
+            NavigatedTo = uri;
+            NavigationCalled = true;
+            
+            Console.WriteLine($"FaultyNavigationManagerMock.NavigateToCore called:");
+            Console.WriteLine($"  - URI: {uri}");
+            Console.WriteLine($"  - Navigation failed silently (simulated fault)");
         }
     }
 

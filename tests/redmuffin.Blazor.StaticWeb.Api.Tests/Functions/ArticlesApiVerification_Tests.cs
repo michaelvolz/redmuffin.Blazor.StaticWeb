@@ -68,8 +68,8 @@ public class ArticlesApiVerification_Tests : TestBase
             // Verify both can be deserialized with the same model
             try
             {
-                var videos = JsonSerializer.Deserialize(videosItems.GetRawText(), RaindropJsonSerializerContext.Default.RaindropItemList);
-                var articles = JsonSerializer.Deserialize(articlesItems.GetRawText(), RaindropJsonSerializerContext.Default.RaindropItemList);
+                var videos = JsonSerializer.Deserialize<List<RaindropItem>>(videosItems.GetRawText(), RaindropJsonSerializerContext.DefaultOptions);
+            var articles = JsonSerializer.Deserialize<List<RaindropItem>>(articlesItems.GetRawText(), RaindropJsonSerializerContext.DefaultOptions);
 
                 await Assert.That(videos).IsNotNull();
                 await Assert.That(articles).IsNotNull();
@@ -138,7 +138,7 @@ public class ArticlesApiVerification_Tests : TestBase
             // Test deserialization with existing model
             try
             {
-                var articles = JsonSerializer.Deserialize(itemsElement.GetRawText(), RaindropJsonSerializerContext.Default.RaindropItemList);
+                var articles = JsonSerializer.Deserialize<List<RaindropItem>>(itemsElement.GetRawText(), RaindropJsonSerializerContext.DefaultOptions);
                 await Assert.That(articles).IsNotNull();
                 await Assert.That(articles!.Count).IsGreaterThan(0);
 

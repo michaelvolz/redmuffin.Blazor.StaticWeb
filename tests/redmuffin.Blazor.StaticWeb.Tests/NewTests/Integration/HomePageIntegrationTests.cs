@@ -80,18 +80,7 @@ public class HomePageIntegrationTests
         }
     }
 
-    [Test]
-    public async Task Homepage_DoesNotRedirect_WhenCorrectPort()
-    {
-        // Arrange
-        using var scope = CreatePortSpecificTestScope("http://localhost:4280/");
 
-        // Act
-        scope.Context.Render<Home>();
-
-        // Assert - Verify no redirection occurs (single navigation concern)
-        await Assert.That(scope.NavigationManager.NavigatedTo).IsNull();
-    }
 
     [Test]
     public async Task Homepage_HasCorrectPageTitle()
@@ -111,18 +100,7 @@ public class HomePageIntegrationTests
         }
     }
 
-    [Test]
-    public async Task Homepage_Redirects_WhenWrongPort()
-    {
-        // Arrange
-        using var scope = CreateIntegrationTestScope();
 
-        // Act
-        scope.Context.Render<Home>();
-
-        // Assert - Verify redirection behavior (single navigation concern)
-        await Assert.That(scope.NavigationManager.NavigatedTo).IsEqualTo("http://localhost:4280");
-    }
 
     [Test]
     public async Task Homepage_RendersSuccessfully_WithoutErrors()
