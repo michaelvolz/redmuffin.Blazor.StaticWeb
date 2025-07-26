@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using redmuffin.Blazor.StaticWeb;
 using redmuffin.Blazor.StaticWeb.Common.Abstractions;
 using redmuffin.Blazor.StaticWeb.Common.Services;
+using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
+using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 using redmuffin.Blazor.StaticWeb.Core.Services;
 using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Services;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
@@ -28,6 +30,11 @@ builder.Services.AddScoped<IPerformanceMetricsService, PerformanceMetricsService
 builder.Services.AddScoped<IImageValidationService, ImageValidationService>();
 builder.Services.AddScoped<IOpenGraphImagesService, OpenGraphImagesService>();
 builder.Services.AddScoped<ISimpleImageValidationService, SimpleImageValidationService>();
+
+// Register image placeholder services
+builder.Services.AddScoped<IImagePlaceholderService, ImagePlaceholderService>();
+builder.Services.AddScoped<IImageValidationCacheService, ImageValidationCacheService>();
+builder.Services.AddScoped<PlaceholderGenerationService>();
 
 // Register delay provider for production (real delays for UX)
 builder.Services.AddScoped<IDelayProvider, ProductionDelayProvider>();
