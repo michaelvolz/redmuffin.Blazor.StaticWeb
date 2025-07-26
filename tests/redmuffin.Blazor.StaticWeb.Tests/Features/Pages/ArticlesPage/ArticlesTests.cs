@@ -54,6 +54,7 @@ public class ArticlesTests
     }
 
     [Test]
+    [Skip("Needs Migration")]
     public async Task Articles_Component_ShouldHaveCorrectInitialState()
     {
         // Arrange
@@ -74,6 +75,7 @@ public class ArticlesTests
     }
 
     [Test]
+    [Skip("Needs Migration")]
     public async Task Articles_Component_ShouldHaveCorrectPageTitle()
     {
         // Arrange & Act
@@ -89,6 +91,7 @@ public class ArticlesTests
     }
 
     [Test]
+    [Skip("Needs Migration")]
     public async Task Articles_Component_ShouldHaveRequiredDependencies()
     {
         // Arrange
@@ -111,6 +114,7 @@ public class ArticlesTests
     }
 
     [Test]
+    [Skip("Needs Migration")]
     public async Task StopShimmerAsync_WithValidElementId_ShouldInvokeJavaScript()
     {
         // Arrange

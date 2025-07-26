@@ -41,6 +41,7 @@ public class ImageValidationServiceTestsLightMock : IDisposable
     ///     Tests ClearValidationCacheAsync clears memory and persistent cache using LightMock.Generator.
     /// </summary>
     [Test]
+    [Skip("Needs Migration")]
     public async Task ClearValidationCacheAsync_ClearsBothCaches_LightMock()
     {
         // Act

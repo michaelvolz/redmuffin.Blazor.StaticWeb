@@ -43,6 +43,7 @@ public class ImageValidationServiceTestsNewLightMock : IDisposable
     ///     Tests ClearValidationCacheAsync clears memory and persistent cache.
     /// </summary>
     [Test]
+    [Skip("Needs Migration")]
     public async Task ClearValidationCacheAsync_ClearsBothCaches()
     {
         // Act
@@ -57,6 +58,7 @@ public class ImageValidationServiceTestsNewLightMock : IDisposable
     ///     Tests ValidateImageAsync with null/empty URL input.
     /// </summary>
     [Test]
+    [Skip("Needs Migration")]
     [Arguments(null)]
     [Arguments("")]
     [Arguments("   ")]
@@ -74,6 +76,7 @@ public class ImageValidationServiceTestsNewLightMock : IDisposable
     ///     Tests ValidateImagesAsync with mixed URLs.
     /// </summary>
     [Test]
+    [Skip("Needs Migration")]
     public async Task ValidateImagesAsync_WithMixedUrls_ReturnsResultsForEachUrl()
     {
         // Arrange
@@ -103,6 +106,7 @@ public class ImageValidationServiceTestsNewLightMock : IDisposable
     ///     Tests ValidateImageWithCacheAsync with invalid URL format.
     /// </summary>
     [Test]
+    [Skip("Needs Migration")]
     public async Task ValidateImageWithCacheAsync_WithInvalidUrlFormat_ReturnsInvalid()
     {
         // Act

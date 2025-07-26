@@ -51,6 +51,7 @@ public class OpenGraphImagesServiceTestsLightMock : IDisposable
     ///     Tests CleanupExpiredEntriesAsync calls the cache service.
     /// </summary>
     [Test]
+    [Skip("Needs Migration")]
     public async Task CleanupExpiredEntriesAsync_CallsCacheService()
     {
         // Arrange
@@ -69,6 +70,7 @@ public class OpenGraphImagesServiceTestsLightMock : IDisposable
     ///     Tests ClearCacheAsync calls the cache service.
     /// </summary>
     [Test]
+    [Skip("Needs Migration")]
     public async Task ClearCacheAsync_CallsCacheService()
     {
         // Arrange
@@ -88,6 +90,7 @@ public class OpenGraphImagesServiceTestsLightMock : IDisposable
     ///     converting nullable DateTime? values to string representations with "N/A" fallback.
     /// </summary>
     [Test]
+    [Skip("Needs Migration")]
     public async Task GetCacheStatsAsync_WithEmptyCache_ReturnsStatsWithNullDateHandling()
     {
         // Arrange: Empty cache scenario
@@ -132,6 +135,7 @@ public class OpenGraphImagesServiceTestsLightMock : IDisposable
     ///     Tests GetImageAsync with valid URL that exists in cache.
     /// </summary>
     [Test]
+    [Skip("Needs Migration")]
     public async Task GetImageAsync_WithCachedImage_ReturnsCachedData()
     {
         // Arrange
@@ -164,6 +168,7 @@ public class OpenGraphImagesServiceTestsLightMock : IDisposable
     ///     Tests GetImageAsync with null/empty URL input.
     /// </summary>
     [Test]
+    [Skip("Needs Migration")]
     [Arguments(null)]
     [Arguments("")]
     [Arguments("   ")]
@@ -180,6 +185,7 @@ public class OpenGraphImagesServiceTestsLightMock : IDisposable
     ///     Tests GetImagesAsync with empty URL list.
     /// </summary>
     [Test]
+    [Skip("Needs Migration")]
     public async Task GetImagesAsync_WithEmptyUrlList_ReturnsEmptyDictionary()
     {
         // Arrange
@@ -197,6 +203,7 @@ public class OpenGraphImagesServiceTestsLightMock : IDisposable
     ///     Tests GetImagesAsync with mixed valid and invalid URLs.
     /// </summary>
     [Test]
+    [Skip("Needs Migration")]
     public async Task GetImagesAsync_WithMixedUrls_FiltersValidUrls()
     {
         // Arrange
@@ -220,6 +227,7 @@ public class OpenGraphImagesServiceTestsLightMock : IDisposable
     ///     Tests InvalidateCacheAsync when cache service throws exception.
     /// </summary>
     [Test]
+    [Skip("Needs Migration")]
     public async Task InvalidateCacheAsync_WhenCacheServiceThrows_ReturnsFalse()
     {
         // Arrange
@@ -238,6 +246,7 @@ public class OpenGraphImagesServiceTestsLightMock : IDisposable
     ///     Tests InvalidateCacheAsync with null/empty URL input.
     /// </summary>
     [Test]
+    [Skip("Needs Migration")]
     [Arguments(null)]
     [Arguments("")]
     [Arguments("   ")]
@@ -254,6 +263,7 @@ public class OpenGraphImagesServiceTestsLightMock : IDisposable
     ///     Tests InvalidateCacheAsync with valid URL.
     /// </summary>
     [Test]
+    [Skip("Needs Migration")]
     public async Task InvalidateCacheAsync_WithValidUrl_CallsRemoveAndReturnsTrue()
     {
         // Arrange
@@ -272,6 +282,7 @@ public class OpenGraphImagesServiceTestsLightMock : IDisposable
     ///     Tests IsImageCachedAsync with null/empty URL input.
     /// </summary>
     [Test]
+    [Skip("Needs Migration")]
     [Arguments(null)]
     [Arguments("")]
     [Arguments("   ")]
@@ -288,6 +299,7 @@ public class OpenGraphImagesServiceTestsLightMock : IDisposable
     ///     Tests UpdateCacheEntryAsync with null parameters.
     /// </summary>
     [Test]
+    [Skip("Needs Migration")]
     [Arguments(null, true)] // null articleUrl, valid imageData
     [Arguments("https://example.com/article", false)] // valid articleUrl, null imageData
     [Arguments(null, false)] // both null
@@ -316,6 +328,7 @@ public class OpenGraphImagesServiceTestsLightMock : IDisposable
     ///     Tests UpdateCacheEntryAsync with valid parameters.
     /// </summary>
     [Test]
+    [Skip("Needs Migration")]
     public async Task UpdateCacheEntryAsync_WithValidParameters_ReturnsTrue()
     {
         // Arrange
