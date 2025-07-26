@@ -2,25 +2,14 @@ using System.Linq;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
+using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Features.Pages.VideosPage;
 
 public partial class Videos
 {
-    // LoggerMessage delegates for better performance
-    private static readonly Action<ILogger, string, Exception> LogShimmerError =
-        LoggerMessage.Define<string>(LogLevel.Warning, new EventId(1, nameof(LogShimmerError)),
-            "Error stopping shimmer for element: {ElementId}");
-
-    private static readonly Action<ILogger, Exception?> LogStartingFetchVideos =
-        LoggerMessage.Define(LogLevel.Information, new EventId(2, nameof(LogStartingFetchVideos)),
-            "Starting to fetch videos using IRaindropAPI service");
-
-    private static readonly Action<ILogger, Exception> LogExceptionFetchingVideos =
-        LoggerMessage.Define(LogLevel.Error, new EventId(3, nameof(LogExceptionFetchingVideos)),
-            "Exception occurred while fetching videos");
-
+    private readonly Dictionary<string, string> _imageUrlCache = new(StringComparer.Ordinal);
     private string? _errorMessage;
     private List<RaindropItem>? _videoItems;
 
@@ -35,6 +24,12 @@ public partial class Videos
 
     [Inject]
     private IRaindropAPI RaindropAPI { get; set; } = null!;
+
+    [Inject]
+    private IImagePlaceholderService ImagePlaceholderService { get; set; } = null!;
+
+    [Inject]
+    private IImageValidationCacheService ImageValidationCacheService { get; set; } = null!;
 
     private static string DisplayTitle(RaindropItem video)
     {
@@ -57,6 +52,8 @@ public partial class Videos
         ArgumentNullException.ThrowIfNull(Js);
         ArgumentNullException.ThrowIfNull(Navigation);
         ArgumentNullException.ThrowIfNull(RaindropAPI);
+        ArgumentNullException.ThrowIfNull(ImagePlaceholderService);
+        ArgumentNullException.ThrowIfNull(ImageValidationCacheService);
 
         // Load videos automatically when the page starts
         return FetchVideosAsync();
@@ -86,28 +83,55 @@ public partial class Videos
         _videoItems = null;
         try
         {
-            LogStartingFetchVideos(Logger, null);
             var videos = await RaindropAPI.GetVideosAsync(CancellationToken.None).ConfigureAwait(false);
             _videoItems = videos.ToList();
+
+            // Populate image cache for videos
+            if (_videoItems.Count > 0)
+            {
+                await ImageValidationCacheService.PopulateImageUrlCacheAsync(
+                    _videoItems,
+                    _imageUrlCache,
+                    () => InvokeAsync(StateHasChanged),
+                    CancellationToken.None).ConfigureAwait(false);
+            }
         }
         catch (Exception ex)
         {
-            LogExceptionFetchingVideos(Logger, ex);
             _errorMessage = $"Exception fetching videos: {ex.Message}";
         }
 
         StateHasChanged();
     }
 
-    private async Task StopShimmerAsync(string elementId)
+    private string GetDefaultPlaceholder()
     {
-        try
-        {
-            await Js.InvokeVoidAsync("eval", $"document.getElementById('{elementId}')?.classList.add('loaded')").ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            LogShimmerError(Logger, elementId, ex);
-        }
+        return ImagePlaceholderService.GetDefaultPlaceholder();
+    }
+
+    private string GetImageUrl(RaindropItem video)
+    {
+        return ImagePlaceholderService.GetImageUrl(video, _imageUrlCache);
+    }
+
+    private Task HandleImageLoadAsync(string elementId, string videoLink, bool loadSuccess)
+    {
+        return ImagePlaceholderService.HandleImageLoadAsync(
+            elementId,
+            videoLink,
+            loadSuccess,
+            _imageUrlCache,
+            Js,
+            () => InvokeAsync(StateHasChanged));
+    }
+
+    private bool HasFallbackPlaceholder(RaindropItem video)
+    {
+        return ImagePlaceholderService.HasFallbackPlaceholder(video, _imageUrlCache);
+    }
+
+    private string GetFallbackReason(RaindropItem video)
+    {
+        return ImagePlaceholderService.GetFallbackReason(video, _imageUrlCache);
     }
 }

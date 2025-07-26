@@ -15,7 +15,18 @@
                     <h5>@DisplayTitle(video)</h5>
                 </div>
                 <div class="shimmer-placeholder" id="shimmer-@video.Id">
-                    <img src="@video.Cover" alt="Video Cover" @onload="@(() => StopShimmerAsync($"shimmer-{video.Id}"))" @onerror="@(() => StopShimmerAsync($"shimmer-{video.Id}"))"/>
+                    <img src="@GetImageUrl(video)" alt="Video Cover"
+                         @onload="@(() => HandleImageLoadAsync($"shimmer-{video.Id}", video.Link, true))"
+                         @onerror="@(() => HandleImageLoadAsync($"shimmer-{video.Id}", video.Link, false))"/>
+                    @if (HasFallbackPlaceholder(video))
+                    {
+                        <div class="fallback-overlay">
+                            <div class="fallback-content">
+                                <i class="fas fa-image fallback-icon"></i>
+                                <span class="fallback-text">@GetFallbackReason(video)</span>
+                            </div>
+                        </div>
+                    }
                 </div>
                 <div class="card-section">
                     <p>@DisplayExcerpt(video)</p>
