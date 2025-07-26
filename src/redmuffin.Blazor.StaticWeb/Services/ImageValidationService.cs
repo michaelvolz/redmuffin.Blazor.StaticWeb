@@ -327,8 +327,8 @@ public class ImageValidationService : IImageValidationService, IDisposable
 
     private async Task<HttpResponseMessage> SendHttpHeadRequestAsync(Uri uri, CancellationToken cancellationToken)
     {
-        var httpClient = _httpClientFactory.CreateClient("ExternalHttpClient");
-        // Override timeout if needed (ExternalHttpClient has 30s default)
+        using var httpClient = _httpClientFactory.CreateClient();
+        // Override timeout if needed (default HttpClient has 30s default)
         if (httpClient.Timeout.TotalMilliseconds > DefaultTimeoutMs) httpClient.Timeout = TimeSpan.FromMilliseconds(DefaultTimeoutMs);
 
         using var request = new HttpRequestMessage(HttpMethod.Head, uri);

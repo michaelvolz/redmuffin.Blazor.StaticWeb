@@ -9,7 +9,7 @@ public static class PageLoadSpeedConfig
     ///     Controls whether the LoadSpeed component is enabled
     ///     Set to true to enable the component, false to disable it entirely
     /// </summary>
-    public static bool IsEnabled { get; set; } = true;
+    public static bool IsEnabled { get; set; }
 
     /// <summary>
     ///     Controls whether the component works on localhost
