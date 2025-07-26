@@ -13,7 +13,7 @@ public sealed class SimpleImageValidationService : ISimpleImageValidationService
 {
     private const string CacheKeyPrefix = "img_validation_";
     private const int DefaultTimeoutMs = 5000; // 5 seconds - shorter than complex service
-    private const int CacheExpirationMinutes = 60; // 1 hour cache
+    private const int CacheExpirationMinutes = 40320; // 4 weeks cache
     private const double CacheCleanupThreshold = 0.75; // Clean up at 75% quota
     private const int TimeoutFailureCacheMinutes = 30; // Cache timeout failures for 30 minutes
 
