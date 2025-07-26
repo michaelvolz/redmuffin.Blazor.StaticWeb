@@ -82,21 +82,11 @@ public class CacheMonitoringService : ICacheMonitoringService
     // private const double LowCacheHitRateThreshold = 60.0;
     // private const double CriticalCacheHitRateThreshold = 40.0;
     private readonly IBrowserStorageService _browserStorageService;
-    private readonly ICacheService _cacheService;
-    private readonly IImageValidationService _imageValidationService;
     private readonly ILogger<CacheMonitoringService> _logger;
-    private readonly IOpenGraphImagesService _openGraphImagesService;
-
     public CacheMonitoringService(
-        ICacheService cacheService,
-        IOpenGraphImagesService openGraphImagesService,
-        IImageValidationService imageValidationService,
         IBrowserStorageService browserStorageService,
         ILogger<CacheMonitoringService> logger)
     {
-        _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
-        _openGraphImagesService = openGraphImagesService ?? throw new ArgumentNullException(nameof(openGraphImagesService));
-        _imageValidationService = imageValidationService ?? throw new ArgumentNullException(nameof(imageValidationService));
         _browserStorageService = browserStorageService ?? throw new ArgumentNullException(nameof(browserStorageService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -276,28 +266,27 @@ public class CacheMonitoringService : ICacheMonitoringService
         {
             LogCollectingComprehensiveStats(_logger, null);
 
-            // Get overall cache statistics
-            var overallStats = await _cacheService.GetCacheStatsAsync(cancellationToken).ConfigureAwait(false);
+            // Get browser storage statistics
+            var storageStats = await _browserStorageService.GetStorageStatsAsync(cancellationToken).ConfigureAwait(false);
 
-            // Get OpenGraph cache statistics
-            var openGraphStats = await _openGraphImagesService.GetCacheStatsAsync().ConfigureAwait(false);
-
-            // Get image validation cache statistics
-            var imageValidationStats = await _imageValidationService.GetValidationCacheStatsAsync(cancellationToken).ConfigureAwait(false);
-
-            // Calculate cache hit/miss rates
-            var totalAccesses = CalculateTotalAccesses(overallStats);
-            var (hitRate, missRate) = CalculateHitMissRates(overallStats, totalAccesses);
+            // Create basic cache stats from storage stats
+            var overallStats = new CacheStats
+            {
+                TotalItems = storageStats.TotalItems,
+                TotalSizeBytes = storageStats.TotalSizeBytes,
+                QuotaUsagePercent = storageStats.QuotaUsagePercent,
+                QuotaLimitBytes = storageStats.QuotaLimitBytes,
+                TotalExpiredItemsCount = 0, // Browser storage doesn't track expired items
+                NamespaceStats = new Dictionary<string, CacheNamespaceStats>()
+            };
 
             var result = new CacheMonitoringStats
             {
                 Overall = overallStats,
-                OpenGraphStats = openGraphStats,
-                ImageValidationStats = imageValidationStats,
-                CacheHitRate = hitRate,
-                CacheMissRate = missRate,
-                AverageAccessTimeMs = CalculateAverageAccessTime(overallStats),
-                TotalCacheOperations = totalAccesses,
+                CacheHitRate = 0.0, // Not available without cache service
+                CacheMissRate = 0.0, // Not available without cache service
+                AverageAccessTimeMs = 1.0, // Default estimate
+                TotalCacheOperations = 0, // Not available without cache service
                 CollectedAt = DateTime.UtcNow
             };
 
@@ -317,8 +306,18 @@ public class CacheMonitoringService : ICacheMonitoringService
         {
             LogCollectingHealthMetrics(_logger, null);
 
-            var stats = await _cacheService.GetCacheStatsAsync(cancellationToken).ConfigureAwait(false);
             var storageStats = await _browserStorageService.GetStorageStatsAsync(cancellationToken).ConfigureAwait(false);
+
+            // Create basic cache stats from storage stats
+            var stats = new CacheStats
+            {
+                TotalItems = storageStats.TotalItems,
+                TotalSizeBytes = storageStats.TotalSizeBytes,
+                QuotaUsagePercent = storageStats.QuotaUsagePercent,
+                QuotaLimitBytes = storageStats.QuotaLimitBytes,
+                TotalExpiredItemsCount = 0, // Browser storage doesn't track expired items
+                NamespaceStats = new Dictionary<string, CacheNamespaceStats>()
+            };
 
             var storageUtilization = stats.QuotaUsagePercent;
             var healthStatus = DetermineHealthStatus(storageUtilization, stats);
@@ -356,8 +355,19 @@ public class CacheMonitoringService : ICacheMonitoringService
         {
             LogCollectingPerformanceStats(_logger, timeRangeHours, null);
 
-            var stats = await _cacheService.GetCacheStatsAsync(cancellationToken).ConfigureAwait(false);
+            var storageStats = await _browserStorageService.GetStorageStatsAsync(cancellationToken).ConfigureAwait(false);
             var timeRange = TimeSpan.FromHours(timeRangeHours);
+
+            // Create basic cache stats from storage stats
+            var stats = new CacheStats
+            {
+                TotalItems = storageStats.TotalItems,
+                TotalSizeBytes = storageStats.TotalSizeBytes,
+                QuotaUsagePercent = storageStats.QuotaUsagePercent,
+                QuotaLimitBytes = storageStats.QuotaLimitBytes,
+                TotalExpiredItemsCount = 0,
+                NamespaceStats = new Dictionary<string, CacheNamespaceStats>()
+            };
 
             // Note: In a real implementation, you would track these metrics over time
             // For now, we'll provide estimates based on current state
@@ -397,28 +407,26 @@ public class CacheMonitoringService : ICacheMonitoringService
             LogStartingCacheOptimization(_logger, null);
 
             // Get initial statistics
-            var initialStats = await _cacheService.GetCacheStatsAsync(cancellationToken).ConfigureAwait(false);
-            result.StorageUtilizationBefore = initialStats.QuotaUsagePercent;
+            var initialStorageStats = await _browserStorageService.GetStorageStatsAsync(cancellationToken).ConfigureAwait(false);
+            result.StorageUtilizationBefore = initialStorageStats.QuotaUsagePercent;
 
-            // Phase 1: Clean up expired items
-            var expiredCleaned = await _cacheService.CleanupExpiredItemsAsync(cancellationToken).ConfigureAwait(false);
-            result.ExpiredItemsRemoved = expiredCleaned;
-            result.ActionsPerformed.Add($"Cleaned up {expiredCleaned.ToString(CultureInfo.InvariantCulture)} expired items");
+            // Phase 1: Clean up expired items (browser storage doesn't track expired items)
+            result.ExpiredItemsRemoved = 0;
+            result.ActionsPerformed.Add("Browser storage cleanup not applicable");
 
             // Phase 2: Perform LRU eviction if storage is still high
-            var finalStats = await _cacheService.GetCacheStatsAsync(cancellationToken).ConfigureAwait(false);
-            if (finalStats.QuotaUsagePercent > HighStorageUtilizationThreshold)
+            if (initialStorageStats.QuotaUsagePercent > HighStorageUtilizationThreshold)
             {
-                var targetSize = (long)(finalStats.QuotaLimitBytes * 0.7); // Target 70% usage
+                var targetSize = (long)(initialStorageStats.QuotaLimitBytes * 0.7); // Target 70% usage
                 var evictedCount = await _browserStorageService.EvictLeastRecentlyUsedAsync(targetSize, cancellationToken).ConfigureAwait(false);
                 result.ItemsEvicted = evictedCount;
                 result.ActionsPerformed.Add($"Evicted {evictedCount.ToString(CultureInfo.InvariantCulture)} LRU items");
             }
 
             // Get final statistics
-            var optimizedStats = await _cacheService.GetCacheStatsAsync(cancellationToken).ConfigureAwait(false);
-            result.StorageUtilizationAfter = optimizedStats.QuotaUsagePercent;
-            result.StorageFreedBytes = initialStats.TotalSizeBytes - optimizedStats.TotalSizeBytes;
+            var finalStorageStats = await _browserStorageService.GetStorageStatsAsync(cancellationToken).ConfigureAwait(false);
+            result.StorageUtilizationAfter = finalStorageStats.QuotaUsagePercent;
+            result.StorageFreedBytes = initialStorageStats.TotalSizeBytes - finalStorageStats.TotalSizeBytes;
             result.IsSuccessful = true;
 
             stopwatch.Stop();
@@ -446,7 +454,19 @@ public class CacheMonitoringService : ICacheMonitoringService
         {
             LogGeneratingCacheRecommendations(_logger, null);
 
-            var stats = await _cacheService.GetCacheStatsAsync(cancellationToken).ConfigureAwait(false);
+            var storageStats = await _browserStorageService.GetStorageStatsAsync(cancellationToken).ConfigureAwait(false);
+            
+            // Create basic cache stats from storage stats
+            var stats = new CacheStats
+            {
+                TotalItems = storageStats.TotalItems,
+                TotalSizeBytes = storageStats.TotalSizeBytes,
+                QuotaUsagePercent = storageStats.QuotaUsagePercent,
+                QuotaLimitBytes = storageStats.QuotaLimitBytes,
+                TotalExpiredItemsCount = 0,
+                NamespaceStats = new Dictionary<string, CacheNamespaceStats>()
+            };
+            
             var healthMetrics = await GetCacheHealthMetricsAsync(cancellationToken).ConfigureAwait(false);
 
             var recommendations = new CacheRecommendations();

@@ -10,10 +10,7 @@ public class CacheMonitoringStats
     /// </summary>
     public CacheStats Overall { get; set; } = new();
 
-    /// <summary>
-    ///     OpenGraph image cache statistics.
-    /// </summary>
-    public IDictionary<string, object> OpenGraphStats { get; set; } = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
 
     /// <summary>
     ///     Image validation cache statistics.
