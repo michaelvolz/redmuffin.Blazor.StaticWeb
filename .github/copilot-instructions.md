@@ -3,12 +3,12 @@
 **FOR AI ASSISTANTS ONLY** - Tech guidelines for AI. Humans use README.md.
 
 ## 🚀 Project
-**Frontend**: Blazor WebAssembly (.NET 9), feature-based  
-**Backend**: Azure Functions (.NET 8), isolated worker  
-**Testing**: TUnit (`[Test]`, `[Arguments]`) - NOT xUnit/NUnit/MSTest  
+**Frontend**: Blazor WebAssembly (.NET 9), feature-based
+**Backend**: Azure Functions (.NET 8), isolated worker
+**Testing**: TUnit (`[Test]`, `[Arguments]`) - NOT xUnit/NUnit/MSTest
 **Mocking**: LightMock.Generator ONLY - NSubstitute deprecated
-**Language**: C# 13 preview, WebAssembly optimizations  
-**Build**: `WasmStripILAfterAOT=true`, `InvariantGlobalization=true`, `PublishTrimmed=true`  
+**Language**: C# 13 preview, WebAssembly optimizations
+**Build**: `WasmStripILAfterAOT=true`, `InvariantGlobalization=true`, `PublishTrimmed=true`
 **Deployment**: Azure Static Web Apps with CSP, caching configs
 
 ## 📦 Dependencies
@@ -126,10 +126,10 @@ public partial class HomeTests
         // Arrange
         using var scope = CreateTestScope();
         var component = scope.Context.RenderComponent<HomePage>();
-        
+
         // Act & Assert
         await button.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
-        await Assert.That(scope.Logger.LogEntries.Any(entry => 
+        await Assert.That(scope.Logger.LogEntries.Any(entry =>
             entry.Message.Contains("Button clicked"))).IsTrue();
     }
 }
@@ -144,7 +144,7 @@ public partial class HomeTests
         public TestLogger<HomePage> Logger { get; } = new();
         // TestScope infrastructure...
     }
-    
+
     private static TestScope CreateTestScope() => new TestScope().WithStandardServices();
     // Helper methods, mocks, utilities...
 }
@@ -182,9 +182,9 @@ Tests:
 
 **Red-Green-Refactor**: Write failing test → implement → refactor
 **Before features**: Write failing TUnit test → `dotnet test` → implement → refactor
-**Test naming**: `Component_Behavior_ExpectedOutcome` (underscores only in tests)  
-**Test behavior, not implementation**: Public interfaces/contracts only  
-**Mock dependencies**: Constructor injection for isolation  
+**Test naming**: `Component_Behavior_ExpectedOutcome` (underscores only in tests)
+**Test behavior, not implementation**: Public interfaces/contracts only
+**Mock dependencies**: Constructor injection for isolation
 **Test structure**: Arrange-Act-Assert pattern
 
 ### MANDATORY: TestScope Architecture (ALL Test Classes)
@@ -203,7 +203,7 @@ public sealed class TestScope(string baseUri = "http://localhost:5000/") : IDisp
     public TestScope WithStandardServices() { /* setup */ return this; }
     public TestScope WithFailingHttpClient() { /* setup */ return this; }
     public TestScope WithJSInterop(JSRuntimeMode mode = JSRuntimeMode.Strict) { /* setup */ return this; }
-    
+
     public void Dispose() => Context?.Dispose();
 }
 
@@ -256,7 +256,7 @@ using (Assert.Multiple())
 **🔧 CRITICAL: Optional Parameters Solution**
 **CS0854 Fix**: ALWAYS specify ALL parameters explicitly in `Arrange()`/`Assert()` calls:
 ```csharp
-// ❌ FAILS: _mock.Arrange(f => f.GetAsync("key"))  
+// ❌ FAILS: _mock.Arrange(f => f.GetAsync("key"))
 // ✅ WORKS: _mock.Arrange(f => f.GetAsync("key", CancellationToken.None))
 // ✅ WORKS: _mock.Arrange(f => f.SetAsync("key", value, null, CancellationToken.None))
 ```
@@ -285,7 +285,7 @@ public partial class UserProfile : ComponentBase
 {
     [Inject] private IUserService UserService { get; set; } = default!;
     [Inject] private ILocalStorageService LocalStorage { get; set; } = default!;
-    
+
     protected override async Task OnInitializedAsync()
     {
         ArgumentNullException.ThrowIfNull(UserService);
@@ -299,13 +299,13 @@ public partial class UserProfile : ComponentBase
 **Private fields**: `_` prefix | **var**: Only when type apparent | **Line length**: 160 chars | **Braces**: Always use | **Null checks**: `ArgumentNullException.ThrowIfNull()`
 
 ## 🎨 UI & Styling
-**Framework**: Zurb Foundation only  
-**SCSS ONLY**: All styles in `wwwroot/scss/` - NEVER modify CSS directly  
-**Component styles**: NEVER use `.razor.css` - use SCSS partials with `_` prefix  
-**SCSS partials**: Must start with `_`, included in `app.scss` for auto-compilation  
-**JavaScript**: Minimal - prefer C#/Blazor, use `IJSRuntime.InvokeAsync<T>()`, NO JS for CSS  
-**Accessibility**: WCAG 2.1 AA compliance, semantic HTML, ARIA roles  
-**Performance**: Lazy loading, virtualization for large lists, optimize assets  
+**Framework**: Zurb Foundation only
+**SCSS ONLY**: All styles in `wwwroot/scss/` - NEVER modify CSS directly
+**Component styles**: NEVER use `.razor.css` - use SCSS partials with `_` prefix
+**SCSS partials**: Must start with `_`, included in `app.scss` for auto-compilation
+**JavaScript**: Minimal - prefer C#/Blazor, use `IJSRuntime.InvokeAsync<T>()`, NO JS for CSS
+**Accessibility**: WCAG 2.1 AA compliance, semantic HTML, ARIA roles
+**Performance**: Lazy loading, virtualization for large lists, optimize assets
 **Images**: WebP/AVIF, `loading="lazy"`, `srcset`
 
 ## 🔒 Security & API
@@ -315,39 +315,45 @@ public partial class UserProfile : ComponentBase
 Primary Constructors: `public class Person(string name, int age)` | Collection Expressions: `int[] nums = [1,2,3];` | Default Lambda: `(x, y=5) => x+y` | Alias Types: `using IntPair = (int, int);` | params Collections: `params ReadOnlySpan<T>` | ref readonly: `void M(ref readonly int x)` | Inline Arrays: `[InlineArray(10)]` | New Lock: `var l = new Lock(); using(l.EnterScope())`
 
 ## 📁 File Organization
-**Features**: `src/redmuffin.Blazor.StaticWeb/Features/` - Feature-based with pages/components  
-**Static**: `src/redmuffin.Blazor.StaticWeb/wwwroot/` - CSS, SCSS, JS, sample data, libraries  
-**Tests**: `tests/` - Mirror structure with TUnit projects  
-**Scripts**: `scripts/` - PowerShell automation  
+**Features**: `src/redmuffin.Blazor.StaticWeb/Features/` - Feature-based with pages/components
+**Static**: `src/redmuffin.Blazor.StaticWeb/wwwroot/` - CSS, SCSS, JS, sample data, libraries
+**Tests**: `tests/` - Mirror structure with TUnit projects
+**Scripts**: `scripts/` - PowerShell automation
 **Config**: `.github/` - Workflows, instructions, prompts, chatmodes
 
 **Key dirs**: `.github/instructions/` (tech standards), `.github/prompts/` (AI prompts), `.github/chatmodes/` (AI modes), `src/.../Features/` (components), `src/.../Api/` (Azure Functions), `src/.../Common/` (shared)
+
+## 📝 Markdown Standards
+**MANDATORY**: For ALL Markdown file creation/modification → Follow `.github/instructions/markdown.instructions.md`
+**Compliance**: MarkdownLint rules (MD001-MD059), auto-fix enabled, configuration via `.markdownlint.jsonc`
+**VS Code**: Auto-format on save, lint workspace, fix violations commands available
+**Structure**: Proper headings hierarchy, consistent formatting, table alignment, link validation
 
 ## 🤖 AI Guidelines
 
 ### 🔄 Development Workflow
 **MANDATORY**: After EVERY major C# file change: `dotnet clean && dotnet build --no-restore --verbosity quiet` → Fix ALL warnings → Continue
 **Pre-commit**: `dotnet test` must pass without errors (warnings OK) - stop commit if test errors exist
-**Git commits**: Batch by SRP for quality messages  
-**File editing**: One file at a time, track progress ("Edit 2 of 5")  
-**Unclear items**: Ask questions, wait for answers before continuing  
+**Git commits**: Batch by SRP for quality messages
+**File editing**: One file at a time, track progress ("Edit 2 of 5")
+**Unclear items**: Ask questions, wait for answers before continuing
 **Large changes**: Outline plan, get approval, incremental edits, keep buildable
 
 ### 🛠️ Tools & Coverage
 **Coverage**: `scripts/Generate-CoverageReport.ps1` | `scripts/View-CoverageReport.ps1`
-**Config**: Coverlet MSBuild integration, exclusions in `.coverletrc`/`Directory.Build.props`  
-**Output**: HTML (unified/branded), XML, JSON, Cobertura to `coverage/`  
+**Config**: Coverlet MSBuild integration, exclusions in `.coverletrc`/`Directory.Build.props`
+**Output**: HTML (unified/branded), XML, JSON, Cobertura to `coverage/`
 **Build**: Use `run_build` tool to verify changes
 
 ### 🌐 External Tools
 **Context7 MCP**: `resolve-library-id` → `get-library-docs` (current docs over training data)
 **Fetch MCP**: URL→markdown conversion for docs/repos/tutorials
-**Brave Search**: `brave_web_search` (2,000 queries/month)  
+**Brave Search**: `brave_web_search` (2,000 queries/month)
 **Sequential Thinking**: Complex problem-solving with dynamic adaptation
 
 ### 📍 Repository Info
 **Owner**: `michaelvolz` | **Name**: `redmuffin.Blazor.StaticWeb`
-**Encoding**: UTF8 without BOM for Markdown  
+**Encoding**: UTF8 without BOM for Markdown
 **Exclude samples**: `wwwroot/sample-data/markdown-cheat-sheet.md`, `wwwroot/Example.md`
 
 ### 📚 Tech Instructions (`.github/instructions/`)
@@ -361,7 +367,7 @@ public partial class Example : ComponentBase
 {
     [Inject] private ILocalStorageService LocalStorage { get; set; } = default!;
     [Parameter] public string Title { get; set; } = string.Empty;
-    
+
     protected override async Task OnInitializedAsync()
     {
         ArgumentNullException.ThrowIfNull(LocalStorage);
@@ -383,11 +389,11 @@ public async Task Component_Behavior_ExpectedOutcome()
 {
     // Arrange
     using var scope = CreateTestScope(); // From .Helpers.cs partial
-    
+
     // Act
     var component = scope.Context.RenderComponent<MyComponent>();
     await button.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
-    
+
     // Assert - Use chaining for related assertions
     await Assert.That(component.Markup).IsNotNull().And.Contains("expected");
 }
@@ -404,7 +410,7 @@ public void Should_Render_UserProfile_When_User_Loaded()
 
 ### ⭐ Best Practices
 **TDD**: Test first, small steps, continuous refactoring, fast feedback, behavior-focused
-**DI**: Dependency inversion, constructor injection, single responsibility, interface segregation  
+**DI**: Dependency inversion, constructor injection, single responsibility, interface segregation
 **Testing**: TestScope architecture, TUnit fluent chaining, comprehensive error scenarios, zero warnings compliance, partial class organization
 **Partial Classes**: Components, services, and tests MUST follow established partial class patterns for clean separation of concerns
 **General**: Modular/reusable/testable components, strongly-typed parameters, handle exceptions with try/catch or `<ErrorBoundary>`, prefer C#/Blazor over JS, use `StateHasChanged()` sparingly, implement `IDisposable` for subscriptions/timers
