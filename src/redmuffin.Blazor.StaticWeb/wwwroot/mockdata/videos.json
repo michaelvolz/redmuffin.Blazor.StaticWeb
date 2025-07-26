@@ -1,0 +1,195 @@
+[
+  {
+    "_id": 123456789,
+    "link": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "title": "Building Modern Web Applications with Blazor WebAssembly",
+    "excerpt": "Learn how to create fast, interactive web applications using Blazor WebAssembly. This comprehensive tutorial covers component architecture, state management, and performance optimization techniques.",
+    "note": "Great tutorial for understanding Blazor fundamentals and best practices.",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        "type": "video"
+      }
+    ],
+    "tags": ["blazor", "webassembly", "dotnet", "tutorial", "web-development"],
+    "important": true,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2024-01-15T10:30:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1000
+  },
+  {
+    "_id": 123456790,
+    "link": "https://www.youtube.com/watch?v=abc123def456",
+    "title": "Advanced C# Features You Should Know in 2024",
+    "excerpt": "Explore the latest C# features including pattern matching, records, nullable reference types, and async streams. Perfect for developers looking to modernize their codebase.",
+    "note": "Excellent coverage of modern C# features with practical examples.",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/abc123def456/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=abc123def456",
+        "type": "video"
+      }
+    ],
+    "tags": ["csharp", "dotnet", "programming", "features", "2024"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2024-01-20T14:15:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [
+      {
+        "text": "Pattern matching is a powerful feature that can simplify complex conditional logic",
+        "note": "Key insight about pattern matching benefits",
+        "created": "2024-01-20T15:30:00Z",
+        "lastUpdate": "2024-01-20T15:30:00Z",
+        "creatorRef": null
+      }
+    ],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 999
+  },
+  {
+    "_id": 123456791,
+    "link": "https://vimeo.com/987654321",
+    "title": "Microservices Architecture Patterns and Best Practices",
+    "excerpt": "Deep dive into microservices architecture, covering service decomposition, communication patterns, data management, and deployment strategies for scalable applications.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://i.vimeocdn.com/video/987654321_640x360.jpg",
+    "media": [
+      {
+        "link": "https://vimeo.com/987654321",
+        "type": "video"
+      }
+    ],
+    "tags": ["microservices", "architecture", "scalability", "distributed-systems"],
+    "important": true,
+    "reminder": {
+      "date": "2024-02-01T09:00:00Z"
+    },
+    "removed": false,
+    "created": "2024-01-25T11:45:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67891,
+      "oid": 67891
+    },
+    "highlights": [],
+    "domain": "vimeo.com",
+    "collectionId": 67891,
+    "sort": 998
+  },
+  {
+    "_id": 123456792,
+    "link": "https://www.youtube.com/watch?v=xyz789uvw012",
+    "title": "This Video Has a Very Long Title That Should Test How the UI Handles Extremely Long Titles That Might Wrap to Multiple Lines or Get Truncated",
+    "excerpt": "This is a test video with an intentionally long title to verify how the application handles edge cases in the user interface. The content discusses various UI/UX considerations for handling long text content.",
+    "note": "Edge case testing for long titles and descriptions.",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [],
+    "tags": ["ui-testing", "edge-cases", "long-content"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2024-01-30T16:20:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 997
+  },
+  {
+    "_id": 123456793,
+    "link": "https://www.twitch.tv/videos/1234567890",
+    "title": "Live Coding: Building a Real-time Chat Application",
+    "excerpt": "Watch as we build a real-time chat application from scratch using SignalR and ASP.NET Core. Includes authentication, message persistence, and scaling considerations.",
+    "note": "Great example of real-time web development techniques.",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://static-cdn.jtvnw.net/cf_vods/d1m7jfoe9zdc1j/1234567890_preview.jpg",
+    "media": [
+      {
+        "link": "https://www.twitch.tv/videos/1234567890",
+        "type": "video"
+      }
+    ],
+    "tags": ["signalr", "real-time", "chat", "aspnet-core", "live-coding"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2024-02-05T19:30:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67892,
+      "oid": 67892
+    },
+    "highlights": [
+      {
+        "text": "SignalR makes real-time communication incredibly simple",
+        "note": "Key takeaway about SignalR benefits",
+        "created": "2024-02-05T20:15:00Z",
+        "lastUpdate": "2024-02-05T20:15:00Z",
+        "creatorRef": null
+      },
+      {
+        "text": "Always consider connection scaling when building real-time apps",
+        "note": "Important scalability consideration",
+        "created": "2024-02-05T21:00:00Z",
+        "lastUpdate": "2024-02-05T21:00:00Z",
+        "creatorRef": null
+      }
+    ],
+    "domain": "twitch.tv",
+    "collectionId": 67892,
+    "sort": 996
+  }
+]
