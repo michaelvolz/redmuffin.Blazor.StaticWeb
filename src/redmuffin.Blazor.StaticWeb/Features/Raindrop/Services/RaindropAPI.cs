@@ -7,23 +7,11 @@ namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
 ///     Real implementation of IRaindropAPI that makes HTTP calls to Azure Functions for RaindropIO API operations.
 ///     Routes all API calls through Azure Functions endpoints for production and localhost:4280 environments.
 /// </summary>
-public sealed partial class RaindropAPI : IRaindropAPI, IDisposable
+public sealed partial class RaindropAPI(IHttpClientFactory httpClientFactory, ILogger<RaindropAPI> logger) : IRaindropAPI, IDisposable
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<RaindropAPI> _logger;
+    private readonly IHttpClientFactory _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+    private readonly ILogger<RaindropAPI> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private bool _disposed;
-
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="RaindropAPI"/> class.
-    /// </summary>
-    /// <param name="httpClientFactory">HTTP client factory for creating HTTP clients to make API calls to Azure Functions.</param>
-    /// <param name="logger">Logger for API operations.</param>
-    /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
-    public RaindropAPI(IHttpClientFactory httpClientFactory, ILogger<RaindropAPI> logger)
-    {
-        _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
 
     /// <summary>
     ///     Releases all resources used by the RaindropAPI.
@@ -46,7 +34,7 @@ public sealed partial class RaindropAPI : IRaindropAPI, IDisposable
         {
             LogCallingVideosAPI(_logger);
 
-            using var httpClient = _httpClientFactory.CreateClient();
+            using var httpClient = _httpClientFactory.CreateClient("DefaultClient");
             var response = await httpClient.GetAsync("/api/RaindropListVideos", cancellationToken).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
@@ -63,7 +51,7 @@ public sealed partial class RaindropAPI : IRaindropAPI, IDisposable
                 return new List<RaindropItem>();
             }
 
-            var videos = await DeserializeWithFallbackAsync<List<RaindropItem>>(jsonContent, "videos API response", cancellationToken).ConfigureAwait(false);
+            var videos = await DeserializeWithFallbackAsync<List<RaindropItem>>(jsonContent, "videos API response").ConfigureAwait(false);
 
             if (videos == null) throw new InvalidOperationException("Failed to deserialize videos API response - all deserialization strategies failed.");
 
@@ -101,7 +89,7 @@ public sealed partial class RaindropAPI : IRaindropAPI, IDisposable
         {
             LogCallingArticlesAPI(_logger);
 
-            using var httpClient = _httpClientFactory.CreateClient();
+            using var httpClient = _httpClientFactory.CreateClient("DefaultClient");
             var response = await httpClient.GetAsync("/api/RaindropListArticles", cancellationToken).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
@@ -118,7 +106,7 @@ public sealed partial class RaindropAPI : IRaindropAPI, IDisposable
                 return new List<RaindropItem>();
             }
 
-            var articles = await DeserializeWithFallbackAsync<List<RaindropItem>>(jsonContent, "articles API response", cancellationToken)
+            var articles = await DeserializeWithFallbackAsync<List<RaindropItem>>(jsonContent, "articles API response")
                 .ConfigureAwait(false);
 
             if (articles == null) throw new InvalidOperationException("Failed to deserialize articles API response - all deserialization strategies failed.");
@@ -155,9 +143,8 @@ public sealed partial class RaindropAPI : IRaindropAPI, IDisposable
     /// <typeparam name="T">The type to deserialize to.</typeparam>
     /// <param name="jsonContent">The JSON content to deserialize.</param>
     /// <param name="source">The source description for logging purposes.</param>
-    /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>The deserialized object or null if all strategies fail.</returns>
-    private Task<T?> DeserializeWithFallbackAsync<T>(string jsonContent, string source, CancellationToken cancellationToken) where T : class
+    private Task<T?> DeserializeWithFallbackAsync<T>(string jsonContent, string source) where T : class
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(jsonContent);
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
