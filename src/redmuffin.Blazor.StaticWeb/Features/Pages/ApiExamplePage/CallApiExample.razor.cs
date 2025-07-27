@@ -11,10 +11,10 @@ public partial class CallApiExample
     [Inject]
     private IRaindropAPI RaindropAPI { get; set; } = default!;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         ArgumentNullException.ThrowIfNull(RaindropAPI);
-        await base.OnInitializedAsync().ConfigureAwait(false);
+        base.OnInitialized();
     }
 
     private async Task CallApiAsync()
@@ -39,6 +39,4 @@ public partial class CallApiExample
             Console.WriteLine(ex);
         }
     }
-
-
 }
