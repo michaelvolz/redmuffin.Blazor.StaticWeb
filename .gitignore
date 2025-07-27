@@ -389,3 +389,8 @@ FodyWeavers.xsd
 /src/redmuffin.Blazor.StaticWeb/wwwroot/lib/logo.css
 /src/redmuffin.Blazor.StaticWeb/wwwroot/lib/logo.min.css
 src/redmuffin.Blazor.StaticWeb/wwwroot/css/app.css
+
+# Local development assets
+/src/redmuffin.Blazor.StaticWeb/wwwroot/mockdata/
+/src/redmuffin.Blazor.StaticWeb/wwwroot/scss/
+/src/redmuffin.Blazor.StaticWeb/wwwroot/lib/
