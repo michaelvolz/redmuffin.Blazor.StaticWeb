@@ -237,6 +237,7 @@ using (Assert.Multiple())
 ### MANDATORY: Test Quality Checklist
 **Before committing ANY test:**
 - [ ] ConfigureAwait(false) on all async calls
+- [ ] **NEVER put ConfigureAwait(false) at the end of assert statements**
 - [ ] TestScope pattern with fluent configuration
 - [ ] TUnit chaining for related assertions
 - [ ] Clear AAA structure with comments
@@ -245,6 +246,7 @@ using (Assert.Multiple())
 - [ ] Resource disposal via using statements
 - [ ] Comprehensive error scenario testing
 - [ ] Partial class structure: Tests in main, helpers in .Helpers.cs
+- [ ] **CRITICAL**: ALL new test code MUST be placed in `NewTests/` folders within test projects - NEVER touch or reference testcode outside NewTests folders
 
 ## 🎭 Mocking Strategy
 **STRATEGIC APPROACH**: Use appropriate mocking based on dependency type
@@ -336,6 +338,7 @@ public partial class UserProfile : ComponentBase
 **Input validation**: Always validate/sanitize | **XSS/CSRF**: Use Blazor built-ins | **Secrets**: Never expose in client | **API**: `IHttpClientFactory` only for actual HTTP needs | **CSP**: In `staticwebapp.config.json` - allows 'unsafe-inline' for styles, restricts scripts | **Azure Functions**: Isolated worker with DI | **Authentication**: ASP.NET Core Identity, RBAC
 
 ## ⚡ Modern C#
+**ALWAYS remember to use modern C# 13 and .NET 9 patterns and techniques**
 Primary Constructors: `public class Person(string name, int age)` | Collection Expressions: `int[] nums = [1,2,3];` | Default Lambda: `(x, y=5) => x+y` | Alias Types: `using IntPair = (int, int);` | params Collections: `params ReadOnlySpan<T>` | ref readonly: `void M(ref readonly int x)` | Inline Arrays: `[InlineArray(10)]` | New Lock: `var l = new Lock(); using(l.EnterScope())`
 
 ## 📁 File Organization
