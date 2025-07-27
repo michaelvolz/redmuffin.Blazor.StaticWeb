@@ -98,11 +98,6 @@
           "Microsoft.AspNetCore.Components.Web": "8.0.0"
         }
       },
-      "BuildWebCompiler2022": {
-        "type": "Transitive",
-        "resolved": "1.14.15",
-        "contentHash": "/bfbMI6LBrLX5kn0sOVqscfe2kbsS0nUtIsKUUJg/puL4ey9J0y4DdGA+YaCAsu4Vi5tyNM8wWjlSOgjywxpzg=="
-      },
       "EnumerableAsyncProcessor": {
         "type": "Transitive",
         "resolved": "2.1.0",
@@ -453,7 +448,6 @@
         "type": "Project",
         "dependencies": {
           "Blazored.LocalStorage": "[4.5.0, )",
-          "BuildWebCompiler2022": "[1.14.15, )",
           "Markdig": "[0.41.3, )",
           "Microsoft.AspNetCore.Components.Authorization": "[9.0.6, )",
           "Microsoft.AspNetCore.Components.WebAssembly": "[9.0.6, )",

@@ -70,17 +70,6 @@
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
-  <!-- Documentation files only for non-test projects -->
-  <PropertyGroup Condition="'$(IsTestProject)' != 'true'">
-    <DocumentationFile>_$(MSBuildProjectName).xml</DocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-  </PropertyGroup>
-
   <!-- Package versions centralized -->
   <PropertyGroup>
     <MeziantouAnalyzerVersion>2.0.205</MeziantouAnalyzerVersion>

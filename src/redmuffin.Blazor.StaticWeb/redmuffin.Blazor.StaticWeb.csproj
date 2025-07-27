@@ -30,9 +30,9 @@
 
   <!-- BuildWebCompiler2022 is only needed for local development on Windows -->
   <!-- CSS files are pre-compiled and committed to source control -->
-  <ItemGroup Condition="'$(Configuration)'=='Debug' And '$(OS)'=='Windows_NT'">
+  <!--<ItemGroup Condition="'$(Configuration)'=='Debug' And '$(OS)'=='Windows_NT'">
     <PackageReference Include="BuildWebCompiler2022" Version="1.14.15" />
-  </ItemGroup>
+  </ItemGroup>-->
 
   <ItemGroup>
     <AdditionalFiles Remove="C:\Users\flynn\.nuget\packages\microsoft.visualstudio.threading.analyzers\17.8.14\build\AdditionalFiles\vs-threading.LegacyThreadSwitchingMembers.txt" />
