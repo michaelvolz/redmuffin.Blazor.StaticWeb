@@ -67,6 +67,7 @@ The generated task list _must_ follow this structure:
 - Mocking uses LightMock.Generator ONLY (NSubstitute deprecated).
 - Use `dotnet clean && dotnet build --no-restore --verbosity quiet` to verify zero build warnings (except IL2111).
 - Use `dotnet test` to run all tests or `dotnet test --filter "FullyQualifiedName~[TestClassName]"` for specific test classes.
+- **QUALITY CHECK**: After every step verify TestScope pattern, custom mock pattern, ConfigureAwait(false) compliance following HomeTests*.cs files as prime example.
 - Blazor components follow feature-based organization under `src/redmuffin.Blazor.StaticWeb/Features/`.
 - Azure Functions use isolated worker model with dependency injection.
 - Use Zurb Foundation classes for consistent UI styling.
