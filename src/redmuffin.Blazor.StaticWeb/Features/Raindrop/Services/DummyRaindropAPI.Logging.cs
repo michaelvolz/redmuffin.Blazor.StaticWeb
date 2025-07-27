@@ -19,6 +19,9 @@ public sealed partial class DummyRaindropAPI
     [LoggerMessage(Level = LogLevel.Information, Message = "Successfully loaded {Count} articles from dummy data")]
     private static partial void LogArticlesLoaded(ILogger logger, int count);
 
+    [LoggerMessage(EventId = 4, Level = LogLevel.Information, Message = "Returning Hello World mock response from dummy data")]
+    private static partial void LogHelloWorldMockResponse(ILogger logger);
+
     [LoggerMessage(Level = LogLevel.Information, Message = "Loading JSON file: {FilePath}")]
     private static partial void LogLoadingFile(ILogger logger, string filePath);
 

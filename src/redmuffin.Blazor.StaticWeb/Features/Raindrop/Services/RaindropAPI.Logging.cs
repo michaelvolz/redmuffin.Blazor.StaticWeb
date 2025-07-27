@@ -19,6 +19,15 @@ public sealed partial class RaindropAPI
     [LoggerMessage(Level = LogLevel.Information, Message = "Successfully loaded {Count} articles from API")]
     private static partial void LogArticlesLoaded(ILogger logger, int count);
 
+    [LoggerMessage(Level = LogLevel.Information, Message = "Calling Hello World API endpoint")]
+    private static partial void LogCallingHelloWorldAPI(ILogger logger);
+
+    [LoggerMessage(EventId = 4, Level = LogLevel.Information, Message = "Successfully retrieved Hello World response from API")]
+    private static partial void LogHelloWorldAPISuccess(ILogger logger);
+
+    [LoggerMessage(EventId = 5, Level = LogLevel.Error, Message = "Hello World API request failed")]
+    private static partial void LogHelloWorldAPIError(ILogger logger, Exception exception);
+
     [LoggerMessage(Level = LogLevel.Error, Message = "API call failed for {Operation} with status code {StatusCode}: {ReasonPhrase}")]
     private static partial void LogAPICallFailed(ILogger logger, string operation, int statusCode, string reasonPhrase);
 

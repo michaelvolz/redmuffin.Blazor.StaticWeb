@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Features.Pages.ApiExamplePage;
 
@@ -8,19 +9,23 @@ public partial class CallApiExample
     private string? _errorMessage;
 
     [Inject]
-    private IHttpClientFactory HttpClientFactory { get; set; } = default!;
+    private IRaindropAPI RaindropAPI { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ArgumentNullException.ThrowIfNull(RaindropAPI);
+        await base.OnInitializedAsync().ConfigureAwait(false);
+    }
 
     private async Task CallApiAsync()
     {
-        ArgumentNullException.ThrowIfNull(HttpClientFactory);
+        ArgumentNullException.ThrowIfNull(RaindropAPI);
 
         _apiResponse = null;
         _errorMessage = null;
         try
         {
-            using var httpClient = HttpClientFactory.CreateClient("DefaultClient");
-            // The API endpoint is relative to the application's base URI
-            _apiResponse = await httpClient.GetStringAsync("api/HelloWorld").ConfigureAwait(false);
+            _apiResponse = await RaindropAPI.GetHelloWorldAsync().ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
@@ -34,4 +39,6 @@ public partial class CallApiExample
             Console.WriteLine(ex);
         }
     }
+
+
 }

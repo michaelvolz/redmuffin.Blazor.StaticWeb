@@ -26,4 +26,18 @@ public interface IRaindropAPI
     /// <exception cref="TaskCanceledException">Thrown when the operation is cancelled via the cancellation token.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the API response cannot be processed or is in an unexpected format.</exception>
     Task<IEnumerable<RaindropItem>> GetArticlesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a Hello World message from the API to demonstrate basic connectivity and service functionality.
+    /// </summary>
+    /// <param name="cancellationToken">Token to cancel the operation if needed.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a Hello World string message.</returns>
+    /// <exception cref="HttpRequestException">Thrown when the API request fails due to network or server issues.</exception>
+    /// <exception cref="TaskCanceledException">Thrown when the operation is cancelled via the cancellation token.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the API response cannot be processed or is in an unexpected format.</exception>
+    Task<string> GetHelloWorldAsync(CancellationToken cancellationToken = default)
+    {
+        // Default implementation for backward compatibility with existing test mocks
+        return Task.FromResult("Hello World from Default Interface Implementation");
+    }
 }

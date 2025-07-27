@@ -44,12 +44,12 @@ public partial class IRaindropAPITests
     public sealed class TestScope : IDisposable
     {
         public TestLogger<DummyRaindropAPI> DummyLogger { get; } = new();
-        public TestLogger<RaindropAPI> RealLogger { get; } = new();
+    public TestLogger<RaindropAPI> RealLogger { get; } = new();
         public DummyRaindropAPI? DummyAPI { get; private set; }
         public RaindropAPI? RealAPI { get; private set; }
         public ILogger Logger => DummyAPI != null ? DummyLogger : RealLogger;
         public TestLogger<DummyRaindropAPI> GetDummyLogger() => DummyLogger;
-        public TestLogger<RaindropAPI> GetRealLogger() => RealLogger;
+    public TestLogger<RaindropAPI> GetRealLogger() => RealLogger;
 
         /// <summary>
         /// Configures the test scope with a DummyRaindropAPI instance that loads data from mock JSON files.
