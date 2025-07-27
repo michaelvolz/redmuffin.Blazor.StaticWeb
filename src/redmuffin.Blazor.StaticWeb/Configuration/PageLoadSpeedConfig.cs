@@ -6,24 +6,24 @@ namespace redmuffin.Blazor.StaticWeb.Configuration;
 public static class PageLoadSpeedConfig
 {
     /// <summary>
-    ///     Controls whether the LoadSpeed component is enabled
+    ///     Gets or sets a value indicating whether the LoadSpeed component is enabled.
     ///     Set to true to enable the component, false to disable it entirely
     /// </summary>
     public static bool IsEnabled { get; set; } = true;
 
     /// <summary>
-    ///     Controls whether the component works on localhost
+    ///     Gets or sets a value indicating whether the LoadSpeed component works on localhost.
     ///     Set to true to enable on localhost, false to disable on localhost
     /// </summary>
-    public static bool EnableOnLocalhost { get; set; } = false; // Set to true for your current needs
+    public static bool EnableOnLocalhost { get; set; } // Set to true for your current needs
 
     /// <summary>
-    ///     Delay in milliseconds before automatically loading metrics
+    ///     Gets or sets the delay in milliseconds before automatically loading metrics.
     /// </summary>
     public static int AutoLoadDelayMs { get; set; } = 2000;
 
     /// <summary>
-    ///     Timeout in seconds for JavaScript interop calls
+    ///     Gets or sets the timeout in seconds for JavaScript interop calls.
     /// </summary>
     public static int JsInteropTimeoutSeconds { get; set; } = 5;
 
