@@ -329,6 +329,7 @@ public partial class UserProfile : ComponentBase
 **SCSS ONLY**: All styles in `wwwroot/scss/` - NEVER modify CSS directly
 **Component styles**: NEVER use `.razor.css` - use SCSS partials with `_` prefix
 **SCSS partials**: Must start with `_`, included in `app.scss` for auto-compilation
+**SCSS Build**: Use `Debug-Sass` configuration for SCSS compilation: `dotnet build --configuration Debug-Sass` | `BuildWebCompiler2022` package auto-included
 **JavaScript**: Minimal - prefer C#/Blazor, use `IJSRuntime.InvokeAsync<T>()`, NO JS for CSS
 **Accessibility**: WCAG 2.1 AA compliance, semantic HTML, ARIA roles
 **Performance**: Lazy loading, virtualization for large lists, optimize assets
