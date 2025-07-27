@@ -83,6 +83,7 @@ public class CacheMonitoringService : ICacheMonitoringService
     // private const double CriticalCacheHitRateThreshold = 40.0;
     private readonly IBrowserStorageService _browserStorageService;
     private readonly ILogger<CacheMonitoringService> _logger;
+
     public CacheMonitoringService(
         IBrowserStorageService browserStorageService,
         ILogger<CacheMonitoringService> logger)
@@ -277,7 +278,7 @@ public class CacheMonitoringService : ICacheMonitoringService
                 QuotaUsagePercent = storageStats.QuotaUsagePercent,
                 QuotaLimitBytes = storageStats.QuotaLimitBytes,
                 TotalExpiredItemsCount = 0, // Browser storage doesn't track expired items
-                NamespaceStats = new Dictionary<string, CacheNamespaceStats>()
+                NamespaceStats = new Dictionary<string, CacheNamespaceStats>(StringComparer.Ordinal)
             };
 
             var result = new CacheMonitoringStats
@@ -316,7 +317,7 @@ public class CacheMonitoringService : ICacheMonitoringService
                 QuotaUsagePercent = storageStats.QuotaUsagePercent,
                 QuotaLimitBytes = storageStats.QuotaLimitBytes,
                 TotalExpiredItemsCount = 0, // Browser storage doesn't track expired items
-                NamespaceStats = new Dictionary<string, CacheNamespaceStats>()
+                NamespaceStats = new Dictionary<string, CacheNamespaceStats>(StringComparer.Ordinal)
             };
 
             var storageUtilization = stats.QuotaUsagePercent;
@@ -366,7 +367,7 @@ public class CacheMonitoringService : ICacheMonitoringService
                 QuotaUsagePercent = storageStats.QuotaUsagePercent,
                 QuotaLimitBytes = storageStats.QuotaLimitBytes,
                 TotalExpiredItemsCount = 0,
-                NamespaceStats = new Dictionary<string, CacheNamespaceStats>()
+                NamespaceStats = new Dictionary<string, CacheNamespaceStats>(StringComparer.Ordinal)
             };
 
             // Note: In a real implementation, you would track these metrics over time
@@ -455,7 +456,7 @@ public class CacheMonitoringService : ICacheMonitoringService
             LogGeneratingCacheRecommendations(_logger, null);
 
             var storageStats = await _browserStorageService.GetStorageStatsAsync(cancellationToken).ConfigureAwait(false);
-            
+
             // Create basic cache stats from storage stats
             var stats = new CacheStats
             {
@@ -464,9 +465,9 @@ public class CacheMonitoringService : ICacheMonitoringService
                 QuotaUsagePercent = storageStats.QuotaUsagePercent,
                 QuotaLimitBytes = storageStats.QuotaLimitBytes,
                 TotalExpiredItemsCount = 0,
-                NamespaceStats = new Dictionary<string, CacheNamespaceStats>()
+                NamespaceStats = new Dictionary<string, CacheNamespaceStats>(StringComparer.Ordinal)
             };
-            
+
             var healthMetrics = await GetCacheHealthMetricsAsync(cancellationToken).ConfigureAwait(false);
 
             var recommendations = new CacheRecommendations();
