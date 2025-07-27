@@ -41,6 +41,7 @@ jobs:
             "CHANGELOG.md"
             "docs/*.md"
             "tasks/*.md"
+            "spec/**/*"
             ".github/copilot-instructions.md"
             ".github/instructions/*.md"
             ".github/prompts/*.md"
@@ -52,6 +53,25 @@ jobs:
             ".editorconfig"
             ".mcp.json"
             ".coverletrc"
+            # IDE and editor configuration
+            ".vscode/**/*"
+            "*.code-workspace"
+            "*.sln.DotSettings"
+            ".config/**/*"
+            ".filenesting.json"
+            ".trae/**/*"
+            # Development configuration
+            "swa-cli.config.json"
+            "Start.ps1"
+            "test.ps1"
+            "config/**/*"
+            ".changelog-state"
+            "src/**/Properties/launchSettings.json"
+            "src/**/appsettings.Development.json"
+            "src/**/*.local.settings.json*"
+            # Git configuration
+            ".gitattributes"
+            ".gitignore"
             # Add more non-code files here as needed
           )
 
