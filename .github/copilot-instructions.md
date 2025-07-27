@@ -333,7 +333,7 @@ Primary Constructors: `public class Person(string name, int age)` | Collection E
 
 ### 🔄 Development Workflow
 **MANDATORY**: After EVERY major C# file change: `dotnet clean && dotnet build --no-restore --verbosity quiet` → Fix ALL warnings → Continue
-**Pre-commit**: `dotnet test` must pass without errors (warnings OK) - stop commit if test errors exist
+**Pre-commit**: `dotnet test` must pass without errors (warnings OK) - stop commit if test errors exist → does not need build or clean before
 **Local Testing**: Start web project → navigate to `localhost:5233` → use Puppeteer for page verification → NEVER use SWA emulator
 **Git commits**: Batch by SRP for quality messages
 **File editing**: One file at a time, track progress ("Edit 2 of 5")

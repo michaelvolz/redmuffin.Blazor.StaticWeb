@@ -2,46 +2,13 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Full Stack Development",
-            "type": "pwa-chrome",
-            "request": "launch",
-            "preLaunchTask": "start-full-stack",
-            "url": "http://localhost:4280",
-            "webRoot": "${workspaceFolder}/src/redmuffin.Blazor.StaticWeb",
-            "sourceMapPathOverrides": {
-                "webpack:///src/*": "${webRoot}/*"
-            }
-        },
-        {
-            "name": "Launch and Debug Standalone Blazor WebAssembly App",
+            "name": "WebApp",
             "type": "pwa-chrome",
             "request": "launch",
             "url": "http://localhost:5233",
             "webRoot": "${workspaceFolder}/src/redmuffin.Blazor.StaticWeb",
-            "preLaunchTask": "start-blazor-app"
+            "preLaunchTask": "start-blazor-app",
+            "runtimeExecutable": "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe"
         },
-        {
-            "name": "Debug Functions",
-            "type": "pwa-node",
-            "request": "launch",
-            "preLaunchTask": "func: host start"
-        },
-        {
-            "name": "Debug SWA Launcher",
-            "type": "pwa-node",
-            "request": "launch",
-            "preLaunchTask": "run swa-launcher"
-        }
     ],
-    "compounds": [
-        {
-            "name": "Blazor WebAssembly + Functions API",
-            "configurations": ["Launch and Debug Standalone Blazor WebAssembly App", "Debug Functions"]
-        },
-        {
-            "name": "Full Stack (Blazor + Functions + SWA)",
-            "configurations": ["Full Stack Development"],
-            "preLaunchTask": "start-full-stack"
-        }
-    ]
 }
