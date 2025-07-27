@@ -394,3 +394,4 @@ src/redmuffin.Blazor.StaticWeb/wwwroot/css/app.css
 /src/redmuffin.Blazor.StaticWeb/wwwroot/mockdata/
 /src/redmuffin.Blazor.StaticWeb/wwwroot/scss/
 /src/redmuffin.Blazor.StaticWeb/wwwroot/lib/
+/reports/bundle-size
