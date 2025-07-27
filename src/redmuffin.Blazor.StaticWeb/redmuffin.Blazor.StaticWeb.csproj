@@ -12,7 +12,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-  <!-- 
+  <!--
     DEBUG CONFIGURATIONS: Optimized for fast builds and AI agent workflows
     Applies to both Debug and Debug-Sass configurations
     These settings prioritize compilation speed over runtime performance and bundle size
@@ -49,15 +49,20 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.6" />
   </ItemGroup>
 
-  <!-- 
+  <!--
     SCSS COMPILATION PACKAGE
-    BuildWebCompiler2022 is only included in Debug Sass configuration for SCSS compilation
+    BuildWebCompiler2022 is only included in Debug-Sass configuration for SCSS compilation
     CSS files are normally pre-compiled and committed to source control
-    Use Debug Sass configuration when you need to compile SCSS: dotnet build with configuration Debug-Sass
+    Use Debug-Sass configuration when you need to compile SCSS: dotnet build with configuration Debug-Sass
   -->
   <ItemGroup Condition="'$(Configuration)'=='Debug-Sass' And '$(OS)'=='Windows_NT'">
     <PackageReference Include="BuildWebCompiler2022" Version="1.14.15" />
   </ItemGroup>
+
+  <!-- Display SASS compiler status in build output -->
+  <Target Name="DisplaySassCompilerStatus" BeforeTargets="CoreCompile" Condition="'$(Configuration)'=='Debug-Sass'">
+    <Message Importance="high" Text="🎨 SASS Compiler Active - BuildWebCompiler2022 is compiling SCSS files to CSS" />
+  </Target>
 
   <ItemGroup>
     <AdditionalFiles Remove="C:\Users\flynn\.nuget\packages\microsoft.visualstudio.threading.analyzers\17.8.14\build\AdditionalFiles\vs-threading.LegacyThreadSwitchingMembers.txt" />

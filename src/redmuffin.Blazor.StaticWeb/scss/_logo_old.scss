@@ -1,0 +1,55 @@
+/* Logo styling for redmuffin brand */
+$burgundy: #800020;
+$black: #000000;
+$white: #FFFFFF;
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500;700&display=swap');
+
+.logo-container {
+    display: flex;
+    justify-content: flex-start;
+    background-color: transparent;
+}
+
+.logo {
+    font-family: 'Outfit', sans-serif;
+    font-size: 4rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: lowercase;
+    display: inline-flex; /* Changed to inline-flex for better character control */
+    align-items: center;
+    
+    /* Individual character styling for precise optical kerning */
+    .char {
+        display: inline-block;
+        position: relative; /* Enable more precise positioning */
+    }
+    
+    /* Red part characters (first 3 characters) */
+    .char-r, .char-e, .char-d {
+        color: $black;
+    }
+    
+    /* Muffin part characters - ensuring they're burgundy */
+    .char-m, .char-u, .char-f1, .char-f2, .char-i, .char-n {
+        color: $burgundy; /* This ensures muffin is burgundy */
+    }      
+    
+    /* Fine-tuned optical spacing between characters - precision kerning */
+    .char-r { margin-right: -0.4rem; }
+    .char-e { margin-right: -0.1rem; }
+    .char-d { margin-right: -0.35rem; }
+    .char-m { margin-right: -0.3rem; }
+    .char-u { margin-right: -0.15rem; }
+    .char-f1 { margin-right: -0.1rem; }
+    .char-f2 { margin-right: -0.0rem; }
+    .char-i { margin-right: -0.3rem; }
+    .char-n { margin-right: 0; } /* Last character has no margin */
+}
+
+@media screen and (max-width: 640px) {
+    .logo {
+        //font-size: 3rem;
+    }
+}

@@ -1,19 +1,19 @@
 [
   {
     "outputFile": "wwwroot/css/foundation-root.min.css",
-    "inputFile": "wwwroot/scss/foundation-root.scss"
+    "inputFile": "scss/foundation-root.scss"
   },
   {
     "outputFile": "wwwroot/css/app.min.css",
-    "inputFile": "wwwroot/scss/app.scss"
+    "inputFile": "scss/app.scss"
   },
   {
     "outputFile": "wwwroot/css/app.css",
-    "inputFile": "wwwroot/scss/app.scss"
+    "inputFile": "scss/app.scss"
   },
   {
     "outputFile": "wwwroot/css/media-query-debugger.min.css",
-    "inputFile": "wwwroot/scss/media-query-debugger.scss"
+    "inputFile": "scss/media-query-debugger.scss"
   },
   {
     "outputFile": "wwwroot/js/page-load-timing.min.js",

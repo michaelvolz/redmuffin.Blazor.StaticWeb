@@ -4,7 +4,7 @@
   "libraries": [
     {
       "library": "foundation-sites@6.9.0",
-      "destination": "wwwroot/lib/foundation-sites/",
+      "destination": "lib/foundation-sites/",
       "files": [
         "scss/**/*.scss",
         "_vendor/**/*.scss"

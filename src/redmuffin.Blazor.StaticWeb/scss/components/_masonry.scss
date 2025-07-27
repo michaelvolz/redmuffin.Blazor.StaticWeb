@@ -1,0 +1,40 @@
+// =============================================================================
+// Shared Masonry Layout Styles
+// =============================================================================
+// Foundation already provides a comprehensive grid system via:
+// - foundation-grid() mixin
+// - .grid-container, .grid-x, .grid-y classes
+// - Full responsive breakpoint system
+//
+// This file contains masonry layout that integrates with Foundation's
+// breakpoint system and uses proper Foundation namespace integration.
+// =============================================================================
+
+// Import Foundation for breakpoint access
+@use '../../lib/foundation-sites/scss/foundation' as foundation;
+
+// Basic masonry layout using CSS columns
+// This integrates with Foundation's breakpoint system
+.masonry {
+    column-count: 1;
+    column-gap: foundation.$global-padding; // Use Foundation's global padding
+}
+
+// Use Foundation's breakpoint system for responsive masonry
+@include foundation.breakpoint(medium) {
+    .masonry {
+        column-count: 2;
+    }
+}
+
+@include foundation.breakpoint(large) {
+    .masonry {
+        column-count: 3;
+    }
+}
+
+@include foundation.breakpoint(xlarge) {
+    .masonry {
+        column-count: 4;
+    }
+}

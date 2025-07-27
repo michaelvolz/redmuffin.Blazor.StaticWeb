@@ -1,0 +1,133 @@
+// =============================================================================
+// Base Typography Styles
+// =============================================================================
+// This file contains base typography styles that extend Foundation's typography system.
+// Foundation already provides comprehensive typography defaults, so we only add
+// project-specific enhancements and customizations here.
+// All typography styles integrate with Foundation's system using proper @use directives.
+// =============================================================================
+
+@use '../../lib/foundation-sites/scss/foundation' as foundation;
+@use '../abstracts/variables' as vars;
+
+// =============================================================================
+// GLOBAL TYPOGRAPHY SETTINGS
+// =============================================================================
+// Foundation handles most global typography settings, but we can add project-specific
+// enhancements here that work alongside Foundation's system.
+
+// Font loading optimization
+html {
+  font-display: swap; // Ensure fonts load with fallback
+}
+
+// =============================================================================
+// CUSTOM FONT FAMILIES
+// =============================================================================
+// Define custom font families that extend Foundation's font system
+// Note: These should complement, not override Foundation's font settings
+
+// Google Fonts imports - consolidated from various locations
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap');
+
+// =============================================================================
+// FONT FAMILY VARIABLES (Foundation Integration)
+// =============================================================================
+// Define font families that work with Foundation's typography system
+// These extend Foundation's $header-font-family and $body-font-family
+
+// Brand fonts (using variables from abstracts layer)
+// Note: These are defined in abstracts/variables.scss
+
+// =============================================================================
+// FOUNDATION TYPOGRAPHY EXTENSIONS
+// =============================================================================
+// Custom font applications that work with Foundation's typography system
+
+// Brand typography (used for logo and special headings)
+.brand-text {
+  font-family: vars.$brand-font-family;
+  font-weight: vars.$brand-font-weight-bold;
+  font-display: swap;
+}
+
+// Custom heading styles that extend Foundation's heading system
+.heading-brand {
+  font-family: vars.$brand-font-family;
+  font-weight: vars.$brand-font-weight-bold;
+  font-display: swap;
+}
+
+// Enhanced monospace styling
+.code-text {
+  font-family: vars.$code-font-family;
+  color: vars.$code-color;
+}
+
+// =============================================================================
+// ENHANCED TYPOGRAPHY STYLES
+// =============================================================================
+// Project-specific typography enhancements that work with Foundation
+
+// Code elements (enhances Foundation's code styling)
+code {
+  font-family: vars.$code-font-family;
+  color: vars.$code-color;
+  // Foundation provides base code styling, we just enhance it
+}
+
+// =============================================================================
+// ACCESSIBILITY IMPROVEMENTS
+// =============================================================================
+// Typography improvements for better accessibility
+
+// Ensure better focus visibility
+:focus {
+  outline: 2px solid vars.$steel-blue;
+  outline-offset: 2px;
+}
+
+// Screen reader only text
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+// =============================================================================
+// RESPONSIVE TYPOGRAPHY
+// =============================================================================
+// Foundation handles most responsive typography, but we can add project-specific
+// responsive enhancements here using Foundation's breakpoint system
+
+// Example: Enhanced responsive headings (if needed beyond Foundation's defaults)
+// @include foundation.breakpoint(small down) {
+//   h1 {
+//     // Small screen adjustments
+//   }
+// }
+
+// =============================================================================
+// PRINT TYPOGRAPHY
+// =============================================================================
+// Typography optimizations for print media
+
+@media print {
+  // Ensure good contrast for print
+  body {
+    color: #000;
+    background: #fff;
+  }
+  
+  // Optimize link display for print
+  a::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+  }
+}

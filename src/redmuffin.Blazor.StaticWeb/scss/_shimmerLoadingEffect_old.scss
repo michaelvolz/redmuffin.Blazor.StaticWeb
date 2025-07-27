@@ -1,0 +1,107 @@
+// ============================================================================
+// Shimmer Loading Effect
+// ============================================================================
+// Professional shimmer/skeleton loading animation for slow-loading images
+// Uses CSS-only approach with linear gradients and animations
+// ============================================================================
+
+// Shimmer animation keyframes
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+// Base shimmer placeholder class
+.shimmer-placeholder {
+  position: relative;
+  overflow: hidden;
+  background-color: #f6f7f8;
+  background-image: linear-gradient(
+    90deg,
+    #f6f7f8 0px,
+    #edeef1 40px,
+    #f6f7f8 80px
+  );
+  background-size: 200px 100%;
+  background-repeat: no-repeat;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 4px;
+
+  // Ensure accessibility - screen readers can still access content
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    z-index: 1;
+  }
+
+  // Hide content while loading
+  img {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  // Show image when loaded
+  &.loaded {
+    animation: none;
+    background: none;
+
+    img {
+      opacity: 1;
+    }
+  }
+}
+
+// Specific shimmer for video card images
+.video-card {
+  .shimmer-placeholder {
+    width: 100%;
+    // Use modern CSS aspect-ratio property for robust handling
+    aspect-ratio: 16 / 9; // Match the original 1280x720 aspect ratio
+    
+    // Fallback for browsers that don't support aspect-ratio
+    @supports not (aspect-ratio: 16 / 9) {
+      height: 0;
+      padding-bottom: 56.25%; // 16:9 fallback
+      position: relative;
+    }
+    
+    background-color: #e8f4f8; // Subtle blue tint for video context
+    background-image: linear-gradient(
+      90deg,
+      #e8f4f8 0px,
+      #d1e7dd 40px,
+      #e8f4f8 80px
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; // Prevent any content from spilling out
+
+    // Ensure images maintain proper aspect ratio and show full image
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain; // Show full image without cropping
+      object-position: center; // Center the image within the container
+      max-width: 100%;
+      max-height: 100%;
+      display: block; // Remove any inline spacing
+      
+      // Fallback positioning for older browsers
+      @supports not (aspect-ratio: 16 / 9) {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+    }
+  }
+}

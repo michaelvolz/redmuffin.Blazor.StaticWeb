@@ -1,0 +1,247 @@
+// =============================================================================
+// Project Variables - Extending Foundation's Variable System
+// =============================================================================
+// This file extends Foundation's built-in variables with our custom values.
+// All spacing is based on Foundation's $global-margin (1rem) for consistency.
+//
+// Foundation Variables Used (DO NOT REDEFINE):
+// - $global-margin: 1rem (Foundation's base spacing unit)
+// - $global-padding: 1rem (Foundation's base padding unit)
+// - $breakpoints: Foundation's responsive breakpoint map
+// - $foundation-palette: Foundation's color palette
+// =============================================================================
+
+// =============================================================================
+// SPACING SYSTEM
+// =============================================================================
+// All spacing values are calculated as multiples of Foundation's $global-margin (1rem)
+// This ensures consistency and makes it easy to maintain proportional spacing
+
+// Base spacing unit (8px when $global-margin = 1rem and base font-size = 16px)
+// Uses Foundation's $global-margin variable directly or fallback to 1rem
+$base-spacing: if(variable-exists(global-margin), $global-margin * 0.5, 0.5rem); // 8px
+
+// Header spacing scale (based on $base-spacing)
+$header-spacing: $base-spacing;           // 8px - Main header padding
+$header-content-spacing: $base-spacing * 2; // 16px - Double header spacing for content
+$logo-nav-spacing: $base-spacing * 0.5;     // 4px - Minimal spacing between logo and nav
+
+// Navigation spacing scale
+$nav-compact-spacing: $base-spacing * 0.25; // 2px - Ultra compact nav spacing
+$nav-item-spacing: $base-spacing * 0.75;    // 6px - Space between nav items
+
+// Media query debugger spacing (keep consistent with existing values)
+$debug-nav-spacing: $base-spacing * 2.5;    // 20px - Standard debug nav bottom margin
+
+// =============================================================================
+// TYPOGRAPHY SYSTEM
+// =============================================================================
+// Logo typography scale using Foundation's breakpoint system
+// Values are in rem units for better scalability
+
+// Logo font sizes (responsive)
+$logo-font-size-small: 2.5rem;   // Mobile/small screens
+$logo-font-size-medium: 3rem;    // Tablet/medium screens  
+$logo-font-size-large: 3.5rem;   // Desktop/large screens
+
+// Navigation typography scale
+$nav-font-size-small: 0.875rem;  // Mobile navigation
+$nav-font-size-medium: 1rem;     // Desktop navigation
+$nav-icon-size-small: 0.8rem;    // Mobile nav icons
+$nav-icon-size-medium: 0.9rem;   // Desktop nav icons
+
+// =============================================================================
+// COLOR SYSTEM - EXTENDING FOUNDATION'S COLOR PALETTE
+// =============================================================================
+// This section extends Foundation's built-in color palette with our custom colors.
+// These variables are used to configure Foundation's $foundation-palette map.
+// DO NOT use these variables directly - use Foundation's get-color() function instead.
+
+// =============================================================================
+// BRAND COLORS (Primary Brand Identity)
+// =============================================================================
+// Core brand colors that define the project's visual identity
+$brand-burgundy: #800020;        // redmuffin burgundy
+$brand-black: #000000;           // Pure black
+$brand-white: #FFFFFF;           // Pure white
+
+// =============================================================================
+// EXTENDED COLOR PALETTE (Foundation Integration)
+// =============================================================================
+// Site colors that extend Foundation's color palette
+// These map to Foundation's semantic color categories
+
+// Primary color palette (consolidated from _site-colors.scss)
+$bittersweet: rgba(255, 89, 94, 1);    // Foundation 'alert' color
+$sunglow: rgba(255, 202, 58, 1);       // Foundation 'warning' color
+$yellow-green: rgba(138, 201, 38, 1);  // Foundation 'success' color
+$steel-blue: rgba(25, 130, 196, 1);    // Foundation 'primary' color
+$ultra-violet: rgba(106, 76, 147, 1);  // Foundation 'secondary' color
+
+// =============================================================================
+// GRADIENT SYSTEM (Optional - from _site-colors.scss)
+// =============================================================================
+// Pre-defined gradient combinations using the color palette
+// These can be used for special design elements when needed
+
+// Linear gradients in different directions
+$gradient-right: linear-gradient(90deg, $bittersweet, $sunglow, $yellow-green, $steel-blue, $ultra-violet);
+$gradient-bottom: linear-gradient(180deg, $bittersweet, $sunglow, $yellow-green, $steel-blue, $ultra-violet);
+$gradient-top-right: linear-gradient(45deg, $bittersweet, $sunglow, $yellow-green, $steel-blue, $ultra-violet);
+$gradient-bottom-right: linear-gradient(135deg, $bittersweet, $sunglow, $yellow-green, $steel-blue, $ultra-violet);
+$gradient-radial: radial-gradient($bittersweet, $sunglow, $yellow-green, $steel-blue, $ultra-violet);
+
+// Utility colors (for validation, etc.)
+$success-color: #26b050;         // Form validation success
+$error-color: #ff0000;           // Form validation error
+$code-color: #c02d76;            // Code syntax highlighting
+
+// =============================================================================
+// TYPOGRAPHY VARIABLES
+// =============================================================================
+// Font families and typography settings used across the project
+
+// Brand fonts variables
+$brand-font-family: 'Outfit', sans-serif;
+$brand-font-weight-normal: 400;
+$brand-font-weight-bold: 700;
+
+// Code fonts variables
+$code-font-family: 'Courier New', Courier, monospace;
+
+// =============================================================================
+// COMPONENT-SPECIFIC VARIABLES
+// =============================================================================
+
+// Logo component variables
+$logo-font-family: 'Outfit', sans-serif;
+$logo-font-weight: 700;
+$logo-letter-spacing: 0;
+$logo-character-spacing: (
+  'r': -0.4rem,
+  'e': -0.1rem, 
+  'd': -0.35rem,
+  'm': -0.3rem,
+  'u': -0.15rem,
+  'f1': -0.1rem,
+  'f2': 0rem,
+  'i': -0.3rem,
+  'n': 0rem
+);
+
+// Shimmer loading effect variables
+$shimmer-duration: 1.5s;
+$shimmer-base-color: #f6f7f8;
+$shimmer-highlight-color: #edeef1;
+$shimmer-video-base: #e8f4f8;
+$shimmer-video-highlight: #d1e7dd;
+$shimmer-border-radius: 4px;
+
+// Error UI variables
+$error-ui-bg: lightyellow;
+$error-ui-z-index: 1000;
+$error-boundary-bg: #b32121;
+$error-boundary-color: white;
+
+// Loading progress variables
+$loading-progress-size: 8rem;
+$loading-progress-stroke: #e0e0e0;
+$loading-progress-active: #1b6ec2;
+$loading-progress-width: 0.6rem;
+
+// =============================================================================
+// PAGE LOAD SPEED WIDGET VARIABLES
+// =============================================================================
+
+// Widget positioning and dimensions
+$page-speed-widget-width: 440px;
+$page-speed-widget-width-mobile: 330px;
+$page-speed-widget-z-index: 9999;
+
+// Widget colors
+$page-speed-brand-teal: #00d4aa;
+$page-speed-bg-primary: rgba(0, 0, 0, 0.95);
+$page-speed-bg-secondary: rgba(20, 20, 20, 0.95);
+$page-speed-text-primary: #e0e0e0;
+$page-speed-text-secondary: #b0b0b0;
+$page-speed-text-muted: #888;
+$page-speed-border-color: rgba(0, 212, 170, 0.2);
+$page-speed-overlay-color: rgba(255, 255, 255, 0.05);
+$page-speed-overlay-color-light: rgba(255, 255, 255, 0.02);
+
+// Widget spacing
+$page-speed-padding-main: 22px;
+$page-speed-padding-header: 18px;
+$page-speed-padding-content: 22px;
+$page-speed-padding-mobile: 16px;
+$page-speed-gap-small: 6px;
+$page-speed-gap-medium: 8px;
+$page-speed-gap-large: 12px;
+$page-speed-gap-xlarge: 16px;
+$page-speed-gap-xxlarge: 20px;
+
+// Widget border radius
+$page-speed-border-radius-large: 16px;
+$page-speed-border-radius-medium: 8px;
+$page-speed-border-radius-small: 4px;
+$page-speed-border-radius-button: 12px;
+$page-speed-border-radius-oval: 20px;
+
+// Widget typography
+$page-speed-font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Consolas', monospace;
+$page-speed-font-size-title: 13px;
+$page-speed-font-size-body: 11px;
+$page-speed-font-size-small: 10px;
+$page-speed-font-size-mobile: 10px;
+$page-speed-font-weight-bold: 700;
+$page-speed-font-weight-semibold: 600;
+$page-speed-font-weight-medium: 500;
+$page-speed-font-weight-normal: 400;
+$page-speed-letter-spacing-title: 0.5px;
+$page-speed-letter-spacing-badge: 0.5px;
+$page-speed-letter-spacing-group: 0.8px;
+
+// Widget transitions and animations
+$page-speed-transition-fast: 0.2s ease;
+$page-speed-transition-medium: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+$page-speed-transition-slow: 0.5s ease-out;
+$page-speed-transition-progress: 1s ease-out;
+$page-speed-animation-pulse: 2s infinite;
+
+// Widget borders
+$page-speed-border-width: 3px;
+$page-speed-border-thin: 1px solid;
+$page-speed-border-medium: 2px solid;
+
+// Widget metric colors
+$page-speed-metric-timing: #ffd700;
+$page-speed-metric-timing-bg: rgba(255, 215, 0, 0.1);
+$page-speed-metric-size: #00bfff;
+$page-speed-metric-size-bg: rgba(0, 191, 255, 0.1);
+$page-speed-metric-breakdown: #ff8c42;
+$page-speed-metric-breakdown-bg: rgba(255, 140, 66, 0.1);
+$page-speed-metric-ratio: #ff6b9d;
+$page-speed-metric-ratio-bg: rgba(255, 107, 157, 0.1);
+
+// Widget rating badge colors
+$page-speed-rating-excellent: #00ff41;
+$page-speed-rating-excellent-bg: rgba(0, 255, 65, 0.1);
+$page-speed-rating-excellent-shadow: rgba(0, 255, 65, 0.3);
+$page-speed-rating-good: #ffd700;
+$page-speed-rating-good-bg: rgba(255, 215, 0, 0.1);
+$page-speed-rating-good-shadow: rgba(255, 215, 0, 0.2);
+$page-speed-rating-fair: #ff8c42;
+$page-speed-rating-fair-bg: rgba(255, 140, 66, 0.1);
+$page-speed-rating-fair-shadow: rgba(255, 140, 66, 0.2);
+$page-speed-rating-poor: #ff4757;
+$page-speed-rating-poor-bg: rgba(255, 71, 87, 0.1);
+$page-speed-rating-poor-shadow: rgba(255, 71, 87, 0.3);
+
+// Widget progress bar
+$page-speed-progress-height: 3px;
+$page-speed-progress-bg: rgba(255, 255, 255, 0.1);
+
+// Widget button styling
+$page-speed-button-padding: 4px 6px;
+$page-speed-button-min-width: 20px;
+$page-speed-refresh-padding: 6px 12px;

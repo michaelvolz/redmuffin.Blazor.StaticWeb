@@ -1,0 +1,189 @@
+// =============================================================================
+// SCSS Placeholders - Shared Placeholder Selectors
+// =============================================================================
+// This file contains placeholder selectors that can be extended throughout the project.
+// Use @extend to apply these styles to avoid code duplication.
+// All placeholders integrate with Foundation's system using proper @use directives.
+// =============================================================================
+
+// Import Foundation for proper integration
+@use '../../lib/foundation-sites/scss/foundation' as foundation;
+
+// Import project variables
+@use 'variables' as vars;
+
+// =============================================================================
+// LAYOUT PLACEHOLDERS
+// =============================================================================
+
+/// Clearfix placeholder - NOTE: Foundation already provides clearfix mixin
+/// This is a project-specific placeholder that uses Foundation's clearfix
+%project-clearfix {
+  @include foundation.clearfix;
+}
+
+/// Flex center placeholder for centering content
+%flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/// Flex space-between placeholder for distributed layout
+%flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/// Absolute overlay placeholder for full coverage
+%absolute-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/// Visually hidden placeholder for screen readers
+%visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+// =============================================================================
+// TYPOGRAPHY PLACEHOLDERS
+// =============================================================================
+
+/// Text truncation placeholder for single line
+%text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/// Multi-line text truncation placeholder
+%text-truncate-multi {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/// Responsive text sizing placeholder
+/// Uses Foundation's breakpoint mixin for responsive typography
+%responsive-text {
+  font-size: vars.$nav-font-size-small;
+  
+  @include foundation.breakpoint(medium) {
+    font-size: vars.$nav-font-size-medium;
+  }
+}
+
+// =============================================================================
+// COMPONENT PLACEHOLDERS
+// =============================================================================
+
+/// Card base placeholder for consistent card styling
+%card-base {
+  background: white;
+  border-radius: vars.$shimmer-border-radius;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/// Button base placeholder for consistent button styling
+%button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: vars.$base-spacing vars.$base-spacing * 2;
+  border: none;
+  border-radius: vars.$shimmer-border-radius;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/// Loading state placeholder for shimmer effects
+%loading-state {
+  position: relative;
+  overflow: hidden;
+  background-color: vars.$shimmer-base-color;
+  background-image: linear-gradient(
+    90deg,
+    vars.$shimmer-base-color 0px,
+    vars.$shimmer-highlight-color 40px,
+    vars.$shimmer-base-color 80px
+  );
+  background-size: 200px 100%;
+  background-repeat: no-repeat;
+  animation: shimmer vars.$shimmer-duration infinite linear;
+  border-radius: vars.$shimmer-border-radius;
+}
+
+/// Processing state placeholder for active loading
+%processing-state {
+  @extend %loading-state;
+  
+  background-color: vars.$shimmer-video-base;
+  background-image: linear-gradient(
+    90deg,
+    vars.$shimmer-video-base 0px,
+    vars.$shimmer-video-highlight 40px,
+    vars.$shimmer-video-base 80px
+  );
+  animation-duration: 1s;
+}
+
+// =============================================================================
+// UTILITY PLACEHOLDERS
+// =============================================================================
+
+/// Focus state placeholder for accessibility
+%focus-state {
+  outline: 2px solid vars.$steel-blue;
+  outline-offset: 2px;
+}
+
+/// Smooth transition placeholder for interactive elements
+%smooth-transition {
+  transition: all 0.3s ease;
+}
+
+/// Shadow hover placeholder for interactive cards
+%shadow-hover {
+  transition: box-shadow 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/// Backdrop blur placeholder for modern overlay effects
+%backdrop-blur {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
