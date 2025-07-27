@@ -6,7 +6,7 @@
 **Frontend**: Blazor WebAssembly (.NET 9), feature-based
 **Backend**: Azure Functions (.NET 8), isolated worker
 **Testing**: TUnit (`[Test]`, `[Arguments]`) - NOT xUnit/NUnit/MSTest
-**Mocking**: LightMock.Generator ONLY - NSubstitute deprecated
+**Mocking**: Strategic approach - LightMock.Generator for external deps, custom mocks for internal, Never NSubstitute
 **Language**: C# 13 preview, WebAssembly optimizations
 **Build**: `WasmStripILAfterAOT=true`, `InvariantGlobalization=true`, `PublishTrimmed=true`
 **Deployment**: Azure Static Web Apps with CSP, caching configs
@@ -246,12 +246,14 @@ using (Assert.Multiple())
 - [ ] Comprehensive error scenario testing
 - [ ] Partial class structure: Tests in main, helpers in .Helpers.cs
 
-## 🎭 LightMock.Generator
-**PRIMARY MOCKING FRAMEWORK** - NSubstitute deprecated, will be removed
+## 🎭 Mocking Strategy
+**STRATEGIC APPROACH**: Use appropriate mocking based on dependency type
 
-**Mock naming**: Use `Mock` suffix: `var userServiceMock = new Mock<IUserService>();`
-**Usage**: `new Mock<IInterface>()` → setup → pass `.Object` to constructor
+### LightMock.Generator - For 3rd Party/External Dependencies ONLY
+**USE FOR**: `IHttpClientFactory`, `ILocalStorageService`, `ILogger<T>`, external APIs, Azure services
 **Benefits**: Compile-time generation, zero runtime overhead, AOT compatible
+**Mock naming**: Use `Mock` suffix: `var httpClientMock = new Mock<IHttpClientFactory>();`
+**Usage**: `new Mock<IInterface>()` → setup → pass `.Object` to constructor
 
 **🔧 CRITICAL: Optional Parameters Solution**
 **CS0854 Fix**: ALWAYS specify ALL parameters explicitly in `Arrange()`/`Assert()` calls:
@@ -261,6 +263,28 @@ using (Assert.Multiple())
 // ✅ WORKS: _mock.Arrange(f => f.SetAsync("key", value, null, CancellationToken.None))
 ```
 **Pattern**: `CancellationToken.None`, `null`, `The<T>.IsAnyValue` for optional params
+
+### Custom Mocks - For Internal Components/Services
+**USE FOR**: `NavigationManager`, internal services, Blazor components, project-specific abstractions
+**Benefits**: Full control, tailored behavior, easier debugging, no external dependencies
+**Pattern**: Follow HomeTests.Helpers.cs examples with sealed classes and primary constructors
+
+```csharp
+// ✅ CUSTOM MOCK: Internal NavigationManager
+public sealed class NavigationManagerMock(string baseUri) : NavigationManager
+{
+    public string? NavigatedTo { get; private set; }
+    protected override void NavigateToCore(string uri, NavigationOptions options)
+    {
+        NavigatedTo = uri;
+    }
+}
+
+// ✅ LIGHTMOCK: External dependency
+var httpClientMock = new Mock<IHttpClientFactory>();
+httpClientMock.Arrange(f => f.CreateClient(The<string>.IsAnyValue))
+    .Returns(new HttpClient());
+```
 
 ```csharp
 [Test, Arguments(null), Arguments("")]
@@ -384,28 +408,39 @@ public async Task<HttpResponseData> Run(
     // Function implementation
 }
 
-// TUnit Test with TestScope Architecture + Partial Class Pattern
+// TUnit Test with TestScope Architecture + Custom Mocks (Internal)
 [Test]
 public async Task Component_Behavior_ExpectedOutcome()
 {
     // Arrange
-    using var scope = CreateTestScope(); // From .Helpers.cs partial
+    using var scope = CreateTestScope(); // From .Helpers.cs partial - uses custom mocks
 
     // Act
-    var component = scope.Context.RenderComponent<MyComponent>();
+    var component = scope.BUnitContext.Render<MyComponent>();
+    var button = component.Find("button");
     await button.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
 
     // Assert - Use chaining for related assertions
     await Assert.That(component.Markup).IsNotNull().And.Contains("expected");
 }
 
-// Component Testing with TestScope
+// Service Testing with LightMock.Generator (External Dependencies)
 [Test]
-public void Should_Render_UserProfile_When_User_Loaded()
+public async Task Should_Return_User_When_Valid_Id_Provided()
 {
-    using var scope = CreateTestScope();
-    var component = scope.Context.RenderComponent<UserProfile>();
-    await Assert.That(component.Find("h1").TextContent).Contains("Expected");
+    // Arrange - LightMock for external dependencies
+    var httpClientMock = new Mock<IHttpClientFactory>();
+    var loggerMock = new Mock<ILogger<UserService>>();
+    httpClientMock.Arrange(f => f.CreateClient(The<string>.IsAnyValue))
+        .Returns(new HttpClient());
+    
+    var userService = new UserService(httpClientMock.Object, loggerMock.Object);
+    
+    // Act
+    var result = await userService.GetUserAsync("valid-id").ConfigureAwait(false);
+    
+    // Assert
+    await Assert.That(result).IsNotNull();
 }
 ```
 
