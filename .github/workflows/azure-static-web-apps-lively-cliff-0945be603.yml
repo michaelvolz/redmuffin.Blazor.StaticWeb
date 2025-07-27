@@ -128,6 +128,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
+      # Install WASM workload for SIMD optimizations in Release builds
+      - name: Install WASM workload
+        run: dotnet workload install wasm-tools
+
       # OPTIMIZATION: Single dependency restoration
       - name: Restore dependencies
         run: dotnet restore
