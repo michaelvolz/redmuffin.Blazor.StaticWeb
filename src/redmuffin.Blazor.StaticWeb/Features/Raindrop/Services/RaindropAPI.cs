@@ -140,7 +140,6 @@ public sealed partial class RaindropAPI(IHttpClientFactory httpClientFactory, IL
     public async Task<string> GetHelloWorldAsync(CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        ArgumentNullException.ThrowIfNull(cancellationToken);
 
         try
         {

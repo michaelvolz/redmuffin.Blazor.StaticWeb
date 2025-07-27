@@ -109,7 +109,6 @@ public sealed partial class DummyRaindropAPI(IHttpClientFactory httpClientFactor
     public Task<string> GetHelloWorldAsync(CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        ArgumentNullException.ThrowIfNull(cancellationToken);
 
         const string response = "Hello World from Mock Data - Not from Azure Functions";
         LogHelloWorldMockResponse(_logger);
