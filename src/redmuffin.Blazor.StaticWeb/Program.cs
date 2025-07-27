@@ -11,17 +11,15 @@ using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Services;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
 using redmuffin.Blazor.StaticWeb.Services;
 
-
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddHttpClient("DefaultClient", client =>
+builder.Services.AddHttpClient<object>(client =>
 {
     client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
     client.Timeout = TimeSpan.FromSeconds(30);
 });
-builder.Services.AddHttpClient();
 
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<IBrowserStorageService, BrowserStorageService>();
