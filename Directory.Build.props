@@ -28,23 +28,73 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <!-- Performance optimizations for Blazor WebAssembly -->
-  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
+  <!-- 
+    CONFIGURATION DEFINITIONS
+    Define debug configurations once to avoid duplication
+  -->
+  <PropertyGroup>
+    <IsDebugConfiguration Condition="'$(Configuration)' == 'Debug' OR '$(Configuration)' == 'Debug-Sass'">true</IsDebugConfiguration>
+    <IsDebugConfiguration Condition="'$(IsDebugConfiguration)' != 'true'">false</IsDebugConfiguration>
+  </PropertyGroup>
+
+  <!-- 
+    BLAZOR WEBASSEMBLY OPTIMIZATIONS
+    These settings are split between Debug and Release configurations to optimize build performance:
+    - Debug: Fast builds for AI agents and development (minimal optimizations)
+    - Release: Full production optimizations for deployment
+  -->
+  
+  <!-- DEBUG MODE: Fast builds for development and AI agent workflows -->
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' AND '$(IsDebugConfiguration)' == 'true'">
+    <!-- Disable globalization optimizations for faster debug builds -->
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <!-- Allow full resource keys for better debugging experience -->
+    <UseSystemResourceKeys>false</UseSystemResourceKeys>
+    <!-- Preserve collation data for debugging (larger bundle, but better dev experience) -->
+    <BlazorWebAssemblyPreserveCollationData>true</BlazorWebAssemblyPreserveCollationData>
+    <!-- Disable IL stripping in debug for faster compilation -->
+    <WasmStripILAfterAOT>false</WasmStripILAfterAOT>
+  </PropertyGroup>
+
+  <!-- RELEASE MODE: Full production optimizations -->
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' AND '$(Configuration)' == 'Release'">
+    <!-- Enable globalization optimizations for smaller bundle size -->
     <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- Use system resource keys to reduce bundle size -->
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <!-- Remove collation data for smaller production bundle -->
     <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
+    <!-- Strip IL after AOT compilation for maximum optimization -->
     <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
   </PropertyGroup>
 
-  <!-- Security and reliability enhancements -->
-  <PropertyGroup>
+  <!-- 
+    SECURITY AND RELIABILITY ENHANCEMENTS
+    Split by configuration to balance build speed vs production quality
+  -->
+  
+  <!-- DEBUG MODE: Faster builds with minimal safety checks -->
+  <PropertyGroup Condition="'$(IsDebugConfiguration)' == 'true'">
+    <!-- Disable overflow checking for faster debug builds -->
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <!-- Disable deterministic builds for faster compilation -->
+    <Deterministic>false</Deterministic>
+    <!-- Skip reference assembly generation to speed up builds -->
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+  </PropertyGroup>
+
+  <!-- RELEASE MODE: Full security and reliability checks -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <!-- Enable overflow checking for production safety -->
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+    <!-- Enable deterministic builds for reproducible releases -->
     <Deterministic>true</Deterministic>
+    <!-- Generate reference assemblies for better tooling support -->
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
   </PropertyGroup>
 
-  <!-- Enable .NET analyzers only in Debug configuration -->
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+  <!-- Enable .NET analyzers only in debug configurations -->
+  <PropertyGroup Condition="'$(IsDebugConfiguration)' == 'true'">
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
     <AnalysisMode>recommended</AnalysisMode>
@@ -54,8 +104,8 @@
     <AnalysisModePerformance>All</AnalysisModePerformance>
   </PropertyGroup>
 
-  <!-- Disable .NET analyzers in other configurations -->
-  <PropertyGroup Condition="'$(Configuration)'!='Debug'">
+  <!-- Disable .NET analyzers in release configurations -->
+  <PropertyGroup Condition="'$(IsDebugConfiguration)' != 'true'">
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
   </PropertyGroup>
 
@@ -80,8 +130,8 @@
     <AsyncFixerVersion>1.6.0</AsyncFixerVersion>
   </PropertyGroup>
 
-  <!-- Analyzer packages - Debug configuration only -->
-  <ItemGroup Condition="'$(IsTestProject)' != 'true' And '$(Configuration)'=='Debug'">
+  <!-- Analyzer packages - Debug configurations only -->
+  <ItemGroup Condition="'$(IsTestProject)' != 'true' And '$(IsDebugConfiguration)' == 'true'">
     <PackageReference Include="Meziantou.Analyzer" Version="$(MeziantouAnalyzerVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
