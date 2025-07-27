@@ -9,7 +9,7 @@ public class WarmupService(IHttpClientFactory httpClientFactory) : IWarmupServic
         try
         {
             // Fire-and-forget call to wake up the Azure Functions
-            using var httpClient = _httpClientFactory.CreateClient("ExternalHttpClient");
+            using var httpClient = _httpClientFactory.CreateClient();
             using var response = await httpClient.GetAsync("/api/HelloWorld").ConfigureAwait(false);
             // Intentionally not checking response - this is just to wake up the functions
         }

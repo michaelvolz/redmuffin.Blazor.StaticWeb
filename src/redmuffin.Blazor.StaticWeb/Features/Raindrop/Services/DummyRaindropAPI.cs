@@ -130,7 +130,7 @@ public sealed partial class DummyRaindropAPI(IHttpClientFactory httpClientFactor
 
         LogLoadingFile(_logger, relativeUrlPath);
 
-        using var httpClient = _httpClientFactory.CreateClient("DefaultClient");
+        using var httpClient = _httpClientFactory.CreateClient();
         var response = await httpClient.GetAsync(relativeUrlPath, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 

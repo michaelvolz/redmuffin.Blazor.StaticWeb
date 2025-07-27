@@ -15,7 +15,7 @@ public partial class RaindropListArticles(ILogger<RaindropListArticles> logger, 
 {
     private const string TargetCollectionId = "56658122";
 
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
+    private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
     private readonly Settings _settings = settings.Value;
 
     [LoggerMessage(1, LogLevel.Information, "Articles function processed a request.", EventName = nameof(Log_FunctionProcessed))]
@@ -51,16 +51,17 @@ public partial class RaindropListArticles(ILogger<RaindropListArticles> logger, 
     {
         Log_FunctionProcessed(logger);
 
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _settings.RainDropTestToken);
-
         var token = request.FunctionContext.CancellationToken;
 
         try
         {
+            using var httpClient = _httpClientFactory.CreateClient();
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _settings.RainDropTestToken);
+
             var apiUrl = $"https://api.raindrop.io/rest/v1/raindrops/{TargetCollectionId}?sort=-created";
             Log_FetchArticles(logger, apiUrl);
 
-            var response = await _httpClient.GetAsync(apiUrl, token).ConfigureAwait(false);
+            var response = await httpClient.GetAsync(apiUrl, token).ConfigureAwait(false);
             var json = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
 
             if (response.IsSuccessStatusCode)

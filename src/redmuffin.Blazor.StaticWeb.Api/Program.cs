@@ -38,9 +38,9 @@ LogHelpers.LogTestMessage(logger);
 var settings = host.Services.GetRequiredService<Settings>();
 
 // Validate Settings
-if (string.IsNullOrWhiteSpace(settings.RainDropClientId) ||
-    string.IsNullOrWhiteSpace(settings.RainDropClientSecret) ||
-    string.IsNullOrWhiteSpace(settings.RainDropTestToken))
+if (string.IsNullOrWhiteSpace(settings.RainDropClientId)
+    || string.IsNullOrWhiteSpace(settings.RainDropClientSecret)
+    || string.IsNullOrWhiteSpace(settings.RainDropTestToken))
     throw new InvalidOperationException("One or more settings are not configured. Please check local.settings.json or application settings.");
 
 await host.RunAsync().ConfigureAwait(false);

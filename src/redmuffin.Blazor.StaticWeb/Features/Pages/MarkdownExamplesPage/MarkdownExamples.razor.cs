@@ -13,7 +13,7 @@ public partial class MarkdownExamples : ComponentBase
     {
         ArgumentNullException.ThrowIfNull(HttpClientFactory);
         var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-        using var httpClient = HttpClientFactory.CreateClient("DefaultClient");
+        using var httpClient = HttpClientFactory.CreateClient();
         _markdownText = new MarkupString(Markdown.ToHtml(await httpClient.GetStringAsync("Example.md").ConfigureAwait(false), pipeline));
     }
 }

@@ -24,7 +24,7 @@ public partial class Weather : ComponentBase
         Logger.LogWarning("Weather OnInitializedAsync(v1)");
 #pragma warning restore CA1848
 
-        using var httpClient = HttpClientFactory.CreateClient("DefaultClient");
+        using var httpClient = HttpClientFactory.CreateClient();
 #pragma warning disable IL2026
         _forecasts = await httpClient.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json", JsonOptions).ConfigureAwait(false);
 #pragma warning restore IL2026

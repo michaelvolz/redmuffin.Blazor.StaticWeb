@@ -34,7 +34,7 @@ public sealed partial class RaindropAPI(IHttpClientFactory httpClientFactory, IL
         {
             LogCallingVideosAPI(_logger);
 
-            using var httpClient = _httpClientFactory.CreateClient("DefaultClient");
+            using var httpClient = _httpClientFactory.CreateClient();
             var response = await httpClient.GetAsync("/api/RaindropListVideos", cancellationToken).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
@@ -89,7 +89,7 @@ public sealed partial class RaindropAPI(IHttpClientFactory httpClientFactory, IL
         {
             LogCallingArticlesAPI(_logger);
 
-            using var httpClient = _httpClientFactory.CreateClient("DefaultClient");
+            using var httpClient = _httpClientFactory.CreateClient();
             var response = await httpClient.GetAsync("/api/RaindropListArticles", cancellationToken).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
@@ -146,7 +146,7 @@ public sealed partial class RaindropAPI(IHttpClientFactory httpClientFactory, IL
         {
             LogCallingHelloWorldAPI(_logger);
 
-            using var httpClient = _httpClientFactory.CreateClient("DefaultClient");
+            using var httpClient = _httpClientFactory.CreateClient();
             var response = await httpClient.GetAsync("/api/HelloWorld", cancellationToken).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
