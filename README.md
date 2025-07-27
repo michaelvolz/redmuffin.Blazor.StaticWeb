@@ -1,5 +1,5 @@
-<!-- 
-This README is intended for human developers. 
+<!--
+This README is intended for human developers.
 AI assistants should refer to .github/copilot-instructions.md for technical guidelines.
 -->
 
@@ -25,10 +25,10 @@ AI assistants should refer to .github/copilot-instructions.md for technical guid
 [![Maintenance](https://img.shields.io/badge/Maintained-yes-green.svg)](https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb/graphs/commit-activity)
 [![GitHub commit activity](https://img.shields.io/github/commit-activity/m/michaelvolz/redmuffin.Blazor.StaticWeb)](https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb/graphs/commit-activity)
 
-
 ## Project Status
 
 **Alpha/Preview Release** - This project is in early development. While functional, expect:
+
 - Breaking changes between versions
 - Incomplete documentation
 - Active development with frequent updates
@@ -67,12 +67,14 @@ Suitable for experimentation, learning, and development environments.
 ## Features
 
 ### Core Functionality
+
 - **Blazor WebAssembly (.NET 9)** - Client-side execution with modern C# features
 - **Azure Functions (.NET 8)** - Serverless backend with HTTP triggers
 - **Raindrop.io OAuth Integration** - External API integration with secure authentication
 - **Markdown Content Rendering** - Advanced Markdown processing with Markdig
 
 ### Development & Quality
+
 - **Modern C# (C# 12/13) features** - Primary constructors, collection expressions, ref readonly parameters
 - **Comprehensive Testing** - TUnit framework with LightMock.Generator mocking
 - **Code Coverage** - Automated coverage reports with Coverlet and ReportGenerator
@@ -85,6 +87,7 @@ Suitable for experimentation, learning, and development environments.
 - **Accessibility Compliance** - WCAG 2.1 AA standards with semantic HTML and ARIA support
 
 ### Infrastructure & Tools
+
 - **EditorConfig** - Consistent code style and formatting
 - **Directory.Build.props** - Centralized project configuration
 - **Docker Integration** - Configures MCP servers for AI assistance (GitHub, Fetch, Time, Brave Search, Sequential Thinking servers)
@@ -95,6 +98,7 @@ Suitable for experimentation, learning, and development environments.
 ## Prerequisites
 
 ### Required Software
+
 - **Visual Studio 2022** (17.8 or later) with the following workloads:
   - ASP.NET and web development
 - **.NET 9 SDK** - For Blazor WebAssembly project
@@ -104,34 +108,40 @@ Suitable for experimentation, learning, and development environments.
 ### Global Tools
 
 #### Node.js Tools (npm)
-- **Azure Static Web Apps CLI**  
+
+- **Azure Static Web Apps CLI**
   Required for local development and testing of Azure Static Web Apps:
+
   ```bash
   npm install -g @azure/static-web-apps-cli
   ```
 
 #### .NET Tools
-- **Project-Local Tools** (automatically managed)  
+
+- **Project-Local Tools** (automatically managed)
   The project includes pre-configured .NET tools in `.config/dotnet-tools.json`:
+
   ```bash
   # Restore all project-local tools
   dotnet tool restore
   ```
-  
+
   **Included Tools:**
   - `Microsoft.Web.LibraryManager.Cli` (LibMan) - Client-side library management
 
-- **Additional Global Tools** (installed automatically by scripts)  
+- **Additional Global Tools** (installed automatically by scripts)
   These tools are installed on-demand by the project scripts:
   - `dotnet-reportgenerator-globaltool` - Code coverage report generation
-  
+
   **Manual Installation (if needed):**
+
   ```bash
   # Install ReportGenerator globally
   dotnet tool install --global dotnet-reportgenerator-globaltool
   ```
 
 ### Optional Tools
+
 - **Azure CLI** - For Azure resource management and deployment
 - **Docker Desktop**
   - Required for optional MCP server integration (enhances AI assistant capabilities)
@@ -226,6 +236,7 @@ warning IL2111: Method 'Microsoft.AspNetCore.Components.LayoutView.Layout.set' w
 ```
 
 **These warnings are expected and safe to ignore** because:
+
 - They occur in generated Razor files (`App_razor.g.cs`) during Blazor WebAssembly compilation
 - They are related to Blazor's internal layout handling mechanism
 - They do not affect application functionality or performance
@@ -353,6 +364,7 @@ This project embraces **[Test-Driven Development](https://martinfowler.com/bliki
 This project successfully uses **LightMock.Generator** for mocking, including with interfaces that have optional parameters. A common compilation issue (CS0854) occurs when interfaces contain optional parameters like `CancellationToken cancellationToken = default`. Here's the proven solution:
 
 **❌ Problem: CS0854 Compilation Error**
+
 ```csharp
 // This fails with "expression tree may not contain optional arguments"
 _mockService.Arrange(f => f.GetItemAsync<T>("namespace", "key"))
@@ -360,6 +372,7 @@ _mockService.Arrange(f => f.GetItemAsync<T>("namespace", "key"))
 ```
 
 **✅ Solution: Explicit Parameter Specification**
+
 ```csharp
 // Always specify ALL parameters explicitly, including optional ones
 _mockService.Arrange(f => f.GetItemAsync<T>("namespace", "key", CancellationToken.None))
@@ -375,6 +388,7 @@ _mockService.Arrange(f => f.GetItemAsync<T>("ns", The<string>.IsAnyValue, Cancel
 ```
 
 **Key Insights:**
+
 - LightMock.Generator cannot handle ANY interface method with optional parameters in expression trees
 - Always provide explicit values for ALL parameters, even optional ones
 - Use `CancellationToken.None`, `null`, or `The<T>.IsAnyValue` as appropriate
@@ -567,49 +581,49 @@ redmuffin.Blazor.StaticWeb/
 
 ### Frontend Technologies
 
-- **[Blazor WebAssembly](https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor)**  
+- **[Blazor WebAssembly](https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor)**
   Framework for building interactive web UIs using C# instead of JavaScript. Enables client-side execution of .NET code in the browser.
 
-- **[C# 12/13](https://learn.microsoft.com/en-us/dotnet/csharp/)**  
+- **[C# 12/13](https://learn.microsoft.com/en-us/dotnet/csharp/)**
   Modern, object-oriented programming language with latest features including primary constructors, collection expressions, and ref readonly parameters.
 
-- **[.NET 9](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)**  
+- **[.NET 9](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)**
   Cross-platform, high-performance framework for building modern applications with the latest features and performance improvements.
 
 ### Backend Technologies
 
-- **[Azure Functions](https://azure.microsoft.com/en-us/products/functions)**  
+- **[Azure Functions](https://azure.microsoft.com/en-us/products/functions)**
   Serverless compute platform running on .NET 8 with HTTP triggers for RESTful API endpoints.
 
-- **[Raindrop.io API](https://developer.raindrop.io/)**  
+- **[Raindrop.io API](https://developer.raindrop.io/)**
   External API integration with OAuth 2.0 authentication for bookmark management functionality.
 
 ### UI Framework & Styling
 
-- **[Zurb Foundation](https://get.foundation/)**  
+- **[Zurb Foundation](https://get.foundation/)**
   Responsive front-end framework providing robust grid system, UI components, and accessibility features.
 
-- **[SCSS (Sass)](https://sass-lang.com/documentation/syntax#scss)**  
+- **[SCSS (Sass)](https://sass-lang.com/documentation/syntax#scss)**
   CSS preprocessor with variables, nesting, and modularization for modern styling capabilities.
-  
+
   **Important:** All styling must be done through SCSS files located in `wwwroot/scss/`. CSS files in `wwwroot/css/` are automatically generated and should never be edited directly. Component-specific styles should be created as SCSS partials (starting with underscore) and imported into `app.scss` for automatic compilation.
-  
+
   **SCSS Partials:** All SCSS partial files must start with an underscore (_) and be imported into `app.scss` for automatic compilation. This ensures proper dependency management and build optimization.
 
-- **[Blazored.LocalStorage](https://github.com/Blazored/LocalStorage)**  
+- **[Blazored.LocalStorage](https://github.com/Blazored/LocalStorage)**
   Blazor library for browser local storage access via JavaScript interop.
 
 ### Content & Utilities
 
-- **[Markdig](https://github.com/xoofx/markdig)**  
+- **[Markdig](https://github.com/xoofx/markdig)**
   Fast, extensible Markdown processor for .NET with advanced extensions support.
 
-- **[Microsoft.AspNetCore.WebUtilities](https://www.nuget.org/packages/Microsoft.AspNetCore.WebUtilities/)**  
+- **[Microsoft.AspNetCore.WebUtilities](https://www.nuget.org/packages/Microsoft.AspNetCore.WebUtilities/)**
   Utilities for web applications including query string parsing and URL manipulation.
 
 ### Testing Framework
 
-- **[TUnit](https://github.com/thomhurst/TUnit)**  
+- **[TUnit](https://github.com/thomhurst/TUnit)**
   Modern, fast, and flexible .NET testing framework with parallel execution and comprehensive assertion library.
 
   #### Why TUnit Over xUnit?
@@ -644,7 +658,7 @@ redmuffin.Blazor.StaticWeb/
   8. **Rich Data Features**:
      - **Fluent Assertions**: Utilizes fluent async assertions and provides detailed test metadata for expressive test writing.
 
-- **[LightMock.Generator](https://github.com/anton-yashin/LightMock.Generator)**  
+- **[LightMock.Generator](https://github.com/anton-yashin/LightMock.Generator)**
   High-performance compile-time mocking library for .NET, providing superior speed and AOT compatibility. **LightMock.Generator is the primary mocking framework** - NSubstitute is deprecated and will be phased out.
 
   #### Why LightMock.Generator Over NSubstitute?
@@ -673,36 +687,36 @@ redmuffin.Blazor.StaticWeb/
 
 ### Build and Analysis Tools
 
-- **[LibMan (Library Manager)](https://learn.microsoft.com/en-us/aspnet/core/client-side/libman/)**  
+- **[LibMan (Library Manager)](https://learn.microsoft.com/en-us/aspnet/core/client-side/libman/)**
   Lightweight client-side library acquisition tool for managing third-party libraries like Foundation.
 
-- **[Roslynator Analyzers](https://github.com/JosefPihrt/Roslynator)**  
+- **[Roslynator Analyzers](https://github.com/JosefPihrt/Roslynator)**
   Provides refactorings, analyzers, and fixes for improving code quality and maintainability.
 
-- **[StyleCop Analyzers](https://github.com/DotNetAnalyzers/StyleCopAnalyzers)**  
+- **[StyleCop Analyzers](https://github.com/DotNetAnalyzers/StyleCopAnalyzers)**
   Enforces a set of style and consistency rules for C# code, ensuring adherence to coding standards.
 
-- **[Meziantou Analyzers](https://github.com/meziantou/Meziantou.Analyzer)**  
+- **[Meziantou Analyzers](https://github.com/meziantou/Meziantou.Analyzer)**
   Offers additional code quality checks focused on performance, security, and best practices.
 
-- **[VSThreading Analyzers](https://github.com/microsoft/vs-threading/tree/main/doc/analyzers)**  
+- **[VSThreading Analyzers](https://github.com/microsoft/vs-threading/tree/main/doc/analyzers)**
   Ensures threading best practices are followed, especially for asynchronous programming.
 
-- **[Coverlet](https://github.com/coverlet-coverage/coverlet)**  
+- **[Coverlet](https://github.com/coverlet-coverage/coverlet)**
   Cross-platform code coverage library for .NET, enabling comprehensive test coverage analysis with multiple output formats.
 
-- **[ReportGenerator](https://github.com/danielpalme/ReportGenerator)**  
+- **[ReportGenerator](https://github.com/danielpalme/ReportGenerator)**
   Powerful tool for generating readable reports from code coverage data, supporting HTML, XML, and various other formats with historical tracking.
 
 ### Development Tools
 
-- **[GitHub Copilot](https://github.com/features/copilot)**  
+- **[GitHub Copilot](https://github.com/features/copilot)**
   AI-powered code completion tool with MCP server integration.
 
 - **[EditorConfig](https://editorconfig.org/)**
   Consistent coding style definitions across different editors and IDEs.
 
-- **[Directory.Build.props](https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-your-build)**  
+- **[Directory.Build.props](https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-your-build)**
   Centralized MSBuild properties for consistent build configuration across all projects.
 
 ---
@@ -735,17 +749,20 @@ The project includes comprehensive development tools and integrations to enhance
 ### Build Commands
 
 **Build the entire solution:**
+
 ```bash
 dotnet build
 ```
 
 **Build specific projects:**
+
 ```bash
 dotnet build src/redmuffin.Blazor.StaticWeb/
 dotnet build src/redmuffin.Blazor.StaticWeb.Api/
 ```
 
 **Run tests:**
+
 ```bash
 dotnet test
 ```
@@ -755,11 +772,13 @@ dotnet test
 The project includes comprehensive code coverage analysis using Coverlet and ReportGenerator:
 
 **Generate Coverage Reports:**
+
 ```powershell
 .\scripts\Generate-CoverageReport.ps1
 ```
 
 **View Coverage Reports:**
+
 ```powershell
 # View unified coverage report (default)
 .\scripts\View-CoverageReport.ps1
@@ -772,6 +791,7 @@ The project includes comprehensive code coverage analysis using Coverlet and Rep
 ```
 
 **Coverage Features:**
+
 - **Multiple Output Formats**: HTML, XML, JSON, and Cobertura formats
 - **Unified Reports**: Combined coverage from both Blazor and API test projects
 - **Historical Tracking**: Coverage trends over time with the branded report
@@ -780,6 +800,7 @@ The project includes comprehensive code coverage analysis using Coverlet and Rep
 - **Tool Integration**: Automatic installation of required tools (ReportGenerator)
 
 **Coverage Configuration:**
+
 - Coverage settings are configured in test project files (.csproj)
 - Global exclusions are defined in Directory.Build.props
 - Additional exclusions can be configured in .coverletrc
@@ -839,6 +860,7 @@ The development environment includes several **Model Context Protocol (MCP) serv
 ### Available MCP Servers
 
 #### Configured Servers
+
 - **[GitHub MCP Server](https://github.com/github/github-mcp-server)**: Provides access to GitHub repositories and issues (requires Personal Access Token)
 - **[Fetch MCP Server](https://github.com/modelcontextprotocol/servers/tree/main/src/fetch)**: Retrieves web content from URLs, automatically converting HTML to markdown for easier AI consumption
 - **[Time MCP Server](https://github.com/modelcontextprotocol/servers/tree/main/src/time)**: Provides current time and date information
@@ -901,8 +923,61 @@ The project is configured for seamless development using Visual Studio's multi-p
 - **Production Simulation**: Mimics the exact Azure Static Web Apps runtime environment
 - **Debugging Support**: Full debugging capabilities for both frontend and backend code
 
+### Simplified Development Workflow
+
+For streamlined development and testing, the project now supports a **simplified workflow** that focuses on frontend development and design validation without requiring the full Azure Functions backend.
+
+#### Quick Development Setup
+
+1. **Start only the main web project:**
+   - In Visual Studio, set `redmuffin.Blazor.StaticWeb` as the startup project
+   - Press F5 or click "Start"
+   - The application will launch on `http://localhost:5233`
+
+2. **Automatic mock data integration:**
+   - The application automatically detects when Azure Functions are unavailable
+   - Mock data services seamlessly replace API calls
+   - All UI components and user interactions function normally
+
+#### Benefits for Development Teams
+
+- **Faster Startup**: Eliminates the overhead of starting multiple projects and services
+- **Design-Focused Development**: Perfect for UI/UX work, component development, and frontend testing
+- **Simplified Debugging**: Focus on frontend logic without backend complexity
+- **Developer Friendly**: Reduces cognitive load and setup complexity for team members
+- **Rapid Prototyping**: Quickly test design changes and user interactions
+
+#### When to Use Each Approach
+
+| Development Task | Recommended Approach |
+|------------------|---------------------|
+| UI/UX Design | **Simplified** (`localhost:5233`) |
+| Component Development | **Simplified** (`localhost:5233`) |
+| Frontend Logic Testing | **Simplified** (`localhost:5233`) |
+| API Integration Testing | **Full Stack** ("Start both" profile) |
+| OAuth Flow Testing | **Full Stack** ("Start both" profile) |
+| End-to-End Testing | **Full Stack** ("Start both" profile) |
+
+#### Technical Implementation
+
+The simplified workflow leverages:
+
+- **Conditional service registration** based on environment detection
+- **Mock data providers** that simulate realistic API responses
+- **Seamless fallback mechanisms** for external service dependencies
+- **Consistent data models** ensuring compatibility between mock and real data
+
+#### Transitioning Between Workflows
+
+Developers can easily switch between approaches:
+
+- **To Simplified**: Stop debugging, set main project as startup, restart
+- **To Full Stack**: Use "Start both" profile or multi-project startup configuration
+- **No code changes required** - the application automatically adapts
+
 ### Notes
 
 - The CLI simulates the Azure Static Web Apps environment, making it ideal for development and testing
 - The "Start both" profile in Visual Studio simplifies launching both projects together
 - OAuth flows and API integration work seamlessly in this local development setup
+- The simplified workflow is particularly beneficial for design-focused tasks and rapid development
