@@ -1,12 +1,12 @@
 namespace redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage;
 
 /// <summary>
-/// Logging partial class for Articles component containing LoggerMessage delegates.
+///     Logging partial class for Articles component containing LoggerMessage delegates.
 /// </summary>
 public partial class Articles
 {
     /// <summary>
-    /// LoggerMessage delegate for shimmer errors.
+    ///     LoggerMessage delegate for shimmer errors.
     /// </summary>
     private static readonly Action<ILogger, string, Exception> LogShimmerError =
         LoggerMessage.Define<string>(
@@ -15,7 +15,7 @@ public partial class Articles
             "Error stopping shimmer for element: {ElementId}");
 
     /// <summary>
-    /// LoggerMessage delegate for background validation failures.
+    ///     LoggerMessage delegate for background validation failures.
     /// </summary>
     private static readonly Action<ILogger, string, Exception?> LogBackgroundValidationFailed =
         LoggerMessage.Define<string>(
@@ -24,7 +24,7 @@ public partial class Articles
             "Background validation failed for article: {ArticleLink}");
 
     /// <summary>
-    /// LoggerMessage delegate for background tasks started.
+    ///     LoggerMessage delegate for background tasks started.
     /// </summary>
     private static readonly Action<ILogger, int, Exception?> LogBackgroundTasksStarted =
         LoggerMessage.Define<int>(
@@ -33,7 +33,7 @@ public partial class Articles
             "Started {TaskCount} background validation tasks");
 
     /// <summary>
-    /// LoggerMessage delegate for background validation completion.
+    ///     LoggerMessage delegate for background validation completion.
     /// </summary>
     private static readonly Action<ILogger, string, bool, Exception?> LogBackgroundValidationCompleted =
         LoggerMessage.Define<string, bool>(
@@ -42,7 +42,7 @@ public partial class Articles
             "Background validation completed for article: {ArticleLink}, Valid: {IsValid}");
 
     /// <summary>
-    /// LoggerMessage delegate for image load handling errors.
+    ///     LoggerMessage delegate for image load handling errors.
     /// </summary>
     private static readonly Action<ILogger, string, Exception> LogImageLoadHandlingError =
         LoggerMessage.Define<string>(

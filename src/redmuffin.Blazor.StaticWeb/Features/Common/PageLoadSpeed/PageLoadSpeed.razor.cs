@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using redmuffin.Blazor.StaticWeb.Configuration;
@@ -7,8 +8,8 @@ using redmuffin.Blazor.StaticWeb.Services;
 namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Components;
 
 /// <summary>
-/// Code-behind for PageLoadSpeed component that displays performance metrics and analytics.
-/// Implements sophisticated performance monitoring with comprehensive timing and size metrics.
+///     Code-behind for PageLoadSpeed component that displays performance metrics and analytics.
+///     Implements sophisticated performance monitoring with comprehensive timing and size metrics.
 /// </summary>
 public partial class PageLoadSpeed : ComponentBase, IAsyncDisposable
 {
@@ -33,14 +34,63 @@ public partial class PageLoadSpeed : ComponentBase, IAsyncDisposable
             if (_currentMetrics.HasValue)
             {
                 var newCache = _currentMetrics.Value.GetPerformanceCache();
-                if (Math.Abs(newCache.PrimaryMetric - _performanceCache.PrimaryMetric) > 0.1)
-                {
-                    _performanceCache = newCache;
-                }
+                if (Math.Abs(newCache.PrimaryMetric - _performanceCache.PrimaryMetric) > 0.1) _performanceCache = newCache;
             }
 
             return _performanceCache;
         }
+    }
+
+    private static LoadSpeed.PageLoadMetrics CreateLegacyMetrics(double[] legacyTimings)
+    {
+        return new LoadSpeed.PageLoadMetrics
+        {
+            TimeToFirstByte = Math.Round(legacyTimings[1] * 0.3, 1),
+            DomContentLoaded = Math.Round(legacyTimings[1], 1),
+            LoadComplete = Math.Round(legacyTimings[0], 1),
+            FirstContentfulPaint = 0,
+            LargestContentfulPaint = 0,
+            TransferSize = 0,
+            EncodedSize = 0,
+            DecodedSize = 0,
+            TransferSizeFormatted = "Unknown",
+            EncodedSizeFormatted = "Unknown",
+            DecodedSizeFormatted = "Unknown",
+            ServerResponseTime = 0,
+            DomProcessingTime = 0,
+            ResourceLoadTime = 0
+        };
+    }
+
+    private static double GetProgressWidth(double value, double maxValue)
+    {
+        if (value <= 0 || maxValue <= 0) return 0;
+        return Math.Min(100, value / maxValue * 100);
+    }
+
+    private static double GetDataSizeProgress(double sizeBytes)
+    {
+        // Progress based on typical web page size (1MB = 100%)
+        const double maxSize = 1024 * 1024; // 1MB
+        return Math.Min(100, sizeBytes / maxSize * 100);
+    }
+
+    private static string GetTimingColor(double timing)
+    {
+        return timing switch
+        {
+            <= 1000 => "#00ff41",
+            <= 2500 => "#ffd700",
+            <= 4000 => "#ff8c42",
+            _ => "#ff4757"
+        };
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _cancellationTokenSource.CancelAsync().ConfigureAwait(false);
+        _cancellationTokenSource.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -48,7 +98,6 @@ public partial class PageLoadSpeed : ComponentBase, IAsyncDisposable
         var shouldDisplay = PageLoadSpeedConfig.ShouldDisplayComponent(Navigation.BaseUri);
 
         if (firstRender && shouldDisplay)
-        {
             try
             {
                 await InitializeWithEmptyMetricsAsync().ConfigureAwait(false);
@@ -62,9 +111,8 @@ public partial class PageLoadSpeed : ComponentBase, IAsyncDisposable
             catch (Exception ex)
             {
                 // If initialization fails, component will still show UI with manual refresh option
-                System.Diagnostics.Debug.WriteLine($"PageLoadSpeed initialization failed: {ex.Message}");
+                Debug.WriteLine($"PageLoadSpeed initialization failed: {ex.Message}");
             }
-        }
     }
 
     private async Task InitializeWithEmptyMetricsAsync()
@@ -135,27 +183,6 @@ public partial class PageLoadSpeed : ComponentBase, IAsyncDisposable
         _currentMetrics = PerformanceMetrics.FromPageLoadMetrics(fallbackMetrics, DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
     }
 
-    private static LoadSpeed.PageLoadMetrics CreateLegacyMetrics(double[] legacyTimings)
-    {
-        return new LoadSpeed.PageLoadMetrics
-        {
-            TimeToFirstByte = Math.Round(legacyTimings[1] * 0.3, 1),
-            DomContentLoaded = Math.Round(legacyTimings[1], 1),
-            LoadComplete = Math.Round(legacyTimings[0], 1),
-            FirstContentfulPaint = 0,
-            LargestContentfulPaint = 0,
-            TransferSize = 0,
-            EncodedSize = 0,
-            DecodedSize = 0,
-            TransferSizeFormatted = "Unknown",
-            EncodedSizeFormatted = "Unknown",
-            DecodedSizeFormatted = "Unknown",
-            ServerResponseTime = 0,
-            DomProcessingTime = 0,
-            ResourceLoadTime = 0
-        };
-    }
-
     private async Task SetFallbackMetricsAsync()
     {
         try
@@ -178,7 +205,6 @@ public partial class PageLoadSpeed : ComponentBase, IAsyncDisposable
     {
         // Ensure UI updates after any metrics update
         if (!_cancellationTokenSource.IsCancellationRequested)
-        {
             try
             {
                 await InvokeAsync(StateHasChanged).ConfigureAwait(false);
@@ -186,9 +212,8 @@ public partial class PageLoadSpeed : ComponentBase, IAsyncDisposable
             catch (Exception ex)
             {
                 // If InvokeAsync fails, component might be disposed
-                System.Diagnostics.Debug.WriteLine($"PageLoadSpeed UI update failed: {ex.Message}");
+                Debug.WriteLine($"PageLoadSpeed UI update failed: {ex.Message}");
             }
-        }
     }
 
     private void ToggleVisibility()
@@ -224,36 +249,5 @@ public partial class PageLoadSpeed : ComponentBase, IAsyncDisposable
         return (_currentMetrics?.Calculated.ServerResponseTime ?? 0) > 0 ||
                (_currentMetrics?.Calculated.DomProcessingTime ?? 0) > 0 ||
                (_currentMetrics?.Calculated.ResourceLoadTime ?? 0) > 0;
-    }
-
-    private static double GetProgressWidth(double value, double maxValue)
-    {
-        if (value <= 0 || maxValue <= 0) return 0;
-        return Math.Min(100, value / maxValue * 100);
-    }
-
-    private static double GetDataSizeProgress(double sizeBytes)
-    {
-        // Progress based on typical web page size (1MB = 100%)
-        const double maxSize = 1024 * 1024; // 1MB
-        return Math.Min(100, sizeBytes / maxSize * 100);
-    }
-
-    private static string GetTimingColor(double timing)
-    {
-        return timing switch
-        {
-            <= 1000 => "#00ff41",
-            <= 2500 => "#ffd700",
-            <= 4000 => "#ff8c42",
-            _ => "#ff4757"
-        };
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await _cancellationTokenSource.CancelAsync().ConfigureAwait(false);
-        _cancellationTokenSource.Dispose();
-        GC.SuppressFinalize(this);
     }
 }

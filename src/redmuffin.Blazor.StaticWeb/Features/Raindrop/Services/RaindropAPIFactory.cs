@@ -1,12 +1,10 @@
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Logging;
-using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
 
 /// <summary>
-/// Factory implementation for creating appropriate IRaindropAPI instances based on the current environment.
-/// Uses NavigationManager.BaseUri to detect localhost:5233 (dummy data) vs localhost:4280 (real API).
+///     Factory implementation for creating appropriate IRaindropAPI instances based on the current environment.
+///     Uses NavigationManager.BaseUri to detect localhost:5233 (dummy data) vs localhost:4280 (real API).
 /// </summary>
 public sealed partial class RaindropAPIFactory : IRaindropAPIFactory
 {
@@ -15,7 +13,7 @@ public sealed partial class RaindropAPIFactory : IRaindropAPIFactory
     private readonly ILogger<RaindropAPIFactory> _logger;
 
     /// <summary>
-    /// Initializes a new instance of the RaindropAPIFactory class.
+    ///     Initializes a new instance of the RaindropAPIFactory class.
     /// </summary>
     /// <param name="navigationManager">Navigation manager for environment detection.</param>
     /// <param name="serviceProvider">Service provider for dependency resolution.</param>
@@ -43,11 +41,9 @@ public sealed partial class RaindropAPIFactory : IRaindropAPIFactory
                 LogCreatingDummyAPI(_logger, _navigationManager.BaseUri);
                 return _serviceProvider.GetRequiredService<DummyRaindropAPI>();
             }
-            else
-            {
-                LogCreatingRealAPI(_logger, _navigationManager.BaseUri);
-                return _serviceProvider.GetRequiredService<RaindropAPI>();
-            }
+
+            LogCreatingRealAPI(_logger, _navigationManager.BaseUri);
+            return _serviceProvider.GetRequiredService<RaindropAPI>();
         }
         catch (Exception ex)
         {

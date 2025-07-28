@@ -1,4 +1,3 @@
-using System.Linq;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
@@ -88,13 +87,11 @@ public partial class Videos
 
             // Populate image cache for videos
             if (_videoItems.Count > 0)
-            {
                 await ImageValidationCacheService.PopulateImageUrlCacheAsync(
                     _videoItems,
                     _imageUrlCache,
                     () => InvokeAsync(StateHasChanged),
                     CancellationToken.None).ConfigureAwait(false);
-            }
         }
         catch (Exception ex)
         {

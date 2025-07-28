@@ -1,9 +1,7 @@
-using Microsoft.Extensions.Logging;
-
 namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
 
 /// <summary>
-/// Logging partial class for DummyRaindropAPI containing LoggerMessage delegates.
+///     Logging partial class for DummyRaindropAPI containing LoggerMessage delegates.
 /// </summary>
 public sealed partial class DummyRaindropAPI
 {
