@@ -3,20 +3,46 @@ using System.Text.RegularExpressions;
 namespace redmuffin.Blazor.StaticWeb.Tests.CodeQuality;
 
 /// <summary>
-///     Code quality tests that enforce architectural standards for Blazor components.
-///     These tests ensure adherence to the code-behind preference established in project guidelines.
+///     Validates architectural standards for Blazor components using behavior-focused testing.
+///     Enforces code-behind patterns and separation of concerns as defined in project guidelines.
 /// </summary>
-public partial class BlazorCodeBehindEnforcementTests
+public sealed partial class BlazorCodeBehindEnforcementTests
 {
     private static readonly string ProjectRoot = GetProjectRoot();
     private static readonly string BlazorProjectPath = Path.Combine(ProjectRoot, "src", "redmuffin.Blazor.StaticWeb");
 
     /// <summary>
-    ///     Validates that existing code-behind files follow proper naming conventions.
-    ///     Ensures consistency in the codebase file organization.
+    ///     Validates that Razor files maintain clean markup by avoiding inline code blocks.
     /// </summary>
     [Test]
-    public async Task Should_FollowNamingConventions_ForCodeBehindFiles()
+    public async Task Should_Avoid_Inline_Code_Blocks_When_Razor_Files_Contain_Logic()
+    {
+        // Arrange
+        var razorFiles = GetAllRazorFiles();
+        var filesWithInlineCode = new List<string>();
+        var codeBlockPattern = new Regex(@"@code\s*\{", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+
+        // Act
+        foreach (var razorFile in razorFiles)
+        {
+            var content = await File.ReadAllTextAsync(razorFile).ConfigureAwait(false);
+
+            if (codeBlockPattern.IsMatch(content)) filesWithInlineCode.Add(GetRelativePath(razorFile));
+        }
+
+        // Assert
+        if (filesWithInlineCode.Count > 0)
+            Assert.Fail($"Found inline @code blocks in the following .razor files. " +
+                        $"Please move code to corresponding .razor.cs files: {string.Join(", ", filesWithInlineCode)}");
+
+        await Assert.That(filesWithInlineCode).IsEmpty();
+    }
+
+    /// <summary>
+    ///     Validates that code-behind files maintain proper naming conventions and file relationships.
+    /// </summary>
+    [Test]
+    public async Task Should_Maintain_Proper_Naming_Conventions_When_Code_Behind_Files_Exist()
     {
         // Arrange
         var codeBehindFiles = GetAllCodeBehindFiles();
@@ -25,7 +51,7 @@ public partial class BlazorCodeBehindEnforcementTests
         // Act
         foreach (var codeBehindFile in codeBehindFiles)
         {
-            var expectedRazorFile = codeBehindFile.Substring(0, codeBehindFile.Length - 3); // Remove ".cs"
+            var expectedRazorFile = codeBehindFile[..^3]; // Remove ".cs"
 
             if (!File.Exists(expectedRazorFile)) invalidNamingFiles.Add(GetRelativePath(codeBehindFile));
         }
@@ -39,11 +65,10 @@ public partial class BlazorCodeBehindEnforcementTests
     }
 
     /// <summary>
-    ///     Verifies that components with complex logic have corresponding .razor.cs code-behind files.
-    ///     This test helps identify components that might benefit from code-behind separation.
+    ///     Validates that complex components utilize code-behind files for proper separation of concerns.
     /// </summary>
     [Test]
-    public async Task Should_HaveCodeBehindFiles_ForComplexComponents()
+    public async Task Should_Use_Code_Behind_Files_When_Components_Have_Complex_Logic()
     {
         // Arrange
         var razorFiles = GetAllRazorFiles();
@@ -77,33 +102,5 @@ public partial class BlazorCodeBehindEnforcementTests
                         $"Consider creating .razor.cs files for: {string.Join(", ", componentsWithoutCodeBehind)}");
 
         await Assert.That(componentsWithoutCodeBehind).IsEmpty();
-    }
-
-    /// <summary>
-    ///     Enforces that all .razor files use code-behind instead of inline @code blocks.
-    ///     This test supports the project's architectural decision to separate concerns and improve maintainability.
-    /// </summary>
-    [Test]
-    public async Task Should_NotContain_InlineCodeBlocks_InRazorFiles()
-    {
-        // Arrange
-        var razorFiles = GetAllRazorFiles();
-        var filesWithInlineCode = new List<string>();
-        var codeBlockPattern = new Regex(@"@code\s*\{", RegexOptions.IgnoreCase | RegexOptions.Multiline);
-
-        // Act
-        foreach (var razorFile in razorFiles)
-        {
-            var content = await File.ReadAllTextAsync(razorFile).ConfigureAwait(false);
-
-            if (codeBlockPattern.IsMatch(content)) filesWithInlineCode.Add(GetRelativePath(razorFile));
-        }
-
-        // Assert
-        if (filesWithInlineCode.Count > 0)
-            Assert.Fail($"Found inline @code blocks in the following .razor files. " +
-                        $"Please move code to corresponding .razor.cs files: {string.Join(", ", filesWithInlineCode)}");
-
-        await Assert.That(filesWithInlineCode).IsEmpty();
     }
 }

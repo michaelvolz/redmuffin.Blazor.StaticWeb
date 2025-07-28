@@ -5,35 +5,84 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using redmuffin.Blazor.StaticWeb.Api.Core;
 using redmuffin.Blazor.StaticWeb.Api.Functions;
-using redmuffin.Blazor.StaticWeb.Api.Tests.Helpers;
 
 namespace redmuffin.Blazor.StaticWeb.Api.Tests.Functions;
 
-public class RaindropListVideos_Tests : TestBase
+/// <summary>
+///     Validates RaindropListVideos Azure Function behavior and response handling.
+///     Ensures proper API integration, error handling, and JSON response formatting for video content.
+/// </summary>
+public sealed partial class RaindropListVideos_Tests
 {
+    /// <summary>
+    ///     Validates that the function returns appropriate error response when provided with invalid authentication.
+    /// </summary>
     [Test]
-    public async Task Run_ReturnsOkWithJsonResponse_Async()
+    public async Task Should_Return_Error_Response_When_Invalid_Token_Provided()
     {
         // Arrange
+        using var scope = CreateTestScope();
         var logger = NullLogger<RaindropListVideos>.Instance;
-
-        var testToken = Configuration["Values:RainDropTestToken"];
-        if (string.IsNullOrWhiteSpace(testToken)) Assert.Fail("RainDropTestToken is null or whitespace.");
-
-        var settings = Options.Create(new Settings { RainDropTestToken = testToken });
-        var functionContext = new TestFunctionContext(nameof(RaindropListVideos));
+        var invalidToken = "invalid-token";
+        var settings = Options.Create(new Settings { RainDropTestToken = invalidToken });
+        var functionContext = TestScope.CreateFunctionContext(nameof(RaindropListVideos));
         var httpClientFactory = functionContext.InstanceServices.GetRequiredService<IHttpClientFactory>();
         var function = new RaindropListVideos(logger, settings, httpClientFactory);
-        var request = new TestHttpRequestData(functionContext);
+        var request = TestScope.CreateHttpRequestData(functionContext);
 
-        TestHttpResponseData? response = null;
+        MockHttpResponseData? response = null;
         try
         {
             // Act
-            response = (TestHttpResponseData)await function.RunAsync(request).ConfigureAwait(false);
+            response = (MockHttpResponseData)await function.RunAsync(request).ConfigureAwait(false);
+
+            // Assert
+            await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
+
+            var responseBody = response.GetBodyAsString();
+            JsonDocument.Parse(responseBody); // Verify response is valid JSON
+
+            await Assert.That(responseBody).Contains("Error");
+        }
+        finally
+        {
+            if (response is IAsyncDisposable asyncDisposableResponse) await asyncDisposableResponse.DisposeAsync().ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    ///     Validates that the function returns valid JSON response containing video data when provided with valid
+    ///     authentication.
+    /// </summary>
+    [Test]
+    public async Task Should_Return_Valid_Json_Response_With_Video_Data_When_Valid_Token_Provided()
+    {
+        // Arrange
+        using var scope = CreateTestScope();
+        var testToken = scope.Configuration["Values:RainDropTestToken"];
+
+        if (string.IsNullOrWhiteSpace(testToken))
+        {
+            Assert.Fail("RainDropTestToken is null or whitespace.");
+            return;
+        }
+
+        var logger = NullLogger<RaindropListVideos>.Instance;
+        var settings = Options.Create(new Settings { RainDropTestToken = testToken });
+        var functionContext = TestScope.CreateFunctionContext(nameof(RaindropListVideos));
+        var httpClientFactory = functionContext.InstanceServices.GetRequiredService<IHttpClientFactory>();
+        var function = new RaindropListVideos(logger, settings, httpClientFactory);
+        var request = TestScope.CreateHttpRequestData(functionContext);
+
+        MockHttpResponseData? response = null;
+        try
+        {
+            // Act
+            response = (MockHttpResponseData)await function.RunAsync(request).ConfigureAwait(false);
 
             // Assert
             await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.OK);
+
             var responseBody = response.GetBodyAsString();
             JsonDocument.Parse(responseBody); // Verify response is valid JSON
 
@@ -41,7 +90,6 @@ public class RaindropListVideos_Tests : TestBase
         }
         finally
         {
-            // Cleanup
             if (response is IAsyncDisposable asyncDisposableResponse) await asyncDisposableResponse.DisposeAsync().ConfigureAwait(false);
         }
     }
