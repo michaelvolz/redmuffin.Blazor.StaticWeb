@@ -43,9 +43,10 @@
     - Debug: Fast builds for AI agents and development (minimal optimizations)
     - Release: Full production optimizations for deployment
   -->
-  
+
   <!-- DEBUG MODE: Fast builds for development and AI agent workflows -->
-  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' AND '$(IsDebugConfiguration)' == 'true'">
+  <PropertyGroup
+    Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' AND '$(IsDebugConfiguration)' == 'true'">
     <!-- Disable globalization optimizations for faster debug builds -->
     <InvariantGlobalization>false</InvariantGlobalization>
     <!-- Allow full resource keys for better debugging experience -->
@@ -72,7 +73,7 @@
     SECURITY AND RELIABILITY ENHANCEMENTS
     Split by configuration to balance build speed vs production quality
   -->
-  
+
   <!-- DEBUG MODE: Faster builds with minimal safety checks -->
   <PropertyGroup Condition="'$(IsDebugConfiguration)' == 'true'">
     <!-- Disable overflow checking for faster debug builds -->

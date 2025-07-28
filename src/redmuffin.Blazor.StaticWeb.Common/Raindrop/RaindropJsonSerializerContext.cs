@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace redmuffin.Blazor.StaticWeb.Common.Raindrop;
 
 /// <summary>
-/// Enhanced JSON serialization context for RaindropIO API responses with robust error handling
+///     Enhanced JSON serialization context for RaindropIO API responses with robust error handling
 /// </summary>
 [JsonSerializable(typeof(List<RaindropItem>), TypeInfoPropertyName = "RaindropItemList")]
 [JsonSerializable(typeof(RaindropItem))]
@@ -23,7 +23,7 @@ namespace redmuffin.Blazor.StaticWeb.Common.Raindrop;
 public partial class RaindropJsonSerializerContext : JsonSerializerContext
 {
     /// <summary>
-    /// Default JSON serialization options with enhanced error handling for malformed responses
+    ///     Default JSON serialization options with enhanced error handling for malformed responses
     /// </summary>
     public static JsonSerializerOptions DefaultOptions { get; } = new()
     {
@@ -39,7 +39,7 @@ public partial class RaindropJsonSerializerContext : JsonSerializerContext
     };
 
     /// <summary>
-    /// Strict JSON serialization options for production API calls with minimal tolerance
+    ///     Strict JSON serialization options for production API calls with minimal tolerance
     /// </summary>
     public static JsonSerializerOptions StrictOptions { get; } = new()
     {
@@ -55,7 +55,7 @@ public partial class RaindropJsonSerializerContext : JsonSerializerContext
     };
 
     /// <summary>
-    /// Lenient JSON serialization options for dummy data and development scenarios
+    ///     Lenient JSON serialization options for dummy data and development scenarios
     /// </summary>
     public static JsonSerializerOptions LenientOptions { get; } = new()
     {
