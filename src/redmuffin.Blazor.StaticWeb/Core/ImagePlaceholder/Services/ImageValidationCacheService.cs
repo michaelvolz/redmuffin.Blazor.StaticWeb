@@ -1,12 +1,11 @@
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
-using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Templates;
 using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 
 /// <summary>
-/// Service for managing image validation caching and background validation.
+///     Service for managing image validation caching and background validation.
 /// </summary>
 public sealed partial class ImageValidationCacheService : IImageValidationCacheService
 {
@@ -15,7 +14,7 @@ public sealed partial class ImageValidationCacheService : IImageValidationCacheS
     private readonly ILogger<ImageValidationCacheService> _logger;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ImageValidationCacheService"/> class.
+    ///     Initializes a new instance of the <see cref="ImageValidationCacheService" /> class.
     /// </summary>
     /// <param name="simpleImageValidationService">The simple image validation service</param>
     /// <param name="imagePlaceholderService">The image placeholder service</param>
@@ -79,10 +78,7 @@ public sealed partial class ImageValidationCacheService : IImageValidationCacheS
         }
 
         // Don't wait for background tasks to complete - they'll update the UI when done
-        if (backgroundValidationTasks.Count > 0)
-        {
-            LogBackgroundTasksStarted(_logger, backgroundValidationTasks.Count, null);
-        }
+        if (backgroundValidationTasks.Count > 0) LogBackgroundTasksStarted(_logger, backgroundValidationTasks.Count, null);
     }
 
     /// <inheritdoc />
@@ -98,12 +94,10 @@ public sealed partial class ImageValidationCacheService : IImageValidationCacheS
         var cachedResult = await _simpleImageValidationService.GetCachedResultAsync(item.Cover, cancellationToken).ConfigureAwait(false);
 
         if (cachedResult != null)
-        {
             // Use cached validation result
             return cachedResult.IsValid
                 ? item.Cover
                 : _imagePlaceholderService.GenerateSimplePlaceholder(cachedResult.FailureReason ?? "Image not available");
-        }
 
         // No cached result - use original cover image for now, background validation will handle it
         return item.Cover;

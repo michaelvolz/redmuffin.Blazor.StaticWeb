@@ -4,26 +4,26 @@ using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 
 /// <summary>
-/// Service for managing image placeholders and image URL handling.
+///     Service for managing image placeholders and image URL handling.
 /// </summary>
 public interface IImagePlaceholderService
 {
     /// <summary>
-    /// Gets the default placeholder SVG for items without images.
+    ///     Gets the default placeholder SVG for items without images.
     /// </summary>
     /// <returns>Base64-encoded SVG placeholder</returns>
     string GetDefaultPlaceholder();
 
     /// <summary>
-    /// Generates a simple SVG placeholder with the specified failure reason.
+    ///     Generates a simple SVG placeholder with the specified failure reason.
     /// </summary>
     /// <param name="reason">The reason for the placeholder</param>
     /// <returns>Base64-encoded SVG placeholder with reason text</returns>
     string GenerateSimplePlaceholder(string reason);
 
     /// <summary>
-    /// Gets the image URL for an item from the cache.
-    /// This method is used by the UI for rendering.
+    ///     Gets the image URL for an item from the cache.
+    ///     This method is used by the UI for rendering.
     /// </summary>
     /// <param name="item">The item to get the image URL for</param>
     /// <param name="imageUrlCache">The image URL cache dictionary</param>
@@ -31,7 +31,7 @@ public interface IImagePlaceholderService
     string GetImageUrl(RaindropItem item, IDictionary<string, string> imageUrlCache);
 
     /// <summary>
-    /// Handles image load events (success or failure) and updates the cache accordingly.
+    ///     Handles image load events (success or failure) and updates the cache accordingly.
     /// </summary>
     /// <param name="elementId">The DOM element ID for shimmer control</param>
     /// <param name="itemLink">The item link used as cache key</param>
@@ -49,7 +49,7 @@ public interface IImagePlaceholderService
         Func<Task> stateHasChangedCallback);
 
     /// <summary>
-    /// Determines if an item has a fallback placeholder.
+    ///     Determines if an item has a fallback placeholder.
     /// </summary>
     /// <param name="item">The item to check</param>
     /// <param name="imageUrlCache">The image URL cache dictionary</param>
@@ -57,7 +57,7 @@ public interface IImagePlaceholderService
     bool HasFallbackPlaceholder(RaindropItem item, IDictionary<string, string> imageUrlCache);
 
     /// <summary>
-    /// Gets the fallback reason for an item.
+    ///     Gets the fallback reason for an item.
     /// </summary>
     /// <param name="item">The item to get the fallback reason for</param>
     /// <param name="imageUrlCache">The image URL cache dictionary</param>

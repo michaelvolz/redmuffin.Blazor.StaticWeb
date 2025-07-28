@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
@@ -8,14 +6,14 @@ using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Templates;
 namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 
 /// <summary>
-/// Service for managing image placeholders and image URL handling.
+///     Service for managing image placeholders and image URL handling.
 /// </summary>
 public sealed partial class ImagePlaceholderService : IImagePlaceholderService
 {
     private readonly ILogger<ImagePlaceholderService> _logger;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ImagePlaceholderService"/> class.
+    ///     Initializes a new instance of the <see cref="ImagePlaceholderService" /> class.
     /// </summary>
     /// <param name="logger">The logger instance</param>
     public ImagePlaceholderService(ILogger<ImagePlaceholderService> logger)
@@ -48,10 +46,7 @@ public sealed partial class ImagePlaceholderService : IImagePlaceholderService
         if (imageUrlCache.TryGetValue(item.Link, out var cachedResult))
         {
             // If cached as failed, return placeholder
-            if (string.Equals(cachedResult, "FAILED", StringComparison.Ordinal))
-            {
-                return GetDefaultPlaceholder();
-            }
+            if (string.Equals(cachedResult, "FAILED", StringComparison.Ordinal)) return GetDefaultPlaceholder();
 
             // Return the cached URL
             return cachedResult;
@@ -78,10 +73,7 @@ public sealed partial class ImagePlaceholderService : IImagePlaceholderService
 
         try
         {
-            if (!loadSuccess)
-            {
-                imageUrlCache[itemLink] = "FAILED";
-            }
+            if (!loadSuccess) imageUrlCache[itemLink] = "FAILED";
 
             await StopShimmerAsync(elementId, jsRuntime).ConfigureAwait(false);
             await stateHasChangedCallback().ConfigureAwait(false);
@@ -99,15 +91,9 @@ public sealed partial class ImagePlaceholderService : IImagePlaceholderService
         ArgumentNullException.ThrowIfNull(imageUrlCache);
 
         // Has fallback if no cover URL or if cached as failed
-        if (string.IsNullOrEmpty(item.Cover))
-        {
-            return true;
-        }
+        if (string.IsNullOrEmpty(item.Cover)) return true;
 
-        if (imageUrlCache.TryGetValue(item.Link, out var cachedResult) && string.Equals(cachedResult, "FAILED", StringComparison.Ordinal))
-        {
-            return true;
-        }
+        if (imageUrlCache.TryGetValue(item.Link, out var cachedResult) && string.Equals(cachedResult, "FAILED", StringComparison.Ordinal)) return true;
 
         return false;
     }
@@ -118,21 +104,16 @@ public sealed partial class ImagePlaceholderService : IImagePlaceholderService
         ArgumentNullException.ThrowIfNull(item);
         ArgumentNullException.ThrowIfNull(imageUrlCache);
 
-        if (string.IsNullOrEmpty(item.Cover))
-        {
-            return SvgPlaceholderTemplate.MapFailureReasonToDisplayText("NO_IMAGE");
-        }
+        if (string.IsNullOrEmpty(item.Cover)) return SvgPlaceholderTemplate.MapFailureReasonToDisplayText("NO_IMAGE");
 
         if (imageUrlCache.TryGetValue(item.Link, out var cachedResult) && string.Equals(cachedResult, "FAILED", StringComparison.Ordinal))
-        {
             return SvgPlaceholderTemplate.MapFailureReasonToDisplayText("LOAD_FAILED");
-        }
 
         return string.Empty;
     }
 
     /// <summary>
-    /// Stops the shimmer effect for the specified element.
+    ///     Stops the shimmer effect for the specified element.
     /// </summary>
     /// <param name="elementId">The DOM element ID</param>
     /// <param name="jsRuntime">JavaScript runtime for DOM manipulation</param>

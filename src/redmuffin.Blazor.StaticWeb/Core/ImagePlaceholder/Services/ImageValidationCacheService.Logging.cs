@@ -1,12 +1,12 @@
 namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 
 /// <summary>
-/// Logging partial class for ImageValidationCacheService containing LoggerMessage delegates.
+///     Logging partial class for ImageValidationCacheService containing LoggerMessage delegates.
 /// </summary>
 public sealed partial class ImageValidationCacheService
 {
     /// <summary>
-    /// LoggerMessage delegate for background validation failures.
+    ///     LoggerMessage delegate for background validation failures.
     /// </summary>
     private static readonly Action<ILogger, string, Exception?> LogBackgroundValidationFailed =
         LoggerMessage.Define<string>(
@@ -15,7 +15,7 @@ public sealed partial class ImageValidationCacheService
             "Background validation failed for item: {ItemLink}");
 
     /// <summary>
-    /// LoggerMessage delegate for background tasks started.
+    ///     LoggerMessage delegate for background tasks started.
     /// </summary>
     private static readonly Action<ILogger, int, Exception?> LogBackgroundTasksStarted =
         LoggerMessage.Define<int>(
@@ -24,7 +24,7 @@ public sealed partial class ImageValidationCacheService
             "Started {TaskCount} background validation tasks");
 
     /// <summary>
-    /// LoggerMessage delegate for background validation completion.
+    ///     LoggerMessage delegate for background validation completion.
     /// </summary>
     private static readonly Action<ILogger, string, bool, Exception?> LogBackgroundValidationCompleted =
         LoggerMessage.Define<string, bool>(
