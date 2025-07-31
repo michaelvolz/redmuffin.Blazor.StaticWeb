@@ -1,25 +1,8 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34302.71
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "redmuffin.Blazor.StaticWeb", "src\redmuffin.Blazor.StaticWeb\redmuffin.Blazor.StaticWeb.csproj", "{D9ADB30C-BA1B-4438-AB86-39218049483F}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution items", "Solution items", "{35F3AA64-4519-477B-A0F0-BDCD1DCFFD8A}"
-	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
-		.gitattributes = .gitattributes
-		.gitignore = .gitignore
-		.mcp.json = .mcp.json
-		.github\workflows\azure-static-web-apps-lively-cliff-0945be603.yml = .github\workflows\azure-static-web-apps-lively-cliff-0945be603.yml
-		.github\workflows\codeql.yml = .github\workflows\codeql.yml
-		Directory.Build.props = Directory.Build.props
-		.config\dotnet-tools.json = .config\dotnet-tools.json
-		global.json = global.json
-		src\redmuffin.Blazor.StaticWeb\wwwroot\sample-data\markdown-cheat-sheet.md = src\redmuffin.Blazor.StaticWeb\wwwroot\sample-data\markdown-cheat-sheet.md
-		README.md = README.md
-		swa-cli.config.json = swa-cli.config.json
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "redmuffin.Blazor.StaticWeb.Tests", "tests\redmuffin.Blazor.StaticWeb.Tests\redmuffin.Blazor.StaticWeb.Tests.csproj", "{0B9FDD37-73E0-4E09-8965-425A97F2E6C9}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -33,138 +16,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "redmuffin.Blazor.StaticWeb.Common", "src\redmuffin.Blazor.StaticWeb.Common\redmuffin.Blazor.StaticWeb.Common.csproj", "{0D4EDCD5-BFA7-41B7-A6EF-2BA2B87EA048}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SwaLauncher", "src\SwaLauncher\SwaLauncher.csproj", "{C36EDD2C-065F-42B4-8667-2CD8E7C08AB4}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tasks", "tasks", "{F2DDD420-CBEF-4AB8-9FE9-BE2B1D0D302F}"
-	ProjectSection(SolutionItems) = preProject
-		tasks\articles-prd-tasks.md = tasks\articles-prd-tasks.md
-		tasks\articles-prd.md = tasks\articles-prd.md
-		tasks\changelog-emojis-prd-tasks.md = tasks\changelog-emojis-prd-tasks.md
-		tasks\changelog-emojis-prd.md = tasks\changelog-emojis-prd.md
-		tasks\changelog-generation-prd-tasks.md = tasks\changelog-generation-prd-tasks.md
-		tasks\changelog-generation-prd.md = tasks\changelog-generation-prd.md
-		tasks\changelog-git-log-prd-tasks.md = tasks\changelog-git-log-prd-tasks.md
-		tasks\changelog-git-log-prd.md = tasks\changelog-git-log-prd.md
-		tasks\cleanup-and-optimize-scss-code-prd-tasks.md = tasks\cleanup-and-optimize-scss-code-prd-tasks.md
-		tasks\cleanup-and-optimize-scss-code-prd.md = tasks\cleanup-and-optimize-scss-code-prd.md
-		tasks\displaywarnings-prd-tasks.md = tasks\displaywarnings-prd-tasks.md
-		tasks\displaywarnings-prd.md = tasks\displaywarnings-prd.md
-		tasks\fix-build-warnings-prd-tasks.md = tasks\fix-build-warnings-prd-tasks.md
-		tasks\fix-build-warnings-prd.md = tasks\fix-build-warnings-prd.md
-		tasks\fixing-articles-image-delay-bug.md = tasks\fixing-articles-image-delay-bug.md
-		tasks\implementing-code-coverage-prd-tasks.md = tasks\implementing-code-coverage-prd-tasks.md
-		tasks\implementing-code-coverage-prd.md = tasks\implementing-code-coverage-prd.md
-		tasks\lightmock-migration-prd-tasks.md = tasks\lightmock-migration-prd-tasks.md
-		tasks\lightmock-migration-prd.md = tasks\lightmock-migration-prd.md
-		tasks\open-graph-image-fallback-prd-tasks.md = tasks\open-graph-image-fallback-prd-tasks.md
-		tasks\open-graph-image-fallback-prd.md = tasks\open-graph-image-fallback-prd.md
-		tasks\scss-component-validation-report.md = tasks\scss-component-validation-report.md
-		tasks\simple-image-validation-prd.md = tasks\simple-image-validation-prd.md
-		tasks\simple-image-validation-tasks.md = tasks\simple-image-validation-tasks.md
-		tasks\simple-integration-test-prd-tasks-2.md = tasks\simple-integration-test-prd-tasks-2.md
-		tasks\simple-integration-test-prd-tasks.md = tasks\simple-integration-test-prd-tasks.md
-		tasks\simple-integration-test-prd.md = tasks\simple-integration-test-prd.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
-	ProjectSection(SolutionItems) = preProject
-		.github\copilot-instructions.md = .github\copilot-instructions.md
-		.github\dependabot.yml = .github\dependabot.yml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "chatmodes", "chatmodes", "{85D63F52-1672-4478-A87F-A3118454EBDF}"
-	ProjectSection(SolutionItems) = preProject
-		.github\chatmodes\accesibility.chatmode.md = .github\chatmodes\accesibility.chatmode.md
-		.github\chatmodes\azure-principal-architect.chatmode.md = .github\chatmodes\azure-principal-architect.chatmode.md
-		.github\chatmodes\beastmode.chatmode.md = .github\chatmodes\beastmode.chatmode.md
-		.github\chatmodes\csharp-dotnet-janitor.chatmode.md = .github\chatmodes\csharp-dotnet-janitor.chatmode.md
-		.github\chatmodes\debug.chatmode.md = .github\chatmodes\debug.chatmode.md
-		.github\chatmodes\expert-dotnet-software-engineer.chatmode.md = .github\chatmodes\expert-dotnet-software-engineer.chatmode.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "instructions", "instructions", "{5D155988-B983-4C74-B6FC-3543DC60007A}"
-	ProjectSection(SolutionItems) = preProject
-		.github\instructions\aspnet-rest-apis.instructions.md = .github\instructions\aspnet-rest-apis.instructions.md
-		.github\instructions\blazor.instructions.md = .github\instructions\blazor.instructions.md
-		.github\instructions\csharp.instructions.md = .github\instructions\csharp.instructions.md
-		.github\instructions\github-actions-ci-cd-best-practices.instructions.md = .github\instructions\github-actions-ci-cd-best-practices.instructions.md
-		.github\instructions\markdown.instructions.md = .github\instructions\markdown.instructions.md
-		.github\instructions\performance-optimization.instructions.md = .github\instructions\performance-optimization.instructions.md
-		.github\instructions\powershell.instructions.md = .github\instructions\powershell.instructions.md
-		.github\instructions\_AzureFunctionsProgrammingBestPractices.instructions.md = .github\instructions\_AzureFunctionsProgrammingBestPractices.instructions.md
-		.github\instructions\_CommitStandars.instructions.md = .github\instructions\_CommitStandars.instructions.md
-		.github\instructions\_Documentation.instructions.md = .github\instructions\_Documentation.instructions.md
-		.github\instructions\_SCSS.instructions.md = .github\instructions\_SCSS.instructions.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prompts", "prompts", "{0BA0D265-B554-4849-A9E6-BCA3909CF37C}"
-	ProjectSection(SolutionItems) = preProject
-		.github\prompts\aspnet-minimal-api-openapi.prompt.md = .github\prompts\aspnet-minimal-api-openapi.prompt.md
-		.github\prompts\create-architectural-decision-record.prompt.md = .github\prompts\create-architectural-decision-record.prompt.md
-		.github\prompts\create-github-issue-feature-from-specification.prompt.md = .github\prompts\create-github-issue-feature-from-specification.prompt.md
-		.github\prompts\create-github-issues-feature-from-implementation-plan.prompt.md = .github\prompts\create-github-issues-feature-from-implementation-plan.prompt.md
-		.github\prompts\create-github-issues-for-unmet-specification-requirements.prompt.md = .github\prompts\create-github-issues-for-unmet-specification-requirements.prompt.md
-		.github\prompts\create-implementation-plan.prompt.md = .github\prompts\create-implementation-plan.prompt.md
-		.github\prompts\create-specification.prompt.md = .github\prompts\create-specification.prompt.md
-		.github\prompts\csharp-async.prompt.md = .github\prompts\csharp-async.prompt.md
-		.github\prompts\csharp-docs.prompt.md = .github\prompts\csharp-docs.prompt.md
-		.github\prompts\csharp-testing.prompt.md = .github\prompts\csharp-testing.prompt.md
-		.github\prompts\csharp-tunit.prompt.md = .github\prompts\csharp-tunit.prompt.md
-		.github\prompts\csharp-xunit.prompt.md = .github\prompts\csharp-xunit.prompt.md
-		.github\prompts\dotnet-best-practices.prompt.md = .github\prompts\dotnet-best-practices.prompt.md
-		.github\prompts\dotnet-design-pattern-review.prompt.md = .github\prompts\dotnet-design-pattern-review.prompt.md
-		.github\prompts\ef-core.prompt.md = .github\prompts\ef-core.prompt.md
-		.github\prompts\gen-specs-as-issues.prompt.md = .github\prompts\gen-specs-as-issues.prompt.md
-		.github\prompts\my-issues.prompt.md = .github\prompts\my-issues.prompt.md
-		.github\prompts\my-pull-requests.prompt.md = .github\prompts\my-pull-requests.prompt.md
-		.github\prompts\optimize-copilot-instructions.prompt.md = .github\prompts\optimize-copilot-instructions.prompt.md
-		.github\prompts\suggest-awesome-github-copilot-chatmodes.prompt.md = .github\prompts\suggest-awesome-github-copilot-chatmodes.prompt.md
-		.github\prompts\suggest-awesome-github-copilot-prompts.prompt.md = .github\prompts\suggest-awesome-github-copilot-prompts.prompt.md
-		.github\prompts\update-implementation-plan.prompt.md = .github\prompts\update-implementation-plan.prompt.md
-		.github\prompts\update-markdown-file-index.prompt.md = .github\prompts\update-markdown-file-index.prompt.md
-		.github\prompts\update-specification.prompt.md = .github\prompts\update-specification.prompt.md
-		.github\prompts\_ExecuteTaskList.prompt.md = .github\prompts\_ExecuteTaskList.prompt.md
-		.github\prompts\_GeneratePRD.prompt.md = .github\prompts\_GeneratePRD.prompt.md
-		.github\prompts\_SecurityReviewAPI.prompt.md = .github\prompts\_SecurityReviewAPI.prompt.md
-		.github\prompts\_TaskListFromPRD.prompt.md = .github\prompts\_TaskListFromPRD.prompt.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{50BF912A-B3A8-4BA3-AD06-24EBBC1CE8E2}"
-	ProjectSection(SolutionItems) = preProject
-		.github\workflows\azure-static-web-apps-lively-cliff-0945be603.yml = .github\workflows\azure-static-web-apps-lively-cliff-0945be603.yml
-		.github\workflows\codeql.yml = .github\workflows\codeql.yml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{9DA4041A-5F1C-411D-8EF0-8084356E458F}"
-	ProjectSection(SolutionItems) = preProject
-		scripts\DisplayWarnings.ps1 = scripts\DisplayWarnings.ps1
-		scripts\extract-fa-icons.ps1 = scripts\extract-fa-icons.ps1
-		scripts\Generate-CoverageReport.ps1 = scripts\Generate-CoverageReport.ps1
-		scripts\install-libman.ps1 = scripts\install-libman.ps1
-		scripts\install-manifest.ps1 = scripts\install-manifest.ps1
-		scripts\test-build-aot.ps1 = scripts\test-build-aot.ps1
-		scripts\test-build-ci.ps1 = scripts\test-build-ci.ps1
-		scripts\test-build-common.ps1 = scripts\test-build-common.ps1
-		scripts\test-build-fast.ps1 = scripts\test-build-fast.ps1
-		scripts\Update-Changelog.ps1 = scripts\Update-Changelog.ps1
-		scripts\Update-Changelog.Tests.ps1 = scripts\Update-Changelog.Tests.ps1
-		scripts\View-CoverageReport.ps1 = scripts\View-CoverageReport.ps1
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{D07877C2-EBAC-448D-A160-265DEF206526}"
-	ProjectSection(SolutionItems) = preProject
-		scripts\modules\CategorizationModule.psm1 = scripts\modules\CategorizationModule.psm1
-		scripts\modules\CategorizationModule.Tests.ps1 = scripts\modules\CategorizationModule.Tests.ps1
-		scripts\modules\ChangelogFormatter.psm1 = scripts\modules\ChangelogFormatter.psm1
-		scripts\modules\ChangelogFormatter.Tests.ps1 = scripts\modules\ChangelogFormatter.Tests.ps1
-		scripts\modules\CommitParser.psm1 = scripts\modules\CommitParser.psm1
-		scripts\modules\CommitParser.Tests.ps1 = scripts\modules\CommitParser.Tests.ps1
-		scripts\modules\FileGenerator.psm1 = scripts\modules\FileGenerator.psm1
-		scripts\modules\FileGenerator.Tests.ps1 = scripts\modules\FileGenerator.Tests.ps1
-		scripts\modules\FilterModule.psm1 = scripts\modules\FilterModule.psm1
-		scripts\modules\FilterModule.Tests.ps1 = scripts\modules\FilterModule.Tests.ps1
-		scripts\modules\UpdateModule.psm1 = scripts\modules\UpdateModule.psm1
-		scripts\modules\UpdateModule.Tests.ps1 = scripts\modules\UpdateModule.Tests.ps1
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -212,13 +63,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{85D63F52-1672-4478-A87F-A3118454EBDF} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
-		{5D155988-B983-4C74-B6FC-3543DC60007A} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
-		{0BA0D265-B554-4849-A9E6-BCA3909CF37C} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
-		{50BF912A-B3A8-4BA3-AD06-24EBBC1CE8E2} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
-		{D07877C2-EBAC-448D-A160-265DEF206526} = {9DA4041A-5F1C-411D-8EF0-8084356E458F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A0087A1A-355D-4454-AE85-D0509704B21F}
