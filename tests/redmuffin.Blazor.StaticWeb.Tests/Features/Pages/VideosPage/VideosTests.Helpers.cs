@@ -1,4 +1,5 @@
 using Bunit;
+using LightMock.Generator;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -10,6 +11,7 @@ using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Models;
 using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Services;
 using redmuffin.Blazor.StaticWeb.Features.Pages.VideosPage;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
+using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.VideosPage;
 
@@ -62,6 +64,7 @@ public sealed partial class VideosTests
             RaindropAPIMock = new RaindropAPIMock();
             ImagePlaceholderServiceMock = new ImagePlaceholderServiceMock();
             SimpleImageValidationServiceMock = new SimpleImageValidationServiceMock();
+            RaindropItemsCacheMock = new Mock<IRaindropItemsCache>();
 
             // Create actual service instance with mocked dependencies
             ImageValidationCacheService = new ImageValidationCacheService(
@@ -77,6 +80,7 @@ public sealed partial class VideosTests
         public ImagePlaceholderServiceMock ImagePlaceholderServiceMock { get; }
         public SimpleImageValidationServiceMock SimpleImageValidationServiceMock { get; }
         public IImageValidationCacheService ImageValidationCacheService { get; }
+        public Mock<IRaindropItemsCache> RaindropItemsCacheMock { get; }
 
         /// <summary>
         ///     Sets up default behaviors for mocks to ensure tests run smoothly.
@@ -98,6 +102,7 @@ public sealed partial class VideosTests
             BUnitContext.Services.AddSingleton<IRaindropAPI>(RaindropAPIMock);
             BUnitContext.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderServiceMock);
             BUnitContext.Services.AddSingleton(ImageValidationCacheService);
+            BUnitContext.Services.AddSingleton<IRaindropItemsCache>(RaindropItemsCacheMock.Object);
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
 
             // Set up default mock behaviors

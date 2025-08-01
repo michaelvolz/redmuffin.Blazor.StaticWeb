@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using redmuffin.Blazor.StaticWeb.Common.Abstractions;
-using redmuffin.Blazor.StaticWeb.Common.Services;
+using redmuffin.Blazor.StaticWeb.Core.Abstractions;
+using redmuffin.Blazor.StaticWeb.Core.Services;
 using HomePage = redmuffin.Blazor.StaticWeb.Features.Pages.HomePage.Home;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Home;

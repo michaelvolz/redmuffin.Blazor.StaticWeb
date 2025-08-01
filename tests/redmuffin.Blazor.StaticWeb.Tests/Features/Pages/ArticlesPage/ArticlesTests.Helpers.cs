@@ -1,4 +1,5 @@
 using Bunit;
+using LightMock.Generator;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -6,6 +7,7 @@ using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
+using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Services;
 using ArticlesComponent = redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Articles;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.ArticlesPage;
@@ -56,6 +58,7 @@ public partial class ArticlesTests
         public SimpleImagePlaceholderServiceMock ImagePlaceholderService { get; } = new();
         public SimpleImageValidationCacheServiceMock ImageValidationCacheService { get; } = new();
         public SimpleRaindropAPIMock RaindropAPI { get; } = new();
+        public Mock<IRaindropItemsCache> RaindropItemsCacheMock { get; } = new();
 
         /// <summary>
         ///     Configures the test context with high-performance services for optimal test execution.
@@ -67,6 +70,7 @@ public partial class ArticlesTests
             BUnitContext.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderService);
             BUnitContext.Services.AddSingleton<IImageValidationCacheService>(ImageValidationCacheService);
             BUnitContext.Services.AddSingleton<IRaindropAPI>(RaindropAPI);
+            BUnitContext.Services.AddSingleton<IRaindropItemsCache>(RaindropItemsCacheMock.Object);
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
@@ -82,6 +86,7 @@ public partial class ArticlesTests
             BUnitContext.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderService);
             BUnitContext.Services.AddSingleton<IImageValidationCacheService>(ImageValidationCacheService);
             BUnitContext.Services.AddSingleton<IRaindropAPI>(failingAPI);
+            BUnitContext.Services.AddSingleton<IRaindropItemsCache>(RaindropItemsCacheMock.Object);
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
@@ -97,6 +102,7 @@ public partial class ArticlesTests
             BUnitContext.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderService);
             BUnitContext.Services.AddSingleton<IImageValidationCacheService>(ImageValidationCacheService);
             BUnitContext.Services.AddSingleton<IRaindropAPI>(emptyAPI);
+            BUnitContext.Services.AddSingleton<IRaindropItemsCache>(RaindropItemsCacheMock.Object);
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
