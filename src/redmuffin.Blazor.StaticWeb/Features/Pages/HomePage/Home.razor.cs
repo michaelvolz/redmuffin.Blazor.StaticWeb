@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using redmuffin.Blazor.StaticWeb.Common.Abstractions;
+using redmuffin.Blazor.StaticWeb.Core.Abstractions;
 
 namespace redmuffin.Blazor.StaticWeb.Features.Pages.HomePage;
 

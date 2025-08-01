@@ -4,7 +4,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb.Api;
 using redmuffin.Blazor.StaticWeb.Api.Core;
-using redmuffin.Blazor.StaticWeb.Common;
 
 var host = new HostBuilder()
     .ConfigureLogging(configureLogging =>

@@ -2,13 +2,14 @@ using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using redmuffin.Blazor.StaticWeb;
-using redmuffin.Blazor.StaticWeb.Common.Abstractions;
-using redmuffin.Blazor.StaticWeb.Common.Services;
+using redmuffin.Blazor.StaticWeb.Core.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 using redmuffin.Blazor.StaticWeb.Core.Services;
+using redmuffin.Blazor.StaticWeb.Features.Cache.Services;
 using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Services;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
+using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Services;
 using redmuffin.Blazor.StaticWeb.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -32,6 +33,9 @@ builder.Services.AddScoped<IPerformanceMetricsService, PerformanceMetricsService
 builder.Services.AddScoped<IImagePlaceholderService, ImagePlaceholderService>();
 builder.Services.AddScoped<IImageValidationCacheService, ImageValidationCacheService>();
 builder.Services.AddScoped<PlaceholderGenerationService>();
+
+// Register cache services
+builder.Services.AddScoped<IRaindropItemsCache, RaindropItemsCache>();
 
 // Register delay provider for production (real delays for UX)
 builder.Services.AddScoped<IDelayProvider, ProductionDelayProvider>();
