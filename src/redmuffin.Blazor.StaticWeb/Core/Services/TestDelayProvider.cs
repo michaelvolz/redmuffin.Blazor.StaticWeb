@@ -1,6 +1,6 @@
-using redmuffin.Blazor.StaticWeb.Common.Abstractions;
+using redmuffin.Blazor.StaticWeb.Core.Abstractions;
 
-namespace redmuffin.Blazor.StaticWeb.Common.Services;
+namespace redmuffin.Blazor.StaticWeb.Core.Services;
 
 /// <summary>
 ///     Test implementation of IDelayProvider that provides no delays for fast test execution.

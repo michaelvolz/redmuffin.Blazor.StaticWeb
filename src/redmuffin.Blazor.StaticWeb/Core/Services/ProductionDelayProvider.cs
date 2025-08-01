@@ -1,6 +1,6 @@
-using redmuffin.Blazor.StaticWeb.Common.Abstractions;
+using redmuffin.Blazor.StaticWeb.Core.Abstractions;
 
-namespace redmuffin.Blazor.StaticWeb.Common.Services;
+namespace redmuffin.Blazor.StaticWeb.Core.Services;
 
 /// <summary>
 ///     Production implementation of IDelayProvider that provides real delays for user experience.

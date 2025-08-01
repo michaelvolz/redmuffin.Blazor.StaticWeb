@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Common.Abstractions;
+namespace redmuffin.Blazor.StaticWeb.Core.Abstractions;
 
 /// <summary>
 ///     Provides delay functionality with configurable implementations for production and testing scenarios.
