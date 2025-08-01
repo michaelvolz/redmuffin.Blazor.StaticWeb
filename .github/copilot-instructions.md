@@ -246,7 +246,6 @@ using (Assert.Multiple())
 - [ ] Resource disposal via using statements
 - [ ] Comprehensive error scenario testing
 - [ ] Partial class structure: Tests in main, helpers in .Helpers.cs
-- [ ] **CRITICAL**: ALL new test code MUST be placed in `NewTests/` folders within test projects - NEVER touch or reference testcode outside NewTests folders
 
 ## 🎭 Mocking Strategy
 **STRATEGIC APPROACH**: Use appropriate mocking based on dependency type
