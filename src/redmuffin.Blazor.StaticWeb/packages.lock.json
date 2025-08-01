@@ -2,6 +2,12 @@
   "version": 1,
   "dependencies": {
     "net9.0": {
+      "AsyncFixer": {
+        "type": "Direct",
+        "requested": "[1.6.0, )",
+        "resolved": "1.6.0",
+        "contentHash": "/Xfs9H3UMfEv64cwT+C/JrTRp4w08BmPuFbj0ageadCHpx6rxYJxAU2C6sEqRFG22xmGk5cX9ewzoiiehWVHOw=="
+      },
       "Blazored.LocalStorage": {
         "type": "Direct",
         "requested": "[4.5.0, )",
@@ -25,6 +31,18 @@
         "requested": "[0.41.3, )",
         "resolved": "0.41.3",
         "contentHash": "i3vSTyGpBGWbJB04aJ3cPJs0T3BV2e1nduW3EUHK/i+xUupYbym75iZPss/XjqhS5JlBErwQYnx7ofK3Zcsozg=="
+      },
+      "Meziantou.Analyzer": {
+        "type": "Direct",
+        "requested": "[2.0.205, )",
+        "resolved": "2.0.205",
+        "contentHash": "adw/4fuYeVyu92yHtoKpjtaBe4VVEjc1nMO/Wy2rZ3ZtOGcNvN6SXwJYAxPDUgDPWwAvfoPYE/jO++1sCs3V8w=="
+      },
+      "Microsoft.AspNetCore.Components.Analyzers": {
+        "type": "Direct",
+        "requested": "[9.0.6, )",
+        "resolved": "9.0.6",
+        "contentHash": "UXMjbezwMMoL21L20OB1BLGF9M1BFPzdWiezaiZSBG55z36BEXvs8hetKw7PiuytOdUqWFI1wkPd3MD9jpeKAw=="
       },
       "Microsoft.AspNetCore.Components.Authorization": {
         "type": "Direct",
@@ -84,6 +102,39 @@
         "resolved": "9.0.7",
         "contentHash": "5ehgbqGUERh0JVhTUPwFizw4hIoAglkFk/WMs45djePp16YHP11Vnmx44rOQ3gLW8/aDYN1j+pKdAtcEp4QOcw=="
       },
+      "Microsoft.VisualStudio.Threading.Analyzers": {
+        "type": "Direct",
+        "requested": "[17.14.15, )",
+        "resolved": "17.14.15",
+        "contentHash": "mXQPJsbuUD2ydq4/ffd8h8tSOFCXec+2xJOVNCvXjuMOq/+5EKHq3D2m2MC2+nUaXeFMSt66VS/J4HdKBixgcw=="
+      },
+      "Roslynator.Analyzers": {
+        "type": "Direct",
+        "requested": "[4.13.1, )",
+        "resolved": "4.13.1",
+        "contentHash": "KZpLy6ZlCebMk+d/3I5KU2R7AOb4LNJ6tPJqPtvFXmO8bEBHQvCIAvJOnY2tu4C9/aVOROTDYUFADxFqw1gh/g=="
+      },
+      "Roslynator.CodeAnalysis.Analyzers": {
+        "type": "Direct",
+        "requested": "[4.13.1, )",
+        "resolved": "4.13.1",
+        "contentHash": "PwbuGlRFp87pdx9GVIjDmFwkYEfxVQKs0yWuIedTrUht2JwIzLe0Y7QNzgeJaE7E3YsCVED09h1X6WBqQ95XIA=="
+      },
+      "Roslynator.Formatting.Analyzers": {
+        "type": "Direct",
+        "requested": "[4.13.1, )",
+        "resolved": "4.13.1",
+        "contentHash": "V9gCt0T1Tnu+jMWJDLiUV/vOTmGzmofEdVeUPKPdh8MJW7f3kkhFXSeDotwl8Ob88OxrBf+4LrV/D7OA4tAluA=="
+      },
+      "StyleCop.Analyzers": {
+        "type": "Direct",
+        "requested": "[1.2.0-beta.556, )",
+        "resolved": "1.2.0-beta.556",
+        "contentHash": "llRPgmA1fhC0I0QyFLEcjvtM2239QzKr/tcnbsjArLMJxJlu0AA5G7Fft0OI30pHF3MW63Gf4aSSsjc5m82J1Q==",
+        "dependencies": {
+          "StyleCop.Analyzers.Unstable": "1.2.0.556"
+        }
+      },
       "JetBrains.Annotations": {
         "type": "Transitive",
         "resolved": "2025.2.0",
@@ -107,11 +158,6 @@
           "Microsoft.AspNetCore.Authorization": "9.0.6",
           "Microsoft.AspNetCore.Components.Analyzers": "9.0.6"
         }
-      },
-      "Microsoft.AspNetCore.Components.Analyzers": {
-        "type": "Transitive",
-        "resolved": "9.0.6",
-        "contentHash": "UXMjbezwMMoL21L20OB1BLGF9M1BFPzdWiezaiZSBG55z36BEXvs8hetKw7PiuytOdUqWFI1wkPd3MD9jpeKAw=="
       },
       "Microsoft.AspNetCore.Components.Forms": {
         "type": "Transitive",
@@ -483,6 +529,11 @@
         "type": "Transitive",
         "resolved": "4.3.0",
         "contentHash": "VB5cn/7OzUfzdnC8tqAIMQciVLiq2epm2NrAm1E9OjNRyG4lVhfR61SMcLizejzQP8R8Uf/0l5qOIbUEi+RdEg=="
+      },
+      "StyleCop.Analyzers.Unstable": {
+        "type": "Transitive",
+        "resolved": "1.2.0.556",
+        "contentHash": "zvn9Mqs/ox/83cpYPignI8hJEM2A93s2HkHs8HYMOAQW0PkampyoErAiIyKxgTLqbbad29HX/shv/6LGSjPJNQ=="
       },
       "System.AppContext": {
         "type": "Transitive",
