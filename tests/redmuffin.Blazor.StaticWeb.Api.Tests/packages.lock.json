@@ -942,6 +942,9 @@
           "TUnit.Core": "0.25.21"
         }
       },
+      "redmuffin.blazor.staticweb": {
+        "type": "Project"
+      },
       "redmuffin.blazor.staticweb.api": {
         "type": "Project",
         "dependencies": {
