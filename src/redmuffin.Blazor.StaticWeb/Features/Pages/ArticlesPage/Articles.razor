@@ -1,9 +1,19 @@
 @page "/articles"
+@using redmuffin.Blazor.StaticWeb.Features.Cache.Components
 
 <PageTitle>Programming & AI Article Hub</PageTitle>
 
 <h1>Programming & AI Article Hub</h1>
 <p class="subheader">This page showcases a curated collection of articles on programming, AI, .NET, C#, Blazor, and more, featuring insights from industry experts and practical tutorials.</p>
+
+<RefreshBadge State="_refreshBadgeState" OnClick="HandleRefreshClickAsync"/>
+
+@if (!string.IsNullOrEmpty(_errorMessage))
+{
+    <div class="callout alert">
+        <p>@_errorMessage</p>
+    </div>
+}
 
 @if (_isLoading)
 {
@@ -39,9 +49,7 @@ else if (_articleItems != null && _articleItems.Any())
         }
     </div>
 }
-else if (!string.IsNullOrEmpty(_errorMessage))
+else
 {
-    <div class="callout alert">
-        <p>@_errorMessage</p>
-    </div>
+    <p>No articles available.</p>
 }
