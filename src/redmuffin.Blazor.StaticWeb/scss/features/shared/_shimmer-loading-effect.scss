@@ -61,7 +61,7 @@
 .video-card {
   .shimmer-placeholder {
     width: 100%;
-    min-height: 200px; // Match Articles placeholder minimum height
+    min-height: 157px; // Match Articles placeholder minimum height
 
     background-color: vars.$shimmer-video-base; // Subtle blue tint for video context
     background-image: linear-gradient(90deg,
