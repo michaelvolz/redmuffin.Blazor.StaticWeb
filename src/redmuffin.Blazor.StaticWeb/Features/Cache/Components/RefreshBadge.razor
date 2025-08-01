@@ -1,0 +1,10 @@
+<button class="refresh-badge @GetCssClass()"
+        @onclick="HandleClickAsync"
+        disabled="@IsDisabled"
+        title="@GetTooltip()">
+    <i class="@GetIconClass()"></i>
+    @if (!string.IsNullOrEmpty(Text))
+    {
+        <span>@Text</span>
+    }
+</button>
