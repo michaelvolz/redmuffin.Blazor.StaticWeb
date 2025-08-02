@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using Blazored.LocalStorage;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Features.Cache.Models;
@@ -8,7 +9,7 @@ namespace redmuffin.Blazor.StaticWeb.Features.Cache.Services;
 /// <summary>
 ///     Debug service to help diagnose localStorage issues.
 /// </summary>
-public class LocalStorageDebugService
+public partial class LocalStorageDebugService
 {
     private readonly ILocalStorageService _localStorage;
     private readonly IJSRuntime _jsRuntime;
@@ -35,27 +36,29 @@ public class LocalStorageDebugService
         {
             // Test basic localStorage availability
             diagnostics.IsLocalStorageAvailable = await TestLocalStorageAvailabilityAsync().ConfigureAwait(false);
-            
+
             // Test Blazored.LocalStorage service
             diagnostics.IsBlazoredServiceWorking = await TestBlazoredServiceAsync(cancellationToken).ConfigureAwait(false);
-            
+
             // Get storage info
             diagnostics.StorageInfo = await GetStorageInfoAsync().ConfigureAwait(false);
-            
+
             // Test JSON serialization
             diagnostics.JsonSerializationWorks = await TestJsonSerializationAsync(cancellationToken).ConfigureAwait(false);
-            
+
             // Check existing cache keys
             diagnostics.ExistingCacheKeys = await GetExistingCacheKeysAsync(cancellationToken).ConfigureAwait(false);
 
-            _logger.LogInformation("LocalStorage diagnostics completed: Available={IsAvailable}, BlazoredWorking={BlazoredWorking}, UsedStorage={UsedBytes}MB",
+            LogDiagnosticsCompleted(
+                _logger,
                 diagnostics.IsLocalStorageAvailable,
                 diagnostics.IsBlazoredServiceWorking,
-                (diagnostics.StorageInfo?.UsedBytes / (1024.0 * 1024.0) ?? 0).ToString(CultureInfo.InvariantCulture));
+                (diagnostics.StorageInfo?.UsedBytes / (1024.0 * 1024.0) ?? 0).ToString(CultureInfo.InvariantCulture),
+                null);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to run localStorage diagnostics");
+            LogDiagnosticsFailed(_logger, ex);
             diagnostics.DiagnosticError = ex.Message;
         }
 
@@ -67,9 +70,7 @@ public class LocalStorageDebugService
         try
         {
             // Direct JavaScript localStorage test
-            return await _jsRuntime.InvokeAsync<bool>(
-                "eval",
-                @"(() => {
+            var jsCode = @"(() => {
                     try {
                         const testKey = '__test_localStorage_' + Date.now();
                         localStorage.setItem(testKey, 'test');
@@ -80,11 +81,12 @@ public class LocalStorageDebugService
                         console.error('localStorage test failed:', e);
                         return false;
                     }
-                })()").ConfigureAwait(false);
+                })()";
+            return await _jsRuntime.InvokeAsync<bool>("eval", jsCode).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "localStorage availability test failed");
+            LogLocalStorageTestFailed(_logger, ex);
             return false;
         }
     }
@@ -98,25 +100,25 @@ public class LocalStorageDebugService
 
             // Test set
             await _localStorage.SetItemAsync(testKey, testValue, cancellationToken).ConfigureAwait(false);
-            
+
             // Test get
             var retrieved = await _localStorage.GetItemAsync<string>(testKey, cancellationToken).ConfigureAwait(false);
-            
+
             // Test remove
             await _localStorage.RemoveItemAsync(testKey, cancellationToken).ConfigureAwait(false);
 
             var success = string.Equals(testValue, retrieved, StringComparison.Ordinal);
-            
+
             if (!success)
             {
-                _logger.LogWarning("Blazored localStorage test failed: expected '{Expected}', got '{Actual}'", testValue, retrieved);
+                LogBlazoredTestFailed(_logger, testValue, retrieved, null);
             }
 
             return success;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Blazored localStorage service test failed");
+            LogBlazoredServiceFailed(_logger, ex);
             return false;
         }
     }
@@ -125,9 +127,7 @@ public class LocalStorageDebugService
     {
         try
         {
-            var storageInfo = await _jsRuntime.InvokeAsync<StorageInfo>(
-                "eval",
-                @"(() => {
+            var jsCode = @"(() => {
                     try {
                         const estimate = navigator.storage && navigator.storage.estimate 
                             ? navigator.storage.estimate() 
@@ -148,13 +148,14 @@ public class LocalStorageDebugService
                             localStorageSize: 0
                         };
                     }
-                })()").ConfigureAwait(false);
+                })()";
+            var storageInfo = await _jsRuntime.InvokeAsync<StorageInfo>("eval", jsCode).ConfigureAwait(false);
 
             return storageInfo;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to get storage info");
+            LogStorageInfoFailed(_logger, ex);
             return null;
         }
     }
@@ -166,7 +167,10 @@ public class LocalStorageDebugService
             var testKey = "__json_test_" + DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
             var testObject = new { Name = "Test", Value = 123, Date = DateTime.UtcNow };
 
-            await _localStorage.SetItemAsStringAsync(testKey, System.Text.Json.JsonSerializer.Serialize(testObject), cancellationToken).ConfigureAwait(false);
+            await _localStorage.SetItemAsStringAsync(
+                testKey,
+                JsonSerializer.Serialize(testObject),
+                cancellationToken).ConfigureAwait(false);
             var retrieved = await _localStorage.GetItemAsStringAsync(testKey, cancellationToken).ConfigureAwait(false);
             await _localStorage.RemoveItemAsync(testKey, cancellationToken).ConfigureAwait(false);
 
@@ -174,7 +178,7 @@ public class LocalStorageDebugService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "JSON serialization test failed");
+            LogJsonTestFailed(_logger, ex);
             return false;
         }
     }
@@ -188,9 +192,8 @@ public class LocalStorageDebugService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to get existing cache keys");
+            LogCacheKeysFailed(_logger, ex);
             return new List<string>();
         }
     }
 }
-

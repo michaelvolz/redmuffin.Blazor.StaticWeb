@@ -12,18 +12,10 @@ public partial class Articles
 {
     private const string CacheKey = "Articles";
 
-    // Simple state management - only what we need
-    private readonly Dictionary<string, string> _imageUrlCache = new(StringComparer.OrdinalIgnoreCase);
-    private List<RaindropItem>? _articleItems;
-
-    private string? _errorMessage;
-    private bool _isLoading;
-    private RefreshBadgeState _refreshBadgeState = RefreshBadgeState.Hidden;
-    private bool _isRefreshing;
-
     // LoggerMessage delegates for performance
     private static readonly Action<ILogger, Exception?> LogImageCacheWarning =
-        LoggerMessage.Define(LogLevel.Warning, new EventId(1, "ImageCacheWarning"), "Failed to populate image cache for cached articles, images may load slower");
+        LoggerMessage.Define(LogLevel.Warning, new EventId(1, "ImageCacheWarning"),
+            "Failed to populate image cache for cached articles, images may load slower");
 
     private static readonly Action<ILogger, int, Exception?> LogArticlesLoaded =
         LoggerMessage.Define<int>(LogLevel.Information, new EventId(2, "ArticlesLoaded"), "Loaded {Count} articles from cache");
@@ -56,7 +48,8 @@ public partial class Articles
         LoggerMessage.Define(LogLevel.Warning, new EventId(11, "CacheRefreshError"), "Failed to cache refreshed article data, data will still be displayed");
 
     private static readonly Action<ILogger, Exception?> LogImageCacheRefreshError =
-        LoggerMessage.Define(LogLevel.Warning, new EventId(12, "ImageCacheRefreshError"), "Failed to populate image cache during refresh, images may load slower");
+        LoggerMessage.Define(LogLevel.Warning, new EventId(12, "ImageCacheRefreshError"),
+            "Failed to populate image cache during refresh, images may load slower");
 
     private static readonly Action<ILogger, Exception?> LogNetworkErrorManual =
         LoggerMessage.Define(LogLevel.Error, new EventId(13, "NetworkErrorManual"), "Network error during manual refresh");
@@ -66,6 +59,15 @@ public partial class Articles
 
     private static readonly Action<ILogger, Exception?> LogUnexpectedErrorManual =
         LoggerMessage.Define(LogLevel.Error, new EventId(15, "UnexpectedErrorManual"), "Unexpected error during manual refresh");
+
+    // Simple state management - only what we need
+    private readonly Dictionary<string, string> _imageUrlCache = new(StringComparer.OrdinalIgnoreCase);
+    private List<RaindropItem>? _articleItems;
+
+    private string? _errorMessage;
+    private bool _isLoading;
+    private RefreshBadgeState _refreshBadgeState = RefreshBadgeState.Hidden;
+    private bool _isRefreshing;
 
     [Inject]
     private ILogger<Articles> Logger { get; set; } = null!;

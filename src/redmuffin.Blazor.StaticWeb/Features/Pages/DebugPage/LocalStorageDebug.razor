@@ -1,16 +1,14 @@
 @page "/debug/localstorage"
-@using redmuffin.Blazor.StaticWeb.Features.Cache.Services
-@using redmuffin.Blazor.StaticWeb.Features.Cache.Models
-@inject LocalStorageDebugService DebugService
-@inject ILogger<LocalStorageDebug> Logger
 
 <PageTitle>localStorage Debug</PageTitle>
+
+<redmuffin.Blazor.StaticWeb.Features.Pages.DebugPage.Components.DebugNavigation/>
 
 <div class="grid-container">
     <div class="grid-x grid-margin-x">
         <div class="cell">
             <h1>localStorage Diagnostics</h1>
-            
+
             @if (_isRunning)
             {
                 <div class="callout primary">
@@ -23,24 +21,30 @@
                     <div class="cell medium-6">
                         <div class="callout @(_diagnostics.IsLocalStorageAvailable ? "success" : "alert")">
                             <h5>localStorage Availability</h5>
-                            <p><strong>Status:</strong> @(_diagnostics.IsLocalStorageAvailable ? "✅ Available" : "❌ Not Available")</p>
+                            <p>
+                                <strong>Status:</strong> @(_diagnostics.IsLocalStorageAvailable ? "✅ Available" : "❌ Not Available")
+                            </p>
                         </div>
                     </div>
-                    
+
                     <div class="cell medium-6">
                         <div class="callout @(_diagnostics.IsBlazoredServiceWorking ? "success" : "alert")">
                             <h5>Blazored.LocalStorage Service</h5>
-                            <p><strong>Status:</strong> @(_diagnostics.IsBlazoredServiceWorking ? "✅ Working" : "❌ Not Working")</p>
+                            <p>
+                                <strong>Status:</strong> @(_diagnostics.IsBlazoredServiceWorking ? "✅ Working" : "❌ Not Working")
+                            </p>
                         </div>
                     </div>
-                    
+
                     <div class="cell medium-6">
                         <div class="callout @(_diagnostics.JsonSerializationWorks ? "success" : "alert")">
                             <h5>JSON Serialization</h5>
-                            <p><strong>Status:</strong> @(_diagnostics.JsonSerializationWorks ? "✅ Working" : "❌ Not Working")</p>
+                            <p>
+                                <strong>Status:</strong> @(_diagnostics.JsonSerializationWorks ? "✅ Working" : "❌ Not Working")
+                            </p>
                         </div>
                     </div>
-                    
+
                     @if (_diagnostics.StorageInfo != null)
                     {
                         <div class="cell medium-6">
@@ -48,12 +52,14 @@
                                 <h5>Storage Information</h5>
                                 <p><strong>Quota:</strong> @((_diagnostics.StorageInfo.QuotaBytes / (1024.0 * 1024.0)).ToString("F1")) MB</p>
                                 <p><strong>Used:</strong> @((_diagnostics.StorageInfo.UsedBytes / (1024.0 * 1024.0)).ToString("F1")) MB</p>
-                                <p><strong>localStorage Items:</strong> @_diagnostics.StorageInfo.LocalStorageLength</p>
+                                <p>
+                                    <strong>localStorage Items:</strong> @_diagnostics.StorageInfo.LocalStorageLength
+                                </p>
                                 <p><strong>localStorage Size:</strong> @((_diagnostics.StorageInfo.LocalStorageSize / 1024.0).ToString("F1")) KB</p>
                             </div>
                         </div>
                     }
-                    
+
                     @if (_diagnostics.ExistingCacheKeys.Any())
                     {
                         <div class="cell">
@@ -62,7 +68,9 @@
                                 <ul>
                                     @foreach (var key in _diagnostics.ExistingCacheKeys)
                                     {
-                                        <li><code>@key</code></li>
+                                        <li>
+                                            <code>@key</code>
+                                        </li>
                                     }
                                 </ul>
                             </div>
@@ -77,24 +85,28 @@
                             </div>
                         </div>
                     }
-                    
+
                     @if (!string.IsNullOrEmpty(_diagnostics.DiagnosticError))
                     {
                         <div class="cell">
                             <div class="callout alert">
                                 <h5>Diagnostic Error</h5>
-                                <p><code>@_diagnostics.DiagnosticError</code></p>
+                                <p>
+                                    <code>@_diagnostics.DiagnosticError</code>
+                                </p>
                             </div>
                         </div>
                     }
                 </div>
-                
+
                 <div class="cell">
                     <h2>Recommendations</h2>
                     <div class="callout secondary">
                         @if (!_diagnostics.IsLocalStorageAvailable)
                         {
-                            <p><strong>🚫 localStorage is not available:</strong></p>
+                            <p>
+                                <strong>🚫 localStorage is not available:</strong>
+                            </p>
                             <ul>
                                 <li>Check if you're in private/incognito mode</li>
                                 <li>Check browser localStorage settings</li>
@@ -103,7 +115,9 @@
                         }
                         else if (!_diagnostics.IsBlazoredServiceWorking)
                         {
-                            <p><strong>🚫 Blazored.LocalStorage service is not working:</strong></p>
+                            <p>
+                                <strong>🚫 Blazored.LocalStorage service is not working:</strong>
+                            </p>
                             <ul>
                                 <li>Check if the service is properly registered in DI</li>
                                 <li>Check for JavaScript interop issues</li>
@@ -112,7 +126,9 @@
                         }
                         else if (!_diagnostics.JsonSerializationWorks)
                         {
-                            <p><strong>🚫 JSON serialization is failing:</strong></p>
+                            <p>
+                                <strong>🚫 JSON serialization is failing:</strong>
+                            </p>
                             <ul>
                                 <li>Check JsonSerializerOptions configuration</li>
                                 <li>Check for circular references in data</li>
@@ -121,7 +137,9 @@
                         }
                         else if (_diagnostics.ExistingCacheKeys.Any())
                         {
-                            <p><strong>✅ Cache keys found - caching appears to be working!</strong></p>
+                            <p>
+                                <strong>✅ Cache keys found - caching appears to be working!</strong>
+                            </p>
                             <p>If you're not seeing data on your live server, the issue might be:</p>
                             <ul>
                                 <li>Data expiration (cache TTL)</li>
@@ -131,7 +149,9 @@
                         }
                         else
                         {
-                            <p><strong>⚠️ No cache keys found:</strong></p>
+                            <p>
+                                <strong>⚠️ No cache keys found:</strong>
+                            </p>
                             <ul>
                                 <li>Cache writing might be failing</li>
                                 <li>Data might not be reaching the cache layer</li>
@@ -141,7 +161,7 @@
                     </div>
                 </div>
             }
-            
+
             <div class="cell">
                 <button class="button primary" @onclick="RunDiagnosticsAsync" disabled="@_isRunning">
                     @if (_isRunning)
@@ -159,40 +179,3 @@
         </div>
     </div>
 </div>
-
-@code {
-    private LocalStorageDiagnostics? _diagnostics;
-    private bool _isRunning;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await RunDiagnosticsAsync().ConfigureAwait(false);
-    }
-
-    private async Task RunDiagnosticsAsync()
-    {
-        if (_isRunning) return;
-
-        _isRunning = true;
-        _diagnostics = null;
-        StateHasChanged();
-
-        try
-        {
-            _diagnostics = await DebugService.DiagnoseLocalStorageAsync().ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Failed to run localStorage diagnostics");
-            _diagnostics = new LocalStorageDiagnostics
-            {
-                DiagnosticError = ex.Message
-            };
-        }
-        finally
-        {
-            _isRunning = false;
-            StateHasChanged();
-        }
-    }
-}

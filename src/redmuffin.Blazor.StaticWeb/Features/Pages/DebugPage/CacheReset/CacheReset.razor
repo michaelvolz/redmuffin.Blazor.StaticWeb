@@ -1,0 +1,171 @@
+@page "/debug/resetcache"
+@namespace redmuffin.Blazor.StaticWeb.Features.Pages.DebugPage.CacheResetPage
+
+<PageTitle>Cache Reset - Programming & AI Article Hub</PageTitle>
+
+<redmuffin.Blazor.StaticWeb.Features.Pages.DebugPage.Components.DebugNavigation/>
+
+<div class="grid-container">
+    <div class="grid-x grid-margin-x">
+        <div class="cell">
+            <h1>Cache Reset</h1>
+
+            @if (_isProcessing)
+            {
+                <div class="callout secondary">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>Clearing localStorage cache...</span>
+                    </div>
+                </div>
+            }
+            else if (_resetCompleted)
+            {
+                <div class="callout success">
+                    <h4><i class="fas fa-check-circle"></i> Cache Reset Successful</h4>
+                    <p>
+                        Successfully cleared <strong>@_itemsCleared</strong> items from localStorage.
+                        All cached data including image validation results and other cached content has been removed.
+                    </p>
+                    <p>
+                        <strong>Next steps:</strong>
+                    </p>
+                    <ul>
+                        <li>When you visit the articles page again, images will be re-validated</li>
+
+                        <li>Page load times may be slightly longer on first visit as caches rebuild</li>
+                    </ul>
+                    <div class="button-group">
+                        <a href="/articles" class="button primary">
+                            <i class="fas fa-arrow-left"></i> Back to Articles
+                        </a>
+                        <button @onclick="ResetAgainAsync" class="button secondary">
+                            <i class="fas fa-redo"></i> Reset Again
+                        </button>
+                    </div>
+                </div>
+            }
+            else if (_hasError)
+            {
+                <div class="callout alert">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Error During Reset</h4>
+                    <p>
+                        An error occurred while clearing the cache: <strong>@_errorMessage</strong>
+                    </p>
+                    <div class="button-group">
+                        <button @onclick="TryResetAgainAsync" class="button alert">
+                            <i class="fas fa-retry"></i> Try Again
+                        </button>
+                        <a href="/articles" class="button secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Articles
+                        </a>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="callout warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Clear All Cache Data</h4>
+                    <p>
+                        This action will completely clear all localStorage data, including:
+                    </p>
+                    <ul>
+                        <li><strong>Image validation cache</strong> - All validated image URLs and results</li>
+
+                        <li><strong>Performance metrics cache</strong> - Page load timing data</li>
+                        <li>
+                            <strong>All other cached application data</strong>
+                        </li>
+                    </ul>
+                    <p>
+                        <strong>Warning:</strong> This action cannot be undone. After clearing the cache,
+                        the application will need to re-fetch and re-validate all data, which may result in
+                        slower initial page loads.
+                    </p>
+                    <div class="button-group">
+                        <button @onclick="ConfirmResetAsync" class="button alert">
+                            <i class="fas fa-trash"></i> Clear All Cache
+                        </button>
+                        <a href="/articles" class="button secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </div>
+            }
+
+            <style>
+    .loading-spinner {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 16px;
+    }
+    
+    .loading-spinner i {
+        font-size: 20px;
+        color: #007bff;
+    }
+    
+    .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .button-group .button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+    
+    .callout {
+        padding: 20px;
+        margin: 20px 0;
+        border-left: 4px solid;
+        border-radius: 4px;
+    }
+    
+    .callout.success {
+        background-color: #d4edda;
+        color: #155724;
+        border-color: #28a745;
+    }
+    
+    .callout.warning {
+        background-color: #fff3cd;
+        color: #856404;
+        border-color: #ffc107;
+    }
+    
+    .callout.alert {
+        background-color: #f8d7da;
+        color: #721c24;
+        border-color: #dc3545;
+    }
+    
+    .callout.secondary {
+        background-color: #e2e3e5;
+        color: #383d41;
+        border-color: #6c757d;
+    }
+    
+    .callout h4 {
+        margin-top: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .callout ul {
+        margin: 15px 0;
+        padding-left: 20px;
+    }
+    
+    .callout li {
+        margin-bottom: 8px;
+    }
+</style>
+        </div>
+    </div>
+</div>

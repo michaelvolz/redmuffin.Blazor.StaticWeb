@@ -67,10 +67,7 @@ public sealed partial class RaindropItemsCache : IRaindropItemsCache
             LogCacheRetrievalStarted(_logger, cacheType, null);
 
             var metadata = await ValidateAndRetrieveMetadataAsync(cacheType, cancellationToken).ConfigureAwait(false);
-            if (metadata == null)
-            {
-                return RaindropCacheResultFactory.Miss<IList<RaindropItem>>();
-            }
+            if (metadata == null) return RaindropCacheResultFactory.Miss<IList<RaindropItem>>();
 
             if (metadata.IsExpired)
             {
@@ -86,10 +83,7 @@ public sealed partial class RaindropItemsCache : IRaindropItemsCache
             }
 
             var cachedData = await DecompressAndDeserializeDataAsync(cacheType, compressedData).ConfigureAwait(false);
-            if (cachedData == null)
-            {
-                return RaindropCacheResultFactory.Error<IList<RaindropItem>>("Data processing failed");
-            }
+            if (cachedData == null) return RaindropCacheResultFactory.Error<IList<RaindropItem>>("Data processing failed");
 
             await UpdateLastAccessedTimeAsync(cacheType, metadata, cancellationToken).ConfigureAwait(false);
 
@@ -100,104 +94,6 @@ public sealed partial class RaindropItemsCache : IRaindropItemsCache
         {
             LogCacheRetrievalFailed(_logger, cacheType, ex);
             return RaindropCacheResultFactory.Error<IList<RaindropItem>>(ex.Message);
-        }
-    }
-
-    private async Task<RaindropCacheMetadata?> ValidateAndRetrieveMetadataAsync(
-        string cacheType,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            var metadataKey = GetMetadataKey(cacheType);
-
-            var metadataExists = await _localStorage.ContainKeyAsync(metadataKey, cancellationToken).ConfigureAwait(false);
-            if (!metadataExists)
-            {
-                LogCacheNotFound(_logger, cacheType, null);
-                return null;
-            }
-
-            var metadata = await _localStorage.GetItemAsync<RaindropCacheMetadata>(metadataKey, cancellationToken).ConfigureAwait(false);
-            if (metadata == null)
-            {
-                LogCacheMetadataCorrupted(_logger, cacheType, null);
-                return null;
-            }
-
-            return metadata;
-        }
-        catch (Exception ex)
-        {
-            LogLocalStorageOperationFailed(_logger, cacheType, ex);
-            throw;
-        }
-    }
-
-    private async Task<string?> RetrieveCompressedDataAsync(
-        string cacheType,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            var cacheKey = GetCacheKey(cacheType);
-            return await _localStorage.GetItemAsync<string>(cacheKey, cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            LogLocalStorageOperationFailed(_logger, cacheType, ex);
-            throw;
-        }
-    }
-
-    private Task<IList<RaindropItem>?> DecompressAndDeserializeDataAsync(
-        string cacheType,
-        string compressedData)
-    {
-        try
-        {
-            var decompressedJson = LZString.DecompressFromUTF16(compressedData);
-            if (string.IsNullOrEmpty(decompressedJson))
-             {
-                 LogDecompressionFailed(_logger, cacheType, null);
-                 return Task.FromResult<IList<RaindropItem>?>(null);
-             }
-
-            var cachedData = JsonSerializer.Deserialize(decompressedJson, RaindropJsonSerializerContext.Default.RaindropItemList);
-            if (cachedData == null)
-             {
-                 LogDeserializationFailed(_logger, cacheType, null);
-                 return Task.FromResult<IList<RaindropItem>?>(null);
-             }
-
-            return Task.FromResult<IList<RaindropItem>?>(cachedData);
-        }
-        catch (Exception ex) when (ex is not JsonException)
-        {
-            LogDecompressionFailed(_logger, cacheType, ex);
-            throw;
-        }
-        catch (JsonException ex)
-        {
-            LogDeserializationFailed(_logger, cacheType, ex);
-            return Task.FromResult<IList<RaindropItem>?>(null);
-        }
-    }
-
-    private async Task UpdateLastAccessedTimeAsync(
-        string cacheType,
-        RaindropCacheMetadata metadata,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            metadata.UpdateLastAccessed();
-            var metadataKey = GetMetadataKey(cacheType);
-            await _localStorage.SetItemAsync(metadataKey, metadata, cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            LogLastAccessTimeUpdateFailed(_logger, cacheType, ex);
         }
     }
 
@@ -320,6 +216,104 @@ public sealed partial class RaindropItemsCache : IRaindropItemsCache
         {
             LogCacheClearAllFailed(_logger, ex);
             throw;
+        }
+    }
+
+    private async Task<RaindropCacheMetadata?> ValidateAndRetrieveMetadataAsync(
+        string cacheType,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var metadataKey = GetMetadataKey(cacheType);
+
+            var metadataExists = await _localStorage.ContainKeyAsync(metadataKey, cancellationToken).ConfigureAwait(false);
+            if (!metadataExists)
+            {
+                LogCacheNotFound(_logger, cacheType, null);
+                return null;
+            }
+
+            var metadata = await _localStorage.GetItemAsync<RaindropCacheMetadata>(metadataKey, cancellationToken).ConfigureAwait(false);
+            if (metadata == null)
+            {
+                LogCacheMetadataCorrupted(_logger, cacheType, null);
+                return null;
+            }
+
+            return metadata;
+        }
+        catch (Exception ex)
+        {
+            LogLocalStorageOperationFailed(_logger, cacheType, ex);
+            throw;
+        }
+    }
+
+    private async Task<string?> RetrieveCompressedDataAsync(
+        string cacheType,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var cacheKey = GetCacheKey(cacheType);
+            return await _localStorage.GetItemAsync<string>(cacheKey, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            LogLocalStorageOperationFailed(_logger, cacheType, ex);
+            throw;
+        }
+    }
+
+    private Task<IList<RaindropItem>?> DecompressAndDeserializeDataAsync(
+        string cacheType,
+        string compressedData)
+    {
+        try
+        {
+            var decompressedJson = LZString.DecompressFromUTF16(compressedData);
+            if (string.IsNullOrEmpty(decompressedJson))
+            {
+                LogDecompressionFailed(_logger, cacheType, null);
+                return Task.FromResult<IList<RaindropItem>?>(null);
+            }
+
+            var cachedData = JsonSerializer.Deserialize(decompressedJson, RaindropJsonSerializerContext.Default.RaindropItemList);
+            if (cachedData == null)
+            {
+                LogDeserializationFailed(_logger, cacheType, null);
+                return Task.FromResult<IList<RaindropItem>?>(null);
+            }
+
+            return Task.FromResult<IList<RaindropItem>?>(cachedData);
+        }
+        catch (Exception ex) when (ex is not JsonException)
+        {
+            LogDecompressionFailed(_logger, cacheType, ex);
+            throw;
+        }
+        catch (JsonException ex)
+        {
+            LogDeserializationFailed(_logger, cacheType, ex);
+            return Task.FromResult<IList<RaindropItem>?>(null);
+        }
+    }
+
+    private async Task UpdateLastAccessedTimeAsync(
+        string cacheType,
+        RaindropCacheMetadata metadata,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            metadata.UpdateLastAccessed();
+            var metadataKey = GetMetadataKey(cacheType);
+            await _localStorage.SetItemAsync(metadataKey, metadata, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            LogLastAccessTimeUpdateFailed(_logger, cacheType, ex);
         }
     }
 
