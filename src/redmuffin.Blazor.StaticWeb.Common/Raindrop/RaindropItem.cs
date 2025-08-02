@@ -1,9 +1,7 @@
 using System.Text.Json.Serialization;
-using JetBrains.Annotations;
 
 namespace redmuffin.Blazor.StaticWeb.Common.Raindrop;
 
-[UsedImplicitly]
 public class RaindropItem
 {
     [JsonPropertyName("_id")]

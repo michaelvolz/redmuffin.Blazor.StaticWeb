@@ -1,6 +1,5 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
 
 //using JetBrains.Annotations;
@@ -12,22 +11,18 @@ public partial class Weather : ComponentBase
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
-    [UsedImplicitly] private WeatherForecast[]? _forecasts;
+    private WeatherForecast[]? _forecasts;
 
     [Inject] private ILogger<Weather> Logger { get; set; } = null!;
-    [Inject] private IHttpClientFactory HttpClientFactory { get; set; } = default!;
+    [Inject] private IHttpClientFactory HttpClientFactory { get; set; } = null!;
 
     protected override async Task OnInitializedAsync()
     {
         ArgumentNullException.ThrowIfNull(HttpClientFactory);
-#pragma warning disable CA1848
         Logger.LogWarning("Weather OnInitializedAsync(v1)");
-#pragma warning restore CA1848
 
         using var httpClient = HttpClientFactory.CreateClient();
-#pragma warning disable IL2026
         _forecasts = await httpClient.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json", JsonOptions).ConfigureAwait(false);
-#pragma warning restore IL2026
     }
 
     public class WeatherForecast

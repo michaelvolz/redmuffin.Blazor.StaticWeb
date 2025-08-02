@@ -194,11 +194,6 @@
           "Grpc.Core.Api": "2.65.0"
         }
       },
-      "JetBrains.Annotations": {
-        "type": "Transitive",
-        "resolved": "2025.2.0",
-        "contentHash": "2BvMkOSW+50EbQFhWFIPWTqmcDLiyyjwkMN7lN386bhP2vN/7ts5t59qu11HtenmHFxqDzaD8J1fFoh+QTOzVA=="
-      },
       "Microsoft.ApplicationInsights": {
         "type": "Transitive",
         "resolved": "2.23.0",
@@ -934,7 +929,6 @@
       "redmuffin.blazor.staticweb.common": {
         "type": "Project",
         "dependencies": {
-          "JetBrains.Annotations": "[2025.2.0, )",
           "Microsoft.Extensions.Logging": "[9.0.7, )"
         }
       }

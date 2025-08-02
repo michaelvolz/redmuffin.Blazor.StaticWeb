@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
 using redmuffin.Blazor.StaticWeb.Core;
 
@@ -13,7 +12,6 @@ public partial class Counter : ComponentBase
         throw new InvalidOperationException();
     }
 
-    [UsedImplicitly]
     private static void ReverseStringExample()
     {
         const string original = "Blazor";

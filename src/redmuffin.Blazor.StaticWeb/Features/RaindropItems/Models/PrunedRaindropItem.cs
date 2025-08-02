@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using JetBrains.Annotations;
 
 namespace redmuffin.Blazor.StaticWeb.Features.RaindropItems.Models;
 
@@ -7,7 +6,6 @@ namespace redmuffin.Blazor.StaticWeb.Features.RaindropItems.Models;
 ///     Pruned version of RaindropItem containing only essential fields for UI display.
 ///     Optimized for cache storage with minimal data footprint and efficient JSON serialization.
 /// </summary>
-[UsedImplicitly]
 public sealed class PrunedRaindropItem
 {
     /// <summary>

@@ -103,11 +103,6 @@
         "resolved": "2.1.0",
         "contentHash": "kcaATgEjEHOUs0/4ZM9Y5QIOHvfWSolkzQg54VxEDvbwRPHL5IVIR7rySFB7Vi8PKQcLYc+8C+Re/4OJaQAdrw=="
       },
-      "JetBrains.Annotations": {
-        "type": "Transitive",
-        "resolved": "2025.2.0",
-        "contentHash": "2BvMkOSW+50EbQFhWFIPWTqmcDLiyyjwkMN7lN386bhP2vN/7ts5t59qu11HtenmHFxqDzaD8J1fFoh+QTOzVA=="
-      },
       "LightMock.Generator.Common": {
         "type": "Transitive",
         "resolved": "1.2.3",
@@ -1366,7 +1361,6 @@
       "redmuffin.blazor.staticweb.common": {
         "type": "Project",
         "dependencies": {
-          "JetBrains.Annotations": "[2025.2.0, )",
           "Microsoft.Extensions.Logging": "[9.0.7, )"
         }
       }

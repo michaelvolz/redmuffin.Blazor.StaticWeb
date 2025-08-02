@@ -135,11 +135,6 @@
           "StyleCop.Analyzers.Unstable": "1.2.0.556"
         }
       },
-      "JetBrains.Annotations": {
-        "type": "Transitive",
-        "resolved": "2025.2.0",
-        "contentHash": "2BvMkOSW+50EbQFhWFIPWTqmcDLiyyjwkMN7lN386bhP2vN/7ts5t59qu11HtenmHFxqDzaD8J1fFoh+QTOzVA=="
-      },
       "Microsoft.AspNetCore.Authorization": {
         "type": "Transitive",
         "resolved": "9.0.6",
@@ -1258,7 +1253,6 @@
       "redmuffin.blazor.staticweb.common": {
         "type": "Project",
         "dependencies": {
-          "JetBrains.Annotations": "[2025.2.0, )",
           "Microsoft.Extensions.Logging": "[9.0.7, )"
         }
       }
