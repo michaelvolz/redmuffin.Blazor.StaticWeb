@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
@@ -30,19 +30,19 @@ public partial class RaindropAPITests
     /// </summary>
     public sealed class TestScope : IDisposable
     {
-        public TestHttpClientFactory HttpClientFactory { get; private set; } = TestHttpClientFactory.Mock;
-        public TestLogger<RaindropAPI> Logger { get; } = new();
-        public HttpMessageHandlerMock? HttpHandler { get; private set; }
-        public FailingHttpMessageHandlerMock? FailingHttpHandler { get; private set; }
-        public CancellationAwareHttpMessageHandlerMock? CancellationHttpHandler { get; private set; }
+        public HttpClientFactory_Stub HttpClientFactory { get; private set; } = HttpClientFactory_Stub.Mock;
+        public Logger_Spy<RaindropAPI> Logger { get; } = new();
+        public HttpMessageHandler_Mock? HttpHandler { get; private set; }
+        public HttpMessageHandler_FailingMock? FailingHttpHandler { get; private set; }
+        public HttpMessageHandler_CancellationAwareMock? CancellationHttpHandler { get; private set; }
 
         /// <summary>
         ///     Configures the test scope with standard HTTP client for successful API calls.
         /// </summary>
         public TestScope WithStandardServices()
         {
-            HttpHandler = new HttpMessageHandlerMock("Hello World from Azure Function");
-            HttpClientFactory = new TestHttpClientFactory(() => HttpHandler);
+            HttpHandler = new HttpMessageHandler_Mock("Hello World from Azure Function");
+            HttpClientFactory = new HttpClientFactory_Stub(() => HttpHandler);
             return this;
         }
 
@@ -51,8 +51,8 @@ public partial class RaindropAPITests
         /// </summary>
         public TestScope WithFailingHttpClient()
         {
-            FailingHttpHandler = new FailingHttpMessageHandlerMock();
-            HttpClientFactory = new TestHttpClientFactory(() => FailingHttpHandler);
+            FailingHttpHandler = new HttpMessageHandler_FailingMock();
+            HttpClientFactory = new HttpClientFactory_Stub(() => FailingHttpHandler);
             return this;
         }
 
@@ -61,8 +61,8 @@ public partial class RaindropAPITests
         /// </summary>
         public TestScope WithCancellationAwareHttpClient()
         {
-            CancellationHttpHandler = new CancellationAwareHttpMessageHandlerMock();
-            HttpClientFactory = new TestHttpClientFactory(() => CancellationHttpHandler);
+            CancellationHttpHandler = new HttpMessageHandler_CancellationAwareMock();
+            HttpClientFactory = new HttpClientFactory_Stub(() => CancellationHttpHandler);
             return this;
         }
 
@@ -75,10 +75,10 @@ public partial class RaindropAPITests
     }
 
     // Modern C# 12 HttpClient factory using primary constructor and static properties
-    public sealed class TestHttpClientFactory(Func<HttpMessageHandler> handlerFactory) : IHttpClientFactory
+    public sealed class HttpClientFactory_Stub(Func<HttpMessageHandler> handlerFactory) : IHttpClientFactory
     {
-        public static TestHttpClientFactory Mock { get; } = new(() => new HttpMessageHandlerMock("Hello World from Azure Function"));
-        public static TestHttpClientFactory Failing { get; } = new(() => new FailingHttpMessageHandlerMock());
+        public static HttpClientFactory_Stub Mock { get; } = new(() => new HttpMessageHandler_Mock("Hello World from Azure Function"));
+        public static HttpClientFactory_Stub Failing { get; } = new(() => new HttpMessageHandler_FailingMock());
 
         public HttpClient CreateClient(string name = "")
         {
@@ -89,7 +89,7 @@ public partial class RaindropAPITests
     }
 
     // Mock HTTP message handler that returns a successful response
-    public sealed class HttpMessageHandlerMock(string responseContent) : HttpMessageHandler
+    public sealed class HttpMessageHandler_Mock(string responseContent) : HttpMessageHandler
     {
         public Uri? LastRequestUri { get; private set; }
 
@@ -105,7 +105,7 @@ public partial class RaindropAPITests
     }
 
     // Mock HTTP message handler that throws exceptions
-    public sealed class FailingHttpMessageHandlerMock : HttpMessageHandler
+    public sealed class HttpMessageHandler_FailingMock : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
@@ -114,7 +114,7 @@ public partial class RaindropAPITests
     }
 
     // Mock HTTP message handler that captures cancellation token
-    public sealed class CancellationAwareHttpMessageHandlerMock : HttpMessageHandler
+    public sealed class HttpMessageHandler_CancellationAwareMock : HttpMessageHandler
     {
         public CancellationToken CancellationTokenReceived { get; private set; }
 
@@ -130,7 +130,7 @@ public partial class RaindropAPITests
     }
 
     // Test logger implementation for capturing log messages
-    public sealed class TestLogger<T> : ILogger<T>
+    public sealed class Logger_Spy<T> : ILogger<T>
     {
         public List<LogEntry> LogEntries { get; } = [];
 

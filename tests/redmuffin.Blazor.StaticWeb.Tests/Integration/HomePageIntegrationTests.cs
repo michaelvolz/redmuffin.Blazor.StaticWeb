@@ -1,8 +1,7 @@
-using Bunit;
+﻿using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using redmuffin.Blazor.StaticWeb.Core.Abstractions;
-using redmuffin.Blazor.StaticWeb.Core.Services;
 using redmuffin.Blazor.StaticWeb.Features.Pages.HomePage;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Integration;
@@ -10,7 +9,7 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Integration;
 /// <summary>
 ///     Integration tests for the Home page component verifying full system behavior.
 ///     Uses TestScope pattern for clean resource management and consistent service setup.
-///     Optimized for fast execution with TestDelayProvider.
+///     Optimized for fast execution with DelayProvider_Stub.
 /// </summary>
 public class HomePageIntegrationTests
 {
@@ -22,18 +21,18 @@ public class HomePageIntegrationTests
     public sealed class TestScope(string baseUri = "http://localhost:5000/") : IDisposable
     {
         public BunitContext Context { get; } = new();
-        public NavigationManagerMock NavigationManager { get; } = new(baseUri);
+        public NavigationManager_Mock NavigationManager { get; } = new(baseUri);
 
         /// <summary>
         ///     Configures the test context with fast integration testing services.
-        ///     Includes logging, HTTP client factory, and TestDelayProvider for optimal performance.
+        ///     Includes logging, HTTP client factory, and DelayProvider_Stub for optimal performance.
         /// </summary>
         public TestScope WithStandardIntegrationServices()
         {
             Context.Services.AddSingleton<NavigationManager>(NavigationManager);
             Context.Services.AddLogging();
             Context.Services.AddHttpClient();
-            Context.Services.AddSingleton<IDelayProvider>(new TestDelayProvider()); // ✅ FAST: No delays in integration tests
+            Context.Services.AddSingleton<IDelayProvider>(new DelayProvider_Stub()); // ✅ FAST: No delays in integration tests
             return this;
         }
 
@@ -121,15 +120,28 @@ public class HomePageIntegrationTests
 }
 
 /// <summary>
+///     Stub implementation of IDelayProvider that provides no delays for fast test execution.
+/// </summary>
+public sealed class DelayProvider_Stub : IDelayProvider
+{
+    /// <inheritdoc />
+    public Task DelayAsync(int milliseconds)
+    {
+        // No delay in test scenarios for optimal performance
+        return Task.CompletedTask;
+    }
+}
+
+/// <summary>
 ///     Mock NavigationManager for integration testing with behavior tracking.
 /// </summary>
-public class NavigationManagerMock : NavigationManager
+public class NavigationManager_Mock : NavigationManager
 {
     /// <summary>
-    ///     Initializes a new instance of the NavigationManagerMock class.
+    ///     Initializes a new instance of the NavigationManager_Mock class.
     /// </summary>
     /// <param name="baseUri">The base URI for the navigation manager.</param>
-    public NavigationManagerMock(string baseUri)
+    public NavigationManager_Mock(string baseUri)
     {
         Initialize(baseUri, baseUri);
     }
