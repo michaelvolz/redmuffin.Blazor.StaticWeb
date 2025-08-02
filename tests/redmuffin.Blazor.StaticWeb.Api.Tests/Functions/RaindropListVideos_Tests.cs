@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -30,11 +30,11 @@ public sealed partial class RaindropListVideos_Tests
         var function = new RaindropListVideos(logger, settings, httpClientFactory);
         var request = TestScope.CreateHttpRequestData(functionContext);
 
-        MockHttpResponseData? response = null;
+        HttpResponseData_Mock? response = null;
         try
         {
             // Act
-            response = (MockHttpResponseData)await function.RunAsync(request).ConfigureAwait(false);
+            response = (HttpResponseData_Mock)await function.RunAsync(request).ConfigureAwait(false);
 
             // Assert
             await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
@@ -74,11 +74,11 @@ public sealed partial class RaindropListVideos_Tests
         var function = new RaindropListVideos(logger, settings, httpClientFactory);
         var request = TestScope.CreateHttpRequestData(functionContext);
 
-        MockHttpResponseData? response = null;
+        HttpResponseData_Mock? response = null;
         try
         {
             // Act
-            response = (MockHttpResponseData)await function.RunAsync(request).ConfigureAwait(false);
+            response = (HttpResponseData_Mock)await function.RunAsync(request).ConfigureAwait(false);
 
             // Assert
             await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.OK);

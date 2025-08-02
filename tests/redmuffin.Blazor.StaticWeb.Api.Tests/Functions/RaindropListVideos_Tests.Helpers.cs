@@ -1,4 +1,4 @@
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
@@ -42,17 +42,17 @@ public sealed partial class RaindropListVideos_Tests
         /// <summary>
         ///     Creates a mock function context for Azure Functions testing.
         /// </summary>
-        public static MockFunctionContext CreateFunctionContext(string functionName)
+        public static FunctionContext_Mock CreateFunctionContext(string functionName)
         {
-            return new MockFunctionContext(functionName);
+            return new FunctionContext_Mock(functionName);
         }
 
         /// <summary>
         ///     Creates a mock HTTP request data for Azure Functions testing.
         /// </summary>
-        public static MockHttpRequestData CreateHttpRequestData(MockFunctionContext functionContext)
+        public static HttpRequestData_Mock CreateHttpRequestData(FunctionContext_Mock functionContext)
         {
-            return new MockHttpRequestData(functionContext);
+            return new HttpRequestData_Mock(functionContext);
         }
 
         public void Dispose()
@@ -64,9 +64,9 @@ public sealed partial class RaindropListVideos_Tests
     /// <summary>
     ///     Mock implementation of FunctionContext for Azure Functions testing.
     /// </summary>
-    public sealed class MockFunctionContext : FunctionContext
+    public sealed class FunctionContext_Mock : FunctionContext
     {
-        public MockFunctionContext(string functionId)
+        public FunctionContext_Mock(string functionId)
         {
             FunctionId = functionId;
 
@@ -92,13 +92,13 @@ public sealed partial class RaindropListVideos_Tests
 
         public override IServiceProvider InstanceServices { get; set; }
 
-        public override FunctionDefinition FunctionDefinition => new MockFunctionDefinition(FunctionId);
+        public override FunctionDefinition FunctionDefinition => new FunctionDefinition_Mock(FunctionId);
         public override IDictionary<object, object> Items { get; set; } = new Dictionary<object, object>();
         public override IInvocationFeatures Features { get; } = null!;
         public override string InvocationId => Guid.NewGuid().ToString();
         public override string FunctionId { get; }
-        public override TraceContext TraceContext => new MockTraceContext();
-        public override BindingContext BindingContext => new MockBindingContext();
+        public override TraceContext TraceContext => new TraceContext_Mock();
+        public override BindingContext BindingContext => new BindingContext_Mock();
         public override RetryContext RetryContext => null!;
 
         private static ObjectSerializer CheckObjectSerializer(IServiceProvider instanceServices)
@@ -111,7 +111,7 @@ public sealed partial class RaindropListVideos_Tests
     /// <summary>
     ///     Mock implementation of HttpRequestData for Azure Functions testing.
     /// </summary>
-    public sealed class MockHttpRequestData(FunctionContext functionContext) : HttpRequestData(functionContext)
+    public sealed class HttpRequestData_Mock(FunctionContext functionContext) : HttpRequestData(functionContext)
     {
         public override IEnumerable<ClaimsIdentity> Identities { get; } = [];
         public override string Method => HttpMethod.Get.ToString();
@@ -122,14 +122,14 @@ public sealed partial class RaindropListVideos_Tests
 
         public override HttpResponseData CreateResponse()
         {
-            return new MockHttpResponseData(FunctionContext);
+            return new HttpResponseData_Mock(FunctionContext);
         }
     }
 
     /// <summary>
     ///     Mock implementation of HttpResponseData for Azure Functions testing.
     /// </summary>
-    public sealed class MockHttpResponseData(FunctionContext functionContext) : HttpResponseData(functionContext), IDisposable, IAsyncDisposable
+    public sealed class HttpResponseData_Mock(FunctionContext functionContext) : HttpResponseData(functionContext), IDisposable, IAsyncDisposable
     {
         private readonly MemoryStream _bodyStream = new();
 
@@ -165,7 +165,7 @@ public sealed partial class RaindropListVideos_Tests
     /// <summary>
     ///     Mock implementation of FunctionDefinition for Azure Functions testing.
     /// </summary>
-    public sealed class MockFunctionDefinition(string functionId) : FunctionDefinition
+    public sealed class FunctionDefinition_Mock(string functionId) : FunctionDefinition
     {
         public override ImmutableArray<FunctionParameter> Parameters { get; } = [];
         public override string PathToAssembly => string.Empty;
@@ -179,7 +179,7 @@ public sealed partial class RaindropListVideos_Tests
     /// <summary>
     ///     Mock implementation of TraceContext for Azure Functions testing.
     /// </summary>
-    public sealed class MockTraceContext : TraceContext
+    public sealed class TraceContext_Mock : TraceContext
     {
         public override string TraceParent => string.Empty;
         public override string TraceState => string.Empty;
@@ -188,7 +188,7 @@ public sealed partial class RaindropListVideos_Tests
     /// <summary>
     ///     Mock implementation of BindingContext for Azure Functions testing.
     /// </summary>
-    public sealed class MockBindingContext : BindingContext
+    public sealed class BindingContext_Mock : BindingContext
     {
         public override IReadOnlyDictionary<string, object?> BindingData { get; } = new Dictionary<string, object?>();
     }
