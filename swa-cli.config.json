@@ -7,7 +7,7 @@
       "outputLocation": "wwwroot",
       "apiLanguage": "dotnetisolated",
       "apiVersion": "8.0",
-      "appBuildCommand": "dotnet publish -c Release -o bin",
+      "appBuildCommand": "dotnet publish -c Release",
       "apiBuildCommand": "dotnet publish -c Release",
       "run": "dotnet run",
       "appDevserverUrl": "http://localhost:5233"
