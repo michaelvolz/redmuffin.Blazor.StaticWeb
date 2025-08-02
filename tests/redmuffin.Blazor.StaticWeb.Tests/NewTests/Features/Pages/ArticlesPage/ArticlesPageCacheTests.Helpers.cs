@@ -1,4 +1,4 @@
-using Bunit;
+﻿using Bunit;
 using LightMock.Generator;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -61,27 +61,27 @@ public partial class ArticlesPageCacheTests
         /// <summary>
         ///     Gets the mock for IRaindropItemsCache service.
         /// </summary>
-        public CacheServiceMock CacheServiceMock { get; } = new();
+        public CacheService_Mock CacheService_Mock { get; } = new();
 
         /// <summary>
         ///     Gets the mock for IRaindropAPI service.
         /// </summary>
-        public RaindropAPIMock RaindropAPIMock { get; } = new();
+        public RaindropAPI_Mock RaindropAPI_Mock { get; } = new();
 
         /// <summary>
         ///     Gets the mock for IImagePlaceholderService.
         /// </summary>
-        public ImagePlaceholderServiceMock ImagePlaceholderServiceMock { get; } = new();
+        public ImagePlaceholderService_Mock ImagePlaceholderService_Mock { get; } = new();
 
         /// <summary>
         ///     Gets the mock for IImageValidationCacheService.
         /// </summary>
-        public ImageValidationCacheServiceMock ImageValidationCacheServiceMock { get; } = new();
+        public ImageValidationCacheService_Mock ImageValidationCacheService_Mock { get; } = new();
 
         /// <summary>
         ///     Gets the mock logger for Articles component (external dependency - uses LightMock).
         /// </summary>
-        public Mock<ILogger<Articles>> LoggerMock { get; } = new();
+        public Mock<ILogger<Articles>> Logger_Mock { get; } = new();
 
         /// <summary>
         ///     Configures the test scope with standard services for component testing.
@@ -90,11 +90,11 @@ public partial class ArticlesPageCacheTests
         public TestScope WithStandardServices()
         {
             // Register mocked services
-            Context.Services.AddSingleton<IRaindropItemsCache>(CacheServiceMock);
-            Context.Services.AddSingleton<IRaindropAPI>(RaindropAPIMock);
-            Context.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderServiceMock);
-            Context.Services.AddSingleton<IImageValidationCacheService>(ImageValidationCacheServiceMock);
-            Context.Services.AddSingleton(LoggerMock.Object);
+            Context.Services.AddSingleton<IRaindropItemsCache>(CacheService_Mock);
+            Context.Services.AddSingleton<IRaindropAPI>(RaindropAPI_Mock);
+            Context.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderService_Mock);
+            Context.Services.AddSingleton<IImageValidationCacheService>(ImageValidationCacheService_Mock);
+            Context.Services.AddSingleton(Logger_Mock.Object);
 
             return this;
         }
@@ -111,7 +111,7 @@ public partial class ArticlesPageCacheTests
     /// <summary>
     ///     Custom mock for IRaindropItemsCache to simulate caching behavior.
     /// </summary>
-    public sealed class CacheServiceMock : IRaindropItemsCache
+    public sealed class CacheService_Mock : IRaindropItemsCache
     {
         private readonly Dictionary<string, List<RaindropItem>> _cache = new(StringComparer.Ordinal);
         private readonly Dictionary<string, bool> _cacheFailures = new(StringComparer.Ordinal);
@@ -175,7 +175,7 @@ public partial class ArticlesPageCacheTests
     /// <summary>
     ///     Custom mock for IRaindropAPI to simulate API behavior.
     /// </summary>
-    public sealed class RaindropAPIMock : IRaindropAPI
+    public sealed class RaindropAPI_Mock : IRaindropAPI
     {
         private List<RaindropItem> _articles = new();
         private string? _failureMessage;
@@ -233,7 +233,7 @@ public partial class ArticlesPageCacheTests
     /// <summary>
     ///     Custom mock for IImagePlaceholderService to simulate image placeholder behavior.
     /// </summary>
-    public sealed class ImagePlaceholderServiceMock : IImagePlaceholderService
+    public sealed class ImagePlaceholderService_Mock : IImagePlaceholderService
     {
         public string GetDefaultPlaceholder()
         {
@@ -272,7 +272,7 @@ public partial class ArticlesPageCacheTests
     /// <summary>
     ///     Custom mock for IImageValidationCacheService to simulate image validation behavior.
     /// </summary>
-    public sealed class ImageValidationCacheServiceMock : IImageValidationCacheService
+    public sealed class ImageValidationCacheService_Mock : IImageValidationCacheService
     {
         public Task PopulateImageUrlCacheAsync(IEnumerable<RaindropItem> items, IDictionary<string, string> imageUrlCache, Func<Task> stateHasChangedCallback,
             CancellationToken cancellationToken = default)

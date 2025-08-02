@@ -1,4 +1,4 @@
-using Bunit;
+﻿using Bunit;
 using Microsoft.AspNetCore.Components.Web;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage;
@@ -21,8 +21,8 @@ public partial class ArticlesPageCacheTests
             CreateTestArticle("1", "Fallback Article", "Fallback excerpt")
         };
 
-        scope.CacheServiceMock.SetupCacheFailure("Articles");
-        scope.RaindropAPIMock.SetupArticles(freshArticles);
+        scope.CacheService_Mock.SetupCacheFailure("Articles");
+        scope.RaindropAPI_Mock.SetupArticles(freshArticles);
 
         // Act
         var component = scope.Context.Render<Articles>();
@@ -46,8 +46,8 @@ public partial class ArticlesPageCacheTests
             CreateTestArticle("1", "Same Article", "Same excerpt")
         };
 
-        scope.CacheServiceMock.SetupCachedData("Articles", identicalArticles);
-        scope.RaindropAPIMock.SetupArticles(identicalArticles); // Same data
+        scope.CacheService_Mock.SetupCachedData("Articles", identicalArticles);
+        scope.RaindropAPI_Mock.SetupArticles(identicalArticles); // Same data
 
         // Act
         var component = scope.Context.Render<Articles>();
@@ -72,9 +72,9 @@ public partial class ArticlesPageCacheTests
             CreateTestArticle("1", "Updated Article", "Updated excerpt")
         };
 
-        scope.CacheServiceMock.SetupCachedData("Articles", cachedArticles);
-        scope.RaindropAPIMock.SetupArticles(freshArticles);
-        scope.RaindropAPIMock.SetupDelay(300); // Add delay to test multiple clicks
+        scope.CacheService_Mock.SetupCachedData("Articles", cachedArticles);
+        scope.RaindropAPI_Mock.SetupArticles(freshArticles);
+        scope.RaindropAPI_Mock.SetupDelay(300); // Add delay to test multiple clicks
 
         var component = scope.Context.Render<Articles>();
         await Task.Delay(200).ConfigureAwait(false); // Allow background refresh to show badge
@@ -101,8 +101,8 @@ public partial class ArticlesPageCacheTests
             CreateTestArticle("2", "Fresh Article 2", "Fresh excerpt 2")
         };
 
-        scope.CacheServiceMock.SetupNoCachedData("Articles");
-        scope.RaindropAPIMock.SetupArticles(freshArticles);
+        scope.CacheService_Mock.SetupNoCachedData("Articles");
+        scope.RaindropAPI_Mock.SetupArticles(freshArticles);
 
         // Act
         var component = scope.Context.Render<Articles>();
@@ -131,8 +131,8 @@ public partial class ArticlesPageCacheTests
             CreateTestArticle("2", "Cached Article 2", "Cached excerpt 2")
         };
 
-        scope.CacheServiceMock.SetupCachedData("Articles", cachedArticles);
-        scope.RaindropAPIMock.SetupArticles(new List<RaindropItem>());
+        scope.CacheService_Mock.SetupCachedData("Articles", cachedArticles);
+        scope.RaindropAPI_Mock.SetupArticles(new List<RaindropItem>());
 
         // Act
         var component = scope.Context.Render<Articles>();
@@ -161,8 +161,8 @@ public partial class ArticlesPageCacheTests
             CreateTestArticle("2", "New Article", "New excerpt")
         };
 
-        scope.CacheServiceMock.SetupCachedData("Articles", cachedArticles);
-        scope.RaindropAPIMock.SetupArticles(freshArticles);
+        scope.CacheService_Mock.SetupCachedData("Articles", cachedArticles);
+        scope.RaindropAPI_Mock.SetupArticles(freshArticles);
         // No artificial delay - let the component handle its own timing
 
         var component = scope.Context.Render<Articles>();
@@ -209,8 +209,8 @@ public partial class ArticlesPageCacheTests
             CreateTestArticle("2", "New Article", "New excerpt")
         };
 
-        scope.CacheServiceMock.SetupCachedData("Articles", cachedArticles);
-        scope.RaindropAPIMock.SetupArticles(freshArticles);
+        scope.CacheService_Mock.SetupCachedData("Articles", cachedArticles);
+        scope.RaindropAPI_Mock.SetupArticles(freshArticles);
 
         var component = scope.Context.Render<Articles>();
         await Task.Delay(200).ConfigureAwait(false); // Allow background refresh to show badge
@@ -240,8 +240,8 @@ public partial class ArticlesPageCacheTests
             CreateTestArticle("1", "Cached Article", "Cached excerpt")
         };
 
-        scope.CacheServiceMock.SetupCachedData("Articles", cachedArticles);
-        scope.RaindropAPIMock.SetupFailure("Network error");
+        scope.CacheService_Mock.SetupCachedData("Articles", cachedArticles);
+        scope.RaindropAPI_Mock.SetupFailure("Network error");
 
         var component = scope.Context.Render<Articles>();
         await Task.Delay(200).ConfigureAwait(false); // Allow background refresh to show badge
@@ -311,8 +311,8 @@ public partial class ArticlesPageCacheTests
             CreateTestArticle("2", "New Article", "New excerpt")
         };
 
-        scope.CacheServiceMock.SetupCachedData("Articles", cachedArticles);
-        scope.RaindropAPIMock.SetupArticles(freshArticles);
+        scope.CacheService_Mock.SetupCachedData("Articles", cachedArticles);
+        scope.RaindropAPI_Mock.SetupArticles(freshArticles);
 
         // Act
         var component = scope.Context.Render<Articles>();

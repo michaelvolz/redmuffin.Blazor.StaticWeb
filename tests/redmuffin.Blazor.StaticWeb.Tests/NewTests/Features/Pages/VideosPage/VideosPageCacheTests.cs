@@ -1,4 +1,4 @@
-using Bunit;
+﻿using Bunit;
 using Microsoft.AspNetCore.Components.Web;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Features.Pages.VideosPage;
@@ -21,8 +21,8 @@ public partial class VideosPageCacheTests
             CreateTestVideo("1", "Fallback Video", "Fallback excerpt")
         };
 
-        scope.CacheServiceMock.SetupCacheFailure("Videos");
-        scope.RaindropAPIMock.SetupVideos(freshVideos);
+        scope.CacheService_Mock.SetupCacheFailure("Videos");
+        scope.RaindropAPI_Mock.SetupVideos(freshVideos);
 
         // Act
         var component = scope.Context.Render<Videos>();
@@ -46,8 +46,8 @@ public partial class VideosPageCacheTests
             CreateTestVideo("1", "Same Video", "Same excerpt")
         };
 
-        scope.CacheServiceMock.SetupCachedData("Videos", identicalVideos);
-        scope.RaindropAPIMock.SetupVideos(identicalVideos); // Same data
+        scope.CacheService_Mock.SetupCachedData("Videos", identicalVideos);
+        scope.RaindropAPI_Mock.SetupVideos(identicalVideos); // Same data
 
         // Act
         var component = scope.Context.Render<Videos>();
@@ -69,8 +69,8 @@ public partial class VideosPageCacheTests
             CreateTestVideo("2", "Fresh Video 2", "Fresh excerpt 2")
         };
 
-        scope.CacheServiceMock.SetupNoCachedData("Videos");
-        scope.RaindropAPIMock.SetupVideos(freshVideos);
+        scope.CacheService_Mock.SetupNoCachedData("Videos");
+        scope.RaindropAPI_Mock.SetupVideos(freshVideos);
 
         // Act
         var component = scope.Context.Render<Videos>();
@@ -99,8 +99,8 @@ public partial class VideosPageCacheTests
             CreateTestVideo("2", "Cached Video 2", "Cached excerpt 2")
         };
 
-        scope.CacheServiceMock.SetupCachedData("Videos", cachedVideos);
-        scope.RaindropAPIMock.SetupVideos(new List<RaindropItem>());
+        scope.CacheService_Mock.SetupCachedData("Videos", cachedVideos);
+        scope.RaindropAPI_Mock.SetupVideos(new List<RaindropItem>());
 
         // Act
         var component = scope.Context.Render<Videos>();
@@ -129,8 +129,8 @@ public partial class VideosPageCacheTests
             CreateTestVideo("2", "New Video", "New excerpt")
         };
 
-        scope.CacheServiceMock.SetupCachedData("Videos", cachedVideos);
-        scope.RaindropAPIMock.SetupVideos(freshVideos);
+        scope.CacheService_Mock.SetupCachedData("Videos", cachedVideos);
+        scope.RaindropAPI_Mock.SetupVideos(freshVideos);
         // No artificial delay - let the component handle its own timing
 
         var component = scope.Context.Render<Videos>();
@@ -177,8 +177,8 @@ public partial class VideosPageCacheTests
             CreateTestVideo("2", "New Video", "New excerpt")
         };
 
-        scope.CacheServiceMock.SetupCachedData("Videos", cachedVideos);
-        scope.RaindropAPIMock.SetupVideos(freshVideos);
+        scope.CacheService_Mock.SetupCachedData("Videos", cachedVideos);
+        scope.RaindropAPI_Mock.SetupVideos(freshVideos);
 
         var component = scope.Context.Render<Videos>();
         await Task.Delay(200).ConfigureAwait(false); // Allow background refresh to show badge
@@ -208,8 +208,8 @@ public partial class VideosPageCacheTests
             CreateTestVideo("1", "Cached Video", "Cached excerpt")
         };
 
-        scope.CacheServiceMock.SetupCachedData("Videos", cachedVideos);
-        scope.RaindropAPIMock.SetupFailure("Network error");
+        scope.CacheService_Mock.SetupCachedData("Videos", cachedVideos);
+        scope.RaindropAPI_Mock.SetupFailure("Network error");
 
         var component = scope.Context.Render<Videos>();
         await Task.Delay(200).ConfigureAwait(false); // Allow background refresh to show badge
@@ -252,8 +252,8 @@ public partial class VideosPageCacheTests
             CreateTestVideo("2", "New Video", "New excerpt")
         };
 
-        scope.CacheServiceMock.SetupCachedData("Videos", cachedVideos);
-        scope.RaindropAPIMock.SetupVideos(freshVideos);
+        scope.CacheService_Mock.SetupCachedData("Videos", cachedVideos);
+        scope.RaindropAPI_Mock.SetupVideos(freshVideos);
 
         // Act
         var component = scope.Context.Render<Videos>();
