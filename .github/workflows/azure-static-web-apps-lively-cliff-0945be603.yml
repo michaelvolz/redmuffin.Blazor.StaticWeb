@@ -247,7 +247,7 @@ jobs:
           swa deploy \
             --app-location ${{ env.APP_LOCATION }}/bin/Release/publish \
             --api-location ${{ env.API_LOCATION }}/bin/Release/publish \
-            --output-location . \
+            --output-location ${{ env.APP_ARTIFACT_LOCATION }} \
             --deployment-token $AZURE_STATIC_WEB_APPS_API_TOKEN \
             --env production \
             --no-use-keychain \
