@@ -1,4 +1,4 @@
-using Bunit;
+﻿using Bunit;
 using LightMock.Generator;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -59,28 +59,28 @@ public sealed partial class VideosTests
         public TestScope(string baseUri = "http://localhost:5000/")
         {
             BUnitContext = new BunitContext();
-            NavigationManager = new NavigationManagerMock(baseUri);
-            Logger = new TestLogger<Videos>();
-            RaindropAPIMock = new RaindropAPIMock();
-            ImagePlaceholderServiceMock = new ImagePlaceholderServiceMock();
-            SimpleImageValidationServiceMock = new SimpleImageValidationServiceMock();
-            RaindropItemsCacheMock = new Mock<IRaindropItemsCache>();
+            NavigationManager = new NavigationManager_Mock(baseUri);
+            Logger = new Logger_Spy<Videos>();
+            RaindropAPI_Mock = new RaindropAPI_Mock();
+            ImagePlaceholderService_Mock = new ImagePlaceholderService_Mock();
+            ImageValidationService_Mock = new ImageValidationService_Mock();
+            RaindropItemsCache_Mock = new Mock<IRaindropItemsCache>();
 
             // Create actual service instance with mocked dependencies
             ImageValidationCacheService = new ImageValidationCacheService(
-                SimpleImageValidationServiceMock,
-                ImagePlaceholderServiceMock,
-                new TestLogger<ImageValidationCacheService>());
+                ImageValidationService_Mock,
+                ImagePlaceholderService_Mock,
+                new Logger_Spy<ImageValidationCacheService>());
         }
 
         public BunitContext BUnitContext { get; }
-        public NavigationManagerMock NavigationManager { get; }
-        public TestLogger<Videos> Logger { get; }
-        public RaindropAPIMock RaindropAPIMock { get; }
-        public ImagePlaceholderServiceMock ImagePlaceholderServiceMock { get; }
-        public SimpleImageValidationServiceMock SimpleImageValidationServiceMock { get; }
+        public NavigationManager_Mock NavigationManager { get; }
+        public Logger_Spy<Videos> Logger { get; }
+        public RaindropAPI_Mock RaindropAPI_Mock { get; }
+        public ImagePlaceholderService_Mock ImagePlaceholderService_Mock { get; }
+        public ImageValidationService_Mock ImageValidationService_Mock { get; }
         public IImageValidationCacheService ImageValidationCacheService { get; }
-        public Mock<IRaindropItemsCache> RaindropItemsCacheMock { get; }
+        public Mock<IRaindropItemsCache> RaindropItemsCache_Mock { get; }
 
         /// <summary>
         ///     Sets up default behaviors for mocks to ensure tests run smoothly.
@@ -99,10 +99,10 @@ public sealed partial class VideosTests
         {
             BUnitContext.Services.AddSingleton<NavigationManager>(NavigationManager);
             BUnitContext.Services.AddSingleton<ILogger<Videos>>(Logger);
-            BUnitContext.Services.AddSingleton<IRaindropAPI>(RaindropAPIMock);
-            BUnitContext.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderServiceMock);
+            BUnitContext.Services.AddSingleton<IRaindropAPI>(RaindropAPI_Mock);
+            BUnitContext.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderService_Mock);
             BUnitContext.Services.AddSingleton(ImageValidationCacheService);
-            BUnitContext.Services.AddSingleton<IRaindropItemsCache>(RaindropItemsCacheMock.Object);
+            BUnitContext.Services.AddSingleton<IRaindropItemsCache>(RaindropItemsCache_Mock.Object);
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
 
             // Set up default mock behaviors
@@ -120,7 +120,7 @@ public sealed partial class VideosTests
     /// <summary>
     ///     Test logger implementation for capturing log messages during tests.
     /// </summary>
-    public sealed class TestLogger<T> : ILogger<T>
+    public sealed class Logger_Spy<T> : ILogger<T>
     {
         public List<LogEntry> LogEntries { get; } = new();
 
@@ -165,9 +165,9 @@ public sealed partial class VideosTests
     /// <summary>
     ///     Mock NavigationManager for testing.
     /// </summary>
-    public sealed class NavigationManagerMock : NavigationManager
+    public sealed class NavigationManager_Mock : NavigationManager
     {
-        public NavigationManagerMock(string baseUri = "http://localhost:5000/")
+        public NavigationManager_Mock(string baseUri = "http://localhost:5000/")
         {
             Initialize(baseUri, baseUri);
         }
@@ -191,7 +191,7 @@ public sealed partial class VideosTests
     /// <summary>
     ///     Manual mock implementation for ISimpleImageValidationService since LightMock.Generator doesn't support it.
     /// </summary>
-    public sealed class SimpleImageValidationServiceMock : ISimpleImageValidationService
+    public sealed class ImageValidationService_Mock : ISimpleImageValidationService
     {
         private readonly Dictionary<string, ImageValidationResult?> _cachedResults = new();
         private readonly Dictionary<string, ImageValidationResult> _validationResults = new();
@@ -253,7 +253,7 @@ public sealed partial class VideosTests
     /// <summary>
     ///     Manual mock implementation for IImagePlaceholderService since LightMock.Generator doesn't support it.
     /// </summary>
-    public sealed class ImagePlaceholderServiceMock : IImagePlaceholderService
+    public sealed class ImagePlaceholderService_Mock : IImagePlaceholderService
     {
         private readonly Dictionary<string, string> _imageUrls = new();
         private readonly Dictionary<string, bool> _fallbackStatuses = new();
@@ -336,7 +336,7 @@ public sealed partial class VideosTests
     /// <summary>
     ///     Manual mock implementation for IRaindropAPI since LightMock.Generator doesn't support it.
     /// </summary>
-    public sealed class RaindropAPIMock : IRaindropAPI
+    public sealed class RaindropAPI_Mock : IRaindropAPI
     {
         private readonly List<RaindropItem> _videos = new();
         private readonly List<RaindropItem> _articles = new();

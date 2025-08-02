@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Text;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -38,9 +38,9 @@ public partial class CallApiExampleTests
     public sealed class TestScope(string baseUri = "http://localhost:5000/") : IDisposable
     {
         public BunitContext BUnitContext { get; } = new();
-        public NavigationManagerMock NavigationManager { get; } = new(baseUri);
-        public TestLogger<CallApiExample> Logger { get; } = new();
-        public RaindropAPIMock RaindropAPIMock { get; } = new();
+        public NavigationManager_Mock NavigationManager { get; } = new(baseUri);
+        public Logger_Spy<CallApiExample> Logger { get; } = new();
+        public RaindropAPI_Mock RaindropAPI_Mock { get; } = new();
 
         /// <summary>
         ///     Configures the test context with high-performance services for optimal test execution.
@@ -48,13 +48,13 @@ public partial class CallApiExampleTests
         public TestScope WithStandardServices()
         {
             // Configure the mock to return the expected response
-            RaindropAPIMock.HelloWorldResponse = "Mock response";
+            RaindropAPI_Mock.HelloWorldResponse = "Mock response";
 
             BUnitContext.Services.AddSingleton<NavigationManager>(NavigationManager);
             BUnitContext.Services.AddSingleton<ILogger<CallApiExample>>(Logger);
-            BUnitContext.Services.AddSingleton<IHttpClientFactory>(TestHttpClientFactory.Mock);
-            BUnitContext.Services.AddSingleton<IRaindropAPI>(RaindropAPIMock);
-            BUnitContext.Services.AddSingleton<IDelayProvider>(new TestDelayProvider()); // ✅ FAST: No delays in tests
+            BUnitContext.Services.AddSingleton<IHttpClientFactory>(HttpClientFactory_Stub.Mock);
+            BUnitContext.Services.AddSingleton<IRaindropAPI>(RaindropAPI_Mock);
+            BUnitContext.Services.AddSingleton<IDelayProvider>(new DelayProvider_Stub()); // ✅ FAST: No delays in tests
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
@@ -66,9 +66,9 @@ public partial class CallApiExampleTests
         {
             BUnitContext.Services.AddSingleton<NavigationManager>(NavigationManager);
             BUnitContext.Services.AddSingleton<ILogger<CallApiExample>>(Logger);
-            BUnitContext.Services.AddSingleton<IHttpClientFactory>(TestHttpClientFactory.Failing);
-            BUnitContext.Services.AddSingleton<IRaindropAPI>(RaindropAPIMock);
-            BUnitContext.Services.AddSingleton<IDelayProvider>(new TestDelayProvider()); // ✅ FAST: No delays in tests
+            BUnitContext.Services.AddSingleton<IHttpClientFactory>(HttpClientFactory_Stub.Failing);
+            BUnitContext.Services.AddSingleton<IRaindropAPI>(RaindropAPI_Mock);
+            BUnitContext.Services.AddSingleton<IDelayProvider>(new DelayProvider_Stub()); // ✅ FAST: No delays in tests
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
@@ -78,12 +78,12 @@ public partial class CallApiExampleTests
         /// </summary>
         public TestScope WithFailingRaindropService()
         {
-            var failingRaindropMock = new FailingRaindropAPIMock();
+            var raindropAPI_FailingMock = new RaindropAPI_FailingMock();
             BUnitContext.Services.AddSingleton<NavigationManager>(NavigationManager);
             BUnitContext.Services.AddSingleton<ILogger<CallApiExample>>(Logger);
-            BUnitContext.Services.AddSingleton<IHttpClientFactory>(TestHttpClientFactory.Mock);
-            BUnitContext.Services.AddSingleton<IRaindropAPI>(failingRaindropMock);
-            BUnitContext.Services.AddSingleton<IDelayProvider>(new TestDelayProvider()); // ✅ FAST: No delays in tests
+            BUnitContext.Services.AddSingleton<IHttpClientFactory>(HttpClientFactory_Stub.Mock);
+            BUnitContext.Services.AddSingleton<IRaindropAPI>(raindropAPI_FailingMock);
+            BUnitContext.Services.AddSingleton<IDelayProvider>(new DelayProvider_Stub()); // ✅ FAST: No delays in tests
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
@@ -95,9 +95,9 @@ public partial class CallApiExampleTests
     }
 
     // Mock NavigationManager for testing
-    public class NavigationManagerMock : NavigationManager
+    public class NavigationManager_Mock : NavigationManager
     {
-        public NavigationManagerMock(string baseUri)
+        public NavigationManager_Mock(string baseUri)
         {
             Initialize(baseUri, baseUri);
         }
@@ -122,7 +122,7 @@ public partial class CallApiExampleTests
     }
 
     // Test logger to capture log messages
-    public class TestLogger<T> : ILogger<T>
+    public class Logger_Spy<T> : ILogger<T>
     {
         public List<LogEntry> LogEntries { get; } = [];
 
@@ -164,10 +164,10 @@ public partial class CallApiExampleTests
     }
 
     // Modern C# 12 HttpClient factory using primary constructor and static properties
-    public sealed class TestHttpClientFactory(Func<HttpMessageHandler> handlerFactory) : IHttpClientFactory
+    public sealed class HttpClientFactory_Stub(Func<HttpMessageHandler> handlerFactory) : IHttpClientFactory
     {
-        public static TestHttpClientFactory Mock { get; } = new(() => new HttpMessageHandlerMock());
-        public static TestHttpClientFactory Failing { get; } = new(() => new FailingHttpMessageHandlerMock());
+        public static HttpClientFactory_Stub Mock { get; } = new(() => new HttpMessageHandler_Mock());
+        public static HttpClientFactory_Stub Failing { get; } = new(() => new HttpMessageHandler_FailingMock());
 
         public HttpClient CreateClient(string name = "")
         {
@@ -178,7 +178,7 @@ public partial class CallApiExampleTests
     }
 
     // Mock HttpMessageHandler that returns a successful response without making real network calls
-    public sealed class HttpMessageHandlerMock : HttpMessageHandler
+    public sealed class HttpMessageHandler_Mock : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
@@ -202,7 +202,7 @@ public partial class CallApiExampleTests
         }
     }
 
-    public sealed class FailingHttpMessageHandlerMock : HttpMessageHandler
+    public sealed class HttpMessageHandler_FailingMock : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
@@ -214,7 +214,7 @@ public partial class CallApiExampleTests
     ///     Custom mock for IRaindropAPI following HomeTests patterns.
     ///     Tests behavior through public interface contracts, not implementation details.
     /// </summary>
-    public class RaindropAPIMock : IRaindropAPI
+    public class RaindropAPI_Mock : IRaindropAPI
     {
         public bool GetHelloWorldAsyncCalled { get; private set; }
         public bool GetVideosAsyncCalled { get; private set; }
@@ -249,9 +249,22 @@ public partial class CallApiExampleTests
     }
 
     /// <summary>
+    ///     Stub implementation of IDelayProvider that provides no delays for fast test execution.
+    /// </summary>
+    public sealed class DelayProvider_Stub : IDelayProvider
+    {
+        /// <inheritdoc />
+        public Task DelayAsync(int milliseconds)
+        {
+            // No delay in test scenarios for optimal performance
+            return Task.CompletedTask;
+        }
+    }
+
+    /// <summary>
     ///     Failing mock for IRaindropAPI to test error scenarios.
     /// </summary>
-    public class FailingRaindropAPIMock : IRaindropAPI
+    public class RaindropAPI_FailingMock : IRaindropAPI
     {
         public Task<string> GetHelloWorldAsync(CancellationToken cancellationToken = default)
         {

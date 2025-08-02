@@ -1,4 +1,4 @@
-using Bunit;
+﻿using Bunit;
 using LightMock.Generator;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,12 +53,12 @@ public partial class ArticlesTests
     public sealed class TestScope(string baseUri = "http://localhost:5000/") : IDisposable
     {
         public BunitContext BUnitContext { get; } = new();
-        public NavigationManagerMock NavigationManager { get; } = new(baseUri);
-        public TestLogger<ArticlesComponent> Logger { get; } = new();
-        public SimpleImagePlaceholderServiceMock ImagePlaceholderService { get; } = new();
-        public SimpleImageValidationCacheServiceMock ImageValidationCacheService { get; } = new();
-        public SimpleRaindropAPIMock RaindropAPI { get; } = new();
-        public Mock<IRaindropItemsCache> RaindropItemsCacheMock { get; } = new();
+        public NavigationManager_Mock NavigationManager { get; } = new(baseUri);
+        public Logger_Spy<ArticlesComponent> Logger { get; } = new();
+        public ImagePlaceholderService_Mock ImagePlaceholderService { get; } = new();
+        public ImageValidationCacheService_Mock ImageValidationCacheService { get; } = new();
+        public RaindropAPI_Mock RaindropAPI { get; } = new();
+        public Mock<IRaindropItemsCache> RaindropItemsCache_Mock { get; } = new();
 
         /// <summary>
         ///     Configures the test context with high-performance services for optimal test execution.
@@ -70,7 +70,7 @@ public partial class ArticlesTests
             BUnitContext.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderService);
             BUnitContext.Services.AddSingleton<IImageValidationCacheService>(ImageValidationCacheService);
             BUnitContext.Services.AddSingleton<IRaindropAPI>(RaindropAPI);
-            BUnitContext.Services.AddSingleton<IRaindropItemsCache>(RaindropItemsCacheMock.Object);
+            BUnitContext.Services.AddSingleton<IRaindropItemsCache>(RaindropItemsCache_Mock.Object);
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
@@ -80,13 +80,13 @@ public partial class ArticlesTests
         /// </summary>
         public TestScope WithFailingRaindropAPI()
         {
-            var failingAPI = new FailingRaindropAPIMock();
+            var failingAPI = new RaindropAPI_FailingMock();
             BUnitContext.Services.AddSingleton<NavigationManager>(NavigationManager);
             BUnitContext.Services.AddSingleton<ILogger<ArticlesComponent>>(Logger);
             BUnitContext.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderService);
             BUnitContext.Services.AddSingleton<IImageValidationCacheService>(ImageValidationCacheService);
             BUnitContext.Services.AddSingleton<IRaindropAPI>(failingAPI);
-            BUnitContext.Services.AddSingleton<IRaindropItemsCache>(RaindropItemsCacheMock.Object);
+            BUnitContext.Services.AddSingleton<IRaindropItemsCache>(RaindropItemsCache_Mock.Object);
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
@@ -96,13 +96,13 @@ public partial class ArticlesTests
         /// </summary>
         public TestScope WithEmptyArticles()
         {
-            var emptyAPI = new EmptyRaindropAPIMock();
+            var emptyAPI = new RaindropAPI_EmptyMock();
             BUnitContext.Services.AddSingleton<NavigationManager>(NavigationManager);
             BUnitContext.Services.AddSingleton<ILogger<ArticlesComponent>>(Logger);
             BUnitContext.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderService);
             BUnitContext.Services.AddSingleton<IImageValidationCacheService>(ImageValidationCacheService);
             BUnitContext.Services.AddSingleton<IRaindropAPI>(emptyAPI);
-            BUnitContext.Services.AddSingleton<IRaindropItemsCache>(RaindropItemsCacheMock.Object);
+            BUnitContext.Services.AddSingleton<IRaindropItemsCache>(RaindropItemsCache_Mock.Object);
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
@@ -123,9 +123,9 @@ public partial class ArticlesTests
     }
 
     // Mock NavigationManager for testing
-    public class NavigationManagerMock : NavigationManager
+    public class NavigationManager_Mock : NavigationManager
     {
-        public NavigationManagerMock(string baseUri)
+        public NavigationManager_Mock(string baseUri)
         {
             Initialize(baseUri, baseUri);
         }
@@ -150,7 +150,7 @@ public partial class ArticlesTests
     }
 
     // Test logger to capture log messages
-    public class TestLogger<T> : ILogger<T>
+    public class Logger_Spy<T> : ILogger<T>
     {
         public List<LogEntry> LogEntries { get; } = [];
 
@@ -192,7 +192,7 @@ public partial class ArticlesTests
     }
 
     // Mock ImagePlaceholderService for testing
-    public class SimpleImagePlaceholderServiceMock : IImagePlaceholderService
+    public class ImagePlaceholderService_Mock : IImagePlaceholderService
     {
         public string GetDefaultPlaceholder()
         {
@@ -229,7 +229,7 @@ public partial class ArticlesTests
     }
 
     // Mock ImageValidationCacheService for testing
-    public class SimpleImageValidationCacheServiceMock : IImageValidationCacheService
+    public class ImageValidationCacheService_Mock : IImageValidationCacheService
     {
         public Task PopulateImageUrlCacheAsync(IEnumerable<RaindropItem> items, IDictionary<string, string> imageUrlCache, Func<Task> stateHasChangedCallback,
             CancellationToken cancellationToken = default)
@@ -254,7 +254,7 @@ public partial class ArticlesTests
     }
 
     // Mock RaindropAPI for testing
-    public class SimpleRaindropAPIMock : IRaindropAPI
+    public class RaindropAPI_Mock : IRaindropAPI
     {
         public Task<IEnumerable<RaindropItem>> GetArticlesAsync(CancellationToken cancellationToken = default)
         {
@@ -290,7 +290,7 @@ public partial class ArticlesTests
     }
 
     // Failing RaindropAPI mock for error testing
-    public class FailingRaindropAPIMock : IRaindropAPI
+    public class RaindropAPI_FailingMock : IRaindropAPI
     {
         public Task<IEnumerable<RaindropItem>> GetArticlesAsync(CancellationToken cancellationToken = default)
         {
@@ -304,7 +304,7 @@ public partial class ArticlesTests
     }
 
     // Empty RaindropAPI mock for empty state testing
-    public class EmptyRaindropAPIMock : IRaindropAPI
+    public class RaindropAPI_EmptyMock : IRaindropAPI
     {
         public Task<IEnumerable<RaindropItem>> GetArticlesAsync(CancellationToken cancellationToken = default)
         {
