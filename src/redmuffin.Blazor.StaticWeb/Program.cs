@@ -36,6 +36,7 @@ builder.Services.AddScoped<PlaceholderGenerationService>();
 
 // Register cache services
 builder.Services.AddScoped<IRaindropItemsCache, RaindropItemsCache>();
+builder.Services.AddScoped<LocalStorageDebugService>();
 
 // Register delay provider for production (real delays for UX)
 builder.Services.AddScoped<IDelayProvider, ProductionDelayProvider>();
