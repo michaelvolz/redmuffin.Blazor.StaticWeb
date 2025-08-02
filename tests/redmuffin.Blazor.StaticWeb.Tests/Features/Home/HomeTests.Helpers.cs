@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Security.Claims;
 using System.Text;
 using Bunit;
@@ -38,8 +38,8 @@ public partial class HomeTests
     private static Task<AuthenticationState> CreateMockAuthenticationState(bool isAuthenticated, string? userName = null)
     {
         var identity = isAuthenticated
-            ? new MockClaimsIdentity(userName ?? "testuser@example.com", "mock")
-            : new MockClaimsIdentity();
+            ? new ClaimsIdentity_Mock(userName ?? "testuser@example.com", "mock")
+            : new ClaimsIdentity_Mock();
 
         var principal = new ClaimsPrincipal(identity);
         var authState = new AuthenticationState(principal);
@@ -55,8 +55,8 @@ public partial class HomeTests
     public sealed class TestScope(string baseUri = "http://localhost:5000/") : IDisposable
     {
         public BunitContext BUnitContext { get; } = new();
-        public NavigationManagerMock NavigationManager { get; } = new(baseUri);
-        public TestLogger<HomePage> Logger { get; } = new();
+        public NavigationManager_Mock NavigationManager { get; } = new(baseUri);
+        public Logger_Spy<HomePage> Logger { get; } = new();
 
         /// <summary>
         ///     Configures the test context with high-performance services for optimal test execution.
@@ -65,8 +65,8 @@ public partial class HomeTests
         {
             BUnitContext.Services.AddSingleton<NavigationManager>(NavigationManager);
             BUnitContext.Services.AddSingleton<ILogger<HomePage>>(Logger);
-            BUnitContext.Services.AddSingleton<IHttpClientFactory>(TestHttpClientFactory.Mock);
-            BUnitContext.Services.AddSingleton<IDelayProvider>(new TestDelayProvider()); // ✅ FAST: No delays in tests
+            BUnitContext.Services.AddSingleton<IHttpClientFactory>(HttpClientFactory_Stub.Mock);
+            BUnitContext.Services.AddSingleton<IDelayProvider>(new DelayProvider_Stub()); // ✅ FAST: No delays in tests
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
@@ -78,8 +78,8 @@ public partial class HomeTests
         {
             BUnitContext.Services.AddSingleton<NavigationManager>(NavigationManager);
             BUnitContext.Services.AddSingleton<ILogger<HomePage>>(Logger);
-            BUnitContext.Services.AddSingleton<IHttpClientFactory>(TestHttpClientFactory.Failing);
-            BUnitContext.Services.AddSingleton<IDelayProvider>(new TestDelayProvider()); // ✅ FAST: No delays in tests
+            BUnitContext.Services.AddSingleton<IHttpClientFactory>(HttpClientFactory_Stub.Failing);
+            BUnitContext.Services.AddSingleton<IDelayProvider>(new DelayProvider_Stub()); // ✅ FAST: No delays in tests
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
@@ -89,11 +89,11 @@ public partial class HomeTests
         /// </summary>
         public TestScope WithFaultyNavigation()
         {
-            var faultyNavigationManager = new FaultyNavigationManagerMock(baseUri);
+            var faultyNavigationManager = new NavigationManager_FaultyMock(baseUri);
             BUnitContext.Services.AddSingleton<NavigationManager>(faultyNavigationManager);
             BUnitContext.Services.AddSingleton<ILogger<HomePage>>(Logger);
-            BUnitContext.Services.AddSingleton<IHttpClientFactory>(TestHttpClientFactory.Mock);
-            BUnitContext.Services.AddSingleton<IDelayProvider>(new TestDelayProvider()); // ✅ FAST: No delays in tests
+            BUnitContext.Services.AddSingleton<IHttpClientFactory>(HttpClientFactory_Stub.Mock);
+            BUnitContext.Services.AddSingleton<IDelayProvider>(new DelayProvider_Stub()); // ✅ FAST: No delays in tests
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
@@ -103,11 +103,11 @@ public partial class HomeTests
         /// </summary>
         public TestScope WithThrowingNavigation()
         {
-            var throwingNavigationManager = new ThrowingNavigationManagerMock(baseUri);
+            var throwingNavigationManager = new NavigationManager_ThrowingMock(baseUri);
             BUnitContext.Services.AddSingleton<NavigationManager>(throwingNavigationManager);
             BUnitContext.Services.AddSingleton<ILogger<HomePage>>(Logger);
-            BUnitContext.Services.AddSingleton<IHttpClientFactory>(TestHttpClientFactory.Mock);
-            BUnitContext.Services.AddSingleton<IDelayProvider>(new TestDelayProvider()); // ✅ FAST: No delays in tests
+            BUnitContext.Services.AddSingleton<IHttpClientFactory>(HttpClientFactory_Stub.Mock);
+            BUnitContext.Services.AddSingleton<IDelayProvider>(new DelayProvider_Stub()); // ✅ FAST: No delays in tests
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
@@ -119,8 +119,8 @@ public partial class HomeTests
         {
             BUnitContext.Services.AddSingleton<NavigationManager>(NavigationManager);
             BUnitContext.Services.AddSingleton<ILogger<HomePage>>(Logger);
-            BUnitContext.Services.AddSingleton<IHttpClientFactory>(TestHttpClientFactory.FastTimeout);
-            BUnitContext.Services.AddSingleton<IDelayProvider>(new TestDelayProvider()); // ✅ FAST: No delays in tests
+            BUnitContext.Services.AddSingleton<IHttpClientFactory>(HttpClientFactory_Stub.FastTimeout);
+            BUnitContext.Services.AddSingleton<IDelayProvider>(new DelayProvider_Stub()); // ✅ FAST: No delays in tests
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
@@ -141,9 +141,9 @@ public partial class HomeTests
     }
 
     // Mock NavigationManager for testing
-    public class NavigationManagerMock : NavigationManager
+    public class NavigationManager_Mock : NavigationManager
     {
-        public NavigationManagerMock(string baseUri)
+        public NavigationManager_Mock(string baseUri)
         {
             Initialize(baseUri, baseUri);
         }
@@ -166,16 +166,16 @@ public partial class HomeTests
             LastNavigationOptions = options;
 
             // Debug logging
-            Console.WriteLine("NavigationManagerMock.NavigateToCore called:");
+            Console.WriteLine("NavigationManager_Mock.NavigateToCore called:");
             Console.WriteLine($"  - URI: {uri}");
             Console.WriteLine($"  - Options: ForceLoad={options.ForceLoad}, ReplaceHistoryEntry={options.ReplaceHistoryEntry}");
         }
     }
 
     // Mock NavigationManager that throws exceptions to test error handling
-    public class ThrowingNavigationManagerMock : NavigationManager
+    public class NavigationManager_ThrowingMock : NavigationManager
     {
-        public ThrowingNavigationManagerMock(string baseUri)
+        public NavigationManager_ThrowingMock(string baseUri)
         {
             Initialize(baseUri, baseUri);
         }
@@ -187,7 +187,7 @@ public partial class HomeTests
     }
 
     // Test logger to capture log messages
-    public class TestLogger<T> : ILogger<T>
+    public class Logger_Spy<T> : ILogger<T>
     {
         public List<LogEntry> LogEntries { get; } = [];
 
@@ -229,11 +229,11 @@ public partial class HomeTests
     }
 
     // Modern C# 12 HttpClient factory using primary constructor and static properties
-    public sealed class TestHttpClientFactory(Func<HttpMessageHandler> handlerFactory) : IHttpClientFactory
+public sealed class HttpClientFactory_Stub(Func<HttpMessageHandler> handlerFactory) : IHttpClientFactory
     {
-        public static TestHttpClientFactory Mock { get; } = new(() => new HttpMessageHandlerMock());
-        public static TestHttpClientFactory Failing { get; } = new(() => new FailingHttpMessageHandler());
-        public static TestHttpClientFactory FastTimeout { get; } = new(() => new FastTimeoutHttpMessageHandler()); // ✅ FAST: 100ms timeout
+        public static HttpClientFactory_Stub Mock { get; } = new(() => new HttpMessageHandler_Mock());
+        public static HttpClientFactory_Stub Failing { get; } = new(() => new FailingHttpMessageHandler());
+        public static HttpClientFactory_Stub FastTimeout { get; } = new(() => new HttpMessageHandler_FastTimeoutMock()); // ✅ FAST: 100ms timeout
 
         public HttpClient CreateClient(string name = "")
         {
@@ -242,7 +242,7 @@ public partial class HomeTests
     }
 
     // Mock HttpMessageHandler that returns a successful response without making real network calls
-    public sealed class HttpMessageHandlerMock : HttpMessageHandler
+    public sealed class HttpMessageHandler_Mock : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
@@ -263,7 +263,7 @@ public partial class HomeTests
     }
 
     // ✅ OPTIMIZED: Fast timeout handler (100ms instead of 60 seconds)
-    public sealed class FastTimeoutHttpMessageHandler : HttpMessageHandler
+    public sealed class HttpMessageHandler_FastTimeoutMock : HttpMessageHandler
     {
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
@@ -273,9 +273,9 @@ public partial class HomeTests
         }
     }
 
-    public class FaultyNavigationManagerMock : NavigationManager
+    public class NavigationManager_FaultyMock : NavigationManager
     {
-        public FaultyNavigationManagerMock(string baseUri)
+        public NavigationManager_FaultyMock(string baseUri)
         {
             Initialize(baseUri, baseUri);
         }
@@ -290,16 +290,29 @@ public partial class HomeTests
             NavigatedTo = uri;
             NavigationCalled = true;
 
-            Console.WriteLine("FaultyNavigationManagerMock.NavigateToCore called:");
+            Console.WriteLine("NavigationManager_FaultyMock.NavigateToCore called:");
             Console.WriteLine($"  - URI: {uri}");
             Console.WriteLine("  - Navigation failed silently (simulated fault)");
         }
     }
 
     /// <summary>
+    ///     Stub implementation of IDelayProvider that provides no delays for fast test execution.
+    /// </summary>
+    public sealed class DelayProvider_Stub : IDelayProvider
+    {
+        /// <inheritdoc />
+        public Task DelayAsync(int milliseconds)
+        {
+            // No delay in test scenarios for optimal performance
+            return Task.CompletedTask;
+        }
+    }
+
+    /// <summary>
     ///     Mock ClaimsIdentity for testing authorization scenarios.
     /// </summary>
-    public sealed class MockClaimsIdentity(string? name = null, string? authenticationType = null) : ClaimsIdentity(CreateClaims(name), authenticationType)
+    public sealed class ClaimsIdentity_Mock(string? name = null, string? authenticationType = null) : ClaimsIdentity(CreateClaims(name), authenticationType)
     {
         public override bool IsAuthenticated => !string.IsNullOrEmpty(AuthenticationType);
 

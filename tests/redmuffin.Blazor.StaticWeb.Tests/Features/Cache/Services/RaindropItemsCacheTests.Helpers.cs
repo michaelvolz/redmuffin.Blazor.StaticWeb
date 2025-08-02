@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using Blazored.LocalStorage;
 using LightMock.Generator;
 using Microsoft.Extensions.Logging;
@@ -162,7 +162,7 @@ public partial class RaindropItemsCacheTests
     /// <summary>
     ///     Manual mock implementation for ILocalStorageService since LightMock.Generator doesn't support it.
     /// </summary>
-    public sealed class LocalStorageServiceMock : ILocalStorageService
+    public sealed class LocalStorageService_Mock : ILocalStorageService
     {
         private readonly Dictionary<string, bool> _containsKeyResults = new();
         private readonly Dictionary<string, object?> _getItemResults = new();
@@ -311,18 +311,18 @@ public partial class RaindropItemsCacheTests
     {
         public TestScope()
         {
-            RaindropAPIMock = new Mock<IRaindropAPI>();
-            LoggerMock = new Mock<ILogger<RaindropItemsCache>>();
-            Logger = new TestLogger<RaindropItemsCache>();
-            LocalStorageMock = new LocalStorageServiceMock();
+            RaindropAPI_Mock = new Mock<IRaindropAPI>();
+            Logger_Mock = new Mock<ILogger<RaindropItemsCache>>();
+            Logger = new Logger_Spy<RaindropItemsCache>();
+            LocalStorageService_Mock = new LocalStorageService_Mock();
             JsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-            Cache = new RaindropItemsCache(LocalStorageMock, Logger);
+            Cache = new RaindropItemsCache(LocalStorageService_Mock, Logger);
         }
 
-        public Mock<IRaindropAPI> RaindropAPIMock { get; }
-        public Mock<ILogger<RaindropItemsCache>> LoggerMock { get; }
-        public TestLogger<RaindropItemsCache> Logger { get; }
-        public LocalStorageServiceMock LocalStorageMock { get; }
+        public Mock<IRaindropAPI> RaindropAPI_Mock { get; }
+        public Mock<ILogger<RaindropItemsCache>> Logger_Mock { get; }
+        public Logger_Spy<RaindropItemsCache> Logger { get; }
+        public LocalStorageService_Mock LocalStorageService_Mock { get; }
         public RaindropItemsCache Cache { get; }
         public JsonSerializerOptions JsonOptions { get; }
 
@@ -335,7 +335,7 @@ public partial class RaindropItemsCacheTests
     /// <summary>
     ///     Test logger implementation that captures log entries for verification in tests.
     /// </summary>
-    public sealed class TestLogger<T> : ILogger<T>
+    public sealed class Logger_Spy<T> : ILogger<T>
     {
         private readonly List<LogEntry> _logEntries = [];
 
