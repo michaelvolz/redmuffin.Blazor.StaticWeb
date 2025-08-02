@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
@@ -78,8 +78,8 @@ public partial class ImagePlaceholderServiceTests
         public TestScope WithImagePlaceholderServices()
         {
             // Register core services
-            _services.AddSingleton<ILogger<ImagePlaceholderService>>(new TestLogger<ImagePlaceholderService>());
-            _services.AddSingleton<IJSRuntime>(new TestJSRuntime());
+            _services.AddSingleton<ILogger<ImagePlaceholderService>>(new Logger_Spy<ImagePlaceholderService>());
+            _services.AddSingleton<IJSRuntime>(new JSRuntime_Stub());
 
             // Register ImagePlaceholder services
             _services.AddSingleton<IImagePlaceholderService, ImagePlaceholderService>();
@@ -98,7 +98,7 @@ public partial class ImagePlaceholderServiceTests
     /// <summary>
     ///     Test logger implementation for capturing log entries.
     /// </summary>
-    public class TestLogger<T> : ILogger<T>
+    public class Logger_Spy<T> : ILogger<T>
     {
         public List<LogEntry> LogEntries { get; } = [];
 
@@ -122,7 +122,7 @@ public partial class ImagePlaceholderServiceTests
     /// <summary>
     ///     Test JSRuntime implementation for testing JavaScript interop.
     /// </summary>
-    public class TestJSRuntime : IJSRuntime
+    public class JSRuntime_Stub : IJSRuntime
     {
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
         {

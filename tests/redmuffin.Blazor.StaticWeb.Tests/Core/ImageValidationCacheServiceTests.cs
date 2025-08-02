@@ -1,4 +1,4 @@
-using redmuffin.Blazor.StaticWeb.Common.Raindrop;
+﻿using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Models;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Core;
@@ -15,7 +15,7 @@ public sealed partial class ImageValidationCacheServiceTests
         using var scope = CreateTestScope();
         var item = CreateTestItem("https://example.com/1", "https://example.com/cover1.jpg");
 
-        scope.SimpleImageValidationServiceMock
+        scope.ImageValidationService_Mock
             .Arrange(s => s.GetCachedResultAsync("https://example.com/cover1.jpg", CancellationToken.None))
             .Returns(Task.FromResult<ImageValidationResult?>(ImageValidationResult.Success()));
 
@@ -33,7 +33,7 @@ public sealed partial class ImageValidationCacheServiceTests
         using var scope = CreateTestScope();
         var item = CreateTestItem("https://example.com/1", "https://example.com/cover1.jpg");
 
-        scope.SimpleImageValidationServiceMock
+        scope.ImageValidationService_Mock
             .Arrange(s => s.GetCachedResultAsync("https://example.com/cover1.jpg", CancellationToken.None))
             .Returns(Task.FromResult<ImageValidationResult?>(null));
 
@@ -52,7 +52,7 @@ public sealed partial class ImageValidationCacheServiceTests
         var item = CreateTestItem("https://example.com/1", string.Empty);
         const string expectedPlaceholder = "data:image/svg+xml;base64,placeholder";
 
-        scope.ImagePlaceholderServiceMock
+        scope.ImagePlaceholderService_Mock
             .Arrange(s => s.GetDefaultPlaceholder())
             .Returns(expectedPlaceholder);
 
@@ -72,11 +72,11 @@ public sealed partial class ImageValidationCacheServiceTests
         const string expectedPlaceholder = "data:image/svg+xml;base64,placeholder";
         const string failureReason = "Image not found";
 
-        scope.SimpleImageValidationServiceMock
+        scope.ImageValidationService_Mock
             .Arrange(s => s.GetCachedResultAsync("https://example.com/cover1.jpg", CancellationToken.None))
             .Returns(Task.FromResult<ImageValidationResult?>(ImageValidationResult.Failure(failureReason)));
 
-        scope.ImagePlaceholderServiceMock
+        scope.ImagePlaceholderService_Mock
             .Arrange(s => s.GenerateSimplePlaceholder(failureReason))
             .Returns(expectedPlaceholder);
 
@@ -125,7 +125,7 @@ public sealed partial class ImageValidationCacheServiceTests
             return Task.CompletedTask;
         }
 
-        scope.SimpleImageValidationServiceMock
+        scope.ImageValidationService_Mock
             .Arrange(s => s.GetCachedResultAsync("https://example.com/cover1.jpg", CancellationToken.None))
             .Returns(Task.FromResult<ImageValidationResult?>(ImageValidationResult.Success()));
 
@@ -152,11 +152,11 @@ public sealed partial class ImageValidationCacheServiceTests
             return Task.CompletedTask;
         }
 
-        scope.SimpleImageValidationServiceMock
+        scope.ImageValidationService_Mock
             .Arrange(s => s.GetCachedResultAsync("https://example.com/cover1.jpg", CancellationToken.None))
             .Returns(Task.FromResult<ImageValidationResult?>(null));
 
-        scope.SimpleImageValidationServiceMock
+        scope.ImageValidationService_Mock
             .Arrange(s => s.ValidateImageAsync("https://example.com/cover1.jpg", CancellationToken.None))
             .Returns(Task.FromResult(ImageValidationResult.Success()));
 
@@ -211,11 +211,11 @@ public sealed partial class ImageValidationCacheServiceTests
 
         const string expectedPlaceholder = "data:image/svg+xml;base64,placeholder";
 
-        scope.SimpleImageValidationServiceMock
+        scope.ImageValidationService_Mock
             .Arrange(s => s.ValidateImageAsync("https://example.com/cover1.jpg", CancellationToken.None))
             .Throws<InvalidOperationException>();
 
-        scope.ImagePlaceholderServiceMock
+        scope.ImagePlaceholderService_Mock
             .Arrange(s => s.GenerateSimplePlaceholder("Validation error"))
             .Returns(expectedPlaceholder);
 
@@ -242,7 +242,7 @@ public sealed partial class ImageValidationCacheServiceTests
             return Task.CompletedTask;
         }
 
-        scope.SimpleImageValidationServiceMock
+        scope.ImageValidationService_Mock
             .Arrange(s => s.ValidateImageAsync("https://example.com/cover1.jpg", CancellationToken.None))
             .Returns(Task.FromResult(ImageValidationResult.Success()));
 
@@ -269,7 +269,7 @@ public sealed partial class ImageValidationCacheServiceTests
             return Task.CompletedTask;
         }
 
-        scope.SimpleImageValidationServiceMock
+        scope.ImageValidationService_Mock
             .Arrange(s => s.ValidateImageAsync("https://example.com/cover1.jpg", CancellationToken.None))
             .Returns(Task.FromResult(ImageValidationResult.Success()));
 
@@ -299,11 +299,11 @@ public sealed partial class ImageValidationCacheServiceTests
         const string expectedPlaceholder = "data:image/svg+xml;base64,placeholder";
         const string failureReason = "Image not found";
 
-        scope.SimpleImageValidationServiceMock
+        scope.ImageValidationService_Mock
             .Arrange(s => s.ValidateImageAsync("https://example.com/cover1.jpg", CancellationToken.None))
             .Returns(Task.FromResult(ImageValidationResult.Failure(failureReason)));
 
-        scope.ImagePlaceholderServiceMock
+        scope.ImagePlaceholderService_Mock
             .Arrange(s => s.GenerateSimplePlaceholder(failureReason))
             .Returns(expectedPlaceholder);
 

@@ -27,14 +27,14 @@ public sealed partial class PlaceholderGenerationServiceTests
 
         public TestScope()
         {
-            Logger = new TestLogger<PlaceholderGenerationService>();
+            Logger = new Logger_Spy<PlaceholderGenerationService>();
             Service = new PlaceholderGenerationService(Logger);
         }
 
         /// <summary>
         ///     Gets the test logger for PlaceholderGenerationService.
         /// </summary>
-        public TestLogger<PlaceholderGenerationService> Logger { get; }
+        public Logger_Spy<PlaceholderGenerationService> Logger { get; }
 
         /// <summary>
         ///     Gets the PlaceholderGenerationService instance under test.
@@ -71,7 +71,7 @@ public sealed partial class PlaceholderGenerationServiceTests
     ///     Test logger implementation for capturing log messages during tests.
     /// </summary>
     /// <typeparam name="T">The category type for the logger.</typeparam>
-    public sealed class TestLogger<T> : ILogger<T>
+    public sealed class Logger_Spy<T> : ILogger<T>
     {
         private readonly List<LogEntry> _logs = [];
 

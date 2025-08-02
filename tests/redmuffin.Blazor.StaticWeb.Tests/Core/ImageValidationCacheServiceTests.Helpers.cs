@@ -1,4 +1,4 @@
-using LightMock.Generator;
+﻿using LightMock.Generator;
 using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
@@ -50,30 +50,30 @@ public sealed partial class ImageValidationCacheServiceTests
 
         public TestScope()
         {
-            SimpleImageValidationServiceMock = new Mock<ISimpleImageValidationService>();
-            ImagePlaceholderServiceMock = new Mock<IImagePlaceholderService>();
-            Logger = new TestLogger<ImageValidationCacheService>();
+            ImageValidationService_Mock = new Mock<ISimpleImageValidationService>();
+            ImagePlaceholderService_Mock = new Mock<IImagePlaceholderService>();
+            Logger = new Logger_Spy<ImageValidationCacheService>();
 
             Service = new ImageValidationCacheService(
-                SimpleImageValidationServiceMock.Object,
-                ImagePlaceholderServiceMock.Object,
+                ImageValidationService_Mock.Object,
+                ImagePlaceholderService_Mock.Object,
                 Logger);
         }
 
         /// <summary>
         ///     Gets the mock for ISimpleImageValidationService.
         /// </summary>
-        public Mock<ISimpleImageValidationService> SimpleImageValidationServiceMock { get; }
+        public Mock<ISimpleImageValidationService> ImageValidationService_Mock { get; }
 
         /// <summary>
         ///     Gets the mock for IImagePlaceholderService.
         /// </summary>
-        public Mock<IImagePlaceholderService> ImagePlaceholderServiceMock { get; }
+        public Mock<IImagePlaceholderService> ImagePlaceholderService_Mock { get; }
 
         /// <summary>
         ///     Gets the test logger for ImageValidationCacheService.
         /// </summary>
-        public TestLogger<ImageValidationCacheService> Logger { get; }
+        public Logger_Spy<ImageValidationCacheService> Logger { get; }
 
         /// <summary>
         ///     Gets the ImageValidationCacheService instance under test.
@@ -94,7 +94,7 @@ public sealed partial class ImageValidationCacheServiceTests
     ///     Test logger implementation for capturing log messages during tests.
     /// </summary>
     /// <typeparam name="T">The category type for the logger.</typeparam>
-    public sealed class TestLogger<T> : ILogger<T>
+    public sealed class Logger_Spy<T> : ILogger<T>
     {
         private readonly List<LogEntry> _logs = [];
 
