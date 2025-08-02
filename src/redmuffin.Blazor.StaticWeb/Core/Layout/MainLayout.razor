@@ -1,14 +1,14 @@
 @inherits LayoutComponentBase
 
-<div class="grid-container">
+<div class="grid-container" style="outline: 1px solid red;">
     <header class="site-header">
         <Logo/>
         <NavMenu/>
     </header>
     <main>
         @Body
+        <CookieFooter/>
     </main>
-    <CookieFooter/>
 </div>
 
 <LoadSpeed/>
