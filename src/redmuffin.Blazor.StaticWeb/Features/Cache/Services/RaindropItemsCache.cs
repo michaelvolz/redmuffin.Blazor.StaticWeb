@@ -26,11 +26,8 @@ public sealed partial class RaindropItemsCache : IRaindropItemsCache
         _localStorage = localStorage ?? throw new ArgumentNullException(nameof(localStorage));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        _jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = false
-        };
+        // Use the RaindropJsonSerializerContext for better performance and compatibility
+        _jsonOptions = RaindropJsonSerializerContext.DefaultOptions;
     }
 
     private static RaindropCacheMetadata CreateCacheMetadata(int itemCount, int originalSize, int compressedSize)
@@ -166,7 +163,7 @@ public sealed partial class RaindropItemsCache : IRaindropItemsCache
                  return Task.FromResult<IList<RaindropItem>?>(null);
              }
 
-            var cachedData = JsonSerializer.Deserialize<IList<RaindropItem>>(decompressedJson, _jsonOptions);
+            var cachedData = JsonSerializer.Deserialize(decompressedJson, RaindropJsonSerializerContext.Default.RaindropItemList);
             if (cachedData == null)
              {
                  LogDeserializationFailed(_logger, cacheType, null);
@@ -334,7 +331,7 @@ public sealed partial class RaindropItemsCache : IRaindropItemsCache
         string jsonData;
         try
         {
-            jsonData = JsonSerializer.Serialize(items, _jsonOptions);
+            jsonData = JsonSerializer.Serialize(items, RaindropJsonSerializerContext.Default.RaindropItemList);
         }
         catch (Exception ex)
         {
