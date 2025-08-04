@@ -109,10 +109,7 @@ public partial class LocalStorageDebugService
 
             var success = string.Equals(testValue, retrieved, StringComparison.Ordinal);
 
-            if (!success)
-            {
-                LogBlazoredTestFailed(_logger, testValue, retrieved, null);
-            }
+            if (!success) LogBlazoredTestFailed(_logger, testValue, retrieved, null);
 
             return success;
         }

@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Logging;
-
 namespace redmuffin.Blazor.StaticWeb.Features.Cache.Services;
 
 public partial class LocalStorageDebugService
