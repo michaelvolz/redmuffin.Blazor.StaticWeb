@@ -1,6 +1,3 @@
-using System;
-using Microsoft.Extensions.Logging;
-
 namespace redmuffin.Blazor.StaticWeb.Features.Pages.DebugPage.CacheResetPage;
 
 public partial class CacheReset
