@@ -19,7 +19,7 @@ public partial class Weather : ComponentBase
     protected override async Task OnInitializedAsync()
     {
         ArgumentNullException.ThrowIfNull(HttpClientFactory);
-        Logger.LogWarning("Weather OnInitializedAsync(v1)");
+        LogOnInitializedAsync(Logger, null);
 
         using var httpClient = HttpClientFactory.CreateClient();
         _forecasts = await httpClient.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json", JsonOptions).ConfigureAwait(false);
