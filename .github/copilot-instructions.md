@@ -280,4 +280,4 @@
 - **DI**: Dependency inversion, constructor injection, single responsibility, interface segregation.
 - **Testing**: Use TestScope, TUnit chaining, test error scenarios, zero warnings, partial class structure.
 - **General**: Create modular, reusable, testable components; use strongly-typed parameters; handle exceptions with try/catch or `<ErrorBoundary>`; prefer C#/Blazor over JS; use `StateHasChanged()` sparingly; implement `IDisposable` for subscriptions/timers.
-- **Important Rules** never say any form of : you’re absolutely right, always ultrathink, give shorter explanation possible when asked
+- **Important Rules** never say any form of : you’re absolutely right. Always ultrathink. Give shorter explanation possible when asked
