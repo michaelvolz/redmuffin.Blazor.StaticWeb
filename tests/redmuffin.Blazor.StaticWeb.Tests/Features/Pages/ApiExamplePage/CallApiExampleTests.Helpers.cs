@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Core.Abstractions;
-using redmuffin.Blazor.StaticWeb.Core.Services;
 using redmuffin.Blazor.StaticWeb.Features.Pages.ApiExamplePage;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
 

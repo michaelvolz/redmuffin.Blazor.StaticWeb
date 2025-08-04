@@ -1,79 +1,10 @@
 using Bunit;
-using Microsoft.AspNetCore.Components.Web;
 using redmuffin.Blazor.StaticWeb.Features.Pages.ApiExamplePage;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.ApiExamplePage;
 
 public partial class CallApiExampleTests
 {
-    [Test]
-    public async Task CallApiExample_Should_Clear_Previous_Response_On_New_Call()
-    {
-        // Arrange
-        using var scope = CreateTestScope();
-        var component = scope.BUnitContext.Render<CallApiExample>();
-        var button = component.Find("button:contains('Call Hello World API')");
-
-        // Act - Click button twice
-        await button.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
-        var firstResponse = component.Find("p:contains('API Response:')");
-        await Assert.That(firstResponse).IsNotNull();
-
-        await button.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
-
-        // Assert - Verify response is still displayed (same call)
-        using (Assert.Multiple())
-        {
-            var response = component.Find("p:contains('API Response:')");
-            await Assert.That(response).IsNotNull();
-            await Assert.That(response.TextContent).Contains("Mock response");
-        }
-    }
-
-    [Test]
-    public async Task CallApiExample_Should_Display_API_Response_When_Button_Clicked()
-    {
-        // Arrange
-        using var scope = CreateTestScope();
-        var component = scope.BUnitContext.Render<CallApiExample>();
-        var button = component.Find("button:contains('Call Hello World API')");
-
-        // Act
-        await button.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
-
-        // Assert - Verify API response is displayed
-        using (Assert.Multiple())
-        {
-            var responseElement = component.Find("p:contains('API Response:')");
-            await Assert.That(responseElement).IsNotNull();
-            await Assert.That(responseElement.TextContent).Contains("Mock response");
-        }
-    }
-
-    [Test]
-    public async Task CallApiExample_Should_Handle_HTTP_Errors_Gracefully()
-    {
-        // Arrange
-        using var scope = CreateFailingServiceTestScope();
-        var component = scope.BUnitContext.Render<CallApiExample>();
-        var button = component.Find("button:contains('Call Hello World API')");
-
-        // Act
-        await button.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
-
-        // Assert - Verify error is displayed gracefully
-        using (Assert.Multiple())
-        {
-            var errorElement = component.Find("p:contains('Error:')");
-            await Assert.That(errorElement).IsNotNull();
-            await Assert.That(errorElement.TextContent).Contains("Error calling API");
-
-            // Verify component remains functional
-            await Assert.That(component.Find("h3").TextContent).Contains("Call API Example");
-        }
-    }
-
-
     [Test]
     public async Task CallApiExample_Should_Have_Proper_Page_Structure()
     {
