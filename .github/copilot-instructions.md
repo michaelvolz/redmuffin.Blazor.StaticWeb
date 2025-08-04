@@ -3,10 +3,11 @@
 ## 🚨 CRITICAL AI DIRECTIVES
 - **ZERO BUILD WARNINGS MANDATE**: AFTER EVERY C# FILE CHANGE, RUN `dotnet clean && dotnet build --no-restore --verbosity quiet`. FIX ALL WARNINGS (EXCEPT IL2111) BEFORE CONTINUING. FAILURE CAUSES HUNDREDS OF ERRORS.
 - **Local Testing**: Use `dotnet run` to start Blazor app on `localhost:5233` with mocked data. NEVER use Azure Static Web Apps emulator or PowerShell scripts.
-- **Pre-Commit Testing**: Run `dotnet test` before committing. All tests must pass (warnings OK). Stop commit if test errors exist.
+- **Pre-Commit Testing**: Run `dotnet test` before committing. Ensure 100% test success and no build errors (except IL2111). Stop commit if errors exist.
 - **File Editing**: Edit one file at a time, track progress (e.g., "Edit 2 of 5").
 - **Unclear Items**: Ask questions and wait for answers before proceeding with ambiguous tasks.
 - **Large Changes**: Outline plan, get approval, make incremental edits, ensure buildable state.
+- **Batch Data Processing**: Process large datasets or text in smaller batches to prevent errors, file corruption, or performance issues. Avoid handling entire files at once unless explicitly requested.
 
 ## 🖥️ Project Configuration
 - **Frontend**: Blazor WebAssembly (.NET 9), feature-based structure.
@@ -90,6 +91,7 @@
   - Components: `Home.razor.cs`, `Home.Logging.cs`.
   - Services: `UserService.cs`, `UserService.Logging.cs`.
   - Tests: `HomeTests.cs`, `HomeTests.Helpers.cs`.
+  - Test files: Use `Component_Tests.cs` for new test files (e.g., `Home_Tests.cs`), incorporating an underscore for consistency with naming standards.
 - **Migration Priorities**:
   - Components: Already follow partial class pattern.
   - Services: Migrate to `LoggerMessage` in partial classes.
@@ -99,7 +101,50 @@
 ## 🧪 TDD and Testing Patterns
 - **Workflow**: Red-Green-Refactor. Write failing TUnit test, run `dotnet test`, implement, refactor.
 - **Test Naming**: `Component_Behavior_ExpectedOutcome` with underscores.
-- **Test Focus**: Test public interfaces, not implementation.
+- **Test Categorization Rules**: Organize TUnit tests into partial class files for each test class (e.g., `HomeTests`) to enhance maintainability. Apply this decision matrix in order:
+  - **File Structure**:
+    - `[TestClass].cs`: Basic functionality tests.
+    - `[TestClass].EdgeCases.cs`: Error handling and edge case tests.
+    - `[TestClass].Infrastructure.cs`: Framework and system-level tests.
+    - `[TestClass].Behavior.cs`: User interaction and workflow tests.
+    - `[TestClass].Helpers.cs`: TestScope, mocks, utilities (per existing pattern).
+  - **Decision Flow**:
+    1. **[TestClass].EdgeCases.cs**:
+       - Test name includes: `Error`, `Exception`, `Fail`, `Invalid`, `Null`, `Empty`, `Timeout`, `Malformed`, `Corrupt`.
+       - Uses: `Assert.Throws`, `ThrowsAsync`, `SetException`, `HttpRequestException`, `InvalidOperationException`.
+       - Setup includes: `CreateFailing*`, `WithFailing*`, `SetupFailure`, `SetupException`, `SetupThrows`.
+       - Validates: Error messages, exception handling, fallback behavior, graceful degradation.
+       - Inputs: Null values, empty collections, invalid data, extreme values.
+    2. **[TestClass].Infrastructure.cs**:
+       - Test name includes: `Lifecycle`, `Logging`, `Cache`, `Auth`, `DI`, `JSInterop`, `Serializ`, `Disposal`, `Memory`, `Event`.
+       - Validates: `OnInitialized`, `OnParametersSet`, `OnAfterRender`, `StateHasChanged`, `Dispose`.
+       - Checks: Log entries, event IDs, authentication state, dependency injection, JS calls.
+       - Uses: `CascadingValue`, `AuthenticationState`, `JSInterop`, `LocalStorage`, cache services.
+       - Focuses on: Framework behavior, system integration, resource management.
+    3. **[TestClass].Behavior.cs**:
+       - Test name includes: `Click`, `Submit`, `Change`, `Interaction`, `Workflow`, `Concurrent`, `Multiple`, `Rapid`.
+       - Uses: `ClickAsync`, `ChangeAsync`, `TriggerEventAsync`, `MouseEventArgs`, `ChangeEventArgs`.
+       - Performs: User interactions, form submissions, button clicks, input changes.
+       - Validates: State transitions, user workflows, interactive behavior.
+       - Setup: Multiple operations, concurrent tasks, user simulation.
+    4. **[TestClass].cs** (Default):
+       - Covers: Basic rendering, simple property validation, "happy path" scenarios, structure verification, default state validation.
+  - **Code Structure**:
+    - Use same namespace (e.g., `Tests.[ProjectName].Features`) and `partial class [TestClass]` declaration across all files.
+    ```csharp
+    namespace Tests.[ProjectName].Features;
+    partial class HomeTests
+    {
+        // Test methods for specific category
+    }
+    ```
+  - **Examples**:
+    - `HomeTests.EdgeCases.cs`: `Should_Handle_Null_Input_Gracefully`, `Should_Throw_ArgumentException_When_Invalid`, `Should_Display_Error_When_API_Fails`.
+    - `HomeTests.Infrastructure.cs`: `Should_Log_Initialization_Events`, `Should_Dispose_Resources_Properly`, `Should_Handle_Authentication_State`.
+    - `HomeTests.Behavior.cs`: `Should_Submit_Form_When_Button_Clicked`, `Should_Handle_Concurrent_Operations`, `Should_Update_State_On_Input_Change`.
+    - `HomeTests.cs`: `Should_Render_Successfully`, `Should_Display_Correct_Title`, `Should_Have_Required_Elements`.
+  - **Override Rule**: If a test fits multiple categories, prioritize: 1. EdgeCases, 2. Infrastructure, 3. Behavior, 4. Main.
+- **Minimal Component Tests**: Write only essential TUnit tests for simple components (e.g., buttons). Avoid overengineering with excessive or redundant tests.
 - **Test Structure**: Arrange-Act-Assert with comments.
 - **TestScope Architecture**: Use `TestScope` with primary constructor, fluent methods, and `IDisposable`.
   ```csharp
@@ -112,7 +157,7 @@
       public void Dispose() => Context?.Dispose();
   }
   private static TestScope CreateTestScope() => new TestScope().WithStandardServices();
-  ```
+  - Use TUnit’s `TestContext` for debug output in tests to ensure visibility in test output. Avoid other methods.
 - **TUnit Assertions**:
   - Chain related assertions: `await Assert.That(markup).IsNotNull().And.Contains("expected")`.
   - Use `Assert.Multiple` for unrelated concerns:
@@ -191,9 +236,11 @@
 - **Features**: `src/[ProjectName]/Features/` for components and pages.
 - **Static Assets**: `src/[ProjectName]/wwwroot/` for CSS, SCSS, JS, sample data, libraries.
 - **Tests**: `tests/` mirroring source structure with TUnit projects.
+- **Test Project Naming**: Name all test projects `[ProjectName].Tests` (e.g., `MyApp.Tests`) to maintain consistent solution structure.
 - **Scripts**: `scripts/` for PowerShell automation.
 - **Config**: `.github/` for workflows, instructions, prompts, chatmodes.
 - **Key Directories**: `.github/instructions/` (standards), `.github/prompts/` (AI prompts), `.github/chatmodes/` (AI modes), `src/[ProjectName]/Api/` (Azure Functions), `src/[ProjectName]/Common/` (shared).
+- **PRD File Location**: Locate all PRDs, PRD-TaskLists, and PRD-ToDos in the `tasks/` folder. Files use the format `PRD-XXX` (XXX is 000–999) to group related documents.
 
 ## 📝 Markdown Standards
 - **Compliance**: Follow `.github/instructions/markdown.instructions.md` with MarkdownLint rules (MD001-MD059).
@@ -219,14 +266,18 @@
      - *Why*: Scripts improve speed and accuracy.
   Reserve scripts for these scenarios, avoiding them for simple tasks where manual methods suffice. If unsure, ask for clarification to ensure the best approach.
 - **Build Verification**: Use `run_build` tool.
-- **External Tools**:
-  - Context7 MCP: `resolve-library-id` → `get-library-docs`.
-  - Fetch MCP: Convert URLs to Markdown.
-  - Brave Search: Use `brave_web_search` (2,000 queries/month).
-  - Sequential Thinking: Apply for complex problem-solving.
+- **MCP Server Usage**: Use the following MCP servers for specific tasks:
+  - `github`: Automate GitHub API tasks (e.g., repo creation, PRs).
+  - `puppeteer`: Scrape JavaScript-rendered pages (e.g., dynamic content).
+  - `fetch`: Scrape static content or convert URLs to Markdown (e.g., documentation).
+  - `brave-search`: Conduct web searches with `brave_web_search` (2,000 queries/month) (e.g., find APIs).
+  - `time`: Handle time-related tasks (e.g., log build times).
+  - `context7`: Process HTTP-based context (e.g., analyze code context, resolve library IDs, get library docs).
+  - `sequentialthinking`: Solve complex problems (e.g., optimize algorithms).
 
 ## 📚 General Best Practices
 - **TDD**: Test first, small steps, continuous refactoring, behavior-focused.
 - **DI**: Dependency inversion, constructor injection, single responsibility, interface segregation.
 - **Testing**: Use TestScope, TUnit chaining, test error scenarios, zero warnings, partial class structure.
 - **General**: Create modular, reusable, testable components; use strongly-typed parameters; handle exceptions with try/catch or `<ErrorBoundary>`; prefer C#/Blazor over JS; use `StateHasChanged()` sparingly; implement `IDisposable` for subscriptions/timers.
+- **Important Rules** never say any form of : you’re absolutely right, always ultrathink, give shorter explanation possible when asked

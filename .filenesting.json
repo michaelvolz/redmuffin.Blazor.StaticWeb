@@ -95,11 +95,20 @@
           "-vsdoc.js": [
             ".js"
           ],
-          ".Logging.cs": [
+          ".Behavior.cs": [
+            ".razor"
+          ],
+          ".EdgeCases.cs": [
             ".razor"
           ],
           ".Helpers.cs": [
             ".cs"
+          ],
+          ".Infrastructure.cs": [
+            ".razor"
+          ],
+          ".Logging.cs": [
+            ".razor"
           ]
         }
       },
