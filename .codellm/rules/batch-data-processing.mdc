@@ -1,0 +1,8 @@
+---
+description: Process large datasets or text in smaller batches to prevent errors and performance issues.
+globs: *.*
+alwaysApply: true
+---
+# Batch Data Processing
+
+- **Batch Data Processing**: Process large datasets or text in smaller batches to prevent errors, file corruption, or performance issues. Avoid handling entire files at once unless explicitly requested.

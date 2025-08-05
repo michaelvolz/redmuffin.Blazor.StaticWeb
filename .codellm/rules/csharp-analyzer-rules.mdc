@@ -1,0 +1,31 @@
+---
+description: Strict adherence to StyleCop, Meziantou, and Microsoft analyzer rules for C# code.
+globs: *.cs
+alwaysApply: true
+---
+# C# Analyzer Rules
+
+- **Analyzer Rules** (Zero Tolerance):
+  - **StyleCop**:
+    - SA1402: One type per file.
+    - SA1208/1210: Order usings (System first, alphabetical).
+    - SA1201-1214: Enforce member order.
+    - SA1413: Trailing commas in multi-line initializers.
+    - SA1028: No trailing whitespace.
+    - SA1500: Opening brace on new line.
+    - SA1507: No multiple blank lines.
+    - SA1508: No blank line before closing brace.
+  - **Meziantou**:
+    - MA0016: Use `IEnumerable<T>`, `IList<T>` abstractions.
+    - MA0002/0006/0074: Specify `StringComparison.OrdinalIgnoreCase`.
+    - MA0048: File name must match type name.
+    - MA0051: Methods <60 lines.
+    - MA0053: Make class sealed when possible.
+  - **Microsoft**:
+    - CA1845: Use `AsSpan()` instead of `Substring()`.
+    - CA1854: Use `TryGetValue` for Dictionary.
+    - CA1869: Cache `JsonSerializerOptions` instances.
+    - CA1848: Use `LoggerMessage` delegates.
+    - CA2016: Forward `CancellationToken` parameters.
+    - CA1805: Remove explicit default initialization.
+    - CA1822: Mark members static when possible.

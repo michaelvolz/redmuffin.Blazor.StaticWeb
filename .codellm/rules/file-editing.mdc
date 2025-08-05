@@ -1,0 +1,8 @@
+---
+description: Edit one file at a time and track progress in multi-file changes.
+globs: *.*
+alwaysApply: true
+---
+# File Editing
+
+- **File Editing**: Edit one file at a time, track progress (e.g., "Edit 2 of 5").

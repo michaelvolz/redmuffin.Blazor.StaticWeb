@@ -1,0 +1,12 @@
+---
+description: Use LoggerMessage delegates for logging in C#, never Logger.LogError.
+globs: *.cs
+alwaysApply: true
+---
+# C# Logging
+
+- **Logging**: Use `LoggerMessage` delegates, NEVER `Logger.LogError()`.
+
+  ```csharp
+  private static readonly Action<ILogger, Exception?> LogEvent = LoggerMessage.Define(LogLevel.Information, new EventId(1, "Event"), "Event occurred");
+  ```

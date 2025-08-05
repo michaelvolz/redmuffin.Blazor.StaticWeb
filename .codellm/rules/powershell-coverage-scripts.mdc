@@ -1,0 +1,8 @@
+---
+description: Use specific PowerShell scripts for generating and viewing coverage reports.
+globs: *.ps1
+alwaysApply: true
+---
+# PowerShell Coverage Scripts
+
+- **Coverage Scripts**: Use `scripts/Generate-CoverageReport.ps1`, `scripts/View-CoverageReport.ps1`. Outputs HTML, XML, JSON, Cobertura to `coverage/`.

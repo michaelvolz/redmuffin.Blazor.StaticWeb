@@ -1,0 +1,8 @@
+---
+description: Ensure WCAG 2.1 AA compliance with semantic HTML and ARIA roles.
+globs: *.razor, *.scss
+alwaysApply: true
+---
+# UI Accessibility
+
+- **Accessibility**: Ensure WCAG 2.1 AA, semantic HTML, ARIA roles.

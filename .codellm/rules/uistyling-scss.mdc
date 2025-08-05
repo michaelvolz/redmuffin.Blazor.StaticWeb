@@ -1,0 +1,8 @@
+---
+description: Use SCSS in wwwroot/scss/, never modify CSS or use .razor.css.
+globs: *.scss
+alwaysApply: true
+---
+# Styling with SCSS
+
+- **Styling**: Use SCSS in `wwwroot/scss/`, NEVER modify CSS or use `.razor.css`. Partials start with `_`, included in `app.scss`.

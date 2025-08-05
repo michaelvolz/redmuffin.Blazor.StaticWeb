@@ -1,0 +1,14 @@
+---
+description: Overview of frontend, backend, testing framework, build settings, deployment, dependencies, and UI styling.
+globs: *.*
+alwaysApply: true
+---
+# Project Structure and Configuration
+
+- **Frontend**: Blazor WebAssembly (.NET 9), feature-based structure.
+- **Backend**: Azure Functions (.NET 8), isolated worker.
+- **Testing Framework**: TUnit with `[Test]` and `[Arguments]`. NEVER use xUnit, NUnit, or MSTest. (See copilot-instructions_testing.md for details.)
+- **Build Settings**: `WasmStripILAfterAOT=true`, `InvariantGlobalization=true`, `PublishTrimmed=true`.
+- **Deployment**: Azure Static Web Apps with CSP and caching in `staticwebapp.config.json`.
+- **Dependencies and Configuration**: See copilot-instructions_dotnet.md for details.
+- **UI and Styling**: See copilot-instructions_uistyling.md for details.

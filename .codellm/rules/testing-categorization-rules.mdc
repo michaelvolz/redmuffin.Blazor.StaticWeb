@@ -1,0 +1,52 @@
+---
+description: Rules for categorizing and organizing TUnit tests into partial class files.
+globs: *.cs
+alwaysApply: true
+---
+# Test Categorization Rules
+
+- **Test Categorization Rules**: Organize TUnit tests into partial class files for each test class (e.g., `HomeTests`) to enhance maintainability. Apply this decision matrix in order:
+  - **File Structure**:
+    - `[TestClass].cs`: Basic functionality tests.
+    - `[TestClass].EdgeCases.cs`: Error handling and edge case tests.
+    - `[TestClass].Infrastructure.cs`: Framework and system-level tests.
+    - `[TestClass].Behavior.cs`: User interaction and workflow tests.
+    - `[TestClass].Helpers.cs`: TestScope, mocks, utilities (per existing pattern).
+  - **Decision Flow**:
+    1. **[TestClass].EdgeCases.cs**:
+       - Test name includes: `Error`, `Exception`, `Fail`, `Invalid`, `Null`, `Empty`, `Timeout`, `Malformed`, `Corrupt`.
+       - Uses: `Assert.Throws`, `ThrowsAsync`, `SetException`, `HttpRequestException`, `InvalidOperationException`.
+       - Setup includes: `CreateFailing*`, `WithFailing*`, `SetupFailure`, `SetupException`, `SetupThrows`.
+       - Validates: Error messages, exception handling, fallback behavior, graceful degradation.
+       - Inputs: Null values, empty collections, invalid data, extreme values.
+    2. **[TestClass].Infrastructure.cs**:
+       - Test name includes: `Lifecycle`, `Logging`, `Cache`, `Auth`, `DI`, `JSInterop`, `Serializ`, `Disposal`, `Memory`, `Event`.
+       - Validates: `OnInitialized`, `OnParametersSet`, `OnAfterRender`, `StateHasChanged`, `Dispose`.
+       - Checks: Log entries, event IDs, authentication state, dependency injection, JS calls.
+       - Uses: `CascadingValue`, `AuthenticationState`, `JSInterop`, `LocalStorage`, cache services.
+       - Focuses on: Framework behavior, system integration, resource management.
+    3. **[TestClass].Behavior.cs**:
+       - Test name includes: `Click`, `Submit`, `Change`, `Interaction`, `Workflow`, `Concurrent`, `Multiple`, `Rapid`.
+       - Uses: `ClickAsync`, `ChangeAsync`, `TriggerEventAsync`, `MouseEventArgs`, `ChangeEventArgs`.
+       - Performs: User interactions, form submissions, button clicks, input changes.
+       - Validates: State transitions, user workflows, interactive behavior.
+       - Setup: Multiple operations, concurrent tasks, user simulation.
+    4. **[TestClass].cs** (Default):
+       - Covers: Basic rendering, simple property validation, "happy path" scenarios, structure verification, default state validation.
+  - **Code Structure**:
+    - Use same namespace (e.g., `Tests.[ProjectName].Features`) and `partial class [TestClass]` declaration across all files.
+
+    ```csharp
+    namespace Tests.[ProjectName].Features;
+    partial class HomeTests
+    {
+        // Test methods for specific category
+    }
+    ```
+
+  - **Examples**:
+    - `HomeTests.EdgeCases.cs`: `Should_Handle_Null_Input_Gracefully`, `Should_Throw_ArgumentException_When_Invalid`, `Should_Display_Error_When_API_Fails`.
+    - `HomeTests.Infrastructure.cs`: `Should_Log_Initialization_Events`, `Should_Dispose_Resources_Properly`, `Should_Handle_Authentication_State`.
+    - `HomeTests.Behavior.cs`: `Should_Submit_Form_When_Button_Clicked`, `Should_Handle_Concurrent_Operations`, `Should_Update_State_On_Input_Change`.
+    - `HomeTests.cs`: `Should_Render_Successfully`, `Should_Display_Correct_Title`, `Should_Have_Required_Elements`.
+  - **Override Rule**: If a test fits multiple categories, prioritize: 1. EdgeCases, 2. Infrastructure, 3. Behavior, 4. Main.

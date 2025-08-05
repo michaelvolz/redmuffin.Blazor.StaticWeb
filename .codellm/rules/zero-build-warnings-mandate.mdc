@@ -1,0 +1,8 @@
+---
+description: Mandate to fix all build warnings except IL2111 after every C# file change using dotnet commands.
+globs: *.cs
+alwaysApply: true
+---
+# Zero Build Warnings Mandate
+
+- **ZERO BUILD WARNINGS MANDATE**: AFTER EVERY C# FILE CHANGE, RUN `dotnet clean && dotnet build --no-restore --verbosity quiet`. FIX ALL WARNINGS (EXCEPT IL2111) BEFORE CONTINUING. FAILURE CAUSES HUNDREDS OF ERRORS.

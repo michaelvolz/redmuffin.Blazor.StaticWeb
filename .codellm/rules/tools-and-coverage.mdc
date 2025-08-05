@@ -1,0 +1,17 @@
+---
+description: Guidelines for coverage scripts, build verification, and MCP server usage for various tasks.
+globs: *.*
+alwaysApply: true
+---
+# Tools and Coverage
+
+- **Coverage**: See copilot-instructions_powershell.md for details on coverage scripts and configuration.
+- **Build Verification**: Use `run_build` tool.
+- **MCP Server Usage**: Use the following MCP servers for specific tasks:
+  - `github`: Automate GitHub API tasks (e.g., repo creation, PRs).
+  - `puppeteer`: Scrape JavaScript-rendered pages (e.g., dynamic content).
+  - `fetch`: Scrape static content or convert URLs to Markdown (e.g., documentation).
+  - `brave-search`: Conduct web searches with `brave_web_search` (2,000 queries/month) (e.g., find APIs).
+  - `time`: Handle time-related tasks (e.g., log build times).
+  - `context7`: Process HTTP-based context (e.g., analyze code context, resolve library IDs, get library docs).
+  - `sequentialthinking`: Solve complex problems (e.g., optimize algorithms).

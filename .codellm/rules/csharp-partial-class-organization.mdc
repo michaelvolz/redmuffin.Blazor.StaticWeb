@@ -1,0 +1,39 @@
+---
+description: Organization of partial classes for Blazor components, services, and tests with file naming conventions.
+globs: *.cs, *.razor
+alwaysApply: true
+---
+# C# Partial Class Organization
+
+- **Partial Class Organization**:
+  - **Blazor Components**: Split into `ComponentName.razor.cs` (logic, lifecycle, properties, events) and `ComponentName.Logging.cs` (`LoggerMessage` delegates).
+
+    ```csharp
+    // ComponentName.razor.cs
+    public partial class Home : ComponentBase
+    {
+        [Inject] public required ILogger<Home> Logger { get; set; }
+        private async Task HandleClickAsync()
+        {
+            LogButtonClicked(Logger, null);
+        }
+    }
+    // ComponentName.Logging.cs
+    public partial class Home
+    {
+        private static readonly Action<ILogger, Exception?> LogButtonClicked = LoggerMessage.Define(LogLevel.Information, new EventId(5, "ButtonClicked"), "Button clicked");
+    }
+    ```
+
+  - **Services**: Split into `ServiceName.cs` (logic, methods, properties) and `ServiceName.Logging.cs` (`LoggerMessage` delegates).
+  - **Tests**: Split into `TestClassName.cs` (`[Test]` methods) and `TestClassName.Helpers.cs` (TestScope, mocks, utilities in same partial class). NEVER create separate helper files. (See copilot-instructions_testing.md for detailed test categorization.)
+  - **File Naming**:
+    - Components: `Home.razor.cs`, `Home.Logging.cs`.
+    - Services: `UserService.cs`, `UserService.Logging.cs`.
+    - Tests: `HomeTests.cs`, `HomeTests.Helpers.cs`.
+    - Test files: Use `Component_Tests.cs` for new test files (e.g., `Home_Tests.cs`), incorporating an underscore for consistency with naming standards.
+  - **Migration Priorities**:
+    - Components: Already follow partial class pattern.
+    - Services: Migrate to `LoggerMessage` in partial classes.
+    - Tests: Split large test files into main and helpers.
+    - New Code: Follow partial class standards.

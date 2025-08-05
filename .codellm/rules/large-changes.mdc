@@ -1,0 +1,8 @@
+---
+description: For large changes, outline plan, get approval, make incremental edits, ensure buildable state.
+globs: *.*
+alwaysApply: true
+---
+# Large Changes
+
+- **Large Changes**: Outline plan, get approval, make incremental edits, ensure buildable state.

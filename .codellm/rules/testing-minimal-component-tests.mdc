@@ -1,0 +1,8 @@
+---
+description: Write only essential tests for simple components to avoid overengineering.
+globs: *.cs
+alwaysApply: true
+---
+# Minimal Component Tests
+
+- **Minimal Component Tests**: Write only essential TUnit tests for simple components (e.g., buttons). Avoid overengineering with excessive or redundant tests.

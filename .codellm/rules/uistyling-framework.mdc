@@ -1,0 +1,8 @@
+---
+description: Use Zurb Foundation via CDN for UI framework.
+globs: *.razor, *.scss
+alwaysApply: true
+---
+# UI Framework
+
+- **Framework**: Zurb Foundation (CDN).

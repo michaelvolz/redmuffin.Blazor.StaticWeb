@@ -1,0 +1,13 @@
+---
+description: Project configuration for frontend, backend, build settings, deployment, and dependencies.
+globs: *.*
+alwaysApply: true
+---
+# .NET Project Configuration
+
+- **Project Configuration**:
+  - **Frontend**: Blazor WebAssembly (.NET 9), feature-based structure.
+  - **Backend**: Azure Functions (.NET 8), isolated worker.
+  - **Build Settings**: `WasmStripILAfterAOT=true`, `InvariantGlobalization=true`, `PublishTrimmed=true`.
+  - **Deployment**: Azure Static Web Apps with CSP and caching in `staticwebapp.config.json`.
+  - **Dependencies**: Blazored.LocalStorage, Markdig, Microsoft.Azure.Functions.Worker, TUnit, Zurb Foundation (CDN), FontAwesome (CDN), BuildWebCompiler2022 (SCSS), Coverlet, Analyzers (Roslynator, StyleCop, Meziantou, VSThreading).
