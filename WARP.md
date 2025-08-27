@@ -86,8 +86,7 @@ Note: The SWA CLI is used via IDE/SwaLauncher; there are no repo-root CLI script
   - Project uses feature-based organization and Azure Static Web Apps for deployment
 - CSS/SCSS policy:
   - From README and project rules: CSS is auto-generated; author styles in SCSS only under wwwroot/scss
-  - Separate user rule: do not change CSS files except .razor.css; prefer SCSS for global styling
-
+  
 ## Notes for running agents
 
 - Prefer solution-wide commands against redmuffin.Blazor.StaticWeb.sln
@@ -102,4 +101,3 @@ Note: The SWA CLI is used via IDE/SwaLauncher; there are no repo-root CLI script
 - Directory.Build.props (analyzers, build options)
 - global.json (SDK pin)
 - Solution file (project topology)
-
