@@ -1,5 +1,11 @@
 # Agent Instructions
 
+## 🚨 CRITICAL: Commit and Push
+
+**NEVER commit or push without explicit user permission.** The user must explicitly say "commit" or "commit and push" before taking any git action. This ensures the user has full control over when changes go public.
+
+Wait for the user to explicitly request a commit before proceeding.
+
 Skills folder (`skills/`) contains detailed rules - loaded automatically when relevant:
 - dotnet, csharp-standards, testing, ui-styling, powershell, markdown, package-management, commits
 
@@ -19,7 +25,6 @@ For deeper context on specific topics, see `.github/guides/`:
 - **ZERO BUILD WARNINGS**: After every C# file change, run `dotnet clean && dotnet build --no-restore --verbosity quiet`. Fix all warnings (except IL2111).
 - **File Editing**: Edit one file at a time, track progress (e.g., "Edit 2 of 5").
 - **Large Changes**: Outline plan, get approval, make incremental edits, ensure buildable state.
-- **Commit vs Push**: NEVER commit or push without explicit user permission. Always wait for the user to explicitly say "commit" or "commit and push" before taking any git action. This ensures the user has full control over when changes go public.
 
 ## Project Overview
 
