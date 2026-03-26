@@ -3,6 +3,16 @@
 Skills folder (`skills/`) contains detailed rules - loaded automatically when relevant:
 - dotnet, csharp-standards, testing, ui-styling, powershell, markdown, package-management, commits
 
+## Reference Guides
+
+For deeper context on specific topics, see `.github/guides/`:
+- `blazor.md` - Blazor patterns and best practices
+- `aspnet-rest-apis.md` - ASP.NET REST API development
+- `azure-functions.md` - Azure Functions best practices
+- `github-actions.md` - CI/CD pipeline design
+- `performance.md` - Performance optimization techniques
+- `documentation.md` - Documentation standards
+
 ## 🚨 Critical Rules
 
 - **ZERO BUILD WARNINGS**: After every C# file change, run `dotnet clean && dotnet build --no-restore --verbosity quiet`. Fix all warnings (except IL2111).
