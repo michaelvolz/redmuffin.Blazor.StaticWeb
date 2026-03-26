@@ -50,8 +50,7 @@ jobs:
             docs/**/*.md
             tasks/**/*.md
             spec/**/*
-            .github/copilot-instructions.md
-            .github/instructions/**/*.md
+            .github/guides/**/*.md
             .github/prompts/**/*.md
             .github/chatmodes/**/*.md
             tests/**/*

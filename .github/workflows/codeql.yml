@@ -42,8 +42,8 @@ jobs:
             "docs/*.md"
             "tasks/*.md"
             "spec/**/*"
-            ".github/copilot-instructions.md"
-            ".github/instructions/*.md"
+            "AGENTS.md"
+            ".github/guides/*.md"
             ".github/prompts/*.md"
             ".github/chatmodes/*.md"
             # Test projects (source files are committed but don't affect security analysis)
