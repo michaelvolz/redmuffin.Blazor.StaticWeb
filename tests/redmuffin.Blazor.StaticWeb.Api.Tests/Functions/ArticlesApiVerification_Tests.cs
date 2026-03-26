@@ -10,6 +10,28 @@ namespace redmuffin.Blazor.StaticWeb.Api.Tests.Functions;
 /// </summary>
 public sealed partial class ArticlesApiVerification_Tests
 {
+    private static readonly HttpStatusCode[] TransientStatuses = [HttpStatusCode.BadGateway, HttpStatusCode.ServiceUnavailable, HttpStatusCode.GatewayTimeout];
+
+    private static async Task<(HttpResponseMessage Response, string Content)> GetWithRetryAsync(HttpClient client, string url, int maxRetries = 3)
+    {
+        for (int i = 0; i < maxRetries; i++)
+        {
+            var response = await client.GetAsync(url).ConfigureAwait(false);
+            var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            if (response.IsSuccessStatusCode || !TransientStatuses.Contains(response.StatusCode))
+            {
+                return (response, content);
+            }
+
+            await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+        }
+
+        var finalResponse = await client.GetAsync(url).ConfigureAwait(false);
+        var finalContent = await finalResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+        return (finalResponse, finalContent);
+    }
+
     /// <summary>
     ///     Validates that Articles API response maintains expected structure and data integrity.
     /// </summary>
@@ -32,8 +54,7 @@ public sealed partial class ArticlesApiVerification_Tests
         var articlesUrl = "https://api.raindrop.io/rest/v1/raindrops/56658122?sort=-created";
 
         // Act
-        var response = await httpClient.GetAsync(articlesUrl).ConfigureAwait(false);
-        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var (response, json) = await GetWithRetryAsync(httpClient, articlesUrl).ConfigureAwait(false);
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.OK);
@@ -67,11 +88,8 @@ public sealed partial class ArticlesApiVerification_Tests
         var articlesUrl = "https://api.raindrop.io/rest/v1/raindrops/56658122?sort=-created";
 
         // Act
-        var videosResponse = await httpClient.GetAsync(videosUrl).ConfigureAwait(false);
-        var videosJson = await videosResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-        var articlesResponse = await httpClient.GetAsync(articlesUrl).ConfigureAwait(false);
-        var articlesJson = await articlesResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var (videosResponse, videosJson) = await GetWithRetryAsync(httpClient, videosUrl).ConfigureAwait(false);
+        var (articlesResponse, articlesJson) = await GetWithRetryAsync(httpClient, articlesUrl).ConfigureAwait(false);
 
         // Assert
         await Assert.That(videosResponse.StatusCode).IsEqualTo(HttpStatusCode.OK);
