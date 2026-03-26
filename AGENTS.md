@@ -8,6 +8,7 @@ This is the main instruction file. Domain-specific rules are in the `skills/` fo
 - `skills/powershell/` - Script automation
 - `skills/markdown/` - Markdown standards, MarkdownLint
 - `skills/package-management/` - NuGet package management
+- `skills/commits/` - Conventional commit format
 
 ## 🚨 Critical Rules
 
