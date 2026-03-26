@@ -53,6 +53,7 @@ jobs:
             .github/guides/**/*.md
             .github/prompts/**/*.md
             .github/chatmodes/**/*.md
+            .opencode/**/*
             tests/**/*
             scripts/**/*
             .editorconfig

@@ -46,6 +46,7 @@ jobs:
             ".github/guides/*.md"
             ".github/prompts/*.md"
             ".github/chatmodes/*.md"
+            ".opencode/**/*"
             # Test projects (source files are committed but don't affect security analysis)
             "tests/**/*"
             # Build and development tools (committed but don't need security analysis)
