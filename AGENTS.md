@@ -1,50 +1,155 @@
 # Agent Instructions
 
-## 🚨 CRITICAL: Commit and Push
+## Build, Lint, and Test Commands
 
-**NEVER commit or push without explicit user permission.** The user must explicitly say "commit" or "commit and push" before taking any git action. This ensures the user has full control over when changes go public.
+### Build
+```powershell
+dotnet build                    # Build entire solution
+dotnet build --no-restore       # Fast build (after restore)
+```
+**Zero Build Warnings Policy**: After any C# file change, run `dotnet build --verbosity quiet` and fix all warnings (except IL2111).
 
-Wait for the user to explicitly request a commit before proceeding.
+### Testing
+```powershell
+dotnet test                     # Run all tests
+dotnet test --filter "FullyQualifiedName~TestClassName"  # Run specific test class
+dotnet test --filter "FullyQualifiedName~TestMethodName" # Run single test
+dotnet test --list-tests       # List all tests
+```
 
-Skills folder (`skills/`) contains detailed rules - loaded automatically when relevant:
-- dotnet, csharp-standards, testing, ui-styling, powershell, markdown, package-management, commits
+**AOT Compilation**: Tests run with AOT in CI (`CI=true` or `GITHUB_ACTIONS=true`), disabled locally for speed.
 
-## Reference Guides
+### Code Coverage
+```powershell
+.\scripts\Generate-CoverageReport.ps1  # Generate coverage report
+.\scripts\View-CoverageReport.ps1       # View unified report
+```
 
-For deeper context on specific topics, see `.github/guides/`:
-- `blazor.md` - Blazor patterns and best practices
-- `aspnet-rest-apis.md` - ASP.NET REST API development
-- `azure-functions.md` - Azure Functions best practices
-- `github-actions.md` - CI/CD pipeline design
-- `performance.md` - Performance optimization techniques
-- `documentation.md` - Documentation standards
-- `security.md` - Security and API guidelines
-
-## 🚨 Critical Rules
-
-- **ZERO BUILD WARNINGS**: After every C# file change, run `dotnet clean && dotnet build --no-restore --verbosity quiet`. Fix all warnings (except IL2111).
-- **File Editing**: Edit one file at a time, track progress (e.g., "Edit 2 of 5").
-- **Large Changes**: Outline plan, get approval, make incremental edits, ensure buildable state.
-
-## Project Overview
-
-- **Frontend**: Blazor WebAssembly (.NET 9)
-- **Backend**: Azure Functions (.NET 9), isolated worker
-- **Testing**: TUnit (NEVER xUnit, NUnit, MSTest)
-- **Deployment**: Azure Static Web Apps
-
-## File Organization
-
-- Features: `src/[Project]/Features/`
-- Tests: `tests/` mirroring source
-- PRDs: `tasks/PRD-XXX-*.md`
-- Scripts: `scripts/`
-
-## Build Scripts
-
-- `scripts/test-build-fast.ps1` - Development builds (AoT disabled, ~9s)
+### Development Build Scripts
+- `scripts/test-build-fast.ps1` - Fast dev build (~9s, AoT disabled)
 - `scripts/test-build-aot.ps1` - Production parity testing
-- `scripts/Generate-CoverageReport.ps1` - Test coverage reports
+- `scripts/DisplayWarnings.ps1` - Show all build warnings
+
+---
+
+## Code Style Guidelines
+
+### Formatting (.editorconfig)
+- **C# files**: Tab indentation (4 tabs = 4 spaces)
+- **Web files** (`.razor`, `.cshtml`): 4-space indentation
+- **Project files** (`.csproj`): 2-space indentation
+- Max line length: 160 characters
+- Opening brace on new line
+
+### Naming Conventions
+- **Types/Namespaces**: PascalCase (e.g., `HomePage`, `UserService`)
+- **Methods/Properties**: PascalCase
+- **Private fields**: camelCase (e.g., `_userService`)
+- **Static readonly fields**: `UpperCamelCase_underscore` (e.g., `LogEvent`)
+- **Interfaces**: Prefix with "I" (e.g., `IUserService`)
+- **Test doubles**: `[ClassName]_[Type]` (e.g., `NavigationManager_Mock`, `HttpClient_Stub`)
+
+### Imports
+- File-scoped namespace declarations
+- Single-line using directives
+- System.* imports first, then alphabetical
+
+### C# 12/13 Features
+- Primary constructors
+- Collection expressions (`[1, 2, 3]`)
+- `ref readonly` parameters
+- Pattern matching in switch expressions
+- Use `nameof` instead of string literals
+
+### Nullable Reference Types
+- Declare variables non-nullable
+- Check for `null` at entry points
+- Use `is null` or `is not null` (NOT `== null`)
+
+### Error Handling
+- Use `LoggerMessage` delegates (NEVER `Logger.LogError()`)
+- Throw specific exceptions with meaningful messages
+- Test error scenarios in `.EdgeCases.cs` files
+
+---
+
+## Partial Class Organization
+
+### Blazor Components
+```
+Features/Home/
+  Home.razor.cs      # Logic, lifecycle, properties, events
+  Home.Logging.cs   # LoggerMessage delegates
+```
+
+### Services
+```
+Core/Services/
+  UserService.cs           # Logic, methods, properties
+  UserService.Logging.cs   # LoggerMessage delegates
+```
+
+### Tests (NEVER separate helper files)
+```
+Core/HomeTests/
+  HomeTests.cs              # [Test] methods
+  HomeTests.Helpers.cs      # TestScope, mocks, utilities
+  HomeTests.EdgeCases.cs    # Error handling, edge cases
+  HomeTests.Infrastructure.cs  # Lifecycle, logging, DI
+  HomeTests.Behavior.cs     # User interactions, workflows
+```
+
+---
+
+## Testing Standards
+
+### Framework
+- **TUnit** with `[Test]` and `[Arguments]` (NEVER xUnit/NUnit/MSTest)
+- **LightMock.Generator** for external dependencies, **Custom mocks** for internal
+
+### Test Quality
+- Use `ConfigureAwait(false)` on async calls (except asserts)
+- Follow AAA structure, use `using` for disposal
+- Test edge cases, zero build warnings
+
+### Mocking Patterns
+```csharp
+// LightMock for external dependencies
+var httpMock = new Mock<IHttpClientFactory>();
+httpMock.Arrange(f => f.CreateClient(The<string>.IsAnyValue)).Returns(new HttpClient());
+
+// Custom mock for internal components
+public sealed class NavigationManager_Mock : NavigationManager
+{
+    public string? NavigatedTo { get; private set; }
+    protected override void NavigateToCore(string uri, NavigationOptions options)
+        => NavigatedTo = uri;
+}
+```
+
+### Critical: Optional Parameters
+Always specify ALL parameters explicitly: `_mock.Arrange(f => f.GetAsync("key", CancellationToken.None))`
+
+---
+
+## Project Structure
+
+- **Frontend**: Blazor WebAssembly (.NET 9) - `src/redmuffin.Blazor.StaticWeb/`
+- **Backend**: Azure Functions (.NET 8) - `src/redmuffin.Blazor.StaticWeb.Api/`
+- **Tests**: `tests/` mirroring source structure
+- **Features**: `src/[Project]/Features/`
+- **PRDs**: `tasks/PRD-XXX-*.md`
+
+---
+
+## Critical Rules
+
+1. **NEVER commit or push** without explicit user permission
+2. **File Editing**: Edit one file at a time, track progress
+3. **Large Changes**: Outline plan, get approval, make incremental edits
+4. **Skills**: See `skills/` folder for detailed rules (loaded automatically):
+   - `csharp-standards`, `testing`, `ui-styling`, `dotnet`, `powershell`
+5. **Reference Guides**: `.github/guides/` contains detailed docs
 
 ## Development Modes
 
@@ -52,50 +157,3 @@ For deeper context on specific topics, see `.github/guides/`:
 |------|------|----------|
 | Simplified | 5233 | UI work, uses mock data when API unavailable |
 | Full Stack | 4280 | API integration, OAuth, E2E testing |
-
-## Configuration
-
-- Use `Debug-Sass` configuration for SCSS compilation
-- Debug mode: analyzers ENABLED
-- Release mode: analyzers DISABLED
-
-## MCP Servers
-
-Use these MCP servers for specific tasks:
-- **github**: Automate GitHub API tasks (e.g., repo creation, PRs)
-- **puppeteer**: Scrape JavaScript-rendered pages (e.g., dynamic content)
-- **fetch**: Scrape static content or convert URLs to Markdown (e.g., documentation)
-- **brave-search**: Conduct web searches (2,000 queries/month) (e.g., find APIs)
-- **time**: Handle time-related tasks (e.g., log build times)
-- **context7**: Process HTTP-based context (e.g., analyze code, resolve library IDs, get library docs)
-- **sequentialthinking**: Solve complex problems (e.g., optimize algorithms)
-
-## Agent Invocation Guide
-
-### Primary Agents
-The main agent handles most tasks. Use these for specific situations:
-
-| Trigger | Agent File | When to Use |
-|---------|------------|-------------|
-| `/debug` | `.opencode/agents/debug.md` | Bug reports, test failures, unexpected behavior |
-| `/janitor` | `.opencode/agents/janitor.md` | Code cleanup, modernization, tech debt |
-| `/beast` | `.opencode/agents/beastmode.md` | Complex problems requiring extensive web research |
-
-### Subagent Invocation
-Invoke these specialized agents using the `task` tool for domain-specific guidance:
-
-| Subagent | When to Use | Invocation Example |
-|----------|-------------|---------------------|
-| `expert-dotnet.md` | Design patterns, SOLID, C# best practices | "Use expert-dotnet to review my architecture" |
-| `azure-architect.md` | Azure architecture, WAF, cloud design | "Consult azure-architect for multi-region strategy" |
-| `accessibility.md` | WCAG compliance, inclusive UI | "Run accessibility review on these components" |
-
-### How to Delegate to Subagents
-
-```markdown
-Use the task tool to invoke subagents:
-
-- For design guidance: task(description=".NET design review", prompt="Review [code] for SOLID compliance", subagent_type="general")
-- For Azure decisions: task(description="Azure architecture", prompt="Recommend storage strategy for [scenario]", subagent_type="general")
-- For UI accessibility: task(description="Accessibility audit", prompt="Check [component] for WCAG 2.1 compliance", subagent_type="general")
-```
