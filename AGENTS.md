@@ -8,12 +8,12 @@ Skills folder (`skills/`) contains detailed rules - loaded automatically when re
 - **ZERO BUILD WARNINGS**: After every C# file change, run `dotnet clean && dotnet build --no-restore --verbosity quiet`. Fix all warnings (except IL2111).
 - **File Editing**: Edit one file at a time, track progress (e.g., "Edit 2 of 5").
 - **Large Changes**: Outline plan, get approval, make incremental edits, ensure buildable state.
-- **Commit vs Push**: Commit first, then wait for user prompt before pushing. This allows batching commits locally and amending if needed before they go public.
+- **Commit vs Push**: NEVER commit or push without explicit user permission. Always wait for the user to explicitly say "commit" or "commit and push" before taking any git action. This ensures the user has full control over when changes go public.
 
 ## Project Overview
 
 - **Frontend**: Blazor WebAssembly (.NET 9)
-- **Backend**: Azure Functions (.NET 8), isolated worker
+- **Backend**: Azure Functions (.NET 9), isolated worker
 - **Testing**: TUnit (NEVER xUnit, NUnit, MSTest)
 - **Deployment**: Azure Static Web Apps
 
