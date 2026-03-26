@@ -128,9 +128,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      # Install WASM workload for SIMD optimizations in Release builds
+      # Install WASM workload for .NET 9 Blazor builds (SIMD and trimming in Release)
       - name: Install WASM workload
-        run: dotnet workload install wasm-tools
+        run: dotnet workload install wasm-tools-net9
 
       # OPTIMIZATION: Single dependency restoration
       - name: Restore dependencies
