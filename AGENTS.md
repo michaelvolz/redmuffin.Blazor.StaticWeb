@@ -64,3 +64,33 @@ Use these MCP servers for specific tasks:
 - **time**: Handle time-related tasks (e.g., log build times)
 - **context7**: Process HTTP-based context (e.g., analyze code, resolve library IDs, get library docs)
 - **sequentialthinking**: Solve complex problems (e.g., optimize algorithms)
+
+## Agent Invocation Guide
+
+### Primary Agents
+The main agent handles most tasks. Use these for specific situations:
+
+| Trigger | Agent File | When to Use |
+|---------|------------|-------------|
+| `/debug` | `.opencode/agents/debug.md` | Bug reports, test failures, unexpected behavior |
+| `/janitor` | `.opencode/agents/janitor.md` | Code cleanup, modernization, tech debt |
+| `/beast` | `.opencode/agents/beastmode.md` | Complex problems requiring extensive web research |
+
+### Subagent Invocation
+Invoke these specialized agents using the `task` tool for domain-specific guidance:
+
+| Subagent | When to Use | Invocation Example |
+|----------|-------------|---------------------|
+| `expert-dotnet.md` | Design patterns, SOLID, C# best practices | "Use expert-dotnet to review my architecture" |
+| `azure-architect.md` | Azure architecture, WAF, cloud design | "Consult azure-architect for multi-region strategy" |
+| `accessibility.md` | WCAG compliance, inclusive UI | "Run accessibility review on these components" |
+
+### How to Delegate to Subagents
+
+```markdown
+Use the task tool to invoke subagents:
+
+- For design guidance: task(description=".NET design review", prompt="Review [code] for SOLID compliance", subagent_type="general")
+- For Azure decisions: task(description="Azure architecture", prompt="Recommend storage strategy for [scenario]", subagent_type="general")
+- For UI accessibility: task(description="Accessibility audit", prompt="Check [component] for WCAG 2.1 compliance", subagent_type="general")
+```
