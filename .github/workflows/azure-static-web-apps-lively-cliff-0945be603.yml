@@ -46,6 +46,7 @@ jobs:
         with:
           files: |
             README.md
+            AGENTS.md
             CHANGELOG.md
             docs/**/*.md
             tasks/**/*.md

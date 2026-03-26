@@ -38,14 +38,14 @@ jobs:
           DOC_FILES=(
             # Documentation files
             "README.md"
-            "CHANGELOG.md"
-            "docs/*.md"
-            "tasks/*.md"
-            "spec/**/*"
             "AGENTS.md"
-            ".github/guides/*.md"
-            ".github/prompts/*.md"
-            ".github/chatmodes/*.md"
+            "CHANGELOG.md"
+            "docs/**/*.md"
+            "tasks/**/*.md"
+            "spec/**/*"
+            ".github/guides/**/*.md"
+            ".github/prompts/**/*.md"
+            ".github/chatmodes/**/*.md"
             ".opencode/**/*"
             # Test projects (source files are committed but don't affect security analysis)
             "tests/**/*"
