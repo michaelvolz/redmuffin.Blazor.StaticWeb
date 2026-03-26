@@ -1,9 +1,0 @@
----
-description: Permitted warnings and handling of documentation warnings in C#.
-globs: *.cs
-alwaysApply: true
----
-# C# Permitted Warnings
-
-- **Permitted Warning**: IL2111 (Blazor WebAssembly `App_razor.g.cs` trimming) is safe to ignore.
-- **Documentation Warnings**: Fix SA1623/SA1615 in Visual Studio if documented; skip if undocumented.

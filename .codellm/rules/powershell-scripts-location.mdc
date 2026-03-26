@@ -1,8 +1,0 @@
----
-description: Place PowerShell scripts in the scripts/ directory.
-globs: *.ps1
-alwaysApply: true
----
-# PowerShell Scripts Location
-
-- **Scripts Location**: `scripts/` for PowerShell automation.

@@ -12,6 +12,7 @@ For deeper context on specific topics, see `.github/guides/`:
 - `github-actions.md` - CI/CD pipeline design
 - `performance.md` - Performance optimization techniques
 - `documentation.md` - Documentation standards
+- `security.md` - Security and API guidelines
 
 ## 🚨 Critical Rules
 
@@ -52,3 +53,14 @@ For deeper context on specific topics, see `.github/guides/`:
 - Use `Debug-Sass` configuration for SCSS compilation
 - Debug mode: analyzers ENABLED
 - Release mode: analyzers DISABLED
+
+## MCP Servers
+
+Use these MCP servers for specific tasks:
+- **github**: Automate GitHub API tasks (e.g., repo creation, PRs)
+- **puppeteer**: Scrape JavaScript-rendered pages (e.g., dynamic content)
+- **fetch**: Scrape static content or convert URLs to Markdown (e.g., documentation)
+- **brave-search**: Conduct web searches (2,000 queries/month) (e.g., find APIs)
+- **time**: Handle time-related tasks (e.g., log build times)
+- **context7**: Process HTTP-based context (e.g., analyze code, resolve library IDs, get library docs)
+- **sequentialthinking**: Solve complex problems (e.g., optimize algorithms)

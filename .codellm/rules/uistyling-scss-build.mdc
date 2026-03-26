@@ -1,8 +1,0 @@
----
-description: Build SCSS using Debug-Sass configuration and BuildWebCompiler2022.
-globs: *.scss
-alwaysApply: true
----
-# SCSS Build
-
-- **SCSS Build**: Use `Debug-Sass` with `dotnet build --configuration Debug-Sass` and BuildWebCompiler2022.
