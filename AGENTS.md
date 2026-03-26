@@ -8,6 +8,7 @@ Skills folder (`skills/`) contains detailed rules - loaded automatically when re
 - **ZERO BUILD WARNINGS**: After every C# file change, run `dotnet clean && dotnet build --no-restore --verbosity quiet`. Fix all warnings (except IL2111).
 - **File Editing**: Edit one file at a time, track progress (e.g., "Edit 2 of 5").
 - **Large Changes**: Outline plan, get approval, make incremental edits, ensure buildable state.
+- **Commit vs Push**: Commit first, then wait for user prompt before pushing. This allows batching commits locally and amending if needed before they go public.
 
 ## Project Overview
 
