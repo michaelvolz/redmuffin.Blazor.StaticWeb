@@ -62,7 +62,8 @@ BenchmarkDotNet.Artifacts/
 project.lock.json
 project.fragment.lock.json
 artifacts/
-**/packages.lock.json
+# packages.lock.json NOT ignored - tracking lock files is intentional per Directory.Build.props
+# Lock files are required for deterministic builds and CI/CD caching
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
