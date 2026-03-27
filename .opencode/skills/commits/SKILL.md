@@ -86,3 +86,25 @@ feat(blazor): add new feature
 - bullet points are NOT allowed in commit body
 - use full sentences instead
 ```
+
+## Git Hooks (Automated Validation)
+
+This project's commits are validated automatically via git hooks.
+
+### Setup
+```powershell
+.\scripts\Setup-GitHooks.ps1
+```
+
+This configures git to use hooks in `.githooks/` directory, which validate:
+- Title format (`<type>(<scope>): <description>`)
+- Max 112 characters
+- Body required (except deps/merge/revert)
+- No bullet points in body
+
+### Manual Verification
+To check a commit message before pushing:
+```powershell
+# Validate without committing
+git commit --dry-run --message "feat(blazor): your message here"
+```

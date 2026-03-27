@@ -1,6 +1,6 @@
 ---
 name: markdown
-description: Markdown content creation standards, MarkdownLint rules (MD001-MD059), formatting guidelines, and VS Code integration.
+description: Markdown content creation standards, MarkdownLint rules (MD001-MD036), formatting guidelines, and VS Code integration.
 invocable: false
 ---
 
@@ -48,12 +48,24 @@ invocable: false
 - MD012: Single blank lines only
 - MD013: Line length limit
 
+### Link Rules
+- MD034: No bare URLs (use descriptive link text)
+
 ## Formatting
 
 - Use `##` for H2 and `###` for H3
 - Use `-` for bullet points and `1.` for numbered lists
-- Break lines at 80 characters
+- Break lines at 100 characters for readability
 - End file with single newline
+
+## Link Syntax
+
+Use descriptive text instead of bare URLs:
+
+```markdown
+BAD:  Visit https://example.com for more info
+GOOD: Visit [the documentation](https://example.com) for more info
+```
 
 ## VS Code Integration
 
