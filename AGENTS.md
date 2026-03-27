@@ -159,6 +159,34 @@ Always specify ALL parameters explicitly: `_mock.Arrange(f => f.GetAsync("key", 
    - `.env` files (gitignored) for local development
    If you detect a secret in a file, immediately warn the user and suggest the correct approach.
 
+## Web Search Strategy
+
+This project has three search/discovery tools. Use the right one for the job:
+
+### Context7 → Always use first for library/framework code
+- Any time you're writing code that uses an external library or framework
+- .NET, Blazor, NuGet packages, JavaScript frameworks
+- Fetches version-specific API docs and code examples — prevents hallucinated APIs
+- Tools: `resolve-library-id` → `get-library-docs`
+
+### Brave (`brave_web_search`) → Default for general web search
+- Stack Overflow answers, error messages, "how to do X"
+- Current events, version changelogs, blog posts, tutorials
+- When you need factual information from the web
+
+### Exa (`websearch`) → Semantic/discovery search
+- Vague/conceptual queries: "find a library that does X", "similar to this"
+- Finding "hidden gem" content that keyword search misses
+- Deep topic exploration where you don't know the exact keywords
+- Fallback when Brave results aren't sufficient
+
+### Decision Rule
+1. Is it about a library/framework API? → **Context7**
+2. Is it a keyword-specific query (error, "how to", specific topic)? → **Brave**
+3. Is it vague/conceptual? → **Exa**
+
+---
+
 ## Commit Message Format
 
 All commits MUST follow this format:
