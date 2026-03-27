@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugins": ["opencode-snippets"],
+  "plugin": ["opencode-snippets"],
   "formatter": {
     "dotnet-format": {
       "command": ["dotnet", "format", "--include", "$FILE"],
