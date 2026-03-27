@@ -152,6 +152,12 @@ Always specify ALL parameters explicitly: `_mock.Arrange(f => f.GetAsync("key", 
 4. **Skills**: See `skills/` folder for detailed rules (loaded automatically):
    - `csharp-standards`, `testing`, `ui-styling`, `dotnet`, `powershell`, `commits`
 5. **Reference Guides**: `.github/guides/` contains detailed docs
+6. **NEVER hardcode secrets**: Never recommend putting API keys, tokens, passwords, or any secrets directly into code or config files. Always use one of:
+   - Environment variables (`{env:VAR_NAME}` in opencode.json, `$env:VAR` in PowerShell)
+   - User secrets (`dotnet user-secrets`) for .NET development
+   - Azure Key Vault for production
+   - `.env` files (gitignored) for local development
+   If you detect a secret in a file, immediately warn the user and suggest the correct approach.
 
 ## Commit Message Format
 
