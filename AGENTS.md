@@ -150,8 +150,54 @@ Always specify ALL parameters explicitly: `_mock.Arrange(f => f.GetAsync("key", 
 2. **File Editing**: Edit one file at a time, track progress
 3. **Large Changes**: Outline plan, get approval, make incremental edits
 4. **Skills**: See `skills/` folder for detailed rules (loaded automatically):
-   - `csharp-standards`, `testing`, `ui-styling`, `dotnet`, `powershell`
+   - `csharp-standards`, `testing`, `ui-styling`, `dotnet`, `powershell`, `commits`
 5. **Reference Guides**: `.github/guides/` contains detailed docs
+
+## Commit Message Format
+
+All commits MUST follow this format:
+
+```
+<type>(<scope>): <description> (max 112 chars)
+
+- Detailed explanation of what was changed
+- Why it was changed
+- Any breaking changes or migration notes
+```
+
+### Requirements
+- **Title**: `<type>(<scope>): <description>` (max 112 chars)
+- **Body**: Required for ALL commits except:
+  - Dependency bumps (e.g., `chore(deps): bump X from 1.0 to 2.0`)
+  - Merge commits
+  - Simple refactoring with self-evident changes
+- **Type/scope**: Use conventional commits (feat, fix, docs, refactor, etc.)
+
+### When Body is Required
+If the commit changes behavior, adds features, fixes bugs, or requires explanation, include a body with 2-3 sentences explaining:
+- What was changed
+- Why it was changed
+- Any breaking changes or migration notes
+
+### Examples
+
+**Good (with body):**
+```
+feat(blazor): add new navigation component
+
+Added NavMenu component with responsive behavior. This improves
+mobile navigation and provides better UX. No breaking changes.
+```
+
+**Good (minimal - dependency bump):**
+```
+chore(deps): bump Meziantou.Analyzer from 2.0.161 to 2.0.163
+```
+
+**Bad (missing body for significant change):**
+```
+refactor: clean up service code
+```
 
 ## Development Modes
 

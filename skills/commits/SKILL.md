@@ -38,18 +38,51 @@ Add `!` after scope:
 feat(api)!: remove deprecated endpoint
 ```
 
-## Body
+## Body (REQUIRED)
 
-Blank line + 2-3 sentences explaining:
-- What was changed
-- Why it was changed
-- Any breaking changes or migration notes
+**Body is MANDATORY** for all commits except:
+- Dependency bumps (`chore(deps): bump X from 1.0 to 2.0`)
+- Merge commits
+- Simple typo fixes
 
-## Examples
+### Body Format
+Blank line after title, then 2-3 sentences explaining:
+1. What was changed
+2. Why it was changed
+3. Any breaking changes or migration notes
 
+### When Body is Required
+Include a body if the commit:
+- Adds new functionality or features
+- Fixes a bug (describe what was broken and how it's fixed)
+- Changes behavior in any way
+- Refactors code (explain the refactoring purpose)
+- Is not completely self-evident from the title
+
+### Examples
+
+**Good (with body):**
 ```
 feat(blazor): add new navigation component
-fix(api): resolve null reference in user service
-docs(readme): update installation instructions
-refactor(components): extract shared button styles
+
+Added NavMenu component with responsive behavior. This improves
+mobile navigation and provides better UX. No breaking changes.
+```
+
+**Good (minimal - dependency bump):**
+```
+chore(deps): bump Meziantou.Analyzer from 2.0.161 to 2.0.163
+```
+
+**Bad (missing body for significant change):**
+```
+refactor: clean up service code
+```
+
+**Rejected:**
+```
+feat(blazor): add new feature
+
+- bullet points are NOT allowed in commit body
+- use full sentences instead
 ```
