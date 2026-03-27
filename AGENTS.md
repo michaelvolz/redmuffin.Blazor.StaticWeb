@@ -1,5 +1,7 @@
 # Agent Instructions
 
+> **Important**: This repo runs on Windows 11 with PowerShell 7. Always use PowerShell commands (e.g., `dotnet build`, `.\scripts\...`), NOT Unix commands like `bash`, `sh`, or `/bin/*`.
+
 ## Build, Lint, and Test Commands
 
 ### Build
