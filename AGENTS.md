@@ -161,7 +161,13 @@ Always specify ALL parameters explicitly: `_mock.Arrange(f => f.GetAsync("key", 
 
 ## Web Search Strategy
 
-This project has three search/discovery tools. Use the right one for the job:
+This project has four search/discovery tools. Use the right one for the job:
+
+### Sequential Thinking (MCP)
+For complex problems that require careful reasoning, multi-step planning, or exploring alternate approaches, use the `sequentialthinking` tool to break down the problem step-by-step. This MCP server provides structured, iterative reasoning with revision capabilities.
+
+- Use for: Architectural decisions, debugging complex issues, multi-step refactoring
+- Prompt: "use sequential thinking to solve this" or include in your reasoning request
 
 ### Context7 → Always use first for library/framework code
 - Any time you're writing code that uses an external library or framework
