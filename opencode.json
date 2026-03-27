@@ -6,5 +6,15 @@
       "command": ["dotnet", "format", "--include", "$FILE"],
       "extensions": [".cs"]
     }
+  },
+  "mcp": {
+    "brave-search": {
+      "type": "local",
+      "command": ["docker", "run", "-i", "--rm", "-e", "BRAVE_API_KEY", "mcp/brave-search"],
+      "environment": {
+        "BRAVE_API_KEY": "{env:BRAVE_API_KEY}"
+      },
+      "enabled": true
+    }
   }
 }
