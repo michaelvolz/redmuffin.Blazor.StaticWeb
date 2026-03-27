@@ -36,3 +36,67 @@ public partial class UserProfile : ComponentBase
     protected override async Task OnInitializedAsync() => ArgumentNullException.ThrowIfNull(UserService);
 }
 ```
+
+## Build Commands
+
+```powershell
+# Build entire solution
+dotnet build
+
+# Fast build (after restore)
+dotnet build --no-restore
+
+# Build with warnings only
+dotnet build --verbosity quiet
+
+# Clean build
+dotnet clean --verbosity minimal
+```
+
+## Test Commands
+
+```powershell
+# Run all tests
+dotnet test
+
+# Run specific test class
+dotnet test --filter "FullyQualifiedName~TestClassName"
+
+# Run single test
+dotnet test --filter "FullyQualifiedName~TestMethodName"
+
+# List all tests
+dotnet test --list-tests
+```
+
+## Coverage
+
+```powershell
+# Generate coverage report
+.\scripts\Generate-CoverageReport.ps1
+
+# View coverage report
+.\scripts\View-CoverageReport.ps1
+```
+
+## Development Build Scripts
+
+- `scripts/test-build-fast.ps1` - Fast dev build (~9s, AoT disabled)
+- `scripts/test-build-aot.ps1` - Production parity testing
+- `scripts/DisplayWarnings.ps1` - Show all build warnings
+
+## Zero Warnings Policy
+
+After any C# file change, run build and fix all warnings except:
+- IL2111 (Blazor WebAssembly `App_razor.g.cs` trimming)
+
+```powershell
+# Check for warnings
+dotnet build --verbosity quiet
+```
+
+## Azure Functions (Isolated Worker)
+
+- Use `Program.cs` with `AddFunctions worker` configuration
+- Bindings use input/output attributes
+- Use `FunctionContext` for logging and dependency injection

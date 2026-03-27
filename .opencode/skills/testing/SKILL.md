@@ -102,6 +102,25 @@ private static TestScope CreateTestScope() => new TestScope().WithStandardServic
 
 - Use TUnit's `TestContext` for debug output in tests to ensure visibility in test output
 
+## TUnit Analyzer (CRITICAL)
+
+TUnit has a built-in analyzer that catches the #1 pitfall: **missing `await` on assertions**. Without `await`, assertions pass silently without executing.
+
+```csharp
+// WRONG - Test passes but assertion never runs!
+// TUnit.Analyzer warning: "Await the assertion"
+Assert.That(result, Is.EqualTo(expected));
+
+// CORRECT - Assertion executes properly
+await Assert.That(result).Is.EqualTo(expected);
+```
+
+Enable in test project:
+```xml<ItemGroup>
+  <PackageReference Include="TUnit.Analyzer" PrivateAssets="all" />
+</ItemGroup>
+```
+
 ## Mocking Strategy
 
 ### LightMock.Generator
