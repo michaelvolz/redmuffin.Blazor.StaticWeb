@@ -98,9 +98,9 @@
       },
       "Microsoft.NET.Sdk.WebAssembly.Pack": {
         "type": "Direct",
-        "requested": "[10.0.5, )",
-        "resolved": "10.0.5",
-        "contentHash": "iFfcR+mLmkHG2pbmBe7wsCmoL3RqBmkl5eyENVuloUHsn51NBQ3TobP62WVrzG4ItOPfxxy6FQbXSvP2Xc5IIw=="
+        "requested": "[9.0.8, )",
+        "resolved": "9.0.8",
+        "contentHash": "+JJYRyS8YoLMzLquskLfdF8RFp2PhN5v+lGCGDLHsywj3JHfSV/Zqo8+T0Fl0Xvoc9Js8YkrAWTnm7M2/3CniA=="
       },
       "Microsoft.VisualStudio.Threading.Analyzers": {
         "type": "Direct",
