@@ -1,6 +1,6 @@
 ---
 description: 'Beast Mode - Iterative problem solver that keeps going until the problem is fully resolved. Requires extensive internet research.'
-mode: primary
+mode: subagent
 permission:
   edit: allow
   bash: allow

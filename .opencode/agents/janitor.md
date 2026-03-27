@@ -1,6 +1,6 @@
 ---
 description: 'C#/.NET Janitor - performs code cleanup, modernization, and tech debt remediation.'
-mode: primary
+mode: subagent
 permission:
   edit: allow
   bash: allow

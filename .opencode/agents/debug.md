@@ -1,6 +1,6 @@
 ---
 description: 'Debug mode - systematically identify, analyze, and resolve bugs in the application.'
-mode: primary
+mode: subagent
 permission:
   edit: allow
   bash: allow
