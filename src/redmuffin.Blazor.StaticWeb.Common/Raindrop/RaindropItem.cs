@@ -2,62 +2,62 @@ using System.Text.Json.Serialization;
 
 namespace redmuffin.Blazor.StaticWeb.Common.Raindrop;
 
-public class RaindropItem
+public record RaindropItem
 {
     [JsonPropertyName("_id")]
-    public long Id { get; set; }
+    public long Id { get; init; }
 
     [JsonPropertyName("link")]
-    public string Link { get; set; } = string.Empty;
+    public string Link { get; init; } = string.Empty;
 
     [JsonPropertyName("title")]
-    public string Title { get; set; } = string.Empty;
+    public string Title { get; init; } = string.Empty;
 
     [JsonPropertyName("excerpt")]
-    public string Excerpt { get; set; } = string.Empty;
+    public string Excerpt { get; init; } = string.Empty;
 
     [JsonPropertyName("note")]
-    public string Note { get; set; } = string.Empty;
+    public string Note { get; init; } = string.Empty;
 
     [JsonPropertyName("type")]
-    public string Type { get; set; } = string.Empty;
+    public string Type { get; init; } = string.Empty;
 
     [JsonPropertyName("user")]
-    public UserReference User { get; set; } = new();
+    public UserReference User { get; init; } = new();
 
     [JsonPropertyName("cover")]
-    public string Cover { get; set; } = string.Empty;
+    public string Cover { get; init; } = string.Empty;
 
     [JsonPropertyName("media")]
-    public IList<MediaItem> Media { get; } = new List<MediaItem>();
+    public IReadOnlyList<MediaItem> Media { get; init; } = [];
 
     [JsonPropertyName("tags")]
-    public IList<string> Tags { get; } = new List<string>();
+    public IReadOnlyList<string> Tags { get; init; } = [];
 
     [JsonPropertyName("important")]
-    public bool Important { get; set; }
+    public bool Important { get; init; }
 
     [JsonPropertyName("reminder")]
-    public Reminder Reminder { get; set; } = new();
+    public Reminder Reminder { get; init; } = new();
 
     [JsonPropertyName("removed")]
-    public bool Removed { get; set; }
+    public bool Removed { get; init; }
 
     [JsonPropertyName("created")]
-    public DateTime Created { get; set; } = DateTime.MinValue;
+    public DateTime Created { get; init; } = DateTime.MinValue;
 
     [JsonPropertyName("collection")]
-    public CollectionReference Collection { get; set; } = new();
+    public CollectionReference Collection { get; init; } = new();
 
     [JsonPropertyName("highlights")]
-    public IList<Highlight> Highlights { get; } = new List<Highlight>();
+    public IReadOnlyList<Highlight> Highlights { get; init; } = [];
 
     [JsonPropertyName("domain")]
-    public string Domain { get; set; } = string.Empty;
+    public string Domain { get; init; } = string.Empty;
 
     [JsonPropertyName("collectionId")]
-    public long CollectionId { get; set; }
+    public long CollectionId { get; init; }
 
     [JsonPropertyName("sort")]
-    public long Sort { get; set; }
+    public long Sort { get; init; }
 }

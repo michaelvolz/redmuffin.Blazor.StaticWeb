@@ -22,51 +22,40 @@ namespace redmuffin.Blazor.StaticWeb.Common.Raindrop;
 [JsonSerializable(typeof(DateTime))]
 public partial class RaindropJsonSerializerContext : JsonSerializerContext
 {
-    /// <summary>
-    ///     Default JSON serialization options with enhanced error handling for malformed responses
-    /// </summary>
-    public static JsonSerializerOptions DefaultOptions { get; } = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = false,
-        AllowTrailingCommas = true,
-        ReadCommentHandling = JsonCommentHandling.Skip,
-        PropertyNameCaseInsensitive = true,
-        NumberHandling = JsonNumberHandling.AllowReadingFromString,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip,
-        TypeInfoResolver = Default
-    };
+    public static JsonSerializerOptions DefaultOptions { get; } = CreateOptions();
 
-    /// <summary>
-    ///     Strict JSON serialization options for production API calls with minimal tolerance
-    /// </summary>
-    public static JsonSerializerOptions StrictOptions { get; } = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = false,
-        AllowTrailingCommas = false,
-        ReadCommentHandling = JsonCommentHandling.Disallow,
-        PropertyNameCaseInsensitive = false,
-        NumberHandling = JsonNumberHandling.Strict,
-        DefaultIgnoreCondition = JsonIgnoreCondition.Never,
-        UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
-        TypeInfoResolver = Default
-    };
+    public static JsonSerializerOptions StrictOptions { get; } = CreateOptions(
+        allowTrailingCommas: false,
+        commentHandling: JsonCommentHandling.Disallow,
+        caseInsensitive: false,
+        numberHandling: JsonNumberHandling.Strict,
+        ignoreCondition: JsonIgnoreCondition.Never,
+        unmappedHandling: JsonUnmappedMemberHandling.Disallow);
 
-    /// <summary>
-    ///     Lenient JSON serialization options for dummy data and development scenarios
-    /// </summary>
-    public static JsonSerializerOptions LenientOptions { get; } = new()
+    public static JsonSerializerOptions LenientOptions { get; } = CreateOptions(
+        numberHandling: JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.AllowNamedFloatingPointLiterals,
+        indented: true);
+
+    private static JsonSerializerOptions CreateOptions(
+        bool allowTrailingCommas = true,
+        JsonCommentHandling commentHandling = JsonCommentHandling.Skip,
+        bool caseInsensitive = true,
+        JsonNumberHandling numberHandling = JsonNumberHandling.AllowReadingFromString,
+        JsonIgnoreCondition ignoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        JsonUnmappedMemberHandling unmappedHandling = JsonUnmappedMemberHandling.Skip,
+        bool indented = false)
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = true,
-        AllowTrailingCommas = true,
-        ReadCommentHandling = JsonCommentHandling.Skip,
-        PropertyNameCaseInsensitive = true,
-        NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.AllowNamedFloatingPointLiterals,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip,
-        TypeInfoResolver = Default
-    };
+        return new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented = indented,
+            AllowTrailingCommas = allowTrailingCommas,
+            ReadCommentHandling = commentHandling,
+            PropertyNameCaseInsensitive = caseInsensitive,
+            NumberHandling = numberHandling,
+            DefaultIgnoreCondition = ignoreCondition,
+            UnmappedMemberHandling = unmappedHandling,
+            TypeInfoResolver = Default
+        };
+    }
 }

@@ -2,14 +2,14 @@ using System.Text.Json.Serialization;
 
 namespace redmuffin.Blazor.StaticWeb.Common.Raindrop;
 
-public class CollectionReference
+public record CollectionReference
 {
     [JsonPropertyName("$ref")]
-    public string? Ref { get; set; } = null;
+    public string? Ref { get; init; }
 
     [JsonPropertyName("$id")]
-    public long? Id { get; set; } = null;
+    public long? Id { get; init; }
 
     [JsonPropertyName("oid")]
-    public long? Oid { get; set; } = null;
+    public long? Oid { get; init; }
 }
