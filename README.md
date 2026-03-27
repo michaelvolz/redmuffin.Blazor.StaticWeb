@@ -159,6 +159,9 @@ git clone https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb.git
 cd redmuffin.Blazor.StaticWeb
 npm install -g @azure/static-web-apps-cli
 
+# Setup git hooks (run once)
+.\scripts\Setup-GitHooks.ps1
+
 # Build and run
 dotnet restore
 dotnet build
@@ -191,7 +194,13 @@ dotnet test
    npm install -g @azure/static-web-apps-cli
    ```
 
-4. **Restore dependencies:**
+4. **Setup git hooks** (run once):
+
+   ```powershell
+   .\scripts\Setup-GitHooks.ps1
+   ```
+
+5. **Restore dependencies:**
 
    ```bash
    dotnet restore

@@ -1,0 +1,3 @@
+#!/bin/bash
+# Wrapper to call PowerShell commit-msg hook
+exec powershell -File "$(dirname "$0")/commit-msg.ps1" "$1"
