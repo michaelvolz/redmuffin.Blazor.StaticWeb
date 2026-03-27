@@ -42,16 +42,29 @@ invocable: false
 
 ## Logging
 
+**CRITICAL**: LoggerMessage declarations MUST be in `*.Logging.cs` files, NEVER in the main file.
+
 - Use `LoggerMessage` delegates, NEVER `Logger.LogError()`
+- Main file: ONLY contains function calls like `LogEvent(logger, exception)`
+- Logging file: ONLY contains delegate declarations
 
 ```csharp
-private static readonly Action<ILogger, Exception?> LogEvent = LoggerMessage.Define(LogLevel.Information, new EventId(1, "Event"), "Event occurred");
+// Main file - only calls, NO declarations
+LogEvent(Logger, null);
+
+// Logging file - declarations only
+private static readonly Action<ILogger, Exception?> LogEvent = LoggerMessage.Define(...);
 ```
 
 ## Partial Class Organization
 
+### Verification Checklist (check BEFORE implementing)
+- [ ] Does the main file contain LoggerMessage declarations? → Move them to `*.Logging.cs`
+- [ ] Does `*.Logging.cs` exist? → Create it if not
+- [ ] Are function calls in `*.Logging.cs`? → Move them to main file
+
 ### Blazor Components
-Split into `ComponentName.razor.cs` (logic, lifecycle, properties, events) and `ComponentName.Logging.cs` (`LoggerMessage` delegates)
+Split into `ComponentName.razor.cs` (logic, lifecycle, properties, events) and `ComponentName.Logging.cs` (`LoggerMessage` declarations)
 
 ```csharp
 // ComponentName.razor.cs
@@ -71,15 +84,16 @@ public partial class Home
 }
 ```
 
-### Services
-Split into `ServiceName.cs` (logic, methods, properties) and `ServiceName.Logging.cs` (`LoggerMessage` delegates)
+### Services (includes Azure Functions)
+Split into `ServiceName.cs` (logic, methods, properties, function calls) and `ServiceName.Logging.cs` (`LoggerMessage` declarations only)
 
 ### Tests
 Split into `TestClassName.cs` (`[Test]` methods) and `TestClassName.Helpers.cs` (TestScope, mocks, utilities in same partial class). NEVER create separate helper files.
 
-### File Naming
-- Components: `Home.razor.cs`, `Home.Logging.cs`
-- Services: `UserService.cs`, `UserService.Logging.cs`
+### File Naming (MUST follow)
+- Components: `Home.razor.cs` (calls), `Home.Logging.cs` (declarations)
+- Services: `UserService.cs` (calls), `UserService.Logging.cs` (declarations)
+- Azure Functions: `FunctionName.cs` (calls), `FunctionName.Logging.cs` (declarations)
 - Tests: `HomeTests.cs`, `HomeTests.Helpers.cs`
 - Test files: Use `Component_Tests.cs` for new test files (e.g., `Home_Tests.cs`)
 
