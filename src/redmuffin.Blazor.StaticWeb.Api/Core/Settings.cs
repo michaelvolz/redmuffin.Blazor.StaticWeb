@@ -1,6 +1,6 @@
 namespace redmuffin.Blazor.StaticWeb.Api.Core;
 
-public class Settings
+public sealed class Settings
 {
     public string? RainDropClientId { get; set; } = Environment.GetEnvironmentVariable("RainDropClientID");
     public string? RainDropClientSecret { get; set; } = Environment.GetEnvironmentVariable("RainDropClientSecret");
