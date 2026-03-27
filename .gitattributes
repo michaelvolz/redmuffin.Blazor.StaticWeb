@@ -1,10 +1,28 @@
 ###############################################################################
 # Set default behavior to automatically normalize line endings.
+# With core.autocrlf=false, .gitattributes controls everything.
+# This ensures consistent line endings across Windows, Linux, and Mac.
 ###############################################################################
-* text=auto
+* text=auto eol=lf
 
-#*.sln       text eol=crlf
-#*.sh        text eol=lf
+# Code files - LF everywhere (Windows, Linux, Mac)
+*.cs        text eol=lf
+*.razor     text eol=lf
+*.csproj    text eol=lf
+*.css       text eol=lf
+*.scss      text eol=lf
+*.js        text eol=lf
+*.json      text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.html      text eol=lf
+*.md        text eol=lf
+
+# PowerShell - LF works cross-platform
+*.ps1       text eol=lf
+
+# Solution files - Visual Studio requires CRLF
+*.sln       text eol=crlf
 
 ###############################################################################
 # Set default behavior for command prompt diff.
