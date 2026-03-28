@@ -32,16 +32,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="bunit" Version="2.0.22-preview" />
-    <PackageReference Include="LightMock.Generator" Version="1.2.3" />
-    <PackageReference Include="TUnit" Version="0.25.21" />
-    <PackageReference Include="Microsoft.Testing.Platform" Version="1.7.3" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Analyzers" Version="9.0.6" />
-    <PackageReference Include="coverlet.msbuild" Version="6.0.4">
+    <PackageReference Include="bunit" />
+    <PackageReference Include="LightMock.Generator" />
+    <PackageReference Include="TUnit" />
+    <PackageReference Include="Microsoft.Testing.Platform" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.msbuild">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="TUnit.Assertions" Version="0.25.21" />
   </ItemGroup>
 
   <ItemGroup>

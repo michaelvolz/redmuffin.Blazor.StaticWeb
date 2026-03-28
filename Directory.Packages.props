@@ -1,0 +1,72 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <PropertyGroup Label="SharedVersions">
+    <MicrosoftExtensionsVersion>9.0.6</MicrosoftExtensionsVersion>
+    <TUnitVersion>0.25.21</TUnitVersion>
+    <AzureFunctionsWorkerVersion>2.0.0</AzureFunctionsWorkerVersion>
+    <CoverletVersion>6.0.4</CoverletVersion>
+    <MeziantouAnalyzerVersion>2.0.205</MeziantouAnalyzerVersion>
+    <VSThreadingAnalyzersVersion>17.14.15</VSThreadingAnalyzersVersion>
+    <RoslynatorVersion>4.13.1</RoslynatorVersion>
+    <StyleCopAnalyzersVersion>1.2.0-beta.556</StyleCopAnalyzersVersion>
+    <AsyncFixerVersion>1.6.0</AsyncFixerVersion>
+  </PropertyGroup>
+
+  <ItemGroup Label="MicrosoftExtensions">
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Label="AspNetCore">
+    <PackageVersion Include="Microsoft.AspNetCore.Components.Analyzers" Version="$(MicrosoftExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="$(MicrosoftExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="$(MicrosoftExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="$(MicrosoftExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.WebUtilities" Version="$(MicrosoftExtensionsVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Label="AzureFunctions">
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="$(AzureFunctionsWorkerVersion)" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="$(AzureFunctionsWorkerVersion)" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Core" Version="$(AzureFunctionsWorkerVersion)" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.3.0" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.0.2" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.5" />
+    <PackageVersion Include="Microsoft.ApplicationInsights.WorkerService" Version="2.23.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="Testing">
+    <PackageVersion Include="TUnit" Version="$(TUnitVersion)" />
+    <PackageVersion Include="TUnit.Assertions" Version="$(TUnitVersion)" />
+    <PackageVersion Include="bunit" Version="2.0.22-preview" />
+    <PackageVersion Include="coverlet.msbuild" Version="$(CoverletVersion)" />
+    <PackageVersion Include="LightMock.Generator" Version="1.2.3" />
+    <PackageVersion Include="Microsoft.Testing.Platform" Version="1.7.3" />
+  </ItemGroup>
+
+  <ItemGroup Label="Other">
+    <PackageVersion Include="AngleSharp" Version="1.1.2" />
+    <PackageVersion Include="Blazored.LocalStorage" Version="4.5.0" />
+    <PackageVersion Include="BuildWebCompiler2022" Version="1.14.15" />
+    <PackageVersion Include="LZStringCSharp" Version="1.4.0" />
+    <PackageVersion Include="Markdig" Version="0.41.3" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+
+  <ItemGroup Label="Analyzers">
+    <PackageVersion Include="Meziantou.Analyzer" Version="$(MeziantouAnalyzerVersion)" />
+    <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="$(VSThreadingAnalyzersVersion)" />
+    <PackageVersion Include="Roslynator.Analyzers" Version="$(RoslynatorVersion)" />
+    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="$(RoslynatorVersion)" />
+    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="$(RoslynatorVersion)" />
+    <PackageVersion Include="StyleCop.Analyzers" Version="$(StyleCopAnalyzersVersion)" />
+    <PackageVersion Include="AsyncFixer" Version="$(AsyncFixerVersion)" />
+    <PackageVersion Update="Microsoft.AspNetCore.Components.Analyzers" Version="$(MicrosoftExtensionsVersion)" />
+  </ItemGroup>
+
+</Project>
