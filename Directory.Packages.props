@@ -50,7 +50,7 @@
   </ItemGroup>
 
   <ItemGroup Label="Other">
-    <PackageVersion Include="AngleSharp" Version="1.1.2" />
+    <PackageVersion Include="AngleSharp" Version="1.4.0" />
     <PackageVersion Include="Blazored.LocalStorage" Version="4.5.0" />
     <PackageVersion Include="BuildWebCompiler2022" Version="1.14.15" />
     <PackageVersion Include="LZStringCSharp" Version="1.4.0" />
