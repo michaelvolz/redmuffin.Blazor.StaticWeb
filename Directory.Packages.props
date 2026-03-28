@@ -7,7 +7,7 @@
     <MicrosoftExtensionsVersion>9.0.6</MicrosoftExtensionsVersion>
     <TUnitVersion>0.25.21</TUnitVersion>
     <AzureFunctionsWorkerVersion>2.0.0</AzureFunctionsWorkerVersion>
-    <CoverletVersion>6.0.4</CoverletVersion>
+    <CoverletVersion>8.0.1</CoverletVersion>
     <MeziantouAnalyzerVersion>2.0.205</MeziantouAnalyzerVersion>
     <VSThreadingAnalyzersVersion>17.14.15</VSThreadingAnalyzersVersion>
     <RoslynatorVersion>4.13.1</RoslynatorVersion>
