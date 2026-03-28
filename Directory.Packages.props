@@ -4,7 +4,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="SharedVersions">
-    <MicrosoftExtensionsVersion>9.0.9</MicrosoftExtensionsVersion>
+    <MicrosoftExtensionsVersion>9.0.14</MicrosoftExtensionsVersion>
     <TUnitVersion>0.25.21</TUnitVersion>
     <AzureFunctionsWorkerVersion>2.0.0</AzureFunctionsWorkerVersion>
     <CoverletVersion>8.0.1</CoverletVersion>
