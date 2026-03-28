@@ -4,7 +4,11 @@
   "formatter": {
     "dotnet-format": {
       "command": ["dotnet", "format", "--include", "$FILE"],
-      "extensions": [".cs"]
+      "extensions": [".cs", ".razor"]
+    },
+    "prettier": {
+      "command": ["prettier", "--write", "$FILE"],
+      "extensions": [".scss", ".css", ".json", ".md", ".yml", ".yaml"]
     }
   },
   "mcp": {
