@@ -10,31 +10,16 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
 
-    <!-- Code Coverage Configuration -->
-    <CollectCoverage>true</CollectCoverage>
-    <CoverletOutputFormat>opencover,cobertura,json</CoverletOutputFormat>
-    <CoverletOutput>../../coverage/api-</CoverletOutput>
-    <Include>[redmuffin.Blazor.StaticWeb*]*</Include>
-    <Exclude>[*Tests*]*,[*]*Program,[*]*Startup,[System*]*,[Microsoft*]*,[Newtonsoft*]*,[TUnit*]*,[coverlet*]*,[NSubstitute*]*</Exclude>
-    <ExcludeByFile>**/obj/**/*;**/bin/**/*;**/*.g.cs;**/*.designer.cs;**/GlobalUsings.g.cs;**/AssemblyInfo.cs</ExcludeByFile>
-
-    <!-- Coverage Thresholds (Warning level, not failing) -->
-    <ThresholdType>line,branch,method</ThresholdType>
-    <Threshold>40,35,50</Threshold>
-    <ThresholdStat>minimum</ThresholdStat>
+    <!-- Code Coverage: Use TUnit native CLI (see Generate-CoverageReport.ps1) -->
     <DoesNotReturnAttribute>DoesNotReturnAttribute</DoesNotReturnAttribute>
   </PropertyGroup>
-  <ItemGroup>
+<ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Core" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="TUnit" />
     <PackageReference Include="Microsoft.Testing.Platform" />
-    <PackageReference Include="coverlet.msbuild">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

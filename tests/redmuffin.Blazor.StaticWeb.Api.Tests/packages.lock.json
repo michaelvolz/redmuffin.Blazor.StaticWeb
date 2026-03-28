@@ -2,12 +2,6 @@
   "version": 2,
   "dependencies": {
     "net9.0": {
-      "coverlet.msbuild": {
-        "type": "Direct",
-        "requested": "[8.0.1, )",
-        "resolved": "8.0.1",
-        "contentHash": "YkP5ZQBSwDno2uUdND/x0tmyLOacCxvKwSN2iEvndpw7OzBaH7STi2xeA06KKkyYHN0m76qDK8Pdz1CVdAPoeg=="
-      },
       "Microsoft.Azure.Functions.Worker.Core": {
         "type": "Direct",
         "requested": "[2.0.0, )",
