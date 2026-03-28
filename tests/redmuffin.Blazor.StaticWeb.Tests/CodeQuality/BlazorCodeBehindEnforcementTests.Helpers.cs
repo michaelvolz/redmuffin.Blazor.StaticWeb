@@ -6,6 +6,7 @@ namespace redmuffin.Blazor.StaticWeb.Tests.CodeQuality;
 ///     Helper methods for Blazor code-behind enforcement tests.
 ///     Provides utility functions for file system operations and path management.
 /// </summary>
+[Category("Feature:CodeQuality")]
 public sealed partial class BlazorCodeBehindEnforcementTests
 {
     /// <summary>

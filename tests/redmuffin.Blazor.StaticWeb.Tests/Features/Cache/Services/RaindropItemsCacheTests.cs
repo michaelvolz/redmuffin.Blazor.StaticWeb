@@ -6,6 +6,8 @@ using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Enums;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Cache.Services;
 
+[Category("Feature:Cache")]
+[Category("Unit")]
 public partial class RaindropItemsCacheTests
 {
     private static List<RaindropItem> CreateCompressibleTestDataSet()
@@ -52,6 +54,7 @@ public partial class RaindropItemsCacheTests
     }
 
     [Test]
+    [Category("Smoke")]
     public async Task CompressionDecompression_RoundTrip_WorksCorrectly()
     {
         // Arrange
@@ -130,6 +133,7 @@ public partial class RaindropItemsCacheTests
     }
 
     [Test]
+    [Category("Smoke")]
     public async Task SetAsync_ValidData_StoresSuccessfully()
     {
         // Arrange

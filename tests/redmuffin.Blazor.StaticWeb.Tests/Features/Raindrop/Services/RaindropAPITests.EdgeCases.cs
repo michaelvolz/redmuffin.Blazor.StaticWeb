@@ -3,6 +3,7 @@ using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Raindrop.Services;
 
+[Category("Feature:Raindrop")]
 public sealed partial class RaindropAPITests
 {
     [Test]

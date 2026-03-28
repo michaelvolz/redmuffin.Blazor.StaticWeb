@@ -6,6 +6,8 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Core;
 ///     Tests for string extension methods with behavior-focused validation.
 ///     Validates string manipulation functionality using TUnit framework with fluent assertions.
 /// </summary>
+[Category("Feature:Core")]
+[Category("Unit")]
 public sealed partial class StringExtensionsTests
 {
     [Test]

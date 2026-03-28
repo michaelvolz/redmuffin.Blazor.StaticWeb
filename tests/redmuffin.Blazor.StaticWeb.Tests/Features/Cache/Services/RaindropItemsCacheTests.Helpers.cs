@@ -9,6 +9,7 @@ using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Models;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Cache.Services;
 
+[Category("Feature:Cache")]
 public partial class RaindropItemsCacheTests
 {
     /// <summary>

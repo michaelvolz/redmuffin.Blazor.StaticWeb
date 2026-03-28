@@ -5,6 +5,7 @@ using HomePage = redmuffin.Blazor.StaticWeb.Features.Pages.HomePage.Home;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Home;
 
+[Category("Feature:Home")]
 public sealed partial class HomeTests
 {
     [Test]

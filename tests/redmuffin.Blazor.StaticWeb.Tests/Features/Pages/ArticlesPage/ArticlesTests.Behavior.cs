@@ -3,6 +3,7 @@ using ArticlesComponent = redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.ArticlesPage;
 
+[Category("Feature:Articles")]
 public sealed partial class ArticlesTests
 {
     [Test]

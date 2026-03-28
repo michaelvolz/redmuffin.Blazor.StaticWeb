@@ -10,6 +10,7 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Core;
 /// <summary>
 ///     Helper classes and methods for ImageValidationCacheServiceTests.
 /// </summary>
+[Category("Feature:Core")]
 public sealed partial class ImageValidationCacheServiceTests
 {
     /// <summary>

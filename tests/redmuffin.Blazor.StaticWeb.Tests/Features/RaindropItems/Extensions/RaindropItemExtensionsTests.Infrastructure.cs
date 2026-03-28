@@ -2,6 +2,7 @@ using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Extensions;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.RaindropItems.Extensions;
 
+[Category("Feature:RaindropItems")]
 public sealed partial class RaindropItemExtensionsTests
 {
     [Test]

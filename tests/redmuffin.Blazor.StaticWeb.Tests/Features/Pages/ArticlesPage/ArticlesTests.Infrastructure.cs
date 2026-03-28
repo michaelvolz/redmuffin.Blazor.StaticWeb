@@ -4,9 +4,11 @@ using ArticlesComponent = redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.ArticlesPage;
 
+[Category("Feature:Articles")]
 public sealed partial class ArticlesTests
 {
     [Test]
+    [Category("Smoke")]
     public async Task Articles_Should_Clear_Cache_On_Fetch()
     {
         // Arrange
@@ -35,6 +37,7 @@ public sealed partial class ArticlesTests
     }
 
     [Test]
+    [Category("Smoke")]
     public async Task Articles_Should_Display_Articles_When_Available()
     {
         // Arrange

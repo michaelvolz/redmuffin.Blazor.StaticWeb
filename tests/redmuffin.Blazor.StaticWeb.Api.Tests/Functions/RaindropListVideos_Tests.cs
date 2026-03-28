@@ -12,6 +12,8 @@ namespace redmuffin.Blazor.StaticWeb.Api.Tests.Functions;
 ///     Validates RaindropListVideos Azure Function behavior and response handling.
 ///     Ensures proper API integration, error handling, and JSON response formatting for video content.
 /// </summary>
+[Category("Feature:Api")]
+[Category("Integration")]
 public sealed partial class RaindropListVideos_Tests
 {
     /// <summary>

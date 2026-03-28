@@ -7,6 +7,7 @@ using HomePage = redmuffin.Blazor.StaticWeb.Features.Pages.HomePage.Home;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Home;
 
+[Category("Feature:Home")]
 public sealed partial class HomeTests
 {
     [Test]
@@ -36,6 +37,7 @@ public sealed partial class HomeTests
     }
 
     [Test]
+    [Category("Smoke")]
     public async Task Home_AdvancedScenarios_ComponentDisposalPatterns_PreventMemoryLeaks()
     {
         // Arrange - Test that component disposal properly cleans up resources
@@ -268,6 +270,7 @@ public sealed partial class HomeTests
     }
 
     [Test]
+    [Category("Smoke")]
     public async Task Home_ButtonClick_LogsExpectedEvent()
     {
         // Arrange
@@ -350,6 +353,7 @@ public sealed partial class HomeTests
     }
 
     [Test]
+    [Category("Smoke")]
     public async Task Home_ContentRendering_DisplaysCorrectText()
     {
         // Arrange & Act

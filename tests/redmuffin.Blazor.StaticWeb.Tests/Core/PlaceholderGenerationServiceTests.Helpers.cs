@@ -7,6 +7,7 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Core;
 /// <summary>
 ///     Helper classes and methods for PlaceholderGenerationServiceTests.
 /// </summary>
+[Category("Feature:Core")]
 public sealed partial class PlaceholderGenerationServiceTests
 {
     /// <summary>

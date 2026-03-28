@@ -6,9 +6,11 @@ using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Models;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Cache.Services;
 
+[Category("Feature:Cache")]
 public sealed partial class RaindropItemsCacheTests
 {
     [Test]
+    [Category("Smoke")]
     public async Task ClearAsync_ExistingCache_RemovesSuccessfully()
     {
         // Arrange
@@ -36,6 +38,7 @@ public sealed partial class RaindropItemsCacheTests
     }
 
     [Test]
+    [Category("Smoke")]
     public async Task CompressionDecompression_EmptyDataSet_HandlesGracefully()
     {
         // Arrange
@@ -81,6 +84,7 @@ public sealed partial class RaindropItemsCacheTests
     }
 
     [Test]
+    [Category("Smoke")]
     public async Task GetAsync_EmptyCache_ReturnsNotFound()
     {
         // Arrange

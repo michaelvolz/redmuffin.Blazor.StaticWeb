@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 
 namespace redmuffin.Blazor.StaticWeb.Api.Tests.Functions;
 
+[Category("Feature:Api")]
 public sealed partial class RaindropListArticles_Tests
 {
     /// <summary>

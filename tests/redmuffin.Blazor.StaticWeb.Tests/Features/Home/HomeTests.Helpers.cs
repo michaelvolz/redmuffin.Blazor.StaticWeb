@@ -11,6 +11,7 @@ using HomePage = redmuffin.Blazor.StaticWeb.Features.Pages.HomePage.Home;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Home;
 
+[Category("Feature:Home")]
 public partial class HomeTests
 {
     // Factory methods for creating test scopes - optimized for fast execution

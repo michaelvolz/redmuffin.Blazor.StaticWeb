@@ -2,6 +2,7 @@ using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Models;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Core;
 
+[Category("Feature:Core")]
 public sealed partial class ImageValidationCacheServiceTests
 {
     [Test]

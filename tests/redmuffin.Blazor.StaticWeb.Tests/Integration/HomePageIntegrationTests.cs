@@ -8,6 +8,8 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Integration;
 ///     Uses TestScope pattern for clean resource management and consistent service setup.
 ///     Optimized for fast execution with DelayProvider_Stub.
 /// </summary>
+[Category("Feature:Home")]
+[Category("Integration")]
 public sealed partial class HomePageIntegrationTests
 {
     [Test]

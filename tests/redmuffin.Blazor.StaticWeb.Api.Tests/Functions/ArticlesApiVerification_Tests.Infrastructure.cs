@@ -4,6 +4,7 @@ using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 
 namespace redmuffin.Blazor.StaticWeb.Api.Tests.Functions;
 
+[Category("Feature:Api")]
 public sealed partial class ArticlesApiVerification_Tests
 {
     /// <summary>

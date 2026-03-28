@@ -2,6 +2,7 @@ using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Models;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Core;
 
+[Category("Feature:Core")]
 public sealed partial class PlaceholderGenerationServiceTests
 {
     [Test]

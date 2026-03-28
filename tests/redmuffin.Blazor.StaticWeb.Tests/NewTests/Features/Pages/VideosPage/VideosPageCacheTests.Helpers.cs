@@ -15,6 +15,7 @@ namespace redmuffin.Blazor.StaticWeb.Tests.NewTests.Features.Pages.VideosPage;
 /// <summary>
 ///     Helper methods and infrastructure for VideosPageCacheTests.
 /// </summary>
+[Category("Feature:Videos")]
 public partial class VideosPageCacheTests
 {
     /// <summary>

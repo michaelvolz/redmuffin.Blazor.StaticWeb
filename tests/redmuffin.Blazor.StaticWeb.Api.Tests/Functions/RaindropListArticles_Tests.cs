@@ -12,6 +12,8 @@ namespace redmuffin.Blazor.StaticWeb.Api.Tests.Functions;
 ///     Validates RaindropListArticles Azure Function behavior and response handling.
 ///     Ensures proper API integration, error handling, and JSON response formatting.
 /// </summary>
+[Category("Feature:Api")]
+[Category("Integration")]
 public sealed partial class RaindropListArticles_Tests
 {
     /// <summary>

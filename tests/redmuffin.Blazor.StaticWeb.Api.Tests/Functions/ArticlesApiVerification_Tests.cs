@@ -8,6 +8,8 @@ namespace redmuffin.Blazor.StaticWeb.Api.Tests.Functions;
 ///     Validates API structure compatibility between Videos and Articles endpoints.
 ///     Ensures consistent data models and proper deserialization across different Raindrop collections.
 /// </summary>
+[Category("Feature:Api")]
+[Category("Integration")]
 public sealed partial class ArticlesApiVerification_Tests
 {
     private static readonly HttpStatusCode[] TransientStatuses = [HttpStatusCode.BadGateway, HttpStatusCode.ServiceUnavailable, HttpStatusCode.GatewayTimeout];

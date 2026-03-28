@@ -4,6 +4,7 @@ using redmuffin.Blazor.StaticWeb.Features.Pages.VideosPage;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.VideosPage;
 
+[Category("Feature:Videos")]
 public sealed partial class VideosTests
 {
     [Test]
@@ -30,6 +31,7 @@ public sealed partial class VideosTests
     }
 
     [Test]
+    [Category("Smoke")]
     public async Task Videos_Should_Display_Videos_When_Available()
     {
         // Arrange

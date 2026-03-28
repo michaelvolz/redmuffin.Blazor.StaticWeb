@@ -6,6 +6,7 @@ using redmuffin.Blazor.StaticWeb.Features.Cache.Enums;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.NewTests.Features.Cache.Components;
 
+[Category("Feature:Cache")]
 public sealed partial class RefreshBadgeTests
 {
     [Test]

@@ -15,6 +15,7 @@ namespace redmuffin.Blazor.StaticWeb.Tests.NewTests.Features.Pages.ArticlesPage;
 /// <summary>
 ///     Helper methods and infrastructure for ArticlesPageCacheTests.
 /// </summary>
+[Category("Feature:Articles")]
 public partial class ArticlesPageCacheTests
 {
     /// <summary>

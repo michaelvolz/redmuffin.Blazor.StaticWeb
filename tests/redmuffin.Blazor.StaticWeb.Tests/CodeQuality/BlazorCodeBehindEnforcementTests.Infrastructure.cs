@@ -3,6 +3,7 @@ namespace redmuffin.Blazor.StaticWeb.Tests.CodeQuality;
 /// <summary>
 ///     Infrastructure tests for Blazor code-behind enforcement.
 /// </summary>
+[Category("Feature:CodeQuality")]
 public sealed partial class BlazorCodeBehindEnforcementTests
 {
     /// <summary>

@@ -7,6 +7,7 @@ namespace redmuffin.Blazor.StaticWeb.Api.Tests.Functions;
 ///     Helper methods and TestScope implementation for ArticlesApiVerification_Tests.
 ///     Provides HttpClient and Configuration setup for API testing scenarios.
 /// </summary>
+[Category("Feature:Api")]
 public sealed partial class ArticlesApiVerification_Tests
 {
     /// <summary>

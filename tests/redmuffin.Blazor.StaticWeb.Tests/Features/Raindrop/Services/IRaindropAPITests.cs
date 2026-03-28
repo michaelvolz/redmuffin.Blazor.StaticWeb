@@ -1,5 +1,7 @@
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Raindrop.Services;
 
+[Category("Feature:Raindrop")]
+[Category("Unit")]
 public partial class IRaindropAPITests
 {
     [Test]
@@ -29,6 +31,7 @@ public partial class IRaindropAPITests
 
 
     [Test]
+    [Category("Smoke")]
     public async Task DummyRaindropAPI_GetVideosAsync_Should_Return_Valid_Videos_When_File_Exists()
     {
         // Arrange
@@ -97,6 +100,7 @@ public partial class IRaindropAPITests
 
 
     [Test]
+    [Category("Smoke")]
     public async Task RaindropAPI_GetVideosAsync_Should_Return_Valid_Videos_When_API_Succeeds()
     {
         // Arrange

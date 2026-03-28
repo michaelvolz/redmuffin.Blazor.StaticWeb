@@ -4,6 +4,7 @@ using redmuffin.Blazor.StaticWeb.Features.Pages.ApiExamplePage;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.ApiExamplePage;
 
+[Category("Feature:ApiExample")]
 public partial class CallApiExampleTests
 {
     [Test]

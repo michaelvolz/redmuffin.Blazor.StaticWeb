@@ -6,6 +6,7 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Features.RaindropItems.Extensions;
 /// <summary>
 ///     Helper methods for RaindropItemExtensionsTests.
 /// </summary>
+[Category("Feature:RaindropItems")]
 public partial class RaindropItemExtensionsTests
 {
     /// <summary>

@@ -4,6 +4,7 @@ using redmuffin.Blazor.StaticWeb.Features.Pages.VideosPage;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.NewTests.Features.Pages.VideosPage;
 
+[Category("Feature:Videos")]
 public sealed partial class VideosPageCacheTests
 {
     [Test]

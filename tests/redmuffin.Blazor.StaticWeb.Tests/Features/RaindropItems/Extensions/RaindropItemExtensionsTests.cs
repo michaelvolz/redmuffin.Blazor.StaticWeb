@@ -7,6 +7,8 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Features.RaindropItems.Extensions;
 ///     Unit tests for RaindropItemExtensions conversion methods.
 ///     Tests the conversion between RaindropItem and PrunedRaindropItem models.
 /// </summary>
+[Category("Feature:RaindropItems")]
+[Category("Unit")]
 public partial class RaindropItemExtensionsTests
 {
     [Test]

@@ -4,9 +4,11 @@ using redmuffin.Blazor.StaticWeb.Features.Pages.VideosPage;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.VideosPage;
 
+[Category("Feature:Videos")]
 public sealed partial class VideosTests
 {
     [Test]
+    [Category("Smoke")]
     public async Task Videos_Should_Display_Error_Message_When_API_Fails()
     {
         // Arrange
@@ -44,6 +46,7 @@ public sealed partial class VideosTests
     }
 
     [Test]
+    [Category("Smoke")]
     public async Task Videos_Should_Handle_Videos_With_Missing_Titles()
     {
         // Arrange
@@ -65,6 +68,7 @@ public sealed partial class VideosTests
     }
 
     [Test]
+    [Category("Smoke")]
     public async Task Videos_Should_Render_Successfully_With_No_Videos()
     {
         // Arrange

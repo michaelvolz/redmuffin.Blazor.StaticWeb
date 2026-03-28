@@ -3,6 +3,7 @@ using redmuffin.Blazor.StaticWeb.Features.Pages.HomePage;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Integration;
 
+[Category("Feature:Home")]
 public sealed partial class HomePageIntegrationTests
 {
     [Test]

@@ -5,6 +5,8 @@ using HomePage = redmuffin.Blazor.StaticWeb.Features.Pages.HomePage.Home;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Home;
 
+[Category("Feature:Home")]
+[Category("Unit")]
 public partial class HomeTests
 {
     [Test]
@@ -302,6 +304,7 @@ public partial class HomeTests
 
 
     [Test]
+    [Category("Smoke")]
     public async Task Home_ComponentStructure_HasRequiredElements()
     {
         // Arrange

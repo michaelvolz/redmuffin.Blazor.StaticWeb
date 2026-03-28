@@ -6,9 +6,12 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.VideosPage;
 /// <summary>
 ///     TUnit tests for Videos component.
 /// </summary>
+[Category("Feature:Videos")]
+[Category("Unit")]
 public sealed partial class VideosTests
 {
     [Test]
+    [Category("Smoke")]
     public async Task Videos_Should_Truncate_Long_Excerpts()
     {
         // Arrange

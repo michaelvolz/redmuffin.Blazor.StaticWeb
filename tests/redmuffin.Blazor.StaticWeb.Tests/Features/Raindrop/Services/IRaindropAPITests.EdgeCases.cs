@@ -1,5 +1,6 @@
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Raindrop.Services;
 
+[Category("Feature:Raindrop")]
 public sealed partial class IRaindropAPITests
 {
     [Test]
@@ -47,6 +48,7 @@ public sealed partial class IRaindropAPITests
     }
 
     [Test]
+    [Category("Smoke")]
     public async Task DummyRaindropAPI_GetVideosAsync_Should_Return_Empty_Collection_When_File_Missing()
     {
         // Arrange

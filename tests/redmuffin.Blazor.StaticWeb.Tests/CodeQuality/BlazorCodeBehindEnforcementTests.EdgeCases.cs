@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.CodeQuality;
 
+[Category("Feature:CodeQuality")]
 public sealed partial class BlazorCodeBehindEnforcementTests
 {
     /// <summary>

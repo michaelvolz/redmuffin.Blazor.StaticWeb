@@ -8,6 +8,7 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Integration;
 /// <summary>
 ///     Helper classes and methods for HomePageIntegrationTests.
 /// </summary>
+[Category("Feature:Home")]
 public sealed partial class HomePageIntegrationTests
 {
     /// <summary>

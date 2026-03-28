@@ -8,6 +8,8 @@ namespace redmuffin.Blazor.StaticWeb.Tests.NewTests.Features.Pages.ArticlesPage;
 ///     Integration tests for Articles page caching functionality.
 ///     Tests the integration between Articles component, RefreshBadge, and caching services.
 /// </summary>
+[Category("Feature:Articles")]
+[Category("Integration")]
 public partial class ArticlesPageCacheTests
 {
     [Test]

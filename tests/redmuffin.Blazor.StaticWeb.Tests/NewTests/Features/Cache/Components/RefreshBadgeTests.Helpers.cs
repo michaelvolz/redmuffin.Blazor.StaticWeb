@@ -5,6 +5,7 @@ namespace redmuffin.Blazor.StaticWeb.Tests.NewTests.Features.Cache.Components;
 /// <summary>
 ///     Helper methods and infrastructure for RefreshBadgeTests.
 /// </summary>
+[Category("Feature:Cache")]
 public partial class RefreshBadgeTests
 {
     /// <summary>

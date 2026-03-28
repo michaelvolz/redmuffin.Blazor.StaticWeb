@@ -2,6 +2,7 @@ using redmuffin.Blazor.StaticWeb.Core;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Core;
 
+[Category("Feature:Core")]
 public sealed partial class StringExtensionsTests
 {
     [Test]

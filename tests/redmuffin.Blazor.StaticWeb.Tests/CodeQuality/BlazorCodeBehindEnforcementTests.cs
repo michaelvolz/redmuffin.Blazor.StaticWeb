@@ -4,6 +4,8 @@ namespace redmuffin.Blazor.StaticWeb.Tests.CodeQuality;
 ///     Validates architectural standards for Blazor components using behavior-focused testing.
 ///     Enforces code-behind patterns and separation of concerns as defined in project guidelines.
 /// </summary>
+[Category("Feature:CodeQuality")]
+[Category("Unit")]
 public sealed partial class BlazorCodeBehindEnforcementTests
 {
     private static readonly string ProjectRoot = GetProjectRoot();

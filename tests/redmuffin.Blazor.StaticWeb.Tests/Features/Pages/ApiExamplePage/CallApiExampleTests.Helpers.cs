@@ -11,6 +11,7 @@ using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.ApiExamplePage;
 
+[Category("Feature:ApiExample")]
 public partial class CallApiExampleTests
 {
     // Factory methods for creating test scopes - optimized for fast execution

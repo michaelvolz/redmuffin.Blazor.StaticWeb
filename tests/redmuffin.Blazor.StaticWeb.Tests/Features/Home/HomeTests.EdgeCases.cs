@@ -7,6 +7,7 @@ using HomePage = redmuffin.Blazor.StaticWeb.Features.Pages.HomePage.Home;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Home;
 
+[Category("Feature:Home")]
 public sealed partial class HomeTests
 {
     [Test]
@@ -38,6 +39,7 @@ public sealed partial class HomeTests
     }
 
     [Test]
+    [Category("Smoke")]
     public async Task Home_AdvancedScenarios_AsyncExceptionPropagation_DoesNotCrashComponent()
     {
         // Arrange
@@ -168,6 +170,7 @@ public sealed partial class HomeTests
     }
 
     [Test]
+    [Category("Smoke")]
     public async Task Home_ErrorRecovery_ContinuesAfterHttpFailure()
     {
         // Arrange
@@ -195,6 +198,7 @@ public sealed partial class HomeTests
     }
 
     [Test]
+    [Category("Smoke")]
     public async Task Home_ErrorRecovery_ContinuesWorkingAfterHttpClientFailure()
     {
         // Arrange

@@ -3,6 +3,8 @@ using ArticlesComponent = redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.ArticlesPage;
 
+[Category("Feature:Articles")]
+[Category("Unit")]
 public partial class ArticlesTests
 {
     [Test]
@@ -30,6 +32,7 @@ public partial class ArticlesTests
     }
 
     [Test]
+    [Category("Smoke")]
     public async Task Articles_Should_Handle_Articles_With_Missing_Titles()
     {
         // Arrange
@@ -74,6 +77,7 @@ public partial class ArticlesTests
 
 
     [Test]
+    [Category("Smoke")]
     public async Task Articles_Should_Render_Successfully_With_No_Articles()
     {
         // Arrange

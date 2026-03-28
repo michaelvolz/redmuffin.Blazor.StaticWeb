@@ -15,6 +15,7 @@ using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.VideosPage;
 
+[Category("Feature:Videos")]
 public sealed partial class VideosTests
 {
     /// <summary>

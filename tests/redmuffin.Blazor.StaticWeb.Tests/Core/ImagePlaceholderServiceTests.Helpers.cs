@@ -7,6 +7,7 @@ using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Core;
 
+[Category("Feature:Core")]
 public partial class ImagePlaceholderServiceTests
 {
     /// <summary>

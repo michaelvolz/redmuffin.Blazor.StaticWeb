@@ -4,6 +4,8 @@
 ///     Integration tests for Videos page caching functionality.
 ///     Tests the integration between Videos component, RefreshBadge, and caching services.
 /// </summary>
+[Category("Feature:Videos")]
+[Category("Integration")]
 public partial class VideosPageCacheTests
 {
     // All test methods have been moved to their respective partial files:

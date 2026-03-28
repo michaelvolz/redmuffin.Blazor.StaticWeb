@@ -3,6 +3,8 @@ using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Raindrop.Services;
 
+[Category("Feature:Raindrop")]
+[Category("Unit")]
 public partial class RaindropAPITests
 {
     [Test]
@@ -21,6 +23,7 @@ public partial class RaindropAPITests
     }
 
     [Test]
+    [Category("Smoke")]
     public async Task GetHelloWorldAsync_Should_Log_Success_When_API_Call_Succeeds()
     {
         // Arrange
@@ -47,6 +50,7 @@ public partial class RaindropAPITests
     }
 
     [Test]
+    [Category("Smoke")]
     public async Task GetHelloWorldAsync_Should_Return_Response_From_Azure_Function()
     {
         // Arrange

@@ -8,6 +8,7 @@ using redmuffin.Blazor.StaticWeb.Api.Functions;
 
 namespace redmuffin.Blazor.StaticWeb.Api.Tests.Functions;
 
+[Category("Feature:Api")]
 public sealed partial class RaindropListArticles_Tests
 {
     /// <summary>
