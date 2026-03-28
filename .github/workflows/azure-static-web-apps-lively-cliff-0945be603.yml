@@ -112,13 +112,12 @@ jobs:
           fetch-depth: 1  # Shallow clone for faster checkout
           show-progress: false  # Reduce log noise
 
-      # OPTIMIZATION: Single .NET setup for both testing and building
+      # OPTIMIZATION: Single .NET setup with WASM workload for Blazor builds
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: |
-            8.0.x
-            9.0.x
+          dotnet-version: '9.0.x'
+          workloads: wasm-tools
 
       # OPTIMIZATION: Cache NuGet packages for faster subsequent builds
       - name: Cache NuGet packages
@@ -128,10 +127,6 @@ jobs:
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/packages.lock.json') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
-
-      # Install WASM workload for .NET 9 Blazor builds (SIMD and trimming in Release)
-      - name: Install WASM workload
-        run: dotnet workload install wasm-tools-net9
 
       # OPTIMIZATION: Single dependency restoration
       - name: Restore dependencies
