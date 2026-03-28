@@ -46,7 +46,7 @@ feat(api)!: remove deprecated endpoint
 - Simple typo fixes
 
 ### Body Format
-Blank line after title, then 2-3 sentences explaining:
+Blank line after title, then bullet points explaining:
 1. What was changed
 2. Why it was changed
 3. Any breaking changes or migration notes
@@ -65,8 +65,9 @@ Include a body if the commit:
 ```
 feat(blazor): add new navigation component
 
-Added NavMenu component with responsive behavior. This improves
-mobile navigation and provides better UX. No breaking changes.
+- Added NavMenu component with responsive behavior
+- Improves mobile navigation and provides better UX
+- No breaking changes
 ```
 
 **Good (minimal - dependency bump):**
@@ -77,14 +78,6 @@ chore(deps): bump Meziantou.Analyzer from 2.0.161 to 2.0.163
 **Bad (missing body for significant change):**
 ```
 refactor: clean up service code
-```
-
-**Rejected:**
-```
-feat(blazor): add new feature
-
-- bullet points are NOT allowed in commit body
-- use full sentences instead
 ```
 
 ## Git Hooks (Automated Validation)
@@ -100,7 +93,7 @@ This configures git to use hooks in `.githooks/` directory, which validate:
 - Title format (`<type>(<scope>): <description>`)
 - Max 112 characters
 - Body required (except deps/merge/revert)
-- No bullet points in body
+- Bullet points required in body
 
 ### Manual Verification
 To check a commit message before pushing:

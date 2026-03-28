@@ -24,7 +24,7 @@ if ($lines.Count -le 1) {
     if ($title -match '^Revert') { exit 0 }
 
     Write-Error "ERROR: Commit message must have a body explaining the change."
-    Write-Error "Add a blank line after the title and 2-3 sentences describing:"
+    Write-Error "Add a blank line after the title and bullet points describing:"
     Write-Error "  - What was changed"
     Write-Error "  - Why it was changed"
     Write-Error "  - Any breaking changes"
@@ -34,9 +34,9 @@ if ($lines.Count -le 1) {
 if ($lines.Count -gt 2) {
     $bodyLines = $lines[2..($lines.Count - 1)]
     $body = $bodyLines -join "`n"
-    if ($body -match '^\s*-\s+') {
-        Write-Error "ERROR: Commit body must use full sentences, not bullet points."
-        Write-Error "Write 2-3 sentences explaining what, why, and any breaking changes."
+    if ($body -notmatch '^\s*[-*]\s+') {
+        Write-Error "ERROR: Commit body must use bullet points, not full sentences."
+        Write-Error "Use '-' or '*' at the start of each line for bullet points."
         exit 1
     }
 }
