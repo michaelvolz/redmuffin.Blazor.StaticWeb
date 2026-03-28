@@ -81,7 +81,7 @@ Suitable for experimentation, learning, and development environments.
 - **PowerShell Automation** - Scripts for coverage report generation and viewing
 - **SCSS Styling Only** - All styling should be done using SCSS files in the `wwwroot/scss/` directory.
 - **CSS Files are Auto-Generated** - Direct modifications to CSS files are not allowed; they are automatically generated from SCSS.
-- **SCSS Partials** - All SCSS partial files must start with an underscore (_) and be included in `app.scss` for automatic compilation.
+- **SCSS Partials** - All SCSS partial files must start with an underscore (\_) and be included in `app.scss` for automatic compilation.
 - **Feature Folder Structure** - Organized by feature for better maintainability
 - **Code Quality & Security** - CodeQL analysis, automated builds, Dependabot integration
 - **Accessibility Compliance** - WCAG 2.1 AA standards with semantic HTML and ARIA support
@@ -214,19 +214,19 @@ dotnet test
    dotnet tool restore
    ```
 
-5. **Build the solution:**
+6. **Build the solution:**
 
    ```bash
    dotnet build
    ```
 
-6. **Run tests to verify setup:**
+7. **Run tests to verify setup:**
 
    ```bash
    dotnet test
    ```
 
-7. **Start the development environment:**
+8. **Start the development environment:**
    - Open `redmuffin.Blazor.StaticWeb.sln` in Visual Studio 2022
    - Use the "Start both" profile or press F5
    - The application will start on `http://localhost:4280`
@@ -624,7 +624,7 @@ redmuffin.Blazor.StaticWeb/
 
   **Important:** All styling must be done through SCSS files located in `wwwroot/scss/`. CSS files in `wwwroot/css/` are automatically generated and should never be edited directly. Component-specific styles should be created as SCSS partials (starting with underscore) and imported into `app.scss` for automatic compilation.
 
-  **SCSS Partials:** All SCSS partial files must start with an underscore (_) and be imported into `app.scss` for automatic compilation. This ensures proper dependency management and build optimization.
+  **SCSS Partials:** All SCSS partial files must start with an underscore (\_) and be imported into `app.scss` for automatic compilation. This ensures proper dependency management and build optimization.
 
 - **[Blazored.LocalStorage](https://github.com/Blazored/LocalStorage)**
   Blazor library for browser local storage access via JavaScript interop.
@@ -645,7 +645,6 @@ redmuffin.Blazor.StaticWeb/
   #### Why TUnit Over xUnit?
 
   TUnit offers several advantages over xUnit, making it a compelling choice for modern .NET testing:
-
   1. **Performance**:
      - **Source Generation**: Utilizes source-generated tests to eliminate runtime reflection, significantly improving performance.
      - **Faster Execution**: Tests execute up to 10x faster in TUnit compared to xUnit due to better optimization.
@@ -680,7 +679,6 @@ redmuffin.Blazor.StaticWeb/
   #### Why LightMock.Generator Over NSubstitute?
 
   LightMock.Generator offers significant advantages over NSubstitute, making it the preferred choice for modern .NET testing:
-
   1. **Compile-Time Generation**:
      - **Zero Runtime Overhead**: Mocks are generated at compile time, eliminating runtime reflection
      - **AOT Compatibility**: Full support for Native AOT compilation and trimming
@@ -965,14 +963,14 @@ For streamlined development and testing, the project now supports a **simplified
 
 #### When to Use Each Approach
 
-| Development Task | Recommended Approach |
-|------------------|---------------------|
-| UI/UX Design | **Simplified** (`localhost:5233`) |
-| Component Development | **Simplified** (`localhost:5233`) |
-| Frontend Logic Testing | **Simplified** (`localhost:5233`) |
+| Development Task        | Recommended Approach                  |
+| ----------------------- | ------------------------------------- |
+| UI/UX Design            | **Simplified** (`localhost:5233`)     |
+| Component Development   | **Simplified** (`localhost:5233`)     |
+| Frontend Logic Testing  | **Simplified** (`localhost:5233`)     |
 | API Integration Testing | **Full Stack** ("Start both" profile) |
-| OAuth Flow Testing | **Full Stack** ("Start both" profile) |
-| End-to-End Testing | **Full Stack** ("Start both" profile) |
+| OAuth Flow Testing      | **Full Stack** ("Start both" profile) |
+| End-to-End Testing      | **Full Stack** ("Start both" profile) |
 
 #### Technical Implementation
 
