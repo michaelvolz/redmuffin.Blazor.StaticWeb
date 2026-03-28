@@ -7,16 +7,16 @@
 // =============================================================================
 
 // 1. Variables - Must be forwarded first as they're used by other files
-@forward 'variables';
+@forward "variables";
 
 // 2. Functions - Used by mixins and other components
-@forward 'functions';
+@forward "functions";
 
 // 3. Mixins - Can use variables and functions
-@forward 'mixins';
+@forward "mixins";
 
 // 4. Animations - Keyframes for use throughout the project
-@forward 'animations';
+@forward "animations";
 
 // 5. Placeholders - Shared placeholder selectors for extending
-@forward 'placeholders';
+@forward "placeholders";

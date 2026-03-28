@@ -6,6 +6,6 @@
 // All base styles integrate with Foundation's system using proper @use directives.
 // =============================================================================
 
-@forward 'reset';
-@forward 'typography';
-@forward 'global';
+@forward "reset";
+@forward "typography";
+@forward "global";

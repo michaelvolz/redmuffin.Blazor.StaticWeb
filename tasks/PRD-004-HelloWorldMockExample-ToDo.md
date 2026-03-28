@@ -131,7 +131,7 @@
 - [x] 4.0 Update CallApiExample Component (SIMPLIFIED APPROACH)
   - [x] 4.1 Add `[Inject] private IRaindropAPI RaindropAPI { get; set; } = default!;` property to `CallApiExample.razor.cs`
   - [x] 4.2 Add `ArgumentNullException.ThrowIfNull(RaindropAPI);` validation in `OnInitializedAsync()` method
-  - [x] 4.3 **PRESERVE EXISTING**: Keep all existing fields (_apiResponse, _errorMessage) and UI layout
+  - [x] 4.3 **PRESERVE EXISTING**: Keep all existing fields (\_apiResponse, \_errorMessage) and UI layout
   - [x] 4.4 **MODIFY EXISTING**: Update `CallApiAsync()` method to use `RaindropAPI.GetHelloWorldAsync()` instead of direct HttpClient
   - [x] 4.5 **NO NEW BUTTONS**: Keep existing single "Call Hello World API" button
   - [x] 4.6 **NO NEW FIELDS**: Reuse existing response and error message fields

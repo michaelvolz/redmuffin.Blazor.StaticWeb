@@ -6,8 +6,8 @@
 // =============================================================================
 
 // Import project variables and animations
-@use '../../abstracts/variables' as vars;
-@use '../../abstracts/animations' as animations;
+@use "../../abstracts/variables" as vars;
+@use "../../abstracts/animations" as animations;
 
 // =============================================================================
 // SHIMMER LOADING EFFECT COMPONENT STYLES
@@ -19,10 +19,12 @@
   position: relative;
   overflow: hidden;
   background-color: vars.$shimmer-base-color;
-  background-image: linear-gradient(90deg,
-      vars.$shimmer-base-color 0px,
-      vars.$shimmer-highlight-color 40px,
-      vars.$shimmer-base-color 80px);
+  background-image: linear-gradient(
+    90deg,
+    vars.$shimmer-base-color 0px,
+    vars.$shimmer-highlight-color 40px,
+    vars.$shimmer-base-color 80px
+  );
   background-size: 200px 100%;
   background-repeat: no-repeat;
   animation: shimmer vars.$shimmer-duration infinite linear;
@@ -30,7 +32,7 @@
 
   // Ensure accessibility - screen readers can still access content
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -64,10 +66,12 @@
     min-height: 157px; // Match Articles placeholder minimum height
 
     background-color: vars.$shimmer-video-base; // Subtle blue tint for video context
-    background-image: linear-gradient(90deg,
+    background-image: linear-gradient(
+      90deg,
       vars.$shimmer-video-base 0px,
       vars.$shimmer-video-highlight 40px,
-      vars.$shimmer-video-base 80px);
+      vars.$shimmer-video-base 80px
+    );
     display: flex;
     align-items: center;
     justify-content: center;

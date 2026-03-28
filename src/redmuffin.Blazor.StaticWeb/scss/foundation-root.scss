@@ -8,15 +8,15 @@
 
 // Foundation color palette configuration
 // All colors are now consolidated in abstracts/_variables.scss
-$foundation-palette: ( 
-    "primary": vars.$steel-blue, 
-    "secondary": vars.$ultra-violet, 
-    "success": vars.$yellow-green, 
-    "warning": vars.$sunglow, 
-    "alert": vars.$bittersweet,
-    "burgundy": vars.$brand-burgundy,
-    "black": vars.$brand-black,
-    "white": vars.$brand-white
+$foundation-palette: (
+  "primary": vars.$steel-blue,
+  "secondary": vars.$ultra-violet,
+  "success": vars.$yellow-green,
+  "warning": vars.$sunglow,
+  "alert": vars.$bittersweet,
+  "burgundy": vars.$brand-burgundy,
+  "black": vars.$brand-black,
+  "white": vars.$brand-white,
 );
 
 // Include Foundation with prototype spacing utilities enabled

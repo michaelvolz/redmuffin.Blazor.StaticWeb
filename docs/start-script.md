@@ -1,11 +1,13 @@
 # Start Script Documentation
 
 ## Overview
+
 The `start.ps1` script is a PowerShell script designed to facilitate local development of the Blazor WebAssembly application with Azure Functions backend. It orchestrates the startup of three essential components in separate console windows for optimal development visibility.
 
 ## Components
 
 ### 1. Blazor WebAssembly Frontend
+
 - **Project**: `redmuffin.Blazor.StaticWeb.csproj`
 - **Port**: 5233 (fixed, must not be changed)
 - **Command**: `dotnet watch run`
@@ -13,6 +15,7 @@ The `start.ps1` script is a PowerShell script designed to facilitate local devel
 - **Location**: `src/redmuffin.Blazor.StaticWeb/`
 
 ### 2. Azure Functions Backend
+
 - **Project**: `redmuffin.Blazor.StaticWeb.Api.csproj`
 - **Port**: 7071 (fixed, must not be changed)
 - **Command**: `dotnet watch run`
@@ -20,27 +23,31 @@ The `start.ps1` script is a PowerShell script designed to facilitate local devel
 - **Location**: `src/redmuffin.Blazor.StaticWeb.Api/`
 
 ### 3. Azure Static Web Apps CLI
+
 - **Command**: `swa start`
 - **Default Port**: 4280
 - **Purpose**: Creates a proxy that merges the Blazor frontend and Azure Functions API into a single URL
-- **Configuration**: 
+- **Configuration**:
   - Frontend URL: `http://localhost:5233`
   - API Location: `http://localhost:7071/api`
 
 ## Important Considerations
 
 ### Port Configuration
+
 - The ports used in this script (5233 for frontend, 7071 for backend) are fixed and must not be modified
 - These ports are essential for the proper functioning of the local development environment
 - The SWA CLI automatically uses port 4280 for the merged endpoint
 
 ### Development Workflow
+
 - Each component runs in its own console window for clear visibility of logs and errors
 - The `dotnet watch run` command enables hot reload for both frontend and backend
 - All console outputs must remain visible to the developer at all times
 - The SWA CLI automatically waits for both frontend and backend to be available before starting
 
 ### Production Deployment
+
 - This script is for local development only
 - Production deployment is handled via GitHub workflows to Azure Static Web Apps
 
@@ -52,17 +59,21 @@ The `start.ps1` script is a PowerShell script designed to facilitate local devel
 4. The SWA CLI automatically handles waiting for the other services to be ready
 
 ## Example URLs
+
 - Frontend (Direct): `http://localhost:5233`
 - Backend API (Direct): `http://localhost:7071`
 - SWA Proxy (Combined): `http://localhost:4280`
 
 ## Usage
+
 Simply run the script from the root of the project:
+
 ```powershell
 .\start.ps1
 ```
 
 ## Notes
+
 - The script uses PowerShell jobs to manage multiple processes
 - Each component runs in a separate window for clear log visibility
 - The SWA CLI provides a development environment that closely matches production
@@ -71,6 +82,7 @@ Simply run the script from the root of the project:
 ## Optimization Report
 
 ### Current Issues and Risks
+
 1. **No Error Handling**
    - Project file existence is not verified
    - Directory existence is not checked
@@ -93,7 +105,9 @@ Simply run the script from the root of the project:
 ### Optimization Plan
 
 #### Phase 1: Basic Error Handling and Validation
+
 1. Add prerequisite checks:
+
 ```powershell
 # Function to verify required tools
 function Test-Prerequisites {
@@ -107,6 +121,7 @@ function Test-Prerequisites {
 ```
 
 2. Add project validation:
+
 ```powershell
 # Function to verify project files and directories
 function Test-ProjectStructure {
@@ -123,7 +138,9 @@ function Test-ProjectStructure {
 ```
 
 #### Phase 2: Process Management
+
 1. Add job tracking and cleanup:
+
 ```powershell
 # Store job information
 $jobs = @()
@@ -140,6 +157,7 @@ function Stop-DevEnvironment {
 ```
 
 2. Add error handling for job starts:
+
 ```powershell
 try {
     $job = Start-Job -ScriptBlock { ... }
@@ -156,7 +174,9 @@ try {
 ```
 
 #### Phase 3: Configuration and Flexibility
+
 1. Add verbose logging:
+
 ```powershell
 function Write-VerboseLog {
     param([string]$Message)
@@ -167,7 +187,9 @@ function Write-VerboseLog {
 ```
 
 #### Phase 4: Health Monitoring
+
 1. Add monitoring loop:
+
 ```powershell
 function Start-HealthMonitoring {
     Start-Job -ScriptBlock {
@@ -181,12 +203,14 @@ function Start-HealthMonitoring {
 ```
 
 ### Implementation Priority
+
 1. Phase 1: Critical for basic reliability
 2. Phase 2: Important for proper process management
 3. Phase 4: Useful for development experience
 4. Phase 3: Nice-to-have flexibility improvements
 
 ### Expected Benefits
+
 - More reliable startup process
 - Better error handling and feedback
 - Proper process cleanup
@@ -194,6 +218,7 @@ function Start-HealthMonitoring {
 - Easier troubleshooting
 
 ### Notes
+
 - All improvements maintain existing functionality
 - Fixed ports are still respected
 - No changes to the core workflow

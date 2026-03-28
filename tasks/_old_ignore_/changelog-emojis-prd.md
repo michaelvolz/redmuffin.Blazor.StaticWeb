@@ -66,12 +66,14 @@ This document outlines the requirements for enhancing the changelog generation s
 ## Design Considerations
 
 ### Emoji Selection Guidelines
+
 - Use universally recognized emojis that render well across platforms
 - Choose emojis that have clear semantic meaning related to their category
 - Avoid overly playful or unprofessional emojis
 - Ensure consistent emoji style (prefer flat, simple designs)
 
 ### Recommended Emoji Mappings
+
 ```
 Categories:
 - Added/Features → ✨
@@ -131,18 +133,21 @@ Commit Types:
 ## Implementation Notes
 
 ### For ChangelogFormatter Module
+
 - Add emoji mapping functions
 - Insert emojis at appropriate positions
 - Ensure proper spacing around emojis
 - Handle edge cases (empty categories, malformed commits)
 
 ### For Testing
+
 - Use Pester for unit and integration tests
 - Mock emoji mappings for predictable tests
 - Test with commits containing existing emojis
 - Verify UTF-8 encoding preservation
 
 ### Best Practices
+
 - Keep emoji usage consistent and predictable
 - Document emoji meanings in project documentation
 - Consider creating an emoji legend in the changelog header

@@ -7,9 +7,9 @@
 // =============================================================================
 
 // Import Foundation and abstracts with @use
-@use '../../lib/foundation-sites/scss/foundation' as foundation;
-@use '../abstracts/functions' as functions;
-@use '../abstracts/variables' as vars;
+@use "../../lib/foundation-sites/scss/foundation" as foundation;
+@use "../abstracts/functions" as functions;
+@use "../abstracts/variables" as vars;
 
 // =============================================================================
 // GRID SYSTEM ENHANCEMENTS
@@ -22,15 +22,15 @@
   // Implement grid structure manually if Foundation's mixin is unavailable
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  
+
   // Add project-specific spacing using our spacing variables
   padding: functions.spacing(2);
-  
+
   // Use Foundation's breakpoint system for responsive behavior
   @include foundation.breakpoint(medium) {
     padding: functions.spacing(3);
   }
-  
+
   @include foundation.breakpoint(large) {
     padding: functions.spacing(4);
   }
@@ -44,26 +44,26 @@
 // Main content grid - placeholder until Foundation grid mixins are properly included
 // .main-content-grid {
 //   @include grid-row;
-//   
+//
 //   .content-primary {
 //     @include grid-column(12);
-//     
+//
 //     @include breakpoint(medium) {
 //       @include grid-column(8);
 //     }
-//     
+//
 //     @include breakpoint(large) {
 //       @include grid-column(9);
 //     }
 //   }
-//   
+//
 //   .content-secondary {
 //     @include grid-column(12);
-//     
+//
 //     @include breakpoint(medium) {
 //       @include grid-column(4);
 //     }
-//     
+//
 //     @include breakpoint(large) {
 //       @include grid-column(3);
 //     }
@@ -73,17 +73,17 @@
 // Article grid layout - placeholder until Foundation grid mixins are properly included
 // .article-grid {
 //   @include grid-row;
-//   
+//
 //   .article-item {
 //     @include grid-column(12);
-//     
+//
 //     // Use project spacing variables
 //     margin-bottom: spacing(2);
-//     
+//
 //     @include breakpoint(medium) {
 //       @include grid-column(6);
 //     }
-//     
+//
 //     @include breakpoint(large) {
 //       @include grid-column(4);
 //     }
@@ -100,11 +100,11 @@
   &-small {
     gap: functions.spacing(1);
   }
-  
+
   &-medium {
     gap: functions.spacing(2);
   }
-  
+
   &-large {
     gap: functions.spacing(3);
   }
@@ -122,7 +122,7 @@
 //       @include grid-column(12);
 //     }
 //   }
-//   
+//
 //   .article-grid {
 //     .article-item {
 //       @include grid-column(12);

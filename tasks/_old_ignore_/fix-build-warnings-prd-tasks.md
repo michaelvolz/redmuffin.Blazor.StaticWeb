@@ -1,20 +1,25 @@
 ## 📋 IMPORTANT: READ THIS ENTIRE TASK LIST FILE COMPLETELY BEFORE PROCEEDING
+
 **You must read and understand all sections of this PRD task list file before continuing with any tasks.**
 
 ## 🚨🚨🚨 CRITICAL REQUIREMENT 🚨🚨🚨
+
 **ALWAYS use `dotnet clean` before `dotnet build` - EVERY. SINGLE. TIME!**
 
 ### ❌ NEVER DO THIS:
+
 ```powershell
 dotnet build  # WRONG - may show incorrect warning count!
 ```
 
 ### ✅ ALWAYS DO THIS:
+
 ```powershell
 dotnet clean && dotnet build  # CORRECT - accurate warning count!
 ```
 
 ### 🎯 BETTER YET, USE THESE:
+
 ```powershell
 .\build-check.ps1              # Script that always cleans first
 make check-warnings            # Makefile target that always cleans
@@ -26,6 +31,7 @@ This ensures accurate warning detection and prevents cached build artifacts from
 ## 🛡️ FILE EDITING BEST PRACTICES - PREVENT CORRUPTION
 
 ### ⚠️ CRITICAL: Lessons Learned from File Corruption Issues
+
 After experiencing recurring file corruption on large files (especially `OpenGraphImagesService.cs`) due to multiple partial edits and git checkout operations, these practices MUST be followed:
 
 ### ✅ MANDATORY PRACTICES FOR SAFE FILE EDITING:
@@ -56,13 +62,16 @@ After experiencing recurring file corruption on large files (especially `OpenGra
    - Never attempt to edit the entire file in one operation
 
 ### 🚨 NEVER DO:
+
 - Multiple partial edits followed by git checkout (loses incremental fixes)
 - Large search/replace operations without verification
 - Editing without specific context that ensures unique matches
 - Continuing edits after noticing any corruption
 
 ### 💡 RECOVERY STRATEGY:
+
 If corruption occurs:
+
 1. Stop immediately - don't compound the problem
 2. Use git diff to see what changed
 3. Selectively revert only the corrupted sections
@@ -71,6 +80,7 @@ If corruption occurs:
 ## Relevant Files
 
 ### Build Process
+
 - `src/redmuffin.Blazor.StaticWeb/` - Main Blazor app for build warning cleanup.
 - `src/redmuffin.Blazor.StaticWeb.Api/` - Azure Functions for API endpoints.
 - `src/redmuffin.Blazor.StaticWeb.Common/` - Shared models/DTOs.
@@ -78,9 +88,11 @@ If corruption occurs:
 - `tests/redmuffin.Blazor.StaticWeb.Api.Tests/` - API test verification.
 
 ### Warning Analysis (197 total warnings, excluding 2 IL warnings)
+
 **Current Status: 6 warnings (ALL non-IL warnings FIXED! - 100% of fixable warnings resolved)**
 
 **Top Priority Warnings (by count):**
+
 1. ✅ MA0002 (50): Use an overload that has a IEqualityComparer<string> or IComparer<string> parameter - FIXED
 2. ✅ MA0076 (34): Do not use implicit culture-sensitive ToString in interpolated strings - FIXED
 3. ✅ MA0016 (26): Prefer using collection abstraction instead of implementation - FIXED
@@ -91,10 +103,12 @@ If corruption occurs:
 8. ✅ CA1822 (14): Mark members static when possible - FIXED
 
 **Remaining Warnings (IL warnings only - as expected):**
+
 1. IL2111 (2): Method with DynamicallyAccessedMembersAttribute accessed via reflection - EXPECTED IL WARNING
 2. IL2026 (4): Using member which has 'RequiresUnreferencedCodeAttribute' - EXPECTED IL WARNING
 
 **Successfully Fixed:**
+
 - ✅ MA0002 (50): Use an overload that has a IEqualityComparer<string> or IComparer<string> parameter - FIXED
 - ✅ MA0076 (34): Do not use implicit culture-sensitive ToString in interpolated strings - FIXED
 - ✅ MA0016 (26): Prefer using collection abstraction instead of implementation - FIXED
@@ -127,6 +141,7 @@ If corruption occurs:
 - Component styling can be scoped using global SCSS.
 
 ### Coverage Issues Encountered
+
 - Coverage thresholds not met: Line coverage < 40%, Branch coverage < 35%, Method coverage < 50%
 - Coverlet.MSBuild.Tasks.CoverageResultTask execution failures
 - Missing module test paths in coverage analysis

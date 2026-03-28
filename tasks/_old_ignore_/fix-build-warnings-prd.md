@@ -51,18 +51,21 @@ This PRD outlines the systematic cleanup of all build warnings in the redmuffin.
 ## Technical Considerations
 
 ### Build Process Integration
+
 - Use `dotnet clean && dotnet build` for accurate warning detection
 - Address warnings in order of frequency (highest count first)
 - Verify fixes after each warning type is resolved
 - Ensure compatibility with existing CI/CD pipeline
 
 ### Project Structure Considerations
+
 - Main Blazor app: `src/redmuffin.Blazor.StaticWeb/`
 - Azure Functions API: `src/redmuffin.Blazor.StaticWeb.Api/`
 - Shared models/DTOs: `src/redmuffin.Blazor.StaticWeb.Common/`
 - Tests: `tests/redmuffin.Blazor.StaticWeb.Tests/` and `tests/redmuffin.Blazor.StaticWeb.Api.Tests/`
 
 ### Common Warning Types in Blazor WebAssembly
+
 - Unused using statements
 - Unused variables and parameters
 - Nullable reference type warnings
@@ -81,6 +84,7 @@ This PRD outlines the systematic cleanup of all build warnings in the redmuffin.
 ## Implementation Notes
 
 ### Blazor-Specific Considerations
+
 - Preserve component lifecycle methods and parameter binding
 - Maintain proper async/await patterns in components
 - Ensure proper disposal of resources in components
@@ -88,12 +92,14 @@ This PRD outlines the systematic cleanup of all build warnings in the redmuffin.
 - Maintain proper cascading parameter usage
 
 ### Testing Strategy
+
 - Run existing TUnit tests after each warning fix batch
 - Ensure no regression in test coverage
 - Verify component functionality after UI-related warning fixes
 - Test API endpoints after Azure Functions warning fixes
 
 ### Warning Fix Approach
+
 1. Run `dotnet clean && dotnet build` to get current warning state
 2. Identify warning with highest count
 3. Fix all instances of that warning type

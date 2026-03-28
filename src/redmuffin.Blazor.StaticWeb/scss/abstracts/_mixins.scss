@@ -7,10 +7,10 @@
 // =============================================================================
 
 // Import Foundation for proper integration
-@use '../../lib/foundation-sites/scss/foundation' as foundation;
+@use "../../lib/foundation-sites/scss/foundation" as foundation;
 
 // Import project variables
-@use 'variables' as vars;
+@use "variables" as vars;
 
 // =============================================================================
 // RESPONSIVE MIXINS
@@ -85,11 +85,19 @@
 /// @param {Length} $left - Left position
 @mixin absolute-position($top: null, $right: null, $bottom: null, $left: null) {
   position: absolute;
-  
-  @if $top != null { top: $top; }
-  @if $right != null { right: $right; }
-  @if $bottom != null { bottom: $bottom; }
-  @if $left != null { left: $left; }
+
+  @if $top != null {
+    top: $top;
+  }
+  @if $right != null {
+    right: $right;
+  }
+  @if $bottom != null {
+    bottom: $bottom;
+  }
+  @if $left != null {
+    left: $left;
+  }
 }
 
 // =============================================================================
@@ -102,7 +110,13 @@
 /// @param {String} $font-style - The font style
 /// @param {Length} $font-size - The font size
 /// @param {Length} $line-height - The line height
-@mixin font-face($font-family, $font-weight: normal, $font-style: normal, $font-size: 1rem, $line-height: 1.5) {
+@mixin font-face(
+  $font-family,
+  $font-weight: normal,
+  $font-style: normal,
+  $font-size: 1rem,
+  $line-height: 1.5
+) {
   font-family: $font-family;
   font-weight: $font-weight;
   font-style: $font-style;
@@ -128,15 +142,19 @@
 
 /// Responsive font size mixin
 /// Uses Foundation's breakpoint mixin for responsive typography
-@mixin responsive-font-size($mobile-size, $tablet-size: null, $desktop-size: null) {
+@mixin responsive-font-size(
+  $mobile-size,
+  $tablet-size: null,
+  $desktop-size: null
+) {
   font-size: $mobile-size;
-  
+
   @if $tablet-size != null {
     @include foundation.breakpoint(medium) {
       font-size: $tablet-size;
     }
   }
-  
+
   @if $desktop-size != null {
     @include foundation.breakpoint(large) {
       font-size: $desktop-size;
@@ -153,7 +171,12 @@
 /// @param {Time} $duration - The duration of the transition
 /// @param {String} $timing-function - The timing function
 /// @param {Time} $delay - The delay before transition starts
-@mixin transition($properties: all, $duration: 0.3s, $timing-function: ease, $delay: 0s) {
+@mixin transition(
+  $properties: all,
+  $duration: 0.3s,
+  $timing-function: ease,
+  $delay: 0s
+) {
   transition: $properties $duration $timing-function $delay;
 }
 
@@ -170,7 +193,14 @@
 /// @param {Time} $delay - The delay before animation starts
 /// @param {String} $fill-mode - The fill mode
 /// @param {String} $iteration-count - The iteration count
-@mixin animation($name, $duration: 1s, $timing-function: ease, $delay: 0s, $fill-mode: none, $iteration-count: 1) {
+@mixin animation(
+  $name,
+  $duration: 1s,
+  $timing-function: ease,
+  $delay: 0s,
+  $fill-mode: none,
+  $iteration-count: 1
+) {
   animation: $name $duration $timing-function $delay $iteration-count $fill-mode;
 }
 
@@ -205,7 +235,13 @@
 /// @param {Length} $blur - Blur radius
 /// @param {Length} $spread - Spread radius
 /// @param {Color} $color - Shadow color
-@mixin box-shadow($x: 0, $y: 2px, $blur: 4px, $spread: 0, $color: rgba(0, 0, 0, 0.2)) {
+@mixin box-shadow(
+  $x: 0,
+  $y: 2px,
+  $blur: 4px,
+  $spread: 0,
+  $color: rgba(0, 0, 0, 0.2)
+) {
   box-shadow: $x $y $blur $spread $color;
 }
 
@@ -221,15 +257,15 @@
   &::placeholder {
     @content;
   }
-  
+
   &::-webkit-input-placeholder {
     @content;
   }
-  
+
   &::-moz-placeholder {
     @content;
   }
-  
+
   &:-ms-input-placeholder {
     @content;
   }

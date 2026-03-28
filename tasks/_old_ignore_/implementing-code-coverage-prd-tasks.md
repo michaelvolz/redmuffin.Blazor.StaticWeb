@@ -1,27 +1,32 @@
 ## Relevant Files
 
 ### Configuration Files
+
 - `Directory.Build.props` - Global MSBuild properties for code coverage configuration.
 - `coverageconfig.json` - Coverage configuration file for exclusions and settings.
 - `.coverletrc` - Coverlet-specific configuration file.
 
 ### PowerShell Scripts
+
 - `scripts/Generate-CoverageReport.ps1` - PowerShell script to generate coverage reports locally.
 - `scripts/View-CoverageReport.ps1` - PowerShell script to open coverage reports in browser.
 
 ### Project Files
+
 - `tests/redmuffin.Blazor.StaticWeb.Tests/redmuffin.Blazor.StaticWeb.Tests.csproj` - Main Blazor test project with coverage configuration.
 - `tests/redmuffin.Blazor.StaticWeb.Api.Tests/redmuffin.Blazor.StaticWeb.Api.Tests.csproj` - API test project with coverage configuration.
 - `src/redmuffin.Blazor.StaticWeb/redmuffin.Blazor.StaticWeb.csproj` - Main Blazor project with coverage instrumentation.
 - `src/redmuffin.Blazor.StaticWeb.Api/redmuffin.Blazor.StaticWeb.Api.csproj` - API project with coverage instrumentation.
 
 ### Coverage Output
+
 - `coverage/` - Directory for coverage output files (HTML reports, XML/JSON data).
 - `coverage/index.html` - Main HTML coverage report entry point.
 - `coverage/coverage.xml` - XML coverage report for tooling integration.
 - `coverage/coverage.json` - JSON coverage report for programmatic access.
 
 ### Documentation
+
 - `docs/CodeCoverage.md` - Documentation for developers on using code coverage.
 - `README.md` - Updated with coverage information and usage instructions.
 

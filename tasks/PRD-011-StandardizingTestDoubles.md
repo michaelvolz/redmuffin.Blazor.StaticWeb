@@ -63,4 +63,3 @@ Verify that all test doubles in the project adhere to the new naming convention 
 
 - [LightMock Documentation](https://lightmock.github.io/)
 - [Best Practices for Mocks and Stubs](https://www.martinfowler.com/articles/mocksArentStubs.html)
-

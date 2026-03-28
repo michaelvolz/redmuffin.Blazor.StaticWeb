@@ -177,6 +177,7 @@ var result = JsonSerializer.Deserialize<T>(jsonContent, RaindropJsonSerializerCo
 **Solution**: Updated test helpers to use consistent `RaindropJsonSerializerContext.DefaultOptions` for both serialization and deserialization.
 
 **Files Modified**:
+
 - `tests/redmuffin.Blazor.StaticWeb.Tests/NewTests/Features/Raindrop/Services/IRaindropAPITests.Helpers.cs`
 - `tests/redmuffin.Blazor.StaticWeb.Api.Tests/Functions/ArticlesApiVerification_Tests.cs`
 
@@ -185,6 +186,7 @@ var result = JsonSerializer.Deserialize<T>(jsonContent, RaindropJsonSerializerCo
 **Issue**: Inconsistent exception handling between different test scenarios (missing files vs malformed JSON vs API failures).
 
 **Solutions Applied**:
+
 1. **DummyRaindropAPI**: Return empty collections for missing files (404) to support development scenarios
 2. **RaindropAPI**: Let `HttpRequestException` pass through without wrapping for proper test assertions
 3. **Both APIs**: Throw `InvalidOperationException` when JSON deserialization fails completely

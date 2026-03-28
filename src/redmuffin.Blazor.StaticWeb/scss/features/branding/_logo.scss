@@ -5,57 +5,82 @@
 // typography and spacing systems using modern @use directives.
 // =============================================================================
 
-@use '../../../lib/foundation-sites/scss/foundation' as foundation;
-@use '../../abstracts/variables' as vars;
+@use "../../../lib/foundation-sites/scss/foundation" as foundation;
+@use "../../abstracts/variables" as vars;
 
 // Google Fonts import (should be consolidated in base/typography later)
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@500;700&display=swap");
 
 .logo-container {
-    display: flex;
-    justify-content: flex-start;
-    background-color: transparent;
+  display: flex;
+  justify-content: flex-start;
+  background-color: transparent;
 }
 
 .logo {
-    font-family: 'Outfit', sans-serif;
-    font-size: 4rem;
-    font-weight: 700;
-    letter-spacing: 0;
-    text-transform: lowercase;
-    display: inline-flex;
-    align-items: center;
-    
-    .char {
-        display: inline-block;
-        position: relative;
-    }
-    
-    .char-r, .char-e, .char-d {
-        color: vars.$brand-black;
-    }
-    
-    .char-m, .char-u, .char-f1, .char-f2, .char-i, .char-n {
-        color: vars.$brand-burgundy;
-    }
-    
-    // Using logo character spacing from abstracts/variables
-    .char-r { margin-right: map-get(vars.$logo-character-spacing, 'r'); }
-    .char-e { margin-right: map-get(vars.$logo-character-spacing, 'e'); }
-    .char-d { margin-right: map-get(vars.$logo-character-spacing, 'd'); }
-    .char-m { margin-right: map-get(vars.$logo-character-spacing, 'm'); }
-    .char-u { margin-right: map-get(vars.$logo-character-spacing, 'u'); }
-    .char-f1 { margin-right: map-get(vars.$logo-character-spacing, 'f1'); }
-    .char-f2 { margin-right: map-get(vars.$logo-character-spacing, 'f2'); }
-    .char-i { margin-right: map-get(vars.$logo-character-spacing, 'i'); }
-    .char-n { margin-right: map-get(vars.$logo-character-spacing, 'n'); }
+  font-family: "Outfit", sans-serif;
+  font-size: 4rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: lowercase;
+  display: inline-flex;
+  align-items: center;
+
+  .char {
+    display: inline-block;
+    position: relative;
+  }
+
+  .char-r,
+  .char-e,
+  .char-d {
+    color: vars.$brand-black;
+  }
+
+  .char-m,
+  .char-u,
+  .char-f1,
+  .char-f2,
+  .char-i,
+  .char-n {
+    color: vars.$brand-burgundy;
+  }
+
+  // Using logo character spacing from abstracts/variables
+  .char-r {
+    margin-right: map-get(vars.$logo-character-spacing, "r");
+  }
+  .char-e {
+    margin-right: map-get(vars.$logo-character-spacing, "e");
+  }
+  .char-d {
+    margin-right: map-get(vars.$logo-character-spacing, "d");
+  }
+  .char-m {
+    margin-right: map-get(vars.$logo-character-spacing, "m");
+  }
+  .char-u {
+    margin-right: map-get(vars.$logo-character-spacing, "u");
+  }
+  .char-f1 {
+    margin-right: map-get(vars.$logo-character-spacing, "f1");
+  }
+  .char-f2 {
+    margin-right: map-get(vars.$logo-character-spacing, "f2");
+  }
+  .char-i {
+    margin-right: map-get(vars.$logo-character-spacing, "i");
+  }
+  .char-n {
+    margin-right: map-get(vars.$logo-character-spacing, "n");
+  }
 }
 
 // Use Foundation's breakpoint system instead of raw media queries
 @include foundation.breakpoint(small only) {
-    .logo {
-        font-size: vars.$logo-font-size-small;
-    }
+  .logo {
+    font-size: vars.$logo-font-size-small;
+  }
 }
 // Future home of logo styles using Foundation's breakpoint system
 // and the logo variables from abstracts/_variables.scss
@@ -64,13 +89,13 @@
 // .logo {
 //   font-family: $logo-font-family;
 //   font-weight: $logo-font-weight;
-//   
+//
 //   @include responsive-font-size(
 //     $logo-font-size-small,
 //     $logo-font-size-medium,
 //     $logo-font-size-large
 //   );
-//   
+//
 //   // Character spacing using Foundation's rem-calc
 //   letter-spacing: rem-calc(0);
 // }

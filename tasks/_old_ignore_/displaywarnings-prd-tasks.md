@@ -1,6 +1,7 @@
 ## Relevant Files
 
 ### Scripts
+
 - `scripts/DisplayWarnings.ps1` - PowerShell script to run `dotnet clean` and `dotnet build`, capturing and displaying warnings in a formatted summary.
 
 ### Notes
@@ -9,7 +10,7 @@
 - Script follows PowerShell cmdlet development guidelines with proper error handling and user-friendly output.
 - Uses PowerShell's native text processing capabilities to parse build output.
 - Implements color-coded output with emojis for enhanced readability.
-- IL* warnings (specifically IL2111) are displayed separately with softened colors as they are expected in Blazor WebAssembly projects.
+- IL\* warnings (specifically IL2111) are displayed separately with softened colors as they are expected in Blazor WebAssembly projects.
 
 ## Tasks
 
@@ -25,7 +26,7 @@
   - [x] 2.4 Develop formatted output display with emojis and color coding
 
 - [x] 3.0 Advanced Features Implementation
-  - [x] 3.1 Implement IL* warning separation and softened color display
+  - [x] 3.1 Implement IL\* warning separation and softened color display
   - [x] 3.2 Add warning sorting by frequency/count
   - [x] 3.3 Create compact and precise output formatting
   - [x] 3.4 Add progress indicators and build status reporting

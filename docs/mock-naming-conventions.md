@@ -7,6 +7,7 @@ This document establishes the naming conventions for mock objects in unit tests 
 ## Standard Pattern: `Mock` Suffix
 
 ### For Mock Objects
+
 Use the `Mock` suffix for all mock wrapper objects:
 
 ```csharp
@@ -18,6 +19,7 @@ private readonly Mock<ICacheService> _cacheServiceMock;
 ```
 
 ### For Mock Object Instances
+
 When accessing the actual mock object, use the base interface name:
 
 ```csharp
@@ -25,15 +27,15 @@ public class UserServiceTests
 {
     private readonly Mock<IUserRepository> _userRepositoryMock;
     private readonly Mock<ILogger<UserService>> _loggerMock;
-    
+
     // The actual service under test
     private readonly UserService _userService;
-    
+
     public UserServiceTests()
     {
         _userRepositoryMock = new Mock<IUserRepository>();
         _loggerMock = new Mock<ILogger<UserService>>();
-        
+
         // Pass the .Object to the service constructor
         _userService = new UserService(
             _userRepositoryMock.Object,
@@ -58,7 +60,7 @@ public class ImageValidationServiceTests : IDisposable
         _cacheServiceMock = new Mock<ICacheService>();
         _httpClientFactoryMock = new Mock<IHttpClientFactory>();
         _loggerMock = new Mock<ILogger<ImageValidationService>>();
-        
+
         _service = new ImageValidationService(
             _httpClientFactoryMock.Object,
             _cacheServiceMock.Object,
@@ -112,12 +114,14 @@ private readonly Mock<ILogger> _mock2;
 ## Framework-Specific Patterns
 
 ### NSubstitute
+
 ```csharp
 private readonly IUserService _userServiceMock = Substitute.For<IUserService>();
 private readonly ILogger<UserService> _loggerMock = Substitute.For<ILogger<UserService>>();
 ```
 
 ### LightMock.Generator
+
 ```csharp
 private readonly Mock<IUserService> _userServiceMock = new Mock<IUserService>();
 private readonly Mock<ILogger<UserService>> _loggerMock = new Mock<ILogger<UserService>>();

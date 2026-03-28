@@ -19,19 +19,23 @@
 
 // Base spacing unit (8px when $global-margin = 1rem and base font-size = 16px)
 // Uses Foundation's $global-margin variable directly or fallback to 1rem
-$base-spacing: if(variable-exists(global-margin), $global-margin * 0.5, 0.5rem); // 8px
+$base-spacing: if(
+  variable-exists(global-margin),
+  $global-margin * 0.5,
+  0.5rem
+); // 8px
 
 // Header spacing scale (based on $base-spacing)
-$header-spacing: $base-spacing;           // 8px - Main header padding
+$header-spacing: $base-spacing; // 8px - Main header padding
 $header-content-spacing: $base-spacing * 2; // 16px - Double header spacing for content
-$logo-nav-spacing: $base-spacing * 0.5;     // 4px - Minimal spacing between logo and nav
+$logo-nav-spacing: $base-spacing * 0.5; // 4px - Minimal spacing between logo and nav
 
 // Navigation spacing scale
 $nav-compact-spacing: $base-spacing * 0.25; // 2px - Ultra compact nav spacing
-$nav-item-spacing: $base-spacing * 0.75;    // 6px - Space between nav items
+$nav-item-spacing: $base-spacing * 0.75; // 6px - Space between nav items
 
 // Media query debugger spacing (keep consistent with existing values)
-$debug-nav-spacing: $base-spacing * 2.5;    // 20px - Standard debug nav bottom margin
+$debug-nav-spacing: $base-spacing * 2.5; // 20px - Standard debug nav bottom margin
 
 // =============================================================================
 // TYPOGRAPHY SYSTEM
@@ -40,15 +44,15 @@ $debug-nav-spacing: $base-spacing * 2.5;    // 20px - Standard debug nav bottom 
 // Values are in rem units for better scalability
 
 // Logo font sizes (responsive)
-$logo-font-size-small: 2.5rem;   // Mobile/small screens
-$logo-font-size-medium: 3rem;    // Tablet/medium screens  
-$logo-font-size-large: 3.5rem;   // Desktop/large screens
+$logo-font-size-small: 2.5rem; // Mobile/small screens
+$logo-font-size-medium: 3rem; // Tablet/medium screens
+$logo-font-size-large: 3.5rem; // Desktop/large screens
 
 // Navigation typography scale
-$nav-font-size-small: 0.875rem;  // Mobile navigation
-$nav-font-size-medium: 1rem;     // Desktop navigation
-$nav-icon-size-small: 0.8rem;    // Mobile nav icons
-$nav-icon-size-medium: 0.9rem;   // Desktop nav icons
+$nav-font-size-small: 0.875rem; // Mobile navigation
+$nav-font-size-medium: 1rem; // Desktop navigation
+$nav-icon-size-small: 0.8rem; // Mobile nav icons
+$nav-icon-size-medium: 0.9rem; // Desktop nav icons
 
 // =============================================================================
 // COLOR SYSTEM - EXTENDING FOUNDATION'S COLOR PALETTE
@@ -61,9 +65,9 @@ $nav-icon-size-medium: 0.9rem;   // Desktop nav icons
 // BRAND COLORS (Primary Brand Identity)
 // =============================================================================
 // Core brand colors that define the project's visual identity
-$brand-burgundy: #800020;        // redmuffin burgundy
-$brand-black: #000000;           // Pure black
-$brand-white: #FFFFFF;           // Pure white
+$brand-burgundy: #800020; // redmuffin burgundy
+$brand-black: #000000; // Pure black
+$brand-white: #ffffff; // Pure white
 
 // =============================================================================
 // EXTENDED COLOR PALETTE (Foundation Integration)
@@ -72,11 +76,11 @@ $brand-white: #FFFFFF;           // Pure white
 // These map to Foundation's semantic color categories
 
 // Primary color palette (consolidated from _site-colors.scss)
-$bittersweet: rgba(255, 89, 94, 1);    // Foundation 'alert' color
-$sunglow: rgba(255, 202, 58, 1);       // Foundation 'warning' color
-$yellow-green: rgba(138, 201, 38, 1);  // Foundation 'success' color
-$steel-blue: rgba(25, 130, 196, 1);    // Foundation 'primary' color
-$ultra-violet: rgba(106, 76, 147, 1);  // Foundation 'secondary' color
+$bittersweet: rgba(255, 89, 94, 1); // Foundation 'alert' color
+$sunglow: rgba(255, 202, 58, 1); // Foundation 'warning' color
+$yellow-green: rgba(138, 201, 38, 1); // Foundation 'success' color
+$steel-blue: rgba(25, 130, 196, 1); // Foundation 'primary' color
+$ultra-violet: rgba(106, 76, 147, 1); // Foundation 'secondary' color
 
 // =============================================================================
 // GRADIENT SYSTEM (Optional - from _site-colors.scss)
@@ -85,16 +89,50 @@ $ultra-violet: rgba(106, 76, 147, 1);  // Foundation 'secondary' color
 // These can be used for special design elements when needed
 
 // Linear gradients in different directions
-$gradient-right: linear-gradient(90deg, $bittersweet, $sunglow, $yellow-green, $steel-blue, $ultra-violet);
-$gradient-bottom: linear-gradient(180deg, $bittersweet, $sunglow, $yellow-green, $steel-blue, $ultra-violet);
-$gradient-top-right: linear-gradient(45deg, $bittersweet, $sunglow, $yellow-green, $steel-blue, $ultra-violet);
-$gradient-bottom-right: linear-gradient(135deg, $bittersweet, $sunglow, $yellow-green, $steel-blue, $ultra-violet);
-$gradient-radial: radial-gradient($bittersweet, $sunglow, $yellow-green, $steel-blue, $ultra-violet);
+$gradient-right: linear-gradient(
+  90deg,
+  $bittersweet,
+  $sunglow,
+  $yellow-green,
+  $steel-blue,
+  $ultra-violet
+);
+$gradient-bottom: linear-gradient(
+  180deg,
+  $bittersweet,
+  $sunglow,
+  $yellow-green,
+  $steel-blue,
+  $ultra-violet
+);
+$gradient-top-right: linear-gradient(
+  45deg,
+  $bittersweet,
+  $sunglow,
+  $yellow-green,
+  $steel-blue,
+  $ultra-violet
+);
+$gradient-bottom-right: linear-gradient(
+  135deg,
+  $bittersweet,
+  $sunglow,
+  $yellow-green,
+  $steel-blue,
+  $ultra-violet
+);
+$gradient-radial: radial-gradient(
+  $bittersweet,
+  $sunglow,
+  $yellow-green,
+  $steel-blue,
+  $ultra-violet
+);
 
 // Utility colors (for validation, etc.)
-$success-color: #26b050;         // Form validation success
-$error-color: #ff0000;           // Form validation error
-$code-color: #c02d76;            // Code syntax highlighting
+$success-color: #26b050; // Form validation success
+$error-color: #ff0000; // Form validation error
+$code-color: #c02d76; // Code syntax highlighting
 
 // =============================================================================
 // TYPOGRAPHY VARIABLES
@@ -102,31 +140,31 @@ $code-color: #c02d76;            // Code syntax highlighting
 // Font families and typography settings used across the project
 
 // Brand fonts variables
-$brand-font-family: 'Outfit', sans-serif;
+$brand-font-family: "Outfit", sans-serif;
 $brand-font-weight-normal: 400;
 $brand-font-weight-bold: 700;
 
 // Code fonts variables
-$code-font-family: 'Courier New', Courier, monospace;
+$code-font-family: "Courier New", Courier, monospace;
 
 // =============================================================================
 // COMPONENT-SPECIFIC VARIABLES
 // =============================================================================
 
 // Logo component variables
-$logo-font-family: 'Outfit', sans-serif;
+$logo-font-family: "Outfit", sans-serif;
 $logo-font-weight: 700;
 $logo-letter-spacing: 0;
 $logo-character-spacing: (
-  'r': -0.4rem,
-  'e': -0.1rem, 
-  'd': -0.35rem,
-  'm': -0.3rem,
-  'u': -0.15rem,
-  'f1': -0.1rem,
-  'f2': 0rem,
-  'i': -0.3rem,
-  'n': 0rem
+  "r": -0.4rem,
+  "e": -0.1rem,
+  "d": -0.35rem,
+  "m": -0.3rem,
+  "u": -0.15rem,
+  "f1": -0.1rem,
+  "f2": 0rem,
+  "i": -0.3rem,
+  "n": 0rem,
 );
 
 // Shimmer loading effect variables
@@ -188,7 +226,8 @@ $page-speed-border-radius-button: 12px;
 $page-speed-border-radius-oval: 20px;
 
 // Widget typography
-$page-speed-font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Consolas', monospace;
+$page-speed-font-family:
+  "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "Consolas", monospace;
 $page-speed-font-size-title: 13px;
 $page-speed-font-size-body: 11px;
 $page-speed-font-size-small: 10px;

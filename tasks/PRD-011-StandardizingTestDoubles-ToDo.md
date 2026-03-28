@@ -3,20 +3,21 @@
 ## Relevant Files
 
 ### Documentation
+
 - `docs/TestingGuidelines.md` - Updated testing guidelines with test double naming conventions
 - `.github/copilot-instructions.md` - Updated with test double standards for AI assistance
 
 ### Test Projects
+
 - `tests/redmuffin.Blazor.StaticWeb.Tests/**/*.cs` - All test files updated with new naming conventions
 - `tests/redmuffin.Blazor.StaticWeb.Api.Tests/**/*.cs` - API test files updated with new naming conventions
-
 
 ### Notes
 
 - Tests use TUnit framework with `[Test]` attribute for test methods and `[Arguments]` for data-driven tests.
 - **CRITICAL: ZERO BUILD WARNINGS POLICY** - Run `dotnet clean && dotnet build --no-restore --verbosity quiet` after EVERY C# file change (except IL2111).
 - Use `dotnet test` to run all tests or `dotnet test --filter "FullyQualifiedName~[TestClassName]"` for specific test classes.
-- **QUALITY CHECK**: After every step verify TestScope pattern, custom mock pattern, ConfigureAwait(false) compliance following HomeTests*.cs files as prime example.
+- **QUALITY CHECK**: After every step verify TestScope pattern, custom mock pattern, ConfigureAwait(false) compliance following HomeTests\*.cs files as prime example.
 - **Test double naming convention** uses underscores: `Something_Mock`, `Something_Stub`, `Something_Fake`, `Something_Spy`, `Something_Dummy`
 - **Strategic Mocking Approach**:
   - **LightMock.Generator**: For 3rd party/external dependencies ONLY (`IHttpClientFactory`, `ILocalStorageService`, `ILogger<T>`, external APIs)

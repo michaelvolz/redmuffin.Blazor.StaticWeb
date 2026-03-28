@@ -5,13 +5,16 @@
 ## Build, Lint, and Test Commands
 
 ### Build
+
 ```powershell
 dotnet build                    # Build entire solution
 dotnet build --no-restore       # Fast build (after restore)
 ```
+
 **Zero Build Warnings Policy**: After any C# file change, run `dotnet build --verbosity quiet` and fix all warnings (except IL2111).
 
 ### Testing
+
 ```powershell
 dotnet test                     # Run all tests
 dotnet test --filter "FullyQualifiedName~TestClassName"  # Run specific test class
@@ -22,12 +25,14 @@ dotnet test --list-tests       # List all tests
 **AOT Compilation**: Tests run with AOT in CI (`CI=true` or `GITHUB_ACTIONS=true`), disabled locally for speed.
 
 ### Code Coverage
+
 ```powershell
 .\scripts\Generate-CoverageReport.ps1  # Generate coverage report
 .\scripts\View-CoverageReport.ps1       # View unified report
 ```
 
 ### Development Build Scripts
+
 - `scripts/test-build-fast.ps1` - Fast dev build (~9s, AoT disabled)
 - `scripts/test-build-aot.ps1` - Production parity testing
 - `scripts/DisplayWarnings.ps1` - Show all build warnings
@@ -37,6 +42,7 @@ dotnet test --list-tests       # List all tests
 ## Code Style Guidelines
 
 ### Formatting (.editorconfig)
+
 - **C# files**: Tab indentation (4 tabs = 4 spaces)
 - **Web files** (`.razor`, `.cshtml`): 4-space indentation
 - **Project files** (`.csproj`): 2-space indentation
@@ -44,6 +50,7 @@ dotnet test --list-tests       # List all tests
 - Opening brace on new line
 
 ### Naming Conventions
+
 - **Types/Namespaces**: PascalCase (e.g., `HomePage`, `UserService`)
 - **Methods/Properties**: PascalCase
 - **Private fields**: camelCase (e.g., `_userService`)
@@ -52,11 +59,13 @@ dotnet test --list-tests       # List all tests
 - **Test doubles**: `[ClassName]_[Type]` (e.g., `NavigationManager_Mock`, `HttpClient_Stub`)
 
 ### Imports
+
 - File-scoped namespace declarations
 - Single-line using directives
-- System.* imports first, then alphabetical
+- System.\* imports first, then alphabetical
 
 ### C# 12/13 Features
+
 - Primary constructors
 - Collection expressions (`[1, 2, 3]`)
 - `ref readonly` parameters
@@ -64,11 +73,13 @@ dotnet test --list-tests       # List all tests
 - Use `nameof` instead of string literals
 
 ### Nullable Reference Types
+
 - Declare variables non-nullable
 - Check for `null` at entry points
 - Use `is null` or `is not null` (NOT `== null`)
 
 ### Error Handling
+
 - Use `LoggerMessage` delegates (NEVER `Logger.LogError()`)
 - Throw specific exceptions with meaningful messages
 - Test error scenarios in `.EdgeCases.cs` files
@@ -78,6 +89,7 @@ dotnet test --list-tests       # List all tests
 ## Partial Class Organization
 
 ### Blazor Components
+
 ```
 Features/Home/
   Home.razor.cs      # Logic, lifecycle, properties, events
@@ -85,6 +97,7 @@ Features/Home/
 ```
 
 ### Services
+
 ```
 Core/Services/
   UserService.cs           # Logic, methods, properties
@@ -92,6 +105,7 @@ Core/Services/
 ```
 
 ### Tests (NEVER separate helper files)
+
 ```
 Core/HomeTests/
   HomeTests.cs              # [Test] methods
@@ -106,15 +120,18 @@ Core/HomeTests/
 ## Testing Standards
 
 ### Framework
+
 - **TUnit** with `[Test]` and `[Arguments]` (NEVER xUnit/NUnit/MSTest)
 - **LightMock.Generator** for external dependencies, **Custom mocks** for internal
 
 ### Test Quality
+
 - Use `ConfigureAwait(false)` on async calls (except asserts)
 - Follow AAA structure, use `using` for disposal
 - Test edge cases, zero build warnings
 
 ### Mocking Patterns
+
 ```csharp
 // LightMock for external dependencies
 var httpMock = new Mock<IHttpClientFactory>();
@@ -130,6 +147,7 @@ public sealed class NavigationManager_Mock : NavigationManager
 ```
 
 ### Critical: Optional Parameters
+
 Always specify ALL parameters explicitly: `_mock.Arrange(f => f.GetAsync("key", CancellationToken.None))`
 
 ---
@@ -157,36 +175,41 @@ Always specify ALL parameters explicitly: `_mock.Arrange(f => f.GetAsync("key", 
    - User secrets (`dotnet user-secrets`) for .NET development
    - Azure Key Vault for production
    - `.env` files (gitignored) for local development
-   If you detect a secret in a file, immediately warn the user and suggest the correct approach.
+     If you detect a secret in a file, immediately warn the user and suggest the correct approach.
 
 ## Web Search Strategy
 
 This project has four search/discovery tools. Use the right one for the job:
 
 ### Sequential Thinking (MCP)
+
 For complex problems that require careful reasoning, multi-step planning, or exploring alternate approaches, use the `sequentialthinking` tool to break down the problem step-by-step. This MCP server provides structured, iterative reasoning with revision capabilities.
 
 - Use for: Architectural decisions, debugging complex issues, multi-step refactoring
 - Prompt: "use sequential thinking to solve this" or include in your reasoning request
 
 ### Context7 → Always use first for library/framework code
+
 - Any time you're writing code that uses an external library or framework
 - .NET, Blazor, NuGet packages, JavaScript frameworks
 - Fetches version-specific API docs and code examples — prevents hallucinated APIs
 - Tools: `resolve-library-id` → `get-library-docs`
 
 ### Brave (`brave_web_search`) → Default for general web search
+
 - Stack Overflow answers, error messages, "how to do X"
 - Current events, version changelogs, blog posts, tutorials
 - When you need factual information from the web
 
 ### Exa (`websearch`) → Semantic/discovery search
+
 - Vague/conceptual queries: "find a library that does X", "similar to this"
 - Finding "hidden gem" content that keyword search misses
 - Deep topic exploration where you don't know the exact keywords
 - Fallback when Brave results aren't sufficient
 
 ### Decision Rule
+
 1. Is it about a library/framework API? → **Context7**
 2. Is it a keyword-specific query (error, "how to", specific topic)? → **Brave**
 3. Is it vague/conceptual? → **Exa**
@@ -195,7 +218,7 @@ For complex problems that require careful reasoning, multi-step planning, or exp
 
 ## Development Modes
 
-| Mode | Port | Use Case |
-|------|------|----------|
+| Mode       | Port | Use Case                                     |
+| ---------- | ---- | -------------------------------------------- |
 | Simplified | 5233 | UI work, uses mock data when API unavailable |
-| Full Stack | 4280 | API integration, OAuth, E2E testing |
+| Full Stack | 4280 | API integration, OAuth, E2E testing          |

@@ -37,4 +37,3 @@ This document outlines the findings from the analysis of current test double usa
 - **Explicit Parameters**: Always specify all parameters when working with mocks to avoid common errors like CS0854
 - **Partial Class Policy**: All test helpers should be placed inside the corresponding partial files, not separate helper files
 - **Standards Compliance**: Follow set conventions to maintain clarity and ensure that all team members understand the test model
-

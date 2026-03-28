@@ -7,10 +7,10 @@
 // =============================================================================
 
 // Import Foundation for proper integration
-@use '../../lib/foundation-sites/scss/foundation' as foundation;
+@use "../../lib/foundation-sites/scss/foundation" as foundation;
 
 // Import project variables
-@use 'variables' as vars;
+@use "variables" as vars;
 
 // =============================================================================
 // LAYOUT PLACEHOLDERS
@@ -81,7 +81,7 @@
 /// Uses Foundation's breakpoint mixin for responsive typography
 %responsive-text {
   font-size: vars.$nav-font-size-small;
-  
+
   @include foundation.breakpoint(medium) {
     font-size: vars.$nav-font-size-medium;
   }
@@ -97,8 +97,10 @@
   border-radius: vars.$shimmer-border-radius;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
@@ -117,11 +119,11 @@
   text-decoration: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  
+
   &:hover {
     transform: translateY(-1px);
   }
-  
+
   &:active {
     transform: translateY(0);
   }
@@ -147,7 +149,7 @@
 /// Processing state placeholder for active loading
 %processing-state {
   @extend %loading-state;
-  
+
   background-color: vars.$shimmer-video-base;
   background-image: linear-gradient(
     90deg,
@@ -176,7 +178,7 @@
 /// Shadow hover placeholder for interactive cards
 %shadow-hover {
   transition: box-shadow 0.3s ease;
-  
+
   &:hover {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   }

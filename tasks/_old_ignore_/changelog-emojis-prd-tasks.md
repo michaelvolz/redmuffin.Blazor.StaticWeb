@@ -1,22 +1,27 @@
 ## Relevant Files
 
 ### PowerShell Modules
+
 - `scripts/modules/ChangelogFormatter.psm1` - Main module for formatting changelog entries, needs emoji insertion logic
 - `scripts/modules/CategorizationModule.psm1` - Module for categorizing commits, may need emoji mapping support
 - `scripts/modules/FileGenerator.psm1` - Module for generating changelog file, needs emoji support in headers/footers
 
 ### Configuration
+
 - `config/changelog-config.json` - Configuration file that needs emoji mapping definitions
 
 ### Tests
+
 - `scripts/modules/ChangelogFormatter.Tests.ps1` - Tests for changelog formatting, needs emoji-related tests
 - `scripts/modules/CategorizationModule.Tests.ps1` - Tests for categorization, may need emoji tests
 - `scripts/modules/FileGenerator.Tests.ps1` - Tests for file generation, needs emoji header/footer tests
 
 ### Main Script
+
 - `scripts/Generate-Changelog.ps1` - Main script that may need UTF-8 encoding verification
 
 ### Output
+
 - `CHANGELOG.md` - The generated changelog file that will contain emojis
 
 ### Notes

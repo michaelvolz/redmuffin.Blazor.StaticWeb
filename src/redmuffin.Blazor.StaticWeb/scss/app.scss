@@ -6,22 +6,22 @@
 // =============================================================================
 
 // Import Foundation first (required for all other modules)
-@use '../lib/foundation-sites/scss/foundation' as foundation;
+@use "../lib/foundation-sites/scss/foundation" as foundation;
 
 // Import all modules in proper order
-@use 'abstracts/index' as abstracts; // Variables, mixins, functions
-@use 'vendors/index' as vendors; // Third-party libraries
-@use 'base/index' as base; // Base styles (reset, global, typography)
-@use 'components/index' as components; // Reusable components
-@use 'layout/index' as layout; // Layout structures
-@use 'features/branding/index' as branding; // Branding features
-@use 'features/content/index' as content; // Content features
-@use 'features/layout/index' as layout-features; // Layout features
-@use 'features/shared/index' as shared; // Shared features
-@use 'utilities/index' as utils; // Utility classes
+@use "abstracts/index" as abstracts; // Variables, mixins, functions
+@use "vendors/index" as vendors; // Third-party libraries
+@use "base/index" as base; // Base styles (reset, global, typography)
+@use "components/index" as components; // Reusable components
+@use "layout/index" as layout; // Layout structures
+@use "features/branding/index" as branding; // Branding features
+@use "features/content/index" as content; // Content features
+@use "features/layout/index" as layout-features; // Layout features
+@use "features/shared/index" as shared; // Shared features
+@use "utilities/index" as utils; // Utility classes
 
 // Import accessibility styles
-@use 'accessibility'; // Accessibility utility classes and enhancements
+@use "accessibility"; // Accessibility utility classes and enhancements
 
 // =============================================================================
 // All styles are now properly organized in their respective modules:

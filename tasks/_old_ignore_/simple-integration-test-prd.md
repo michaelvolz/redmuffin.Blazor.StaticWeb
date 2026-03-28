@@ -14,7 +14,7 @@ This PRD outlines the requirements for creating a simple integration test in a .
 - Incorporate all relevant user stories.
 - Reference documentation: TUnit via Context7 (/thomhurst/tunit), LightMock.Generator at [LightMock.Generator docs].
 - Always check /b:/DevDrive-Projects/redmuffin.Blazor.StaticWeb/.github/copilot-instructions.md and /b:/DevDrive-Projects/redmuffin.Blazor.StaticWeb/.github/prompts/csharp-testing.prompt.md before creating or changing test code.
-- Handle all build errors and warnings (except IL* warnings) immediately.
+- Handle all build errors and warnings (except IL\* warnings) immediately.
 
 ## User Stories
 
@@ -111,7 +111,7 @@ During testing, update Home.razor.cs smartly with precise, clean dummy code to g
 - Adding minimal methods for untested lifecycles (e.g., OnParametersSetAsync with logging).
 - Introducing injectable services (e.g., IHttpClientFactory) with simple usage.
 - Including event handlers (e.g., async button click with error simulation).
-Ensure updates are concise, follow existing patterns, and enable tests without unnecessary complexity.
+  Ensure updates are concise, follow existing patterns, and enable tests without unnecessary complexity.
 
 ## Code-Behind Preference
 

@@ -1,6 +1,6 @@
 ---
-mode: 'agent'
-description: 'Product Requirements Document for Video Image Placeholders with Clean Architecture'
+mode: "agent"
+description: "Product Requirements Document for Video Image Placeholders with Clean Architecture"
 ---
 
 # Product Requirements Document: Video Image Placeholders with Clean Architecture

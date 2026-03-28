@@ -11,30 +11,30 @@
 // =============================================================================
 
 // Import Foundation for breakpoint access
-@use '../../lib/foundation-sites/scss/foundation' as foundation;
+@use "../../lib/foundation-sites/scss/foundation" as foundation;
 
 // Basic masonry layout using CSS columns
 // This integrates with Foundation's breakpoint system
 .masonry {
-    column-count: 1;
-    column-gap: foundation.$global-padding; // Use Foundation's global padding
+  column-count: 1;
+  column-gap: foundation.$global-padding; // Use Foundation's global padding
 }
 
 // Use Foundation's breakpoint system for responsive masonry
 @include foundation.breakpoint(medium) {
-    .masonry {
-        column-count: 2;
-    }
+  .masonry {
+    column-count: 2;
+  }
 }
 
 @include foundation.breakpoint(large) {
-    .masonry {
-        column-count: 3;
-    }
+  .masonry {
+    column-count: 3;
+  }
 }
 
 @include foundation.breakpoint(xlarge) {
-    .masonry {
-        column-count: 4;
-    }
+  .masonry {
+    column-count: 4;
+  }
 }

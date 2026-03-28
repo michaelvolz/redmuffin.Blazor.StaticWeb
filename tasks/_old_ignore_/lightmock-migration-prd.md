@@ -3,9 +3,11 @@
 ## Updated PRD with Integrated Details
 
 ### Introduction/Overview
+
 The goal of this migration is to replace all instances of NSubstitute with LightMock.Generator in the test suite of the `redmuffin.Blazor.StaticWeb` project. This migration will be performed incrementally, ensuring that each test is migrated, verified, and error-free before proceeding to the next. The primary objective is to maintain high-quality, professional tests that focus on behavior rather than implementation, while adhering to the project's testing standards.
 
 ### Goals
+
 1. Replace all NSubstitute mocks with LightMock.Generator in the test suite.
 2. Ensure each migrated test is error-free and maintains in general the same test criteria as the original. Differences are allowed to make it more robust and more behavior testing.
 3. Focus on testing behavior rather than implementation.
@@ -14,11 +16,13 @@ The goal of this migration is to replace all instances of NSubstitute with Light
 6. Remove NSubstitute completely from the project once all tests are migrated.
 
 ### User Stories
+
 - **As a developer**, I want to migrate tests incrementally so that I can ensure each test is robust and error-free.
 - **As a developer**, I want to replace NSubstitute with LightMock.Generator to align with the project's testing framework standards.
 - **As a developer**, I want to focus on behavior-driven tests to ensure the tests are meaningful and maintainable.
 
 ### Functional Requirements
+
 1. Migrate tests incrementally, starting with those that use NSubstitute the least and are not skipped.
 2. Ensure each migrated test is error-free and adheres to the same test criteria as the original.
 3. Avoid shortcuts or hacks during the migration process.
@@ -30,6 +34,7 @@ The goal of this migration is to replace all instances of NSubstitute with Light
 9. Remove NSubstitute from the project once all tests are migrated.
 
 ### Working Order
+
 The migration process will follow this detailed working order:
 
 1. **Start with Non-Skipped Tests:**
@@ -57,6 +62,7 @@ The migration process will follow this detailed working order:
    - Confirm that all tests are behavior-driven and mock only external dependencies where necessary.
 
 ### Design Considerations
+
 - Follow the TUnit framework and LightMock.Generator guidelines as outlined in the `./github/copilot-instructions.md` file.
 - Use the example test implementation in `tests/redmuffin.Blazor.StaticWeb.Tests/Services/ImageValidationServiceTestsLightMock.cs` as a reference.
 - Ensure tests are behavior-driven and not implementation-focused.
@@ -64,6 +70,7 @@ The migration process will follow this detailed working order:
 - Adhere to the project's testing standards, including the Arrange-Act-Assert pattern and dependency injection practices.
 
 ### File Naming and Backup Process
+
 - **File Naming for Migrated Tests:**
   - For each test file being migrated, create a new file with the same name but with the `LightMock` suffix (e.g., `TestServiceTests.cs` becomes `TestServiceTestsLightMock.cs`).
   - Perform all migration work in the new `LightMock`-suffixed file.
@@ -92,6 +99,7 @@ The migration process will follow this detailed working order:
   - Ensure the project builds successfully and all tests pass without errors.
 
 ### Technical Considerations
+
 - Start with tests that use NSubstitute the least and are not skipped.
 - Incrementally unskip tests with the least NSubstitute usage and migrate them.
 - Ensure each test is migrated one by one, maintaining the same test criteria as the original.
@@ -101,12 +109,14 @@ The migration process will follow this detailed working order:
 - TUnit tests are parallel by default. Use `[NotInParallel]` only when necessary.
 
 ### Success Metrics
+
 - All tests using NSubstitute are successfully migrated to LightMock.Generator.
 - NSubstitute is completely removed from the project.
 - All migrated tests are error-free and maintain the same test criteria as the original.
 - Tests are robust, professional, and behavior-driven.
 
 ### Implementation Notes
+
 - Follow the TUnit framework and LightMock.Generator guidelines as outlined in the `./github/copilot-instructions.md` file.
 - Use the example test implementation in `tests/redmuffin.Blazor.StaticWeb.Tests/Services/ImageValidationServiceTestsLightMock.cs` as a reference.
 - Incrementally migrate tests, starting with those that use NSubstitute the least and are not skipped.

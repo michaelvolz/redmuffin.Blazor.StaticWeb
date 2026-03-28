@@ -5,16 +5,18 @@
 The current Articles component image checking system has become overly complex with multiple layers of validation, state management, progressive enhancement, and fallback mechanisms. This PRD outlines a simplified approach that maintains core functionality while removing unnecessary complexity.
 
 **Problem**: The current system has:
+
 - Complex state management with multiple dictionaries and tracking mechanisms
-- Elaborate progressive enhancement logic  
+- Elaborate progressive enhancement logic
 - Extensive background validation processes
 - Intricate fallback placeholder management
 - Multiple validation phases and caching layers
 - Overengineered error handling and recovery
 
 **Goal**: Create a simple, robust image validation system that:
+
 1. Checks image validity once per image URL
-2. Caches results in localStorage indefinitely  
+2. Caches results in localStorage indefinitely
 3. Shows images or placeholders based on cache
 4. Removes all superfluous complexity
 
@@ -81,12 +83,14 @@ The current Articles component image checking system has become overly complex w
 ## Design Considerations
 
 ### UI/UX Requirements
+
 - Use existing Zurb Foundation styling for consistency
 - Single placeholder design with clear failure messaging
 - Maintain current shimmer loading effect for initial page load
 - No additional loading indicators or progress bars
 
 ### Technical Architecture
+
 - **Single Service**: `SimpleImageValidationService` replacing current complex system
 - **Minimal State**: Remove complex state dictionaries and tracking
 - **Cache-First**: Always check localStorage before any network requests
@@ -95,18 +99,21 @@ The current Articles component image checking system has become overly complex w
 ## Technical Considerations
 
 ### Blazor WebAssembly .NET 9 Implementation
+
 - **Component Structure**: Simplify Articles.razor.cs, remove complex state management
 - **Dependency Injection**: Single `ISimpleImageValidationService` interface
 - **localStorage Integration**: Direct IJSRuntime calls for cache operations
 - **Background Tasks**: Simple Task.Run() for validation, no complex orchestration
 
 ### Performance Characteristics
+
 - **Initial Load**: Fast rendering with cached results or immediate placeholders
 - **Memory Usage**: Minimal in-memory state, rely on localStorage
 - **Network Requests**: One HTTP HEAD request per unique image URL ever
 - **Browser Storage**: Efficient key-value storage with minimal data
 
 ### Error Handling
+
 - **Simple Try-Catch**: Basic error handling without complex recovery
 - **Graceful Degradation**: Show placeholder on any error condition
 - **Logging**: Basic error logging for debugging purposes
@@ -115,12 +122,14 @@ The current Articles component image checking system has become overly complex w
 ## Implementation Notes
 
 ### Core Components
+
 1. **SimpleImageValidationService**: Single service for all image validation
 2. **ImageValidationCache**: Simple localStorage wrapper
 3. **PlaceholderGenerator**: Single method for generating failure placeholders
 4. **Articles Component**: Simplified component with minimal state
 
 ### Key Methods
+
 ```csharp
 // Simple validation service interface
 public interface ISimpleImageValidationService
@@ -140,6 +149,7 @@ public class ImageValidationResult
 ```
 
 ### Cache Structure
+
 ```javascript
 // localStorage key format
 "img_validation_[SHA256_hash_of_url]": {
@@ -150,6 +160,7 @@ public class ImageValidationResult
 ```
 
 ### Placeholder Generation
+
 - Single SVG template with dynamic text replacement
 - Consistent styling and dimensions
 - Clear, user-friendly messaging
@@ -173,11 +184,13 @@ public class ImageValidationResult
 ## Dependencies
 
 ### External Dependencies
+
 - **IJSRuntime**: For localStorage operations
 - **HttpClient**: For HTTP HEAD requests
 - **System.Security.Cryptography**: For URL hashing
 
 ### Internal Dependencies
+
 - **Articles Component**: Primary integration point
 - **Cache Management**: Integration with existing cache purge functionality
 - **Placeholder System**: Integration with existing shimmer effects
@@ -185,6 +198,7 @@ public class ImageValidationResult
 ## Technical Implementation
 
 ### Service Implementation
+
 ```csharp
 public class SimpleImageValidationService : ISimpleImageValidationService
 {
@@ -221,11 +235,12 @@ public class SimpleImageValidationService : ISimpleImageValidationService
 ```
 
 ### Articles Component Changes
+
 ```csharp
 public partial class Articles
 {
     private readonly Dictionary<string, string> _imageUrlCache = new();
-    
+
     [Inject] private ISimpleImageValidationService ImageValidationService { get; set; }
 
     private async Task PopulateImageCacheAsync()

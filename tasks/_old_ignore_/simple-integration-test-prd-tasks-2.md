@@ -30,24 +30,29 @@ Based on the comprehensive implementation of the Simple Integration Test PRD, th
 **DISCOVERY**: During implementation of Task 6.5, we discovered that the original AoT requirement was too rigid for development workflows. The solution is **conditional AoT compilation** that provides optimal experience for both development and CI/CD environments.
 
 #### Implementation Details:
+
 - **MSBuild Conditions**: `<RunAOTCompilation Condition="'$(CI)' == 'true' OR '$(GITHUB_ACTIONS)' == 'true' OR '$(AOT_TESTS)' == 'true'">true</RunAOTCompilation>`
 - **Development Mode**: AoT disabled by default (9.4s build time)
 - **CI/CD Mode**: AoT enabled automatically (11.1s build time, production parity)
 - **Manual Override**: `AOT_TESTS=true` environment variable forces AoT locally
 
 #### Build Scripts Created:
+
 - `scripts/test-build-fast.ps1` - Development builds (AoT disabled)
 - `scripts/test-build-aot.ps1` - Production parity testing (AoT enabled)
 - `scripts/test-build-ci.ps1` - CI/CD simulation with coverage
 
 #### Key Findings:
+
 - **18% build time increase** for AoT (1.7 seconds) is acceptable for CI/CD
 - **Zero compatibility issues** between AoT and non-AoT modes
 - **All 120 tests pass** in both compilation modes
 - **Perfect production parity** when needed for debugging
 
 #### Updated Success Metrics:
+
 **Original metrics plus conditional AoT insights:**
+
 - The test passes consistently in both AoT and non-AoT modes.
 - Conditional AoT configuration provides optimal development vs CI/CD experience.
 - Build scripts enable easy switching between compilation modes.
@@ -58,19 +63,23 @@ Based on the comprehensive implementation of the Simple Integration Test PRD, th
 **DISCOVERY**: Manual enforcement of code-behind preference is insufficient. **Automated testing** is required to maintain architectural standards.
 
 #### Implementation: BlazorCodeBehindEnforcementTests
+
 - **Regex Pattern Detection**: Scans all .razor files for `@code {` blocks
 - **Complexity Analysis**: Identifies components needing code-behind based on lifecycle methods, injection patterns
 - **Naming Convention Validation**: Ensures proper .razor.cs file associations
-- **Exclusion Logic**: Properly excludes App.razor, _Imports.razor, generated files
+- **Exclusion Logic**: Properly excludes App.razor, \_Imports.razor, generated files
 
 #### Key Benefits:
+
 - **Prevents Regression**: Automated detection of inline @code blocks
 - **Guidance for Developers**: Clear error messages with file paths
 - **CI/CD Integration**: Can be integrated into build pipelines
 - **Maintains Clean Architecture**: Enforces separation of concerns
 
 #### Updated Implementation Notes:
+
 **Enhanced with code-behind enforcement insights:**
+
 - Create code-behind enforcement tests to maintain architectural standards.
 - Use regex pattern detection for automated compliance checking.
 - Implement detailed error messaging for developer guidance.
@@ -85,6 +94,7 @@ Based on the comprehensive implementation of the Simple Integration Test PRD, th
 **✅ MANDATORY ARCHITECTURE PATTERNS:**
 
 1. **Sealed TestScope with Primary Constructor** (C# 13 pattern):
+
 ```csharp
 public sealed class TestScope(string baseUri = "http://localhost:5000/") : IDisposable
 {
@@ -95,6 +105,7 @@ public sealed class TestScope(string baseUri = "http://localhost:5000/") : IDisp
 ```
 
 2. **Fluent Builder Pattern for Service Configuration**:
+
 ```csharp
 // ✅ PRIME PATTERN: Chainable configuration methods
 public TestScope WithStandardServices() { /* setup */ return this; }
@@ -104,6 +115,7 @@ public TestScope WithJSInterop(JSRuntimeMode mode = JSRuntimeMode.Strict) { /* s
 ```
 
 3. **Factory Methods for Common Scenarios**:
+
 ```csharp
 // ✅ Clean factory methods eliminate repetition
 private static TestScope CreateTestScope(string baseUri = "http://localhost:5000/")
@@ -116,6 +128,7 @@ private static TestScope CreateFailingHttpTestScope(string baseUri = "http://loc
 ### **🎯 TESTSCOPE BENEFITS & REQUIREMENTS**
 
 **ADVANTAGES:**
+
 - **Automatic Resource Disposal**: IDisposable pattern ensures proper cleanup
 - **Flexible Service Configuration**: Mix and match services for different test scenarios
 - **Consistent Test Setup**: Eliminates duplication across test methods
@@ -123,6 +136,7 @@ private static TestScope CreateFailingHttpTestScope(string baseUri = "http://loc
 - **Modern C# Features**: Primary constructors, fluent APIs, sealed classes
 
 **MANDATORY FOR ALL NEW TEST CLASSES:**
+
 1. **TestScope inner class** with primary constructor and IDisposable
 2. **Fluent builder methods** for different service configurations (WithXXX pattern)
 3. **Factory methods** for common scenarios (CreateXXXTestScope pattern)
@@ -161,8 +175,9 @@ public class TestLogger<T> : ILogger<T>
 ### **📋 TESTSCOPE IMPLEMENTATION CHECKLIST**
 
 **Required for ALL Future Test Classes:**
+
 - [ ] **TestScope class** with primary constructor and IDisposable
-- [ ] **WithXXX methods** for different service configurations  
+- [ ] **WithXXX methods** for different service configurations
 - [ ] **CreateXXXTestScope** factory methods for common scenarios
 - [ ] **Mock implementations** for all external dependencies
 - [ ] **Service registration** using proper DI lifetime patterns
@@ -170,6 +185,7 @@ public class TestLogger<T> : ILogger<T>
 - [ ] **Configuration flexibility** for different test scenarios (loose/strict JS interop, etc.)
 
 **TestScope Usage Pattern:**
+
 ```csharp
 [Test]
 public async Task ComponentBehavior_Scenario_ExpectedResult()
@@ -179,9 +195,9 @@ public async Task ComponentBehavior_Scenario_ExpectedResult()
         .WithThrowingNavigation()
         .WithFailingHttpClient()
         .WithJSInterop(JSRuntimeMode.Strict);
-    
+
     var component = scope.Context.RenderComponent<MyComponent>();
-    
+
     await Assert.That(component.Markup).IsNotNull().And.Contains("expected");
 }
 ```
@@ -189,30 +205,34 @@ public async Task ComponentBehavior_Scenario_ExpectedResult()
 ### **🚀 ADVANCED TESTSCOPE FEATURES**
 
 **Error Scenario Configuration:**
+
 - `WithFailingHttpClient()` - HTTP request failures
-- `WithThrowingNavigation()` - Navigation exceptions  
+- `WithThrowingNavigation()` - Navigation exceptions
 - `WithTimeoutHttpClient()` - Timeout scenarios
 - `WithFaultyNavigation()` - Silent navigation failures
 
 **Service Customization:**
+
 - `WithJSInterop(JSRuntimeMode)` - JavaScript interop modes
 - `WithStandardServices()` - Normal operation setup
 - Chainable configuration for complex scenarios
 
 **This TestScope architecture is now the MANDATORY STANDARD for all future test development.**
 
-## TUnit Fluent Chaining - PRIME EXAMPLE FOR ALL FUTURE TESTS ✅ 
+## TUnit Fluent Chaining - PRIME EXAMPLE FOR ALL FUTURE TESTS ✅
 
 **CRITICAL LEARNING**: TUnit supports powerful fluent chaining with `.And` and `.Or` operators. This is the **OPTIMAL** approach for related assertions on the same object and should be used as our **prime example** for all future tests.
 
 ### **🎯 GOLDEN RULES - ALWAYS APPLY**
 
 **✅ USE CHAINING FOR:**
+
 - **Same Object/Property**: Multiple assertions on `component.Markup`, `result.Value`, etc.
 - **Logically Sequential**: Null check → content check → format validation
 - **Single Failure Point**: Each chain tests ONE logical concept
 
 **⚠️ USE Assert.Multiple FOR:**
+
 - **Different Objects**: Different DOM elements, different services, different properties
 - **Unrelated Concerns**: Logging + markup + navigation (separate concerns)
 - **Multiple Failure Reporting**: When you want ALL failures reported together
@@ -268,12 +288,14 @@ await Assert.That(scope.Context.RenderComponent<Home>().Find("button")).IsNotNul
 ### **📋 IMPLEMENTATION CHECKLIST**
 
 **Before Writing ANY Test:**
+
 - [ ] Identify what you're testing (same object = chain, different objects = Assert.Multiple)
 - [ ] Group related assertions on same object/property
 - [ ] Use descriptive test names indicating the single concept being tested
 - [ ] Apply chaining for sequential validations (null → content → format)
 
 **Pattern Selection Guide:**
+
 ```csharp
 // When asserting the SAME object/property:
 await Assert.That(component.Markup).IsNotNull().And.Contains("text").And.Contains("more");
@@ -298,6 +320,7 @@ await Assert.That(component.Find("h1").TextContent).Contains("expected");
 **✅ MANDATORY IMPLEMENTATION STRATEGIES:**
 
 1. **Modern C# 13 Primary Constructor with Comments**:
+
 ```csharp
 /// <summary>
 ///     Modern test scope that encapsulates all test resources with automatic disposal.
@@ -307,6 +330,7 @@ public sealed class TestScope(string baseUri = "http://localhost:5000/") : IDisp
 ```
 
 2. **Comprehensive Error Scenario Testing**:
+
 ```csharp
 // ✅ PRIME PATTERN: Multiple failure mode combinations
 using var scope = new TestScope("http://localhost:3000/")
@@ -316,6 +340,7 @@ using var scope = new TestScope("http://localhost:3000/")
 ```
 
 3. **Professional Test Naming Convention** (Follows project standards):
+
 ```csharp
 // ✅ OPTIMAL: Component_Behavior_ExpectedOutcome pattern
 Home_AdvancedErrorHandling_MixedFailureScenarios
@@ -324,6 +349,7 @@ Home_LifecycleMethods_HandleConcurrentAsyncOperations
 ```
 
 4. **ConfigureAwait(false) Usage** (Zero warnings compliance):
+
 ```csharp
 // ✅ MANDATORY: Always use ConfigureAwait(false)
 await button.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
@@ -331,6 +357,7 @@ await Task.WhenAll(tasks).ConfigureAwait(false);
 ```
 
 5. **Sophisticated Mock Implementations with Static Properties**:
+
 ```csharp
 // ✅ PRIME PATTERN: C# 12 primary constructor with static factory properties
 public sealed class TestHttpClientFactory(Func<HttpMessageHandler> handlerFactory) : IHttpClientFactory
@@ -342,12 +369,13 @@ public sealed class TestHttpClientFactory(Func<HttpMessageHandler> handlerFactor
 ```
 
 6. **Comprehensive Logging Strategy with Structured LogEntry**:
+
 ```csharp
 // ✅ SOPHISTICATED: Structured log capture with full ILogger implementation
 public class TestLogger<T> : ILogger<T>
 {
     public List<LogEntry> LogEntries { get; } = [];
-    
+
     public class LogEntry
     {
         public LogLevel LogLevel { get; set; }
@@ -359,6 +387,7 @@ public class TestLogger<T> : ILogger<T>
 ```
 
 7. **Timeout Simulation Patterns** (Real-world async testing):
+
 ```csharp
 // ✅ ADVANCED: Realistic timeout scenarios
 public sealed class TimeoutHttpMessageHandler : HttpMessageHandler
@@ -372,6 +401,7 @@ public sealed class TimeoutHttpMessageHandler : HttpMessageHandler
 ```
 
 8. **Concurrent Operation Testing**:
+
 ```csharp
 // ✅ OPTIMAL: Concurrent async operation validation
 var tasks = new List<Task>();
@@ -380,6 +410,7 @@ await Task.WhenAll(tasks).ConfigureAwait(false);
 ```
 
 9. **Clear Arrange-Act-Assert with Descriptive Comments**:
+
 ```csharp
 // ✅ PRIME PATTERN: Clear test structure with purpose comments
 [Test]
@@ -388,22 +419,23 @@ public async Task Home_ErrorRecovery_ContinuesAfterHttpFailure()
     // Arrange
     using var scope = CreateFailingHttpTestScope();
     var component = scope.Context.RenderComponent<HomePage>();
-    
+
     // Act - Trigger error, then test recovery
     scope.Logger.LogEntries.Clear();
     await button.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
-    
+
     // Assert - Verify error recovery behavior (single recovery concern)
     await Assert.That(firstErrorLogged).IsTrue();
 }
 ```
 
 10. **Multi-Scenario Validation in Single Test**:
+
 ```csharp
 // ✅ SOPHISTICATED: Test recovery after multiple failure modes
 var firstErrorLogged = scope.Logger.LogEntries.Any(entry =>
     entry.LogLevel == LogLevel.Error && entry.Message.Contains("Dummy API call failed"));
-    
+
 scope.Logger.LogEntries.Clear();
 await button.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
 ```
@@ -445,6 +477,7 @@ await button.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
 ### **📋 QUALITY CHECKLIST FOR ALL TESTS**
 
 **Before Committing ANY Test:**
+
 - [ ] **ConfigureAwait(false)** on all async calls
 - [ ] **Descriptive naming** following project conventions
 - [ ] **TestScope pattern** with fluent configuration
@@ -471,6 +504,7 @@ await button.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
    - Add to Blazor project: `<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.0" />`
 
 2. **Cascading Parameter Definitions**:
+
 ```csharp
 // ✅ OPTIMAL: Named cascading parameters with interface abstractions
 [CascadingParameter(Name = "AppTheme")]
@@ -484,6 +518,7 @@ public Task<AuthenticationState>? AuthenticationState { get; set; }
 ```
 
 3. **Helper Methods for Cascading Parameters**:
+
 ```csharp
 // ✅ PRIME PATTERN: Theme handling with switch expressions
 public string GetThemeClass()
@@ -491,7 +526,7 @@ public string GetThemeClass()
     return AppTheme switch
     {
         "dark" => "theme-dark",
-        "light" => "theme-light", 
+        "light" => "theme-light",
         "high-contrast" => "theme-high-contrast",
         _ => "theme-default"
     };
@@ -509,6 +544,7 @@ public object? GetUserPreference(string key)
 **✅ CRITICAL INSIGHTS:**
 
 1. **VSTHRD003 Warning Prevention**:
+
 ```csharp
 // ✅ SOLUTION: Wrap authentication state await in try-catch to prevent deadlocks
 if (AuthenticationState != null)
@@ -531,6 +567,7 @@ if (AuthenticationState != null)
 ```
 
 2. **Mock Authorization Implementation**:
+
 ```csharp
 // ✅ SOPHISTICATED: Custom MockClaimsIdentity for authorization testing
 public sealed class MockClaimsIdentity : ClaimsIdentity
@@ -574,7 +611,7 @@ public async Task Home_CascadingParameters_MultipleThemes_ReturnsCorrectClasses(
         var lightComponent = lightScope.Context.RenderComponent<HomePage>();
         await Assert.That(lightComponent.Instance.GetThemeClass()).IsEqualTo("theme-light");
     }
-    
+
     // Test high-contrast theme in separate scope
     using (var contrastScope = CreateTestScope())
     {
@@ -604,6 +641,7 @@ scope.Context.Services.AddCascadingValue<Task<AuthenticationState>>(_ => authSta
 ### **📋 Cascading Parameters Testing Checklist**
 
 **Required for ALL Future Cascading Parameter Tests:**
+
 - [ ] **Microsoft.AspNetCore.Components.Authorization** package reference if using authorization
 - [ ] **Interface abstractions** (IDictionary vs Dictionary) to avoid MA0016 warnings
 - [ ] **Lambda functions** for AddCascadingValue (not direct values)
@@ -616,7 +654,7 @@ scope.Context.Services.AddCascadingValue<Task<AuthenticationState>>(_ => authSta
 
 ### **🏆 Authorization Testing Patterns**
 
-```csharp
+````csharp
 // ✅ PRIME EXAMPLE: Complete authorization test with proper mocking
 [Test]
 public async Task Home_Authorization_AuthenticatedUser_ProcessesCorrectly()
@@ -625,16 +663,16 @@ public async Task Home_Authorization_AuthenticatedUser_ProcessesCorrectly()
     using var scope = CreateTestScope();
     var authState = CreateMockAuthenticationState(isAuthenticated: true, userName: "testuser@example.com");
     scope.Context.Services.AddCascadingValue<Task<AuthenticationState>>(_ => authState);
-    
+
     // Act
     var component = scope.Context.RenderComponent<HomePage>();
-    
+
     // Assert - Verify authenticated user state
     using (Assert.Multiple())
     {
         await Assert.That(component.Instance.IsAuthenticated).IsTrue();
         await Assert.That(component.Instance.CurrentUserName).IsEqualTo("testuser@example.com");
-        await Assert.That(scope.Logger.LogEntries.Any(entry => 
+        await Assert.That(scope.Logger.LogEntries.Any(entry =>
             entry.Message.Contains("Authorization state changed: True"))).IsTrue();
     }
 }```
@@ -733,11 +771,13 @@ Based on the workspace context and your established pattern with Home.Logging.cs
 #### 1. 🧩 Component Partial Class Pattern ✅ ALREADY IMPLEMENTED
 ESTABLISHED WITH: Home.razor.cs + Home.Logging.cs
 NEW STANDARD FOR ALL BLAZOR COMPONENTS:
-```
+````
+
 Components:
-├── ComponentName.razor.cs         // Main: business logic, lifecycle, properties, events
-└── ComponentName.Logging.cs       // Logging: ALL LoggerMessage delegates ONLY
-```
+├── ComponentName.razor.cs // Main: business logic, lifecycle, properties, events
+└── ComponentName.Logging.cs // Logging: ALL LoggerMessage delegates ONLY
+
+````
 
 EXAMPLE STRUCTURE:
 ```csharp
@@ -746,7 +786,7 @@ public partial class Home : ComponentBase
 {
     [Inject] public required ILogger<Home> Logger { get; set; }
     // Business logic, lifecycle methods, properties, events...
-    
+
     private async Task HandleClickAsync()
     {
         LogButtonClicked(Logger, null); // Reference to logging partial
@@ -761,10 +801,12 @@ public partial class Home
         LoggerMessage.Define(LogLevel.Information, new EventId(5, nameof(LogButtonClicked)),
             "Button clicked");
 }
-```
+````
 
 #### 2. 🔧 Service/Class Partial Pattern
+
 NEW STANDARD FOR ALL C# CLASSES with LoggerMessage:
+
 ```
 Services/Classes:
 ├── ServiceName.cs                  // Main: business logic, methods, properties
@@ -772,12 +814,13 @@ Services/Classes:
 ```
 
 EXAMPLE STRUCTURE:
+
 ```csharp
 // UserService.cs - Main service logic
 public partial class UserService : IUserService
 {
     private readonly ILogger<UserService> _logger;
-    
+
     public async Task<User> GetUserAsync(string id)
     {
         LogUserRequested(_logger, id, null); // Reference to logging partial
@@ -795,7 +838,9 @@ public partial class UserService
 ```
 
 #### 3. 🧪 Test Class Partial Pattern ⭐ NEEDS IMPLEMENTATION
+
 NEW STANDARD FOR ALL TEST CLASSES:
+
 ```
 Tests:
 ├── TestClassName.cs                // Main: [Test] methods ONLY
@@ -806,6 +851,7 @@ CURRENT STATE: HomeTests.cs has EVERYTHING mixed together (1,000+ lines)
 DESIRED STATE: Split into clean separation
 
 EXAMPLE SPLIT:
+
 ```csharp
 // HomeTests.cs - Test methods ONLY
 public partial class HomeTests
@@ -816,13 +862,13 @@ public partial class HomeTests
         // Arrange
         using var scope = CreateTestScope();
         var component = scope.Context.RenderComponent<HomePage>();
-        
+
         // Act & Assert
         await button.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
-        await Assert.That(scope.Logger.LogEntries.Any(entry => 
+        await Assert.That(scope.Logger.LogEntries.Any(entry =>
             entry.Message.Contains("Button clicked"))).IsTrue();
     }
-    
+
     // All other [Test] methods...
 }
 
@@ -836,13 +882,14 @@ public partial class HomeTests
         public TestLogger<HomePage> Logger { get; } = new();
         // All TestScope infrastructure...
     }
-    
+
     private static TestScope CreateTestScope() => new TestScope().WithStandardServices();
     // All helper methods, mocks, utilities...
 }
 ```
 
 #### 4. 📁 File Naming Convention
+
 ```
 Components:
 ├── Home.razor.cs                 // Main component logic
@@ -858,7 +905,9 @@ Tests:
 ```
 
 #### 5. 🔄 Migration Requirements
+
 IMMEDIATE TASKS:
+
 1. ✅ Components: Already done with Home.Logging.cs
 2. 🔄 Services: Find and migrate any services with LoggerMessage (like LogHelpers.cs)
 3. 🎯 Tests: Split HomeTests.cs into HomeTests.cs + HomeTests.Helpers.cs

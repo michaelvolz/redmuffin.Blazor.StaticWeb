@@ -8,7 +8,7 @@
 // - .callout.small, .callout.large (sizing variants)
 // - Customizable styling via Foundation's color palette
 //
-// This file contains project-specific callout extensions that 
+// This file contains project-specific callout extensions that
 // build upon Foundation's callout system, not duplicate it.
 // =============================================================================
 
@@ -24,7 +24,7 @@
 // Project-specific callout extensions beyond Foundation's system
 // Foundation's color palette is already configured in foundation-root.scss with:
 // - primary: $steel-blue
-// - secondary: $ultra-violet  
+// - secondary: $ultra-violet
 // - success: $yellow-green
 // - warning: $sunglow
 // - alert: $bittersweet
@@ -36,11 +36,11 @@
 // Custom alert callout styling shared across articles and videos
 // This extends Foundation's .callout.alert with project-specific theming
 .callout.alert {
-    background: #f8d7da;
-    color: #721c24;
-    padding: 16px;
-    border: 1px solid #f5c6cb;
-    border-radius: 8px;
+  background: #f8d7da;
+  color: #721c24;
+  padding: 16px;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
 }
 
 // Example: Additional custom callout variants can be added here
@@ -48,7 +48,7 @@
 //   &.callout-brand {
 //     @include callout-style(brand-color('burgundy'));
 //   }
-//   
+//
 //   &.callout-code {
 //     // Custom code callout styling
 //     font-family: 'Courier New', monospace;

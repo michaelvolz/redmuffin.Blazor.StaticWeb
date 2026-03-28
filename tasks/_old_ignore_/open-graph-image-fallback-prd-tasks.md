@@ -1,10 +1,12 @@
 ## Relevant Files
 
 ### Blazor Components
+
 - `src/redmuffin.Blazor.StaticWeb/Features/Pages/ArticlesPage/Articles.razor` - Main Articles component with integrated image fallback functionality.
 - `src/redmuffin.Blazor.StaticWeb/Features/Pages/ArticlesPage/Articles.razor.cs` - Code-behind for Articles component with image processing logic.
 
 ### Services
+
 - `src/redmuffin.Blazor.StaticWeb/Services/IOpenGraphImagesService.cs` - Interface for Open Graph image retrieval service.
 - `src/redmuffin.Blazor.StaticWeb/Services/OpenGraphImagesService.cs` - Service for retrieving Open Graph images and managing cache.
 - `src/redmuffin.Blazor.StaticWeb/Services/IImageValidationService.cs` - Interface for image validation service.
@@ -17,9 +19,11 @@
 - `src/redmuffin.Blazor.StaticWeb/Services/CacheMonitoringService.cs` - Service for cache health monitoring, statistics, and performance optimization.
 
 ### Azure Functions (API)
+
 - `src/redmuffin.Blazor.StaticWeb.Api/Functions/GetOpenGraphImages.cs` - Azure Function for batch Open Graph image retrieval.
 
 ### Shared/Common
+
 - `src/redmuffin.Blazor.StaticWeb.Common/Models/ArticleImageRequest.cs` - Request model for article image processing.
 - `src/redmuffin.Blazor.StaticWeb.Common/Models/ArticleImageResponse.cs` - Response model for article image processing.
 - `src/redmuffin.Blazor.StaticWeb.Common/Models/BatchImageRequest.cs` - Batch request model for multiple articles.
@@ -29,12 +33,14 @@
 - `src/redmuffin.Blazor.StaticWeb.Common/Enums/ImageSource.cs` - Enum for image source types.
 
 ### Styles
+
 - `src/redmuffin.Blazor.StaticWeb/wwwroot/scss/_articles.scss` - SCSS partial for Articles component with image loading states and placeholders.
 - `src/redmuffin.Blazor.StaticWeb/wwwroot/scss/_shimmerLoadingEffect.scss` - SCSS partial for shimmer loading effects.
 - `src/redmuffin.Blazor.StaticWeb/wwwroot/scss/_ArticleImageDisplay.scss` - SCSS partial for article image display enhancements.
 - `src/redmuffin.Blazor.StaticWeb/wwwroot/scss/app.scss` - Main SCSS file that imports all partials and compiles to CSS.
 
 ### Tests
+
 - `tests/redmuffin.Blazor.StaticWeb.Tests/Services/OpenGraphImagesServiceTests.cs` - TUnit tests for Open Graph image service.
 - `tests/redmuffin.Blazor.StaticWeb.Tests/Services/ImageValidationServiceTests.cs` - TUnit tests for image validation service.
 - `tests/redmuffin.Blazor.StaticWeb.Tests/Services/BrowserStorageServiceTests.cs` - TUnit tests for browser storage service.
@@ -56,7 +62,7 @@
 - Use Zurb Foundation classes for consistent UI styling.
 - Component styling uses SCSS partials imported into app.scss and compiled to CSS.
 - SCSS partials are located in `src/redmuffin.Blazor.StaticWeb/wwwroot/scss/` directory.
-- No *.razor.css files are used; all styling is handled through SCSS compilation.
+- No \*.razor.css files are used; all styling is handled through SCSS compilation.
 
 ## Tasks
 

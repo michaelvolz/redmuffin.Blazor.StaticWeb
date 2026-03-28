@@ -23,7 +23,7 @@
 - Tests use TUnit framework with `[Test]` attribute for test methods and `[Arguments]` for data-driven tests.
 - Use `dotnet clean && dotnet build --no-restore --verbosity quiet` to verify zero build warnings
 - Use `dotnet test` to run all tests or `dotnet test --filter "FullyQualifiedName~[TestClassName]"` for specific test classes.
-- **QUALITY CHECK**: After every step verify TestScope pattern, custom mock pattern, ConfigureAwait(false) compliance following HomeTests*.cs files as prime example.
+- **QUALITY CHECK**: After every step verify TestScope pattern, custom mock pattern, ConfigureAwait(false) compliance following HomeTests\*.cs files as prime example.
 - All test files follow partial class organization with proper namespace declarations.
 - Only create partial class files that will contain moved tests (no empty files).
 - Preserve all existing test logic, attributes, and functionality during reorganization.
@@ -38,7 +38,7 @@
   - [x] 1.1 Scan 100% of ALL test files in the project and catalog each test method with current location
     - [x] 1.1.1 You can use powershell to make it 100% correct. Anything than 100% is unacceptable
   - [x] 1.2 Apply categorization rules to determine target partial class for each test method
-  - [x] 1.3 Create migration mapping document showing source and destination for each test 
+  - [x] 1.3 Create migration mapping document showing source and destination for each test
     - [x] 1.3.1 Name it tasks/PRD-012-TestPartialClassReorganization-ToDo-MigrationMapping.json (JSON format for efficiency)
   - [x] 1.4 Identify which partial class files need to be created based on test categorization (38 partial class files needed)
   - [x] 1.5 Validate categorization rules against actual test method names and functionality

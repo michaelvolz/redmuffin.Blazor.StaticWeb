@@ -23,6 +23,7 @@ The Articles page is a feature-complete implementation mirroring the existing Vi
 ## User Stories
 
 ### Primary User Stories
+
 - **US-001:** As a visitor, I want to browse articles without needing to authenticate with Raindrop.io so that I can quickly access content
 - **US-002:** As a user, I want to view articles in a masonry layout so that I can efficiently scan through available content
 - **US-003:** As a user, I want to click on an article to open it in a new tab so that I can read the full content without losing my place
@@ -30,6 +31,7 @@ The Articles page is a feature-complete implementation mirroring the existing Vi
 - **US-005:** As a user, I want the articles page to be responsive so that I can browse on mobile, tablet, and desktop devices
 
 ### Secondary User Stories
+
 - **US-006:** As a developer, I want to see clear loading states so that I understand when articles are being fetched
 - **US-007:** As a user, I want to see meaningful error messages if articles fail to load so that I understand what went wrong
 - **US-008:** As a user, I want articles to be visually distinct from videos so that I can immediately identify the content type
@@ -37,6 +39,7 @@ The Articles page is a feature-complete implementation mirroring the existing Vi
 ## Functional Requirements
 
 ### Core Functionality
+
 1. **FR-001:** The system must display a page accessible via `/articles` route
 2. **FR-002:** The system must fetch articles from Raindrop.io using category ID `56658122`
 3. **FR-003:** The system must display articles in a responsive masonry layout
@@ -49,18 +52,21 @@ The Articles page is a feature-complete implementation mirroring the existing Vi
 10. **FR-010:** The system must add "Articles" navigation menu item after "Videos" with appropriate FontAwesome icon
 
 ### Data Requirements
+
 11. **FR-011:** The system must use existing RaindropItem data structure if compatible
 12. **FR-012:** The system must verify data structure compatibility before implementation
 13. **FR-013:** The system must handle missing or incomplete article data gracefully
 14. **FR-014:** The system must implement proper JSON deserialization with trimming support
 
 ### API Requirements
+
 15. **FR-015:** The system must implement RaindropListArticles Azure Function
 16. **FR-016:** The system must follow TDD principles for Azure Function development
 17. **FR-017:** The system must implement proper logging and error handling in API
 18. **FR-018:** The system must use consistent patterns with existing RaindropListVideos function
 
 ### UI/UX Requirements
+
 19. **FR-019:** The system must use subtle masonry layout optimizations to make cards look more article-focused (no color changes)
 20. **FR-020:** The system must implement shimmer loading effects for article thumbnails
 21. **FR-021:** The system must use appropriate FontAwesome icon for articles navigation
@@ -70,7 +76,7 @@ The Articles page is a feature-complete implementation mirroring the existing Vi
 ## Non-Goals (Out of Scope)
 
 1. **NG-001:** User authentication or login functionality
-2. **NG-002:** Article search and filtering capabilities  
+2. **NG-002:** Article search and filtering capabilities
 3. **NG-003:** Article bookmarking or favorites functionality
 4. **NG-004:** Article commenting or social features
 5. **NG-005:** Article content extraction or display within the app
@@ -83,6 +89,7 @@ The Articles page is a feature-complete implementation mirroring the existing Vi
 ## Design Considerations
 
 ### Visual Design
+
 - **Typography:** Use Foundation typography system with clear hierarchy
 - **Color Scheme:** Maintain existing color scheme (no color changes from videos)
 - **Icons:** Use appropriate FontAwesome icon for navigation (e.g., `fa-file-text`, `fa-newspaper`)
@@ -90,6 +97,7 @@ The Articles page is a feature-complete implementation mirroring the existing Vi
 - **Spacing:** Maintain consistent spacing patterns with existing site design
 
 ### User Experience
+
 - **Navigation:** Add "Articles" menu item with appropriate icon after "Videos"
 - **Loading States:** Implement consistent loading patterns with shimmer effects
 - **Error Handling:** Provide clear, actionable error messages
@@ -97,6 +105,7 @@ The Articles page is a feature-complete implementation mirroring the existing Vi
 - **Mobile First:** Design for mobile devices first, then enhance for larger screens
 
 ### Responsive Design
+
 - **Breakpoints:** Use Foundation SCSS breakpoints (small, medium, large)
 - **Masonry Layout:** Implement responsive column counts (1-4 columns based on screen size)
 - **Touch Interactions:** Optimize for touch devices with appropriate touch targets
@@ -105,6 +114,7 @@ The Articles page is a feature-complete implementation mirroring the existing Vi
 ## Technical Considerations
 
 ### Blazor WebAssembly (.NET 9) Implementation
+
 - **Component Structure:** Create Articles.razor page in `src/redmuffin.Blazor.StaticWeb/Features/Pages/ArticlesPage/`
 - **Code Organization:** Use code-behind pattern (Articles.razor.cs) for complex logic
 - **State Management:** Implement proper state management for article data
@@ -112,6 +122,7 @@ The Articles page is a feature-complete implementation mirroring the existing Vi
 - **Error Boundaries:** Implement proper error handling with user-friendly messages
 
 ### Azure Functions (.NET 8) API
+
 - **Function Name:** RaindropListArticles
 - **File Path:** `src/redmuffin.Blazor.StaticWeb.Api/Functions/RaindropListArticles.cs`
 - **API Endpoint:** `/api/RaindropListArticles`
@@ -121,12 +132,14 @@ The Articles page is a feature-complete implementation mirroring the existing Vi
 - **Performance:** Use proper async/await patterns and ConfigureAwait(false)
 
 ### Data Verification Strategy
+
 1. **Data Structure Analysis:** Compare Videos vs Articles API responses
 2. **Compatibility Check:** Verify RaindropItem model works for articles
 3. **Model Adaptation:** Create article-specific models if needed
 4. **Testing:** Implement comprehensive tests for data handling
 
 ### Styling and Assets
+
 - **SCSS File:** Create `src/redmuffin.Blazor.StaticWeb/wwwroot/scss/_articles.scss` with article-specific styling
 - **Import:** Add `@import '_articles';` to `app.scss`
 - **Masonry Layout:** Optimize for article content display while maintaining visual consistency
@@ -135,6 +148,7 @@ The Articles page is a feature-complete implementation mirroring the existing Vi
 ## Success Metrics
 
 ### Technical Success Criteria
+
 1. **Build Success:** All code compiles without errors
 2. **Test Coverage:** 100% pass rate for all TUnit tests
 3. **Performance:** Page loads within 3 seconds on typical connections
@@ -142,6 +156,7 @@ The Articles page is a feature-complete implementation mirroring the existing Vi
 5. **Responsive:** Functions properly on mobile, tablet, and desktop
 
 ### User Experience Success Criteria
+
 1. **Usability:** Users can successfully browse and access articles
 2. **Accessibility:** Meets WCAG 2.1 AA compliance standards
 3. **Visual Distinction:** Users can immediately identify articles vs videos
@@ -149,6 +164,7 @@ The Articles page is a feature-complete implementation mirroring the existing Vi
 5. **Mobile Experience:** Seamless experience on mobile devices
 
 ### Business Success Criteria
+
 1. **Content Access:** Users can access all available articles from Raindrop.io
 2. **Engagement:** Users successfully navigate to external article links
 3. **Reliability:** System handles API failures gracefully
@@ -157,18 +173,21 @@ The Articles page is a feature-complete implementation mirroring the existing Vi
 ## Implementation Notes
 
 ### Development Approach
+
 1. **TDD Implementation:** Write tests first for Azure Function
 2. **Data Verification:** Verify API response structure before development
 3. **Incremental Development:** Build page incrementally with testing at each step
 4. **Code Reuse:** Maximize reuse of existing patterns and components
 
 ### Testing Strategy
+
 - **Unit Tests:** TUnit tests for all business logic and API functions
 - **Integration Tests:** End-to-end testing of article fetching and display
 - **UI Tests:** Component testing for proper rendering and interactions
 - **Data Tests:** Verification of JSON deserialization and data handling
 
 ### Quality Assurance
+
 - **Code Review:** Follow established code review processes
 - **Performance Testing:** Verify loading times and responsiveness
 - **Cross-Browser Testing:** Ensure compatibility across target browsers
@@ -183,6 +202,7 @@ The Articles page is a feature-complete implementation mirroring the existing Vi
 5. **Future Integration:** Are there plans for additional content types that would benefit from this pattern?
 
 ### Resolved Questions
+
 - **Icon Selection:** Will use appropriate FontAwesome icon for articles navigation (e.g., `fa-file-text`, `fa-newspaper`)
 - **Loading Behavior:** Manual fetch via "Fetch Articles" button (no automatic loading)
 - **Page Title:** "Articles" (SEO optimization not required)
@@ -192,17 +212,20 @@ The Articles page is a feature-complete implementation mirroring the existing Vi
 ## Dependencies
 
 ### External Dependencies
+
 - **Raindrop.io API:** Articles category must be accessible via API
 - **FontAwesome:** Icons for navigation and UI elements
 - **Foundation Framework:** UI components and responsive grid system
 
 ### Internal Dependencies
+
 - **Existing Infrastructure:** RaindropItem models and serialization context
 - **Common Libraries:** HTTP client factory and logging infrastructure
 - **Azure Functions:** API hosting and configuration
 - **SCSS Pipeline:** Styling compilation and integration
 
 ### Development Dependencies
+
 - **TUnit Framework:** For comprehensive testing
 - **Development Tools:** Visual Studio, .NET 9 SDK
 - **Build Pipeline:** SCSS compilation and asset management

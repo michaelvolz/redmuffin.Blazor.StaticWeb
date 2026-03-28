@@ -7,7 +7,7 @@
 // =============================================================================
 
 // Import variables with @use
-@use 'variables' as vars;
+@use "variables" as vars;
 
 // =============================================================================
 // SPACING FUNCTIONS
@@ -26,15 +26,15 @@
 /// @return {Length} - The calculated spacing value
 @function responsive-spacing($breakpoint, $multiplier: 1) {
   $scale: 1;
-  
-  @if $breakpoint == 'small' {
+
+  @if $breakpoint == "small" {
     $scale: 0.75;
-  } @else if $breakpoint == 'medium' {
+  } @else if $breakpoint == "medium" {
     $scale: 1;
-  } @else if $breakpoint == 'large' {
+  } @else if $breakpoint == "large" {
     $scale: 1.25;
   }
-  
+
   @return vars.$base-spacing * $multiplier * $scale;
 }
 
@@ -47,16 +47,16 @@
 /// @return {Color} - The brand color value
 @function brand-color($color-name) {
   $colors: (
-    'burgundy': vars.$brand-burgundy,
-    'black': vars.$brand-black,
-    'white': vars.$brand-white,
-    'bittersweet': vars.$bittersweet,
-    'sunglow': vars.$sunglow,
-    'yellow-green': vars.$yellow-green,
-    'steel-blue': vars.$steel-blue,
-    'ultra-violet': vars.$ultra-violet
+    "burgundy": vars.$brand-burgundy,
+    "black": vars.$brand-black,
+    "white": vars.$brand-white,
+    "bittersweet": vars.$bittersweet,
+    "sunglow": vars.$sunglow,
+    "yellow-green": vars.$yellow-green,
+    "steel-blue": vars.$steel-blue,
+    "ultra-violet": vars.$ultra-violet,
   );
-  
+
   @if map-has-key($colors, $color-name) {
     @return map-get($colors, $color-name);
   } @else {
@@ -81,18 +81,28 @@
 /// @param {String} $size - The size name (small, medium, large)
 /// @param {String} $component - The component name (logo, nav, etc.)
 /// @return {Length} - The font size value
-@function font-size($size, $component: 'base') {
-  @if $component == 'logo' {
-    @if $size == 'small' { @return vars.$logo-font-size-small; }
-    @if $size == 'medium' { @return vars.$logo-font-size-medium; }
-    @if $size == 'large' { @return vars.$logo-font-size-large; }
+@function font-size($size, $component: "base") {
+  @if $component == "logo" {
+    @if $size == "small" {
+      @return vars.$logo-font-size-small;
+    }
+    @if $size == "medium" {
+      @return vars.$logo-font-size-medium;
+    }
+    @if $size == "large" {
+      @return vars.$logo-font-size-large;
+    }
   }
-  
-  @if $component == 'nav' {
-    @if $size == 'small' { @return vars.$nav-font-size-small; }
-    @if $size == 'medium' { @return vars.$nav-font-size-medium; }
+
+  @if $component == "nav" {
+    @if $size == "small" {
+      @return vars.$nav-font-size-small;
+    }
+    @if $size == "medium" {
+      @return vars.$nav-font-size-medium;
+    }
   }
-  
+
   @warn "Font size '#{$size}' for component '#{$component}' not found.";
   @return 1rem;
 }

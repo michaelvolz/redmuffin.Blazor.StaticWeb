@@ -6,8 +6,8 @@
 // Uses modern @use directives for proper namespace management.
 // =============================================================================
 
-@use '../../lib/foundation-sites/scss/foundation' as foundation;
-@use '../abstracts/variables' as vars;
+@use "../../lib/foundation-sites/scss/foundation" as foundation;
+@use "../abstracts/variables" as vars;
 
 // =============================================================================
 // FOUNDATION SETTINGS OVERRIDE
@@ -16,28 +16,28 @@
 
 // Foundation color palette configuration
 // All colors are now consolidated in abstracts/_variables.scss
-$foundation-palette: ( 
-    "primary": vars.$steel-blue, 
-    "secondary": vars.$ultra-violet, 
-    "success": vars.$yellow-green, 
-    "warning": vars.$sunglow, 
-    "alert": vars.$bittersweet,
-    "burgundy": vars.$brand-burgundy,
-    "black": vars.$brand-black,
-    "white": vars.$brand-white
+$foundation-palette: (
+  "primary": vars.$steel-blue,
+  "secondary": vars.$ultra-violet,
+  "success": vars.$yellow-green,
+  "warning": vars.$sunglow,
+  "alert": vars.$bittersweet,
+  "burgundy": vars.$brand-burgundy,
+  "black": vars.$brand-black,
+  "white": vars.$brand-white,
 );
 
 // Future structure for more overrides:
 // // Import Foundation's settings first
 // @import '../../lib/foundation-sites/scss/settings/settings';
-// 
+//
 // // Override Foundation variables with project-specific values
 // $global-margin: 1rem;
 // $global-padding: 1rem;
 // $global-font-size: 100%;
 // $global-width: rem-calc(1200);
 // $global-lineheight: 1.5;
-// 
+//
 // // Color palette override using project colors
 // $foundation-palette: (
 //   primary: brand-color('steel-blue'),
@@ -49,7 +49,7 @@ $foundation-palette: (
 //   black: brand-color('black'),
 //   white: brand-color('white')
 // );
-// 
+//
 // // Breakpoint overrides (if needed)
 // $breakpoints: (
 //   small: 0,
@@ -58,11 +58,11 @@ $foundation-palette: (
 //   xlarge: 1200px,
 //   xxlarge: 1440px,
 // );
-// 
+//
 // // Typography overrides
 // $header-font-family: $logo-font-family;
 // $body-font-family: $body-font-family;
-// 
+//
 // // Import Foundation after settings
 // @import '../../lib/foundation-sites/scss/foundation';
 

@@ -7,8 +7,8 @@
 // All typography styles integrate with Foundation's system using proper @use directives.
 // =============================================================================
 
-@use '../../lib/foundation-sites/scss/foundation' as foundation;
-@use '../abstracts/variables' as vars;
+@use "../../lib/foundation-sites/scss/foundation" as foundation;
+@use "../abstracts/variables" as vars;
 
 // =============================================================================
 // GLOBAL TYPOGRAPHY SETTINGS
@@ -28,7 +28,7 @@ html {
 // Note: These should complement, not override Foundation's font settings
 
 // Google Fonts imports - consolidated from various locations
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap");
 
 // =============================================================================
 // FONT FAMILY VARIABLES (Foundation Integration)
@@ -124,7 +124,7 @@ code {
     color: #000;
     background: #fff;
   }
-  
+
   // Optimize link display for print
   a::after {
     content: " (" attr(href) ")";

@@ -17,12 +17,14 @@ Reorganize all existing TUnit tests in the project into appropriate partial clas
 ## 🎯 Objectives
 
 ### Primary Goals
+
 - Move 100% of existing tests into the correct partial class files based on categorization rules
 - Create new partial class files only when tests exist that need to be moved there (no empty files)
 - Maintain all existing test functionality and logic unchanged
 - Ensure all tests continue to pass after reorganization
 
 ### Success Criteria
+
 - [ ] All test files analyzed against categorization rules
 - [ ] Tests moved to appropriate partial class files:
   - `[TestClass].EdgeCases.cs` for error/exception scenarios
@@ -37,13 +39,16 @@ Reorganize all existing TUnit tests in the project into appropriate partial clas
 ## 🔍 Current State Analysis
 
 ### Test Files to Process
+
 Based on project structure, analyze and reorganize tests in:
+
 - Component tests (e.g., `HomeTests.cs`, `ArticlesTests.cs`)
 - Service tests (e.g., `UserServiceTests.cs`, `ArticleServiceTests.cs`)
 - Integration tests
 - Any other existing test files
 
 ### Categorization Rules (Reference)
+
 1. **EdgeCases**: Error, exception, null, invalid input, timeout scenarios
 2. **Infrastructure**: Lifecycle, logging, DI, authentication, caching, disposal
 3. **Behavior**: User interactions, clicks, form submissions, workflows
@@ -52,6 +57,7 @@ Based on project structure, analyze and reorganize tests in:
 ## 📝 Technical Requirements
 
 ### File Organization Standards
+
 - Use partial class structure: `public sealed partial class [TestClass]`
 - Maintain same namespace across all partial files
 - Follow naming convention: `[TestClass].[Category].cs`
@@ -59,6 +65,7 @@ Based on project structure, analyze and reorganize tests in:
 - Keep IDisposable implementation in main file only
 
 ### Quality Assurance
+
 - All tests must continue to pass (`dotnet test`)
 - No build warnings introduced (`dotnet build`)
 - Maintain existing test naming conventions
@@ -68,6 +75,7 @@ Based on project structure, analyze and reorganize tests in:
 ## 🚀 Implementation Plan
 
 ### Phase 1: Analysis and Planning
+
 1. **Inventory Existing Tests**
    - Scan all test files in the project
    - Catalog each test method with its current location
@@ -79,6 +87,7 @@ Based on project structure, analyze and reorganize tests in:
    - Plan the move sequence to avoid conflicts
 
 ### Phase 2: Partial Class File Creation
+
 1. **Create Required Partial Files**
    - Generate `[TestClass].EdgeCases.cs` files where needed
    - Generate `[TestClass].Infrastructure.cs` files where needed
@@ -86,6 +95,7 @@ Based on project structure, analyze and reorganize tests in:
    - Ensure proper namespace and class declarations
 
 ### Phase 3: Test Migration
+
 1. **Move Tests by Category**
    - Move EdgeCases tests first (highest priority)
    - Move Infrastructure tests second
@@ -98,6 +108,7 @@ Based on project structure, analyze and reorganize tests in:
    - Fix any issues before proceeding
 
 ### Phase 4: Final Verification
+
 1. **Comprehensive Testing**
    - Run full test suite to ensure 100% pass rate
    - Verify no build warnings
@@ -110,18 +121,21 @@ Based on project structure, analyze and reorganize tests in:
 ## 🎯 Acceptance Criteria
 
 ### Functional Requirements
+
 - [ ] All existing tests maintain their original functionality
 - [ ] Test methods are moved to appropriate partial class files
 - [ ] No duplicate test methods exist
 - [ ] All partial class files use correct namespace and class declaration
 
 ### Technical Requirements
+
 - [ ] `dotnet build` produces no new warnings
 - [ ] `dotnet test` shows 100% pass rate
 - [ ] All partial class files follow established naming convention
 - [ ] Only partial class files with actual tests are created
 
 ### Quality Requirements
+
 - [ ] Code maintains existing quality standards
 - [ ] No test logic is modified during the move
 - [ ] All using statements are preserved correctly
@@ -130,6 +144,7 @@ Based on project structure, analyze and reorganize tests in:
 ## 🔄 Testing Strategy
 
 ### Validation Steps
+
 1. **Pre-Migration Baseline**
    - Record current test count and pass rate
    - Document any existing build warnings
@@ -148,12 +163,14 @@ Based on project structure, analyze and reorganize tests in:
 ## 📊 Success Metrics
 
 ### Quantitative Metrics
+
 - **Test Coverage**: 100% of tests moved to appropriate files
 - **Test Success Rate**: 100% tests continue to pass
 - **Build Health**: Zero new build warnings
 - **File Organization**: Only non-empty partial class files created
 
 ### Qualitative Metrics
+
 - **Maintainability**: Improved test organization and findability
 - **Consistency**: All tests follow consistent categorization rules
 - **Clarity**: Clear separation of concerns in test organization
@@ -161,6 +178,7 @@ Based on project structure, analyze and reorganize tests in:
 ## 🚨 Risk Mitigation
 
 ### Potential Risks
+
 1. **Test Failures**: Tests might fail after moving due to dependencies
    - **Mitigation**: Move tests incrementally and validate after each step
 
@@ -175,6 +193,7 @@ Based on project structure, analyze and reorganize tests in:
 ### Estimated Duration: 1-2 days
 
 ### Phase Breakdown
+
 - **Analysis**: 2-4 hours (catalog all tests, create migration plan)
 - **Implementation**: 4-6 hours (create files, move tests, validate)
 - **Verification**: 1-2 hours (final testing, documentation)
@@ -192,6 +211,7 @@ Based on project structure, analyze and reorganize tests in:
 ## 📋 Next Steps
 
 After completion of this PRD:
+
 1. All future tests will be written directly in appropriate partial class files
 2. Categorization rules can be refined based on practical experience
 3. Similar reorganization can be applied to other code areas if beneficial

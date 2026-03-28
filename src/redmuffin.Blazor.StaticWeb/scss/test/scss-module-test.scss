@@ -18,15 +18,15 @@
 // This is a requirement of the SCSS module system
 
 // TEST 1: @use directive - Import variables with namespace
-@use '../abstracts/variables' as vars;
-@use '../abstracts/mixins' as mix;
-@use '../abstracts/functions' as func;
+@use "../abstracts/variables" as vars;
+@use "../abstracts/mixins" as mix;
+@use "../abstracts/functions" as func;
 
 // TEST 2: @use directive - Import Foundation with namespace
-@use '../../lib/foundation-sites/scss/foundation' as foundation;
+@use "../../lib/foundation-sites/scss/foundation" as foundation;
 
 // TEST 4: Test @forward functionality by importing from index files
-@use '../abstracts/index' as abstracts;
+@use "../abstracts/index" as abstracts;
 
 // =============================================================================
 // SCSS RULES AND STYLES (MUST COME AFTER ALL @use RULES)
@@ -123,7 +123,7 @@
 .scss-module-test-success {
   content: "✓ @forward and @use directives are working correctly";
   display: block;
-  background: #4CAF50;
+  background: #4caf50;
   color: white;
   padding: 1rem;
   text-align: center;

@@ -1,9 +1,11 @@
 # bUnit AoT Compatibility Report
 
 ## Overview
+
 This report documents the compatibility testing results of bUnit with AoT (Ahead-of-Time) compilation in a .NET 9 Blazor WebAssembly project using TUnit as the testing framework.
 
 ## Test Environment
+
 - **.NET Version**: .NET 9
 - **Framework**: Blazor WebAssembly
 - **Testing Framework**: TUnit 0.25.21
@@ -14,6 +16,7 @@ This report documents the compatibility testing results of bUnit with AoT (Ahead
 ## 🎯 **NEW: Conditional AoT Configuration**
 
 ### Smart AoT Control
+
 The test project now uses intelligent conditional compilation that automatically optimizes for the current environment:
 
 ```xml
@@ -23,6 +26,7 @@ The test project now uses intelligent conditional compilation that automatically
 ```
 
 ### Environment Detection
+
 - **CI/CD Environments**: Automatically enables AoT (GitHub Actions, Azure DevOps, Jenkins)
 - **Local Development**: AoT disabled by default for faster builds
 - **Manual Override**: Set `AOT_TESTS=true` to force AoT locally
@@ -30,6 +34,7 @@ The test project now uses intelligent conditional compilation that automatically
 ## 🚀 **Developer Build Scripts**
 
 ### Quick Reference
+
 ```powershell
 # Fast development builds (AoT disabled) - 9.4 seconds
 .\scripts\test-build-fast.ps1
@@ -42,6 +47,7 @@ The test project now uses intelligent conditional compilation that automatically
 ```
 
 ### Script Features
+
 - **Automatic environment setup** with proper variable configuration
 - **Performance timing** and build feedback
 - **Coverage integration** for CI/CD simulation
@@ -51,18 +57,21 @@ The test project now uses intelligent conditional compilation that automatically
 ## Performance Comparison
 
 ### 🏃‍♂️ Development Mode (AoT Disabled)
+
 - **Build Time**: 9.4 seconds (fast iteration)
 - **Test Execution Time**: 0.5 seconds for 120 tests
 - **Use Case**: Rapid development cycles, TDD workflows
 - **Command**: `.\scripts\test-build-fast.ps1`
 
 ### 🎯 Production Mode (AoT Enabled)
+
 - **Build Time**: 11.1 seconds (production parity)
-- **Test Execution Time**: 0.5 seconds for 120 tests  
+- **Test Execution Time**: 0.5 seconds for 120 tests
 - **Use Case**: Pre-deployment validation, production debugging
 - **Command**: `.\scripts\test-build-aot.ps1`
 
 ### 🤖 CI/CD Mode (Automated)
+
 - **Build Time**: 11.1 seconds (matches GitHub Actions)
 - **Test Execution Time**: 0.5 seconds for 120 tests
 - **Additional**: Code coverage, clean builds
@@ -71,33 +80,38 @@ The test project now uses intelligent conditional compilation that automatically
 ## 📋 **Usage Guidelines**
 
 ### ✅ **Use Development Mode When:**
+
 - **Daily development** - TDD, feature implementation
 - **Rapid iteration** - Quick test feedback loops
 - **Local debugging** - Faster compile-test cycles
 - **Code refactoring** - Frequent small changes
 
 ### 🎯 **Use Production Mode When:**
+
 - **Pre-deployment testing** - Final validation before release
 - **Production debugging** - Investigating deployment-specific issues
 - **Performance validation** - Ensuring production characteristics
 - **Integration testing** - End-to-end system validation
 
 ### 🤖 **CI/CD Mode Is Automatic For:**
+
 - **GitHub Actions** workflows
-- **Azure DevOps** pipelines  
+- **Azure DevOps** pipelines
 - **Jenkins** builds
 - **Any environment** with `CI=true`
 
 ## 📊 **Performance Impact Analysis**
 
 ### Build Time Comparison
-| Mode | Build Time | Savings | Use Case |
-|------|------------|---------|----------|
-| Development | 9.4s | **1.7s faster** | Daily development |
-| Production | 11.1s | Production parity | Pre-deployment |
-| CI/CD | 11.1s | Automated | Continuous integration |
+
+| Mode        | Build Time | Savings           | Use Case               |
+| ----------- | ---------- | ----------------- | ---------------------- |
+| Development | 9.4s       | **1.7s faster**   | Daily development      |
+| Production  | 11.1s      | Production parity | Pre-deployment         |
+| CI/CD       | 11.1s      | Automated         | Continuous integration |
 
 ### When AoT Benefits Outweigh Costs
+
 - **Test suites >500 tests**: Runtime benefits become significant
 - **Memory-constrained environments**: Better memory efficiency
 - **Production debugging**: Exact runtime characteristics
@@ -106,6 +120,7 @@ The test project now uses intelligent conditional compilation that automatically
 ## Key Findings
 
 ### ✅ Compatibility
+
 - **bUnit + AoT**: Fully compatible with zero test failures
 - **TUnit + AoT**: Excellent compatibility with async assertions
 - **LightMock.Generator + AoT**: Perfect compatibility due to compile-time generation
@@ -115,21 +130,24 @@ The test project now uses intelligent conditional compilation that automatically
 ### 🔧 Configuration Examples
 
 #### Force AoT Locally
+
 ```powershell
 $env:AOT_TESTS = "true"
 dotnet test
 ```
 
 #### Check Current AoT Status
+
 ```powershell
 # Development mode
 dotnet build --verbosity normal | Select-String "RunAOTCompilation"
 
-# Production mode  
+# Production mode
 .\scripts\test-build-aot.ps1 -Verbose
 ```
 
 #### Custom Test Filtering
+
 ```powershell
 # Fast builds with specific tests
 .\scripts\test-build-fast.ps1 -Filter "HomeTests" -Verbose
@@ -141,18 +159,21 @@ dotnet build --verbosity normal | Select-String "RunAOTCompilation"
 ## 🎯 Best Practices
 
 ### 📅 **Development Workflow**
+
 1. **Daily development**: Use default (AoT disabled) for speed
 2. **Feature completion**: Test with `.\scripts\test-build-aot.ps1`
 3. **Pre-commit**: Run `.\scripts\test-build-ci.ps1` to simulate CI
 4. **Debugging CI issues**: Use CI simulation locally
 
 ### 🔄 **Team Guidelines**
+
 - **Default**: Fast development builds for productivity
 - **Pull requests**: Include production parity test results
 - **CI/CD**: Automatically uses AoT for deployment validation
 - **Troubleshooting**: Use verbose flags for detailed diagnostics
 
 ### 🚀 **Performance Optimization**
+
 - **Small test suites** (<200 tests): Development mode recommended
 - **Large test suites** (>500 tests): Consider AoT for better runtime
 - **CI/CD pipelines**: AoT provides production parity validation
@@ -165,6 +186,7 @@ dotnet build --verbosity normal | Select-String "RunAOTCompilation"
 The 18% build time increase for AoT is now **optional for development** but **automatic for CI/CD**, ensuring both developer productivity and production reliability.
 
 ## Implementation Status
+
 - ✅ Conditional AoT configuration implemented
 - ✅ Development build scripts created
 - ✅ Production parity testing enabled

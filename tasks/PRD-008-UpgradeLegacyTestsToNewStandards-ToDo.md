@@ -134,26 +134,11 @@ public sealed class TestScope : IDisposable
 1. `StringExtensionsTests.cs` - Simple extension method tests, minimal dependencies
 2. `BlazorCodeBehindEnforcementTests.cs` - File system operations, regex patterns
 
-**Phase 2: API Function Tests (Medium Complexity)**
-3. `TestDeserialization.cs` - JSON deserialization, file operations
-4. `ArticlesApiVerification_Tests.cs` - HTTP client, authentication, API calls
-5. `RaindropListArticles_Tests.cs` - API integration tests
-6. `RaindropListVideos_Tests.cs` - API integration tests
+**Phase 2: API Function Tests (Medium Complexity)** 3. `TestDeserialization.cs` - JSON deserialization, file operations 4. `ArticlesApiVerification_Tests.cs` - HTTP client, authentication, API calls 5. `RaindropListArticles_Tests.cs` - API integration tests 6. `RaindropListVideos_Tests.cs` - API integration tests
 
-**Phase 3: Helper Infrastructure (Complex Dependencies)**
-7. `TestHttpMessageHandler.cs` - HTTP mocking infrastructure
-8. `TestBase.cs` (Main) - Configuration management
-9. `TestBase.cs` (API) - Configuration with environment variables
-10. `TestBindingContext.cs` - Azure Functions binding context
-11. `TestFunctionContext.cs` - Azure Functions context
-12. `TestFunctionDefinition.cs` - Azure Functions definition
-13. `TestHttpRequestData.cs` - Azure Functions HTTP request data
-14. `TestHttpResponseData.cs` - Azure Functions HTTP response data
-15. `TestTraceContext.cs` - Azure Functions tracing context
+**Phase 3: Helper Infrastructure (Complex Dependencies)** 7. `TestHttpMessageHandler.cs` - HTTP mocking infrastructure 8. `TestBase.cs` (Main) - Configuration management 9. `TestBase.cs` (API) - Configuration with environment variables 10. `TestBindingContext.cs` - Azure Functions binding context 11. `TestFunctionContext.cs` - Azure Functions context 12. `TestFunctionDefinition.cs` - Azure Functions definition 13. `TestHttpRequestData.cs` - Azure Functions HTTP request data 14. `TestHttpResponseData.cs` - Azure Functions HTTP response data 15. `TestTraceContext.cs` - Azure Functions tracing context
 
-**Phase 4: Performance Tests (Specialized)**
-16. `ArticlesPagePerformanceTestsLightMock.cs` - Performance testing with mocks
-17. `TestBase.cs` (Performance) - Performance testing infrastructure
+**Phase 4: Performance Tests (Specialized)** 16. `ArticlesPagePerformanceTestsLightMock.cs` - Performance testing with mocks 17. `TestBase.cs` (Performance) - Performance testing infrastructure
 
 **Migration Strategy per File:**
 
@@ -188,7 +173,7 @@ public sealed class TestScope : IDisposable
 - Custom mocks must be used for internal dependencies (NavigationManager, internal services).
 - Use `dotnet clean && dotnet build --no-restore --verbosity quiet` to verify zero build warnings (except IL2111).
 - Use `dotnet test` to run all tests or `dotnet test --filter "FullyQualifiedName~[TestClassName]"` for specific test classes.
-- **QUALITY CHECK**: After every step verify TestScope pattern, custom mock pattern, ConfigureAwait(false) compliance following HomeTests*.cs files as prime example.
+- **QUALITY CHECK**: After every step verify TestScope pattern, custom mock pattern, ConfigureAwait(false) compliance following HomeTests\*.cs files as prime example.
 - All upgraded tests must use the TestScope pattern with C# 13 primary constructors.
 - Tests must follow partial class organization: main file for `[Test]` methods, `.Helpers.cs` for infrastructure.
 - TUnit fluent chaining must be used for related assertions on the same object.
@@ -222,10 +207,10 @@ public sealed class TestScope : IDisposable
     - [x] 2.2.4 Ensure tests validate behavior rather than implementation details
     - [x] 2.2.5 Run dotnet build and dotnet test to verify zero warnings and passing tests
   - [x] 2.3 Rename original Phase 1 files with .outdated suffix after successful upgrade
-     - [x] StringExtensionsTests.cs → StringExtensionsTests.cs.outdated
-     - [x] BlazorCodeBehindEnforcementTests.cs → BlazorCodeBehindEnforcementTests.cs.outdated
-     - [x] BlazorCodeBehindEnforcementTests.Helpers.cs → BlazorCodeBehindEnforcementTests.Helpers.cs.outdated
-     - [x] Build verification successful - only modernized tests remain active
+    - [x] StringExtensionsTests.cs → StringExtensionsTests.cs.outdated
+    - [x] BlazorCodeBehindEnforcementTests.cs → BlazorCodeBehindEnforcementTests.cs.outdated
+    - [x] BlazorCodeBehindEnforcementTests.Helpers.cs → BlazorCodeBehindEnforcementTests.Helpers.cs.outdated
+    - [x] Build verification successful - only modernized tests remain active
 - [ ] 3.0 Upgrade API Function Tests (Phase 2)
   - [x] 3.1 Upgrade TestDeserialization.cs to TestScope pattern
     - [x] 3.1.1 Create NewTests/Functions/TestDeserialization.cs with [Test] methods only
@@ -252,57 +237,57 @@ public sealed class TestScope : IDisposable
     - [x] 3.4.4 Ensure tests validate API behavior rather than implementation
     - [x] 3.4.5 Run dotnet build and dotnet test to verify zero warnings and passing tests (2 tests added)
   - [x] 3.5 Rename original Phase 2 files with .outdated suffix after successful upgrade
-      - [x] 3.5.1 Rename TestDeserialization.cs to TestDeserialization.cs.outdated
-      - [x] 3.5.2 Rename ArticlesApiVerification_Tests.cs to ArticlesApiVerification_Tests.cs.outdated
-      - [x] 3.5.3 Rename RaindropListArticles_Tests.cs to RaindropListArticles_Tests.cs.outdated
-      - [x] 3.5.4 Rename RaindropListVideos_Tests.cs to RaindropListVideos_Tests.cs.outdated
-      - [x] 3.5.5 Verify successful build with only modernized tests running
-      - [x] 3.5.6 Remove duplicate original files to prevent conflicts (keeping .outdated versions)
-         - [x] Removed API test duplicates: TestDeserialization.cs, ArticlesApiVerification_Tests.cs, RaindropListArticles_Tests.cs, RaindropListVideos_Tests.cs
-         - [x] Removed main test duplicates: StringExtensionsTests.cs, BlazorCodeBehindEnforcementTests.cs, BlazorCodeBehindEnforcementTests.Helpers.cs
-         - [x] Verified both test projects build successfully after cleanup
+    - [x] 3.5.1 Rename TestDeserialization.cs to TestDeserialization.cs.outdated
+    - [x] 3.5.2 Rename ArticlesApiVerification_Tests.cs to ArticlesApiVerification_Tests.cs.outdated
+    - [x] 3.5.3 Rename RaindropListArticles_Tests.cs to RaindropListArticles_Tests.cs.outdated
+    - [x] 3.5.4 Rename RaindropListVideos_Tests.cs to RaindropListVideos_Tests.cs.outdated
+    - [x] 3.5.5 Verify successful build with only modernized tests running
+    - [x] 3.5.6 Remove duplicate original files to prevent conflicts (keeping .outdated versions)
+      - [x] Removed API test duplicates: TestDeserialization.cs, ArticlesApiVerification_Tests.cs, RaindropListArticles_Tests.cs, RaindropListVideos_Tests.cs
+      - [x] Removed main test duplicates: StringExtensionsTests.cs, BlazorCodeBehindEnforcementTests.cs, BlazorCodeBehindEnforcementTests.Helpers.cs
+      - [x] Verified both test projects build successfully after cleanup
 
 **Note**: Duplicate file cleanup was necessary because the original migration process created both original and .outdated versions of the same files. This cleanup ensures a clean project structure with only the modernized tests active and legacy versions properly archived.
 
- - [ ] 4.0 Migrate and Modernize Helper Infrastructure (Phase 3)
-  - [x] 4.1 Analyze existing helper files in tests/redmuffin.Blazor.StaticWeb.Api.Tests/Helpers/
-     - [x] TestBase.cs: Configuration management (IConfiguration setup)
-     - [x] TestFunctionContext.cs: Azure Functions context with DI container
-     - [x] TestHttpRequestData.cs: HTTP request mocking (GET/POST variants)
-     - [x] TestHttpResponseData.cs: HTTP response handling with stream management
-     - [x] TestFunctionDefinition.cs: Function metadata for testing
-     - [x] TestBindingContext.cs, TestTraceContext.cs, TestHttpMessageHandler.cs: Supporting infrastructure
-     - [x] Analysis: All helpers are already well-designed and compatible with TestScope pattern
-   - [x] 4.2 Integrate useful helper functionality into new TestScope patterns
-      - [x] TestFunctionContext and TestHttpRequestData already integrated in all TestScope implementations
-      - [x] Configuration management from TestBase.cs incorporated into TestScope pattern
-      - [x] HTTP response handling with TestHttpResponseData used in all Azure Function tests
-      - [x] No additional integration needed - existing helpers work seamlessly with TestScope
-   - [x] 4.3 Modernize helper code to use C# 13 patterns and TUnit best practices
-      - [x] Helper files already use modern C# patterns (primary constructors, collection expressions)
-      - [x] TestHttpRequestData and TestHttpResponseData use modern constructor patterns
-      - [x] Proper async/await patterns with ConfigureAwait(false) where needed
-      - [x] Modern disposal patterns with IAsyncDisposable implementation
-   - [x] 4.4 Ensure all helper code follows zero build warnings policy
-      - [x] API tests project builds with zero warnings
-      - [x] Main tests project builds with zero warnings
-      - [x] All helper files comply with analyzer rules and coding standards
-   - [x] 4.5 Consolidate standalone helper files into TestScope partial classes with Mock naming conventions
-      - [x] Integrated TestFunctionContext → MockFunctionContext into partial helper files
-      - [x] Integrated TestHttpRequestData → MockHttpRequestData into partial helper files  
-      - [x] Integrated TestHttpResponseData → MockHttpResponseData into partial helper files
-      - [x] Integrated TestFunctionDefinition → MockFunctionDefinition into partial helper files
-      - [x] Integrated TestBindingContext → MockBindingContext into partial helper files
-      - [x] Integrated TestTraceContext → MockTraceContext into partial helper files
-      - [x] Updated all test files to use Mock naming convention instead of Test prefix
-      - [x] Marked all standalone helper files as outdated (.outdated suffix)
-      - [x] Cleaned up duplicate files - removed all .obsolete versions and original files without suffix
-      - [x] Verified project builds successfully with integrated Mock helpers
-   - [x] 4.6 Update any remaining references to use new TestScope-integrated Mock helpers
-      - [x] Updated RaindropListVideos_Tests to use MockFunctionContext and MockHttpRequestData
-      - [x] Updated RaindropListArticles_Tests to use MockFunctionContext and MockHttpRequestData
-      - [x] Removed imports of obsolete helper namespace from all test files
-      - [x] All tests now use proper Mock naming convention following project standards
+- [ ] 4.0 Migrate and Modernize Helper Infrastructure (Phase 3)
+- [x] 4.1 Analyze existing helper files in tests/redmuffin.Blazor.StaticWeb.Api.Tests/Helpers/
+  - [x] TestBase.cs: Configuration management (IConfiguration setup)
+  - [x] TestFunctionContext.cs: Azure Functions context with DI container
+  - [x] TestHttpRequestData.cs: HTTP request mocking (GET/POST variants)
+  - [x] TestHttpResponseData.cs: HTTP response handling with stream management
+  - [x] TestFunctionDefinition.cs: Function metadata for testing
+  - [x] TestBindingContext.cs, TestTraceContext.cs, TestHttpMessageHandler.cs: Supporting infrastructure
+  - [x] Analysis: All helpers are already well-designed and compatible with TestScope pattern
+- [x] 4.2 Integrate useful helper functionality into new TestScope patterns
+  - [x] TestFunctionContext and TestHttpRequestData already integrated in all TestScope implementations
+  - [x] Configuration management from TestBase.cs incorporated into TestScope pattern
+  - [x] HTTP response handling with TestHttpResponseData used in all Azure Function tests
+  - [x] No additional integration needed - existing helpers work seamlessly with TestScope
+- [x] 4.3 Modernize helper code to use C# 13 patterns and TUnit best practices
+  - [x] Helper files already use modern C# patterns (primary constructors, collection expressions)
+  - [x] TestHttpRequestData and TestHttpResponseData use modern constructor patterns
+  - [x] Proper async/await patterns with ConfigureAwait(false) where needed
+  - [x] Modern disposal patterns with IAsyncDisposable implementation
+- [x] 4.4 Ensure all helper code follows zero build warnings policy
+  - [x] API tests project builds with zero warnings
+  - [x] Main tests project builds with zero warnings
+  - [x] All helper files comply with analyzer rules and coding standards
+- [x] 4.5 Consolidate standalone helper files into TestScope partial classes with Mock naming conventions
+  - [x] Integrated TestFunctionContext → MockFunctionContext into partial helper files
+  - [x] Integrated TestHttpRequestData → MockHttpRequestData into partial helper files
+  - [x] Integrated TestHttpResponseData → MockHttpResponseData into partial helper files
+  - [x] Integrated TestFunctionDefinition → MockFunctionDefinition into partial helper files
+  - [x] Integrated TestBindingContext → MockBindingContext into partial helper files
+  - [x] Integrated TestTraceContext → MockTraceContext into partial helper files
+  - [x] Updated all test files to use Mock naming convention instead of Test prefix
+  - [x] Marked all standalone helper files as outdated (.outdated suffix)
+  - [x] Cleaned up duplicate files - removed all .obsolete versions and original files without suffix
+  - [x] Verified project builds successfully with integrated Mock helpers
+- [x] 4.6 Update any remaining references to use new TestScope-integrated Mock helpers
+  - [x] Updated RaindropListVideos_Tests to use MockFunctionContext and MockHttpRequestData
+  - [x] Updated RaindropListArticles_Tests to use MockFunctionContext and MockHttpRequestData
+  - [x] Removed imports of obsolete helper namespace from all test files
+  - [x] All tests now use proper Mock naming convention following project standards
 - [x] 5.0 Validation, Cleanup and Finalization (Phase 4)
   - [x] 5.1 Run comprehensive test suite to ensure all upgraded tests pass
     - [x] Main test project: 165 tests passed, 0 failed

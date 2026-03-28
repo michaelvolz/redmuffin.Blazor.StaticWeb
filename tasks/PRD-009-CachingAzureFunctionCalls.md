@@ -206,7 +206,7 @@ public sealed class RefreshBadgeHelper
 - **Logging**: Use `LoggerMessage` delegates for structured logging
 - **Sass Compilation**: Use `dotnet build -c Debug-Sass` to compile modified or created SASS files
 - **Sass Compilation**: Sass partials need to be imported via @use to be compiled in the app.scss file
-- **Sass Compilation**: Sass partials need to be @forward -ed in the correct _index.scss
+- **Sass Compilation**: Sass partials need to be @forward -ed in the correct \_index.scss
 
 ### SCSS Styling
 
@@ -235,7 +235,7 @@ public sealed class RefreshBadgeHelper
 ## Open Questions
 
 1. **Compression Library**: Should we use LZString.NET, System.IO.Compression, or a custom solution?
-    Answer: which is the simplest and uses less WebAssembly space to download
+   Answer: which is the simplest and uses less WebAssembly space to download
 2. **Cache Cleanup Strategy**: Should we implement LRU eviction or simple time-based expiration?
 3. **Badge Positioning**: Should the badge be page-relative or viewport-relative?
 4. **Error Recovery**: How should we handle partial cache corruption (some fields missing)?

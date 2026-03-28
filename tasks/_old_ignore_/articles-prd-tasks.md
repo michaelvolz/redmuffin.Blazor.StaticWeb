@@ -1,25 +1,31 @@
 ## Relevant Files
 
 ### Blazor Components
+
 - `src/redmuffin.Blazor.StaticWeb/Features/Pages/ArticlesPage/Articles.razor` - Main Articles page component displaying article list in masonry layout.
 - `src/redmuffin.Blazor.StaticWeb/Features/Pages/ArticlesPage/Articles.razor.cs` - Code-behind for Articles page with API integration and state management.
 - `src/redmuffin.Blazor.StaticWeb/Features/Pages/ArticlesPage/Articles.razor.css` - Component-specific styles for Articles page (if needed).
 
 ### Azure Functions (API)
+
 - `src/redmuffin.Blazor.StaticWeb.Api/Functions/RaindropListArticles.cs` - Azure Function for fetching articles from Raindrop.io using category ID 56658122. ✅ COMPLETED
 
 ### Shared/Common
+
 - `src/redmuffin.Blazor.StaticWeb.Common/Models/RaindropItem.cs` - Verify compatibility with articles data structure.
 - `src/redmuffin.Blazor.StaticWeb.Common/DTOs/RaindropResponse.cs` - Verify compatibility with articles API response structure.
 
 ### Navigation
+
 - `src/redmuffin.Blazor.StaticWeb/Core/Layout/NavMenu.razor` - Add Articles navigation menu item with FontAwesome icon. ✅ COMPLETED
 
 ### Styles
+
 - `src/redmuffin.Blazor.StaticWeb/wwwroot/scss/_articles.scss` - Article-specific SCSS styles for masonry layout optimizations.
-- `src/redmuffin.Blazor.StaticWeb/wwwroot/scss/app.scss` - Import _articles.scss file.
+- `src/redmuffin.Blazor.StaticWeb/wwwroot/scss/app.scss` - Import \_articles.scss file.
 
 ### Tests
+
 - `tests/redmuffin.Blazor.StaticWeb.Tests/Features/Pages/ArticlesPage/ArticlesTests.cs` - TUnit tests for Articles page component. ✅ COMPLETED
 - `tests/redmuffin.Blazor.StaticWeb.Api.Tests/Functions/RaindropListArticles_Tests.cs` - TUnit tests for RaindropListArticles Azure Function. ✅ COMPLETED
 
@@ -56,8 +62,8 @@
   - [x] 3.5 Add loading states and error handling
 - [x] 4.0 Implement Navigation Integration and Styling
   - [x] 4.1 Add Articles navigation menu item to MainLayout.razor
-  - [x] 4.2 Create and implement _articles.scss for component-specific styles
-  - [x] 4.3 Import _articles.scss in app.scss
+  - [x] 4.2 Create and implement \_articles.scss for component-specific styles
+  - [x] 4.3 Import \_articles.scss in app.scss
   - [x] 4.4 Add routing configuration for Articles page
 - [x] 5.0 Add Comprehensive Testing and Quality Assurance
   - [x] 5.1 Create and implement ArticlesTests.cs for component testing

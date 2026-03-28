@@ -44,7 +44,7 @@
   - [x] 2.4 Ensure each migrated test adheres to the Arrange-Act-Assert pattern.
   - [x] 2.5 Verify that each migrated test is error-free and passes all assertions.
   - [x] 2.6 Repeat for the next prioritized non-skipped test file.
-  
+
 **IMPORTANT MIGRATION GOALS:**
 
 - **REMOVE [Skip] attributes** from tests when migrating to LightMock - the goal is to create WORKING tests
@@ -97,14 +97,14 @@
 // ❌ FAILS: Methods with optional parameters in expression trees
 _mock.Arrange(f => f.GetItemAsync<T>("namespace", "key"))  // CS0854 error
 
-// ✅ WORKS: Explicitly specify ALL parameters including optional ones  
+// ✅ WORKS: Explicitly specify ALL parameters including optional ones
 _mock.Arrange(f => f.GetItemAsync<T>("namespace", "key", CancellationToken.None))  // Compiles!
 ```
 
 **� SPECIFIC FIXES APPLIED:**
 
 1. **GetItemAsync calls**: Added explicit `CancellationToken.None` parameter
-2. **SetItemAsync calls**: Added explicit `The<int?>.IsAnyValue, CancellationToken.None` parameters  
+2. **SetItemAsync calls**: Added explicit `The<int?>.IsAnyValue, CancellationToken.None` parameters
 3. **RemoveItemAsync calls**: Added explicit `CancellationToken.None` parameter
 4. **All Cache Service methods**: Specified all parameters explicitly
 

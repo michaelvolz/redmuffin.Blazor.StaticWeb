@@ -345,7 +345,7 @@ public sealed class RaindropAPIFactory : IRaindropAPIFactory
         return _serviceProvider.GetRequiredService<RaindropAPI>();
     }
  }
- ```
+```
 
 ### Component Update Pattern
 
@@ -431,9 +431,9 @@ public sealed class DummyRaindropAPI : IRaindropAPI
             var httpClient = _httpClientFactory.CreateClient();
             var response = await httpClient.GetAsync("mockdata/videos.json", cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            
+
             var jsonContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            var result = JsonSerializer.Deserialize(jsonContent, RaindropJsonSerializerContext.Default.RaindropItemList) 
+            var result = JsonSerializer.Deserialize(jsonContent, RaindropJsonSerializerContext.Default.RaindropItemList)
                         ?? new List<RaindropItem>();
             _logger.LogInformation("Successfully loaded {Count} videos from dummy data", result.Count);
             return result;
@@ -457,9 +457,9 @@ public sealed class DummyRaindropAPI : IRaindropAPI
             var httpClient = _httpClientFactory.CreateClient();
             var response = await httpClient.GetAsync("mockdata/articles.json", cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            
+
             var jsonContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            var result = JsonSerializer.Deserialize(jsonContent, RaindropJsonSerializerContext.Default.RaindropItemList) 
+            var result = JsonSerializer.Deserialize(jsonContent, RaindropJsonSerializerContext.Default.RaindropItemList)
                         ?? new List<RaindropItem>();
             _logger.LogInformation("Successfully loaded {Count} articles from dummy data", result.Count);
             return result;
@@ -498,9 +498,9 @@ public sealed class RaindropAPI : IRaindropAPI
         {
             var response = await _httpClient.GetAsync("/api/RaindropListVideos", cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            
+
             var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            var result = JsonSerializer.Deserialize(json, RaindropJsonSerializerContext.Default.RaindropItemList) 
+            var result = JsonSerializer.Deserialize(json, RaindropJsonSerializerContext.Default.RaindropItemList)
                         ?? new List<RaindropItem>();
             _logger.LogInformation("Successfully retrieved {Count} videos from API", result.Count);
             return result;
@@ -523,9 +523,9 @@ public sealed class RaindropAPI : IRaindropAPI
         {
             var response = await _httpClient.GetAsync("/api/RaindropListArticles", cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            
+
             var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            var result = JsonSerializer.Deserialize(json, RaindropJsonSerializerContext.Default.RaindropItemList) 
+            var result = JsonSerializer.Deserialize(json, RaindropJsonSerializerContext.Default.RaindropItemList)
                         ?? new List<RaindropItem>();
             _logger.LogInformation("Successfully retrieved {Count} articles from API", result.Count);
             return result;

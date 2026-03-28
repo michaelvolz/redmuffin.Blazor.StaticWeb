@@ -1,27 +1,33 @@
 # Fixing Articles Image Delay Bug
 
 ## Problem Summary
+
 The Articles.razor page takes seconds to display the first article because `PopulateImageUrlCacheAsync` makes sequential await calls to `ImageValidationService.ValidateImageWithCacheAsync()` for each image during initial render. This was implemented to fix a CORS bug where blocked images would be displayed via the src attribute, but the fix introduced a performance regression.
 
 ## Root Cause
+
 - **Original Bug**: Images blocked by CORS were being set in the src attribute, causing browser errors
 - **Fix Applied**: Check cache for validation results before setting src attribute
 - **Performance Issue**: The fix calls `ValidateImageWithCacheAsync` synchronously for every image during initial render, causing 2-10 seconds delay
 
 ## Solution Approach
+
 Implement a two-phase rendering approach:
+
 1. **Phase 1 (Immediate)**: Display articles with cached validation results or original cover images
 2. **Phase 2 (Background)**: Perform image validation in parallel and update UI progressively
 
 ## Tasks
 
 ### 1. Add Cache-Only Check Method to ImageValidationService
+
 - [x] Add new method `GetCachedValidationResultAsync(string imageUrl)` to `IImageValidationService`
 - [x] Implement cache-only lookup that doesn't trigger HTTP requests
 - [x] Return cached result if available, null if not cached
 - [x] Check both memory cache and persistent cache
 
 ### 2. Modify PopulateImageUrlCacheAsync Method
+
 - [x] Replace `ImageValidationService.ValidateImageWithCacheAsync()` call with cache-only check
 - [x] Use cached validation results if available
 - [x] For CORS-blocked images (cached as blocked), use data URI placeholder
@@ -30,12 +36,14 @@ Implement a two-phase rendering approach:
 - [x] Call `StateHasChanged()` immediately after populating cache
 
 ### 3. Optimize GetBestImageUrlAsync Method
+
 - [x] Prioritize cached OpenGraph images first
 - [x] Use cached validation results without triggering network requests
 - [x] Fallback to original cover images immediately
 - [x] Remove any network-dependent operations from this method
 
 ### 4. Create Background Image Validation Process
+
 - [x] Add new method `ValidateImagesInBackgroundAsync()` to Articles.razor.cs
 - [x] Identify images that need validation (not in cache)
 - [x] Use `Task.WhenAll()` for parallel validation
@@ -44,12 +52,14 @@ Implement a two-phase rendering approach:
 - [x] Handle partial failures gracefully
 
 ### 5. Update ProcessOpenGraphImagesAsync Method
+
 - [x] Integrate background validation with existing OpenGraph processing
 - [x] Ensure both processes can run in parallel without conflicts
 - [x] Use progressive UI updates for better user experience
 - [x] Maintain existing error handling and state management
 
 ### 6. Testing and Validation
+
 - [x] Test with articles that have CORS-blocked images
 - [x] Verify immediate rendering (should be under 500ms)
 - [x] Test background validation updates
@@ -60,6 +70,7 @@ Implement a two-phase rendering approach:
 ## Implementation Details
 
 ### Cache-Only Check Method
+
 ```csharp
 public async Task<ImageValidationResult?> GetCachedValidationResultAsync(string imageUrl, CancellationToken cancellationToken = default)
 {
@@ -84,6 +95,7 @@ public async Task<ImageValidationResult?> GetCachedValidationResultAsync(string 
 ```
 
 ### Updated PopulateImageUrlCacheAsync Logic
+
 ```csharp
 private async Task PopulateImageUrlCacheAsync()
 {
@@ -92,11 +104,11 @@ private async Task PopulateImageUrlCacheAsync()
     foreach (var article in _articleItems)
     {
         var imageUrl = await GetBestImageUrlAsync(article);
-        
+
         // Check cache for validation results (no network requests)
         var cachedValidation = await ImageValidationService.GetCachedValidationResultAsync(imageUrl);
-        
-        if (cachedValidation != null && !cachedValidation.IsValid && 
+
+        if (cachedValidation != null && !cachedValidation.IsValid &&
             cachedValidation.ErrorMessage?.Contains("Browser blocked") == true)
         {
             // Use placeholder for blocked images
@@ -108,16 +120,17 @@ private async Task PopulateImageUrlCacheAsync()
             _imageUrlCache[article.Link] = imageUrl;
         }
     }
-    
+
     // Trigger immediate UI update
     StateHasChanged();
-    
+
     // Start background validation (don't await)
     _ = ValidateImagesInBackgroundAsync();
 }
 ```
 
 ## Success Criteria
+
 - [x] Articles page displays first article within 500ms
 - [x] CORS-blocked images still use placeholders (no regression)
 - [x] Background validation works correctly
@@ -126,6 +139,7 @@ private async Task PopulateImageUrlCacheAsync()
 - [x] Existing functionality is preserved
 
 ## Notes
+
 - This fix maintains the CORS protection while eliminating the performance penalty
 - The solution uses a cache-first approach with background validation
 - Progressive enhancement ensures good user experience during validation

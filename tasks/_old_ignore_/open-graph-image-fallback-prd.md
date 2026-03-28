@@ -19,11 +19,13 @@ The Articles page currently displays article thumbnails using the `Cover` proper
 ## User Stories
 
 ### Primary User Stories
+
 - **US-001:** As a user, I want to see relevant images for all articles so that I can quickly identify and engage with content
 - **US-002:** As a user, I want articles to load quickly with minimal delay so that I can browse efficiently
 - **US-003:** As a user, I want consistent visual presentation so that the interface feels polished and professional
 
 ### Secondary User Stories
+
 - **US-004:** As a user, I want images to load progressively so that I can start viewing content immediately
 - **US-005:** As a user, I want appropriate fallback images when no suitable image is found so that the layout remains consistent
 - **US-006:** As a developer, I want cached image data to reduce API calls so that the system performs efficiently
@@ -31,6 +33,7 @@ The Articles page currently displays article thumbnails using the `Cover` proper
 ## Functional Requirements
 
 ### Core Functionality
+
 1. **FR-001:** The system must detect when an article's `Cover` property is empty or null
 2. **FR-002:** The system must fetch Open Graph meta tags from the article's website URL
 3. **FR-003:** The system must prioritize Open Graph images in the following order:
@@ -44,6 +47,7 @@ The Articles page currently displays article thumbnails using the `Cover` proper
 7. **FR-007:** The system must handle failed image loads gracefully with fallback behavior
 
 ### Performance Requirements
+
 8. **FR-008:** The system must implement local storage caching for retrieved image URLs
 9. **FR-009:** The system must implement cache eviction when storage approaches capacity limits
 10. **FR-010:** The system must process images asynchronously to avoid blocking the UI
@@ -57,6 +61,7 @@ The Articles page currently displays article thumbnails using the `Cover` proper
 18. **FR-018:** The system must implement URL-based caching for validation results to prevent duplicate validation across articles
 
 ### API Requirements
+
 19. **FR-019:** The system must implement an Azure Function to fetch and parse Open Graph data
 20. **FR-020:** The system must implement proper error handling for unreachable or invalid URLs
 21. **FR-021:** The system must implement rate limiting and timeout mechanisms
@@ -65,6 +70,7 @@ The Articles page currently displays article thumbnails using the `Cover` proper
 24. **FR-024:** The system must handle partial batch failures gracefully
 
 ### Data Storage Requirements
+
 25. **FR-025:** The system must store only essential data: article ID, image URL, hash, and timestamp
 26. **FR-026:** The system must implement LRU (Least Recently Used) cache eviction strategy
 27. **FR-027:** The system must handle local storage quota exceeded errors gracefully
@@ -91,18 +97,21 @@ The Articles page currently displays article thumbnails using the `Cover` proper
 ## Design Considerations
 
 ### Visual Design
+
 - **Placeholder Image:** Use a neutral, document-style icon (e.g., FontAwesome `fa-file-text` or `fa-image`)
 - **Loading States:** Maintain existing shimmer effects during image processing
 - **Error States:** Graceful degradation with consistent placeholder styling
 - **Responsive Design:** Ensure fallback images work across all breakpoints
 
 ### User Experience
+
 - **Progressive Loading:** Display articles immediately, then update with retrieved images
 - **Seamless Transitions:** Smooth image replacement without layout shifts
 - **Error Recovery:** Clear visual feedback for failed image loads
 - **Performance:** Minimal impact on initial page load times
 
 ### Accessibility
+
 - **Alt Text:** Provide meaningful alternative text for all images
 - **Screen Readers:** Ensure fallback images are properly announced
 - **Keyboard Navigation:** Maintain keyboard accessibility during image loading
@@ -111,6 +120,7 @@ The Articles page currently displays article thumbnails using the `Cover` proper
 ## Technical Considerations
 
 ### Azure Functions (.NET 8) Implementation
+
 - **Function Name:** GetOpenGraphImages
 - **File Path:** `src/redmuffin.Blazor.StaticWeb.Api/Functions/GetOpenGraphImages.cs`
 - **API Endpoint:** `/api/GetOpenGraphImages`
@@ -122,6 +132,7 @@ The Articles page currently displays article thumbnails using the `Cover` proper
 - **Rate Limiting:** Implement proper throttling to prevent abuse
 
 ### Blazor WebAssembly (.NET 9) Implementation
+
 - **Service:** Create OpenGraphImagesService in `src/redmuffin.Blazor.StaticWeb/Services/`
 - **Integration:** Update Articles.razor to use the new service
 - **Batch Processing:** Implement GetImageUrlsAsync(List<ArticleImageRequest>)
@@ -130,12 +141,14 @@ The Articles page currently displays article thumbnails using the `Cover` proper
 - **State Management:** Proper state management for image loading states
 
 ### Open Graph Meta Tag Parsing
+
 - **HTML Parsing:** Use AngleSharp or HtmlAgilityPack for safe HTML parsing
 - **Meta Tag Priority:** Implement priority system for different meta tag types
 - **Validation:** Validate image URLs and basic image properties
 - **Security:** Sanitize and validate all input data
 
 ### Local Storage Strategy
+
 - **Key Format:** `og_image_{articleId}_{urlHash}`
 - **Data Structure:** `{ imageUrl: string, timestamp: number, hash: string, isValid: boolean }`
 - **Size Limits:** Monitor storage usage and implement cleanup
@@ -144,6 +157,7 @@ The Articles page currently displays article thumbnails using the `Cover` proper
 - **Batch Updates:** Update multiple cache entries efficiently
 
 ### Error Handling Strategy
+
 - **Network Errors:** Handle unreachable URLs gracefully
 - **Parsing Errors:** Handle malformed HTML or missing meta tags
 - **Storage Errors:** Handle quota exceeded and storage failures
@@ -152,6 +166,7 @@ The Articles page currently displays article thumbnails using the `Cover` proper
 ## Success Metrics
 
 ### Technical Success Criteria
+
 1. **Cache Hit Rate:** Achieve >80% cache hit rate for repeated article views
 2. **Performance:** Open Graph image retrieval completes within 3 seconds
 3. **Reliability:** Handle 95% of edge cases gracefully without errors
@@ -159,6 +174,7 @@ The Articles page currently displays article thumbnails using the `Cover` proper
 5. **API Performance:** Azure Function responds within 2 seconds for 90% of requests
 
 ### User Experience Success Criteria
+
 1. **Visual Consistency:** 95% of articles display appropriate images
 2. **Loading Performance:** Articles display within 1 second, images load progressively
 3. **Error Recovery:** Graceful fallback behavior for all failure scenarios
@@ -166,6 +182,7 @@ The Articles page currently displays article thumbnails using the `Cover` proper
 5. **Accessibility:** Meet WCAG 2.1 AA standards for all image content
 
 ### Business Success Criteria
+
 1. **User Engagement:** Maintain or improve article click-through rates
 2. **Performance:** No degradation in overall page load times
 3. **Reliability:** System handles high traffic without failures
@@ -174,18 +191,21 @@ The Articles page currently displays article thumbnails using the `Cover` proper
 ## Implementation Notes
 
 ### Development Approach
+
 1. **Phase 1:** Implement Azure Function for Open Graph parsing
 2. **Phase 2:** Create Blazor service for image retrieval and caching
 3. **Phase 3:** Integrate with Articles component
 4. **Phase 4:** Implement advanced caching and optimization
 
 ### Testing Strategy
+
 - **Unit Tests:** TUnit tests for all business logic and parsing functions
 - **Integration Tests:** End-to-end testing of image retrieval and caching
 - **Performance Tests:** Load testing for API endpoints and caching
 - **Error Scenario Tests:** Comprehensive testing of failure modes
 
 ### Quality Assurance
+
 - **Code Review:** Follow established code review processes
 - **Performance Testing:** Verify caching efficiency and API performance
 - **Security Testing:** Validate input sanitization and safe HTML parsing
@@ -210,6 +230,7 @@ The Articles page currently displays article thumbnails using the `Cover` proper
 ### Articles Component Implementation Strategy
 
 #### Phase 1: Image Availability Detection
+
 1. **Initial Assessment:** After fetching articles, identify which need image processing:
    - Articles with null/empty `Cover` property
    - Articles with `Cover` URLs marked as invalid in cache
@@ -221,17 +242,20 @@ The Articles page currently displays article thumbnails using the `Cover` proper
    - Timestamp-based cache expiration
 
 #### Phase 2: Batch Validation and Processing
+
 1. **Image Validation:** Use HTTP HEAD requests to validate existing `Cover` URLs
 2. **Batch Collection:** Collect all articles requiring Open Graph processing
 3. **API Call:** Send batch request to GetOpenGraphImages Azure Function
 4. **Result Processing:** Handle partial successes and failures gracefully
 
 #### Phase 3: UI Updates
+
 1. **Progressive Enhancement:** Display articles immediately with available images
 2. **Async Updates:** Update images as batch results are processed
 3. **Fallback Handling:** Use placeholder images for ultimate failures
 
 ### Articles Component Changes
+
 - **Image Collection:** Identify missing images without accessing them multiple times
 - **Batch Request:** Collect articles needing image processing and batch process after initial render
 - **UI Updates:** Update UI progressively as results come in
@@ -241,11 +265,13 @@ The Articles page currently displays article thumbnails using the `Cover` proper
 ## Dependencies
 
 ### External Dependencies
+
 - **AngleSharp or HtmlAgilityPack:** For HTML parsing in Azure Functions
 - **HttpClient:** For fetching external website content
 - **Browser Storage APIs:** For local caching implementation
 
 ### Internal Dependencies
+
 - **Existing Articles Component:** Integration point for new functionality
 - **Raindrop Data Models:** Understanding of existing data structure
 - **Azure Functions Infrastructure:** Hosting and deployment environment
@@ -253,6 +279,7 @@ The Articles page currently displays article thumbnails using the `Cover` proper
 ## Detailed Technical Implementation
 
 ### Azure Function Structure
+
 ```csharp
 public class GetOpenGraphImages
 {
@@ -267,6 +294,7 @@ public class GetOpenGraphImages
 ```
 
 ### Batch Processing Data Models
+
 ```csharp
 public class ArticleImageRequest
 {
@@ -298,6 +326,7 @@ public class BatchImageResponse
 ```
 
 ### Blazor Service Structure
+
 ```csharp
 public interface IOpenGraphImagesService
 {
@@ -314,6 +343,7 @@ public class OpenGraphImagesService : IOpenGraphImagesService
 ```
 
 ### Image Validation Service
+
 ```csharp
 public interface IImageValidationService
 {
@@ -328,6 +358,7 @@ public class ImageValidationService : IImageValidationService
 ```
 
 ### Cache Data Structure
+
 ```csharp
 public class CachedImageData
 {
@@ -355,6 +386,7 @@ public class ImageValidationResult
 ```
 
 ### Local Storage Key Strategy
+
 - **Format:** `og_image_{articleId}_{urlHash}`
 - **Cleanup:** Remove entries older than 7 days
 - **Size Management:** Implement LRU eviction when approaching 80% capacity

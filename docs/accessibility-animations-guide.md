@@ -136,21 +136,25 @@ The `prefers-reduced-motion` CSS media query detects when users have enabled acc
 
 ```javascript
 // Detect user's motion preference
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const prefersReducedMotion = window.matchMedia(
+  "(prefers-reduced-motion: reduce)",
+).matches;
 
 if (prefersReducedMotion) {
   // Disable JavaScript-based animations
-  document.body.classList.add('reduced-motion');
+  document.body.classList.add("reduced-motion");
 }
 
 // Listen for changes
-window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => {
-  if (e.matches) {
-    document.body.classList.add('reduced-motion');
-  } else {
-    document.body.classList.remove('reduced-motion');
-  }
-});
+window
+  .matchMedia("(prefers-reduced-motion: reduce)")
+  .addEventListener("change", (e) => {
+    if (e.matches) {
+      document.body.classList.add("reduced-motion");
+    } else {
+      document.body.classList.remove("reduced-motion");
+    }
+  });
 ```
 
 ## Testing Reduced Motion
@@ -227,5 +231,5 @@ Shimmer loading effects are **essential animations** that provide important feed
 
 ---
 
-*Last updated: December 2024*
-*This document reflects lessons learned from debugging shimmer animation accessibility issues.*
+_Last updated: December 2024_
+_This document reflects lessons learned from debugging shimmer animation accessibility issues._

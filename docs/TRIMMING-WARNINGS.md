@@ -13,12 +13,14 @@ This Blazor WebAssembly project currently has **2 expected IL2111 warnings** tha
 **Reason**: The Blazor framework uses reflection to access the Layout property of LayoutView components
 
 **Why it's safe to ignore**:
+
 - This is auto-generated code from the Blazor compiler
 - The LayoutView component is part of the official ASP.NET Core framework
 - The reflection access is expected behavior for the framework's routing system
 - The types being accessed are preserved by the framework's trimming configuration
 
-**Source**: 
+**Source**:
+
 ```razor
 <!-- From App.razor -->
 <LayoutView Layout="@typeof(MainLayout)">
@@ -37,9 +39,11 @@ This Blazor WebAssembly project currently has **2 expected IL2111 warnings** tha
 ## Monitoring
 
 ### Expected Warnings (Safe to Ignore)
+
 - ✅ 2x IL2111 warnings for `LayoutView.Layout.set` in `App_razor.g.cs`
 
 ### Warnings to Investigate
+
 - ❌ Any IL2111 warnings NOT related to `LayoutView.Layout.set`
 - ❌ Any IL2111 warnings from user code (non-auto-generated files)
 - ❌ Any new IL2026, IL2070, IL2072, IL2075, IL2077 warnings

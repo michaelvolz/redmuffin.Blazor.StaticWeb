@@ -14,10 +14,10 @@ name: Deploy to Azure Static Web Apps
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   pull_request:
     types: [opened, synchronize, reopened, closed]
-    branches: [ "master" ]
+    branches: ["master"]
 
 # Environment variables available to all jobs and steps in this workflow
 env:
@@ -37,8 +37,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 0  # Full history for reliable change detection
-          show-progress: false  # Reduce log noise
+          fetch-depth: 0 # Full history for reliable change detection
+          show-progress: false # Reduce log noise
 
       - name: Check if only documentation files changed
         id: check
@@ -109,14 +109,14 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v6
         with:
-          fetch-depth: 1  # Shallow clone for faster checkout
-          show-progress: false  # Reduce log noise
+          fetch-depth: 1 # Shallow clone for faster checkout
+          show-progress: false # Reduce log noise
 
       # OPTIMIZATION: Single .NET setup with WASM workload for Blazor builds
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: "9.0.x"
           workloads: wasm-tools
 
       # OPTIMIZATION: Cache NuGet packages for faster subsequent builds
@@ -151,7 +151,7 @@ jobs:
       - name: Setup Node.js for Azure Static Web Apps CLI
         uses: actions/setup-node@v6
         with:
-          node-version: '18'
+          node-version: "18"
 
       # Cache npm for faster CLI installation
       - name: Cache npm

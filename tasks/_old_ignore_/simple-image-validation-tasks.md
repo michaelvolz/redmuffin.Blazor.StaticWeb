@@ -1,9 +1,11 @@
 # Simple Image Validation System - Task List
 
 ## Overview
+
 This task list implements the simplified image validation system as defined in the PRD, replacing the complex existing system with a lean, maintainable solution.
 
 ## Prerequisites
+
 - [x] **PREP-001**: Purge existing cache data before implementation
 - [x] **PREP-002**: Backup current image validation implementation for reference
 
@@ -37,10 +39,11 @@ tests/redmuffin.Blazor.StaticWeb.Tests/Features/Pages/ArticlesPage/
 ## Phase 1: Core Service Implementation
 
 ### Task 1: Create Simple Image Validation Service
+
 - [x] **TASK-001**: Create `ISimpleImageValidationService` interface
   - **Location**: `Features/Pages/ArticlesPage/Core/Services/ISimpleImageValidationService.cs`
   - Define `ValidateImageAsync(string imageUrl)` method
-  - Define `GetCachedResultAsync(string imageUrl)` method  
+  - Define `GetCachedResultAsync(string imageUrl)` method
   - Define `GetImageUrlOrPlaceholderAsync(string imageUrl)` method
   - Add to DI container registration
 
@@ -59,6 +62,7 @@ tests/redmuffin.Blazor.StaticWeb.Tests/Features/Pages/ArticlesPage/
   - localStorage cache integration
 
 ### Task 2: Cache Management
+
 - [x] **TASK-004**: Implement localStorage cache operations
   - **Location**: Part of `SimpleImageValidationService` class
   - Cache key format: `img_validation_{url_hash}`
@@ -73,6 +77,7 @@ tests/redmuffin.Blazor.StaticWeb.Tests/Features/Pages/ArticlesPage/
   - Fallback when localStorage unavailable
 
 ### Task 3: Placeholder System
+
 - [x] **TASK-006**: Create single SVG placeholder template
   - **Location**: `Features/Pages/ArticlesPage/Core/Templates/PlaceholderTemplate.cs`
   - Base SVG with dynamic text replacement
@@ -90,6 +95,7 @@ tests/redmuffin.Blazor.StaticWeb.Tests/Features/Pages/ArticlesPage/
 ## Phase 2: Articles Component Integration
 
 ### Task 4: Simplify Articles Component
+
 - [x] **TASK-008**: Remove complex state management
   - Remove existing image validation dictionaries
   - Remove progressive enhancement logic
@@ -110,6 +116,7 @@ tests/redmuffin.Blazor.StaticWeb.Tests/Features/Pages/ArticlesPage/
 ## Phase 3: Background Validation
 
 ### Task 5: Implement Background Processing
+
 - [x] **TASK-011**: Add fire-and-forget validation
   - `Task.Run()` for uncached images
   - No complex concurrency management
@@ -123,6 +130,7 @@ tests/redmuffin.Blazor.StaticWeb.Tests/Features/Pages/ArticlesPage/
 ## Phase 4: Error Handling & Testing
 
 ### Task 6: Error Handling
+
 - [x] **TASK-013**: Implement basic error handling
   - Try-catch blocks in validation methods
   - Graceful fallback to placeholder on errors
@@ -134,6 +142,7 @@ tests/redmuffin.Blazor.StaticWeb.Tests/Features/Pages/ArticlesPage/
   - Cache timeout failures to avoid retries
 
 ### Task 7: Unit Tests
+
 - [ ] **TASK-015**: Create service unit tests
   - **Location**: `tests/redmuffin.Blazor.StaticWeb.Tests/Features/Pages/ArticlesPage/Core/Services/SimpleImageValidationServiceTests.cs`
   - Mock HttpClient for validation tests
@@ -150,6 +159,7 @@ tests/redmuffin.Blazor.StaticWeb.Tests/Features/Pages/ArticlesPage/
 ## Phase 5: Cleanup & Integration
 
 ### Task 8: Remove Legacy Code
+
 - [ ] **TASK-017**: Remove old image validation services
   - Remove complex validation orchestration
   - Remove progressive enhancement logic
@@ -162,6 +172,7 @@ tests/redmuffin.Blazor.StaticWeb.Tests/Features/Pages/ArticlesPage/
   - Update any other components using old services
 
 ### Task 9: Integration Testing
+
 - [ ] **TASK-019**: End-to-end testing
   - Test complete article loading flow
   - Test cache persistence across page loads
@@ -177,6 +188,7 @@ tests/redmuffin.Blazor.StaticWeb.Tests/Features/Pages/ArticlesPage/
 ## Phase 6: Documentation & Deployment
 
 ### Task 10: Documentation
+
 - [ ] **TASK-021**: Update code documentation
   - Add XML comments to service interface
   - Document cache key format
@@ -188,6 +200,7 @@ tests/redmuffin.Blazor.StaticWeb.Tests/Features/Pages/ArticlesPage/
   - Rollback procedures if needed
 
 ### Task 11: Monitoring & Validation
+
 - [ ] **TASK-023**: Add basic monitoring
   - Log validation failures for debugging
   - Track cache hit/miss ratios (optional)
@@ -202,21 +215,25 @@ tests/redmuffin.Blazor.StaticWeb.Tests/Features/Pages/ArticlesPage/
 ## Implementation Order
 
 ### Sprint 1 (Core Implementation)
+
 - PREP-001, PREP-002
 - TASK-001, TASK-002, TASK-003
 - TASK-004, TASK-005
 
 ### Sprint 2 (UI Integration)
+
 - TASK-006, TASK-007
 - TASK-008, TASK-009, TASK-010
 - TASK-011, TASK-012
 
 ### Sprint 3 (Testing & Cleanup)
+
 - TASK-013, TASK-014
 - TASK-015, TASK-016
 - TASK-017, TASK-018
 
 ### Sprint 4 (Validation & Deployment)
+
 - TASK-019, TASK-020
 - TASK-021, TASK-022
 - TASK-023, TASK-024

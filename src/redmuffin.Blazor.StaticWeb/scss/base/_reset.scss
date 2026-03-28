@@ -6,12 +6,12 @@
 // - foundation-global-styles() mixin (includes box-sizing: border-box)
 // - Default margin/padding resets on body and other elements
 //
-// This file should only contain project-specific reset additions that 
+// This file should only contain project-specific reset additions that
 // extend Foundation's reset system, not duplicate it.
 // All resets integrate with Foundation's system using proper @use directives.
 // =============================================================================
 
-@use '../../lib/foundation-sites/scss/foundation' as foundation;
+@use "../../lib/foundation-sites/scss/foundation" as foundation;
 
 // Project-specific reset additions (if needed)
 // Foundation already handles:
@@ -23,4 +23,3 @@
 // .custom-element {
 //   // Only add resets that Foundation doesn't already provide
 // }
-

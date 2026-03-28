@@ -6,8 +6,8 @@
 // =============================================================================
 
 // Import project variables and mixins (which include Foundation integration)
-@use '../../abstracts/variables' as vars;
-@use '../../abstracts/mixins' as mixins;
+@use "../../abstracts/variables" as vars;
+@use "../../abstracts/mixins" as mixins;
 
 // =============================================================================
 // PAGE LOAD SPEED WIDGET COMPONENT STYLES
@@ -20,13 +20,19 @@
   top: 0;
   right: 0;
   z-index: vars.$page-speed-widget-z-index;
-  background: linear-gradient(135deg, vars.$page-speed-bg-primary, vars.$page-speed-bg-secondary);
+  background: linear-gradient(
+    135deg,
+    vars.$page-speed-bg-primary,
+    vars.$page-speed-bg-secondary
+  );
   color: vars.$page-speed-text-primary;
   border-radius: 0 0 0 vars.$page-speed-border-radius-large;
   cursor: pointer;
   font-family: vars.$page-speed-font-family;
   user-select: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   @include mixins.transition(all, vars.$page-speed-transition-medium);
   width: vars.$page-speed-widget-width;
@@ -76,7 +82,8 @@
 
 // Pulse animation keyframes
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -235,25 +242,49 @@
   &.excellent {
     color: vars.$page-speed-rating-excellent;
     background: vars.$page-speed-rating-excellent-bg;
-    @include mixins.box-shadow(0, 0, 20px, 0, vars.$page-speed-rating-excellent-shadow);
+    @include mixins.box-shadow(
+      0,
+      0,
+      20px,
+      0,
+      vars.$page-speed-rating-excellent-shadow
+    );
   }
 
   &.good {
     color: vars.$page-speed-rating-good;
     background: vars.$page-speed-rating-good-bg;
-    @include mixins.box-shadow(0, 0, 20px, 0, vars.$page-speed-rating-good-shadow);
+    @include mixins.box-shadow(
+      0,
+      0,
+      20px,
+      0,
+      vars.$page-speed-rating-good-shadow
+    );
   }
 
   &.fair {
     color: vars.$page-speed-rating-fair;
     background: vars.$page-speed-rating-fair-bg;
-    @include mixins.box-shadow(0, 0, 20px, 0, vars.$page-speed-rating-fair-shadow);
+    @include mixins.box-shadow(
+      0,
+      0,
+      20px,
+      0,
+      vars.$page-speed-rating-fair-shadow
+    );
   }
 
   &.poor {
     color: vars.$page-speed-rating-poor;
     background: vars.$page-speed-rating-poor-bg;
-    @include mixins.box-shadow(0, 0, 20px, 0, vars.$page-speed-rating-poor-shadow);
+    @include mixins.box-shadow(
+      0,
+      0,
+      20px,
+      0,
+      vars.$page-speed-rating-poor-shadow
+    );
   }
 
   &:hover {
@@ -286,7 +317,8 @@
 
 // Glowing progress bar animation
 @keyframes progressGlow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 5px currentColor;
   }
   50% {
@@ -352,7 +384,8 @@
   }
 
   .widget-header {
-    padding: vars.$page-speed-gap-large vars.$page-speed-padding-mobile vars.$page-speed-gap-medium;
+    padding: vars.$page-speed-gap-large vars.$page-speed-padding-mobile
+      vars.$page-speed-gap-medium;
   }
 
   .widget-content {

@@ -18,22 +18,22 @@
 // .article-image-display {
 //   // Use Foundation's responsive utilities
 //   @include responsive-embed(square);
-//   
+//
 //   // Use project spacing variables
 //   margin-bottom: spacing(2);
-//   
+//
 //   img {
 //     // Use Foundation's responsive image class
 //     @extend .responsive-image;
-//     
+//
 //     // Use project animations
 //     @include transition(opacity);
-//     
+//
 //     &:hover {
 //       opacity: 0.8;
 //     }
 //   }
-//   
+//
 //   // Use Foundation's breakpoint system
 //   @include breakpoint(medium) {
 //     margin-bottom: spacing(3);

@@ -1,0 +1,9 @@
+**/wwwroot/css/**
+**/node_modules/**
+**/lib/foundation-sites/**
+**/lib/**
+*.lock.json
+**/packages.lock.json
+TestResults/
+coverage/
+reports/
