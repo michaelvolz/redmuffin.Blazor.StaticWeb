@@ -120,6 +120,7 @@ public partial class Articles
     protected override async Task OnInitializedAsync()
     {
         // Validate injected dependencies
+#pragma warning disable MA0015 // Not method parameters — validating Blazor [Inject] properties
         ArgumentNullException.ThrowIfNull(Logger);
         ArgumentNullException.ThrowIfNull(Js);
         ArgumentNullException.ThrowIfNull(Navigation);
@@ -127,6 +128,7 @@ public partial class Articles
         ArgumentNullException.ThrowIfNull(ImageValidationCacheService);
         ArgumentNullException.ThrowIfNull(RaindropAPI);
         ArgumentNullException.ThrowIfNull(RaindropItemsCache);
+#pragma warning restore MA0015
 
         // Load cached data first for immediate display
         await LoadCachedDataAsync().ConfigureAwait(false);

@@ -2,25 +2,22 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
-
   <PropertyGroup Label="SharedVersions">
     <MicrosoftExtensionsVersion>9.0.14</MicrosoftExtensionsVersion>
     <TUnitVersion>1.22.3</TUnitVersion>
     <AzureFunctionsWorkerVersion>2.0.0</AzureFunctionsWorkerVersion>
     <CoverletVersion>8.0.1</CoverletVersion>
-    <MeziantouAnalyzerVersion>2.0.214</MeziantouAnalyzerVersion>
+
     <VSThreadingAnalyzersVersion>17.14.15</VSThreadingAnalyzersVersion>
     <RoslynatorVersion>4.15.0</RoslynatorVersion>
     <StyleCopAnalyzersVersion>1.2.0-beta.556</StyleCopAnalyzersVersion>
     <AsyncFixerVersion>2.1.0</AsyncFixerVersion>
   </PropertyGroup>
-
   <ItemGroup Label="MicrosoftExtensions">
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsVersion)" />
   </ItemGroup>
-
   <ItemGroup Label="AspNetCore">
     <PackageVersion Include="Microsoft.AspNetCore.Components.Analyzers" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="$(MicrosoftExtensionsVersion)" />
@@ -29,7 +26,6 @@
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.WebUtilities" Version="$(MicrosoftExtensionsVersion)" />
   </ItemGroup>
-
   <ItemGroup Label="AzureFunctions">
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="$(AzureFunctionsWorkerVersion)" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="$(AzureFunctionsWorkerVersion)" />
@@ -39,7 +35,6 @@
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.7" />
     <PackageVersion Include="Microsoft.ApplicationInsights.WorkerService" Version="3.0.0" />
   </ItemGroup>
-
   <ItemGroup Label="Testing">
     <PackageVersion Include="TUnit" Version="$(TUnitVersion)" />
     <PackageVersion Include="TUnit.Assertions" Version="$(TUnitVersion)" />
@@ -48,7 +43,6 @@
     <PackageVersion Include="LightMock.Generator" Version="1.2.3" />
     <PackageVersion Include="Microsoft.Testing.Platform" Version="2.1.0" />
   </ItemGroup>
-
   <ItemGroup Label="Other">
     <PackageVersion Include="AngleSharp" Version="1.4.0" />
     <PackageVersion Include="Blazored.LocalStorage" Version="4.5.0" />
@@ -57,9 +51,8 @@
     <PackageVersion Include="Markdig" Version="1.1.2" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
-
   <ItemGroup Label="Analyzers">
-    <PackageVersion Include="Meziantou.Analyzer" Version="$(MeziantouAnalyzerVersion)" />
+    <PackageVersion Include="Meziantou.Analyzer" Version="3.0.29" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="$(VSThreadingAnalyzersVersion)" />
     <PackageVersion Include="Roslynator.Analyzers" Version="$(RoslynatorVersion)" />
     <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="$(RoslynatorVersion)" />
@@ -68,5 +61,4 @@
     <PackageVersion Include="AsyncFixer" Version="$(AsyncFixerVersion)" />
     <PackageVersion Update="Microsoft.AspNetCore.Components.Analyzers" Version="$(MicrosoftExtensionsVersion)" />
   </ItemGroup>
-
 </Project>

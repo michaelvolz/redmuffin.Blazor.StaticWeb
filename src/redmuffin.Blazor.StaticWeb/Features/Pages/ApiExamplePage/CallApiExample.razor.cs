@@ -13,13 +13,17 @@ public partial class CallApiExample
 
     protected override void OnInitialized()
     {
+#pragma warning disable MA0015 // Not a method parameter — validating Blazor [Inject] property
         ArgumentNullException.ThrowIfNull(RaindropAPI);
+#pragma warning restore MA0015
         base.OnInitialized();
     }
 
     private async Task CallApiAsync()
     {
+#pragma warning disable MA0015 // Not a method parameter — validating Blazor [Inject] property
         ArgumentNullException.ThrowIfNull(RaindropAPI);
+#pragma warning restore MA0015
 
         _apiResponse = null;
         _errorMessage = null;

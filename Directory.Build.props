@@ -94,8 +94,8 @@
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
   </PropertyGroup>
 
-  <!-- Enable .NET analyzers only in debug configurations -->
-  <PropertyGroup Condition="'$(IsDebugConfiguration)' == 'true'">
+  <!-- .NET analyzers - enabled for ALL configurations -->
+  <PropertyGroup>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
     <AnalysisMode>recommended</AnalysisMode>
@@ -103,11 +103,6 @@
     <AnalysisModeSecurity>All</AnalysisModeSecurity>
     <AnalysisModeReliability>All</AnalysisModeReliability>
     <AnalysisModePerformance>All</AnalysisModePerformance>
-  </PropertyGroup>
-
-  <!-- Disable .NET analyzers in release configurations -->
-  <PropertyGroup Condition="'$(IsDebugConfiguration)' != 'true'">
-    <EnableNETAnalyzers>false</EnableNETAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>
@@ -121,18 +116,8 @@
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
-  <!-- Package versions centralized -->
-  <PropertyGroup>
-    <MeziantouAnalyzerVersion>2.0.205</MeziantouAnalyzerVersion>
-    <VSThreadingAnalyzersVersion>17.14.15</VSThreadingAnalyzersVersion>
-    <RoslynatorVersion>4.13.1</RoslynatorVersion>
-    <StyleCopAnalyzersVersion>1.2.0-beta.556</StyleCopAnalyzersVersion>
-    <MicrosoftAspNetCoreComponentsAnalyzersVersion>9.0.6</MicrosoftAspNetCoreComponentsAnalyzersVersion>
-    <AsyncFixerVersion>1.6.0</AsyncFixerVersion>
-  </PropertyGroup>
-
-  <!-- Analyzer packages - Debug configurations only -->
-  <ItemGroup Condition="'$(IsTestProject)' != 'true' And '$(IsDebugConfiguration)' == 'true'">
+  <!-- Analyzer packages - ALL configurations (versions managed in Directory.Packages.props) -->
+  <ItemGroup Condition="'$(IsTestProject)' != 'true'">
     <PackageReference Include="Meziantou.Analyzer">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

@@ -18,7 +18,9 @@ public partial class Weather : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
+#pragma warning disable MA0015 // Not a method parameter — validating Blazor [Inject] property
         ArgumentNullException.ThrowIfNull(HttpClientFactory);
+#pragma warning restore MA0015
         LogOnInitializedAsync(Logger, null);
 
         using var httpClient = HttpClientFactory.CreateClient();
