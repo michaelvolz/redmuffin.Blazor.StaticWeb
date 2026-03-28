@@ -127,7 +127,7 @@ Suitable for experimentation, learning, and development environments.
   Validates commit messages against Conventional Commits format:
 
   ```bash
-  npm install -g @commitlint/cli
+  npm install -g @commitlint/cli @commitlint/config-conventional
   ```
 
 - **chrome-devtools-mcp** (Required for Chrome DevTools MCP integration)
@@ -180,7 +180,7 @@ Suitable for experimentation, learning, and development environments.
 # Clone and setup
 git clone https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb.git
 cd redmuffin.Blazor.StaticWeb
-npm install -g @azure/static-web-apps-cli prettier @commitlint/cli chrome-devtools-mcp
+npm install -g @azure/static-web-apps-cli prettier @commitlint/cli @commitlint/config-conventional chrome-devtools-mcp
 
 # Setup git hooks (run once)
 .\scripts\Setup-GitHooks.ps1
