@@ -15,11 +15,46 @@ dotnet build --no-restore       # Fast build (after restore)
 
 ### Testing
 
+#### All Tests
+
 ```powershell
-dotnet test                     # Run all tests
-dotnet test --filter "FullyQualifiedName~TestClassName"  # Run specific test class
-dotnet test --filter "FullyQualifiedName~TestMethodName" # Run single test
+dotnet test                     # Run all tests (258 tests, ~1.4s)
 dotnet test --list-tests       # List all tests
+```
+
+#### Category-Based Filtering (Agentic Coding)
+
+Tests are categorized for fast, targeted execution:
+
+| Filter                    | Command                                                                       | Tests | Duration |
+| ------------------------- | ----------------------------------------------------------------------------- | ----- | -------- |
+| **Smoke** (fastest)       | `dotnet test -- --treenode-filter "/*/*/*/*[Category=Smoke]"`                 | 27    | ~0.8s    |
+| **Feature:Home**          | `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Home]"`          | 52    | ~0.8s    |
+| **Feature:Videos**        | `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Videos]"`        | 10    | ~0.7s    |
+| **Feature:Articles**      | `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Articles]"`      | 17    | ~0.7s    |
+| **Feature:Cache**         | `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Cache]"`         | 31    | ~0.9s    |
+| **Feature:Raindrop**      | `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Raindrop]"`      | 24    | ~0.6s    |
+| **Feature:RaindropItems** | `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:RaindropItems]"` | 17    | ~0.6s    |
+| **Feature:Core**          | `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Core]"`          | 13    | ~0.6s    |
+| **Feature:ApiExample**    | `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:ApiExample]"`    | 5     | ~0.7s    |
+
+**When to use:**
+
+- **Smoke**: Fast validation after small changes (5-10 tests per feature)
+- **Feature:X**: Run only tests for the feature you're working on
+- **Unit**: Pure unit tests (no I/O)
+
+**Example workflow:**
+
+```powershell
+# 1. Fast smoke test (agentic coding)
+dotnet test -- --treenode-filter "/*/*/*/*[Category=Smoke]"
+
+# 2. Feature-specific tests
+dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Home]"
+
+# 3. Full test suite (before commit)
+dotnet test
 ```
 
 **AOT Compilation**: Tests run with AOT in CI (`CI=true` or `GITHUB_ACTIONS=true`), disabled locally for speed.
