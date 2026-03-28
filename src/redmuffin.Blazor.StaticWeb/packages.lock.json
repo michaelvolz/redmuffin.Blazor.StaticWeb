@@ -96,17 +96,11 @@
           "Microsoft.Extensions.Options": "9.0.14"
         }
       },
-      "Microsoft.NET.ILLink.Tasks": {
+      "Microsoft.NET.Sdk.WebAssembly.Pack": {
         "type": "Direct",
         "requested": "[9.0.9, )",
         "resolved": "9.0.9",
-        "contentHash": "cHi1os/s6aobEgNkbOh/jW+ru//rHuedvj4PmTh2mMY7et/mJjqphBeXeKCesDvMd0+E2JyX9EPZZC4VRKslXg=="
-      },
-      "Microsoft.NET.Sdk.WebAssembly.Pack": {
-        "type": "Direct",
-        "requested": "[9.0.14, )",
-        "resolved": "9.0.14",
-        "contentHash": "C69h2ZW0zQf5K389hwVP3oRccYvGaTueidbvsXXcjcLzpFG920Ut4DIF9OsE6AwxdxTGYumGF1kSjHT3VM6t/w=="
+        "contentHash": "Nx4yF/l8YyzwHM+xBRFOSGv77mjBZP0XkImzLMdrSBGYPB32nEZNXTSwhH9viDhxMhGij+fVUjJj5iAtUdMBww=="
       },
       "Microsoft.VisualStudio.Threading.Analyzers": {
         "type": "Direct",
