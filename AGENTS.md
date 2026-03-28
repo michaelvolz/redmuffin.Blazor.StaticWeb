@@ -164,13 +164,14 @@ Always specify ALL parameters explicitly: `_mock.Arrange(f => f.GetAsync("key", 
 
 ## Critical Rules
 
-1. **NEVER commit or push** without explicit user permission
-2. **File Editing**: Edit one file at a time, track progress
-3. **Large Changes**: Outline plan, get approval, make incremental edits
-4. **Skills**: See `skills/` folder for detailed rules (loaded automatically):
+1. **Commit**: ONLY after user's explicit command (never auto-commit)
+2. **Push**: HARD BLOCKED - NEVER allow under any circumstances (enforced by plugin)
+3. **File Editing**: Edit one file at a time, track progress
+4. **Large Changes**: Outline plan, get approval, make incremental edits
+5. **Skills**: See `skills/` folder for detailed rules (loaded automatically):
    - `csharp-standards`, `testing`, `ui-styling`, `dotnet`, `powershell`, `commits`
-5. **Reference Guides**: `.github/guides/` contains detailed docs
-6. **NEVER hardcode secrets**: Never recommend putting API keys, tokens, passwords, or any secrets directly into code or config files. Always use one of:
+6. **Reference Guides**: `.github/guides/` contains detailed docs
+7. **NEVER hardcode secrets**: Never recommend putting API keys, tokens, passwords, or any secrets directly into code or config files. Always use one of:
    - Environment variables (`{env:VAR_NAME}` in opencode.json, `$env:VAR` in PowerShell)
    - User secrets (`dotnet user-secrets`) for .NET development
    - Azure Key Vault for production

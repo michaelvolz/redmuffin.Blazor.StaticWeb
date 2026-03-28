@@ -6,26 +6,33 @@ invocable: false
 
 # Commit Standards
 
+## Critical Policy
+
+- **Commit**: ONLY after user's explicit command (never auto-commit)
+- **Push**: HARD BLOCKED - NEVER allow under any circumstances (enforced by plugin)
+
+The assistant must NEVER commit or push without explicit user permission. Push is completely disallowed and enforced at the plugin level.
+
 ## Format
 
 `<type>(<scope>): <description>` (max 72 characters optimally, up to 100 if needed)
 
 ## Types
 
-| Type | Purpose |
-|------|---------|
-| feat | New feature |
-| fix | Bug fix |
-| docs | Documentation changes |
-| style | Code style changes (formatting, missing semicolons) |
-| refactor | Code refactoring without changing functionality |
-| perf | Performance improvements |
-| test | Adding or updating tests |
-| chore | Maintenance tasks, dependency updates |
-| security | Security-related changes |
-| ci | CI/CD pipeline changes |
-| config | Configuration changes |
-| revert | Reverting previous commits |
+| Type     | Purpose                                             |
+| -------- | --------------------------------------------------- |
+| feat     | New feature                                         |
+| fix      | Bug fix                                             |
+| docs     | Documentation changes                               |
+| style    | Code style changes (formatting, missing semicolons) |
+| refactor | Code refactoring without changing functionality     |
+| perf     | Performance improvements                            |
+| test     | Adding or updating tests                            |
+| chore    | Maintenance tasks, dependency updates               |
+| security | Security-related changes                            |
+| ci       | CI/CD pipeline changes                              |
+| config   | Configuration changes                               |
+| revert   | Reverting previous commits                          |
 
 ## Scopes
 
@@ -34,6 +41,7 @@ blazor, components, pages, api, ui, db, auth, services, models, utils, build, de
 ## Breaking Changes
 
 Add `!` after scope:
+
 ```
 feat(api)!: remove deprecated endpoint
 ```
@@ -43,17 +51,20 @@ feat(api)!: remove deprecated endpoint
 A body is **always required** for all commits. This is enforced by commitlint rules.
 
 ### Body Format
+
 - Blank line between title and body (required)
 - Use paragraphs/sentences, not bullet points
 - Max 100 characters per line
 
 ### Body Content
+
 - Provide brief context about what changed and why
 - Even simple commits need a body (e.g., "Bump version" or "Fix typo")
 
 ### Examples
 
 **All commits require a body:**
+
 ```
 chore(deps): bump Meziantou.Analyzer to 2.0.163
 
@@ -67,6 +78,7 @@ Clarified prerequisites in the installation section.
 ```
 
 **With extended body (multiple or non-obvious changes):**
+
 ```
 feat(blazor): add new navigation component
 
@@ -76,6 +88,7 @@ No breaking changes.
 ```
 
 **Breaking changes:**
+
 ```
 feat(api)!: remove deprecated endpoint
 
@@ -89,17 +102,21 @@ BREAKING CHANGE: The /api/v1/* endpoints are no longer available.
 This project uses **commitlint** for automated commit message validation.
 
 ### Setup
+
 Install commitlint globally:
+
 ```powershell
 npm install -g @commitlint/cli
 ```
 
 Run the setup script to configure git hooks:
+
 ```powershell
 .\scripts\Setup-GitHooks.ps1
 ```
 
 ### Validation Rules
+
 - Title format: `<type>(<scope>): <description>`
 - Body: Always required, cannot be empty
 - Body must have blank line between title and body
@@ -107,7 +124,9 @@ Run the setup script to configure git hooks:
 - Types: Must be from the allowed list
 
 ### Manual Verification
+
 To check a commit message before committing (always include body):
+
 ```
 $body = @"
 feat(blazor): your message
@@ -118,7 +137,9 @@ $body | commitlint
 ```
 
 ### Skipping Hooks
+
 ```powershell
 git commit -m "message" -n  # Skip hooks
 ```
+
 Use sparingly and only when necessary.
