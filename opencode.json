@@ -43,6 +43,15 @@
       "type": "local",
       "command": ["docker", "run", "-i", "--rm", "mcp/sequentialthinking"],
       "enabled": true
+    },
+    "chrome-devtools": {
+      "type": "local",
+      "command": [
+        "npx",
+        "chrome-devtools-mcp",
+        "--executablePath=C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
+        "--isolated"
+      ]
     }
   },
   "tools": {

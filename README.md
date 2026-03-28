@@ -130,6 +130,15 @@ Suitable for experimentation, learning, and development environments.
   npm install -g @commitlint/cli
   ```
 
+- **chrome-devtools-mcp** (Required for Chrome DevTools MCP integration)
+  Enables AI-powered browser automation, performance analysis, and debugging. Required for the Chrome DevTools MCP server in opencode.json:
+
+  ```bash
+  npm install -g chrome-devtools-mcp
+  ```
+
+  > **Note**: This MCP server provides browser control capabilities including navigation, script execution, screenshots, performance tracing, and network inspection. It uses the `--isolated` flag to run Chrome in an incognito-like mode with automatic cleanup.
+
 #### .NET Tools
 
 - **Project-Local Tools** (automatically managed)
@@ -171,7 +180,7 @@ Suitable for experimentation, learning, and development environments.
 # Clone and setup
 git clone https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb.git
 cd redmuffin.Blazor.StaticWeb
-npm install -g @azure/static-web-apps-cli prettier @commitlint/cli
+npm install -g @azure/static-web-apps-cli prettier @commitlint/cli chrome-devtools-mcp
 
 # Setup git hooks (run once)
 .\scripts\Setup-GitHooks.ps1
@@ -205,7 +214,7 @@ dotnet test
 3. **Install global tools:**
 
    ```bash
-npm install -g @azure/static-web-apps-cli prettier
+   npm install -g @azure/static-web-apps-cli prettier
    ```
 
 4. **Setup git hooks** (run once):
@@ -888,6 +897,7 @@ The development environment includes several **Model Context Protocol (MCP) serv
 - **[Context7 MCP Server](https://github.com/upstash/context7)**: Fetches up-to-date documentation for libraries and frameworks via HTTP endpoint
 - **[Brave Search MCP Server](https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search)**: Provides real-time web search and local business search capabilities (requires API key)
 - **[Sequential Thinking MCP Server](https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking)**: Enables structured, multi-step reasoning and problem-solving through dynamic thought processes
+- **[Chrome DevTools MCP Server](https://github.com/ChromeDevTools/chrome-devtools-mcp)**: Provides browser automation, performance analysis, network inspection, and debugging capabilities (requires Node.js and Chrome)
 
 ### Key Benefits
 
@@ -900,6 +910,13 @@ The development environment includes several **Model Context Protocol (MCP) serv
 ### Configuration
 
 MCP servers are pre-configured in the project's `.mcp.json` file and integrate seamlessly with GitHub Copilot when Docker Desktop is available. Some servers may require API keys (like Brave Search) for full functionality.
+
+> **Note**: The Chrome DevTools MCP server is configured in the project's `opencode.json`. The `chrome-devtools-mcp` package is installed globally via npm (`npm install -g chrome-devtools-mcp`). It requires:
+>
+> - [Node.js](https://nodejs.org/) v20.19+ (for running `npx`)
+> - [Google Chrome](https://www.google.com/chrome/) (the browser to control)
+>
+> The `--isolated` flag is used to create a temporary user data directory (incognito-like behavior) that is automatically cleaned up after each session.
 
 ### Usage Examples
 
