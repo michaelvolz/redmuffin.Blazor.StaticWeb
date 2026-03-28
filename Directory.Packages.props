@@ -5,7 +5,7 @@
 
   <PropertyGroup Label="SharedVersions">
     <MicrosoftExtensionsVersion>9.0.14</MicrosoftExtensionsVersion>
-    <TUnitVersion>0.25.21</TUnitVersion>
+    <TUnitVersion>1.22.3</TUnitVersion>
     <AzureFunctionsWorkerVersion>2.0.0</AzureFunctionsWorkerVersion>
     <CoverletVersion>8.0.1</CoverletVersion>
     <MeziantouAnalyzerVersion>2.0.214</MeziantouAnalyzerVersion>
@@ -46,7 +46,7 @@
     <PackageVersion Include="bunit" Version="2.6.2" />
     <PackageVersion Include="coverlet.msbuild" Version="$(CoverletVersion)" />
     <PackageVersion Include="LightMock.Generator" Version="1.2.3" />
-    <PackageVersion Include="Microsoft.Testing.Platform" Version="1.7.3" />
+    <PackageVersion Include="Microsoft.Testing.Platform" Version="2.1.0" />
   </ItemGroup>
 
   <ItemGroup Label="Other">
