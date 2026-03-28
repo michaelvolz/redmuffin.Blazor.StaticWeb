@@ -8,7 +8,7 @@ invocable: false
 
 ## Format
 
-`<type>(<scope>): <description>` (max 112 chars)
+`<type>(<scope>): <description>` (max 72 characters optimally, up to 100 if needed)
 
 ## Types
 
@@ -38,66 +38,88 @@ Add `!` after scope:
 feat(api)!: remove deprecated endpoint
 ```
 
-## Body (REQUIRED)
+## Body (Required for Non-Trivial Changes)
 
-**Body is MANDATORY** for all commits except:
-- Dependency bumps (`chore(deps): bump X from 1.0 to 2.0`)
-- Merge commits
-- Simple typo fixes
+A body/description is required when there's more than one change or the change isn't completely obvious from the title alone.
 
 ### Body Format
-Blank line after title, then bullet points explaining:
-1. What was changed
-2. Why it was changed
-3. Any breaking changes or migration notes
+- Blank line between title and body (required)
+- Use paragraphs/sentences, not bullet points
+- Max 100 characters per line
 
 ### When Body is Required
-Include a body if the commit:
-- Adds new functionality or features
-- Fixes a bug (describe what was broken and how it's fixed)
-- Changes behavior in any way
-- Refactors code (explain the refactoring purpose)
-- Is not completely self-evident from the title
+Include a body when:
+- There are multiple changes in one commit
+- The change isn't completely obvious from the title
+- Additional context helps reviewers understand the change
+- It's not a simple, obvious one-liner fix
 
 ### Examples
 
-**Good (with body):**
+**Title only (simple, obvious single changes):**
+```
+chore(deps): bump Meziantou.Analyzer from 2.0.161 to 2.0.163
+fix(blazor): null reference in user service
+docs(readme): update installation steps
+```
+
+**With body (multiple or non-obvious changes):**
 ```
 feat(blazor): add new navigation component
 
-- Added NavMenu component with responsive behavior
-- Improves mobile navigation and provides better UX
-- No breaking changes
+Added NavMenu component with responsive behavior.
+This improves mobile navigation and provides better UX.
+No breaking changes.
 ```
 
-**Good (minimal - dependency bump):**
+**Breaking changes (body required):**
 ```
-chore(deps): bump Meziantou.Analyzer from 2.0.161 to 2.0.163
-```
+feat(api)!: remove deprecated endpoint
 
-**Bad (missing body for significant change):**
-```
-refactor: clean up service code
+The v1 endpoints have been removed. Users should
+migrate to the v2 endpoints documented in the migration guide.
+BREAKING CHANGE: The /api/v1/* endpoints are no longer available.
 ```
 
 ## Git Hooks (Automated Validation)
 
-This project's commits are validated automatically via git hooks.
+This project uses **commitlint** for automated commit message validation.
 
 ### Setup
+Install commitlint globally:
+```powershell
+npm install -g @commitlint/cli
+```
+
+Run the setup script to configure git hooks:
 ```powershell
 .\scripts\Setup-GitHooks.ps1
 ```
 
-This configures git to use hooks in `.githooks/` directory, which validate:
-- Title format (`<type>(<scope>): <description>`)
-- Max 112 characters
-- Body required (except deps/merge/revert)
-- Bullet points required in body
+### Validation Rules
+- Title format: `<type>(<scope>): <description>`
+- Body (if present): Must have blank line between title and body
+- Max line length: 100 characters in body
+- Types: Must be from the allowed list
 
 ### Manual Verification
-To check a commit message before pushing:
+To check a commit message before committing:
 ```powershell
-# Validate without committing
-git commit --dry-run --message "feat(blazor): your message here"
+echo "feat(blazor): your message" | commitlint
 ```
+
+Or with body:
+```
+$body = @"
+feat(blazor): your message
+
+Your description here.
+"@
+$body | commitlint
+```
+
+### Skipping Hooks
+```powershell
+git commit -m "message" -n  # Skip hooks
+```
+Use sparingly and only when necessary.

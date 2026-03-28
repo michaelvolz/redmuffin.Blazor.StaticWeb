@@ -123,6 +123,13 @@ Suitable for experimentation, learning, and development environments.
   npm install -g prettier
   ```
 
+- **commitlint** (Required for commit message validation)
+  Validates commit messages against Conventional Commits format:
+
+  ```bash
+  npm install -g @commitlint/cli
+  ```
+
 #### .NET Tools
 
 - **Project-Local Tools** (automatically managed)
@@ -164,7 +171,7 @@ Suitable for experimentation, learning, and development environments.
 # Clone and setup
 git clone https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb.git
 cd redmuffin.Blazor.StaticWeb
-npm install -g @azure/static-web-apps-cli prettier
+npm install -g @azure/static-web-apps-cli prettier @commitlint/cli
 
 # Setup git hooks (run once)
 .\scripts\Setup-GitHooks.ps1
@@ -198,7 +205,7 @@ dotnet test
 3. **Install global tools:**
 
    ```bash
-   npm install -g @azure/static-web-apps-cli prettier
+npm install -g @azure/static-web-apps-cli prettier
    ```
 
 4. **Setup git hooks** (run once):
