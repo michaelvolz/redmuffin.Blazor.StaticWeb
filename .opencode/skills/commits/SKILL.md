@@ -38,32 +38,35 @@ Add `!` after scope:
 feat(api)!: remove deprecated endpoint
 ```
 
-## Body (Required for Non-Trivial Changes)
+## Body (Always Required)
 
-A body/description is required when there's more than one change or the change isn't completely obvious from the title alone.
+A body is **always required** for all commits. This is enforced by commitlint rules.
 
 ### Body Format
 - Blank line between title and body (required)
 - Use paragraphs/sentences, not bullet points
 - Max 100 characters per line
 
-### When Body is Required
-Include a body when:
-- There are multiple changes in one commit
-- The change isn't completely obvious from the title
-- Additional context helps reviewers understand the change
-- It's not a simple, obvious one-liner fix
+### Body Content
+- Provide brief context about what changed and why
+- Even simple commits need a body (e.g., "Bump version" or "Fix typo")
 
 ### Examples
 
-**Title only (simple, obvious single changes):**
+**All commits require a body:**
 ```
-chore(deps): bump Meziantou.Analyzer from 2.0.161 to 2.0.163
+chore(deps): bump Meziantou.Analyzer to 2.0.163
+
+Updated analyzer package to latest version.
 fix(blazor): null reference in user service
+
+Added null check before accessing user profile.
 docs(readme): update installation steps
+
+Clarified prerequisites in the installation section.
 ```
 
-**With body (multiple or non-obvious changes):**
+**With extended body (multiple or non-obvious changes):**
 ```
 feat(blazor): add new navigation component
 
@@ -72,7 +75,7 @@ This improves mobile navigation and provides better UX.
 No breaking changes.
 ```
 
-**Breaking changes (body required):**
+**Breaking changes:**
 ```
 feat(api)!: remove deprecated endpoint
 
@@ -98,17 +101,13 @@ Run the setup script to configure git hooks:
 
 ### Validation Rules
 - Title format: `<type>(<scope>): <description>`
-- Body (if present): Must have blank line between title and body
+- Body: Always required, cannot be empty
+- Body must have blank line between title and body
 - Max line length: 100 characters in body
 - Types: Must be from the allowed list
 
 ### Manual Verification
-To check a commit message before committing:
-```powershell
-echo "feat(blazor): your message" | commitlint
-```
-
-Or with body:
+To check a commit message before committing (always include body):
 ```
 $body = @"
 feat(blazor): your message
