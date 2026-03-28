@@ -8,11 +8,11 @@
     <TUnitVersion>0.25.21</TUnitVersion>
     <AzureFunctionsWorkerVersion>2.0.0</AzureFunctionsWorkerVersion>
     <CoverletVersion>8.0.1</CoverletVersion>
-<MeziantouAnalyzerVersion>2.0.208</MeziantouAnalyzerVersion>
+    <MeziantouAnalyzerVersion>2.0.214</MeziantouAnalyzerVersion>
     <VSThreadingAnalyzersVersion>17.14.15</VSThreadingAnalyzersVersion>
     <RoslynatorVersion>4.15.0</RoslynatorVersion>
     <StyleCopAnalyzersVersion>1.2.0-beta.556</StyleCopAnalyzersVersion>
-    <AsyncFixerVersion>1.6.0</AsyncFixerVersion>
+    <AsyncFixerVersion>2.1.0</AsyncFixerVersion>
   </PropertyGroup>
 
   <ItemGroup Label="MicrosoftExtensions">

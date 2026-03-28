@@ -4,9 +4,9 @@
     "net9.0": {
       "AsyncFixer": {
         "type": "Direct",
-        "requested": "[1.6.0, )",
-        "resolved": "1.6.0",
-        "contentHash": "/Xfs9H3UMfEv64cwT+C/JrTRp4w08BmPuFbj0ageadCHpx6rxYJxAU2C6sEqRFG22xmGk5cX9ewzoiiehWVHOw=="
+        "requested": "[2.1.0, )",
+        "resolved": "2.1.0",
+        "contentHash": "OOHNlH7GF39qk0Pv4cIQWA99hUh3nujDgGE2nADPpw88lD7s2qwlxEhuJIBfstC8ng3B1yY6SQy2JW/tddlMAQ=="
       },
       "Blazored.LocalStorage": {
         "type": "Direct",
@@ -34,9 +34,9 @@
       },
       "Meziantou.Analyzer": {
         "type": "Direct",
-        "requested": "[2.0.208, )",
-        "resolved": "2.0.208",
-        "contentHash": "Zioa5GpasYgWmA58y4pFVZj11L7pTbpTbwSbsChRgZYAy+qYjO1xIv0Zoun9hmJKbdQACAtenTEZBo13DAldQg=="
+        "requested": "[2.0.214, )",
+        "resolved": "2.0.214",
+        "contentHash": "ziJDZzk+y5DG9R6eBrKqDsrKcYtGpQj9uLC9IrCvbr+aLrfb60gUNdQYXWtqcYbF2xrkwiiWiysXvyUEKMxFVA=="
       },
       "Microsoft.AspNetCore.Components.Analyzers": {
         "type": "Direct",
