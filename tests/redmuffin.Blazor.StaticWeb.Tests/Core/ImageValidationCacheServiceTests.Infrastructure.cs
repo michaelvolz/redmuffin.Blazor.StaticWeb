@@ -82,7 +82,7 @@ public sealed partial class ImageValidationCacheServiceTests
         await scope.Service.PopulateImageUrlCacheAsync(items, imageUrlCache, StateChangedCallback, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        await Assert.That(imageUrlCache).HasCount().EqualTo(1);
+        await Assert.That(imageUrlCache).Count().IsEqualTo(1);
         await Assert.That(imageUrlCache["https://example.com/1"]).IsEqualTo("https://example.com/cover1.jpg");
     }
 
@@ -116,7 +116,7 @@ public sealed partial class ImageValidationCacheServiceTests
         await Task.Delay(100).ConfigureAwait(false);
 
         // Assert
-        await Assert.That(imageUrlCache).HasCount().EqualTo(1);
+        await Assert.That(imageUrlCache).Count().IsEqualTo(1);
         await Assert.That(imageUrlCache["https://example.com/1"]).IsEqualTo("https://example.com/cover1.jpg");
     }
 

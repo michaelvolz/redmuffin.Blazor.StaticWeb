@@ -236,7 +236,7 @@ public sealed partial class HomeTests
             // Cascading parameters
             await Assert.That(component.Instance.AppTheme).IsEqualTo("dark");
             await Assert.That(component.Instance.GetThemeClass()).IsEqualTo("theme-dark");
-            await Assert.That(component.Instance.GetUserPreference("accessibility")).IsEqualTo(true);
+            await Assert.That((bool)component.Instance.GetUserPreference("accessibility")!).IsTrue();
 
             // Logging verification
             await Assert.That(scope.Logger.LogEntries.Any(entry =>
@@ -344,7 +344,7 @@ public sealed partial class HomeTests
             await Assert.That(component.Instance.UserPreferences).IsNotNull();
             await Assert.That(component.Instance.GetUserPreference("fontSize")).IsEqualTo(16);
             await Assert.That(component.Instance.GetUserPreference("language")).IsEqualTo("en-US");
-            await Assert.That(component.Instance.GetUserPreference("accessibility")).IsEqualTo(true);
+            await Assert.That((bool)component.Instance.GetUserPreference("accessibility")!).IsTrue();
             await Assert.That(component.Instance.GetUserPreference("nonexistent")).IsNull();
         }
     }

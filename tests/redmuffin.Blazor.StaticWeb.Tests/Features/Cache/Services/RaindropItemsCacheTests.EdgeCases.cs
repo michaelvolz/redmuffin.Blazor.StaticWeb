@@ -53,7 +53,7 @@ public sealed partial class RaindropItemsCacheTests
         {
             await Assert.That(compressedData).IsNotNull();
             await Assert.That(decompressedData).IsEqualTo(jsonData);
-            await Assert.That(deserializedItems).HasCount().EqualTo(0);
+            await Assert.That(deserializedItems).Count().IsEqualTo(0);
         }
     }
 

@@ -60,7 +60,7 @@ public sealed partial class ArticlesPageCacheTests
         // Assert
         using (Assert.Multiple())
         {
-            await Assert.That(component.FindAll(".article-card")).HasCount().EqualTo(2);
+            await Assert.That(component.FindAll(".article-card")).Count().IsEqualTo(2);
             await Assert.That(component.Markup).Contains("Fresh Article 1");
             await Assert.That(component.Markup).Contains("Fresh Article 2");
             // No refresh badge should be visible since we loaded fresh data immediately
@@ -90,7 +90,7 @@ public sealed partial class ArticlesPageCacheTests
         // Assert
         using (Assert.Multiple())
         {
-            await Assert.That(component.FindAll(".article-card")).HasCount().EqualTo(2);
+            await Assert.That(component.FindAll(".article-card")).Count().IsEqualTo(2);
             await Assert.That(component.Markup).Contains("Cached Article 1");
             await Assert.That(component.Markup).Contains("Cached Article 2");
         }

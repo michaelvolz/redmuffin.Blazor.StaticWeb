@@ -27,7 +27,7 @@ public sealed partial class ArticlesPageCacheTests
         // Assert
         using (Assert.Multiple())
         {
-            await Assert.That(component.FindAll(".article-card")).HasCount().EqualTo(1);
+            await Assert.That(component.FindAll(".article-card")).Count().IsEqualTo(1);
             await Assert.That(component.Markup).Contains("Fallback Article");
         }
     }

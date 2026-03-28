@@ -14,7 +14,7 @@ public sealed partial class RaindropItemExtensionsTests
         var fullItems = prunedItems.ToFull().ToList();
 
         // Assert
-        await Assert.That(fullItems).HasCount().EqualTo(3);
+        await Assert.That(fullItems).Count().IsEqualTo(3);
 
         for (var i = 0; i < prunedItems.Count; i++)
         {
@@ -67,7 +67,7 @@ public sealed partial class RaindropItemExtensionsTests
         var prunedItems = raindropItems.ToPruned().ToList();
 
         // Assert
-        await Assert.That(prunedItems).HasCount().EqualTo(3);
+            await Assert.That(prunedItems).Count().IsEqualTo(3);
 
         for (var i = 0; i < raindropItems.Count; i++)
         {

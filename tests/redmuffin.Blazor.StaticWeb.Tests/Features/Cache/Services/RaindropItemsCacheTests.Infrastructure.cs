@@ -36,8 +36,8 @@ public sealed partial class RaindropItemsCacheTests
         {
             await Assert.That(result1.Status).IsEqualTo(RaindropCacheStatus.Hit);
             await Assert.That(result2.Status).IsEqualTo(RaindropCacheStatus.Hit);
-            await Assert.That(result1.Data).HasCount().EqualTo(2);
-            await Assert.That(result2.Data).HasCount().EqualTo(2);
+            await Assert.That(result1.Data).Count().IsEqualTo(2);
+            await Assert.That(result2.Data).Count().IsEqualTo(2);
         }
     }
 

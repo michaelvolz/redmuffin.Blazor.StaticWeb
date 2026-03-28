@@ -27,7 +27,7 @@ public sealed partial class VideosPageCacheTests
         // Assert
         using (Assert.Multiple())
         {
-            await Assert.That(component.FindAll(".video-card")).HasCount().EqualTo(1);
+            await Assert.That(component.FindAll(".video-card")).Count().IsEqualTo(1);
             await Assert.That(component.Markup).Contains("Fallback Video");
         }
     }
@@ -53,7 +53,7 @@ public sealed partial class VideosPageCacheTests
         // Assert
         using (Assert.Multiple())
         {
-            await Assert.That(component.FindAll(".video-card")).HasCount().EqualTo(2);
+            await Assert.That(component.FindAll(".video-card")).Count().IsEqualTo(2);
             await Assert.That(component.Markup).Contains("Fresh Video 1");
             await Assert.That(component.Markup).Contains("Fresh Video 2");
             // No refresh badge should be visible since we loaded fresh data immediately

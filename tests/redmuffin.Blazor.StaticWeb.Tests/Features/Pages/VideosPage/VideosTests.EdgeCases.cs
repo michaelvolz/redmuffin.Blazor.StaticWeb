@@ -76,6 +76,6 @@ public sealed partial class VideosTests
 
         // Assert
         await Assert.That(component.Find("h1").TextContent).Contains("Programming & AI Video Hub");
-        await Assert.That(component.FindAll(".video-card")).HasCount().EqualTo(0);
+        await Assert.That(component.FindAll(".video-card")).Count().IsEqualTo(0);
     }
 }

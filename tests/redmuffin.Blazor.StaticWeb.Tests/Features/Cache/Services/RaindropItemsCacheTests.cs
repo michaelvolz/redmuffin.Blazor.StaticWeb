@@ -45,7 +45,7 @@ public partial class RaindropItemsCacheTests
         {
             await Assert.That(compressedData).IsNotNull();
             await Assert.That(decompressedData).IsEqualTo(jsonData);
-            await Assert.That(deserializedItems).HasCount().EqualTo(largeTestItems.Count);
+            await Assert.That(deserializedItems).Count().IsEqualTo(largeTestItems.Count);
             await Assert.That(deserializedItems![0].Title).IsEqualTo(largeTestItems[0].Title);
             await Assert.That(compressedData.Length).IsLessThan(jsonData.Length); // Verify compression occurred
         }
@@ -140,6 +140,6 @@ public partial class RaindropItemsCacheTests
         await scope.Cache.SetAsync("videos", testItems, CancellationToken.None).ConfigureAwait(false);
 
         // Assert - Verify no exceptions were thrown
-        await Assert.That(testItems).HasCount().EqualTo(2);
+        await Assert.That(testItems).Count().IsEqualTo(2);
     }
 }

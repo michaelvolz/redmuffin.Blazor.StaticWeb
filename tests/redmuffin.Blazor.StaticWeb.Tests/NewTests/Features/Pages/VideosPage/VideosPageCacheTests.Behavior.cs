@@ -27,7 +27,7 @@ public sealed partial class VideosPageCacheTests
         // Assert
         using (Assert.Multiple())
         {
-            await Assert.That(component.FindAll(".video-card")).HasCount().EqualTo(2);
+            await Assert.That(component.FindAll(".video-card")).Count().IsEqualTo(2);
             await Assert.That(component.Markup).Contains("Cached Video 1");
             await Assert.That(component.Markup).Contains("Cached Video 2");
         }

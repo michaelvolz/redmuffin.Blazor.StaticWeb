@@ -26,7 +26,7 @@ public sealed partial class VideosTests
         await Task.Delay(100).ConfigureAwait(false); // Allow component to update
 
         // Assert
-        await Assert.That(component.FindAll(".video-card")).HasCount().EqualTo(1);
+        await Assert.That(component.FindAll(".video-card")).Count().IsEqualTo(1);
     }
 
     [Test]
@@ -47,7 +47,7 @@ public sealed partial class VideosTests
         await Task.Delay(100).ConfigureAwait(false); // Allow component to update
 
         // Assert
-        await Assert.That(component.FindAll(".video-card")).HasCount().EqualTo(2);
+        await Assert.That(component.FindAll(".video-card")).Count().IsEqualTo(2);
         await Assert.That(component.Markup).Contains("Test Video 1");
         await Assert.That(component.Markup).Contains("Test Video 2");
     }
@@ -72,7 +72,7 @@ public sealed partial class VideosTests
         await image.TriggerEventAsync("onload", EventArgs.Empty).ConfigureAwait(false);
 
         // Assert
-        await Assert.That(component.FindAll(".video-card")).HasCount().EqualTo(1);
+        await Assert.That(component.FindAll(".video-card")).Count().IsEqualTo(1);
     }
 
     [Test]
@@ -94,7 +94,7 @@ public sealed partial class VideosTests
         // Assert - Verify that the underlying services were called
         // Note: These assertions need to be updated to work with the manual mock
         // For now, we'll verify the component rendered successfully
-        await Assert.That(component.FindAll(".video-card")).HasCount().EqualTo(1);
+        await Assert.That(component.FindAll(".video-card")).Count().IsEqualTo(1);
     }
 
     [Test]
@@ -116,6 +116,6 @@ public sealed partial class VideosTests
         await Task.Delay(100).ConfigureAwait(false); // Allow component to update
 
         // Assert
-        await Assert.That(component.FindAll(".video-card")).HasCount().EqualTo(1);
+        await Assert.That(component.FindAll(".video-card")).Count().IsEqualTo(1);
     }
 }

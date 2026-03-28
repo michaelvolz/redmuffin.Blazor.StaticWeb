@@ -20,7 +20,7 @@ public partial class RaindropItemExtensionsTests
         var roundTripItems = prunedItems.ToFull().ToList();
 
         // Assert
-        await Assert.That(roundTripItems).HasCount().EqualTo(originalItems.Count);
+        await Assert.That(roundTripItems).Count().IsEqualTo(originalItems.Count);
 
         for (var i = 0; i < originalItems.Count; i++)
         {
@@ -73,8 +73,8 @@ public partial class RaindropItemExtensionsTests
         // Assert
         await Assert.That(prunedItem.Title).IsEqualTo(longTitle);
         await Assert.That(prunedItem.Excerpt).IsEqualTo(longExcerpt);
-        await Assert.That(prunedItem.Title).HasLength().EqualTo(400);
-        await Assert.That(prunedItem.Excerpt).HasLength().EqualTo(1500);
+        await Assert.That(prunedItem.Title).Length().IsEqualTo(400);
+        await Assert.That(prunedItem.Excerpt).Length().IsEqualTo(1500);
     }
 
     [Test]
