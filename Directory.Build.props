@@ -127,7 +127,7 @@
     <VSThreadingAnalyzersVersion>17.14.15</VSThreadingAnalyzersVersion>
     <RoslynatorVersion>4.13.1</RoslynatorVersion>
     <StyleCopAnalyzersVersion>1.2.0-beta.556</StyleCopAnalyzersVersion>
-    <MicrosoftAspNetCoreComponentsAnalyzersVersion>9.0.6</MicrosoftAspNetCoreComponentsAnalyzersVersion>
+    <MicrosoftAspNetCoreComponentsAnalyzersVersion>10.0.5</MicrosoftAspNetCoreComponentsAnalyzersVersion>
     <AsyncFixerVersion>1.6.0</AsyncFixerVersion>
   </PropertyGroup>
 
