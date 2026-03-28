@@ -4,13 +4,13 @@
   </PropertyGroup>
 
   <PropertyGroup Label="SharedVersions">
-    <MicrosoftExtensionsVersion>9.0.6</MicrosoftExtensionsVersion>
+    <MicrosoftExtensionsVersion>9.0.9</MicrosoftExtensionsVersion>
     <TUnitVersion>0.25.21</TUnitVersion>
     <AzureFunctionsWorkerVersion>2.0.0</AzureFunctionsWorkerVersion>
-    <CoverletVersion>6.0.4</CoverletVersion>
-    <MeziantouAnalyzerVersion>2.0.205</MeziantouAnalyzerVersion>
+    <CoverletVersion>8.0.1</CoverletVersion>
+    <MeziantouAnalyzerVersion>2.0.208</MeziantouAnalyzerVersion>
     <VSThreadingAnalyzersVersion>17.14.15</VSThreadingAnalyzersVersion>
-    <RoslynatorVersion>4.13.1</RoslynatorVersion>
+    <RoslynatorVersion>4.15.0</RoslynatorVersion>
     <StyleCopAnalyzersVersion>1.2.0-beta.556</StyleCopAnalyzersVersion>
     <AsyncFixerVersion>1.6.0</AsyncFixerVersion>
   </PropertyGroup>
@@ -36,7 +36,7 @@
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Core" Version="$(AzureFunctionsWorkerVersion)" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.3.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.0.2" />
-    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.5" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.7" />
     <PackageVersion Include="Microsoft.ApplicationInsights.WorkerService" Version="2.23.0" />
   </ItemGroup>
 
@@ -50,7 +50,7 @@
   </ItemGroup>
 
   <ItemGroup Label="Other">
-    <PackageVersion Include="AngleSharp" Version="1.1.2" />
+    <PackageVersion Include="AngleSharp" Version="1.4.0" />
     <PackageVersion Include="Blazored.LocalStorage" Version="4.5.0" />
     <PackageVersion Include="BuildWebCompiler2022" Version="1.14.15" />
     <PackageVersion Include="LZStringCSharp" Version="1.4.0" />
