@@ -96,7 +96,13 @@ jobs:
           # For pushes, compare with previous commit
           else
             echo "Checking push changes..."
-            CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+            # Handle force pushes - if the previous commit doesn't exist, use HEAD~1
+            if git cat-file -e ${{ github.event.before }} 2>/dev/null; then
+              CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+            else
+              echo "Previous commit not found (force push detected) - comparing with HEAD~1"
+              CHANGED_FILES=$(git diff --name-only HEAD~1 ${{ github.sha }})
+            fi
           fi
 
           # If empty diff (first commit or error), don't skip
