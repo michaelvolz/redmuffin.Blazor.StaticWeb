@@ -7,7 +7,6 @@
     <TUnitVersion>1.22.3</TUnitVersion>
     <AzureFunctionsWorkerVersion>2.0.0</AzureFunctionsWorkerVersion>
     <CoverletVersion>8.0.1</CoverletVersion>
-
     <VSThreadingAnalyzersVersion>17.14.15</VSThreadingAnalyzersVersion>
     <RoslynatorVersion>4.15.0</RoslynatorVersion>
     <StyleCopAnalyzersVersion>1.2.0-beta.556</StyleCopAnalyzersVersion>
