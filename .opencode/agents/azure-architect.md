@@ -1,6 +1,7 @@
 ---
-description: 'Azure Principal Architect - provides expert Azure architecture guidance using WAF principles and Microsoft best practices.'
+description: "Azure Principal Architect - provides expert Azure architecture guidance using WAF principles and Microsoft best practices."
 mode: subagent
+temperature: 0.2
 permission:
   read: allow
   grep: allow

@@ -1,6 +1,7 @@
 ---
-description: 'C#/.NET Janitor - performs code cleanup, modernization, and tech debt remediation.'
+description: "C#/.NET Janitor - performs code cleanup, modernization, and tech debt remediation."
 mode: primary
+temperature: 0.1
 permission:
   edit: allow
   bash: allow

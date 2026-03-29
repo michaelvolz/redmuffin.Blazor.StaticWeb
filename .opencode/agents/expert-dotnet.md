@@ -1,6 +1,7 @@
 ---
-description: 'Expert .NET software engineer providing guidance on modern design patterns, SOLID principles, and best practices.'
+description: "Expert .NET software engineer providing guidance on modern design patterns, SOLID principles, and best practices."
 mode: subagent
+temperature: 0.2
 permission:
   read: allow
   grep: allow
