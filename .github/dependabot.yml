@@ -1,30 +1,74 @@
+# Dependabot configuration
+# Cooldown periods protect against supply chain attacks by waiting for community vetting
+# Security updates bypass cooldown and are applied immediately
+# See: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#cooldown
+
 version: 2
 updates:
+  # NuGet (.NET) dependencies
   - package-ecosystem: nuget
     directory: "/"
     schedule:
-      interval: daily
+      interval: weekly
+      day: monday
       time: "04:00"
     open-pull-requests-limit: 10
+    versioning-strategy: auto
+    # Cooldown: Wait for community vetting before adopting new versions
+    # 7+ days recommended to avoid supply chain attacks (malicious packages typically detected within 24-72 hours)
+    cooldown:
+      default-days: 7
+      semver-major-days: 30 # Major versions: longer wait due to breaking change risk
+      semver-minor-days: 7 # Minor versions: standard 7-day safety window
+      semver-patch-days: 3 # Patch versions: shorter wait for bug fixes
+    labels:
+      - "dependencies"
+      - "dotnet"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    groups:
+      # Group non-major updates to reduce PR noise
+      dotnet-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
+  # Docker dependencies
   - package-ecosystem: docker
     directory: "/.devcontainer"
     schedule:
-      interval: weekly
-      day: monday
+      interval: monthly
       time: "04:00"
     open-pull-requests-limit: 5
+    # Docker doesn't support SemVer cooldown; use default
+    cooldown:
+      default-days: 7
     labels:
       - "dependencies"
       - "docker"
+    commit-message:
+      prefix: "deps(docker)"
 
+  # GitHub Actions
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: weekly
-      day: monday
+      interval: monthly
       time: "04:00"
     open-pull-requests-limit: 10
+    # GitHub Actions doesn't support SemVer cooldown; use default
+    cooldown:
+      default-days: 7
     labels:
       - "dependencies"
       - "github-actions"
+    commit-message:
+      prefix: "deps(actions)"
+    groups:
+      # Group all GitHub Actions updates
+      github-actions:
+        patterns:
+          - "*"
