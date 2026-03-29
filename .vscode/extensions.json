@@ -1,12 +1,15 @@
 {
   "recommendations": [
+    "ms-vscode-remote.remote-containers",
     "ms-azuretools.vscode-azurefunctions",
-    "ms-dotnettools.csharp",
-    "ms-dotnettools.blazorwasm-companion",
     "ms-azuretools.vscode-azurestaticwebapps",
+    "ms-dotnettools.csharp",
     "ms-dotnettools.csdevkit",
+    "ms-dotnettools.blazorwasm-companion",
+    "ms-dotnettools.dotnet-test-explorer",
     "editorconfig.editorconfig",
     "streetsidesoftware.code-spell-checker",
-    "formulahendry.dotnet-test-explorer"
+    "davidanson.vscode-markdownlint",
+    "esbenp.prettier-vscode"
   ]
 }
