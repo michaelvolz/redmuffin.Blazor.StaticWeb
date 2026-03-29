@@ -19,24 +19,34 @@ The assistant must NEVER commit or push without explicit user permission. Push i
 
 ## Types
 
-| Type     | Purpose                                             |
-| -------- | --------------------------------------------------- |
-| feat     | New feature                                         |
-| fix      | Bug fix                                             |
-| docs     | Documentation changes                               |
-| style    | Code style changes (formatting, missing semicolons) |
-| refactor | Code refactoring without changing functionality     |
-| perf     | Performance improvements                            |
-| test     | Adding or updating tests                            |
-| chore    | Maintenance tasks, dependency updates               |
-| security | Security-related changes                            |
-| ci       | CI/CD pipeline changes                              |
-| config   | Configuration changes                               |
-| revert   | Reverting previous commits                          |
+These are the 11 standard types enforced by `@commitlint/config-conventional`
+(based on the Angular convention and commitizen/conventional-commit-types).
+Do NOT use custom types like `config` or `security` — commitlint will reject them.
+Use scopes instead (see below).
+
+| Type     | Purpose                                                 |
+| -------- | ------------------------------------------------------- |
+| feat     | New feature                                             |
+| fix      | Bug fix                                                 |
+| docs     | Documentation only changes                              |
+| style    | Code style changes (formatting, whitespace, semicolons) |
+| refactor | Code change that neither fixes a bug nor adds a feature |
+| perf     | Performance improvements                                |
+| test     | Adding missing tests or correcting existing tests       |
+| build    | Changes to build system or external dependencies        |
+| chore    | Maintenance tasks, project settings, dev tooling        |
+| ci       | CI/CD pipeline changes                                  |
+| revert   | Reverts a previous commit                               |
 
 ## Scopes
 
-blazor, components, pages, api, ui, db, auth, services, models, utils, build, deploy, scripts, skills
+blazor, components, pages, api, ui, db, auth, services, models, utils, build, deploy, scripts, skills, opencode, deps, security
+
+Use scopes to convey domain-specific meaning instead of inventing custom types:
+
+- **Config/tooling changes**: `chore(opencode):`, `chore(build):`, `chore(scripts):`
+- **Security fixes**: `fix(security):` or `chore(deps):` for dependency patches
+- **Dependency updates**: `build(deps):` for production deps, `chore(deps):` for dev deps
 
 ## Breaking Changes
 
@@ -121,7 +131,7 @@ Run the setup script to configure git hooks:
 - Body: Always required, cannot be empty
 - Body must have blank line between title and body
 - Max line length: 100 characters in body
-- Types: Must be from the allowed list
+- Types: Must be one of the 11 allowed types (build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test)
 
 ### Manual Verification
 
