@@ -90,7 +90,7 @@ Suitable for experimentation, learning, and development environments.
 
 - **EditorConfig** - Consistent code style and formatting
 - **Directory.Build.props** - Centralized project configuration
-- **Docker Integration** - Configures MCP servers for AI assistance (GitHub, Fetch, Time, Brave Search, Sequential Thinking servers)
+- **Docker Integration** - Configures MCP servers for AI assistance (Fetch, Time, Brave Search, Sequential Thinking servers)
 - **Azure Static Web Apps** - Deployment and hosting platform
 
 ---
@@ -890,7 +890,6 @@ The development environment includes several **Model Context Protocol (MCP) serv
 
 #### Configured Servers
 
-- **[GitHub MCP Server](https://github.com/github/github-mcp-server)**: Provides access to GitHub repositories and issues (requires Personal Access Token)
 - **[Fetch MCP Server](https://github.com/modelcontextprotocol/servers/tree/main/src/fetch)**: Retrieves web content from URLs, automatically converting HTML to markdown for easier AI consumption
 - **[Time MCP Server](https://github.com/modelcontextprotocol/servers/tree/main/src/time)**: Provides current time and date information
 - **[Context7 MCP Server](https://github.com/upstash/context7)**: Fetches up-to-date documentation for libraries and frameworks via HTTP endpoint
