@@ -115,14 +115,14 @@ This project uses **commitlint** for automated commit message validation.
 
 Install commitlint globally:
 
-```powershell
+```bash
 npm install -g @commitlint/cli
 ```
 
 Run the setup script to configure git hooks:
 
-```powershell
-.\scripts\Setup-GitHooks.ps1
+```bash
+pwsh scripts/Setup-GitHooks.ps1
 ```
 
 ### Validation Rules
@@ -137,18 +137,17 @@ Run the setup script to configure git hooks:
 
 To check a commit message before committing (always include body):
 
-```
-$body = @"
+```bash
+cat <<'EOF' | commitlint
 feat(blazor): your message
 
 Your description here.
-"@
-$body | commitlint
+EOF
 ```
 
 ### Skipping Hooks
 
-```powershell
+```bash
 git commit -m "message" -n  # Skip hooks
 ```
 

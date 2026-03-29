@@ -39,7 +39,7 @@ public partial class UserProfile : ComponentBase
 
 ## Build Commands
 
-```powershell
+```bash
 # Build entire solution
 dotnet build
 
@@ -55,7 +55,7 @@ dotnet clean --verbosity minimal
 
 ## Test Commands
 
-```powershell
+```bash
 # Run all tests
 dotnet test
 
@@ -71,12 +71,12 @@ dotnet test --list-tests
 
 ## Coverage
 
-```powershell
+```bash
 # Generate coverage report
-.\scripts\Generate-CoverageReport.ps1
+pwsh scripts/Generate-CoverageReport.ps1
 
 # View coverage report
-.\scripts\View-CoverageReport.ps1
+pwsh scripts/View-CoverageReport.ps1
 ```
 
 ## Development Build Scripts
@@ -88,9 +88,10 @@ dotnet test --list-tests
 ## Zero Warnings Policy
 
 After any C# file change, run build and fix all warnings except:
+
 - IL2111 (Blazor WebAssembly `App_razor.g.cs` trimming)
 
-```powershell
+```bash
 # Check for warnings
 dotnet build --verbosity quiet
 ```

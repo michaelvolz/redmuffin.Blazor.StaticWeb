@@ -1,12 +1,12 @@
 # Agent Instructions
 
-> **Important**: This repo runs on Windows 11 with PowerShell 7. Always use PowerShell commands (e.g., `dotnet build`, `.\scripts\...`), NOT Unix commands like `bash`, `sh`, or `/bin/*`.
+> **Important**: Use bash-compatible commands in this CLI tool. PowerShell (`.ps1`) scripts are executed via `pwsh scripts/...`. Human-facing documentation uses PowerShell syntax — always convert to bash equivalents when using the bash tool.
 
 ## Build, Lint, and Test Commands
 
 ### Build
 
-```powershell
+```bash
 dotnet build                    # Build entire solution
 dotnet build --no-restore       # Fast build (after restore)
 ```
@@ -17,7 +17,7 @@ dotnet build --no-restore       # Fast build (after restore)
 
 #### All Tests
 
-```powershell
+```bash
 dotnet test                     # Run all tests (258 tests, ~1.4s)
 dotnet test --list-tests       # List all tests
 ```
@@ -46,7 +46,7 @@ Tests are categorized for fast, targeted execution:
 
 **Example workflow:**
 
-```powershell
+```bash
 # 1. Fast smoke test (agentic coding)
 dotnet test -- --treenode-filter "/*/*/*/*[Category=Smoke]"
 
@@ -61,9 +61,9 @@ dotnet test
 
 ### Code Coverage
 
-```powershell
-.\scripts\Generate-CoverageReport.ps1  # Generate coverage report
-.\scripts\View-CoverageReport.ps1       # View unified report
+```bash
+pwsh scripts/Generate-CoverageReport.ps1  # Generate coverage report
+pwsh scripts/View-CoverageReport.ps1       # View unified report
 ```
 
 ### Development Build Scripts
@@ -206,11 +206,11 @@ Always specify ALL parameters explicitly: `_mock.Arrange(f => f.GetAsync("key", 
 4. **File Editing**: Edit one file at a time, track progress
 5. **Large Changes**: Outline plan, get approval, make incremental edits
 6. **Skills**: See `skills/` folder for detailed rules (loaded automatically):
-   - `csharp-standards`, `testing`, `ui-styling`, `dotnet`, `powershell`, `commits`
+   - `csharp-standards`, `testing`, `ui-styling`, `dotnet`, `commits`
 7. **Reference Guides**: `.github/guides/` contains detailed docs
 8. **Never install anything**: ALWAYS ask first (see rule #1)
 9. **NEVER hardcode secrets**: Never recommend putting API keys, tokens, passwords, or any secrets directly into code or config files. Always use one of:
-   - Environment variables (`{env:VAR_NAME}` in opencode.json, `$env:VAR` in PowerShell)
+   - Environment variables (`{env:VAR_NAME}` in opencode.json, `$VAR` or `export VAR=val` in bash, `$env:VAR` in PowerShell)
    - User secrets (`dotnet user-secrets`) for .NET development
    - Azure Key Vault for production
    - `.env` files (gitignored) for local development
