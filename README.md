@@ -58,6 +58,9 @@ Suitable for experimentation, learning, and development environments.
   - [Local Development](#local-development-visual-studio-multi-project-startup)
   - [Azure Functions Integration](#azure-functions-integration)
   - [MCP Server Integration](#mcp-server-integration)
+- [Security Policy](#security-policy)
+  - [Secret Management](#secret-management)
+  - [DevContainer Secrets](#devcontainer-secrets)
 - [Build and Deployment](#build-and-deployment)
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
@@ -930,6 +933,105 @@ Once configured, you can ask your AI assistant to:
 - Fetch MCP Server can access local/internal IP addresses - ensure proper network security policies in corporate environments
 - All servers respect standard web protocols (robots.txt, user-agent settings)
 - Configuration is managed through your AI assistant's settings
+
+---
+
+## Security Policy
+
+> **CRITICAL**: This project follows a **zero-tolerance policy for secrets in files**. The repository MUST NEVER contain a single secret. See [`.devcontainer/SECURITY.md`](.devcontainer/SECURITY.md) for full details.
+
+### Zero Secrets Policy
+
+The repository MUST NEVER contain any secrets, including:
+
+- API keys or tokens
+- Passwords or credentials
+- Database connection strings with credentials
+- Private keys (SSH, GPG, etc.)
+- Session tokens or refresh tokens
+- Any sensitive configuration values
+
+**Even in private repositories**, secrets must never be committed. Automated scanners will find and exploit them within hours.
+
+### Allowed Secret Management Methods
+
+| Method                        | Use Case                 | Syntax                                         |
+| ----------------------------- | ------------------------ | ---------------------------------------------- |
+| **Environment Variables**     | MCP configs, scripts     | `{env:VAR_NAME}` or `${env:VAR}`               |
+| **VS Code Secrets**           | Devcontainer development | Defined in `devcontainer.json` `secrets` block |
+| **GitHub Repository Secrets** | CI/CD pipelines          | `${{ secrets.SECRET_NAME }}`                   |
+| **Azure Key Vault**           | Production deployments   | `az keyvault secret show`                      |
+| **User Secrets**              | Local .NET development   | `dotnet user-secrets`                          |
+
+### MCP Configuration Rules
+
+All MCP configurations must read secrets from environment variables:
+
+```json
+// CORRECT - reads from environment
+"env": { "API_KEY": "${env:API_KEY}" }
+
+// WRONG - hardcoded value (NEVER DO THIS)
+"env": { "API_KEY": "actual_secret_here" }
+```
+
+### DevContainer Secrets
+
+The devcontainer uses VS Code Secrets for secure secret management:
+
+1. **First Start**: VS Code prompts for each secret
+2. **Storage**: Secrets stored in OS credential manager (Keychain, Credential Manager, libsecret)
+3. **Access**: Injected as environment variables inside container only
+4. **Security**: Never written to disk, never in shell history
+
+Required secrets are defined in `.devcontainer/devcontainer.json`:
+
+```json
+{
+  "secrets": {
+    "BRAVE_API_KEY": { "description": "Brave Search API Key" },
+    "CONTEXT7_API_KEY": { "description": "Context7 API Key (optional)" },
+    "RAINDROP_CLIENT_ID": { "description": "Raindrop.io Client ID" },
+    "RAINDROP_CLIENT_SECRET": { "description": "Raindrop.io Client Secret" }
+  }
+}
+```
+
+### GitHub Actions Secrets
+
+For CI/CD, use GitHub Repository Secrets:
+
+```yaml
+# Correct - uses repository secrets
+env:
+  Values__RainDropClientId: ${{ secrets.RAINDROP_CLIENT_ID }}
+
+# Wrong - hardcoded value (NEVER DO THIS)
+env:
+  Values__RainDropClientId: "actual_client_id"
+```
+
+### What To Do If You Expose a Secret
+
+1. **IMMEDIATELY rotate the exposed secret** (generate new key/token)
+2. **Alert the team** about the exposure
+3. **Remove from git history** if committed:
+   ```bash
+   git filter-branch --force --index-filter \
+     'git rm --cached --ignore-unmatch path/to/file' \
+     --prune-empty --tag-name-filter cat -- --all
+   git push origin --force --all
+   ```
+4. **Update all dependent systems** with the new secret
+
+### Security Checklist
+
+Before committing, verify:
+
+- [ ] No API keys, tokens, or secrets in changed files
+- [ ] No `password`, `secret`, `token`, `key`, `credential`, `auth` with visible values
+- [ ] Config files use `${env:VAR}` or `${input:VAR}` syntax only
+- [ ] `.gitignore` includes sensitive file patterns
 
 ---
 

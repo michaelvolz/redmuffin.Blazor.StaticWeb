@@ -190,7 +190,7 @@ Always specify ALL parameters explicitly: `_mock.Arrange(f => f.GetAsync("key", 
 ## Project Structure
 
 - **Frontend**: Blazor WebAssembly (.NET 9) - `src/redmuffin.Blazor.StaticWeb/`
-- **Backend**: Azure Functions (.NET 8) - `src/redmuffin.Blazor.StaticWeb.Api/`
+- **Backend**: Azure Functions (.NET 9) - `src/redmuffin.Blazor.StaticWeb.Api/`
 - **Tests**: `tests/` mirroring source structure
 - **Features**: `src/[Project]/Features/`
 - **PRDs**: `tasks/PRD-XXX-*.md`
@@ -209,12 +209,73 @@ Always specify ALL parameters explicitly: `_mock.Arrange(f => f.GetAsync("key", 
    - `csharp-standards`, `testing`, `ui-styling`, `dotnet`, `commits`
 7. **Reference Guides**: `.github/guides/` contains detailed docs
 8. **Never install anything**: ALWAYS ask first (see rule #1)
-9. **NEVER hardcode secrets**: Never recommend putting API keys, tokens, passwords, or any secrets directly into code or config files. Always use one of:
-   - Environment variables (`{env:VAR_NAME}` in opencode.json, `$VAR` or `export VAR=val` in bash, `$env:VAR` in PowerShell)
-   - User secrets (`dotnet user-secrets`) for .NET development
-   - Azure Key Vault for production
-   - `.env` files (gitignored) for local development
-     If you detect a secret in a file, immediately warn the user and suggest the correct approach.
+
+---
+
+## Security-First Policy (CRITICAL)
+
+This project follows a **zero-tolerance policy for secrets in files**. The repository MUST NEVER contain a single secret.
+
+### Absolute Rules
+
+1. **NEVER commit secrets to git**: API keys, tokens, passwords, credentials, secrets, or any sensitive data must NEVER be in any file in the repository. This includes:
+   - Source code files (`.cs`, `.razor`, `.cshtml`)
+   - Configuration files (`.json`, `.yml`, `.yaml`, `.xml`)
+   - Docker files (`Dockerfile`, `docker-compose.yml`)
+   - Scripts (`.ps1`, `.sh`, `.bash`)
+   - Documentation (`.md`, `.txt`)
+   - Even private repositories are not exempt
+
+2. **NEVER hardcode secrets**: Never write patterns like `"api_key": "value"` or `Token = "secret"` in any file
+
+3. **NEVER suggest file-based secrets**: Do not recommend `.env` files, `appsettings.json` with real values, or any file that stores secrets
+
+### Allowed Secret Management Methods
+
+Always use ONE of these methods for secrets:
+
+| Method                           | Use Case                    | Syntax                                         |
+| -------------------------------- | --------------------------- | ---------------------------------------------- |
+| **Environment Variables**        | MCP configs, devcontainer   | `{env:VAR_NAME}` or `${env:VAR}`               |
+| **VS Code DevContainer Secrets** | Devcontainer development    | Defined in `devcontainer.json` `secrets` block |
+| **VS Code Copilot MCP Inputs**   | VS Code Copilot MCP servers | `${input:secret_id}` with `password: true`     |
+| **GitHub Repository Secrets**    | CI/CD pipelines             | `${{ secrets.SECRET_NAME }}`                   |
+| **Azure Key Vault**              | Production deployments      | `az keyvault secret show`                      |
+| **User Secrets**                 | Local .NET development      | `dotnet user-secrets`                          |
+
+### MCP Configuration Syntax
+
+MCP configs must read secrets from environment variables:
+
+```json
+// CORRECT - reads from environment
+"env": { "API_KEY": "${env:API_KEY}" }
+
+// WRONG - hardcoded value
+"env": { "API_KEY": "actual_secret_here" }
+```
+
+### If You Detect a Secret
+
+If you find ANY secret hardcoded in a file, IMMEDIATELY:
+
+1. Stop all work
+2. Alert the user with URGENT warning
+3. Do NOT continue until the exposed secret is rotated
+4. Assist with cleanup (git history scrubbing if needed)
+
+### Security Checklist
+
+Before ANY commit, verify:
+
+- [ ] No API keys, tokens, or secrets in changed files
+- [ ] No `password`, `secret`, `token`, `key`, `credential`, `auth` with visible values
+- [ ] Config files use `${env:VAR}` or `${input:VAR}` syntax only
+- [ ] `.gitignore` includes sensitive file patterns
+
+### Reference
+
+See `.devcontainer/SECURITY.md` for detailed devcontainer secret management.
 
 ## Web Search Strategy
 
