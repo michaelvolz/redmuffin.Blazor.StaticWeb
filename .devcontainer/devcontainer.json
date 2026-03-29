@@ -1,0 +1,109 @@
+{
+  "name": "redmuffin.Blazor.StaticWeb",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:9.0-ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts",
+      "installTools": false
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "moby": true
+    },
+    "ghcr.io/devcontainers/features/powershell:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers-contrib/features/git-hooks:1": {
+      "version": "latest"
+    }
+  },
+  "secrets": {
+    "BRAVE_API_KEY": {
+      "description": "Brave Search API Key for MCP web search",
+      "documentationUrl": "https://brave.com/search/api/"
+    },
+    "CONTEXT7_API_KEY": {
+      "description": "Context7 API Key for up-to-date library documentation",
+      "documentationUrl": "https://context7.com"
+    },
+    "RAINDROP_CLIENT_ID": {
+      "description": "Raindrop.io OAuth Client ID",
+      "documentationUrl": "https://app.raindrop.io/settings/integrations/developer"
+    },
+    "RAINDROP_CLIENT_SECRET": {
+      "description": "Raindrop.io OAuth Client Secret",
+      "documentationUrl": "https://app.raindrop.io/settings/integrations/developer"
+    }
+  },
+  "forwardPorts": [4280, 5233, 7071],
+  "portsAttributes": {
+    "4280": {
+      "label": "Azure Static Web Apps",
+      "onAutoForward": "openPreview"
+    },
+    "5233": {
+      "label": "Blazor WebAssembly",
+      "onAutoForward": "openPreview"
+    },
+    "7071": {
+      "label": "Azure Functions",
+      "onAutoForward": "silent"
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postStartCommand": "bash .devcontainer/post-start.sh 2>/dev/null || true",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "dotnet.defaultSolution": "redmuffin.Blazor.StaticWeb.sln",
+        "dotnet.debugger.launchJsonSchemaVersion": "1.0.0",
+        "dotnet.server.waitForDebugger": false,
+        "dotnet.tests.useUtmps": true,
+        "azureFunctions.projectSubpath": "src/redmuffin.Blazor.StaticWeb.Api",
+        "azureFunctions.deploySubpath": "src/redmuffin.Blazor.StaticWeb.Api/bin/Release/net9.0/publish",
+        "azureFunctions.projectLanguage": "C#",
+        "azureFunctions.projectRuntime": "~4",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll": "explicit",
+          "source.organizeImports": "explicit"
+        },
+        "files.trimTrailingWhitespace": true,
+        "blazorwasm.trace": "verbose",
+        "security.workspace.trust.enabled": true,
+        "security.workspace.trust.startupPrompt": "never"
+      },
+      "extensions": [
+        "ms-vscode-remote.remote-containers",
+        "ms-azuretools.vscode-azurefunctions",
+        "ms-azuretools.vscode-azurestaticwebapps",
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.blazorwasm-companion",
+        "ms-dotnettools.dotnet-test-explorer",
+        "editorconfig.editorconfig",
+        "streetsidesoftware.code-spell-checker",
+        "davidanson.vscode-markdownlint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  },
+  "remoteEnv": {
+    "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+    "DOTNET_NOLOGO": "1",
+    "NPM_CONFIG_UPDATE_NOTIFIER": "false",
+    "BRAVE_API_KEY": "${secret|BRAVE_API_KEY}",
+    "CONTEXT7_API_KEY": "${secret|CONTEXT7_API_KEY}",
+    "RAINDROP_CLIENT_ID": "${secret|RAINDROP_CLIENT_ID}",
+    "RAINDROP_CLIENT_SECRET": "${secret|RAINDROP_CLIENT_SECRET}"
+  },
+  "remoteUser": "vscode",
+  "containerEnv": {
+    "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+    "DOTNET_NOLOGO": "1",
+    "NPM_CONFIG_UPDATE_NOTIFIER": "false"
+  },
+  "containerUser": "vscode",
+  "securityOpt": ["seccomp=unconfined"],
+  "privileged": true
+}
