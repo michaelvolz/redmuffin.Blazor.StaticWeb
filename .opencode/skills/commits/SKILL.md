@@ -56,6 +56,116 @@ Add `!` after scope:
 feat(api)!: remove deprecated endpoint
 ```
 
+## Commit Strategy
+
+### Single-Purpose Principle
+
+Each commit must address **exactly ONE logical concern**. Never mix unrelated changes:
+
+**WRONG** (mixed concerns):
+
+```
+feat(api): add auth and update docs
+
+Added OAuth2 support and updated README.
+```
+
+**CORRECT** (separate commits):
+
+```
+feat(api): add OAuth2 authentication
+
+Implemented OAuth2 support with token validation.
+docs(readme): update authentication documentation
+
+Added OAuth2 setup instructions to README.
+```
+
+### Commit Ordering
+
+When multiple changes exist, commit in this order:
+
+1. **Infrastructure first** - Config, build, CI/CD changes
+2. **Core functionality** - Features, fixes, refactors
+3. **Dependencies** - Package updates
+4. **Documentation last** - README, docs, guides
+
+Example ordering:
+
+```
+1. chore(build): update project file
+2. feat(api): add new endpoint
+3. test(api): add tests for new endpoint
+4. docs(readme): document new endpoint
+```
+
+### Batching Rules
+
+When multiple files are modified, group by logical purpose:
+
+| Change Type                    | Batch Together | Separate                 |
+| ------------------------------ | -------------- | ------------------------ |
+| Same feature + its tests       | ✅ Yes         |                          |
+| Config change + dependent code | ✅ Yes         |                          |
+| Unrelated features             |                | ❌ No - split            |
+| Code + unrelated docs          |                | ❌ No - split            |
+| Same file type (all .cs files) |                | ❌ No - split by concern |
+| Security fix + unrelated chore |                | ❌ No - split            |
+
+### Analysis Workflow
+
+Before committing, analyze all changes:
+
+1. Run `git diff --name-only` to see all modified files
+2. Group files by logical purpose
+3. Draft commit messages for each group
+4. Verify each commit has ONE purpose
+5. Commit in dependency order
+
+### Example: Multiple File Changes
+
+Files modified: `README.md`, `AGENTS.md`, `devcontainer.json`, `settings.json`, `Dockerfile`
+
+**WRONG approach:**
+
+```
+chore: various updates
+
+Updated multiple files.
+```
+
+**CORRECT approach:**
+
+```
+docs(readme): add security policy section
+
+Added comprehensive security policy documentation covering
+secret management and allowed methods.
+docs(agents): add security-first policy
+
+Added critical security rules to agent instructions
+requiring no secrets in files.
+feat(devcontainer): add VS Code secrets configuration
+
+Configured devcontainer to use VS Code Secrets for
+secure API key management with Docker-in-Docker support.
+fix(vscode): replace deprecated omnisharp settings
+
+Updated to modern dotnet.* settings and added
+devcontainer-specific configurations.
+```
+
+### Scope Selection
+
+Use the most specific scope that accurately describes the commit:
+
+- **vscode**: VS Code configuration changes (settings, extensions, tasks, launch)
+- **devcontainer**: DevContainer configuration
+- **security**: Security-related changes
+- **opencode**: OpenCode configuration
+- **readme**: README-only changes
+- **ci**: GitHub Actions workflows
+
 ## Body (Always Required)
 
 A body is **always required** for all commits. This is enforced by commitlint rules.
