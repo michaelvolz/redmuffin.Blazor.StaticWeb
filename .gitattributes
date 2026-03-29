@@ -5,46 +5,136 @@
 ###############################################################################
 * text=auto eol=lf
 
-# Code files - LF everywhere (Windows, Linux, Mac)
+###############################################################################
+# Text files - LF everywhere (Windows, Linux, Mac)
+###############################################################################
+
+# Source code
 *.cs        text eol=lf
 *.razor     text eol=lf
-*.csproj    text eol=lf
+*.razor.cs  text eol=lf
+
+# Web
 *.css       text eol=lf
 *.scss      text eol=lf
 *.js        text eol=lf
 *.json      text eol=lf
+*.html      text eol=lf
+*.xml       text eol=lf
+
+# Config
 *.yml       text eol=lf
 *.yaml      text eol=lf
-*.html      text eol=lf
+*.editorconfig text eol=lf
+*.gitignore text eol=lf
+*.gitattributes text eol=lf
+
+# Documentation
 *.md        text eol=lf
+*.txt       text eol=lf
 
-# NuGet lock files - don't normalize (auto-generated, line endings irrelevant)
-**/packages.lock.json -text
+# MSBuild - LF (SDK-style projects, works with dotnet CLI and modern VS/Rider)
+*.csproj    text eol=lf
+*.props     text eol=lf
+*.targets   text eol=lf
 
-# PowerShell - LF works cross-platform
+# PowerShell - LF works cross-platform (PowerShell Core)
 *.ps1       text eol=lf
+*.psm1      text eol=lf
+*.psd1      text eol=lf
+
+# Python
+*.py        text eol=lf
+
+###############################################################################
+# CRLF files - Windows-only formats that REQUIRE CRLF
+###############################################################################
 
 # Solution files - Visual Studio requires CRLF
 *.sln       text eol=crlf
 
-###############################################################################
-# Set default behavior for command prompt diff.
-#
-# This is need for earlier builds of msysgit that does not have it on by
-# default for csharp files.
-# Note: This is only used by command line
-###############################################################################
-#*.cs     diff=csharp
+# Visual Studio project types that require CRLF (future-proofing)
+*.vbproj    text eol=crlf
+*.vcxproj   text eol=crlf
+*.vcproj    text eol=crlf
+*.fsproj    text eol=crlf
+*.dbproj    text eol=crlf
+*.sqlproj   text eol=crlf
+*.wixproj   text eol=crlf
+*.lsproj    text eol=crlf
+*.modelproj text eol=crlf
+*.wwaproj   text eol=crlf
+*.xproj     text eol=crlf
+*.vcxitems  text eol=crlf
+*.filters   text eol=crlf
+
+# Windows batch scripts - cmd.exe requires CRLF or commands may break
+*.bat       text eol=crlf
+*.cmd       text eol=crlf
+
+# Windows registry files
+*.reg       text eol=crlf
+
+# Windows script components
+*.ics       text eol=crlf
 
 ###############################################################################
-# Set the merge driver for project and solution files
+# Binary files - must NOT be normalized (line ending conversion corrupts them)
+###############################################################################
+
+# Images
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.ico       binary
+*.webp      binary
+*.bmp       binary
+*.tif       binary
+*.tiff      binary
+*.psd       binary
+*.ai        binary
+*.eps       binary
+
+# SVG - text-based (leave normalized), uncomment next line to treat as binary
+*.svg       text
+*.svgz      binary
+
+# Fonts
+*.ttf       binary
+*.eot       binary
+*.otf       binary
+*.woff      binary
+*.woff2     binary
+
+# Archives
+*.zip       binary
+*.7z        binary
+*.gz        binary
+*.tar       binary
+*.rar       binary
+*.jar       binary
+
+# Executables / libraries
+*.exe       binary
+*.dll       binary
+*.so        binary
+
+# Documents
+*.pdf       binary
+
+###############################################################################
+# NuGet lock files - don't normalize (auto-generated, line endings irrelevant)
+###############################################################################
+**/packages.lock.json -text
+
+###############################################################################
+# Merge drivers for project and solution files
 #
 # Merging from the command prompt will add diff markers to the files if there
 # are conflicts (Merging from VS is not affected by the settings below, in VS
 # the diff markers are never inserted). Diff markers may cause the following
-# file extensions to fail to load in VS. An alternative would be to treat
-# these files as binary and thus will always conflict and require user
-# intervention with every merge. To do so, just uncomment the entries below
+# file extensions to fail to load in VS.
 ###############################################################################
 #*.sln       merge=binary
 #*.csproj    merge=binary
@@ -60,20 +150,7 @@
 #*.wwaproj   merge=binary
 
 ###############################################################################
-# behavior for image files
-#
-# image files are treated as binary by default.
-###############################################################################
-#*.jpg   binary
-#*.png   binary
-#*.gif   binary
-
-###############################################################################
-# diff behavior for common document formats
-#
-# Convert binary document formats to text before diffing them. This feature
-# is only available from the command line. Turn it on by uncommenting the
-# entries below.
+# Diff behavior for common document formats
 ###############################################################################
 #*.doc   diff=astextplain
 #*.DOC   diff=astextplain
