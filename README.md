@@ -38,7 +38,7 @@ Suitable for experimentation, learning, and development environments.
 
 ## Overview
 
-**redmuffin.Blazor.StaticWeb** is a modern full-stack web application built with Blazor WebAssembly (.NET 9) and Azure Functions (.NET 8). The solution provides a performant, maintainable static web application with serverless backend capabilities, featuring OAuth integration and comprehensive testing infrastructure.
+**redmuffin.Blazor.StaticWeb** is a modern full-stack web application built with Blazor WebAssembly (.NET 9) and Azure Functions (.NET 9). The solution provides a performant, maintainable static web application with serverless backend capabilities, featuring OAuth integration and comprehensive testing infrastructure.
 
 ## Table of Contents
 
@@ -69,7 +69,7 @@ Suitable for experimentation, learning, and development environments.
 ### Core Functionality
 
 - **Blazor WebAssembly (.NET 9)** - Client-side execution with modern C# features
-- **Azure Functions (.NET 8)** - Serverless backend with HTTP triggers
+- **Azure Functions (.NET 9)** - Serverless backend with HTTP triggers
 - **Raindrop.io OAuth Integration** - External API integration with secure authentication
 - **Markdown Content Rendering** - Advanced Markdown processing with Markdig
 
@@ -101,8 +101,7 @@ Suitable for experimentation, learning, and development environments.
 
 - **Visual Studio 2022** (17.8 or later) with the following workloads:
   - ASP.NET and web development
-- **.NET 9 SDK** - For Blazor WebAssembly project
-- **.NET 8 SDK** - For Azure Functions project
+- **.NET 9 SDK** - For all projects (Blazor WebAssembly and Azure Functions)
 - **Node.js** (Latest LTS) - Required for Azure Static Web Apps CLI
 
 ### Global Tools
@@ -207,7 +206,7 @@ dotnet test
 
 2. **Verify prerequisites:**
    - Check .NET versions: `dotnet --list-sdks`
-   - Ensure you have .NET 8 and .NET 9 SDKs installed
+   - Ensure you have .NET 9 SDK installed
    - Verify Node.js: `node --version`
    - (Optional) Check Docker: `docker --version` - only needed for MCP server integration
 
@@ -595,7 +594,7 @@ redmuffin.Blazor.StaticWeb/
 │   │   ├── Core/
 │   │   ├── wwwroot/
 │   │   └── Properties/
-│   ├── redmuffin.Blazor.StaticWeb.Api/      # Azure Functions (.NET 8)
+│   ├── redmuffin.Blazor.StaticWeb.Api/      # Azure Functions (.NET 9)
 │   │   ├── Functions/
 │   │   └── Core/
 │   ├── redmuffin.Blazor.StaticWeb.Common/   # Shared utilities
@@ -625,7 +624,7 @@ redmuffin.Blazor.StaticWeb/
 ### Backend Technologies
 
 - **[Azure Functions](https://azure.microsoft.com/en-us/products/functions)**
-  Serverless compute platform running on .NET 8 with HTTP triggers for RESTful API endpoints.
+  Serverless compute platform running on .NET 9 with HTTP triggers for RESTful API endpoints.
 
 - **[Raindrop.io API](https://developer.raindrop.io/)**
   External API integration with OAuth 2.0 authentication for bookmark management functionality.
@@ -870,11 +869,11 @@ This project is licensed under the [Unlicense](https://unlicense.org/).
 
 ## Azure Functions Integration
 
-The API project leverages **Azure Functions with .NET 8 Isolated Worker** to provide serverless compute capabilities. This integration enables scalable and event-driven backend functionality for the Blazor WebAssembly application.
+The API project leverages **Azure Functions with .NET 9 Isolated Worker** to provide serverless compute capabilities. This integration enables scalable and event-driven backend functionality for the Blazor WebAssembly application.
 
 ### Key Features
 
-- **Azure Functions Worker SDK (.NET 8)**: Isolated worker process for better performance and control
+- **Azure Functions Worker SDK (.NET 9)**: Isolated worker process for better performance and control
 - **HTTP Triggers**: RESTful API endpoints with strong typing and dependency injection
 - **OAuth Integration**: Secure token exchange for external API authentication
 - **Dependency Injection**: Full DI container support with `IHttpClientFactory`, `ILogger`, and custom services
