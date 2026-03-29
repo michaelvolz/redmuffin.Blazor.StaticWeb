@@ -12,15 +12,15 @@
       "**/publish/**"
     ]
   },
-  "plugin": ["opencode-snippets"],
+  "plugin": [ "opencode-snippets" ],
   "formatter": {
     "dotnet-format": {
-      "command": ["dotnet", "format", "--include", "$FILE"],
-      "extensions": [".cs", ".razor"]
+      "command": [ "dotnet", "format", "--include", "$FILE" ],
+      "extensions": [ ".cs", ".razor" ]
     },
     "prettier": {
-      "command": ["prettier", "--write", "$FILE"],
-      "extensions": [".scss", ".css", ".json", ".md", ".yml", ".yaml"]
+      "command": [ "prettier", "--write", "$FILE" ],
+      "extensions": [ ".scss", ".css", ".json", ".md", ".yml", ".yaml" ]
     }
   },
   "mcp": {
@@ -53,7 +53,7 @@
     },
     "sequentialthinking": {
       "type": "local",
-      "command": ["docker", "run", "-i", "--rm", "mcp/sequentialthinking"],
+      "command": [ "docker", "run", "-i", "--rm", "mcp/sequentialthinking" ],
       "enabled": true
     },
     "chrome-devtools": {
