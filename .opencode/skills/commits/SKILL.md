@@ -13,6 +13,23 @@ invocable: false
 
 The assistant must NEVER commit or push without explicit user permission. Push is completely disallowed and enforced at the plugin level.
 
+## NuGet Lock Files (packages.lock.json)
+
+This project uses NuGet lock files for deterministic builds. These files are tracked in git and **must always be committed** when they change.
+
+**Rules:**
+
+- Always include `packages.lock.json` files in commits when they are modified
+- These files update automatically when package references change in `.csproj` files
+- Never exclude them from staging when committing dependency changes
+- These files are required for CI/CD caching and reproducible builds
+
+**Locations:**
+
+- `src/**/packages.lock.json`
+- `tests/**/packages.lock.json`
+- `src/SwaLauncher/packages.lock.json`
+
 ## Format
 
 `<type>(<scope>): <description>` (max 72 characters optimally, up to 100 if needed)
@@ -117,10 +134,14 @@ When multiple files are modified, group by logical purpose:
 Before committing, analyze all changes:
 
 1. Run `git diff --name-only` to see all modified files
-2. Group files by logical purpose
-3. Draft commit messages for each group
-4. Verify each commit has ONE purpose
-5. Commit in dependency order
+2. **CRITICAL: Check for `packages.lock.json` changes** - These must ALWAYS be committed
+   - Run `git status` to see if any `packages.lock.json` files are modified
+   - If package references changed, the lock files will update automatically
+   - **Never commit without including updated `packages.lock.json` files**
+3. Group files by logical purpose
+4. Draft commit messages for each group
+5. Verify each commit has ONE purpose
+6. Commit in dependency order
 
 ### Example: Multiple File Changes
 
