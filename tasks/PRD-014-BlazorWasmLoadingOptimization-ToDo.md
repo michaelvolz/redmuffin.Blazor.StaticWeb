@@ -27,18 +27,18 @@ Update the file after completing each sub-task, not just after completing an ent
 
 ## Tasks
 
-- [ ] 0.0 Create feature branch
-  - [ ] 0.1 Create and checkout a new branch: `git checkout -b feature/PRD-014-wasm-loading-optimization`
-  - [ ] 0.2 Verify you're on the new branch: `git branch`
+- [x] 0.0 Create feature branch
+  - [x] 0.1 Create and checkout a new branch: `git checkout -b feature/PRD-014-wasm-loading-optimization`
+  - [x] 0.2 Verify you're on the new branch: `git branch`
 
-- [ ] 1.0 Enable AOT Compilation (FR-001)
-  - [ ] 1.1 Read current `src/redmuffin.Blazor.StaticWeb/redmuffin.Blazor.StaticWeb.csproj`
-  - [ ] 1.2 Add `<RunAOTCompilation>true</RunAOTCompilation>` to the Release configuration PropertyGroup (around line 33)
-  - [ ] 1.3 Save the file
-  - [ ] 1.4 Run Release build to verify: `dotnet build -c Release`
-  - [ ] 1.5 If build fails, check for AOT-related errors and research solutions
-  - [ ] 1.6 Run tests: `dotnet test`
-  - [ ] 1.7 Document: Note the build time increase (AOT compilation takes longer)
+- [x] 1.0 Enable AOT Compilation (FR-001)
+  - [x] 1.1 Read current `src/redmuffin.Blazor.StaticWeb/redmuffin.Blazor.StaticWeb.csproj`
+  - [x] 1.2 Add `<RunAOTCompilation>true</RunAOTCompilation>` to the Release configuration PropertyGroup (around line 33)
+  - [x] 1.3 Save the file
+  - [x] 1.4 Run Release build to verify: `dotnet build -c Release`
+  - [x] 1.5 If build fails, check for AOT-related errors and research solutions
+  - [x] 1.6 Run tests: `dotnet test`
+  - [x] 1.7 Document: Note the build time increase (AOT compilation takes longer)
 
 - [ ] 2.0 Implement Aggressive Trimming (FR-002)
   - [ ] 2.1 Read current `src/redmuffin.Blazor.StaticWeb/redmuffin.Blazor.StaticWeb.csproj`

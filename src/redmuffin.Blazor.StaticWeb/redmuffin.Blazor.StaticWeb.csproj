@@ -31,6 +31,8 @@
     These settings prioritize runtime performance and minimal bundle size
   -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <!-- Enable AOT compilation for better runtime performance and size optimization -->
+    <RunAOTCompilation>true</RunAOTCompilation>
     <!-- Enable WASM SIMD for better runtime performance in production -->
     <WasmEnableSIMD>true</WasmEnableSIMD>
     <!-- Enable trimming to reduce bundle size for production deployment -->
