@@ -2,6 +2,7 @@
 This README is intended for human developers.
 AI assistants should refer to .github/copilot-instructions.md for technical guidelines.
 -->
+<!-- Test comment for PRD-015 - will be removed after testing -->
 
 # redmuffin.Blazor.StaticWeb (preview - alpha)
 
