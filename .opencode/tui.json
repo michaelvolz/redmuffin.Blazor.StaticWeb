@@ -1,0 +1,9 @@
+{
+  "$schema": "https://opencode.ai/tui.json",
+  "keybinds": {
+    "app_exit": "ctrl+d,<leader>q",
+    "input_clear": "ctrl+k",
+    "messages_copy": "ctrl+c",
+    "terminal_suspend": "none"
+  }
+}
