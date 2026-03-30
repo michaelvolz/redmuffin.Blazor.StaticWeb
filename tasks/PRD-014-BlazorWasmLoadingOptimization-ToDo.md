@@ -73,15 +73,15 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 4.7 Test in browser and verify resources are preloaded (check Network tab)
   - [x] 4.8 Run Lighthouse audit and document performance score
 
-- [ ] 5.0 Disable Unnecessary Runtime Features (FR-005)
-  - [ ] 5.1 Read `Directory.Build.props` to review current settings
-  - [ ] 5.2 Add `<BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>` to Release configuration
-  - [ ] 5.3 Add `<EventSourceSupport>false</EventSourceSupport>` to Release configuration
-  - [ ] 5.4 Verify `HttpActivityPropagationSupport` is not explicitly enabled (should be false by default)
-  - [ ] 5.5 Save Directory.Build.props
-  - [ ] 5.6 Build in Release mode: `dotnet build -c Release`
-  - [ ] 5.7 Test application thoroughly to ensure no timezone/EventSource functionality is broken
-  - [ ] 5.8 Document which features were disabled
+- [x] 5.0 Disable Unnecessary Runtime Features (FR-005)
+  - [x] 5.1 Read `Directory.Build.props` to review current settings
+  - [x] 5.2 Add `<BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>` to Release configuration
+  - [x] 5.3 Add `<EventSourceSupport>false</EventSourceSupport>` to Release configuration
+  - [x] 5.4 Add `<HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>` to Release configuration
+  - [x] 5.5 Save Directory.Build.props
+  - [x] 5.6 Build in Release mode: `dotnet build -c Release`
+  - [x] 5.7 Test application thoroughly to ensure no timezone/EventSource functionality is broken
+  - [x] 5.8 Document which features were disabled
 
 - [ ] 6.0 Evaluate and Optimize Dependencies (FR-006)
   - [ ] 6.1 Run `dotnet list src/redmuffin.Blazor.StaticWeb/redmuffin.Blazor.StaticWeb.csproj package --include-transitive`

@@ -67,6 +67,12 @@
     <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
     <!-- Strip IL after AOT compilation for maximum optimization -->
     <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
+    <!-- Disable timezone support to reduce bundle size (application doesn't use timezones) -->
+    <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
+    <!-- Disable EventSource support to reduce bundle size -->
+    <EventSourceSupport>false</EventSourceSupport>
+    <!-- Disable HTTP activity propagation (not using distributed tracing) -->
+    <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
   </PropertyGroup>
 
   <!-- 
