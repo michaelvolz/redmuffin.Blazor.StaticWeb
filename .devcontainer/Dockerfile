@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM mcr.microsoft.com/devcontainers/dotnet:9.0-ubuntu
+FROM mcr.microsoft.com/devcontainers/dotnet:9.0
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
@@ -13,24 +13,16 @@ RUN apt-get update && apt-get -y install --no-install-recommends \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/ubuntu/$(. /etc/os-release && echo $VERSION_CODENAME)/prod $(. /etc/os-release && echo $VERSION_CODENAME) main" > /etc/apt/sources.list.d/dotnet.list \
-    && apt-get update \
-    && apt-get -y install azure-functions-core-tools-4 \
-    && rm -rf /var/lib/apt/lists/*
+# Install dotnet workloads as ROOT (base image has .NET 9 SDK)
+RUN dotnet workload install wasm-tools
 
-RUN npm install -g \
-    @azure/static-web-apps-cli \
-    prettier \
-    @commitlint/cli \
-    @commitlint/config-conventional \
-    chrome-devtools-mcp \
-    --silent \
-    --no-audit \
-    --no-fund
+# Configure dotnet to skip file timestamp checks (fixes bind mount permission issues)
+ENV DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+ENV DOTNET_NOLOGO=1
 
+# Switch to vscode user for the rest
 USER vscode
 
-RUN dotnet tool install --global dotnet-reportgenerator-globaltool --quiet 2>/dev/null || true
+RUN dotnet tool install --global dotnet-reportgenerator-globaltool 2>/dev/null || true
 
 WORKDIR /workspaces/redmuffin.Blazor.StaticWeb
