@@ -15,6 +15,23 @@ To guide an AI assistant in creating a detailed, step-by-step task list in Markd
 - **Location:** `/tasks/`
 - **Filename:** `tasks-[number]-[feature-name].md` (e.g., `tasks-001-user-profile-editing.md`)
 
+### Determining the Task List Number
+
+**CRITICAL:** You MUST determine the next available task list number dynamically:
+
+1. **List existing PRD files:** Run `ls tasks/ | grep -E '^PRD-[0-9]+'` to find all PRD files
+2. **Extract numbers:** Extract the numeric portion from each filename (e.g., PRD-001 → 001, PRD-013 → 013)
+3. **Find highest:** Identify the maximum number currently in use
+4. **Match PRD number:** Use the SAME number as the corresponding PRD file (e.g., if PRD is 014, use tasks-014)
+
+**Example command to find the PRD number:**
+
+```bash
+ls tasks/ | grep -E '^PRD-[0-9]+' | sed 's/PRD-\([0-9]*\).*/\1/' | sort -n | tail -1
+```
+
+The task list number must match the PRD number it corresponds to. Always use 3-digit format with leading zeros (001, 013, 042, etc.).
+
 ## Process
 
 1.  **Receive Requirements:** The user provides a feature request, task description, or points to existing documentation
@@ -25,6 +42,8 @@ To guide an AI assistant in creating a detailed, step-by-step task list in Markd
 6.  **Identify Relevant Files:** Based on the tasks and requirements, identify potential files that will need to be created or modified. List these under the `Relevant Files` section, including corresponding test files if applicable.
 7.  **Generate Final Output:** Combine the parent tasks, sub-tasks, relevant files, and notes into the final Markdown structure.
 8.  **Save Task List:** Save the generated document in the `/tasks/` directory with the filename `tasks-[number]-[feature-name].md`, where `[number]` is the PRD number and `[feature-name]` describes the main feature (e.g., if the request was about user profile editing, the output is `tasks-001-user-profile-editing.md`).
+
+    **IMPORTANT:** Before saving, determine the correct number by finding the highest existing PRD number in `/tasks/` and using that same number (since task lists correspond to their PRDs).
 
 ## Output Format
 

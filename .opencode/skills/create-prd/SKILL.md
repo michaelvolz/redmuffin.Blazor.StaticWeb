@@ -79,6 +79,23 @@ Assume the primary reader of the PRD is a **junior developer**. Therefore, requi
 - **Location:** `/tasks/`
 - **Filename:** `prd-[number]-[feature-name].md` (e.g., `prd-001-user-authentication.md`)
 
+### Determining the PRD Number
+
+**CRITICAL:** You MUST determine the next available PRD number dynamically:
+
+1. **List existing PRD files:** Run `ls tasks/ | grep -E '^PRD-[0-9]+'` to find all PRD files
+2. **Extract numbers:** Extract the numeric portion from each filename (e.g., PRD-001 → 001, PRD-013 → 013)
+3. **Find highest:** Identify the maximum number currently in use
+4. **Use next number:** Increment by 1 to get the new PRD number (e.g., if highest is 013, use 014)
+
+**Example command to find next number:**
+
+```bash
+ls tasks/ | grep -E '^PRD-[0-9]+' | sed 's/PRD-\([0-9]*\).*/\1/' | sort -n | tail -1
+```
+
+Then add 1 to get the next available number. Always use 3-digit format with leading zeros (001, 013, 042, etc.).
+
 ## Final instructions
 
 1. Do NOT start implementing the PRD
