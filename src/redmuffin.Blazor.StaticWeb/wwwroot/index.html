@@ -7,6 +7,9 @@
     <title>redmuffin</title>
     <base href="/"/>
     <link href="favicon.png" rel="icon" type="image/png"/>
+    <!-- Preload critical CSS files for faster rendering -->
+    <link rel="preload" href="css/foundation-root.min.css" as="style">
+    <link rel="preload" href="css/app.min.css" as="style">
     <link href="css/foundation-root.min.css" rel="stylesheet"/>
     <link href="css/app.min.css" rel="stylesheet"/>
     <!-- Resource hints for performance optimization -->
@@ -18,6 +21,8 @@
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css" integrity="sha512-9xKTRVabjVeZmc+GUW8GgSmcREDunMM+Dt/GrzchfN8tkwHizc5RP4Ok/MXFFy5rIjJjzhndFScTceq5e6GvVQ==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <!-- Preload Blazor WebAssembly runtime for faster startup -->
+    <link rel="preload" href="_framework/blazor.webassembly.js" as="script" crossorigin="anonymous">
     <!-- Add the media query debugger CSS below the main stylesheets -->
     <link href="css/media-query-debugger.min.css" rel="stylesheet"/>
     <script>

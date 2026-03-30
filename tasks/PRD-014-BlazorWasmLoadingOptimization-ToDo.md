@@ -63,15 +63,15 @@ Update the file after completing each sub-task, not just after completing an ent
   - [ ] 3.8 Test error handling when lazy loading fails
   - [ ] 3.9 Verify initial bundle size is reduced
 
-- [ ] 4.0 Optimize Resource Loading (FR-004)
-  - [ ] 4.1 Read `src/redmuffin.Blazor.StaticWeb/wwwroot/index.html`
-  - [ ] 4.2 Add `<link rel="preload">` for critical CSS files (foundation-root.min.css, app.min.css)
-  - [ ] 4.3 Add `<link rel="preload">` for blazor.webassembly.js
-  - [ ] 4.4 Add `<link rel="prefetch">` for non-critical resources (font files, external scripts)
-  - [ ] 4.5 Verify proper `crossorigin` attributes are set for external resources
-  - [ ] 4.6 Save index.html
-  - [ ] 4.7 Test in browser and verify resources are preloaded (check Network tab)
-  - [ ] 4.8 Run Lighthouse audit and document performance score
+- [x] 4.0 Optimize Resource Loading (FR-004)
+  - [x] 4.1 Read `src/redmuffin.Blazor.StaticWeb/wwwroot/index.html`
+  - [x] 4.2 Add `<link rel="preload">` for critical CSS files (foundation-root.min.css, app.min.css)
+  - [x] 4.3 Add `<link rel="preload">` for blazor.webassembly.js
+  - [x] 4.4 Add `<link rel="prefetch">` for non-critical resources (font files, external scripts)
+  - [x] 4.5 Verify proper `crossorigin` attributes are set for external resources
+  - [x] 4.6 Save index.html
+  - [x] 4.7 Test in browser and verify resources are preloaded (check Network tab)
+  - [x] 4.8 Run Lighthouse audit and document performance score
 
 - [ ] 5.0 Disable Unnecessary Runtime Features (FR-005)
   - [ ] 5.1 Read `Directory.Build.props` to review current settings
