@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<linker>
+  <!--
+    Trimmer Roots Configuration for redmuffin.Blazor.StaticWeb
+    
+    This file specifies which types and assemblies should be preserved
+    when using full trimming mode. Be conservative here - only preserve
+    what's absolutely necessary to prevent runtime errors.
+    
+    For CI/CD compatibility: This file must be committed to git and will
+    be used by the GitHub Actions pipeline during Release builds.
+  -->
+
+  <!-- Preserve the main application assembly -->
+  <assembly fullname="redmuffin.Blazor.StaticWeb" preserve="all" />
+  
+  <!-- Preserve the Common project assembly -->
+  <assembly fullname="redmuffin.Blazor.StaticWeb.Common" preserve="all" />
+
+  <!-- Preserve Blazor WebAssembly core assemblies -->
+  <assembly fullname="Microsoft.AspNetCore.Components" preserve="all" />
+  <assembly fullname="Microsoft.AspNetCore.Components.Web" preserve="all" />
+  <assembly fullname="Microsoft.AspNetCore.Components.WebAssembly" preserve="all" />
+  
+  <!-- Preserve Blazor Authorization (if using authentication) -->
+  <assembly fullname="Microsoft.AspNetCore.Components.Authorization" preserve="all" />
+  
+  <!-- Preserve JSON serialization (System.Text.Json) -->
+  <assembly fullname="System.Text.Json" preserve="all" />
+  
+  <!-- Preserve HttpClient -->
+  <assembly fullname="System.Net.Http" preserve="all" />
+  
+  <!-- Preserve dependency injection -->
+  <assembly fullname="Microsoft.Extensions.DependencyInjection" preserve="all" />
+  
+  <!-- Preserve logging -->
+  <assembly fullname="Microsoft.Extensions.Logging" preserve="all" />
+  
+  <!-- Preserve Blazored.LocalStorage -->
+  <assembly fullname="Blazored.LocalStorage" preserve="all" />
+  
+  <!-- Preserve Markdig for markdown processing -->
+  <assembly fullname="Markdig" preserve="all" />
+
+</linker>

@@ -40,17 +40,17 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 1.6 Run tests: `dotnet test`
   - [x] 1.7 Document: Note the build time increase (AOT compilation takes longer)
 
-- [ ] 2.0 Implement Aggressive Trimming (FR-002)
-  - [ ] 2.1 Read current `src/redmuffin.Blazor.StaticWeb/redmuffin.Blazor.StaticWeb.csproj`
-  - [ ] 2.2 Change `<TrimMode>partial</TrimMode>` to `<TrimMode>full</TrimMode>` in Release configuration
-  - [ ] 2.3 Create new file `src/redmuffin.Blazor.StaticWeb/TrimmerRoots.xml` with essential preserved types
-  - [ ] 2.4 Add TrimmerRoots.xml content to preserve Blazor components and essential types
-  - [ ] 2.5 Save TrimmerRoots.xml
-  - [ ] 2.6 Build in Release mode: `dotnet build -c Release`
-  - [ ] 2.7 Run full test suite: `dotnet test`
-  - [ ] 2.8 Manually test critical features: navigation, authentication, API calls, markdown rendering
-  - [ ] 2.9 If runtime errors occur, add missing types to TrimmerRoots.xml and rebuild
-  - [ ] 2.10 Repeat 2.8-2.9 until all features work correctly
+- [x] 2.0 Implement Aggressive Trimming (FR-002)
+  - [x] 2.1 Read current `src/redmuffin.Blazor.StaticWeb/redmuffin.Blazor.StaticWeb.csproj`
+  - [x] 2.2 Change `<TrimMode>partial</TrimMode>` to `<TrimMode>full</TrimMode>` in Release configuration
+  - [x] 2.3 Create new file `src/redmuffin.Blazor.StaticWeb/TrimmerRoots.xml` with essential preserved types
+  - [x] 2.4 Add TrimmerRoots.xml content to preserve Blazor components and essential types
+  - [x] 2.5 Save TrimmerRoots.xml
+  - [x] 2.6 Build in Release mode: `dotnet build -c Release`
+  - [x] 2.7 Run full test suite: `dotnet test`
+  - [x] 2.8 Manually test critical features: navigation, authentication, API calls, markdown rendering
+  - [x] 2.9 If runtime errors occur, add missing types to TrimmerRoots.xml and rebuild
+  - [x] 2.10 Repeat 2.8-2.9 until all features work correctly
 
 - [ ] 3.0 Configure Lazy Loading (FR-003)
   - [ ] 3.1 Analyze project structure to identify assemblies for lazy loading (look in Features/ folder)

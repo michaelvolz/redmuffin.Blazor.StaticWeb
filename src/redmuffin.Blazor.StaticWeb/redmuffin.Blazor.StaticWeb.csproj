@@ -37,8 +37,10 @@
     <WasmEnableSIMD>true</WasmEnableSIMD>
     <!-- Enable trimming to reduce bundle size for production deployment -->
     <PublishTrimmed>true</PublishTrimmed>
-    <!-- Use partial trimming mode for balance between size and compatibility -->
-    <TrimMode>partial</TrimMode>
+    <!-- Use full trimming mode for maximum size reduction -->
+    <TrimMode>full</TrimMode>
+    <!-- Specify trimmer descriptor to preserve essential types -->
+    <TrimmerRootDescriptor>TrimmerRoots.xml</TrimmerRootDescriptor>
   </PropertyGroup>
 
   <ItemGroup>
