@@ -148,11 +148,62 @@ jobs:
           echo "✅ All tests passed! Proceeding with build and deployment."
 
       # BUILD AND DEPLOY PHASE: Only runs if tests pass
-      # Note: Using Azure/static-web-apps-deploy action instead of SWA CLI
-      # This allows skip_app_build: true to preserve pre-compressed Brotli files
+      - name: Setup Node.js for Azure Static Web Apps CLI
+        uses: actions/setup-node@v6
+        with:
+          node-version: "18"
 
-      - name: Build Blazor WebAssembly Application
+      # Cache npm for faster CLI installation
+      - name: Cache npm
+        uses: actions/cache@v5
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-swa-cli-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-swa-cli-
+            ${{ runner.os }}-npm-
+
+      # Install Azure Static Web Apps CLI (with caching)
+      - name: Install Azure Static Web Apps CLI
         run: |
+          echo "📦 Installing Azure Static Web Apps CLI..."
+          # Check if already installed
+          if command -v swa &> /dev/null; then
+            echo "✅ SWA CLI already available: $(swa --version)"
+          else
+            echo "Installing SWA CLI..."
+            npm install -g @azure/static-web-apps-cli --silent --no-audit --no-fund
+            echo "✅ Azure Static Web Apps CLI installed successfully"
+          fi
+
+      - name: Build and Deploy to Azure Static Web Apps
+        env:
+          AZURE_STATIC_WEB_APPS_API_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_CLIFF_0945BE603 }}
+        run: |
+          # 🚀 OPTIMIZED AZURE STATIC WEB APPS DEPLOYMENT
+          # Benefits of this optimized approach:
+          # ✅ Single job reduces runner overhead and speeds up pipeline
+          # ✅ Tests run first for fast failure (fail-fast principle)
+          # ✅ No duplicate .NET setup, checkout, or dependency restoration
+          # ✅ Shared environment and context between test and deploy phases
+          # ✅ No local.settings.json file creation - uses environment variables directly
+
+          set -e  # Exit on any error
+
+          echo "🔍 Environment Information:"
+          echo "Working Directory: $(pwd)"
+          echo "Node Version: $(node --version)"
+          echo "NPM Version: $(npm --version)"
+          echo ".NET Version: $(dotnet --version)"
+          echo "SWA CLI Version: $(swa --version)"
+
+          echo ""
+          echo "📁 Project Structure:"
+          echo "App Location: ${{ env.APP_LOCATION }}"
+          echo "API Location: ${{ env.API_LOCATION }}"
+          echo "Output Location: ${{ env.APP_ARTIFACT_LOCATION }}"
+
+          echo ""
           echo "🏗️ Building Blazor WebAssembly Application..."
           # Build with optimizations for production deployment
           dotnet publish ${{ env.APP_LOCATION }} \
@@ -163,8 +214,7 @@ jobs:
             --verbosity quiet \
             --nologo
 
-      - name: Build Azure Functions API
-        run: |
+          echo ""
           echo "⚡ Building Azure Functions API..."
           dotnet publish ${{ env.API_LOCATION }} \
             -c Release \
@@ -174,40 +224,35 @@ jobs:
             --verbosity quiet \
             --nologo
 
-      - name: Verify Brotli compression files exist
-        run: |
-          echo "🔍 Verifying Brotli compressed files..."
-          PUBLISH_WWWROOT="${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot"
-          if find "$PUBLISH_WWWROOT" -name "*.br" | grep -q .; then
-            echo "✅ Brotli files found"
-            echo "Sample Brotli files:"
-            find "$PUBLISH_WWWROOT" -name "*.br" | head -10
-            echo ""
-            echo "File count:"
-            echo "  .br files: $(find $PUBLISH_WWWROOT -name "*.br" | wc -l)"
-            echo "  .gz files: $(find $PUBLISH_WWWROOT -name "*.gz" | wc -l)"
-          else
-            echo "❌ No Brotli files found - build may not have compression enabled"
-            exit 1
-          fi
+          echo ""
+          echo "🔍 Verifying Build Output Structure..."
+          echo "Blazor app output:"
+          ls -la ${{ env.APP_LOCATION }}/bin/Release/publish/ | head -5
+          echo ""
+          echo "Looking for wwwroot in Blazor output:"
+          find ${{ env.APP_LOCATION }}/bin/Release/publish/ -name "wwwroot" -type d || echo "No wwwroot directory found"
+          echo ""
+          echo "API output:"
+          ls -la ${{ env.API_LOCATION }}/bin/Release/publish/ | head -5
 
-      - name: Deploy to Azure Static Web Apps
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_CLIFF_0945BE603 }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          action: "upload"
-          app_location: "src/redmuffin.Blazor.StaticWeb/bin/Release/publish/wwwroot"
-          api_location: "src/redmuffin.Blazor.StaticWeb.Api/bin/Release/publish"
-          output_location: "" # Empty because app is pre-built
-          skip_app_build: true # Critical: prevents Oryx rebuild and preserves Brotli files
+          echo ""
+          echo "📦 Deploying to Azure Static Web Apps..."
+          # FIXED: Use explicit parameters to override swa-cli.config.json
+          # The explicit --app-location, --api-location, and --output-location parameters
+          # should take precedence over the config file settings
+          swa deploy \
+            --app-location ${{ env.APP_LOCATION }}/bin/Release/publish \
+            --api-location ${{ env.API_LOCATION }}/bin/Release/publish \
+            --output-location ${{ env.APP_ARTIFACT_LOCATION }} \
+            --deployment-token $AZURE_STATIC_WEB_APPS_API_TOKEN \
+            --env production \
+            --no-use-keychain \
+            --print-config
 
-      - name: Deployment Summary
-        run: |
+          echo ""
           echo "✅ Pipeline completed successfully!"
           echo "🧪 Tests passed, build succeeded, deployment completed"
           echo "🌐 Your Blazor WebAssembly app is now live on Azure Static Web Apps"
-          echo "📦 Brotli compression preserved - smaller file sizes for faster loading"
 
       # Health check after deployment
       - name: Verify deployment health
@@ -222,20 +267,6 @@ jobs:
           else
             echo "⚠️ Site may not be fully ready yet - this is normal for new deployments"
             echo "ℹ️  You can manually verify at: https://redmuffin.net"
-          fi
-
-          echo ""
-          echo "🔍 Verifying Brotli compression..."
-          # Check if the server is serving Brotli compressed files
-          CONTENT_ENCODING=$(curl -s -I -H "Accept-Encoding: br" \
-            "https://redmuffin.net/_framework/dotnet.wasm" 2>/dev/null | \
-            grep -i "content-encoding:" | awk '{print $2}' | tr -d '\r')
-
-          if [ "$CONTENT_ENCODING" = "br" ]; then
-            echo "✅ Brotli compression verified - files are being served with content-encoding: br"
-          else
-            echo "⚠️ Brotli encoding not detected (content-encoding: $CONTENT_ENCODING)"
-            echo "ℹ️  This may be normal immediately after deployment - compression may take a moment to activate"
           fi
 
   # JOB: Handle documentation-only changes (skipped deployment)

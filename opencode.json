@@ -58,7 +58,12 @@
     },
     "chrome-devtools": {
       "type": "local",
-      "command": ["npx", "chrome-devtools-mcp", "--isolated"]
+      "command": [
+        "npx",
+        "chrome-devtools-mcp",
+        "--executablePath",
+        "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe"
+      ]
     }
   },
   "tools": {
