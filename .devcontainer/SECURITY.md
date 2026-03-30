@@ -232,14 +232,24 @@ dotnet user-secrets clear
 │  │  │  - RAINDROP_CLIENT_ID                            │ │  │
 │  │  │  - RAINDROP_CLIENT_SECRET                        │ │  │
 │  │  └─────────────────────────────────────────────────┘ │  │
+│  │                            │                           │  │
+│  │  ┌────────────────────────┴───────────────────────┐  │  │
+│  │  │  ~/.ssh (read-only mount)                        │  │  │
+│  │  │  - Only for git authentication                   │  │  │
+│  │  │  - Container CANNOT write to this                 │  │  │
+│  │  └─────────────────────────────────────────────────┘ │  │
 │  └───────────────────────────────────────────────────────┘  │
 │                            │                                 │
-│                            │ (SSH tunnel, not files)         │
-│                            ▼                                 │
+│                            ▼ (environment variables only)    │
 │  ┌───────────────────────────────────────────────────────┐  │
-│  │              DevContainer (Ubuntu)                      │  │
+│  │              DevContainer (Ubuntu) Volume              │  │
 │  │  ┌─────────────────────────────────────────────────┐ │  │
-│  │  │  Environment Variables (In-Memory Only)           │ │  │
+│  │  │  Repository (cloned inside container)            │ │  │
+│  │  │  - NO access to Windows filesystem               │ │  │
+│  │  │  - Volume persists across sessions               │ │  │
+│  │  └─────────────────────────────────────────────────┘ │  │
+│  │  ┌─────────────────────────────────────────────────┐ │  │
+│  │  │  Environment Variables (In-Memory Only)         │ │  │
 │  │  │  - $BRAVE_API_KEY                                │ │  │
 │  │  │  - $RAINDROP_CLIENT_ID                           │ │  │
 │  │  └─────────────────────────────────────────────────┘ │  │
@@ -255,6 +265,11 @@ dotnet user-secrets clear
 
 ### Security Properties
 
+- **Total Windows isolation**: Workspace in Docker volume, NOT bind-mounted
+- **Standalone devcontainer.json**: No docker-compose needed - uses Dev Container spec
+- **Folder-based volume naming**: `${localWorkspaceFolderBasename}` creates unique volumes per repo
+- **Repository cloned inside**: opencode cannot access any Windows files
+- **SSH keys read-only**: Container can read keys but cannot modify them
 - **Secrets never touch disk**: Environment variables are in-memory only
 - **Isolation**: Each MCP server gets only the secrets it needs
 - **No persistence**: Container restart clears all secret values

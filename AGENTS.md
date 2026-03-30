@@ -2,6 +2,67 @@
 
 > **Important**: Use bash-compatible commands in this CLI tool. PowerShell (`.ps1`) scripts are executed via `pwsh scripts/...`. Human-facing documentation uses PowerShell syntax — always convert to bash equivalents when using the bash tool.
 
+---
+
+## Research-First Imperative (MANDATORY)
+
+**Before implementing ANY non-trivial solution, you MUST research first. NEVER guess, experiment, or iterate blindly.**
+
+### Loop Detection - STOP Immediately If:
+
+- You make 2+ file edits on the same problem without testing → STOP, use brave_web_search
+- You're about to "try" something you're not 100% certain about → STOP, use brave_web_search
+- You use words like: "maybe", "perhaps", "let's try", "I think", "probably" → STOP, use brave_web_search
+- You see the same error message twice → STOP, escalate to user
+- You're modifying code without reading documentation first → STOP, use Context7
+- You feel stuck or unsure what to do next → STOP, escalate to user
+
+### The Research Mandate
+
+**Before ANY implementation, you MUST answer:**
+
+1. "What is the canonical way to solve this?" (find official docs)
+2. "Has someone else solved this exact problem?" (search GitHub/SO)
+3. "What does the official documentation say?" (Context7 for APIs)
+
+**If you cannot answer all 3, STOP. Do not proceed.**
+
+### The 15-Minute Rule
+
+- **First 15 minutes:** Research ONLY. Zero code changes.
+- **After 15 minutes:** You may implement ONLY if you found authoritative guidance
+- **If no authoritative source found:** Escalate to user with research summary
+
+### Anti-Pattern Recognition
+
+If you catch yourself thinking or saying:
+
+- ❌ "Let me try..." → **STOP and use brave_web_search**
+- ❌ "Maybe this will work..." → **STOP and use brave_web_search**
+- ❌ "I'll just test this..." → **STOP and use brave_web_search**
+- ❌ Making the same change twice → **STOP and use brave_web_search**
+- ❌ "I think the API is..." → **STOP and use Context7**
+
+### Verification Checklist
+
+Before submitting ANY solution, confirm:
+
+- [ ] I consulted at least one authoritative source (official docs, Context7, reputable GitHub/Stack Overflow)
+- [ ] I can cite the documentation/reference I used
+- [ ] I didn't "experiment" or "guess" to find this solution
+- [ ] If this fails, I know where to look next (not guess)
+
+### When Research Fails
+
+If after 15 minutes of quality research you have no answer:
+
+1. Document what you searched for
+2. Document what you found (and why it didn't help)
+3. Present findings to user BEFORE attempting a solution
+4. Ask: "Should I research differently, or is experimentation acceptable here?"
+
+---
+
 ## Build, Lint, and Test Commands
 
 ### Build
@@ -277,6 +338,8 @@ Before ANY commit, verify:
 
 See `.devcontainer/SECURITY.md` for detailed devcontainer secret management.
 
+---
+
 ## Web Search Strategy
 
 This project has four search/discovery tools. Use the right one for the job:
@@ -293,7 +356,7 @@ For complex problems that require careful reasoning, multi-step planning, or exp
 - Any time you're writing code that uses an external library or framework
 - .NET, Blazor, NuGet packages, JavaScript frameworks
 - Fetches version-specific API docs and code examples — prevents hallucinated APIs
-- Tools: `resolve-library-id` → `get-library-docs`
+- Tools: `resolve-library-id` → `query-docs`
 
 ### Brave (`brave_web_search`) → Default for general web search
 
@@ -301,7 +364,7 @@ For complex problems that require careful reasoning, multi-step planning, or exp
 - Current events, version changelogs, blog posts, tutorials
 - When you need factual information from the web
 
-### Exa (`websearch`) → Semantic/discovery search
+### websearch → Semantic/discovery search
 
 - Vague/conceptual queries: "find a library that does X", "similar to this"
 - Finding "hidden gem" content that keyword search misses
@@ -310,9 +373,9 @@ For complex problems that require careful reasoning, multi-step planning, or exp
 
 ### Decision Rule
 
-1. Is it about a library/framework API? → **Context7**
-2. Is it a keyword-specific query (error, "how to", specific topic)? → **Brave**
-3. Is it vague/conceptual? → **Exa**
+1. Is it about a library/framework API? → **Context7** (`resolve-library-id` → `query-docs`)
+2. Is it a keyword-specific query (error, "how to", specific topic)? → **brave_web_search**
+3. Is it vague/conceptual? → **websearch**
 
 ---
 

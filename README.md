@@ -46,7 +46,15 @@ Suitable for experimentation, learning, and development environments.
 - [Overview](#overview)
 - [Features](#features)
 - [Prerequisites](#prerequisites)
+  - [For DevContainer Development (Recommended)](#for-devcontainer-development-recommended)
+  - [For Local Development](#for-local-development)
+- [Development Environment](#development-environment)
+  - [Option 1: DevContainer (Recommended)](#option-1-devcontainer-recommended)
+  - [Option 2: Local Development](#option-2-local-development)
+  - [PowerShell Helper Scripts](#powershell-helper-scripts)
 - [Getting Started](#getting-started)
+  - [DevContainer Workflow (Recommended)](#devcontainer-workflow-recommended)
+  - [Local Development Workflow](#local-development-workflow)
 - [Development Workflow](#development-workflow)
   - [Trunk-Based Development](#trunk-based-development)
   - [Test-Driven Development (TDD)](#test-driven-development-tdd)
@@ -55,6 +63,8 @@ Suitable for experimentation, learning, and development environments.
 - [Project Structure](#project-structure)
 - [Technology Stack](#technology-stack)
 - [Development Tools](#development-tools)
+  - [Container Infrastructure](#container-infrastructure)
+  - [Docker for MCP Servers](#docker-for-mcp-servers)
   - [Local Development](#local-development-visual-studio-multi-project-startup)
   - [Azure Functions Integration](#azure-functions-integration)
   - [MCP Server Integration](#mcp-server-integration)
@@ -93,6 +103,7 @@ Suitable for experimentation, learning, and development environments.
 
 - **EditorConfig** - Consistent code style and formatting
 - **Directory.Build.props** - Centralized project configuration
+- **DevContainer** - Secure development environment with VS Code Secrets
 - **Docker Integration** - Configures MCP servers for AI assistance (Fetch, Time, Brave Search, Sequential Thinking servers)
 - **Azure Static Web Apps** - Deployment and hosting platform
 
@@ -100,16 +111,62 @@ Suitable for experimentation, learning, and development environments.
 
 ## Prerequisites
 
-### Required Software
+### For DevContainer Development (Recommended)
 
-- **Visual Studio 2022** (17.8 or later) with the following workloads:
-  - ASP.NET and web development
-- **.NET 9 SDK** - For all projects (Blazor WebAssembly and Azure Functions)
-- **Node.js** (Latest LTS) - Required for Azure Static Web Apps CLI
+- **Docker Desktop** with WSL2 backend
+  - [Download Docker Desktop](https://www.docker.com/products/docker-desktop)
+  - Enable WSL2 integration in Docker Desktop settings
+- **Node.js** (Latest LTS) - Required for DevContainer CLI
+- **DevContainer CLI**: `npm install -g @devcontainers/cli`
+- **PowerShell** 5.1+ or PowerShell Core
+- **SSH Keys** for GitHub authentication (see below)
+
+#### SSH Key Setup (Required)
+
+You need SSH keys configured for Git operations inside the devcontainer:
+
+1. **Check if you have SSH keys:**
+
+   ```powershell
+   ls $HOME\.ssh\id_*
+   ```
+
+2. **Generate keys if needed:**
+
+   ```powershell
+   ssh-keygen -t ed25519 -C "your-email@example.com"
+   ```
+
+3. **Add to GitHub:**
+   - Copy public key: `Get-Content $HOME\.ssh\id_ed25519.pub | Set-Clipboard`
+   - Go to https://github.com/settings/keys
+   - Click "New SSH key" and paste
+
+4. **Test connection:**
+   ```powershell
+   ssh -T git@github.com
+   ```
+
+The devcontainer will automatically mount your `.ssh` directory and configure SSH authentication. See [docs/SSH-AGENT-SETUP.md](docs/SSH-AGENT-SETUP.md) for complete details.
+
+### For Local Development
+
+Use only if you cannot run Docker. Note: Manual secret management required.
+
+- **Visual Studio 2026 (Community)**
+- **.NET 9 SDK** - For all projects
+- **Node.js** (Latest LTS)
 
 ### Global Tools
 
 #### Node.js Tools (npm)
+
+- **DevContainer CLI** (Required for DevContainer development)
+  Enables running opencode inside the devcontainer with full security boundary:
+
+  ```powershell
+  npm install -g @devcontainers/cli
+  ```
 
 - **Azure Static Web Apps CLI**
   Required for local development and testing of Azure Static Web Apps:
@@ -174,11 +231,59 @@ Suitable for experimentation, learning, and development environments.
 
 ---
 
-## Getting Started
+## Development Environment
 
-### Quick Start (Experienced Developers)
+We support two development workflows. **DevContainer is strongly recommended** for security and consistency.
 
-```bash
+### Option 1: DevContainer (Recommended - Secure)
+
+**Why DevContainer?**
+
+- Complete security boundary (secrets, MCP servers, tools isolated)
+- Consistent environment across all developers
+- Zero secrets in repository or host filesystem
+- Works identically on Windows, macOS, Linux
+
+**Prerequisites:**
+
+- Docker Desktop with WSL2 backend
+- DevContainer CLI: `npm install -g @devcontainers/cli`
+
+**Quick Start (PowerShell):**
+
+```powershell
+# One-time setup
+npm install -g @devcontainers/cli
+
+# Clone and enter directory
+git clone https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb.git
+cd redmuffin.Blazor.StaticWeb
+
+# Start devcontainer
+devcontainer up --workspace-folder .
+
+# Run opencode (secrets will be injected automatically)
+.\scripts\opencode-secure.ps1
+
+# When finished, stop the container
+.\scripts\devcontainer-down.ps1
+```
+
+**First Run Secret Setup:**
+On first run, VS Code will prompt for required secrets (stored in Windows Credential Manager):
+
+- `BRAVE_API_KEY` - Brave Search API Key
+- `CONTEXT7_API_KEY` - Context7 API Key (optional)
+- `RAINDROP_CLIENT_ID` - Raindrop.io Client ID
+- `RAINDROP_CLIENT_SECRET` - Raindrop.io Client Secret
+
+### Option 2: Local Development
+
+Use only if you cannot run Docker. **Note: Reduced security - secrets must be managed manually.**
+
+**Quick Start:**
+
+```powershell
 # Clone and setup
 git clone https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb.git
 cd redmuffin.Blazor.StaticWeb
@@ -192,17 +297,136 @@ dotnet restore
 dotnet build
 dotnet test
 
-# Start development environment
-# Open redmuffin.Blazor.StaticWeb.sln in Visual Studio
-# Use "Start both" profile or press F5
-# Navigate to http://localhost:4280
+# Open in Visual Studio or run:
+dotnet run --project src/redmuffin.Blazor.StaticWeb/redmuffin.Blazor.StaticWeb.csproj
 ```
 
-### Detailed Setup
+### PowerShell Helper Scripts
+
+Located in `scripts/`:
+
+| Script                        | Purpose                                      |
+| ----------------------------- | -------------------------------------------- |
+| `opencode-secure.ps1`         | Starts devcontainer and runs opencode inside |
+| `devcontainer-down.ps1`       | Stops the devcontainer                       |
+| `Generate-CoverageReport.ps1` | Generates code coverage                      |
+| `View-CoverageReport.ps1`     | Views coverage report                        |
+| `Setup-GitHooks.ps1`          | Configures git hooks for commit validation   |
+
+**Creating an alias (optional):**
+Add to your PowerShell profile (`$PROFILE`):
+
+```powershell
+Set-Alias -Name opencode -Value "C:\path\to\scripts\opencode-secure.ps1"
+```
+
+---
+
+## Getting Started
+
+### DevContainer Workflow (Recommended)
+
+The devcontainer provides a secure, isolated development environment with all tools pre-installed.
+
+#### Prerequisites Checklist
+
+Before starting, ensure you have:
+
+- [ ] **Docker Desktop** with WSL2 backend installed
+- [ ] **DevContainer CLI**: `npm install -g @devcontainers/cli`
+- [ ] **SSH Keys** in `C:\Users\<username>\.ssh\` for Git authentication
+- [ ] **GitHub account** with SSH keys added
+
+#### Step-by-Step Setup
+
+1. **Clone and enter directory:**
+
+   ```powershell
+   git clone https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb.git
+   cd redmuffin.Blazor.StaticWeb
+   ```
+
+2. **Verify SSH keys are configured:**
+
+   ```powershell
+   # Check if SSH keys exist
+   ls $HOME\.ssh\id_*
+
+   # Test GitHub connection
+   ssh -T git@github.com
+   ```
+
+   If you don't have SSH keys, generate them:
+
+   ```powershell
+   ssh-keygen -t ed25519 -C "your-email@example.com"
+   # Add to GitHub: https://github.com/settings/keys
+   ```
+
+3. **Start the devcontainer:**
+
+   ```powershell
+   .\scripts\opencode-secure.ps1
+   ```
+
+   This script will:
+   - Build and start the devcontainer
+   - Mount your SSH keys (read-only) for Git authentication
+   - Install all development tools automatically
+   - Launch opencode inside the container
+
+   **First run only**: You'll be prompted for secrets (stored in Windows Credential Manager):
+   - `BRAVE_API_KEY` - For Brave Search MCP server
+   - `CONTEXT7_API_KEY` - For Context7 documentation (optional)
+   - `RAINDROP_CLIENT_ID` - For Raindrop.io integration
+   - `RAINDROP_CLIENT_SECRET` - For Raindrop.io integration
+
+4. **Verify SSH in container:**
+
+   Once opencode starts, verify Git authentication:
+
+   ```bash
+   # Inside the container
+   ssh-add -l
+   ssh -T git@github.com
+   ```
+
+5. **When finished:**
+   ```powershell
+   # Exit opencode, then stop the container
+   .\scripts\devcontainer-down.ps1
+   ```
+
+#### What's Included in the DevContainer
+
+The devcontainer automatically provides:
+
+- **.NET 9 SDK** - Latest stable version
+- **Node.js & npm** - Latest LTS
+- **Azure Functions Core Tools** - For local API development
+- **Azure Static Web Apps CLI** - For local testing
+- **opencode** - AI coding assistant
+- **Prettier, commitlint** - Code formatting and commit validation
+- **Docker-in-Docker** - For running MCP servers
+- **SSH Agent** - Configured for Git authentication
+
+#### SSH Key Security
+
+Your SSH keys are handled securely:
+
+- Keys are **mounted read-only** from Windows host
+- Copied into container with **Unix permissions (600)**
+- **Container-local ssh-agent** holds decrypted keys in memory only
+- Keys **never stored in Docker images**
+- All copies are **deleted when container stops**
+
+See [docs/SSH-AGENT-SETUP.md](docs/SSH-AGENT-SETUP.md) for detailed SSH setup and troubleshooting.
+
+### Local Development Workflow
 
 1. **Clone the repository:**
 
-   ```bash
+   ```powershell
    git clone https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb.git
    cd redmuffin.Blazor.StaticWeb
    ```
@@ -211,43 +435,41 @@ dotnet test
    - Check .NET versions: `dotnet --list-sdks`
    - Ensure you have .NET 9 SDK installed
    - Verify Node.js: `node --version`
-   - (Optional) Check Docker: `docker --version` - only needed for MCP server integration
 
 3. **Install global tools:**
 
-   ```bash
-   npm install -g @azure/static-web-apps-cli prettier
+   ```powershell
+   npm install -g @azure/static-web-apps-cli prettier @commitlint/cli @commitlint/config-conventional chrome-devtools-mcp
    ```
 
-4. **Setup git hooks** (run once):
+4. **Setup git hooks:**
 
    ```powershell
    .\scripts\Setup-GitHooks.ps1
    ```
 
-5. **Restore dependencies:**
+5. **Build and run:**
 
-   ```bash
+   ```powershell
    dotnet restore
-   dotnet tool restore
-   ```
-
-6. **Build the solution:**
-
-   ```bash
    dotnet build
-   ```
-
-7. **Run tests to verify setup:**
-
-   ```bash
    dotnet test
    ```
 
-8. **Start the development environment:**
-   - Open `redmuffin.Blazor.StaticWeb.sln` in Visual Studio 2022
-   - Use the "Start both" profile or press F5
-   - The application will start on `http://localhost:4280`
+6. **Start development:**
+
+   ```powershell
+   # Using Visual Studio
+   # Open redmuffin.Blazor.StaticWeb.sln
+   # Use "Start both" profile
+
+   # Or using CLI
+   dotnet run --project src/redmuffin.Blazor.StaticWeb/redmuffin.Blazor.StaticWeb.csproj
+   ```
+
+7. **Navigate to:**
+   - Full Stack: http://localhost:4280
+   - Frontend Only: http://localhost:5233
 
 ### Validation Steps
 
@@ -266,7 +488,7 @@ After setup, verify everything is working:
 During development and building, you may encounter IL2111 warnings like:
 
 ```
-warning IL2111: Method 'Microsoft.AspNetCore.Components.LayoutView.Layout.set' with parameters or return value with `DynamicallyAccessedMembersAttribute` is accessed via reflection. Trimmer can't guarantee availability of the requirements of the method.
+warning IL2111: Method 'Microsoft.AspNetCore.Components.LayoutView.Layout.set' with parameters or return type with `DynamicallyAccessedMembersAttribute` is accessed via reflection. Trimmer can't guarantee availability of the requirements of the method.
 ```
 
 **These warnings are expected and safe to ignore** because:
@@ -764,15 +986,40 @@ The project includes comprehensive development tools and integrations to enhance
 - **OS**: Windows 10/11, macOS 10.15+, or Linux (Ubuntu 20.04+)
 - **CPU**: x64 processor with SSE2 instruction set support
 
-### Docker Integration
+### Container Infrastructure
 
-**Docker Desktop** is required for MCP server functionality:
+The project uses Docker-based development environments for security and consistency.
 
-- **Purpose**: Enables AI assistants to access external resources and documentation
-- **Configured Servers**: GitHub, Fetch, Time, Brave Search, and Sequential Thinking servers (via Docker)
-- **Installation**: [Download Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- **Configuration**: MCP servers are pre-configured in `.mcp.json`
-- **Note**: Context7 uses HTTP endpoint, not Docker
+#### DevContainer
+
+The devcontainer provides a complete development environment:
+
+- **Isolated Environment**: .NET 9 SDK, Node.js, Azure Functions tools
+- **Security Boundary**: Secrets and MCP servers run inside container only
+- **Consistency**: Same environment for all developers
+- **Pre-installed Tools**: SWA CLI, Prettier, commitlint, opencode
+
+Configuration: `.devcontainer/devcontainer.json`
+
+**Windows Setup:**
+
+1. Install Docker Desktop
+2. Enable WSL2 backend (recommended)
+3. Ensure WSL2 integration is enabled in Docker Desktop settings
+4. Share your project drive in Docker Desktop → Settings → Resources → File Sharing
+
+#### Docker for MCP Servers
+
+MCP servers run as Docker containers inside the devcontainer:
+
+- **Brave Search** - Web search with Brave API
+- **Fetch** - Web content fetching
+- **Time** - Date/time utilities
+- **Sequential Thinking** - AI reasoning assistance
+
+Docker Desktop handles the containerization layer.
+
+**Note:** Context7 uses HTTP endpoint, not Docker.
 
 ---
 
@@ -1042,7 +1289,7 @@ The project is configured for seamless development using Visual Studio's multi-p
 ### Quick Start
 
 1. **Start the development environment:**
-   - Open `redmuffin.Blazor.StaticWeb.sln` in Visual Studio 2022
+   - Open `redmuffin.Blazor.StaticWeb.sln` in Visual Studio 2026 (Community)
    - Use the "Start both" profile (or similar multi-project startup configuration)
    - Visual Studio will automatically start:
      - Blazor WebAssembly frontend
