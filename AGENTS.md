@@ -63,6 +63,50 @@ If after 15 minutes of quality research you have no answer:
 
 ---
 
+## Infrastructure/Toolchain Error Protocol (SCOPED)
+
+When **build infrastructure or toolchain errors** occur—such as SCSS compilation failures, NuGet package resolution issues, missing dependencies, or compiler configuration problems—you **MUST** follow this protocol:
+
+### STOP and Debug
+
+1. **Halt all work** on the current feature
+2. **Analyze the error message** thoroughly
+3. **Check system state**: Verify Node.js, NuGet, or other toolchain components are properly installed
+4. **Inspect configuration**: Review `.csproj`, `compilerconfig.json`, and related config files
+5. **Research the specific error** using web search if unfamiliar
+
+### Propose Solution
+
+- Explain the root cause clearly
+- Recommend a specific fix
+- Explain why this fix will work
+- **WAIT for user approval** before implementing
+
+### When to Use This Protocol
+
+**Applies to:**
+
+- SCSS/Sass compilation errors
+- NuGet package restore failures
+- Missing compiler tools or dependencies
+- Build configuration issues
+- Environment/path problems
+
+**Does NOT apply to:**
+
+- C# syntax errors (fix immediately)
+- Test failures (debug and fix)
+- Logic errors in code (research and fix)
+
+### Example
+
+If SCSS compilation fails with "The system cannot find the path specified":
+
+- ❌ **WRONG**: Skip SCSS compilation and use pre-built CSS
+- ✅ **CORRECT**: Investigate whether Node.js, Sass, or BuildWebCompiler2022 is properly configured, then propose solution
+
+---
+
 ## Build, Lint, and Test Commands
 
 ### Build
