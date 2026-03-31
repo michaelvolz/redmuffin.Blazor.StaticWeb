@@ -135,12 +135,13 @@ jobs:
       # TESTING PHASE: Fast fail if tests don't pass with parallel execution
       # Note: Tests automatically use environment variables set in the job environment
       # No local.settings.json file needed as TestBase class uses AddEnvironmentVariables()
+      # OPTIMIZATION: Run tests in Release mode to avoid double compilation
       - name: Run tests
         run: |
           echo "🧪 Running TUnit Tests..."
           echo "ℹ️  Tests will automatically use environment variables in CI/CD environment"
           echo "ℹ️  TUnit runs tests in parallel by default - no additional configuration needed"
-          dotnet test --no-restore --verbosity quiet --logger trx --results-directory TestResults /p:CollectCoverage=false
+          dotnet test -c Release --no-restore --verbosity quiet --logger trx --results-directory TestResults /p:CollectCoverage=false
           if [ $? -ne 0 ]; then
             echo "❌ Tests failed! Stopping deployment."
             exit 1
@@ -153,28 +154,24 @@ jobs:
         with:
           node-version: "18"
 
-      # Cache npm for faster CLI installation
-      - name: Cache npm
+      # OPTIMIZATION: Cache npm global packages for SWA CLI
+      # Using static key since we install a specific global package version
+      - name: Cache npm global packages
         uses: actions/cache@v5
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-swa-cli-${{ hashFiles('**/package-lock.json') }}
+          path: |
+            ~/.npm
+            $(npm root -g)
+          key: ${{ runner.os }}-npm-global-swa-v1
           restore-keys: |
-            ${{ runner.os }}-npm-swa-cli-
-            ${{ runner.os }}-npm-
+            ${{ runner.os }}-npm-global-swa-
 
-      # Install Azure Static Web Apps CLI (with caching)
+      # Install Azure Static Web Apps CLI (uses cache when available)
       - name: Install Azure Static Web Apps CLI
         run: |
           echo "📦 Installing Azure Static Web Apps CLI..."
-          # Check if already installed
-          if command -v swa &> /dev/null; then
-            echo "✅ SWA CLI already available: $(swa --version)"
-          else
-            echo "Installing SWA CLI..."
-            npm install -g @azure/static-web-apps-cli --silent --no-audit --no-fund
-            echo "✅ Azure Static Web Apps CLI installed successfully"
-          fi
+          npm install -g @azure/static-web-apps-cli --silent --no-audit --no-fund
+          echo "✅ Azure Static Web Apps CLI installed: $(swa --version)"
 
       - name: Build and Deploy to Azure Static Web Apps
         env:
