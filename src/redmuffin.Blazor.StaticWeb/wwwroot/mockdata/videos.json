@@ -1,0 +1,877 @@
+[
+  {
+    "_id": 123456800,
+    "link": "https://www.youtube.com/watch?v=65o_j4E7_lk",
+    "title": "Top 10 DevOps & AI Tools You MUST Use in 2026",
+    "excerpt": "Discover the essential DevOps and AI tools that will shape development workflows in 2026. From automation platforms to intelligent coding assistants, this comprehensive guide covers the must-have technologies.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/65o_j4E7_lk/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=65o_j4E7_lk",
+        "type": "video"
+      }
+    ],
+    "tags": ["devops", "ai", "tools", "2026", "automation"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2026-01-14T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1100
+  },
+  {
+    "_id": 123456801,
+    "link": "https://www.youtube.com/watch?v=YDhJ953D6-U",
+    "title": ".NET Conf 2025 - Day 1",
+    "excerpt": "The complete Day 1 coverage of .NET Conf 2025 featuring announcements about .NET 10, new Blazor features, performance improvements, and ecosystem updates from Microsoft engineers and community leaders.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/YDhJ953D6-U/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=YDhJ953D6-U",
+        "type": "video"
+      }
+    ],
+    "tags": ["dotnet", "conference", "blazor", "microsoft"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-11-11T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1099
+  },
+  {
+    "_id": 123456802,
+    "link": "https://www.youtube.com/watch?v=lZVtbC6oylQ",
+    "title": "From Free to $300 the best options for AI Coding",
+    "excerpt": "A comprehensive breakdown of AI coding assistants across all price points. Compare features, capabilities, and value to find the perfect tool for your development workflow and budget.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/lZVtbC6oylQ/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=lZVtbC6oylQ",
+        "type": "video"
+      }
+    ],
+    "tags": ["ai", "coding", "tools", "comparison"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-11-09T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1098
+  },
+  {
+    "_id": 123456803,
+    "link": "https://www.youtube.com/watch?v=sslJ9ovlfhM",
+    "title": "Best AI coding Agents with some interesting results",
+    "excerpt": "Deep dive into the top AI coding agents available today. Real-world testing reveals surprising performance differences and unique strengths across different programming scenarios.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/sslJ9ovlfhM/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=sslJ9ovlfhM",
+        "type": "video"
+      }
+    ],
+    "tags": ["ai", "coding", "agents", "testing"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-11-09T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1097
+  },
+  {
+    "_id": 123456804,
+    "link": "https://www.youtube.com/watch?v=jRJa83DeOd8",
+    "title": "Everything You Need to Know About the Latest in C#",
+    "excerpt": "Comprehensive overview of the newest C# language features and improvements. Learn about pattern matching enhancements, performance optimizations, and developer productivity features.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/jRJa83DeOd8/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=jRJa83DeOd8",
+        "type": "video"
+      }
+    ],
+    "tags": ["csharp", "dotnet", "programming", "features"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-08-19T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1096
+  },
+  {
+    "_id": 123456805,
+    "link": "https://www.youtube.com/watch?v=eQaZytCQsLE",
+    "title": "The Future of Visual Studio",
+    "excerpt": "Microsoft unveils the roadmap for Visual Studio's evolution. Explore upcoming features, AI integration, performance improvements, and the vision for the next generation of development tools.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/eQaZytCQsLE/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=eQaZytCQsLE",
+        "type": "video"
+      }
+    ],
+    "tags": ["visual-studio", "microsoft", "ide", "future"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-08-19T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1095
+  },
+  {
+    "_id": 123456806,
+    "link": "https://www.youtube.com/watch?v=oz7aIFfHXRw",
+    "title": "Will AI Code Create MOUNTAINS Of Technical Debt?",
+    "excerpt": "Critical analysis of AI-generated code and its long-term implications. Examine the risks of technical debt, code maintainability, and strategies for responsible AI-assisted development.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/oz7aIFfHXRw/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=oz7aIFfHXRw",
+        "type": "video"
+      }
+    ],
+    "tags": ["ai", "technical-debt", "code-quality", "architecture"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-08-02T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1094
+  },
+  {
+    "_id": 123456807,
+    "link": "https://www.youtube.com/watch?v=IYyyiA5eWEo",
+    "title": "Stack Overflow for your LLMs (and you!)",
+    "excerpt": "How Stack Overflow is evolving to serve both human developers and AI language models. Explore new features, API integrations, and the future of developer knowledge sharing.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/IYyyiA5eWEo/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=IYyyiA5eWEo",
+        "type": "video"
+      }
+    ],
+    "tags": ["stackoverflow", "llm", "ai", "documentation"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-08-02T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1093
+  },
+  {
+    "_id": 123456808,
+    "link": "https://www.youtube.com/watch?v=VP2OlIXVMa0",
+    "title": "Beyond the Prompt: Evaluating, Testing, and Securing LLM Applications",
+    "excerpt": "Advanced techniques for productionizing LLM applications. Learn about evaluation frameworks, testing strategies, security considerations, and best practices for deploying AI systems at scale.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/VP2OlIXVMa0/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=VP2OlIXVMa0",
+        "type": "video"
+      }
+    ],
+    "tags": ["llm", "testing", "security", "ai", "production"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-31T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1092
+  },
+  {
+    "_id": 123456809,
+    "link": "https://www.youtube.com/watch?v=rswfNKwpE5k",
+    "title": "What's New in ASP.NET Core & Blazor (.NET 10)",
+    "excerpt": "Complete overview of the latest features in ASP.NET Core and Blazor with .NET 10. Discover new rendering modes, enhanced components, performance improvements, and modern web development patterns.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/rswfNKwpE5k/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=rswfNKwpE5k",
+        "type": "video"
+      }
+    ],
+    "tags": ["aspnet-core", "blazor", "dotnet", "web-development"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-30T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1091
+  },
+  {
+    "_id": 123456810,
+    "link": "https://www.youtube.com/watch?v=sF799nFJONk",
+    "title": "5 Claude Code MCP Servers You Need To Be Using",
+    "excerpt": "Essential MCP servers that supercharge Claude Code capabilities. Learn how to extend your AI coding assistant with powerful integrations for databases, APIs, and development tools.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/sF799nFJONk/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=sF799nFJONk",
+        "type": "video"
+      }
+    ],
+    "tags": ["claude", "mcp", "ai", "coding", "tools"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-26T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1090
+  },
+  {
+    "_id": 123456811,
+    "link": "https://www.youtube.com/watch?v=nvwyaNucle0",
+    "title": "Microsoft Just Replaced VSTest and Most .NET Developers Missed It",
+    "excerpt": "Breaking down Microsoft's new testing platform that replaces VSTest. Understand the migration path, new features, and why this change matters for every .NET developer.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/nvwyaNucle0/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=nvwyaNucle0",
+        "type": "video"
+      }
+    ],
+    "tags": ["dotnet", "testing", "vstest", "microsoft"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-25T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1089
+  },
+  {
+    "_id": 123456812,
+    "link": "https://www.youtube.com/watch?v=-HzgcbRXUK8",
+    "title": "Demis Hassabis: Future of AI, Simulating Reality, Physics and Video Games",
+    "excerpt": "DeepMind CEO Demis Hassabis discusses the cutting edge of AI research. Explore the intersection of artificial intelligence, physics simulation, virtual worlds, and the path toward AGI.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/-HzgcbRXUK8/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=-HzgcbRXUK8",
+        "type": "video"
+      }
+    ],
+    "tags": ["ai", "deepmind", "agi", "research", "science"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-24T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1088
+  },
+  {
+    "_id": 123456813,
+    "link": "https://www.youtube.com/watch?v=8KDPmPQymdc",
+    "title": "AI Coding is changing and not in a way I like!",
+    "excerpt": "Critical perspective on the evolving landscape of AI-assisted coding. Examine concerning trends, over-reliance on AI tools, and the importance of maintaining fundamental programming skills.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/8KDPmPQymdc/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=8KDPmPQymdc",
+        "type": "video"
+      }
+    ],
+    "tags": ["ai", "coding", "opinion", "skills"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-23T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1087
+  },
+  {
+    "_id": 123456814,
+    "link": "https://www.youtube.com/watch?v=crMrVozp_h8",
+    "title": "The AI-native startup: 5 products, 7-figure revenue, 100% AI-written code",
+    "excerpt": "Case study of a startup built entirely with AI-generated code. Learn how they leveraged AI tools to build multiple products, achieve significant revenue, and manage a lean operation.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/crMrVozp_h8/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=crMrVozp_h8",
+        "type": "video"
+      }
+    ],
+    "tags": ["ai", "startup", "business", "case-study"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-19T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1086
+  },
+  {
+    "_id": 123456815,
+    "link": "https://www.youtube.com/watch?v=mGe1Y18EcNk",
+    "title": "AI Writes Garbage Code?",
+    "excerpt": "Honest assessment of AI code generation quality. Analyze common pitfalls, quality issues, and practical strategies for getting better results from AI coding assistants.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/mGe1Y18EcNk/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=mGe1Y18EcNk",
+        "type": "video"
+      }
+    ],
+    "tags": ["ai", "coding", "quality", "best-practices"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-19T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1085
+  },
+  {
+    "_id": 123456816,
+    "link": "https://www.youtube.com/watch?v=H3lCPUx7TEE",
+    "title": "This Changed How I Code with AI: The Exact Method!",
+    "excerpt": "Step-by-step methodology for effectively pairing with AI coding tools. Discover proven techniques for prompting, code review, and integrating AI into your development workflow.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/H3lCPUx7TEE/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=H3lCPUx7TEE",
+        "type": "video"
+      }
+    ],
+    "tags": ["ai", "coding", "tutorial", "methodology"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-18T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1084
+  },
+  {
+    "_id": 123456817,
+    "link": "https://maven.com/p/446ea1/why-devin-does-not-use-multi-agents",
+    "title": "Why Devin does not use multi agents",
+    "excerpt": "Cognition Labs explains the architectural decisions behind Devin AI. Understand why they chose a single-agent approach over multi-agent systems for autonomous software engineering.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://maven.com/p/446ea1/why-devin-does-not-use-multi-agents",
+        "type": "video"
+      }
+    ],
+    "tags": ["ai", "devin", "architecture", "agents"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-17T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "maven.com",
+    "collectionId": 67890,
+    "sort": 1083
+  },
+  {
+    "_id": 123456818,
+    "link": "https://www.youtube.com/watch?v=TZE33qMYwsc",
+    "title": "Amazon, Google and Vibe Coding with Steve Yegge",
+    "excerpt": "Legendary developer Steve Yegge discusses the culture at tech giants and the phenomenon of vibe coding. Insights from decades of experience at Amazon and Google.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/TZE33qMYwsc/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=TZE33qMYwsc",
+        "type": "video"
+      }
+    ],
+    "tags": ["career", "amazon", "google", "culture", "coding"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-16T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1082
+  },
+  {
+    "_id": 123456819,
+    "link": "https://www.youtube.com/watch?v=TI-OVY11HD4",
+    "title": "My NEW Favourite Way to Define COLORS in CSS",
+    "excerpt": "Modern CSS color techniques that improve maintainability and design consistency. Explore CSS custom properties, color functions, and new specifications for better color management.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/TI-OVY11HD4/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=TI-OVY11HD4",
+        "type": "video"
+      }
+    ],
+    "tags": ["css", "design", "colors", "frontend"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-05T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1081
+  },
+  {
+    "_id": 123456820,
+    "link": "https://www.youtube.com/watch?v=Egeuql3Lrzg",
+    "title": "Context Engineering is the New Vibe Coding (Learn this Now)",
+    "excerpt": "Introduction to context engineering as the evolution of vibe coding. Master techniques for providing better context to AI tools for significantly improved code generation results.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/Egeuql3Lrzg/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=Egeuql3Lrzg",
+        "type": "video"
+      }
+    ],
+    "tags": ["ai", "context-engineering", "vibe-coding", "tutorial"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-03T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1080
+  },
+  {
+    "_id": 123456821,
+    "link": "https://www.youtube.com/watch?v=eIUYSC6SilA",
+    "title": "Code 10x Better With These 5 Claude Code Features",
+    "excerpt": "Maximize productivity with Claude Code's most powerful features. Learn advanced workflows, keyboard shortcuts, and integrations that will transform your development process.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/eIUYSC6SilA/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=eIUYSC6SilA",
+        "type": "video"
+      }
+    ],
+    "tags": ["claude", "ai", "productivity", "tutorial"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-02T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1079
+  },
+  {
+    "_id": 123456822,
+    "link": "https://www.youtube.com/watch?v=f_fG8ie7Ntc",
+    "title": "Developer Happiness and Why it Matters - Damian Brady - NDC Melbourne 2025",
+    "excerpt": "Damian Brady explores the critical importance of developer experience and happiness. Learn how to create environments that foster productivity, creativity, and sustainable software development.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/f_fG8ie7Ntc/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=f_fG8ie7Ntc",
+        "type": "video"
+      }
+    ],
+    "tags": ["career", "developer-experience", "productivity", "conference"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-02T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1078
+  },
+  {
+    "_id": 123456823,
+    "link": "https://www.youtube.com/watch?v=Lon0oRRqB6A",
+    "title": "The BEST AI Coding Assistants | July 2025",
+    "excerpt": "Comprehensive comparison of the top AI coding assistants in July 2025. Benchmark tests, feature comparisons, and recommendations for different use cases and programming languages.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/Lon0oRRqB6A/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=Lon0oRRqB6A",
+        "type": "video"
+      }
+    ],
+    "tags": ["ai", "coding", "comparison", "tools"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-01T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1077
+  },
+  {
+    "_id": 123456824,
+    "link": "https://www.youtube.com/watch?v=0ZCMPodISoE",
+    "title": "Warp 2.0: the Agentic Development Environment - Zach Lloyd and Ben Holmes",
+    "excerpt": "Warp Terminal 2.0 introduces agentic AI capabilities directly into your terminal. Explore how this changes command-line workflows and developer productivity.",
+    "note": "",
+    "type": "video",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://img.youtube.com/vi/0ZCMPodISoE/maxresdefault.jpg",
+    "media": [
+      {
+        "link": "https://www.youtube.com/watch?v=0ZCMPodISoE",
+        "type": "video"
+      }
+    ],
+    "tags": ["terminal", "ai", "warp", "productivity", "tools"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-01T00:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 67890,
+      "oid": 67890
+    },
+    "highlights": [],
+    "domain": "youtube.com",
+    "collectionId": 67890,
+    "sort": 1076
+  }
+]

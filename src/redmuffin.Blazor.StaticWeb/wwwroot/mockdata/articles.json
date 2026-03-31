@@ -1,0 +1,877 @@
+[
+  {
+    "_id": 223456800,
+    "link": "https://x.com/hackernoon/status/2034156945045647429",
+    "title": "There is a brand of loneliness",
+    "excerpt": "An insightful exploration of modern loneliness and how technology intersects with human connection, featuring perspectives from the tech community and reflections on digital isolation.",
+    "note": "",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://x.com/hackernoon/status/2034156945045647429",
+        "type": "article"
+      }
+    ],
+    "tags": ["loneliness", "technology", "mental-health", "social-media"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2026-03-18T10:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "x.com",
+    "collectionId": 78901,
+    "sort": 2100
+  },
+  {
+    "_id": 223456801,
+    "link": "https://x.com/martinfowler/status/2009258648598438352",
+    "title": "Fragments: How AI is changing Anthropic's internal development",
+    "excerpt": "A detailed look at how Anthropic is leveraging AI tools to transform their internal development processes, with insights on productivity gains and workflow evolution.",
+    "note": "",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://x.com/martinfowler/status/2009258648598438352",
+        "type": "article"
+      }
+    ],
+    "tags": ["ai", "anthropic", "development", "productivity", "martin-fowler"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2026-01-08T14:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "x.com",
+    "collectionId": 78901,
+    "sort": 2099
+  },
+  {
+    "_id": 223456802,
+    "link": "https://github.blog/ai-and-ml/github-copilot/how-to-write-a-great-agents-md-lessons-from-over-2500-repositories/",
+    "title": "How to write a great agents.md",
+    "excerpt": "GitHub shares lessons learned from analyzing over 2500 repositories on writing effective agents.md files, providing best practices for AI agent configuration and documentation.",
+    "note": "",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://github.blog/wp-content/uploads/2024/01/AI-DarkMode-3.png",
+    "media": [
+      {
+        "link": "https://github.blog/ai-and-ml/github-copilot/how-to-write-a-great-agents-md-lessons-from-over-2500-repositories/",
+        "type": "article"
+      }
+    ],
+    "tags": ["github", "copilot", "ai", "agents", "documentation", "best-practices"],
+    "important": true,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-11-26T09:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "github.blog",
+    "collectionId": 78901,
+    "sort": 2098
+  },
+  {
+    "_id": 223456803,
+    "link": "https://mariozechner.at/posts/2025-11-02-what-if-you-dont-need-mcp/",
+    "title": "What if you don't need MCP at all?",
+    "excerpt": "A thought-provoking analysis questioning the necessity of Model Context Protocol (MCP) in AI development, exploring alternative approaches and simpler solutions for AI integration.",
+    "note": "",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://mariozechner.at/posts/2025-11-02-what-if-you-dont-need-mcp/",
+        "type": "article"
+      }
+    ],
+    "tags": ["mcp", "ai", "architecture", "integration"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-11-17T16:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "mariozechner.at",
+    "collectionId": 78901,
+    "sort": 2097
+  },
+  {
+    "_id": 223456804,
+    "link": "https://www.windowscentral.com/microsoft-suggests-future-of-windows",
+    "title": "Microsoft suggests the future of Windows",
+    "excerpt": "An overview of Microsoft's vision for the future of Windows, exploring upcoming features, UI changes, and integration with AI technologies.",
+    "note": "",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://www.windowscentral.com/microsoft-suggests-future-of-windows",
+        "type": "article"
+      }
+    ],
+    "tags": ["windows", "microsoft", "ai", "os"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-08-05T11:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "windowscentral.com",
+    "collectionId": 78901,
+    "sort": 2096
+  },
+  {
+    "_id": 223456805,
+    "link": "https://x.com/venelinkochev/status/1952384179850576278",
+    "title": "Check ClaudeLog",
+    "excerpt": "A tweet highlighting ClaudeLog, a tool for logging and analyzing Claude AI interactions, useful for debugging and understanding AI behavior.",
+    "note": "",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://x.com/venelinkochev/status/1952384179850576278",
+        "type": "article"
+      }
+    ],
+    "tags": ["claude", "ai", "logging", "tools"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-08-05T12:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "x.com",
+    "collectionId": 78901,
+    "sort": 2095
+  },
+  {
+    "_id": 223456806,
+    "link": "https://x.com/charliebholtz/status/1952392641112326166",
+    "title": "Try Conductor",
+    "excerpt": "Introduction to Conductor, a new tool for orchestrating AI workflows and managing complex multi-agent systems efficiently.",
+    "note": "",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://x.com/charliebholtz/status/1952392641112326166",
+        "type": "article"
+      }
+    ],
+    "tags": ["ai", "orchestration", "tools", "workflow"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-08-05T13:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "x.com",
+    "collectionId": 78901,
+    "sort": 2094
+  },
+  {
+    "_id": 223456807,
+    "link": "https://steipete.me/posts/2025/self-hosting-ai-models",
+    "title": "Self-Hosting AI Models After Claude's Usage Limits",
+    "excerpt": "A comprehensive guide to self-hosting AI models as an alternative to API-based services, covering infrastructure requirements, model selection, and cost-benefit analysis.",
+    "note": "",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://steipete.me/posts/2025/self-hosting-ai-models",
+        "type": "article"
+      }
+    ],
+    "tags": ["ai", "self-hosting", "infrastructure", "claude", "llm"],
+    "important": true,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-08-02T10:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "steipete.me",
+    "collectionId": 78901,
+    "sort": 2093
+  },
+  {
+    "_id": 223456808,
+    "link": "https://andrewlock.net/exploring-dotnet-10-preview-features-5-running-one-off-dotnet-tools-with-dnx/",
+    "title": "Running one-off .NET tools with dnx",
+    "excerpt": "Part 5 of exploring .NET 10 preview features, focusing on dnx - a new way to run one-off .NET tools without installing them globally or locally.",
+    "note": "",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://andrewlock.net/exploring-dotnet-10-preview-features-5-running-one-off-dotnet-tools-with-dnx/",
+        "type": "article"
+      }
+    ],
+    "tags": ["dotnet", "dotnet10", "dnx", "tools", "cli"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-29T08:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "andrewlock.net",
+    "collectionId": 78901,
+    "sort": 2092
+  },
+  {
+    "_id": 223456809,
+    "link": "https://docs.task-master.dev/docs/introduction",
+    "title": "Introduction - Task Master",
+    "excerpt": "Official documentation for Task Master, a powerful task management and automation tool designed to streamline development workflows and project organization.",
+    "note": "",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://docs.task-master.dev/docs/introduction",
+        "type": "article"
+      }
+    ],
+    "tags": ["task-master", "documentation", "automation", "productivity"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-27T14:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "docs.task-master.dev",
+    "collectionId": 78901,
+    "sort": 2091
+  },
+  {
+    "_id": 223456810,
+    "link": "https://medium.com/devlink-tips/ai-killed-my-coding-brain-but-im-rebuilding-it-8de7e1618bca",
+    "title": "AI killed my coding brain but I'm rebuilding it",
+    "excerpt": "A personal journey of over-reliance on AI coding assistants and the process of reclaiming fundamental programming skills through intentional practice and learning.",
+    "note": "",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://medium.com/devlink-tips/ai-killed-my-coding-brain-but-im-rebuilding-it-8de7e1618bca",
+        "type": "article"
+      }
+    ],
+    "tags": ["ai", "programming", "learning", "skill-development", "medium"],
+    "important": true,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-15T10:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "medium.com",
+    "collectionId": 78901,
+    "sort": 2090
+  },
+  {
+    "_id": 223456811,
+    "link": "https://long.sweet.pub/ill-instantly-know-you-used-chat-gpt-if-i-see-this-d0a635bc0a00",
+    "title": "I'll Instantly Know You Used Chat GPT If I See This",
+    "excerpt": "A humorous yet insightful look at the telltale signs of AI-generated content, helping readers recognize and avoid common patterns that scream ChatGPT usage.",
+    "note": "",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://long.sweet.pub/ill-instantly-know-you-used-chat-gpt-if-i-see-this-d0a635bc0a00",
+        "type": "article"
+      }
+    ],
+    "tags": ["ai", "chatgpt", "writing", "content-creation"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-15T11:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "long.sweet.pub",
+    "collectionId": 78901,
+    "sort": 2089
+  },
+  {
+    "_id": 223456812,
+    "link": "https://medium.com/@sohail_saifi/kubernetes-is-dead-why-tech-giants-are-secretly-moving-to-these-5-orchestration-alternatives-0c4f8eb38185",
+    "title": "Kubernetes Is Dead",
+    "excerpt": "An analysis of why major tech companies are exploring alternatives to Kubernetes for container orchestration, examining five emerging platforms and their advantages.",
+    "note": "",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://medium.com/@sohail_saifi/kubernetes-is-dead-why-tech-giants-are-secretly-moving-to-these-5-orchestration-alternatives-0c4f8eb38185",
+        "type": "article"
+      }
+    ],
+    "tags": ["kubernetes", "containers", "orchestration", "devops", "infrastructure"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-15T12:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "medium.com",
+    "collectionId": 78901,
+    "sort": 2088
+  },
+  {
+    "_id": 223456813,
+    "link": "https://medium.com/bricksnbrackets/i-cant-recommend-the-macbook-pro-to-developers-anymore-3c646047d70a",
+    "title": "I Can't Recommend The MacBook Pro To Developers Anymore",
+    "excerpt": "A critical look at why the MacBook Pro may no longer be the best choice for developers, examining hardware limitations, software restrictions, and better alternatives.",
+    "note": "",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://medium.com/bricksnbrackets/i-cant-recommend-the-macbook-pro-to-developers-anymore-3c646047d70a",
+        "type": "article"
+      }
+    ],
+    "tags": ["macbook", "hardware", "development", "laptops", "apple"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-15T13:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "medium.com",
+    "collectionId": 78901,
+    "sort": 2087
+  },
+  {
+    "_id": 223456814,
+    "link": "https://medium.com/psychology-of-workplaces/resumes-are-dying-heres-what-s-replacing-them-818422da3fbf",
+    "title": "Resumes Are Dying",
+    "excerpt": "An exploration of modern alternatives to traditional resumes in the hiring process, including portfolio-based applications, skill assessments, and AI-powered candidate evaluation.",
+    "note": "",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://medium.com/psychology-of-workplaces/resumes-are-dying-heres-what-s-replacing-them-818422da3fbf",
+        "type": "article"
+      }
+    ],
+    "tags": ["hiring", "career", "resumes", "job-search", "recruitment"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-15T14:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "medium.com",
+    "collectionId": 78901,
+    "sort": 2086
+  },
+  {
+    "_id": 223456815,
+    "link": "https://aindotnet.com/",
+    "title": "AI C# Programming",
+    "excerpt": "A comprehensive resource for integrating AI capabilities into C# applications, featuring tutorials, libraries, and best practices for .NET developers.",
+    "note": "",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://aindotnet.com/",
+        "type": "article"
+      }
+    ],
+    "tags": ["csharp", "ai", "dotnet", "programming", "ml"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-15T15:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "aindotnet.com",
+    "collectionId": 78901,
+    "sort": 2085
+  },
+  {
+    "_id": 223456816,
+    "link": "https://medium.com/@slemfowel/ai-tool-as-a-c-developer-9d388cab0cdd",
+    "title": "AI tool as a C# developer",
+    "excerpt": "A practical guide to leveraging AI tools effectively as a C# developer, covering code generation, debugging assistance, and productivity enhancement techniques.",
+    "note": "",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://medium.com/@slemfowel/ai-tool-as-a-c-developer-9d388cab0cdd",
+        "type": "article"
+      }
+    ],
+    "tags": ["csharp", "ai", "productivity", "development", "tools"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-15T16:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "medium.com",
+    "collectionId": 78901,
+    "sort": 2084
+  },
+  {
+    "_id": 223456817,
+    "link": "https://medium.com/@slemfowel/ml-net-unleashing-the-power-of-ai-in-c-development-a-comprehensive-exploration-in-2024-part-1-of-b4e6490561dc",
+    "title": "Unleashing the Power of AI in C# Development",
+    "excerpt": "Part 1 of a comprehensive exploration into ML.NET and how it enables C# developers to build powerful machine learning applications without leaving the .NET ecosystem.",
+    "note": "",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://medium.com/@slemfowel/ml-net-unleashing-the-power-of-ai-in-c-development-a-comprehensive-exploration-in-2024-part-1-of-b4e6490561dc",
+        "type": "article"
+      }
+    ],
+    "tags": ["csharp", "mlnet", "machine-learning", "ai", "dotnet"],
+    "important": true,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-15T17:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "medium.com",
+    "collectionId": 78901,
+    "sort": 2083
+  },
+  {
+    "_id": 223456818,
+    "link": "https://andrewlock.net/exploring-dotnet-10-preview-features-2-behind-the-scenes-of-dotnet-run-app.cs/",
+    "title": "Behind the scenes of dotnet run app.cs",
+    "excerpt": "Part 2 of exploring .NET 10 preview features, diving deep into how the new dotnet run app.cs feature works internally and its implications for C# scripting.",
+    "note": "",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://andrewlock.net/exploring-dotnet-10-preview-features-2-behind-the-scenes-of-dotnet-run-app.cs/",
+        "type": "article"
+      }
+    ],
+    "tags": ["dotnet", "dotnet10", "csharp", "scripting", "cli"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-08T09:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "andrewlock.net",
+    "collectionId": 78901,
+    "sort": 2082
+  },
+  {
+    "_id": 223456819,
+    "link": "https://spiess.dev/blog/how-i-use-claude-code",
+    "title": "How I Use Claude Code",
+    "excerpt": "A detailed walkthrough of one developer's workflow using Claude Code, sharing tips, tricks, and best practices for maximizing productivity with AI pair programming.",
+    "note": "",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://spiess.dev/blog/how-i-use-claude-code",
+        "type": "article"
+      }
+    ],
+    "tags": ["claude", "ai", "productivity", "development", "workflow"],
+    "important": false,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-08T10:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "spiess.dev",
+    "collectionId": 78901,
+    "sort": 2081
+  },
+  {
+    "_id": 223456820,
+    "link": "https://steipete.me/posts/2025/claude-code-is-my-computer",
+    "title": "Claude Code is My Computer",
+    "excerpt": "An in-depth exploration of using Claude Code as the primary interface for computing tasks, reimagining how we interact with computers through natural language.",
+    "note": "",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://steipete.me/posts/2025/claude-code-is-my-computer",
+        "type": "article"
+      }
+    ],
+    "tags": ["claude", "ai", "future", "interface", "productivity"],
+    "important": true,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2025-07-08T11:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "steipete.me",
+    "collectionId": 78901,
+    "sort": 2080
+  },
+  {
+    "_id": 223456821,
+    "link": "https://docs.microsoft.com/en-us/aspnet/core/blazor/",
+    "title": "Introduction to ASP.NET Core Blazor",
+    "excerpt": "Blazor is a framework for building interactive web UIs using C# instead of JavaScript. Blazor apps are composed of reusable web UI components implemented using C#, HTML, and CSS.",
+    "note": "Official Microsoft documentation - comprehensive guide to getting started with Blazor.",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://docs.microsoft.com/en-us/media/logos/logo-ms-social.png",
+    "media": [
+      {
+        "link": "https://docs.microsoft.com/en-us/aspnet/core/blazor/",
+        "type": "article"
+      }
+    ],
+    "tags": ["blazor", "aspnet-core", "microsoft", "documentation", "web-development"],
+    "important": true,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2024-01-10T08:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "docs.microsoft.com",
+    "collectionId": 78901,
+    "sort": 2079
+  },
+  {
+    "_id": 223456822,
+    "link": "https://martinfowler.com/articles/microservices.html",
+    "title": "Microservices: A Definition",
+    "excerpt": "The term 'microservice architecture' has sprung up over the last few years to describe a particular way of designing software applications as suites of independently deployable services.",
+    "note": "Classic article by Martin Fowler defining microservices architecture.",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "https://martinfowler.com/img/mf-name-white.png",
+    "media": [
+      {
+        "link": "https://martinfowler.com/articles/microservices.html",
+        "type": "article"
+      }
+    ],
+    "tags": ["microservices", "architecture", "martin-fowler", "software-design"],
+    "important": true,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2024-01-12T14:30:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "martinfowler.com",
+    "collectionId": 78901,
+    "sort": 2078
+  },
+  {
+    "_id": 223456823,
+    "link": "https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882",
+    "title": "Clean Code: A Handbook",
+    "excerpt": "Even bad code can function. But if code isn't clean, it can bring a development organization to its knees. This book is a must-read for any developer, software engineer, project manager, team lead, or systems analyst with an interest in producing better code.",
+    "note": "Essential reading for software developers on writing maintainable, clean code.",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882",
+        "type": "article"
+      }
+    ],
+    "tags": ["clean-code", "programming", "best-practices", "books", "software-craftsmanship"],
+    "important": true,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2024-01-15T10:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "amazon.com",
+    "collectionId": 78901,
+    "sort": 2077
+  },
+  {
+    "_id": 223456824,
+    "link": "https://pragprog.com/titles/tpp20/the-pragmatic-programmer-20th-anniversary-edition/",
+    "title": "The Pragmatic Programmer",
+    "excerpt": "The Pragmatic Programmer cuts through the increasing specialization and technicalities of modern software development to examine the core process--taking a requirement and producing working, maintainable code that delights its users.",
+    "note": "20th Anniversary Edition of the classic book on software development best practices.",
+    "type": "article",
+    "user": {
+      "$ref": "users",
+      "$id": 12345
+    },
+    "cover": "",
+    "media": [
+      {
+        "link": "https://pragprog.com/titles/tpp20/the-pragmatic-programmer-20th-anniversary-edition/",
+        "type": "article"
+      }
+    ],
+    "tags": ["pragmatic-programmer", "programming", "books", "best-practices", "career"],
+    "important": true,
+    "reminder": {
+      "date": null
+    },
+    "removed": false,
+    "created": "2024-01-18T09:00:00Z",
+    "collection": {
+      "$ref": "collections",
+      "$id": 78901,
+      "oid": 78901
+    },
+    "highlights": [],
+    "domain": "pragprog.com",
+    "collectionId": 78901,
+    "sort": 2076
+  }
+]
