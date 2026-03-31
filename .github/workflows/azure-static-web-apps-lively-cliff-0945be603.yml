@@ -156,15 +156,16 @@ jobs:
 
       # OPTIMIZATION: Cache npm global packages for SWA CLI
       # Using static key since we install a specific global package version
-      - name: Cache npm global packages
+      - name: Cache npm and SWA CLI
         uses: actions/cache@v5
         with:
           path: |
             ~/.npm
             $(npm root -g)
-          key: ${{ runner.os }}-npm-global-swa-v1
+            ~/.swa
+          key: ${{ runner.os }}-npm-swa-cli-v2
           restore-keys: |
-            ${{ runner.os }}-npm-global-swa-
+            ${{ runner.os }}-npm-swa-cli-
 
       # Install Azure Static Web Apps CLI (uses cache when available)
       - name: Install Azure Static Web Apps CLI
@@ -222,29 +223,15 @@ jobs:
             --nologo
 
           echo ""
-          echo "🔍 Verifying Build Output Structure..."
-          echo "Blazor app output:"
-          ls -la ${{ env.APP_LOCATION }}/bin/Release/publish/ | head -5
-          echo ""
-          echo "Looking for wwwroot in Blazor output:"
-          find ${{ env.APP_LOCATION }}/bin/Release/publish/ -name "wwwroot" -type d || echo "No wwwroot directory found"
-          echo ""
-          echo "API output:"
-          ls -la ${{ env.API_LOCATION }}/bin/Release/publish/ | head -5
-
-          echo ""
           echo "📦 Deploying to Azure Static Web Apps..."
-          # FIXED: Use explicit parameters to override swa-cli.config.json
-          # The explicit --app-location, --api-location, and --output-location parameters
-          # should take precedence over the config file settings
+          # Deploy with minimal output (removed --print-config for faster execution)
           swa deploy \
             --app-location ${{ env.APP_LOCATION }}/bin/Release/publish \
             --api-location ${{ env.API_LOCATION }}/bin/Release/publish \
             --output-location ${{ env.APP_ARTIFACT_LOCATION }} \
             --deployment-token $AZURE_STATIC_WEB_APPS_API_TOKEN \
             --env production \
-            --no-use-keychain \
-            --print-config
+            --no-use-keychain
 
           echo ""
           echo "✅ Pipeline completed successfully!"
