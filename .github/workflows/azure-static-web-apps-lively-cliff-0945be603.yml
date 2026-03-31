@@ -112,6 +112,25 @@ jobs:
           fetch-depth: 1 # Shallow clone for faster checkout
           show-progress: false # Reduce log noise
 
+      - name: Display job context
+        run: |
+          echo "=== Job Context ==="
+          echo "Job: test_and_build_job"
+          echo "Trigger: ${{ github.event_name }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Runner: ${{ runner.os }}"
+          echo ""
+
+      - name: Display system resources
+        run: |
+          echo "=== System Resources ==="
+          echo "CPU: $(nproc) cores"
+          echo "Memory: $(free -h | grep Mem | awk '{print $2}' | sed 's/i//g')"
+          echo "Disk available: $(df -h / | tail -1 | awk '{print $4}')"
+          echo ""
+
       # OPTIMIZATION: Single .NET setup with WASM workload for Blazor builds
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
