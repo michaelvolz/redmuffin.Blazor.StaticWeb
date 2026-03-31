@@ -1,5 +1,7 @@
 @page "/articles"
+@using Microsoft.AspNetCore.Components.Web.Virtualization
 @using redmuffin.Blazor.StaticWeb.Features.Cache.Components
+@using redmuffin.Blazor.StaticWeb.Features.Common.Components
 
 <PageTitle>Programming & AI Article Hub</PageTitle>
 
@@ -22,36 +24,24 @@
 else if (_articleItems != null && _articleItems.Any())
 {
     <div class="masonry">
-        @foreach (var (article, index) in _articleItems.Select((v, i) => (v, i)))
-        {
-            var imageUrl = GetImageUrl(article);
-
-            <div class="card article-card">
-                <div class="card-divider">
-                    <h5>@DisplayTitle(article)</h5>
+        <Virtualize Items="@_articleItems" Context="article" ItemSize="400" OverscanCount="3">
+            <ItemContent>
+                <RaindropItemCard Item="@article"
+                                  ItemType="article"
+                                  Index="@_articleItems.IndexOf(article)"
+                                  ImageUrlCache="@_imageUrlCache"
+                                  ImagePlaceholderService="@ImagePlaceholderService"
+                                  JsRuntime="@Js"
+                                  OnImageLoad="@HandleCardImageLoadAsync" />
+            </ItemContent>
+            <Placeholder>
+                <div class="card article-card">
+                    <div class="shimmer-placeholder" style="height: 350px;">
+                        <div class="shimmer"></div>
+                    </div>
                 </div>
-                <div class="shimmer-placeholder" id="shimmer-@article.Id">
-                    <img src="@imageUrl" alt="Article Cover"
-                         loading="@(index < 6 ? "eager" : "lazy")"
-                         fetchpriority="@(index < 6 ? "high" : "low")"
-                         decoding="async"
-                         @onload="@(() => HandleImageLoadAsync($"shimmer-{article.Id}", article.Link, true))"
-                         @onerror="@(() => HandleImageLoadAsync($"shimmer-{article.Id}", article.Link, false))"/>
-                    @if (HasFallbackPlaceholder(article))
-                    {
-                        <div class="fallback-placeholder-overlay">
-                            <i class="fas fa-image"></i>
-                            <span>@GetFallbackReason(article)</span>
-                        </div>
-                    }
-                </div>
-                <div class="card-section">
-                    <p>@DisplayExcerpt(article)</p>
-                    <p><i class="fas fa-calendar-alt"></i> Created: @article.Created.ToString("yyyy-MM-dd")</p>
-                    <a href="@article.Link" target="_blank" class="button"><i class="fas fa-external-link-alt"></i> Read Article</a>
-                </div>
-            </div>
-        }
+            </Placeholder>
+        </Virtualize>
     </div>
 }
 else
