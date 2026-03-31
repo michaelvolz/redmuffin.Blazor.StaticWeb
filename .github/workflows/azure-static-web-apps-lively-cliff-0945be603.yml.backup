@@ -1,0 +1,289 @@
+# This workflow will build and push a web application to an Azure Static Web App when you change your code.
+#
+# This workflow assumes you have already created the target Azure Static Web App.
+# For instructions see https://docs.microsoft.com/azure/static-web-apps/get-started-portal?tabs=vanilla-javascript
+#
+# To configure this workflow:
+#
+# 1. Set up a secret in your repository named AZURE_STATIC_WEB_APPS_API_TOKEN with the value of your Static Web Apps deployment token.
+#    For instructions on obtaining the deployment token see: https://docs.microsoft.com/azure/static-web-apps/deployment-token-management
+#
+# 3. Change the values for the APP_LOCATION, API_LOCATION and APP_ARTIFACT_LOCATION, AZURE_STATIC_WEB_APPS_API_TOKEN environment variables (below).
+#    For instructions on setting up the appropriate configuration values go to https://docs.microsoft.com/azure/static-web-apps/front-end-frameworks
+name: Deploy to Azure Static Web Apps
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches: ["master"]
+
+# Environment variables available to all jobs and steps in this workflow
+env:
+  APP_LOCATION: "src/redmuffin.Blazor.StaticWeb" # location of your client code
+  API_LOCATION: "src/redmuffin.Blazor.StaticWeb.Api" # location of your api source code - optional
+  APP_ARTIFACT_LOCATION: "wwwroot" # location of client code build output
+  AZURE_STATIC_WEB_APPS_API_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_CLIFF_0945BE603 }} # secret containing deployment token for your static web app
+
+permissions:
+  contents: read
+
+jobs:
+  check_changes:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_output.outputs.should_skip }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # Full history for reliable change detection
+          show-progress: false # Reduce log noise
+
+      - name: Check if only documentation files changed
+        id: check
+        uses: tj-actions/changed-files@v47.0.5
+        with:
+          files: |
+            README.md
+            AGENTS.md
+            CHANGELOG.md
+            docs/**/*.md
+            tasks/**/*.md
+            spec/**/*
+            .github/guides/**/*.md
+            .github/prompts/**/*.md
+            .github/chatmodes/**/*.md
+            .opencode/**/*
+            tests/**/*
+            scripts/**/*
+            .editorconfig
+            .mcp.json
+            .coverletrc
+            .vscode/**/*
+            *.code-workspace
+            *.sln.DotSettings
+            .config/**/*
+            .filenesting.json
+            .trae/**/*
+            swa-cli.config.json
+            Start.ps1
+            test.ps1
+            config/**/*
+            .changelog-state
+            src/**/Properties/launchSettings.json
+            src/**/appsettings.Development.json
+            src/**/*.local.settings.json*
+            .gitattributes
+            .gitignore
+
+      - name: Set skip output
+        id: skip_output
+        run: |
+          # Use the changed-files action's built-in logic instead of complex shell script
+          if [[ "${{ steps.check.outputs.only_changed }}" == "true" ]]; then
+            echo "Only documentation and non-deployed files changed, skipping deployment"
+            echo "should_skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "Code files changed, proceeding with deployment"
+            echo "should_skip=false" >> $GITHUB_OUTPUT
+          fi
+
+  test_and_build_job:
+    needs: check_changes
+    if: |
+      needs.check_changes.outputs.should_skip != 'true' &&
+      (github.event_name != 'pull_request' || github.event.action != 'closed')
+    runs-on: ubuntu-latest
+    name: Test, Build and Deploy
+    env:
+      # Environment variables for Azure Functions testing
+      # These are automatically picked up by:
+      # - TestBase class via AddEnvironmentVariables() for tests
+      # - Settings class via Environment.GetEnvironmentVariable() for Azure Functions
+      # No local.settings.json file needed in CI/CD - optimized for faster execution
+      Values__RainDropClientId: ${{ secrets.RAINDROP_CLIENT_ID }}
+      Values__RainDropClientSecret: ${{ secrets.RAINDROP_CLIENT_SECRET }}
+      Values__RainDropTestToken: ${{ secrets.RAINDROP_TEST_TOKEN }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1 # Shallow clone for faster checkout
+          show-progress: false # Reduce log noise
+
+      # OPTIMIZATION: Single .NET setup with WASM workload for Blazor builds
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "9.0.x"
+          workloads: wasm-tools
+
+      # OPTIMIZATION: Cache NuGet packages for faster subsequent builds
+      - name: Cache NuGet packages
+        uses: actions/cache@v5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      # OPTIMIZATION: Single dependency restoration
+      - name: Restore dependencies
+        run: dotnet restore
+
+      # TESTING PHASE: Fast fail if tests don't pass with parallel execution
+      # Note: Tests automatically use environment variables set in the job environment
+      # No local.settings.json file needed as TestBase class uses AddEnvironmentVariables()
+      # OPTIMIZATION: Run tests in Release mode to avoid double compilation
+      - name: Run tests
+        run: |
+          echo "🧪 Running TUnit Tests..."
+          echo "ℹ️  Tests will automatically use environment variables in CI/CD environment"
+          echo "ℹ️  TUnit runs tests in parallel by default - no additional configuration needed"
+          dotnet test -c Release --no-restore --verbosity quiet --logger trx --results-directory TestResults /p:CollectCoverage=false
+          if [ $? -ne 0 ]; then
+            echo "❌ Tests failed! Stopping deployment."
+            exit 1
+          fi
+          echo "✅ All tests passed! Proceeding with build and deployment."
+
+      # BUILD AND DEPLOY PHASE: Only runs if tests pass
+      - name: Setup Node.js for Azure Static Web Apps CLI
+        uses: actions/setup-node@v6
+        with:
+          node-version: "18"
+
+      # OPTIMIZATION: Cache npm global packages for SWA CLI
+      # Using static key since we install a specific global package version
+      - name: Cache npm and SWA CLI
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            $(npm root -g)
+            ~/.swa
+          key: ${{ runner.os }}-npm-swa-cli-v2
+          restore-keys: |
+            ${{ runner.os }}-npm-swa-cli-
+
+      # Install Azure Static Web Apps CLI (uses cache when available)
+      - name: Install Azure Static Web Apps CLI
+        run: |
+          echo "📦 Installing Azure Static Web Apps CLI..."
+          npm install -g @azure/static-web-apps-cli --silent --no-audit --no-fund
+          echo "✅ Azure Static Web Apps CLI installed: $(swa --version)"
+
+      - name: Build and Deploy to Azure Static Web Apps
+        env:
+          AZURE_STATIC_WEB_APPS_API_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_CLIFF_0945BE603 }}
+        run: |
+          # 🚀 OPTIMIZED AZURE STATIC WEB APPS DEPLOYMENT
+          # Benefits of this optimized approach:
+          # ✅ Single job reduces runner overhead and speeds up pipeline
+          # ✅ Tests run first for fast failure (fail-fast principle)
+          # ✅ No duplicate .NET setup, checkout, or dependency restoration
+          # ✅ Shared environment and context between test and deploy phases
+          # ✅ No local.settings.json file creation - uses environment variables directly
+
+          set -e  # Exit on any error
+
+          echo "🔍 Environment Information:"
+          echo "Working Directory: $(pwd)"
+          echo "Node Version: $(node --version)"
+          echo "NPM Version: $(npm --version)"
+          echo ".NET Version: $(dotnet --version)"
+          echo "SWA CLI Version: $(swa --version)"
+
+          echo ""
+          echo "📁 Project Structure:"
+          echo "App Location: ${{ env.APP_LOCATION }}"
+          echo "API Location: ${{ env.API_LOCATION }}"
+          echo "Output Location: ${{ env.APP_ARTIFACT_LOCATION }}"
+
+          echo ""
+          echo "🏗️ Building Blazor WebAssembly Application..."
+          # Build with optimizations for production deployment
+          dotnet publish ${{ env.APP_LOCATION }} \
+            -c Release \
+            -o ${{ env.APP_LOCATION }}/bin/Release/publish \
+            --no-restore \
+            --no-dependencies \
+            --verbosity quiet \
+            --nologo
+
+          echo ""
+          echo "⚡ Building Azure Functions API..."
+          dotnet publish ${{ env.API_LOCATION }} \
+            -c Release \
+            -o ${{ env.API_LOCATION }}/bin/Release/publish \
+            --no-restore \
+            --no-dependencies \
+            --verbosity quiet \
+            --nologo
+
+          echo ""
+          echo "📦 Deploying to Azure Static Web Apps..."
+          # Deploy with minimal output (removed --print-config for faster execution)
+          swa deploy \
+            --app-location ${{ env.APP_LOCATION }}/bin/Release/publish \
+            --api-location ${{ env.API_LOCATION }}/bin/Release/publish \
+            --output-location ${{ env.APP_ARTIFACT_LOCATION }} \
+            --deployment-token $AZURE_STATIC_WEB_APPS_API_TOKEN \
+            --env production \
+            --no-use-keychain
+
+          echo ""
+          echo "✅ Pipeline completed successfully!"
+          echo "🧪 Tests passed, build succeeded, deployment completed"
+          echo "🌐 Your Blazor WebAssembly app is now live on Azure Static Web Apps"
+
+      # Health check after deployment
+      - name: Verify deployment health
+        run: |
+          echo "🔍 Verifying deployment health..."
+          sleep 5  # Minimum required wait time
+
+          echo "Performing basic connectivity test..."
+          if curl -f -s --max-time 5 --retry 1 --retry-delay 2 \
+             "https://redmuffin.net" > /dev/null; then
+            echo "✅ Deployment health check passed - site is accessible"
+          else
+            echo "⚠️ Site may not be fully ready yet - this is normal for new deployments"
+            echo "ℹ️  You can manually verify at: https://redmuffin.net"
+          fi
+
+  # JOB: Handle documentation-only changes (skipped deployment)
+  docs_only_changed_job:
+    needs: check_changes
+    if: |
+      (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')) &&
+      needs.check_changes.outputs.should_skip == 'true'
+    runs-on: ubuntu-latest
+    name: Documentation Only Changed
+    steps:
+      - name: Skip Deployment
+        run: |
+          echo "📝 Only documentation and non-deployed files changed."
+          echo "⏭️ Skipping deployment process as no code changes were detected."
+          echo ""
+          echo "💡 WHAT THIS MEANS FOR YOU:"
+          echo "   • Tests and builds are skipped to save time and resources"
+          echo "   • Documentation changes don't require application redeployment"
+          echo "   • Your live application remains unchanged and operational"
+          echo "   • GitHub Pages documentation will still be updated automatically"
+
+  # JOB: Handle pull request closures
+  close_pull_request_job:
+    permissions:
+      contents: none
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request Job
+    steps:
+      - name: Close Pull Request
+        id: closepullrequest
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_CLIFF_0945BE603 }}
+          action: "close"
