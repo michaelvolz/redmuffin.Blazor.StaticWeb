@@ -45,7 +45,7 @@
       "$ref": "users",
       "$id": 12345
     },
-    "cover": "https://picsum.photos/400/200?random=1",
+    "cover": "https://placehold.co/400x200/3b82f6/ffffff?text=Article+1",
     "media": [
       {
         "link": "https://x.com/martinfowler/status/2009258648598438352",
@@ -80,7 +80,7 @@
       "$ref": "users",
       "$id": 12345
     },
-    "cover": "https://picsum.photos/400/200?random=2",
+    "cover": "https://placehold.co/400x200/3b82f6/ffffff?text=Article+2",
     "media": [
       {
         "link": "https://github.blog/ai-and-ml/github-copilot/how-to-write-a-great-agents-md-lessons-from-over-2500-repositories/",
@@ -115,7 +115,7 @@
       "$ref": "users",
       "$id": 12345
     },
-    "cover": "https://picsum.photos/400/200?random=3",
+    "cover": "https://placehold.co/400x200/3b82f6/ffffff?text=Article+3",
     "media": [
       {
         "link": "https://mariozechner.at/posts/2025-11-02-what-if-you-dont-need-mcp/",
@@ -150,7 +150,7 @@
       "$ref": "users",
       "$id": 12345
     },
-    "cover": "https://picsum.photos/400/200?random=4",
+    "cover": "https://placehold.co/400x200/3b82f6/ffffff?text=Article+4",
     "media": [
       {
         "link": "https://www.windowscentral.com/microsoft-suggests-future-of-windows",
@@ -185,7 +185,7 @@
       "$ref": "users",
       "$id": 12345
     },
-    "cover": "https://picsum.photos/400/200?random=5",
+    "cover": "https://placehold.co/400x200/3b82f6/ffffff?text=Article+5",
     "media": [
       {
         "link": "https://x.com/venelinkochev/status/1952384179850576278",
@@ -220,7 +220,7 @@
       "$ref": "users",
       "$id": 12345
     },
-    "cover": "https://picsum.photos/400/200?random=6",
+    "cover": "https://placehold.co/400x200/3b82f6/ffffff?text=Article+6",
     "media": [
       {
         "link": "https://x.com/charliebholtz/status/1952392641112326166",
@@ -255,7 +255,7 @@
       "$ref": "users",
       "$id": 12345
     },
-    "cover": "https://picsum.photos/400/200?random=7",
+    "cover": "https://placehold.co/400x200/3b82f6/ffffff?text=Article+7",
     "media": [
       {
         "link": "https://steipete.me/posts/2025/self-hosting-ai-models",
@@ -290,7 +290,7 @@
       "$ref": "users",
       "$id": 12345
     },
-    "cover": "https://picsum.photos/400/200?random=8",
+    "cover": "https://placehold.co/400x200/3b82f6/ffffff?text=Article+8",
     "media": [
       {
         "link": "https://andrewlock.net/exploring-dotnet-10-preview-features-5-running-one-off-dotnet-tools-with-dnx/",
@@ -325,7 +325,7 @@
       "$ref": "users",
       "$id": 12345
     },
-    "cover": "https://picsum.photos/400/200?random=9",
+    "cover": "https://placehold.co/400x200/3b82f6/ffffff?text=Article+9",
     "media": [
       {
         "link": "https://docs.task-master.dev/docs/introduction",
@@ -360,7 +360,7 @@
       "$ref": "users",
       "$id": 12345
     },
-    "cover": "https://picsum.photos/400/200?random=10",
+    "cover": "https://placehold.co/400x200/3b82f6/ffffff?text=Article+10",
     "media": [
       {
         "link": "https://medium.com/devlink-tips/ai-killed-my-coding-brain-but-im-rebuilding-it-8de7e1618bca",
@@ -395,7 +395,7 @@
       "$ref": "users",
       "$id": 12345
     },
-    "cover": "https://picsum.photos/400/200?random=11",
+    "cover": "https://placehold.co/400x200/3b82f6/ffffff?text=Article+11",
     "media": [
       {
         "link": "https://long.sweet.pub/ill-instantly-know-you-used-chat-gpt-if-i-see-this-d0a635bc0a00",
@@ -430,7 +430,7 @@
       "$ref": "users",
       "$id": 12345
     },
-    "cover": "https://picsum.photos/400/200?random=12",
+    "cover": "https://placehold.co/400x200/3b82f6/ffffff?text=Article+12",
     "media": [
       {
         "link": "https://medium.com/@sohail_saifi/kubernetes-is-dead-why-tech-giants-are-secretly-moving-to-these-5-orchestration-alternatives-0c4f8eb38185",
@@ -465,7 +465,7 @@
       "$ref": "users",
       "$id": 12345
     },
-    "cover": "https://picsum.photos/400/200?random=13",
+    "cover": "https://placehold.co/400x200/3b82f6/ffffff?text=Article+13",
     "media": [
       {
         "link": "https://medium.com/bricksnbrackets/i-cant-recommend-the-macbook-pro-to-developers-anymore-3c646047d70a",
@@ -500,7 +500,7 @@
       "$ref": "users",
       "$id": 12345
     },
-    "cover": "https://picsum.photos/400/200?random=14",
+    "cover": "https://placehold.co/400x200/3b82f6/ffffff?text=Article+14",
     "media": [
       {
         "link": "https://medium.com/psychology-of-workplaces/resumes-are-dying-heres-what-s-replacing-them-818422da3fbf",
@@ -535,7 +535,7 @@
       "$ref": "users",
       "$id": 12345
     },
-    "cover": "https://picsum.photos/400/200?random=15",
+    "cover": "https://placehold.co/400x200/3b82f6/ffffff?text=Article+15",
     "media": [
       {
         "link": "https://aindotnet.com/",
@@ -570,7 +570,7 @@
       "$ref": "users",
       "$id": 12345
     },
-    "cover": "https://picsum.photos/400/200?random=16",
+    "cover": "https://placehold.co/400x200/3b82f6/ffffff?text=Article+16",
     "media": [
       {
         "link": "https://medium.com/@slemfowel/ai-tool-as-a-c-developer-9d388cab0cdd",
@@ -605,7 +605,7 @@
       "$ref": "users",
       "$id": 12345
     },
-    "cover": "https://picsum.photos/400/200?random=17",
+    "cover": "https://placehold.co/400x200/3b82f6/ffffff?text=Article+17",
     "media": [
       {
         "link": "https://medium.com/@slemfowel/ml-net-unleashing-the-power-of-ai-in-c-development-a-comprehensive-exploration-in-2024-part-1-of-b4e6490561dc",
@@ -640,7 +640,7 @@
       "$ref": "users",
       "$id": 12345
     },
-    "cover": "https://picsum.photos/400/200?random=18",
+    "cover": "https://placehold.co/400x200/3b82f6/ffffff?text=Article+18",
     "media": [
       {
         "link": "https://andrewlock.net/exploring-dotnet-10-preview-features-2-behind-the-scenes-of-dotnet-run-app.cs/",
@@ -675,7 +675,7 @@
       "$ref": "users",
       "$id": 12345
     },
-    "cover": "https://picsum.photos/400/200?random=19",
+    "cover": "https://placehold.co/400x200/3b82f6/ffffff?text=Article+19",
     "media": [
       {
         "link": "https://spiess.dev/blog/how-i-use-claude-code",
@@ -710,7 +710,7 @@
       "$ref": "users",
       "$id": 12345
     },
-    "cover": "https://picsum.photos/400/200?random=20",
+    "cover": "https://placehold.co/400x200/3b82f6/ffffff?text=Article+20",
     "media": [
       {
         "link": "https://steipete.me/posts/2025/claude-code-is-my-computer",
