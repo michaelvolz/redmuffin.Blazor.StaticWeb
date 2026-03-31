@@ -65,8 +65,8 @@
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
     <!-- Remove collation data for smaller production bundle -->
     <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
-    <!-- Strip IL after AOT compilation for maximum optimization -->
-    <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
+    <!-- IL stripping after AOT disabled - AoT is not used to keep bundle size small -->
+    <WasmStripILAfterAOT>false</WasmStripILAfterAOT>
     <!-- Disable timezone support to reduce bundle size (application doesn't use timezones) -->
     <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
     <!-- Disable EventSource support to reduce bundle size -->
