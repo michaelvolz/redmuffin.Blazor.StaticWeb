@@ -18,7 +18,7 @@
 @if (_videoItems != null && _videoItems.Any())
 {
     <div class="masonry">
-        @foreach (var video in _videoItems)
+        @foreach (var (video, index) in _videoItems.Select((v, i) => (v, i)))
         {
             <div class="card video-card">
                 <div class="card-divider">
@@ -26,6 +26,9 @@
                 </div>
                 <div class="shimmer-placeholder" id="shimmer-@video.Id">
                     <img src="@GetImageUrl(video)" alt="Video Cover"
+                         loading="@(index < 6 ? "eager" : "lazy")"
+                         fetchpriority="@(index < 6 ? "high" : "low")"
+                         decoding="async"
                          @onload="@(() => HandleImageLoadAsync($"shimmer-{video.Id}", video.Link, true))"
                          @onerror="@(() => HandleImageLoadAsync($"shimmer-{video.Id}", video.Link, false))"/>
                     @if (HasFallbackPlaceholder(video))

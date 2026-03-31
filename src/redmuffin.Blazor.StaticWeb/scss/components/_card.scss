@@ -41,6 +41,12 @@
   width: 100%;
   margin-bottom: foundation.$global-margin;
 
+  // Performance optimizations: CSS containment and content-visibility
+  // Limits layout recalculations and skips rendering for off-screen cards
+  contain: content;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 350px;
+
   &:hover {
     transform: translateY(foundation.rem-calc(-5));
     box-shadow: 0 foundation.rem-calc(4) foundation.rem-calc(8)
