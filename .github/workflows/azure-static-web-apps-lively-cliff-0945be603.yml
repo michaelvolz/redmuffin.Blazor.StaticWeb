@@ -157,15 +157,17 @@ jobs:
       # OPTIMIZATION: Run tests in Release mode to avoid double compilation
       - name: Run tests
         run: |
-          echo "🧪 Running TUnit Tests..."
-          echo "ℹ️  Tests will automatically use environment variables in CI/CD environment"
-          echo "ℹ️  TUnit runs tests in parallel by default - no additional configuration needed"
+          echo "Running tests..."
+          echo "Configuration: Release mode, parallel execution enabled"
           dotnet test -c Release --no-restore --verbosity quiet --logger trx --results-directory TestResults /p:CollectCoverage=false
-          if [ $? -ne 0 ]; then
-            echo "❌ Tests failed! Stopping deployment."
-            exit 1
+          TEST_EXIT_CODE=$?
+          if [ $TEST_EXIT_CODE -ne 0 ]; then
+            echo ""
+            echo "❌ STEP FAILED: Test Execution"
+            echo "Exit code: $TEST_EXIT_CODE"
+            echo ""
+            exit $TEST_EXIT_CODE
           fi
-          echo "✅ All tests passed! Proceeding with build and deployment."
 
       # BUILD AND DEPLOY PHASE: Only runs if tests pass
       - name: Setup Node.js for Azure Static Web Apps CLI
@@ -189,25 +191,25 @@ jobs:
       # Install Azure Static Web Apps CLI (uses cache when available)
       - name: Install Azure Static Web Apps CLI
         run: |
-          echo "📦 Installing Azure Static Web Apps CLI..."
+          echo "Installing Azure Static Web Apps CLI..."
           npm install -g @azure/static-web-apps-cli --silent --no-audit --no-fund
-          echo "✅ Azure Static Web Apps CLI installed: $(swa --version)"
+          echo "Azure Static Web Apps CLI version: $(swa --version)"
 
       - name: Build and Deploy to Azure Static Web Apps
         env:
           AZURE_STATIC_WEB_APPS_API_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_CLIFF_0945BE603 }}
         run: |
-          # 🚀 OPTIMIZED AZURE STATIC WEB APPS DEPLOYMENT
+          # OPTIMIZED AZURE STATIC WEB APPS DEPLOYMENT
           # Benefits of this optimized approach:
-          # ✅ Single job reduces runner overhead and speeds up pipeline
-          # ✅ Tests run first for fast failure (fail-fast principle)
-          # ✅ No duplicate .NET setup, checkout, or dependency restoration
-          # ✅ Shared environment and context between test and deploy phases
-          # ✅ No local.settings.json file creation - uses environment variables directly
+          # - Single job reduces runner overhead and speeds up pipeline
+          # - Tests run first for fast failure (fail-fast principle)
+          # - No duplicate .NET setup, checkout, or dependency restoration
+          # - Shared environment and context between test and deploy phases
+          # - No local.settings.json file creation - uses environment variables directly
 
           set -e  # Exit on any error
 
-          echo "🔍 Environment Information:"
+          echo "Environment Information:"
           echo "Working Directory: $(pwd)"
           echo "Node Version: $(node --version)"
           echo "NPM Version: $(npm --version)"
@@ -215,13 +217,13 @@ jobs:
           echo "SWA CLI Version: $(swa --version)"
 
           echo ""
-          echo "📁 Project Structure:"
+          echo "Project Structure:"
           echo "App Location: ${{ env.APP_LOCATION }}"
           echo "API Location: ${{ env.API_LOCATION }}"
           echo "Output Location: ${{ env.APP_ARTIFACT_LOCATION }}"
 
           echo ""
-          echo "🏗️ Building Blazor WebAssembly Application..."
+          echo "Building Blazor WebAssembly Application..."
           # Build with optimizations for production deployment
           dotnet publish ${{ env.APP_LOCATION }} \
             -c Release \
@@ -232,7 +234,7 @@ jobs:
             --nologo
 
           echo ""
-          echo "⚡ Building Azure Functions API..."
+          echo "Building Azure Functions API..."
           dotnet publish ${{ env.API_LOCATION }} \
             -c Release \
             -o ${{ env.API_LOCATION }}/bin/Release/publish \
@@ -242,7 +244,7 @@ jobs:
             --nologo
 
           echo ""
-          echo "📦 Deploying to Azure Static Web Apps..."
+          echo "Deploying to Azure Static Web Apps..."
           # Deploy with minimal output (removed --print-config for faster execution)
           swa deploy \
             --app-location ${{ env.APP_LOCATION }}/bin/Release/publish \
@@ -253,23 +255,26 @@ jobs:
             --no-use-keychain
 
           echo ""
-          echo "✅ Pipeline completed successfully!"
-          echo "🧪 Tests passed, build succeeded, deployment completed"
-          echo "🌐 Your Blazor WebAssembly app is now live on Azure Static Web Apps"
+          echo "=== Pipeline Summary ==="
+          echo "Tests: Completed"
+          echo "Build: Success"
+          echo "Deploy: Success"
+          echo ""
+          echo "✅ All checks passed"
 
       # Health check after deployment
       - name: Verify deployment health
         run: |
-          echo "🔍 Verifying deployment health..."
+          echo "Verifying deployment health..."
           sleep 5  # Minimum required wait time
 
           echo "Performing basic connectivity test..."
           if curl -f -s --max-time 5 --retry 1 --retry-delay 2 \
              "https://redmuffin.net" > /dev/null; then
-            echo "✅ Deployment health check passed - site is accessible"
+            echo "Deployment health check passed - site is accessible"
           else
             echo "⚠️ Site may not be fully ready yet - this is normal for new deployments"
-            echo "ℹ️  You can manually verify at: https://redmuffin.net"
+            echo "Manual verification: https://redmuffin.net"
           fi
 
   # JOB: Handle documentation-only changes (skipped deployment)
@@ -283,14 +288,14 @@ jobs:
     steps:
       - name: Skip Deployment
         run: |
-          echo "📝 Only documentation and non-deployed files changed."
-          echo "⏭️ Skipping deployment process as no code changes were detected."
+          echo "Only documentation and non-deployed files changed."
+          echo "Skipping deployment process as no code changes were detected."
           echo ""
-          echo "💡 WHAT THIS MEANS FOR YOU:"
-          echo "   • Tests and builds are skipped to save time and resources"
-          echo "   • Documentation changes don't require application redeployment"
-          echo "   • Your live application remains unchanged and operational"
-          echo "   • GitHub Pages documentation will still be updated automatically"
+          echo "WHAT THIS MEANS FOR YOU:"
+          echo "  - Tests and builds are skipped to save time and resources"
+          echo "  - Documentation changes don't require application redeployment"
+          echo "  - Your live application remains unchanged and operational"
+          echo "  - GitHub Pages documentation will still be updated automatically"
 
   # JOB: Handle pull request closures
   close_pull_request_job:
