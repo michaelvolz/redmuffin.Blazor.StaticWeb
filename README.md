@@ -199,11 +199,41 @@ Use only if you cannot run Docker. Note: Manual secret management required.
   > **Note**: This MCP server provides browser control capabilities including navigation, script execution, screenshots, performance tracing, and network inspection. It uses the `--isolated` flag to run Chrome in an incognito-like mode with automatic cleanup.
 
 - **cc-safety-net** (Required for OpenCode plugin)
-  AI agent safety net that blocks destructive git and filesystem commands before execution. Prevents accidental data loss from commands like `git push --force`, `git reset --hard`, `git checkout --`, and `rm -rf`. MIT licensed, open source:
+  AI agent safety net that blocks destructive git and filesystem commands before execution. Prevents accidental data loss from AI agent mistakes. MIT licensed, open source:
 
   ```bash
   npm install -g cc-safety-net
   ```
+
+  **Dual Push Protection:**
+  The project uses two independent layers to prevent remote pushes:
+
+  | Layer            | Mechanism                                                  | Blocks                                                                           |
+  | ---------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------- |
+  | 1. cc-safety-net | Semantic command analysis via `tool.execute.before` hook   | All `git push` variants, shell wrappers, env prefixes                            |
+  | 2. block-push.js | Custom OpenCode plugin (`.opencode/plugins/block-push.js`) | `git push` with bypass-resistant parsing, interpreter one-liners, command chains |
+
+  **Blocked Commands (Built-in Rules):**
+
+  | Command Pattern                | Reason                                       |
+  | ------------------------------ | -------------------------------------------- |
+  | `git push *`                   | NEVER push without explicit user permission  |
+  | `git reset --hard`             | Destroys all uncommitted changes permanently |
+  | `git checkout -- *`            | Discards uncommitted changes permanently     |
+  | `git clean -f*`                | Removes untracked files permanently          |
+  | `git branch -D *`              | Force-deletes without merge check            |
+  | `rm -rf /` or `rm -rf ~`       | Targeting root or home directory             |
+  | `rm -rf .` or `rm -rf ../path` | Outside current working directory            |
+
+  **Paranoid Mode (devcontainer.json):**
+  Four environment variables enforce maximum protection:
+
+  | Variable                             | Effect                                                |
+  | ------------------------------------ | ----------------------------------------------------- |
+  | `SAFETY_NET_STRICT=1`                | Fail-closed on unparseable commands                   |
+  | `SAFETY_NET_PARANOID=1`              | Enable all paranoid checks (master switch)            |
+  | `SAFETY_NET_PARANOID_RM=1`           | Block ALL `rm -rf` (even within cwd)                  |
+  | `SAFETY_NET_PARANOID_INTERPRETERS=1` | Block interpreter one-liners (`node -e`, `python -c`) |
 
   > **Note**: This plugin is registered in `opencode.json` and intercepts all bash commands via the `tool.execute.before` hook. It provides semantic command analysis (not simple pattern matching), shell wrapper detection, and interpreter one-liner detection. Default mode blocks only truly destructive operations while allowing safe git workflows. Configured with `min-release-age=7` in `.npmrc` to prevent supply chain attacks from newly published packages.
 
