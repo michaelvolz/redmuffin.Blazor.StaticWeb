@@ -2,7 +2,7 @@
 aliases:
   - commit
   - c
-description: Create conventional commit following project standards
+description: Create conventional commit(s) following project standards
 ---
 
-Execute the commit skill immediately. Do not provide a summary or ask for confirmation—just commit. Determine scope: if user explicitly said "full", "all", or "everything", commit ALL open changes; otherwise commit only files changed in this session plus any package.lock.json files created during our work.
+Execute commits skill immediately. Strictly follow its rules including staging order and batched commits per concern (even for "full/all/everything" - stage all but commit separately). Scope: all open changes if "full/all/everything"; else session files + package.lock.json. No summary or confirmation—just commit.
