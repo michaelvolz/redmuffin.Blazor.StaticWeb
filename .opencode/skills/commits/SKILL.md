@@ -1,8 +1,21 @@
 ---
 name: commits
-description: Conventional commit format and standards for this project.
+description: Guidelines for creating conventional commit messages following project standards. USE THIS SKILL whenever the user wants to commit changes, write a commit message, create a commit, or mentions committing - even if they don't say 'git'. Ensures proper conventional commit format with types, scopes, and descriptive bodies.
 invocable: false
 ---
+
+## When to use me
+
+Use this skill whenever the user mentions:
+
+- Committing changes
+- Creating a commit message
+- Writing a commit
+- Making a commit
+- Preparing to commit
+- Conventional commits
+
+This applies even if the user doesn't explicitly say "git" - any mention of committing code should trigger this skill.
 
 CHECK_ORDER:
 
