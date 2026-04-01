@@ -44,6 +44,7 @@ jobs:
         id: check
         uses: tj-actions/changed-files@v47.0.5
         with:
+          since_last_remote_commit: true
           files: |
             README.md
             AGENTS.md
