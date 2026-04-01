@@ -6,7 +6,7 @@
       "apiLocation": "src/redmuffin.Blazor.StaticWeb.Api",
       "outputLocation": "wwwroot",
       "apiLanguage": "dotnetisolated",
-      "apiVersion": "8.0",
+      "apiVersion": "9.0",
       "appBuildCommand": "dotnet publish -c Release",
       "apiBuildCommand": "dotnet publish -c Release",
       "run": "dotnet run",
