@@ -339,15 +339,4 @@ public partial class Videos
     {
         return ImagePlaceholderService.GetFallbackReason(video, _imageUrlCache);
     }
-
-    private Task HandleCardImageLoadAsync((string ElementId, string ItemLink, bool Success) args)
-    {
-        return ImagePlaceholderService.HandleImageLoadAsync(
-            args.ElementId,
-            args.ItemLink,
-            args.Success,
-            _imageUrlCache,
-            Js,
-            () => InvokeAsync(StateHasChanged));
-    }
 }
