@@ -4,34 +4,67 @@ description: Conventional commit format and standards for this project.
 invocable: false
 ---
 
-# Commits - READ THIS FIRST
+# COMMIT PROTOCOL
 
-## Template (Copy-Paste This)
+## ⏻ BEFORE EDITING THIS FILE
 
-```bash
-git commit -m "type(scope): description
+□ Read **complete file** (line 1 to end)  
+□ Identify **all sections** for your change  
+□ Plan **all edits** in one pass  
+□ Execute - if you need a second edit, re-read first
 
-Body explaining what changed."
+---
+
+## ⏻ PRE-FLIGHT (Before every commit)
+
+□ Body exists? (blank line + description)  
+□ Lock files staged? (`packages.lock.json` when deps change)  
+□ Concerns separated? (ONE logical change: docs|code|config|tooling)
+
+## ✎ FORMAT
+
+```
+type(scope): subject (max 100 chars)
+
+Body explaining what and why.
 ```
 
-**CRITICAL: The blank line between title and body is required.**
+**CRITICAL:** Blank line between title and body is required.
 
-## Before Every Commit
+## 📋 REFERENCE
 
-Check these two things:
+**Types:** feat|fix|docs|style|refactor|perf|test|build|chore|ci|revert  
+**Type meanings:** feat=feature, fix=bug fix, docs=documentation, style=formatting, refactor=code change no feature/fix, perf=performance, test=adding tests, build=build system, chore=maintenance/tooling, ci=CI/CD, revert=revert commit  
+**Scopes:** blazor|api|ui|deps|build|scripts|ci|docs|opencode  
+**Max length:** 100 chars per line  
+**Breaking:** Add `!` after scope + `BREAKING CHANGE:` in body
 
-1. **Body exists?** Must have blank line + description
-2. **Lock files staged?** Run `git status`, include all `packages.lock.json` if modified
+## ⚠ GUARDRAILS
 
-## Format Reference
+### NEVER
 
-**Types:** feat, fix, docs, style, refactor, perf, test, build, chore, ci, revert
-**Scopes:** blazor, api, ui, deps, build, scripts, ci, docs, opencode
-**Max length:** 100 chars per line
+- No body (commitlint rejects)
+- Missing lock files when deps change
+- Mix concerns (docs+code, config+feature, tooling+bugfix)
+- Push (plugin blocks this)
+- Commit without explicit user command
+- Use custom types like `config` or `security` (use `chore(opencode):` or `fix(security):`)
 
-## Right vs Wrong
+### ALWAYS
 
-✅ **CORRECT:**
+- One logical concern per commit
+- Include `packages.lock.json` for CI/CD reproducible builds
+- Explicit user approval before committing
+
+## 📁 LOCK FILES (commit when modified)
+
+- `src/**/packages.lock.json`
+- `tests/**/packages.lock.json`
+- `src/SwaLauncher/packages.lock.json`
+
+## 💡 EXAMPLES
+
+**Standard:**
 
 ```bash
 git commit -m "feat(api): add endpoint
@@ -39,18 +72,7 @@ git commit -m "feat(api): add endpoint
 Added POST endpoint."
 ```
 
-❌ **WRONG (no body):**
-
-```bash
-git commit -m "feat(api): add endpoint"
-```
-
-❌ **WRONG (missing lock files):**
-Only committing `Directory.Packages.props` without `packages.lock.json` files
-
-## Common Patterns
-
-**Dependencies:**
+**Dependency bump:**
 
 ```bash
 git commit -m "chore(deps): bump PackageName
@@ -67,47 +89,25 @@ git commit -m "chore(deps): bump packages
 - PackageB: 2.0.0 → 2.1.0"
 ```
 
-## Rules
+**Breaking change:**
 
-- **ALWAYS** include body (commitlint rejects without it)
-- **ALWAYS** include `packages.lock.json` when dependencies change (required for CI/CD reproducible builds)
-- **NEVER** mix unrelated changes in one commit (one logical concern per commit)
-- **NEVER** push (plugin blocks this)
-- **NEVER** commit without explicit user command
-- **NEVER** use custom types like `config` or `security` (use `chore(opencode):` or `fix(security):`)
+```bash
+git commit -m "feat(api)!: remove deprecated endpoint
 
-**Breaking changes:** Add `!` after scope
-
-```
-feat(api)!: remove deprecated endpoint
-
-BREAKING CHANGE: v1 endpoints removed.
+BREAKING CHANGE: v1 endpoints removed."
 ```
 
-## Lock Files Location
+**Commit separation:**
 
-Always commit when modified:
+```bash
+# ✓ docs(agents): add winget priority rule  (AGENTS.md - infrastructure docs)
+# ✓ fix(swa): update apiVersion to 9.0       (swa-cli.config.json - config fix)
+# ✗ chore: update configs                     (mixing unrelated changes)
+```
 
-- `src/**/packages.lock.json`
-- `tests/**/packages.lock.json`
-- `src/SwaLauncher/packages.lock.json`
+**Revert test:** "If I revert this commit, would I lose work I want to keep?" If yes, separate them.
 
-## Type Meanings
+## 🛠 SCRIPTS
 
-- **feat:** New feature
-- **fix:** Bug fix
-- **docs:** Documentation only
-- **style:** Formatting, whitespace
-- **refactor:** Code change, no feature/fix
-- **perf:** Performance improvement
-- **test:** Adding/correcting tests
-- **build:** Build system or deps
-- **chore:** Maintenance, tooling
-- **ci:** CI/CD changes
-- **revert:** Revert previous commit
-
-## Scripts
-
-Setup git hooks: `pwsh scripts/Setup-GitHooks.ps1`
-
+Setup git hooks: `pwsh scripts/Setup-GitHooks.ps1`  
 Skip hooks (emergency): `git commit -m "msg" -n`
