@@ -198,6 +198,15 @@ Use only if you cannot run Docker. Note: Manual secret management required.
 
   > **Note**: This MCP server provides browser control capabilities including navigation, script execution, screenshots, performance tracing, and network inspection. It uses the `--isolated` flag to run Chrome in an incognito-like mode with automatic cleanup.
 
+- **cc-safety-net** (Required for OpenCode plugin)
+  AI agent safety net that blocks destructive git and filesystem commands before execution. Prevents accidental data loss from commands like `git push --force`, `git reset --hard`, `git checkout --`, and `rm -rf`. MIT licensed, open source:
+
+  ```bash
+  npm install -g cc-safety-net
+  ```
+
+  > **Note**: This plugin is registered in `opencode.json` and intercepts all bash commands via the `tool.execute.before` hook. It provides semantic command analysis (not simple pattern matching), shell wrapper detection, and interpreter one-liner detection. Default mode blocks only truly destructive operations while allowing safe git workflows. Configured with `min-release-age=7` in `.npmrc` to prevent supply chain attacks from newly published packages.
+
 #### .NET Tools
 
 - **Project-Local Tools** (automatically managed)

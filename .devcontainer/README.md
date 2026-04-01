@@ -53,6 +53,9 @@ This method provides the full security boundary and works with opencode:
 # One-time setup
 npm install -g @devcontainers/cli
 
+# Install AI agent safety net (blocks destructive commands)
+npm install -g cc-safety-net
+
 # Clone repo to a temp location (NOT inside the devcontainer!)
 # You only need the .devcontainer folder, not the full repo
 git clone git@github.com:michaelvolz/redmuffin.Blazor.StaticWeb.git temp-devcontainer
@@ -226,6 +229,7 @@ Unlike traditional development, you do **not** need to create `.env` files. Secr
 - `prettier` - Code formatter
 - `@commitlint/cli` - Commit message validation
 - `chrome-devtools-mcp` - Chrome DevTools MCP server
+- `cc-safety-net` - AI agent safety net (blocks destructive git/filesystem commands)
 
 ### Docker Images (MCP Servers)
 
