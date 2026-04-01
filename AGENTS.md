@@ -267,7 +267,7 @@ Full stack: `pwsh Stop.ps1` (tracks PIDs in `.dev-session.pids`)
 ### ALWAYS
 
 - Bash-compatible commands (`pwsh scripts/...`)
-- `winget` (NOT Chocolatey)
+- `winget`
 - `dotnet build --verbosity quiet` after C# changes
 - `dotnet build -c Debug-Sass` after SCSS/JS
 - `dotnet test` before commit
@@ -303,10 +303,11 @@ Full stack: `pwsh Stop.ps1` (tracks PIDs in `.dev-session.pids`)
 - Auto-commit (explicit command only)
 - `Logger.LogError()` (use `LoggerMessage`)
 - `== null` (use `is null`)
-- Chocolatey (use `winget`)
+
 - ALL CAPS filenames (except AGENTS.md, README.md)
 - Edit multiple files without testing
 - Skip testing on infrastructure errors
+- NEVER circumvent git hooks (--no-verify etc.). Implemented to avoid agent mistakes. Critical
 
 ## OUTPUT STYLE
 
