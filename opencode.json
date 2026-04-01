@@ -12,7 +12,7 @@
       "**/publish/**"
     ]
   },
-  "plugin": ["opencode-snippets"],
+  "plugin": ["opencode-snippets", "cc-safety-net"],
   "formatter": {
     "dotnet-format": {
       "command": ["dotnet", "format", "--include", "$FILE"],
