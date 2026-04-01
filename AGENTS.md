@@ -313,6 +313,19 @@ _mock.Arrange(f => f.GetAsync("key", CancellationToken.None))
 - Edit multiple files without testing
 - Skip testing on infrastructure errors (investigate root cause)
 
+## OUTPUT STYLE
+
+**Vertical Density Rules:**
+| Rule | Constraint |
+|------|------------|
+| Line width | Max 160 chars |
+| Empty lines | Minimize - use only between major sections |
+| Paragraphs | Avoid - use bullets/tables instead |
+| Recapitulation | Never - state once, move on |
+| Voice | Active, imperative |
+
+**Format Priority:** Tables > bullets > single-line > minimal prose. ALL information preserved, only verbosity removed.
+
 ## CONTEXT
 
 - **AOT Compilation**: Tests run with AOT in CI (`CI=true` or `GITHUB_ACTIONS=true`), disabled locally for speed
