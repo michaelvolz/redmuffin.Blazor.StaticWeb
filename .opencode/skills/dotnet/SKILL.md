@@ -67,7 +67,25 @@ dotnet test --filter "FullyQualifiedName~TestMethodName"
 
 # List all tests
 dotnet test --list-tests
+
+# Run by category (treenode-filter)
+dotnet test -- --treenode-filter "/*/*/*/*[Category=Smoke]"                 # Smoke (27, ~0.8s)
+dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Home]"          # Home (52)
+dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Videos]"        # Videos (10)
+dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Articles]"      # Articles (17)
+dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Cache]"         # Cache (31)
+dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Raindrop]"      # Raindrop (24)
+dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:RaindropItems]" # RaindropItems (17)
+dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Core]"          # Core (13)
+dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:ApiExample]"    # ApiExample (5)
 ```
+
+## Dev Modes
+
+| Mode       | Port | Use Case             | Command                                               |
+| ---------- | ---- | -------------------- | ----------------------------------------------------- |
+| Normal     | 5233 | UI, mock data (99%)  | `dotnet run --project src/redmuffin.Blazor.StaticWeb` |
+| Full Stack | 4280 | Real API, OAuth, E2E | `pwsh Start.ps1 -Auto`                                |
 
 ## Coverage
 
