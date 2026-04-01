@@ -12,6 +12,9 @@
 - **Research-First**: 15 min research BEFORE any code changes
 - **Stop**: 2+ edits without testing → `brave_web_search`
 - **Stop**: "maybe", "try", "probably" → `brave_web_search`
+- ALWAYS check port 5233 is free before starting dev server
+- ALWAYS redirect dev server output to `logs/dotnet.log`
+- NEVER kill dotnet processes without verifying they are not VS-owned
 
 ## COMMANDS
 
@@ -132,6 +135,36 @@ Core/HomeTests/
 
 1. Read `logs/dotnet.log` FIRST (exceptions, 404s, warnings)
 2. Investigate based on findings only - NO guessing
+
+### Dev Server Startup Protocol
+
+**Before starting:**
+
+1. Check port: `netstat -ano | findstr :5233`
+2. If occupied → identify owner PID (see Process Management below)
+3. Kill only agent-owned PIDs: `taskkill //PID <PID> //F`
+4. Verify port free: `netstat -ano | findstr :5233` (should return nothing)
+
+**Starting:**
+
+```bash
+nohup dotnet run --project src/redmuffin.Blazor.StaticWeb > logs/dotnet.log 2>&1 &
+```
+
+**After starting:**
+
+1. Wait + verify: `sleep 12 && netstat -ano | findstr :5233`
+2. Read `logs/dotnet.log` for errors (build failures, port conflicts, WASM corruption)
+3. Only open browser after clean log confirmation
+
+**Diagnosing failures from log:**
+| Log symptom | Root cause | Fix |
+| -------------------------------- | ----------------------- | ----------------------------- |
+| "address already in use" | Port still occupied | Kill remaining process |
+| "Unexpected end of JSON input" | Corrupt blazor.boot.json| Clean rebuild |
+| Build errors/warnings | Compilation failure | Fix errors, rebuild |
+| No "Now listening on" line | Server never started | Check build output, restart |
+| 404 on `_framework/*` | Missing wwwroot files | Full rebuild (`dotnet build`) |
 
 ### Web Search Decision Tree
 
@@ -262,6 +295,15 @@ taskkill /PID <PID> /F
 
 Full stack: `pwsh Stop.ps1` (tracks PIDs in `.dev-session.pids`)
 
+**Identifying VS-owned vs agent-owned processes:**
+| Indicator | VS-Owned Process | Agent-Owned Process |
+| ---------------------- | ------------------------- | -------------------------- |
+| Parent process | `devenv.exe` | Shell/bash |
+| Process count | Multiple child processes | Single process |
+| Started by | Visual Studio launch | Current agent session |
+| Safe to kill | NEVER | YES |
+| Identification method | `wmic process where ProcessId=<PID> get ParentProcessId` | Track PID from `nohup` |
+
 ## BOUNDARIES
 
 ### ALWAYS
@@ -288,6 +330,9 @@ Full stack: `pwsh Stop.ps1` (tracks PIDs in `.dev-session.pids`)
 - UpperCamelCase\_: static readonly
 - "I" prefix: interfaces
 - `[Class]_[Type]`: test doubles
+- Check port 5233 free before `dotnet run`
+- Redirect all `dotnet run` output to `logs/dotnet.log`
+- Verify server started via log before opening browser
 
 ### ASK FIRST
 
@@ -307,6 +352,9 @@ Full stack: `pwsh Stop.ps1` (tracks PIDs in `.dev-session.pids`)
 - ALL CAPS filenames (except AGENTS.md, README.md)
 - Edit multiple files without testing
 - Skip testing on infrastructure errors
+- Start dev server without logging to `logs/dotnet.log`
+- Kill dotnet processes without verifying ownership
+- Assume port is free without checking
 - NEVER circumvent git hooks (--no-verify etc.). Implemented to avoid agent mistakes. Critical
 
 ## OUTPUT STYLE
