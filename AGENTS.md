@@ -64,7 +64,7 @@ src/redmuffin.Blazor.StaticWeb.Api/      # Backend (Azure Functions)
 tests/                                    # Tests (mirrors src)
 src/[Project]/Features/                   # Feature folders
 tasks/PRD-XXX-*.md                        # PRD documents
-skills/                                   # Skills: csharp-standards, testing, ui-styling, dotnet, commits
+.opencode/skills/                         # Skills: csharp-standards, testing, ui-styling, dotnet, commits, markdown, nuget-manager, agent-markdown-optimizer, create-prd, generate-tasks, skill-creator, output-style, security-secrets, dev-workflows
 .github/guides/                           # Reference docs
 ```
 
@@ -166,144 +166,6 @@ nohup dotnet run --project src/redmuffin.Blazor.StaticWeb > logs/dotnet.log 2>&1
 | No "Now listening on" line | Server never started | Check build output, restart |
 | 404 on `_framework/*` | Missing wwwroot files | Full rebuild (`dotnet build`) |
 
-### Web Search Decision Tree
-
-| Query Type            | Tool                                           | Use Case                |
-| --------------------- | ---------------------------------------------- | ----------------------- |
-| Library/framework API | Context7 (`resolve-library-id` → `query-docs`) | .NET, Blazor, NuGet, JS |
-| Keyword-specific      | `brave_web_search`                             | Errors, "how to"        |
-| Vague/conceptual      | `websearch`                                    | "find library like X"   |
-| Complex reasoning     | `sequentialthinking`                           | Architecture, debugging |
-
-## PATTERNS
-
-### Formatting
-
-| File Type       | Indentation    | Notes             |
-| --------------- | -------------- | ----------------- |
-| C#              | Tab (4 spaces) | -                 |
-| .razor, .cshtml | 4 spaces       | -                 |
-| .csproj         | 2 spaces       | -                 |
-| All             | Max 160 chars  | Brace on new line |
-
-### Naming
-
-| Type               | Convention       | Example                   |
-| ------------------ | ---------------- | ------------------------- |
-| Types/Namespaces   | PascalCase       | `HomePage`, `UserService` |
-| Methods/Properties | PascalCase       | `GetUser()`               |
-| Private fields     | camelCase        | `_userService`            |
-| Static readonly    | UpperCamelCase\_ | `LogEvent`                |
-| Interfaces         | Prefix "I"       | `IUserService`            |
-| Test doubles       | `[Class]_[Type]` | `NavigationManager_Mock`  |
-
-### C# 12/13
-
-- Primary constructors
-- Collection expressions: `[1, 2, 3]`
-- `ref readonly` parameters
-- Pattern matching in switch expressions
-- `nameof` not string literals
-
-### Nullable Reference Types
-
-- Declare non-nullable
-- Check `null` at entry points
-- `is null` / `is not null` (NOT `== null`)
-
-### Error Handling
-
-- `LoggerMessage` delegates (NEVER `Logger.LogError()`)
-- Specific exceptions with messages
-- Test errors in `.EdgeCases.cs`
-
-### File-Scoped Namespaces
-
-```csharp
-namespace MyNamespace;
-// Single-line using directives
-// System.* first, then alphabetical
-```
-
-### Mocking
-
-**LightMock (external):**
-
-```csharp
-var httpMock = new Mock<IHttpClientFactory>();
-httpMock.Arrange(f => f.CreateClient(The<string>.IsAnyValue)).Returns(new HttpClient());
-```
-
-**Custom (internal):**
-
-```csharp
-public sealed class NavigationManager_Mock : NavigationManager
-{
-    public string? NavigatedTo { get; private set; }
-    protected override void NavigateToCore(string uri, NavigationOptions options)
-        => NavigatedTo = uri;
-}
-```
-
-**Critical:** ALL parameters explicit:
-
-```csharp
-_mock.Arrange(f => f.GetAsync("key", CancellationToken.None))
-```
-
-### Test Quality
-
-- `ConfigureAwait(false)` on async (except asserts)
-- AAA structure
-- `using` for disposal
-- Edge cases
-- Zero build warnings
-
-### Secret Management
-
-| Method                | Use Case          | Syntax                                |
-| --------------------- | ----------------- | ------------------------------------- |
-| Environment Variables | MCP, devcontainer | `{env:VAR}` or `${env:VAR}`           |
-| VS Code DevContainer  | Devcontainer      | `devcontainer.json` secrets block     |
-| VS Code Copilot MCP   | Copilot           | `${input:secret_id}` `password: true` |
-| GitHub Secrets        | CI/CD             | `${{ secrets.NAME }}`                 |
-| Azure Key Vault       | Production        | `az keyvault secret show`             |
-| User Secrets          | Local .NET        | `dotnet user-secrets`                 |
-
-**MCP:**
-
-```json
-"env": { "API_KEY": "${env:API_KEY}" }  // CORRECT
-"env": { "API_KEY": "actual_secret" }   // WRONG
-```
-
-### Dev Modes
-
-| Mode       | Port | Use Case             | Command                                               |
-| ---------- | ---- | -------------------- | ----------------------------------------------------- |
-| Normal     | 5233 | UI, mock data (99%)  | `dotnet run --project src/redmuffin.Blazor.StaticWeb` |
-| Full Stack | 4280 | Real API, OAuth, E2E | `pwsh Start.ps1 -Auto`                                |
-
-### Dotnet Process Management (VS Running)
-
-VS runs own dotnet processes. Cannot Ctrl+C. Kill specific PID only:
-
-```powershell
-netstat -ano | findstr :5233
-taskkill /PID <PID> /F
-```
-
-Full stack: `pwsh Stop.ps1` (tracks PIDs in `.dev-session.pids`)
-
-**Identifying VS-owned vs agent-owned processes:**
-| Indicator | VS-Owned Process | Agent-Owned Process |
-| ---------------------- | ------------------------- | -------------------------- |
-| Parent process | `devenv.exe` | Shell/bash |
-| Process count | Multiple child processes | Single process |
-| Started by | Visual Studio launch | Current agent session |
-| Safe to kill | NEVER | YES |
-| Identification method | `wmic process where ProcessId=<PID> get ParentProcessId` | Track PID from `nohup` |
-
 ## BOUNDARIES
 
 ### ALWAYS
@@ -357,18 +219,6 @@ Full stack: `pwsh Stop.ps1` (tracks PIDs in `.dev-session.pids`)
 - Assume port is free without checking
 - NEVER circumvent git hooks (--no-verify etc.). Implemented to avoid agent mistakes. Critical
 
-## OUTPUT STYLE
-
-| Rule           | Constraint                     |
-| -------------- | ------------------------------ |
-| Line width     | Max 160 chars                  |
-| Empty lines    | Minimize - major sections only |
-| Paragraphs     | Avoid - bullets/tables         |
-| Recapitulation | Never - state once             |
-| Voice          | Active, imperative             |
-
-**Priority:** Tables > bullets > single-line > prose. ALL info preserved, verbosity removed.
-
 ## CONTEXT
 
 - **AOT**: CI runs AOT (`CI=true`/`GITHUB_ACTIONS=true`), disabled locally
@@ -377,3 +227,18 @@ Full stack: `pwsh Stop.ps1` (tracks PIDs in `.dev-session.pids`)
 - **Start.ps1 -Auto**: Creates `.dev-session.pids` for `Stop.ps1` cleanup
 - **Test Categories**: Smoke (fastest), Feature:X (targeted), Unit (pure, no I/O)
 - **Secrets Reference**: `.devcontainer/SECURITY.md`
+
+## SKILL REFERENCES
+
+| Skill              | Trigger When...                                                      |
+| ------------------ | -------------------------------------------------------------------- |
+| `csharp-standards` | Writing C# code, analyzer rules, LoggerMessage, partial classes      |
+| `testing`          | Writing tests, TUnit patterns, TestScope, mocking                    |
+| `dotnet`           | .NET config, DI, build commands, Azure Functions                     |
+| `ui-styling`       | Foundation CSS, SCSS, accessibility (WCAG 2.1 AA)                    |
+| `commits`          | Creating commits, conventional commit messages                       |
+| `markdown`         | Markdown formatting, MarkdownLint rules                              |
+| `nuget-manager`    | Adding/removing NuGet packages                                       |
+| `output-style`     | C# formatting, naming conventions, C# 12/13 features, nullable types |
+| `security-secrets` | Secret management, MCP env vars, security rules                      |
+| `dev-workflows`    | Process management, port handling, web search tool selection         |
