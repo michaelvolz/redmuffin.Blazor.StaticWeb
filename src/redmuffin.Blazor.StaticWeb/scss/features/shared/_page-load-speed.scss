@@ -127,6 +127,7 @@
 .metrics-grid {
   @include mixins.grid-layout(2, vars.$page-speed-gap-xxlarge);
   margin-bottom: vars.$page-speed-gap-xlarge;
+  align-items: center;
 }
 
 // Individual metric group container
@@ -383,6 +384,58 @@
 @media screen and (min-width: 376px) and (max-width: 430px) {
   .page-speed-widget {
     width: vars.$page-speed-widget-width-iphone15;
+  }
+
+  .widget-header {
+    padding: 12px vars.$page-speed-padding-main 10px;
+    margin-bottom: 10px;
+  }
+
+  .widget-content {
+    padding: 0 vars.$page-speed-padding-main 14px;
+  }
+
+  .metrics-grid {
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .metric-group {
+    padding: 10px;
+  }
+
+  .metric-group-title {
+    margin-bottom: 6px;
+  }
+
+  .metric-item {
+    margin-bottom: 4px;
+  }
+
+  .metric-progress {
+    margin-top: 2px;
+  }
+
+  .performance-breakdown {
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+
+  .breakdown-grid {
+    gap: 8px;
+  }
+
+  .performance-rating {
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+
+  .rating-badge {
+    padding: 6px 12px;
+  }
+
+  .refresh-button {
+    margin-top: 8px;
   }
 }
 
