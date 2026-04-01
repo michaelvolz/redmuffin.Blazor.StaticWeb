@@ -5,6 +5,7 @@ namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Core;
 /// </summary>
 public readonly record struct PerformanceMetrics(
     TimingMetrics Timing,
+    WasmMetrics Wasm,
     SizeMetrics Size,
     CalculatedMetrics Calculated,
     string FormattedTimestamp)
@@ -25,6 +26,19 @@ public readonly record struct PerformanceMetrics(
             metrics.FirstContentfulPaint,
             metrics.LargestContentfulPaint);
 
+        var wasm = new WasmMetrics(
+            metrics.WasmDownloadTime,
+            metrics.WasmDownloadSize,
+            metrics.WasmDownloadSizeFormatted,
+            metrics.AssemblyCount,
+            metrics.AssemblyTotalSize,
+            metrics.AssemblyTotalSizeFormatted,
+            metrics.RuntimeStartupTime,
+            metrics.MemoryUsed,
+            metrics.MemoryTotal,
+            metrics.MemoryFormatted,
+            metrics.BlazorInitTime);
+
         var size = new SizeMetrics(
             metrics.TransferSize,
             metrics.EncodedSize,
@@ -38,6 +52,6 @@ public readonly record struct PerformanceMetrics(
             metrics.DomProcessingTime,
             metrics.ResourceLoadTime);
 
-        return new PerformanceMetrics(timing, size, calculated, timestamp);
+        return new PerformanceMetrics(timing, wasm, size, calculated, timestamp);
     }
 }

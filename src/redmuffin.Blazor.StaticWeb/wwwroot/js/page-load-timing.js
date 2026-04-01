@@ -392,8 +392,198 @@ window.startPerformanceMonitoring = function(callback) {
     }
 };
 
+// WASM Metric Collection
+window.pageLoadSpeed.wasmMetrics = {
+    // Timing marks for WASM lifecycle
+    wasmStartTime: 0,
+    blazorStartTime: 0,
+    wasmEndTime: 0,
+
+    // Set WASM start time (called from beforeStart)
+    markStart: function() {
+        this.wasmStartTime = performance.now();
+        try {
+            performance.mark('wasm-start');
+        } catch (e) {}
+    },
+
+    // Mark when WASM runtime is ready and Blazor starts
+    markBlazorStart: function() {
+        this.blazorStartTime = performance.now();
+        try {
+            performance.mark('blazor-start');
+        } catch (e) {}
+    },
+
+    // Set WASM end time (called from afterStarted)
+    markEnd: function() {
+        this.wasmEndTime = performance.now();
+        try {
+            performance.mark('wasm-end');
+            performance.measure('wasm-runtime', 'wasm-start', 'wasm-end');
+        } catch (e) {}
+    },
+
+    // Get WASM metrics
+    getWasmMetrics: function() {
+        const metrics = {
+            // WASM Download
+            wasmDownloadTime: 0,
+            wasmDownloadSize: 0,
+            wasmDownloadSizeFormatted: 'N/A',
+
+            // Assemblies
+            assemblyCount: 0,
+            assemblyTotalSize: 0,
+            assemblyTotalSizeFormatted: 'N/A',
+
+            // Runtime Startup
+            runtimeStartupTime: 0,
+
+            // Memory Heap
+            memoryUsed: 0,
+            memoryTotal: 0,
+            memoryFormatted: 'N/A',
+
+            // Blazor Init
+            blazorInitTime: 0
+        };
+
+        try {
+            // Get WASM download info
+            const wasmEntry = this.findWasmEntry();
+            if (wasmEntry) {
+                metrics.wasmDownloadTime = Math.round(wasmEntry.duration);
+                metrics.wasmDownloadSize = wasmEntry.transferSize || 0;
+                metrics.wasmDownloadSizeFormatted = window.pageLoadSpeed.formatBytes(metrics.wasmDownloadSize);
+                
+                // Use WASM entry timing to set blazorStartTime if not already set
+                if (this.blazorStartTime === 0 && wasmEntry.responseEnd > 0) {
+                    this.blazorStartTime = wasmEntry.responseEnd;
+                }
+            }
+
+            // Get assemblies info
+            const assemblyInfo = this.getAssemblyInfo();
+            metrics.assemblyCount = assemblyInfo.count;
+            metrics.assemblyTotalSize = assemblyInfo.totalSize;
+            metrics.assemblyTotalSizeFormatted = window.pageLoadSpeed.formatBytes(metrics.assemblyTotalSize);
+
+            // Runtime startup time (WASM runtime load to ready)
+            if (this.wasmStartTime > 0 && this.blazorStartTime > 0) {
+                metrics.runtimeStartupTime = Math.round(this.blazorStartTime - this.wasmStartTime);
+            }
+
+            // Memory heap (Chrome only)
+            const memoryInfo = this.getMemoryInfo();
+            if (memoryInfo) {
+                metrics.memoryUsed = Math.round(memoryInfo.usedJSHeapSize / 1024 / 1024);
+                metrics.memoryTotal = Math.round(memoryInfo.totalJSHeapSize / 1024 / 1024);
+                metrics.memoryFormatted = metrics.memoryUsed + ' MB / ' + metrics.memoryTotal + ' MB';
+            } else {
+                metrics.memoryFormatted = 'N/A';
+            }
+
+            // Blazor init time (Blazor framework initialization)
+            if (this.blazorStartTime > 0 && this.wasmEndTime > 0) {
+                metrics.blazorInitTime = Math.round(this.wasmEndTime - this.blazorStartTime);
+            }
+
+        } catch (e) {
+            console.warn('Error collecting WASM metrics:', e);
+        }
+
+        return metrics;
+    },
+
+    // Find WASM runtime entry in resource timing (.NET 9 uses dotnet.native.*.js)
+    findWasmEntry: function() {
+        try {
+            const resources = performance.getEntriesByType('resource');
+            // .NET 9+ uses dotnet.native.<hash>.js instead of dotnet.wasm
+            return resources.find(r => r.name && r.name.includes('dotnet.native') && r.name.endsWith('.js'));
+        } catch (e) {
+            return null;
+        }
+    },
+
+    // Get assembly information (.NET 9 bundles assemblies)
+    getAssemblyInfo: function() {
+        const info = { count: 0, totalSize: 0 };
+        try {
+            const resources = performance.getEntriesByType('resource');
+            // .NET 9 bundles assemblies into the runtime, so we count framework files as proxy
+            // Count dotnet.js, dotnet.runtime.*.js, dotnet.native.*.js, and blazor.boot.json
+            resources.forEach(r => {
+                if (r.name && r.name.includes('_framework')) {
+                    const name = r.name.split('/').pop() || '';
+                    if (name === 'dotnet.js' || 
+                        name.startsWith('dotnet.runtime') || 
+                        name.startsWith('dotnet.native') ||
+                        name === 'blazor.boot.json') {
+                        info.count++;
+                        info.totalSize += r.transferSize || 0;
+                    }
+                }
+            });
+        } catch (e) {
+            // Fall through with zeros
+        }
+        return info;
+    },
+
+    // Get memory info (Chrome only)
+    getMemoryInfo: function() {
+        try {
+            if (performance.memory) {
+                return performance.memory;
+            }
+        } catch (e) {}
+        return null;
+    },
+
+    // Get navigation start time
+    getNavigationStart: function() {
+        try {
+            if (window.performance && window.performance.timing) {
+                return window.performance.timing.navigationStart;
+            }
+        } catch (e) {}
+        return 0;
+    }
+};
+
 // Initialize when script loads
 window.pageLoadSpeed.init();
+
+// Mark WASM startup start time (this runs before Blazor loads)
+window.pageLoadSpeed.wasmMetrics.markStart();
+
+// Global WASM metrics function for Blazor interop
+window.getWasmMetrics = function() {
+    try {
+        if (window.pageLoadSpeed && window.pageLoadSpeed.wasmMetrics) {
+            return window.pageLoadSpeed.wasmMetrics.getWasmMetrics();
+        }
+    } catch (e) {
+        console.warn('Error getting WASM metrics:', e);
+    }
+
+    // Return default values if metrics unavailable
+    return {
+        wasmDownloadTime: 0,
+        wasmDownloadSize: 0,
+        wasmDownloadSizeFormatted: 'N/A',
+        assemblyCount: 0,
+        assemblyTotalSize: 0,
+        assemblyTotalSizeFormatted: 'N/A',
+        runtimeStartupTime: 0,
+        memoryUsed: 0,
+        memoryTotal: 0,
+        memoryFormatted: 'N/A',
+        blazorInitTime: 0
+    };
+};
 
 // Add a global performance summary function
 window.getPerformanceSummary = function() {

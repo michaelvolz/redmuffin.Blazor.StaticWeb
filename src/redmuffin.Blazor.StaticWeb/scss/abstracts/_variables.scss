@@ -194,6 +194,7 @@ $loading-progress-width: 0.6rem;
 // Widget positioning and dimensions
 $page-speed-widget-width: 440px;
 $page-speed-widget-width-mobile: 330px;
+$page-speed-widget-width-iphone15: 430px; // iPhone 15/Pro Max viewport width
 $page-speed-widget-z-index: 9999;
 
 // Widget colors
@@ -255,6 +256,8 @@ $page-speed-border-medium: 2px solid;
 // Widget metric colors
 $page-speed-metric-timing: #ffd700;
 $page-speed-metric-timing-bg: rgba(255, 215, 0, 0.1);
+$page-speed-metric-wasm: #9d4edd;
+$page-speed-metric-wasm-bg: rgba(157, 78, 221, 0.1);
 $page-speed-metric-size: #00bfff;
 $page-speed-metric-size-bg: rgba(0, 191, 255, 0.1);
 $page-speed-metric-breakdown: #ff8c42;

@@ -1,4 +1,5 @@
 using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed;
+using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Core;
 
 namespace redmuffin.Blazor.StaticWeb.Services;
 
@@ -13,6 +14,13 @@ public interface IPerformanceMetricsService
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>Performance metrics or null if unavailable</returns>
     Task<LoadSpeed.PageLoadMetrics?> GetMetricsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Retrieves WebAssembly-specific performance metrics
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>WASM metrics or default values if unavailable</returns>
+    Task<WasmMetrics> GetWasmMetricsAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Checks if JavaScript performance APIs are available

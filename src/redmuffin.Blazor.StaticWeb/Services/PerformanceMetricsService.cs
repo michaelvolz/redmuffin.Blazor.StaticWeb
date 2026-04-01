@@ -1,6 +1,7 @@
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Configuration;
 using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed;
+using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Core;
 
 namespace redmuffin.Blazor.StaticWeb.Services;
 
@@ -42,6 +43,24 @@ public class PerformanceMetricsService(IJSRuntime jsRuntime) : IPerformanceMetri
                 if (functionExists)
                 {
                     var metrics = await jsRuntime.InvokeAsync<LoadSpeed.PageLoadMetrics>("getPageLoadMetrics", cts.Token).ConfigureAwait(false);
+
+                    // Mark WASM startup end time before collecting metrics
+                    await jsRuntime.InvokeVoidAsync("eval", cts.Token, "window.pageLoadSpeed && window.pageLoadSpeed.wasmMetrics && window.pageLoadSpeed.wasmMetrics.markEnd()").ConfigureAwait(false);
+
+                    // Fetch WASM metrics directly (semaphore already held by GetMetricsAsync)
+                    var wasmMetrics = await jsRuntime.InvokeAsync<WasmMetrics>("getWasmMetrics", cts.Token).ConfigureAwait(false);
+                    metrics.WasmDownloadTime = wasmMetrics.WasmDownloadTime;
+                    metrics.WasmDownloadSize = wasmMetrics.WasmDownloadSize;
+                    metrics.WasmDownloadSizeFormatted = wasmMetrics.WasmDownloadSizeFormatted;
+                    metrics.AssemblyCount = wasmMetrics.AssemblyCount;
+                    metrics.AssemblyTotalSize = wasmMetrics.AssemblyTotalSize;
+                    metrics.AssemblyTotalSizeFormatted = wasmMetrics.AssemblyTotalSizeFormatted;
+                    metrics.RuntimeStartupTime = wasmMetrics.RuntimeStartupTime;
+                    metrics.MemoryUsed = wasmMetrics.MemoryUsed;
+                    metrics.MemoryTotal = wasmMetrics.MemoryTotal;
+                    metrics.MemoryFormatted = wasmMetrics.MemoryFormatted;
+                    metrics.BlazorInitTime = wasmMetrics.BlazorInitTime;
+
                     return metrics;
                 }
 
@@ -59,6 +78,48 @@ public class PerformanceMetricsService(IJSRuntime jsRuntime) : IPerformanceMetri
         catch (Exception)
         {
             return null;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<WasmMetrics> GetWasmMetricsAsync(CancellationToken cancellationToken = default)
+    {
+        if (_disposed) return WasmMetrics.CreateDefault();
+
+        try
+        {
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            cts.CancelAfter(TimeSpan.FromSeconds(PageLoadSpeedConfig.JsInteropTimeoutSeconds));
+
+            await _semaphore.WaitAsync(cts.Token).ConfigureAwait(false);
+            try
+            {
+                var functionExists = await jsRuntime.InvokeAsync<bool>("eval", cts.Token, "typeof window.getWasmMetrics === 'function'")
+                    .ConfigureAwait(false);
+
+                if (functionExists)
+                {
+                    // Mark WASM startup end time before collecting metrics
+                    await jsRuntime.InvokeVoidAsync("eval", cts.Token, "window.pageLoadSpeed && window.pageLoadSpeed.wasmMetrics && window.pageLoadSpeed.wasmMetrics.markEnd()").ConfigureAwait(false);
+
+                    var metrics = await jsRuntime.InvokeAsync<WasmMetrics>("getWasmMetrics", cts.Token).ConfigureAwait(false);
+                    return metrics;
+                }
+
+                return WasmMetrics.CreateDefault();
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            return WasmMetrics.CreateDefault();
+        }
+        catch (Exception)
+        {
+            return WasmMetrics.CreateDefault();
         }
     }
 

@@ -87,6 +87,68 @@
                         }
                     </div>
 
+                    <!-- WebAssembly Metrics -->
+                    <div class="metric-group">
+                        <div class="metric-group-title">
+                            <span>🎯</span>
+                            <span>WebAssembly</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">WASM↓:</span>
+                            <span class="metric-value wasm">@(_currentMetrics?.Wasm.WasmDownloadTime ?? 0)ms / @(_currentMetrics?.Wasm.WasmDownloadSizeFormatted ?? "N/A")</span>
+                        </div>
+                        @if ((_currentMetrics?.Wasm.WasmDownloadTime ?? 0) > 0)
+                        {
+                            <div class="metric-progress">
+                                <div class="metric-progress-bar" style="width: @(GetProgressWidth(_currentMetrics?.Wasm.WasmDownloadTime ?? 0, 1000))%; background: @GetWasmColor(_currentMetrics?.Wasm.WasmDownloadTime ?? 0, 200, 500, 1000)"></div>
+                            </div>
+                        }
+
+                        <div class="metric-item">
+                            <span class="metric-label">Assemblies:</span>
+                            <span class="metric-value wasm">@(_currentMetrics?.Wasm.AssemblyCount ?? 0) / @(_currentMetrics?.Wasm.AssemblyTotalSizeFormatted ?? "N/A")</span>
+                        </div>
+                        @if ((_currentMetrics?.Wasm.AssemblyCount ?? 0) > 0)
+                        {
+                            <div class="metric-progress">
+                                <div class="metric-progress-bar" style="width: @(GetProgressWidth(_currentMetrics?.Wasm.AssemblyCount ?? 0, 100))%; background: @GetWasmColor(_currentMetrics?.Wasm.AssemblyCount ?? 0, 30, 50, 100)"></div>
+                            </div>
+                        }
+
+                        <div class="metric-item">
+                            <span class="metric-label">Memory:</span>
+                            <span class="metric-value wasm">@(_currentMetrics?.Wasm.MemoryFormatted ?? "N/A")</span>
+                        </div>
+                        @if ((_currentMetrics?.Wasm.MemoryUsed ?? 0) > 0)
+                        {
+                            <div class="metric-progress">
+                                <div class="metric-progress-bar" style="width: @(GetProgressWidth(_currentMetrics?.Wasm.MemoryUsed ?? 0, 200))%; background: @GetWasmColor(_currentMetrics?.Wasm.MemoryUsed ?? 0, 50, 100, 200)"></div>
+                            </div>
+                        }
+
+                        <div class="metric-item">
+                            <span class="metric-label">Runtime:</span>
+                            <span class="metric-value wasm">@(_currentMetrics?.Wasm.RuntimeStartupTime ?? 0)ms</span>
+                        </div>
+                        @if ((_currentMetrics?.Wasm.RuntimeStartupTime ?? 0) > 0)
+                        {
+                            <div class="metric-progress">
+                                <div class="metric-progress-bar" style="width: @(GetProgressWidth(_currentMetrics?.Wasm.RuntimeStartupTime ?? 0, 1200))%; background: @GetWasmColor(_currentMetrics?.Wasm.RuntimeStartupTime ?? 0, 500, 800, 1200)"></div>
+                            </div>
+                        }
+
+                        <div class="metric-item">
+                            <span class="metric-label">Blazor Init:</span>
+                            <span class="metric-value wasm">@(_currentMetrics?.Wasm.BlazorInitTime ?? 0)ms</span>
+                        </div>
+                        @if ((_currentMetrics?.Wasm.BlazorInitTime ?? 0) > 0)
+                        {
+                            <div class="metric-progress">
+                                <div class="metric-progress-bar" style="width: @(GetProgressWidth(_currentMetrics?.Wasm.BlazorInitTime ?? 0, 5000))%; background: @GetWasmColor(_currentMetrics?.Wasm.BlazorInitTime ?? 0, 2500, 3500, 5000)"></div>
+                            </div>
+                        }
+                    </div>
+
                     <!-- Data Transfer Metrics -->
                     <div class="metric-group">
                         <div class="metric-group-title">

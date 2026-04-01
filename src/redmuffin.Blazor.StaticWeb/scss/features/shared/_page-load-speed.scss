@@ -179,6 +179,11 @@
       background: vars.$page-speed-metric-timing-bg;
     }
 
+    &.wasm {
+      color: vars.$page-speed-metric-wasm;
+      background: vars.$page-speed-metric-wasm-bg;
+    }
+
     &.size {
       color: vars.$page-speed-metric-size;
       background: vars.$page-speed-metric-size-bg;
@@ -373,6 +378,14 @@
 }
 
 // Responsive design using Foundation's breakpoint system through mixins
+
+// iPhone 15/Pro Max specific breakpoint (376-430px)
+@media screen and (min-width: 376px) and (max-width: 430px) {
+  .page-speed-widget {
+    width: vars.$page-speed-widget-width-iphone15;
+  }
+}
+
 @include mixins.desktop-down(medium) {
   .page-speed-widget {
     width: vars.$page-speed-widget-width-mobile;

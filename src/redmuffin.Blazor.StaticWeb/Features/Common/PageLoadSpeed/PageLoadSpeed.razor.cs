@@ -122,6 +122,7 @@ public partial class PageLoadSpeed : ComponentBase, IAsyncDisposable
         {
             _currentMetrics = new PerformanceMetrics(
                 new TimingMetrics(0, 0, 0, 0, 0),
+                WasmMetrics.CreateDefault(),
                 new SizeMetrics(0, 0, 0, "Loading...", "Loading...", "Loading..."),
                 new CalculatedMetrics(0, 0, 0),
                 DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
@@ -195,6 +196,7 @@ public partial class PageLoadSpeed : ComponentBase, IAsyncDisposable
             // Final fallback - create empty metrics
             _currentMetrics = new PerformanceMetrics(
                 new TimingMetrics(0, 0, 0, 0, 0),
+                WasmMetrics.CreateDefault(),
                 new SizeMetrics(0, 0, 0, "Unknown", "Unknown", "Unknown"),
                 new CalculatedMetrics(0, 0, 0),
                 DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
