@@ -37,7 +37,7 @@
   <ItemGroup Label="Testing">
     <PackageVersion Include="TUnit" Version="$(TUnitVersion)" />
     <PackageVersion Include="TUnit.Assertions" Version="$(TUnitVersion)" />
-    <PackageVersion Include="bunit" Version="2.6.2" />
+    <PackageVersion Include="bunit" Version="2.7.2" />
     <PackageVersion Include="coverlet.msbuild" Version="$(CoverletVersion)" />
     <PackageVersion Include="LightMock.Generator" Version="1.2.3" />
     <PackageVersion Include="Microsoft.Testing.Platform" Version="2.1.0" />
