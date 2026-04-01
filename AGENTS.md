@@ -309,6 +309,7 @@ Always specify ALL parameters explicitly: `_mock.Arrange(f => f.GetAsync("key", 
 2. **Package Manager Priority**: **ALWAYS use winget if available**. Do NOT use Chocolatey unless explicitly instructed by the user. Winget is the preferred Windows package manager.
 
 3. **Commit**: ONLY after user's explicit command (never auto-commit)
+   **MANDATORY**: Before `git commit`, invoke `skill name="commits"` tool. No exceptions.
 4. **Push**: HARD BLOCKED - NEVER allow under any circumstances (enforced by plugin)
 5. **File Editing**: Edit one file at a time, track progress
 6. **Large Changes**: Outline plan, get approval, make incremental edits
