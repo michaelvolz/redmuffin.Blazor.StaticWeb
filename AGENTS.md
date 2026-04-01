@@ -431,3 +431,124 @@ For complex problems that require careful reasoning, multi-step planning, or exp
 | ---------- | ---- | -------------------------------------------- |
 | Simplified | 5233 | UI work, uses mock data when API unavailable |
 | Full Stack | 4280 | API integration, OAuth, E2E testing          |
+
+---
+
+## Agent Development Environment Scripts
+
+**FOR AGENT USE ONLY** - When you need to verify the website with production data and real API integration.
+
+### Quick Reference
+
+**For Normal Development (Use This):**
+
+```bash
+# Start only frontend with mock data (fast, lightweight)
+dotnet run --project src/redmuffin.Blazor.StaticWeb
+# Access: http://localhost:5233
+```
+
+**For Production Mode Testing (Use Sparingly):**
+
+```bash
+# Interactive mode - You close windows manually
+pwsh Start.ps1
+
+# Automated mode - Use Stop.ps1 to cleanup
+pwsh Start.ps1 -Auto
+pwsh Stop.ps1
+# Access: http://localhost:4280
+```
+
+### When to Use Each Approach
+
+**Normal Development Mode (Port 5233) - USE THIS 99% OF THE TIME:**
+
+- Daily development and testing
+- UI/layout changes
+- Quick iteration
+- Fast startup (~5 seconds)
+- Uses mock data (no backend needed)
+- Command: `dotnet run --project src/redmuffin.Blazor.StaticWeb`
+
+**Production Mode Testing (Port 4280) - USE ONLY FOR FINAL VERIFICATION:**
+
+- Final check before deployment
+- Testing with real API data
+- Verifying layout/design with live data
+- Heavy resource usage (3 processes)
+- Slower startup (~15-20 seconds)
+- Uses real Raindrop API via Azure Functions
+
+### Start.ps1 Options
+
+**Interactive Mode (Default):**
+
+```bash
+pwsh Start.ps1
+```
+
+- Opens 3 PowerShell windows with `-NoExit`
+- You see all output
+- **You must close windows manually**
+- Best for debugging
+
+**Automated Mode (For Agent Workflows):**
+
+```bash
+pwsh Start.ps1 -Auto
+```
+
+- Creates `.dev-session.pids` file
+- Enables automated cleanup via Stop.ps1
+- Windows stay open for visibility
+- **Always use this mode for automated testing**
+
+### Stop.ps1
+
+**Purpose:** Kill exactly the 3 processes started by `Start.ps1 -Auto`
+
+**Usage:**
+
+```bash
+pwsh Stop.ps1
+```
+
+**What it does:**
+
+1. Reads PIDs from `.dev-session.pids`
+2. Kills the 3 parent pwsh processes
+3. Cleans up orphaned child processes
+4. Removes PID file
+5. Reports processes stopped
+
+**Important:** Only works with `-Auto` mode. For interactive mode, close windows manually.
+
+### Decision Tree
+
+```
+Need to test with real API data?
+├── No → Use: dotnet run --project src/redmuffin.Blazor.StaticWeb
+│        Access: http://localhost:5233
+│
+└── Yes → Use: pwsh Start.ps1 -Auto
+          Cleanup: pwsh Stop.ps1
+          Access: http://localhost:4280
+```
+
+### Resource Comparison
+
+| Aspect       | Normal Dev (5233) | Production Mode (4280)       |
+| ------------ | ----------------- | ---------------------------- |
+| Startup Time | ~5 seconds        | ~15-20 seconds               |
+| Processes    | 1 (frontend)      | 3 (frontend + backend + swa) |
+| Memory       | ~200 MB           | ~600 MB                      |
+| Data Source  | Mock/Fake         | Real Raindrop API            |
+| Backend      | None              | Azure Functions              |
+
+### Naming Convention Note
+
+**NEVER create new ALL CAPS filenames** (except for defined standard files like AGENTS.md, README.md).
+
+- ❌ BAD: `DEV_SCRIPTS_README.md`
+- ✅ GOOD: `DevScriptsReadme.md` or lowercase `dev-scripts-readme.md`
