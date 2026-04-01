@@ -5,6 +5,7 @@
 - NEVER commit secrets to git
 - NEVER install tools/packages without explicit permission
 - ALWAYS run `dotnet build --verbosity quiet` after C# changes
+- ALWAYS run `dotnet build -c Debug-Sass` after modifying SCSS or JS files (see compilerconfig.json)
 - ALWAYS run `dotnet test` before commit
 - ALWAYS use `question` tool before installing anything
 - ALWAYS use `skill name="commits"` before git commit
@@ -15,30 +16,32 @@
 
 ## COMMANDS
 
-| Command                                                                       | Purpose                             | When                                 |
-| ----------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------ |
-| `dotnet build`                                                                | Build entire solution               | After any C# file change             |
-| `dotnet build --no-restore`                                                   | Fast build (after restore)          | Subsequent builds                    |
-| `dotnet build --verbosity quiet`                                              | Build + show warnings               | Verify zero warnings (except IL2111) |
-| `dotnet test`                                                                 | Run all 258 tests (~1.4s)           | Before commit                        |
-| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Smoke]"`                 | Smoke tests (27, ~0.8s)             | Fast validation                      |
-| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Home]"`          | Home feature tests (52)             | Feature-specific validation          |
-| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Videos]"`        | Videos tests (10)                   | Feature-specific validation          |
-| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Articles]"`      | Articles tests (17)                 | Feature-specific validation          |
-| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Cache]"`         | Cache tests (31)                    | Feature-specific validation          |
-| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Raindrop]"`      | Raindrop tests (24)                 | Feature-specific validation          |
-| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:RaindropItems]"` | RaindropItems tests (17)            | Feature-specific validation          |
-| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Core]"`          | Core tests (13)                     | Feature-specific validation          |
-| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:ApiExample]"`    | ApiExample tests (5)                | Feature-specific validation          |
-| `pwsh scripts/Generate-CoverageReport.ps1`                                    | Generate coverage report            | Check coverage                       |
-| `pwsh scripts/View-CoverageReport.ps1`                                        | View coverage report                | Review coverage                      |
-| `pwsh scripts/test-build-fast.ps1`                                            | Fast dev build (~9s, AoT disabled)  | Local development                    |
-| `pwsh scripts/test-build-aot.ps1`                                             | Production parity testing           | Pre-deployment check                 |
-| `pwsh scripts/DisplayWarnings.ps1`                                            | Show all build warnings             | Debug warnings                       |
-| `dotnet run --project src/redmuffin.Blazor.StaticWeb`                         | Start frontend only (port 5233)     | Normal development (99% of time)     |
-| `pwsh Start.ps1`                                                              | Start full stack - interactive mode | Manual debugging                     |
-| `pwsh Start.ps1 -Auto`                                                        | Start full stack - automated mode   | Agent workflows                      |
-| `pwsh Stop.ps1`                                                               | Stop full stack processes           | Cleanup after `Start.ps1 -Auto`      |
+| Command                                                                       | Purpose                             | When                                                                               |
+| ----------------------------------------------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------- |
+| `dotnet build`                                                                | Build entire solution               | After any C# file change                                                           |
+| `dotnet build -c Debug-Sass`                                                  | Compile SCSS and minify JS          | After modifying .scss or .js files that need compilation (see compilerconfig.json) |
+| `dotnet build --no-restore`                                                   | Fast build (after restore)          | Subsequent builds                                                                  |
+| `dotnet build --verbosity quiet`                                              | Build + show warnings               | Verify zero warnings (except IL2111)                                               |
+| `dotnet test`                                                                 | Run all 258 tests (~1.4s)           | Before commit                                                                      |
+| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Smoke]"`                 | Smoke tests (27, ~0.8s)             | Fast validation                                                                    |
+| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Home]"`          | Home feature tests (52)             | Feature-specific validation                                                        |
+| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Videos]"`        | Videos tests (10)                   | Feature-specific validation                                                        |
+| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Articles]"`      | Articles tests (17)                 | Feature-specific validation                                                        |
+| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Cache]"`         | Cache tests (31)                    | Feature-specific validation                                                        |
+| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Raindrop]"`      | Raindrop tests (24)                 | Feature-specific validation                                                        |
+| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:RaindropItems]"` | RaindropItems tests (17)            | Feature-specific validation                                                        |
+| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Core]"`          | Core tests (13)                     | Feature-specific validation                                                        |
+| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:ApiExample]"`    | ApiExample tests (5)                | Feature-specific validation                                                        |
+| `pwsh scripts/Generate-CoverageReport.ps1`                                    | Generate coverage report            | Check coverage                                                                     |
+| `pwsh scripts/View-CoverageReport.ps1`                                        | View coverage report                | Review coverage                                                                    |
+| `pwsh scripts/test-build-fast.ps1`                                            | Fast dev build (~9s, AoT disabled)  | Local development                                                                  |
+| `pwsh scripts/test-build-aot.ps1`                                             | Production parity testing           | Pre-deployment check                                                               |
+| `pwsh scripts/DisplayWarnings.ps1`                                            | Show all build warnings             | Debug warnings                                                                     |
+| `dotnet run --project src/redmuffin.Blazor.StaticWeb`                         | Start frontend only (port 5233)     | Normal development (99% of time)                                                   |
+| `dotnet run --project src/redmuffin.Blazor.StaticWeb > logs/dotnet.log 2>&1`  | Start with logging to file          | Debug mode - captures all output                                                   |
+| `pwsh Start.ps1`                                                              | Start full stack - interactive mode | Manual debugging                                                                   |
+| `pwsh Start.ps1 -Auto`                                                        | Start full stack - automated mode   | Agent workflows                                                                    |
+| `pwsh Stop.ps1`                                                               | Stop full stack processes           | Cleanup after `Start.ps1 -Auto`                                                    |
 
 ## STACK
 
@@ -145,6 +148,21 @@ Core/HomeTests/
 - WAIT for user approval
 
 **Does NOT Apply to:** C# syntax errors (fix immediately), test failures (debug and fix), logic errors (research and fix)
+
+### Frontend Debugging Protocol
+
+**When:** Site running on port 5233 shows errors in browser devtools or isn't working
+
+**Prerequisites:** Start with `dotnet run --project src/redmuffin.Blazor.StaticWeb > logs/dotnet.log 2>&1`
+
+**Steps:**
+
+1. **Check dotnet logs FIRST** - Read `logs/dotnet.log`
+   - Look for exceptions, build errors, 404s
+   - Note warning messages
+   - Do NOT guess - use actual log output
+
+2. **Investigate based on findings** - Only after reading logs
 
 ### Web Search Decision Tree
 
@@ -275,6 +293,7 @@ _mock.Arrange(f => f.GetAsync("key", CancellationToken.None))
 - Use bash-compatible commands (PowerShell scripts via `pwsh scripts/...`)
 - Use winget for package management (NOT Chocolatey)
 - Run `dotnet build --verbosity quiet` after C# changes
+- Run `dotnet build -c Debug-Sass` after modifying SCSS or JS files (see compilerconfig.json)
 - Run `dotnet test` before commit
 - Use `skill name="commits"` before `git commit`
 - Use `ConfigureAwait(false)` on async calls (except asserts)
