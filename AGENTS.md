@@ -3,91 +3,79 @@
 ## CRITICAL
 
 - NEVER commit secrets to git
-- NEVER install tools/packages without explicit permission
-- ALWAYS run `dotnet build --verbosity quiet` after C# changes
-- ALWAYS run `dotnet build -c Debug-Sass` after modifying SCSS or JS files (see compilerconfig.json)
-- ALWAYS run `dotnet test` before commit
-- ALWAYS use `question` tool before installing anything
-- ALWAYS use `skill name="commits"` before git commit
+- NEVER install tools/packages without explicit permission (use `question` tool)
 - NEVER push to remote (HARD BLOCKED)
-- **Research-First**: 15 minutes research BEFORE any code changes
-- **Stop Immediately**: 2+ edits without testing → use `brave_web_search`
-- **Stop Immediately**: Words like "maybe", "try", "probably" → use `brave_web_search`
+- ALWAYS run `dotnet build --verbosity quiet` after C# changes
+- ALWAYS run `dotnet build -c Debug-Sass` after SCSS/JS changes (see compilerconfig.json)
+- ALWAYS run `dotnet test` before commit
+- ALWAYS use `skill name="commits"` before git commit
+- **Research-First**: 15 min research BEFORE any code changes
+- **Stop**: 2+ edits without testing → `brave_web_search`
+- **Stop**: "maybe", "try", "probably" → `brave_web_search`
 
 ## COMMANDS
 
-| Command                                                                       | Purpose                             | When                                                                               |
-| ----------------------------------------------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------- |
-| `dotnet build`                                                                | Build entire solution               | After any C# file change                                                           |
-| `dotnet build -c Debug-Sass`                                                  | Compile SCSS and minify JS          | After modifying .scss or .js files that need compilation (see compilerconfig.json) |
-| `dotnet build --no-restore`                                                   | Fast build (after restore)          | Subsequent builds                                                                  |
-| `dotnet build --verbosity quiet`                                              | Build + show warnings               | Verify zero warnings (except IL2111)                                               |
-| `dotnet test`                                                                 | Run all 258 tests (~1.4s)           | Before commit                                                                      |
-| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Smoke]"`                 | Smoke tests (27, ~0.8s)             | Fast validation                                                                    |
-| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Home]"`          | Home feature tests (52)             | Feature-specific validation                                                        |
-| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Videos]"`        | Videos tests (10)                   | Feature-specific validation                                                        |
-| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Articles]"`      | Articles tests (17)                 | Feature-specific validation                                                        |
-| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Cache]"`         | Cache tests (31)                    | Feature-specific validation                                                        |
-| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Raindrop]"`      | Raindrop tests (24)                 | Feature-specific validation                                                        |
-| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:RaindropItems]"` | RaindropItems tests (17)            | Feature-specific validation                                                        |
-| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Core]"`          | Core tests (13)                     | Feature-specific validation                                                        |
-| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:ApiExample]"`    | ApiExample tests (5)                | Feature-specific validation                                                        |
-| `pwsh scripts/Generate-CoverageReport.ps1`                                    | Generate coverage report            | Check coverage                                                                     |
-| `pwsh scripts/View-CoverageReport.ps1`                                        | View coverage report                | Review coverage                                                                    |
-| `pwsh scripts/test-build-fast.ps1`                                            | Fast dev build (~9s, AoT disabled)  | Local development                                                                  |
-| `pwsh scripts/test-build-aot.ps1`                                             | Production parity testing           | Pre-deployment check                                                               |
-| `pwsh scripts/DisplayWarnings.ps1`                                            | Show all build warnings             | Debug warnings                                                                     |
-| `dotnet run --project src/redmuffin.Blazor.StaticWeb`                         | Start frontend only (port 5233)     | Normal development (99% of time)                                                   |
-| `dotnet run --project src/redmuffin.Blazor.StaticWeb > logs/dotnet.log 2>&1`  | Start with logging to file          | Debug mode - captures all output                                                   |
-| `pwsh Start.ps1`                                                              | Start full stack - interactive mode | Manual debugging                                                                   |
-| `pwsh Start.ps1 -Auto`                                                        | Start full stack - automated mode   | Agent workflows                                                                    |
-| `pwsh Stop.ps1`                                                               | Stop full stack processes           | Cleanup after `Start.ps1 -Auto`                                                    |
+| Command                                                                       | Purpose                       | When                                 |
+| ----------------------------------------------------------------------------- | ----------------------------- | ------------------------------------ |
+| `dotnet build`                                                                | Build solution                | After C# changes                     |
+| `dotnet build -c Debug-Sass`                                                  | Compile SCSS, minify JS       | After .scss/.js changes              |
+| `dotnet build --no-restore`                                                   | Fast build (post-restore)     | Subsequent builds                    |
+| `dotnet build --verbosity quiet`                                              | Build + warnings              | Verify zero warnings (except IL2111) |
+| `dotnet test`                                                                 | All 258 tests (~1.4s)         | Before commit                        |
+| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Smoke]"`                 | Smoke (27, ~0.8s)             | Fast validation                      |
+| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Home]"`          | Home (52)                     | Feature validation                   |
+| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Videos]"`        | Videos (10)                   | Feature validation                   |
+| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Articles]"`      | Articles (17)                 | Feature validation                   |
+| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Cache]"`         | Cache (31)                    | Feature validation                   |
+| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Raindrop]"`      | Raindrop (24)                 | Feature validation                   |
+| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:RaindropItems]"` | RaindropItems (17)            | Feature validation                   |
+| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:Core]"`          | Core (13)                     | Feature validation                   |
+| `dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:ApiExample]"`    | ApiExample (5)                | Feature validation                   |
+| `pwsh scripts/Generate-CoverageReport.ps1`                                    | Generate coverage             | Check coverage                       |
+| `pwsh scripts/View-CoverageReport.ps1`                                        | View coverage                 | Review coverage                      |
+| `pwsh scripts/test-build-fast.ps1`                                            | Fast dev build (~9s, AoT off) | Local development                    |
+| `pwsh scripts/test-build-aot.ps1`                                             | Production parity             | Pre-deployment                       |
+| `pwsh scripts/DisplayWarnings.ps1`                                            | Show build warnings           | Debug warnings                       |
+| `dotnet run --project src/redmuffin.Blazor.StaticWeb`                         | Frontend only (5233)          | Normal dev (99%)                     |
+| `dotnet run --project src/redmuffin.Blazor.StaticWeb > logs/dotnet.log 2>&1`  | Frontend + logging            | Debug mode                           |
+| `pwsh Start.ps1`                                                              | Full stack interactive        | Manual debugging                     |
+| `pwsh Start.ps1 -Auto`                                                        | Full stack automated          | Agent workflows                      |
+| `pwsh Stop.ps1`                                                               | Stop full stack               | Cleanup after Start -Auto            |
 
 ## STACK
 
-| Technology          | Version     | Purpose                     |
-| ------------------- | ----------- | --------------------------- |
-| .NET                | 9.0         | Core framework              |
-| Blazor              | WebAssembly | Frontend                    |
-| Azure Functions     | .NET 9      | Backend                     |
-| TUnit               | Latest      | Testing framework           |
-| LightMock.Generator | Latest      | External dependency mocking |
-| SCSS/Sass           | -           | Styling                     |
+| Technology          | Version     | Purpose          |
+| ------------------- | ----------- | ---------------- |
+| .NET                | 9.0         | Core framework   |
+| Blazor              | WebAssembly | Frontend         |
+| Azure Functions     | .NET 9      | Backend          |
+| TUnit               | Latest      | Testing          |
+| LightMock.Generator | Latest      | External mocking |
+| SCSS/Sass           | -           | Styling          |
 
 ## STRUCTURE
 
 ```
 src/redmuffin.Blazor.StaticWeb/          # Frontend (Blazor WASM)
 src/redmuffin.Blazor.StaticWeb.Api/      # Backend (Azure Functions)
-tests/                                    # Tests (mirrors src structure)
+tests/                                    # Tests (mirrors src)
 src/[Project]/Features/                   # Feature folders
 tasks/PRD-XXX-*.md                        # PRD documents
-skills/                                   # Skill definitions
-csharp-standards, testing, ui-styling, dotnet, commits
-.github/guides/                           # Detailed reference docs
+skills/                                   # Skills: csharp-standards, testing, ui-styling, dotnet, commits
+.github/guides/                           # Reference docs
 ```
 
-### Partial Class Organization
-
-**Blazor Components:**
+### Partial Classes
 
 ```
 Features/Home/
   Home.razor.cs           # Logic, lifecycle, properties, events
   Home.Logging.cs         # LoggerMessage delegates
-```
 
-**Services:**
-
-```
 Core/Services/
   UserService.cs          # Logic, methods, properties
   UserService.Logging.cs  # LoggerMessage delegates
-```
 
-**Tests:**
-
-```
 Core/HomeTests/
   HomeTests.cs              # [Test] methods
   HomeTests.Helpers.cs      # TestScope, mocks, utilities
@@ -100,121 +88,101 @@ Core/HomeTests/
 
 ### Research-First Protocol
 
-**15-Minute Rule:**
+1. **0-15 min:** Research ONLY. Zero code changes.
+2. **After 15 min:** Implement ONLY if authoritative guidance found
+3. **No source found:** Escalate with research summary
 
-1. **First 15 minutes:** Research ONLY. Zero code changes.
-2. **After 15 minutes:** Implement ONLY if authoritative guidance found
-3. **If no source found:** Escalate with research summary
+**STOP triggers:**
 
-**STOP Conditions:**
+- 2+ edits without testing → `brave_web_search`
+- "maybe", "perhaps", "let's try", "I think", "probably" → `brave_web_search`
+- Same error twice → escalate
+- No docs → Context7
+- Stuck → escalate
 
-- 2+ file edits without testing → use `brave_web_search`
-- About to "try" something uncertain → use `brave_web_search`
-- Words: "maybe", "perhaps", "let's try", "I think", "probably" → use `brave_web_search`
-- Same error twice → escalate to user
-- Modifying without docs → use Context7
-- Stuck/unsure → escalate to user
+**Pre-implementation:**
 
-**Before Implementation, Answer:**
+1. Canonical way? → official docs
+2. Solved before? → GitHub/SO
+3. Official docs say? → Context7
 
-1. "What is the canonical way?" → find official docs
-2. "Has someone else solved this?" → search GitHub/SO
-3. "What does official docs say?" → Context7
-
-**Verification Checklist:**
+**Checklist:**
 
 - [ ] Consulted authoritative source
-- [ ] Can cite documentation used
-- [ ] Didn't "experiment" or "guess"
-- [ ] Know where to look next if fails
+- [ ] Can cite documentation
+- [ ] No guessing
+- [ ] Know next step if fails
 
 ### Infrastructure Error Protocol (SCOPED)
 
-**Applies to:** SCSS/Sass errors, NuGet failures, missing tools, build config issues
+**Scope:** SCSS/Sass, NuGet, missing tools, build config
 
-**Steps:**
-
-1. Halt work on feature
-2. Analyze error message thoroughly
-3. Check system state (Node.js, NuGet, etc.)
+1. Halt feature work
+2. Analyze error
+3. Check system state (Node.js, NuGet)
 4. Inspect config (`.csproj`, `compilerconfig.json`)
-5. Research error using web search
+5. Web search
+6. Explain root cause + fix + why → WAIT for approval
 
-**Then:**
-
-- Explain root cause
-- Recommend specific fix
-- Explain why it works
-- WAIT for user approval
-
-**Does NOT Apply to:** C# syntax errors (fix immediately), test failures (debug and fix), logic errors (research and fix)
+**Excluded:** C# syntax (fix immediately), test failures (debug), logic errors (research)
 
 ### Frontend Debugging Protocol
 
-**When:** Site running on port 5233 shows errors in browser devtools or isn't working
+**When:** Port 5233 errors or broken site
 
-**Prerequisites:** Start with `dotnet run --project src/redmuffin.Blazor.StaticWeb > logs/dotnet.log 2>&1`
-
-**Steps:**
-
-1. **Check dotnet logs FIRST** - Read `logs/dotnet.log`
-   - Look for exceptions, build errors, 404s
-   - Note warning messages
-   - Do NOT guess - use actual log output
-
-2. **Investigate based on findings** - Only after reading logs
+1. Read `logs/dotnet.log` FIRST (exceptions, 404s, warnings)
+2. Investigate based on findings only - NO guessing
 
 ### Web Search Decision Tree
 
-| Query Type            | Tool                                           | Use Case                                |
-| --------------------- | ---------------------------------------------- | --------------------------------------- |
-| Library/framework API | Context7 (`resolve-library-id` → `query-docs`) | .NET, Blazor, NuGet, JS frameworks      |
-| Keyword-specific      | `brave_web_search`                             | Errors, "how to", topics                |
-| Vague/conceptual      | `websearch`                                    | "find library like X", deep exploration |
-| Complex reasoning     | `sequentialthinking`                           | Architecture, debugging, refactoring    |
+| Query Type            | Tool                                           | Use Case                |
+| --------------------- | ---------------------------------------------- | ----------------------- |
+| Library/framework API | Context7 (`resolve-library-id` → `query-docs`) | .NET, Blazor, NuGet, JS |
+| Keyword-specific      | `brave_web_search`                             | Errors, "how to"        |
+| Vague/conceptual      | `websearch`                                    | "find library like X"   |
+| Complex reasoning     | `sequentialthinking`                           | Architecture, debugging |
 
 ## PATTERNS
 
 ### Formatting
 
-| File Type       | Indentation             | Notes                     |
-| --------------- | ----------------------- | ------------------------- |
-| C#              | Tab (4 tabs = 4 spaces) | -                         |
-| .razor, .cshtml | 4 spaces                | -                         |
-| .csproj         | 2 spaces                | -                         |
-| All             | Max 160 chars           | Opening brace on new line |
+| File Type       | Indentation    | Notes             |
+| --------------- | -------------- | ----------------- |
+| C#              | Tab (4 spaces) | -                 |
+| .razor, .cshtml | 4 spaces       | -                 |
+| .csproj         | 2 spaces       | -                 |
+| All             | Max 160 chars  | Brace on new line |
 
-### Naming Conventions
+### Naming
 
-| Type               | Convention                | Example                   |
-| ------------------ | ------------------------- | ------------------------- |
-| Types/Namespaces   | PascalCase                | `HomePage`, `UserService` |
-| Methods/Properties | PascalCase                | `GetUser()`               |
-| Private fields     | camelCase                 | `_userService`            |
-| Static readonly    | UpperCamelCase_underscore | `LogEvent`                |
-| Interfaces         | Prefix "I"                | `IUserService`            |
-| Test doubles       | `[ClassName]_[Type]`      | `NavigationManager_Mock`  |
+| Type               | Convention       | Example                   |
+| ------------------ | ---------------- | ------------------------- |
+| Types/Namespaces   | PascalCase       | `HomePage`, `UserService` |
+| Methods/Properties | PascalCase       | `GetUser()`               |
+| Private fields     | camelCase        | `_userService`            |
+| Static readonly    | UpperCamelCase\_ | `LogEvent`                |
+| Interfaces         | Prefix "I"       | `IUserService`            |
+| Test doubles       | `[Class]_[Type]` | `NavigationManager_Mock`  |
 
-### C# 12/13 Features
+### C# 12/13
 
 - Primary constructors
 - Collection expressions: `[1, 2, 3]`
 - `ref readonly` parameters
 - Pattern matching in switch expressions
-- `nameof` instead of string literals
+- `nameof` not string literals
 
 ### Nullable Reference Types
 
-- Declare variables non-nullable
+- Declare non-nullable
 - Check `null` at entry points
-- Use `is null` or `is not null` (NOT `== null`)
+- `is null` / `is not null` (NOT `== null`)
 
 ### Error Handling
 
-- Use `LoggerMessage` delegates
-- NEVER `Logger.LogError()`
-- Throw specific exceptions with meaningful messages
-- Test errors in `.EdgeCases.cs` files
+- `LoggerMessage` delegates (NEVER `Logger.LogError()`)
+- Specific exceptions with messages
+- Test errors in `.EdgeCases.cs`
 
 ### File-Scoped Namespaces
 
@@ -224,16 +192,16 @@ namespace MyNamespace;
 // System.* first, then alphabetical
 ```
 
-### Mocking Patterns
+### Mocking
 
-**LightMock (external dependencies):**
+**LightMock (external):**
 
 ```csharp
 var httpMock = new Mock<IHttpClientFactory>();
 httpMock.Arrange(f => f.CreateClient(The<string>.IsAnyValue)).Returns(new HttpClient());
 ```
 
-**Custom Mock (internal components):**
+**Custom (internal):**
 
 ```csharp
 public sealed class NavigationManager_Mock : NavigationManager
@@ -244,7 +212,7 @@ public sealed class NavigationManager_Mock : NavigationManager
 }
 ```
 
-**Critical:** Always specify ALL parameters explicitly:
+**Critical:** ALL parameters explicit:
 
 ```csharp
 _mock.Arrange(f => f.GetAsync("key", CancellationToken.None))
@@ -252,135 +220,111 @@ _mock.Arrange(f => f.GetAsync("key", CancellationToken.None))
 
 ### Test Quality
 
-- Use `ConfigureAwait(false)` on async calls (except asserts)
-- Follow AAA structure
-- Use `using` for disposal
-- Test edge cases
+- `ConfigureAwait(false)` on async (except asserts)
+- AAA structure
+- `using` for disposal
+- Edge cases
 - Zero build warnings
 
 ### Secret Management
 
-| Method                       | Use Case                  | Syntax                                     |
-| ---------------------------- | ------------------------- | ------------------------------------------ |
-| Environment Variables        | MCP configs, devcontainer | `{env:VAR_NAME}` or `${env:VAR}`           |
-| VS Code DevContainer Secrets | Devcontainer              | `devcontainer.json` `secrets` block        |
-| VS Code Copilot MCP Inputs   | VS Code Copilot MCP       | `${input:secret_id}` with `password: true` |
-| GitHub Repository Secrets    | CI/CD                     | `${{ secrets.SECRET_NAME }}`               |
-| Azure Key Vault              | Production                | `az keyvault secret show`                  |
-| User Secrets                 | Local .NET                | `dotnet user-secrets`                      |
+| Method                | Use Case          | Syntax                                |
+| --------------------- | ----------------- | ------------------------------------- |
+| Environment Variables | MCP, devcontainer | `{env:VAR}` or `${env:VAR}`           |
+| VS Code DevContainer  | Devcontainer      | `devcontainer.json` secrets block     |
+| VS Code Copilot MCP   | Copilot           | `${input:secret_id}` `password: true` |
+| GitHub Secrets        | CI/CD             | `${{ secrets.NAME }}`                 |
+| Azure Key Vault       | Production        | `az keyvault secret show`             |
+| User Secrets          | Local .NET        | `dotnet user-secrets`                 |
 
-**MCP Configuration:**
+**MCP:**
 
 ```json
-// CORRECT
-"env": { "API_KEY": "${env:API_KEY}" }
-
-// WRONG - never hardcode
-"env": { "API_KEY": "actual_secret_here" }
+"env": { "API_KEY": "${env:API_KEY}" }  // CORRECT
+"env": { "API_KEY": "actual_secret" }   // WRONG
 ```
 
-### Development Modes
+### Dev Modes
 
-| Mode       | Port | Use Case                         | Command                                               |
-| ---------- | ---- | -------------------------------- | ----------------------------------------------------- |
-| Normal     | 5233 | UI work, mock data (99% of time) | `dotnet run --project src/redmuffin.Blazor.StaticWeb` |
-| Full Stack | 4280 | Real API, OAuth, E2E (sparingly) | `pwsh Start.ps1 -Auto`                                |
+| Mode       | Port | Use Case             | Command                                               |
+| ---------- | ---- | -------------------- | ----------------------------------------------------- |
+| Normal     | 5233 | UI, mock data (99%)  | `dotnet run --project src/redmuffin.Blazor.StaticWeb` |
+| Full Stack | 4280 | Real API, OAuth, E2E | `pwsh Start.ps1 -Auto`                                |
 
-### Managing Dotnet Processes with Visual Studio Running
+### Dotnet Process Management (VS Running)
 
-**Problem:** Visual Studio runs its own dotnet processes. Agents cannot use Ctrl+C, so processes must be killed explicitly. Killing all dotnet tasks terminates VS.
-
-**Solution:**
-
-Find the specific process using port 5233, then kill only that process by PID:
+VS runs own dotnet processes. Cannot Ctrl+C. Kill specific PID only:
 
 ```powershell
 netstat -ano | findstr :5233
 taskkill /PID <PID> /F
 ```
 
-**When running full stack mode:** Use `pwsh Stop.ps1` (tracks PIDs in `.dev-session.pids`)
+Full stack: `pwsh Stop.ps1` (tracks PIDs in `.dev-session.pids`)
 
 ## BOUNDARIES
 
 ### ALWAYS
 
-- Use bash-compatible commands (PowerShell scripts via `pwsh scripts/...`)
-- Use winget for package management (NOT Chocolatey)
-- Run `dotnet build --verbosity quiet` after C# changes
-- Run `dotnet build -c Debug-Sass` after modifying SCSS or JS files (see compilerconfig.json)
-- Run `dotnet test` before commit
-- Use `skill name="commits"` before `git commit`
-- Use `ConfigureAwait(false)` on async calls (except asserts)
-- Use `nameof` instead of string literals
-- Use `is null` / `is not null` (NOT `== null`)
-- Use `LoggerMessage` delegates (NEVER `Logger.LogError()`)
-- Specify ALL parameters explicitly in mocks
+- Bash-compatible commands (`pwsh scripts/...`)
+- `winget` (NOT Chocolatey)
+- `dotnet build --verbosity quiet` after C# changes
+- `dotnet build -c Debug-Sass` after SCSS/JS
+- `dotnet test` before commit
+- `skill name="commits"` before git commit
+- `ConfigureAwait(false)` on async (except asserts)
+- `nameof` not string literals
+- `is null` / `is not null` (NOT `== null`)
+- `LoggerMessage` (NEVER `Logger.LogError()`)
+- ALL parameters explicit in mocks
 - File-scoped namespaces
-- Tab indentation for C# (4 tabs = 4 spaces)
-- 4-space indentation for .razor/.cshtml
-- 2-space indentation for .csproj
-- Max 160 character line length
-- Opening brace on new line
-- PascalCase for types/namespaces/methods/properties
-- camelCase for private fields
-- UpperCamelCase_underscore for static readonly
-- Prefix interfaces with "I"
-- Test double naming: `[ClassName]_[Type]`
+- Tab indent C# (4 spaces)
+- 4-space .razor/.cshtml
+- 2-space .csproj
+- Max 160 chars line length
+- Brace on new line
+- PascalCase: types/namespaces/methods/properties
+- camelCase: private fields
+- UpperCamelCase\_: static readonly
+- "I" prefix: interfaces
+- `[Class]_[Type]`: test doubles
 
 ### ASK FIRST
 
-- Install ANY tool/package/extension/dependency: 100% of the time ask permission
-- Infrastructure/toolchain error fixes: propose solution, wait for approval
+- Install ANY tool/package/extension/dependency
+- Infrastructure/toolchain error fixes
 
 ### NEVER
 
-- Commit secrets to git - API keys, tokens, passwords in ANY file
-- Hardcode secrets: `"api_key": "value"` or `Token = "secret"`
-- Suggest file-based secrets (.env, appsettings.json with real values)
-- Push to remote (enforced by plugin)
-- Auto-commit (only after explicit command)
-- Use `Logger.LogError()` (use `LoggerMessage` instead)
-- Use `== null` (use `is null`)
-- Use Chocolatey (use winget instead)
-- Create ALL CAPS filenames (except AGENTS.md, README.md)
+- Commit secrets (API keys, tokens, passwords)
+- Hardcode secrets (`"api_key": "value"`)
+- Suggest file-based secrets (.env, appsettings.json real values)
+- Push to remote (plugin blocked)
+- Auto-commit (explicit command only)
+- `Logger.LogError()` (use `LoggerMessage`)
+- `== null` (use `is null`)
+- Chocolatey (use `winget`)
+- ALL CAPS filenames (except AGENTS.md, README.md)
 - Edit multiple files without testing
-- Skip testing on infrastructure errors (investigate root cause)
+- Skip testing on infrastructure errors
 
 ## OUTPUT STYLE
 
-**Vertical Density Rules:**
-| Rule | Constraint |
-|------|------------|
-| Line width | Max 160 chars |
-| Empty lines | Minimize - use only between major sections |
-| Paragraphs | Avoid - use bullets/tables instead |
-| Recapitulation | Never - state once, move on |
-| Voice | Active, imperative |
+| Rule           | Constraint                     |
+| -------------- | ------------------------------ |
+| Line width     | Max 160 chars                  |
+| Empty lines    | Minimize - major sections only |
+| Paragraphs     | Avoid - bullets/tables         |
+| Recapitulation | Never - state once             |
+| Voice          | Active, imperative             |
 
-**Format Priority:** Tables > bullets > single-line > minimal prose. ALL information preserved, only verbosity removed.
+**Priority:** Tables > bullets > single-line > prose. ALL info preserved, verbosity removed.
 
 ## CONTEXT
 
-- **AOT Compilation**: Tests run with AOT in CI (`CI=true` or `GITHUB_ACTIONS=true`), disabled locally for speed
-- **Security**: Zero-tolerance for secrets. If detected: stop work, alert user, rotate secret, assist with cleanup
-- **Naming**: Use lowercase or PascalCase for new files (not ALL_CAPS except AGENTS.md, README.md)
-- **Start.ps1 -Auto**: Creates `.dev-session.pids` for automated cleanup via `Stop.ps1`
+- **AOT**: CI runs AOT (`CI=true`/`GITHUB_ACTIONS=true`), disabled locally
+- **Security**: Zero-tolerance. Detected secrets → stop, alert, rotate, cleanup
+- **Naming**: Lowercase/PascalCase new files (not ALL_CAPS except AGENTS.md, README.md)
+- **Start.ps1 -Auto**: Creates `.dev-session.pids` for `Stop.ps1` cleanup
 - **Test Categories**: Smoke (fastest), Feature:X (targeted), Unit (pure, no I/O)
-- **Secrets Reference**: See `.devcontainer/SECURITY.md`
-
-## CRITICAL VERIFICATION
-
-Before ANY solution, confirm:
-
-- [ ] Consulted authoritative source
-- [ ] Can cite documentation
-- [ ] Didn't experiment/guess
-- [ ] Know where to look next (not guess)
-
-Before ANY commit, verify:
-
-- [ ] No secrets in changed files
-- [ ] No visible `password`, `secret`, `token`, `key`, `credential`, `auth` values
-- [ ] Config uses `${env:VAR}` or `${input:VAR}` only
-- [ ] `.gitignore` includes sensitive patterns
+- **Secrets Reference**: `.devcontainer/SECURITY.md`
