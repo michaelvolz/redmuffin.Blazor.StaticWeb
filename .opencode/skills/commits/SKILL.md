@@ -32,7 +32,7 @@ Body explaining why.
 
 TYPES: feat fix docs style refactor perf test build chore ci revert
 SCOPES: blazor api ui deps build scripts ci docs opencode
-NEVER: push, commit without approval, no body, mixed concerns
+NEVER: push, commit without approval, no body, mixed concerns, circumvent git hooks (--no-verify, --no-gpg-sign, etc.)
 ALWAYS: one concern, explicit approval, lock files when changed
 BREAKING: ! after scope + BREAKING CHANGE: in body
 
