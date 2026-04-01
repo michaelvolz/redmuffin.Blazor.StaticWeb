@@ -286,6 +286,21 @@ _mock.Arrange(f => f.GetAsync("key", CancellationToken.None))
 | Normal     | 5233 | UI work, mock data (99% of time) | `dotnet run --project src/redmuffin.Blazor.StaticWeb` |
 | Full Stack | 4280 | Real API, OAuth, E2E (sparingly) | `pwsh Start.ps1 -Auto`                                |
 
+### Managing Dotnet Processes with Visual Studio Running
+
+**Problem:** Visual Studio runs its own dotnet processes. Agents cannot use Ctrl+C, so processes must be killed explicitly. Killing all dotnet tasks terminates VS.
+
+**Solution:**
+
+Find the specific process using port 5233, then kill only that process by PID:
+
+```powershell
+netstat -ano | findstr :5233
+taskkill /PID <PID> /F
+```
+
+**When running full stack mode:** Use `pwsh Stop.ps1` (tracks PIDs in `.dev-session.pids`)
+
 ## BOUNDARIES
 
 ### ALWAYS
