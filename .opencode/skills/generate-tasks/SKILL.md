@@ -13,7 +13,7 @@ To guide an AI assistant in creating a detailed, step-by-step task list in Markd
 
 - **Format:** Markdown (`.md`)
 - **Location:** `/tasks/`
-- **Filename:** `tasks-[number]-[feature-name].md` (e.g., `tasks-001-user-profile-editing.md`)
+- **Filename:** `PRD-[number]-[Feature-Name].Tasklist.md` (e.g., `PRD-001-User-Profile-Editing.Tasklist.md`)
 
 ### Determining the Task List Number
 
@@ -41,7 +41,7 @@ The task list number must match the PRD number it corresponds to. Always use 3-d
 5.  **Phase 2: Generate Sub-Tasks:** Once the user confirms, break down each parent task into smaller, actionable sub-tasks necessary to complete the parent task. Ensure sub-tasks logically follow from the parent task and cover the implementation details implied by the requirements.
 6.  **Identify Relevant Files:** Based on the tasks and requirements, identify potential files that will need to be created or modified. List these under the `Relevant Files` section, including corresponding test files if applicable.
 7.  **Generate Final Output:** Combine the parent tasks, sub-tasks, relevant files, and notes into the final Markdown structure.
-8.  **Save Task List:** Save the generated document in the `/tasks/` directory with the filename `tasks-[number]-[feature-name].md`, where `[number]` is the PRD number and `[feature-name]` describes the main feature (e.g., if the request was about user profile editing, the output is `tasks-001-user-profile-editing.md`).
+8.  **Save Task List:** Save the generated document in the `/tasks/` directory with the filename `PRD-[number]-[Feature-Name].Tasklist.md`, where `[number]` is the PRD number and `[Feature-Name]` describes the main feature in Title-Case (e.g., if the request was about user profile editing, the output is `PRD-001-User-Profile-Editing.Tasklist.md`).
 
     **IMPORTANT:** Before saving, determine the correct number by finding the highest existing PRD number in `/tasks/` and using that same number (since task lists correspond to their PRDs).
 
