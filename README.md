@@ -205,19 +205,19 @@ Use only if you cannot run Docker. Note: Manual secret management required.
   npm install -g cc-safety-net
   ```
 
-  **Dual Push Protection:**
-  The project uses two independent layers to prevent remote pushes:
+  **Push Protection:**
+  The project uses two complementary layers to prevent unauthorized remote pushes:
 
-  | Layer            | Mechanism                                                  | Blocks                                                                           |
-  | ---------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------- |
-  | 1. cc-safety-net | Semantic command analysis via `tool.execute.before` hook   | All `git push` variants, shell wrappers, env prefixes                            |
-  | 2. block-push.js | Custom OpenCode plugin (`.opencode/plugins/block-push.js`) | `git push` with bypass-resistant parsing, interpreter one-liners, command chains |
+  | Layer            | Mechanism                                                  | Blocks                                       |
+  | ---------------- | ---------------------------------------------------------- | -------------------------------------------- |
+  | 1. cc-safety-net | Semantic command analysis via `tool.execute.before` hook   | `git push --force` / `-f` (destroys history) |
+  | 2. block-push.js | Custom OpenCode plugin (`.opencode/plugins/block-push.js`) | ALL `git push` with bypass-resistant parsing |
 
-  **Blocked Commands (Built-in Rules):**
+  **Blocked Commands (cc-safety-net Built-in Rules):**
 
   | Command Pattern                | Reason                                       |
   | ------------------------------ | -------------------------------------------- |
-  | `git push *`                   | NEVER push without explicit user permission  |
+  | `git push --force` / `-f`      | Destroys remote history                      |
   | `git reset --hard`             | Destroys all uncommitted changes permanently |
   | `git checkout -- *`            | Discards uncommitted changes permanently     |
   | `git clean -f*`                | Removes untracked files permanently          |
