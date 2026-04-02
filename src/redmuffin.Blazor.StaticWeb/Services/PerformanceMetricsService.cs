@@ -12,6 +12,7 @@ public class PerformanceMetricsService(IJSRuntime jsRuntime) : IPerformanceMetri
 {
     private readonly SemaphoreSlim _semaphore = new(1, 1);
     private bool _disposed;
+    private bool _wasmInitFinalized;
 
     public ValueTask DisposeAsync()
     {
@@ -42,10 +43,14 @@ public class PerformanceMetricsService(IJSRuntime jsRuntime) : IPerformanceMetri
 
                 if (functionExists)
                 {
-                    var metrics = await jsRuntime.InvokeAsync<LoadSpeed.PageLoadMetrics>("getPageLoadMetrics", cts.Token).ConfigureAwait(false);
+                    if (!_wasmInitFinalized)
+                    {
+                        // Finalize the startup boundary once; later reads must not move it.
+                        await jsRuntime.InvokeVoidAsync("eval", cts.Token, "window.pageLoadSpeed && window.pageLoadSpeed.wasmMetrics && window.pageLoadSpeed.wasmMetrics.markEnd()").ConfigureAwait(false);
+                        _wasmInitFinalized = true;
+                    }
 
-                    // Mark WASM startup end time before collecting metrics
-                    await jsRuntime.InvokeVoidAsync("eval", cts.Token, "window.pageLoadSpeed && window.pageLoadSpeed.wasmMetrics && window.pageLoadSpeed.wasmMetrics.markEnd()").ConfigureAwait(false);
+                    var metrics = await jsRuntime.InvokeAsync<LoadSpeed.PageLoadMetrics>("getPageLoadMetrics", cts.Token).ConfigureAwait(false);
 
                     // Fetch WASM metrics directly (semaphore already held by GetMetricsAsync)
                     var wasmMetrics = await jsRuntime.InvokeAsync<WasmMetrics>("getWasmMetrics", cts.Token).ConfigureAwait(false);
@@ -99,8 +104,12 @@ public class PerformanceMetricsService(IJSRuntime jsRuntime) : IPerformanceMetri
 
                 if (functionExists)
                 {
-                    // Mark WASM startup end time before collecting metrics
-                    await jsRuntime.InvokeVoidAsync("eval", cts.Token, "window.pageLoadSpeed && window.pageLoadSpeed.wasmMetrics && window.pageLoadSpeed.wasmMetrics.markEnd()").ConfigureAwait(false);
+                    if (!_wasmInitFinalized)
+                    {
+                        // Finalize the startup boundary once; later reads must not move it.
+                        await jsRuntime.InvokeVoidAsync("eval", cts.Token, "window.pageLoadSpeed && window.pageLoadSpeed.wasmMetrics && window.pageLoadSpeed.wasmMetrics.markEnd()").ConfigureAwait(false);
+                        _wasmInitFinalized = true;
+                    }
 
                     var metrics = await jsRuntime.InvokeAsync<WasmMetrics>("getWasmMetrics", cts.Token).ConfigureAwait(false);
                     return metrics;

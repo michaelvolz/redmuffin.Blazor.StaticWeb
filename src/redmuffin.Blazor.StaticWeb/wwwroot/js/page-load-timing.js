@@ -417,6 +417,10 @@ window.pageLoadSpeed.wasmMetrics = {
 
     // Set WASM end time (called from afterStarted)
     markEnd: function() {
+        if (this.wasmEndTime > 0) {
+            return;
+        }
+
         this.wasmEndTime = performance.now();
         try {
             performance.mark('wasm-end');
