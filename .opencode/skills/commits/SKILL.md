@@ -42,7 +42,8 @@ Rule: do not attempt commit until every required field is populated and validate
 2. Dependencies committed? → NO: commit those first
 3. One concern? → NO: separate commits
 4. Body present? → NO: add body
-5. Lock files changed? → YES: include them
+5. Lock files changed? → if the only lockfile delta is Debug-Sass `BuildWebCompiler2022` drift,
+   normalize first; otherwise include them
 
 ## PRECOMMIT_MESSAGE_CHECK
 
@@ -95,7 +96,7 @@ SCOPES: `blazor` `api` `ui` `deps` `build` `scripts` `ci` `docs` `opencode`
 
 NEVER: push, commit without approval, no body, mixed concerns, circumvent git hooks (`--no-verify`, `--no-gpg-sign`, etc.)
 
-ALWAYS: one concern, explicit approval, lock files when changed
+ALWAYS: one concern, explicit approval, lock files when changed; group files only when they changed for the same reason, otherwise split commits.
 
 BREAKING: `!` after scope + `BREAKING CHANGE:` in body
 
@@ -114,3 +115,15 @@ Footer-One: value
 - `src/**/packages.lock.json`
 - `tests/**/packages.lock.json`
 - `src/SwaLauncher/packages.lock.json`
+- `src/redmuffin.Blazor.StaticWeb/packages.lock.json`
+- `src/redmuffin.Blazor.StaticWeb.Api/packages.lock.json`
+- `src/redmuffin.Blazor.StaticWeb.Common/packages.lock.json`
+- `tests/redmuffin.Blazor.StaticWeb.Tests/packages.lock.json`
+- `tests/redmuffin.Blazor.StaticWeb.Api.Tests/packages.lock.json`
+
+## LOCKFILE_EXCEPTION
+
+- If the only lockfile drift is `BuildWebCompiler2022` in `packages.lock.json`, treat it as a
+  Debug-Sass artifact and do not commit it unless the post-normalization diff still shows a real
+  dependency change.
+- Preserve the default rule for all other lockfile changes.

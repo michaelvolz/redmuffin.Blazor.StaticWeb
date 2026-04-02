@@ -1279,7 +1279,8 @@ git add **/packages.lock.json
 git commit -m "chore: update package lock files"
 ```
 
-**Prevention**: Always commit `packages.lock.json` when you see it changed.
+**Prevention**: Always commit `packages.lock.json` when you see it changed, except for the
+Debug-Sass-only `BuildWebCompiler2022` drift called out in `AGENTS.md`.
 
 ---
 
