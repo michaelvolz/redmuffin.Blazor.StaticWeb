@@ -195,6 +195,7 @@ nohup dotnet run --project src/redmuffin.Blazor.StaticWeb > logs/dotnet.log 2>&1
 - Check port 5233 free before `dotnet run`
 - Redirect all `dotnet run` output to `logs/dotnet.log`
 - Verify server started via log before opening browser
+- Ignore BuildWebCompiler2022 lock file drift — it is conditionally included (Debug-Sass only, Windows-only) and always dropped by CI/CD restores. If BuildWebCompiler2022 is the only change in packages.lock.json, do NOT commit it.
 
 ### ASK FIRST
 
