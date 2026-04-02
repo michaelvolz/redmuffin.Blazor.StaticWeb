@@ -136,6 +136,14 @@
   @include mixins.border-radius(vars.$page-speed-border-radius-medium);
   padding: vars.$page-speed-gap-large;
   border: 1px solid vars.$page-speed-overlay-color;
+
+  // Center the Data Transfer block (3rd item) in the 2-column grid
+  &:nth-child(3) {
+    grid-column: 1 / -1;
+    min-width: calc(50% - vars.$page-speed-gap-xxlarge / 2);
+    max-width: calc(50% - vars.$page-speed-gap-xxlarge / 2);
+    justify-self: center;
+  }
 }
 
 // Metric group title styling
@@ -447,6 +455,14 @@
 
   .metrics-grid {
     @include mixins.grid-layout(1, vars.$page-speed-gap-large);
+  }
+
+  .metric-group {
+    &:nth-child(3) {
+      min-width: auto;
+      max-width: none;
+      justify-self: auto;
+    }
   }
 
   .widget-header {
