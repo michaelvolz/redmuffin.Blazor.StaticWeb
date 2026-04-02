@@ -5,4 +5,4 @@ aliases:
 description: Create conventional commit(s) following project standards
 ---
 
-Execute commits skill immediately. Strictly follow its rules including staging order and batched commits per concern (even for "full/all/everything" - stage all but commit separately). Scope: all open changes if "full/all/everything"; else session files + package.lock.json. No summary or confirmation—just commit.
+Run commits skill. Obey staging order, split by concern, and keep commit body lines <=100 chars. Full/all/everything = stage all, commit separately. Scope: all open changes else session files + package.lock.json. No summary/confirmation.
