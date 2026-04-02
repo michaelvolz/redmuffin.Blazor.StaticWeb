@@ -30,6 +30,54 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+$script:IsQuiet = $Quiet
+
+$script:EsExePath = $null
+
+function Get-EsExePath {
+    try {
+        $command = Get-Command 'es.exe' -ErrorAction Stop | Select-Object -First 1
+
+        if ($command -and $command.Source) {
+            return $command.Source
+        }
+
+        if ($command -and $command.Path) {
+            return $command.Path
+        }
+    }
+    catch {
+    }
+
+    return $null
+}
+
+$script:EsExePath = Get-EsExePath
+
+if (-not $script:EsExePath) {
+    Write-Host ""
+    Write-Host "ERROR: es.exe not found in PATH" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "This script requires 'es.exe' (Everything Command Line Interface) for" -ForegroundColor Yellow
+    Write-Host "instant system-wide filesystem searches. It is part of the Everything tool" -ForegroundColor Yellow
+    Write-Host "by voidtools, which indexes all files on NTFS volumes for fast searching." -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "Everything is a free, safe, and widely-used file search utility." -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "Download Everything:" -ForegroundColor White
+    Write-Host "  https://www.voidtools.com/downloads/" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "Download ES (CLI):" -ForegroundColor White
+    Write-Host "  https://www.voidtools.com/downloads/#cli" -ForegroundColor Cyan
+    Write-Host "  https://github.com/voidtools/ES" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "After installing Everything, make sure es.exe is available on PATH." -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "If you use a custom install, add that folder to PATH." -ForegroundColor Gray
+    Write-Host ""
+    exit 3
+}
+
 $script:Timestamp = (Get-Date -Format 'yyyy-MM-ddTHH:mm:ss')
 $script:Status = 'PASS'
 $script:Checks = [System.Collections.ArrayList]::new()
@@ -58,11 +106,33 @@ function Add-Check {
     }
 }
 
+function Write-ScanLine {
+    param(
+        [string]$Message,
+        [ConsoleColor]$Color = [ConsoleColor]::White
+    )
+
+    Write-Host $Message -ForegroundColor $Color
+}
+
+function Write-ProgressLine {
+    param(
+        [string]$Message,
+        [ConsoleColor]$Color = [ConsoleColor]::White
+    )
+
+    if ($Json -or $script:IsQuiet) {
+        return
+    }
+
+    Write-Host $Message -ForegroundColor $Color
+}
+
 function Invoke-EsSearch {
     param([string]$Query)
 
     try {
-        $output = & es.exe $Query 2>$null
+        $output = & $script:EsExePath $Query 2>$null
         return $output | Where-Object { $_ -and $_.Trim() }
     }
     catch {
@@ -83,9 +153,9 @@ function Get-EsPaths {
     return Invoke-EsSearch -Query $Query
 }
 
-Write-Host "Scanning for npm supply chain attack indicators..." -ForegroundColor Cyan
-Write-Host "Using Everything (es.exe) for instant filesystem searches" -ForegroundColor Gray
-Write-Host ""
+Write-ProgressLine "Scanning for npm supply chain attack indicators..." Cyan
+Write-ProgressLine "Using Everything (es.exe) for instant filesystem searches" Gray
+Write-ProgressLine ""
 
 <# IMPORTANT: Keep this list updated with known malicious packages #>
 $MaliciousPackages = @{
@@ -107,9 +177,9 @@ $MaliciousPackages = @{
 }
 
 $MalwareArtifacts = @{
+    '6202033' = 'Windows payload/dropper artifact (axios attack)'
     '6202033.ps1' = 'Windows PowerShell RAT payload (axios attack)'
     '6202033.vbs' = 'Windows VBScript dropper (axios attack)'
-    '6202033' = 'Generic malware artifact pattern'
     'com.apple.act.mond' = 'macOS RAT payload (axios attack)'
     'ld.py' = 'Linux Python RAT (context-dependent, check path)'
 }
@@ -121,7 +191,7 @@ $PersistencePaths = @{
 
 $C2Indicators = @('sfrclak', '142.11.206.73')
 
-Write-Host "[CHECK 1/8] Scanning for malicious npm packages..." -ForegroundColor Yellow
+Write-ProgressLine "[CHECK 1/8] Scanning for malicious npm packages..." Yellow
 
 $axiosPackages = Get-EsPaths -Query "axios/package.json"
 $suspectAxios = @()
@@ -170,14 +240,14 @@ else {
     [void]$script:Recommendations.Add("Check for malware artifacts (see subsequent checks)")
 }
 
-Write-Host "[CHECK 2/8] Scanning for malware artifacts..." -ForegroundColor Yellow
+Write-ProgressLine "[CHECK 2/8] Scanning for malware artifacts..." Yellow
 
 $malwareFound = @()
 
 foreach ($artifact in $MalwareArtifacts.Keys) {
     $results = Get-EsPaths -Query $artifact
     foreach ($result in $results) {
-        if ($result -match $artifact) {
+        if ((Split-Path $result -Leaf) -ieq $artifact) {
             $malwareFound += $result
         }
     }
@@ -192,7 +262,7 @@ else {
     [void]$script:Recommendations.Add("Isolate system and perform full incident response")
 }
 
-Write-Host "[CHECK 3/8] Scanning for persistence mechanisms..." -ForegroundColor Yellow
+Write-ProgressLine "[CHECK 3/8] Scanning for persistence mechanisms..." Yellow
 
 $persistenceFound = @()
 
@@ -215,7 +285,7 @@ else {
     [void]$script:Recommendations.Add("Investigate and remove suspicious files")
 }
 
-Write-Host "[CHECK 4/8] Scanning for C2 domain references..." -ForegroundColor Yellow
+Write-ProgressLine "[CHECK 4/8] Scanning for C2 domain references..." Yellow
 
 $c2Found = @()
 
@@ -236,7 +306,7 @@ else {
     [void]$script:Recommendations.Add("Investigate network traffic for C2 communication")
 }
 
-Write-Host "[CHECK 5/8] Checking npm configuration..." -ForegroundColor Yellow
+Write-ProgressLine "[CHECK 5/8] Checking npm configuration..." Yellow
 
 try {
     $npmConfig = npm config list 2>$null
@@ -270,7 +340,7 @@ catch {
     Add-Check -Name "npm config" -Status "WARN" -Message "Could not read npm config"
 }
 
-Write-Host "[CHECK 6/8] Checking Windows Run keys..." -ForegroundColor Yellow
+Write-ProgressLine "[CHECK 6/8] Checking Windows Run keys..." Yellow
 
 $runKeyHKCU = Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -ErrorAction SilentlyContinue
 $runKeyHKLM = Get-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Run" -ErrorAction SilentlyContinue
@@ -313,7 +383,7 @@ else {
     [void]$script:Findings.Add("MEDIUM: Suspicious Run key entries - investigate manually")
 }
 
-Write-Host "[CHECK 7/8] Checking for installed axios versions..." -ForegroundColor Yellow
+Write-ProgressLine "[CHECK 7/8] Checking for installed axios versions..." Yellow
 
 $allAxiosVersions = @()
 
@@ -346,7 +416,7 @@ else {
     Add-Check -Name "Axios inventory" -Status "PASS" -Message "All $safeCount axios installations are safe versions"
 }
 
-Write-Host "[CHECK 8/8] Checking npm cache for compromised packages..." -ForegroundColor Yellow
+Write-ProgressLine "[CHECK 8/8] Checking npm cache for compromised packages..." Yellow
 
 $npmCachePath = "$env:LOCALAPPDATA\npm-cache\_cacache"
 $cacheClean = $true
@@ -364,11 +434,11 @@ else {
     Add-Check -Name "npm cache" -Status "PASS" -Message "npm cache directory not found"
 }
 
-Write-Host ""
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "SCAN COMPLETE" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host ""
+Write-ProgressLine ""
+Write-ProgressLine "========================================" Cyan
+Write-ProgressLine "SCAN COMPLETE" Cyan
+Write-ProgressLine "========================================" Cyan
+Write-ProgressLine ""
 
 if ($Json) {
     $output = [PSCustomObject]@{
@@ -382,11 +452,10 @@ if ($Json) {
 }
 else {
     $statusColor = if ($script:Status -eq 'PASS') { 'Green' } elseif ($script:Status -eq 'WARN') { 'Yellow' } else { 'Red' }
-    Write-Host "OVERALL STATUS: " -NoNewline
-    Write-Host $script:Status -ForegroundColor $statusColor
-    Write-Host ""
+    Write-ScanLine "OVERALL STATUS: $script:Status" $statusColor
+    Write-ScanLine ""
 
-    Write-Host "CHECKS:" -ForegroundColor Yellow
+    Write-ScanLine "CHECKS:" Yellow
     foreach ($check in $script:Checks) {
         $color = switch ($check.Status) {
             'PASS' { 'Green' }
@@ -395,38 +464,39 @@ else {
             'INFO' { 'Gray' }
             default { 'White' }
         }
-        Write-Host "  [$($check.Status)] " -NoNewline -ForegroundColor $color
-        Write-Host "$($check.Name): $($check.Message)"
+        Write-ScanLine "  [$($check.Status)] $($check.Name): $($check.Message)" $color
         if ($check.Paths -and $check.Paths.Count -gt 0) {
             foreach ($path in $check.Paths | Select-Object -First 5) {
-                Write-Host "    -> $path" -ForegroundColor Gray
+                Write-ScanLine "    -> $path" Gray
             }
             if ($check.Paths.Count -gt 5) {
-                Write-Host "    ... and $($check.Paths.Count - 5) more" -ForegroundColor Gray
+                Write-ScanLine "    ... and $($check.Paths.Count - 5) more" Gray
             }
         }
     }
 
     if ($script:Findings.Count -gt 0) {
-        Write-Host ""
-        Write-Host "FINDINGS:" -ForegroundColor Red
+        Write-ScanLine ""
+        Write-ScanLine "FINDINGS:" Red
         foreach ($finding in $script:Findings) {
-            Write-Host "  - $finding"
+            Write-ScanLine "  - $finding" Red
         }
     }
 
     if ($script:Recommendations.Count -gt 0) {
-        Write-Host ""
-        Write-Host "RECOMMENDATIONS:" -ForegroundColor Yellow
+        Write-ScanLine ""
+        Write-ScanLine "RECOMMENDATIONS:" Yellow
         foreach ($rec in $script:Recommendations) {
-            Write-Host "  - $rec"
+            Write-ScanLine "  - $rec" Yellow
         }
     }
 
-    Write-Host ""
-    Write-Host "Axios installations found: $($allAxiosVersions.Count)" -ForegroundColor Gray
+    Write-ScanLine ""
+    Write-ScanLine "Axios installations found: $($allAxiosVersions.Count)" Gray
     if ($allAxiosVersions.Count -gt 0) {
-        $allAxiosVersions | Format-Table -AutoSize | Out-String | Write-Host
+        if (-not $script:IsSilent) {
+            $allAxiosVersions | Format-Table -AutoSize | Out-String | Write-Host
+        }
     }
 }
 
