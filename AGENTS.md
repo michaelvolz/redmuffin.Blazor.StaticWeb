@@ -109,6 +109,7 @@ src/redmuffin.Blazor.StaticWeb.Api/      # Backend (Azure Functions)
 tests/                                    # Tests (mirrors src)
 src/[Project]/Features/                   # Feature folders
 tasks/PRD-XXX-*.md                        # PRD documents
+docs/solutions/                            # documented solutions to past problems, organized by category with YAML frontmatter; useful when debugging recurring issues or reviewing established patterns
 .opencode/skills/                         # Skills: csharp-standards, testing, ui-styling, dotnet, commits, markdown, nuget-manager, agent-markdown-optimizer, create-prd, generate-tasks, skill-creator, output-style, security-secrets, dev-workflows
 .github/guides/                           # Reference docs
 ```
