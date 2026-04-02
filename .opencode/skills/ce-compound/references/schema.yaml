@@ -1,0 +1,42 @@
+frontmatter:
+  required:
+    - title
+    - problem_type
+    - category
+    - date
+    - track
+  optional:
+    - component
+    - module
+    - tags
+    - applies_when
+    - symptoms
+    - root_cause
+    - resolution_type
+    - last_updated
+
+enums:
+  problem_type:
+    - bug
+    - knowledge
+  track:
+    - bug
+    - knowledge
+  category:
+    - build-errors
+    - test-failures
+    - runtime-errors
+    - performance-issues
+    - database-issues
+    - security-issues
+    - ui-bugs
+    - integration-issues
+    - logic-errors
+
+track_fields:
+  bug:
+    - symptoms
+    - root_cause
+    - resolution_type
+  knowledge:
+    - applies_when
