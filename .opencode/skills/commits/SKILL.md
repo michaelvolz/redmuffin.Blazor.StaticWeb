@@ -1,12 +1,14 @@
 ---
 name: commits
-description: Guidelines for creating conventional commit messages following project standards. USE THIS SKILL whenever the user wants to commit changes, write a commit message, create a commit, or mentions committing - even if they don't say 'git'. Ensures proper conventional commit format with types, scopes, and descriptive bodies.
+description: Conventional commit guidance for this repo. Trigger on any mention of committing, commit messages, conventional commits, or preparing to commit.
 invocable: false
 ---
 
-## When to use me
+# commits
 
-Use this skill whenever the user mentions:
+## TRIGGER
+
+Use for:
 
 - Committing changes
 - Creating a commit message
@@ -15,28 +17,56 @@ Use this skill whenever the user mentions:
 - Preparing to commit
 - Conventional commits
 
-This applies even if the user doesn't explicitly say "git" - any mention of committing code should trigger this skill.
+Trigger even if user does not say `git`.
 
-CHECK_ORDER:
+## CHECK_ORDER
 
-1. .gitignore staged? → NO: stage first
+1. `.gitignore` staged? → NO: stage first
 2. Dependencies committed? → NO: commit those first
 3. One concern? → NO: separate commits
 4. Body present? → NO: add body
 5. Lock files changed? → YES: include them
 
-FORMAT:
-type(scope): subject (max 100)
+## FORMAT
+
+`type(scope): subject` (max 100)
 
 Body explaining why.
 
-TYPES: feat fix docs style refactor perf test build chore ci revert
-SCOPES: blazor api ui deps build scripts ci docs opencode
-NEVER: push, commit without approval, no body, mixed concerns, circumvent git hooks (--no-verify, --no-gpg-sign, etc.)
-ALWAYS: one concern, explicit approval, lock files when changed
-BREAKING: ! after scope + BREAKING CHANGE: in body
+## COMMITLINT RULES
 
-LOCK_PATHS:
-src/**/packages.lock.json
-tests/**/packages.lock.json
-src/SwaLauncher/packages.lock.json
+- body is required for non-trivial changes here
+- body must start with a blank line after the header
+- body lines must stay at or under 100 characters
+- footer must start with a blank line after the body
+- BREAKING CHANGE must be uppercase and belong in the footer or be marked with `!` in the header
+
+## ALLOWED VALUES
+
+TYPES: `feat` `fix` `docs` `style` `refactor` `perf` `test` `build` `chore` `ci` `revert`
+
+SCOPES: `blazor` `api` `ui` `deps` `build` `scripts` `ci` `docs` `opencode`
+
+## HARD RULES
+
+NEVER: push, commit without approval, no body, mixed concerns, circumvent git hooks (`--no-verify`, `--no-gpg-sign`, etc.)
+
+ALWAYS: one concern, explicit approval, lock files when changed
+
+BREAKING: `!` after scope + `BREAKING CHANGE:` in body
+
+## VALID MESSAGE SHAPE
+
+```text
+type(scope): subject
+
+Short body paragraph wrapped so no line exceeds 100 characters.
+
+Footer-One: value
+```
+
+## LOCK_PATHS
+
+- `src/**/packages.lock.json`
+- `tests/**/packages.lock.json`
+- `src/SwaLauncher/packages.lock.json`
