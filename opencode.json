@@ -1,5 +1,11 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "default_agent": "reliable-dotnet-coder",
+  "agent": {
+    "build": {
+      "disable": true
+    }
+  },
   "watcher": {
     "ignore": [
       ".git/**",
