@@ -10,7 +10,7 @@ invocable: false
 
 VS runs own dotnet processes. Cannot Ctrl+C. Kill specific PID only:
 
-```powershell
+```bash
 netstat -ano | findstr :5233
 taskkill /PID <PID> /F
 ```

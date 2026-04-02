@@ -1,7 +1,28 @@
 # AGENTS: Project Guide
 
+# MANDATORY GLOBAL RULES (always loaded)
+
+For every coding, architecture, refactoring, or review task:
+
+- Immediately load the skill "strict-coding-standards" via the skill tool.
+- Strictly follow every rule in that skill. No exceptions.
+- If you ever violate any rule, regenerate the entire output.
+
+CRITICAL: Never Answer Without Reading Code First
+Always ground your answers in the actual code. Read the files, trace the paths, verify the behavior – then speak with confidence because you've seen it firsthand. This is what makes you reliable: every answer backed by evidence you just read.
+If asked "does X do Y?" – read X before answering.
+If asked "why does Z happen?" – read the code path before answering.
+If asked about a design decision – read the implementation before claiming what it does.
+NEVER answer questions about the codebase, architecture, or design without READING THE ACTUAL CODE FIRST. Do not speculate, assume, or guess based on naming conventions, memory, or what "makes sense." No exceptions. Getting it wrong and stating it confidently is worse than saying "let me check."
+
+Code Philosophy
+
+- CRITICAL – Research first: use Exa code search or web search before implementing unfamiliar APIs
+
 ## CRITICAL
 
+- ALWAYS use PascalCase for newly created docs and scripts (except if convention exists like AGENTS.md and README.md or instructed otherwise)
+- BEFORE you do any work mention how you could verify that work
 - NEVER commit secrets to git
 - NEVER install tools/packages without explicit permission (use `question` tool)
 - NEVER push to remote (HARD BLOCKED)
@@ -15,6 +36,30 @@
 - ALWAYS check port 5233 is free before starting dev server
 - ALWAYS redirect dev server output to `logs/dotnet.log`
 - NEVER kill dotnet processes without verifying they are not VS-owned
+- NEVER use `pwsh -Command` for ad-hoc commands — use the Bash tool instead
+
+## TOOL SELECTION
+
+- **Bash tool**: All ad-hoc commands (file ops, registry queries, process management, git, netstat, etc.)
+- **PowerShell (`pwsh`)**: Only for running existing scripts (`pwsh scripts/...`) or writing new `.ps1` files
+- **NEVER** use `pwsh -Command` for ad-hoc one-liners — the Bash tool is faster and more reliable
+
+## EVERYTHING SEARCH
+
+`es.exe` (voidtools Everything CLI) must be in the system PATH for all contributors. Use it for **instant filesystem searches** when you don't know where to look or need to search outside the workspace.
+
+**Syntax:** `es.exe <search> [options]`
+
+| Example                                            | Purpose                                     |
+| -------------------------------------------------- | ------------------------------------------- |
+| `es.exe "ext:cs redmuffin" -p`                     | Find .cs files matching "redmuffin" in path |
+| `es.exe "ext:razor" -sort dm -n 10`                | 10 most recently modified .razor files      |
+| `es.exe "filename:AGENTS.md" -p`                   | Find specific file by name anywhere         |
+| `es.exe "path:redmuffin.Blazor.StaticWeb ext:sln"` | Find solution files in project              |
+
+**When to use:** Prefer `glob`/`grep` for workspace-relative searches. Use `es.exe` when searching the entire filesystem, locating files outside the workspace, or when glob patterns are too slow for broad searches.
+
+**Key options:** `-p` (match full path), `-n <num>` (limit results), `-sort dm` (sort by date modified), `-sort size` (sort by size), `/a-d` (files only), `/ad` (folders only)
 
 ## COMMANDS
 
@@ -142,7 +187,7 @@ Core/HomeTests/
 
 1. Check port: `netstat -ano | findstr :5233`
 2. If occupied → identify owner PID (see Process Management below)
-3. Kill only agent-owned PIDs: `taskkill //PID <PID> //F`
+3. Kill only agent-owned PIDs: `taskkill /PID <PID> /F`
 4. Verify port free: `netstat -ano | findstr :5233` (should return nothing)
 
 **Starting:**
@@ -170,7 +215,7 @@ nohup dotnet run --project src/redmuffin.Blazor.StaticWeb > logs/dotnet.log 2>&1
 
 ### ALWAYS
 
-- Bash-compatible commands (`pwsh scripts/...`)
+- Bash tool for ad-hoc commands; `pwsh scripts/...` for PowerShell scripts
 - `winget`
 - `dotnet build --verbosity quiet` after C# changes
 - `dotnet build -c Debug-Sass` after SCSS/JS

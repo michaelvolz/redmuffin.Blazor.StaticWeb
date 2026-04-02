@@ -89,7 +89,7 @@ dotnet test -- --treenode-filter "/*/*/*/*[Category=Feature:ApiExample]"    # Ap
 
 ## Coverage
 
-```bash
+```powershell
 # Generate coverage report
 pwsh scripts/Generate-CoverageReport.ps1
 
