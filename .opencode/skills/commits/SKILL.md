@@ -44,6 +44,15 @@ Rule: do not attempt commit until every required field is populated and validate
 4. Body present? → NO: add body
 5. Lock files changed? → YES: include them
 
+## PRECOMMIT_MESSAGE_CHECK
+
+Before any `git commit` attempt, verify the final message yourself:
+
+- Wrap every body line to 100 characters or fewer.
+- Never rely on commitlint to catch wrapping mistakes for you.
+- If any line is too long, rewrite the message before committing.
+- Do not attempt the commit until the message is already valid.
+
 ## OUTPUT_CONTRACT
 
 Return a commit payload, not advice:
@@ -72,6 +81,7 @@ Blank line required between header/body and body/footer.
 - body is required for non-trivial changes here
 - body must start with a blank line after the header
 - body lines must stay at or under 100 characters
+- treat this as a preflight requirement, not a hook failure to discover
 - footer must start with a blank line after the body
 - BREAKING CHANGE must be uppercase and belong in the footer or be marked with `!` in the header
 
