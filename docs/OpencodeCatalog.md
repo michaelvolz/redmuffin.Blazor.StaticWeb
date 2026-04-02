@@ -1,5 +1,5 @@
 ---
-title: Opencode Skills, Snippets, and Agents Catalog
+title: Opencode Commands, Skills, Snippets, and Agents Catalog
 description: Quick reference index for all local and global opencode assets in this repo
 last-updated: 2026-04-02
 ---
@@ -28,11 +28,16 @@ Quick reference only. Open the source file for full details.
 | [testing](../.opencode/skills/testing/SKILL.md)                                   | TUnit and TestScope patterns.              | `../.opencode/skills/testing/SKILL.md`                  |
 | [ui-styling](../.opencode/skills/ui-styling/SKILL.md)                             | Blazor styling and accessibility.          | `../.opencode/skills/ui-styling/SKILL.md`               |
 
+## Commands
+
+| Name                                      | Purpose                     | Source                            |
+| ----------------------------------------- | --------------------------- | --------------------------------- |
+| [commit](../.opencode/commands/commit.md) | Conventional commit helper. | `../.opencode/commands/commit.md` |
+
 ## Snippets
 
 | Name                                                                   | Purpose                          | Shortcuts                        | Source                                          |
 | ---------------------------------------------------------------------- | -------------------------------- | -------------------------------- | ----------------------------------------------- |
-| [commit](../.opencode/snippet/commit.md)                               | Conventional commit helper.      | `c`, `commit`                    | `../.opencode/snippet/commit.md`                |
 | [csharp-standards](../.opencode/snippet/csharp-standards.md)           | C# coding standards.             | `cs`, `csharp`                   | `../.opencode/snippet/csharp-standards.md`      |
 | [dotnet-build](../.opencode/snippet/dotnet-build.md)                   | Build and test commands.         | `build`                          | `../.opencode/snippet/dotnet-build.md`          |
 | [dotnet-best-practices](../.opencode/snippet/dotnet-best-practices.md) | .NET/C# best practices.          | `dotnet`                         | `../.opencode/snippet/dotnet-best-practices.md` |
