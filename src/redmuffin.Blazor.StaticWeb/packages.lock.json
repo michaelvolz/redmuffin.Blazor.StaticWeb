@@ -17,6 +17,12 @@
           "Microsoft.AspNetCore.Components.Web": "8.0.0"
         }
       },
+      "BuildWebCompiler2022": {
+        "type": "Direct",
+        "requested": "[1.14.15, )",
+        "resolved": "1.14.15",
+        "contentHash": "/bfbMI6LBrLX5kn0sOVqscfe2kbsS0nUtIsKUUJg/puL4ey9J0y4DdGA+YaCAsu4Vi5tyNM8wWjlSOgjywxpzg=="
+      },
       "LZStringCSharp": {
         "type": "Direct",
         "requested": "[1.4.0, )",
