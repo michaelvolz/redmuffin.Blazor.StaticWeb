@@ -332,8 +332,23 @@ try {
     }
     else {
         Add-Check -Name "npm config" -Status "WARN" -Message "npm security settings need attention: $($configIssues -join '; ')"
-        [void]$script:Recommendations.Add("Run: npm config set ignore-scripts true")
-        [void]$script:Recommendations.Add("Run: npm config set min-release-age 10080")
+
+        if ($ignoreScripts -ne 'true') {
+            [void]$script:Recommendations.Add("Enable ignore-scripts to block lifecycle scripts: npm config set ignore-scripts true")
+        }
+        else {
+            [void]$script:Recommendations.Add("ignore-scripts is already enabled")
+        }
+
+        if (-not $minReleaseAge -or $minReleaseAge -eq 'undefined' -or $minReleaseAge -eq 'null') {
+            [void]$script:Recommendations.Add("Set a release-age quarantine window: npm config set min-release-age 10080")
+        }
+        elseif ([int]$minReleaseAge -lt 10080) {
+            [void]$script:Recommendations.Add("Increase min-release-age to 10080 minutes or more")
+        }
+        else {
+            [void]$script:Recommendations.Add("min-release-age is already configured")
+        }
     }
 }
 catch {
