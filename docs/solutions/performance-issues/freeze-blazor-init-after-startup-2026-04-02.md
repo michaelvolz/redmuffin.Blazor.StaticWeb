@@ -68,3 +68,4 @@ The init window should close once, not every time metrics are queried. A guarded
 
 - `docs/plans/2026-04-02-002-fix-blazor-init-refresh-plan.md` — same boundary, same fix area, and the same prevention shape.
 - `tasks/PRD-020-WebAssembly-Performance-Metrics.md` — broader feature context for the WASM timing surface.
+- `docs/solutions/logic-errors/wasm-metrics-showing-zero-bytes-2026-04-03.md` — same `page-load-timing.js` surface; fixes WASM file-type lookup in `findWasmEntry()` and `getAssemblyInfo()`.
