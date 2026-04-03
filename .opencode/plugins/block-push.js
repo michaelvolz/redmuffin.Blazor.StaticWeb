@@ -3,91 +3,102 @@ export const BlockPushPlugin = async () => {
     "tool.execute.before": async (input, output) => {
       if (input.tool !== "bash") return;
 
-      const cmd = output.args.command || "";
-      if (detectGitPush(cmd)) {
-        throw new Error(
-          "BLOCKED by Policy: git push is restricted to the repository owner only.\n\n" +
-          "Command: " + sanitize(cmd) + "\n\n" +
-          "Reason: Only humans may push to remote repositories. " +
-          "Ask the user to push manually when ready."
-        );
-      }
+      try {
+        const cmd = output?.args?.command || "";
 
-      if (detectGitRevert(cmd)) {
-        throw new Error(
-          "BLOCKED by Policy: git revert is restricted to the repository owner only.\n\n" +
-          "Command: " + sanitize(cmd) + "\n\n" +
-          "Reason: Only humans may rewrite history with git revert. " +
-          "Ask the user to perform the revert manually when ready."
-        );
+        if (detectGitCommand(cmd, "push")) {
+          throw new Error(
+            "BLOCKED by Policy: git push is restricted to the repository owner only.\n\n" +
+            "Command: " + sanitize(cmd) + "\n\n" +
+            "Reason: Only humans may push to remote repositories. " +
+            "Ask the user to push manually when ready."
+          );
+        }
+
+        if (detectGitCommand(cmd, "revert")) {
+          throw new Error(
+            "BLOCKED by Policy: git revert is restricted to the repository owner only.\n\n" +
+            "Command: " + sanitize(cmd) + "\n\n" +
+            "Reason: Only humans may rewrite history with git revert. " +
+            "Ask the user to perform the revert manually when ready."
+          );
+        }
+      } catch (err) {
+        // Re-throw blocked commands so they're enforced
+        if (err.message.startsWith("BLOCKED by Policy:")) {
+          throw err;
+        }
+        // Log other errors but don't block all commands - fail open for safety
+        console.error("BlockPushPlugin error:", err.message);
       }
     },
   };
 };
 
-function detectGitPush(cmd) {
+/**
+ * Detect if a command contains a specific git subcommand
+ * @param {string} cmd - The command to check
+ * @param {string} gitCommand - The git subcommand to detect (e.g., "push", "revert")
+ * @returns {boolean}
+ */
+function detectGitCommand(cmd, gitCommand) {
   const segments = parseCommand(cmd);
   for (const segment of segments) {
-    if (isGitPush(segment)) return true;
+    if (isGitCommand(segment, gitCommand)) return true;
   }
   return false;
+}
+
+/**
+ * Check if a command segment contains a specific git subcommand
+ * @param {string} segment - The command segment to check
+ * @param {string} gitCommand - The git subcommand to detect
+ * @returns {boolean}
+ */
+function isGitCommand(segment, gitCommand) {
+  const tokens = tokenize(segment);
+  if (tokens.length === 0) return false;
+
+  const base = basename(tokens[0]);
+  if (base === "git") {
+    const sub = tokens.find(t => !t.startsWith("-") && t !== "git");
+    if (sub === gitCommand) return true;
+  }
+
+  // Check shell wrappers (bash, sh, zsh, cmd, powershell, pwsh)
+  if (["bash", "sh", "zsh", "cmd", "powershell", "pwsh"].includes(base)) {
+    const execArg = extractExecArg(tokens);
+    if (execArg && detectGitCommand(execArg, gitCommand)) return true;
+  }
+
+  // Check script interpreters (python, node, ruby, perl, php)
+  if (["python", "python3", "node", "ruby", "perl", "php"].includes(base)) {
+    const execArg = extractExecArg(tokens);
+    if (execArg && detectGitCommand(execArg, gitCommand)) return true;
+  }
+
+  return false;
+}
+
+// Keep legacy functions for backward compatibility
+function detectGitPush(cmd) {
+  return detectGitCommand(cmd, "push");
 }
 
 function detectGitRevert(cmd) {
-  const segments = parseCommand(cmd);
-  for (const segment of segments) {
-    if (isGitRevert(segment)) return true;
-  }
-  return false;
+  return detectGitCommand(cmd, "revert");
 }
 
 function isGitPush(segment) {
-  const tokens = tokenize(segment);
-  if (tokens.length === 0) return false;
-
-  const base = basename(tokens[0]);
-  if (base === "git") {
-    const sub = tokens.find(t => !t.startsWith("-") && t !== "git");
-    if (sub === "push") return true;
-  }
-
-  if (["bash", "sh", "zsh", "cmd", "powershell", "pwsh"].includes(base)) {
-    const execArg = extractExecArg(tokens);
-    if (execArg && detectGitPush(execArg)) return true;
-  }
-
-  if (["python", "python3", "node", "ruby", "perl", "php"].includes(base)) {
-    const execArg = extractExecArg(tokens);
-    if (execArg && detectGitPush(execArg)) return true;
-  }
-
-  return false;
+  return isGitCommand(segment, "push");
 }
 
 function isGitRevert(segment) {
-  const tokens = tokenize(segment);
-  if (tokens.length === 0) return false;
-
-  const base = basename(tokens[0]);
-  if (base === "git") {
-    const sub = tokens.find(t => !t.startsWith("-") && t !== "git");
-    if (sub === "revert") return true;
-  }
-
-  if (["bash", "sh", "zsh", "cmd", "powershell", "pwsh"].includes(base)) {
-    const execArg = extractExecArg(tokens);
-    if (execArg && detectGitRevert(execArg)) return true;
-  }
-
-  if (["python", "python3", "node", "ruby", "perl", "php"].includes(base)) {
-    const execArg = extractExecArg(tokens);
-    if (execArg && detectGitRevert(execArg)) return true;
-  }
-
-  return false;
+  return isGitCommand(segment, "revert");
 }
 
 function parseCommand(cmd) {
+  if (!cmd) return [];
   const trimmed = cmd.trim();
   if (!trimmed) return [];
 
@@ -107,6 +118,8 @@ function stripEnvPrefix(cmd) {
 }
 
 function tokenize(cmd) {
+  if (!cmd) return [];
+  
   const tokens = [];
   let current = "";
   let inSingleQuote = false;
@@ -162,6 +175,7 @@ function extractExecArg(tokens) {
 }
 
 function basename(path) {
+  if (!path) return "";
   return path.replace(/^.*[\\\/]/, "").toLowerCase();
 }
 
