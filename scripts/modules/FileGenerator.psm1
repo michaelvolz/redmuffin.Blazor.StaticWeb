@@ -106,7 +106,7 @@ function Get-ChangelogHeader {
     #>
     param(
         [Parameter(Mandatory = $false)]
-        [string]$ConfigPath = "config/changelog-config.json"
+        [string]$ConfigPath = ".config/changelog-config.json"
     )
     
     # Load configuration for output settings
@@ -177,7 +177,7 @@ function Add-ChangelogMetadata {
         [int]$FilteredCount = 0,
         
         [Parameter(Mandatory = $false)]
-        [string]$ConfigPath = "config/changelog-config.json"
+        [string]$ConfigPath = ".config/changelog-config.json"
     )
     
     # Get emoji config
@@ -275,7 +275,7 @@ function Write-ChangelogToFile {
         [hashtable]$CategorizedCommits,
         
         [Parameter(Mandatory = $false)]
-        [string]$ConfigPath = "config/changelog-config.json",
+        [string]$ConfigPath = ".config/changelog-config.json",
         
         [Parameter(Mandatory = $false)]
         [switch]$CreateBackup,

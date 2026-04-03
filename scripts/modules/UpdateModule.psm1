@@ -211,7 +211,7 @@ function Merge-ChangelogSections {
         [hashtable]$NewCategorizedCommits,
         
         [Parameter(Mandatory = $false)]
-        [string]$ConfigPath = "config/changelog-config.json"
+        [string]$ConfigPath = ".config/changelog-config.json"
     )
     
     # Import required modules
@@ -363,7 +363,7 @@ function Update-ExistingChangelog {
         [array]$NewCommits,
         
         [Parameter(Mandatory = $false)]
-        [string]$ConfigPath = "config/changelog-config.json",
+        [string]$ConfigPath = ".config/changelog-config.json",
         
         [Parameter(Mandatory = $false)]
         [switch]$CreateBackup

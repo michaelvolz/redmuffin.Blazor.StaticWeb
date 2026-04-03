@@ -14,7 +14,7 @@ function Get-FilteringConfig {
     #>
     param(
         [Parameter(Mandatory = $false)]
-        [string]$ConfigPath = "config/changelog-config.json"
+        [string]$ConfigPath = ".config/changelog-config.json"
     )
     
     try {
@@ -290,7 +290,7 @@ function Filter-CommitsWithConfig {
         [array]$CommitList,
         
         [Parameter(Mandatory = $false)]
-        [string]$ConfigPath = "config/changelog-config.json"
+        [string]$ConfigPath = ".config/changelog-config.json"
     )
 
     # Load configuration

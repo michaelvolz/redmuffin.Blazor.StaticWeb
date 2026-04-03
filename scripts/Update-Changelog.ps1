@@ -19,7 +19,7 @@
 
        Note: All modules use -DisableNameChecking to suppress warnings about non-approved verbs
 
-    2. **Configuration** (config/changelog-config.json)
+    2. **Configuration** (.config/changelog-config.json)
        - Defines filtering patterns for excluded commits
        - Maps commit types to changelog categories
        - Controls which patterns are enabled/disabled
@@ -93,13 +93,13 @@
 .MAINTENANCE NOTES FOR AI ASSISTANTS
 
     1. **When modifying filtering rules:**
-       - Update patterns in config/changelog-config.json
+       - Update patterns in .config/changelog-config.json
        - Ensure regex patterns are properly escaped
        - Update corresponding tests in FilterModule.Tests.ps1
        - Check that Filter-CommitsWithConfig handles config correctly
 
     2. **When changing commit categories:**
-       - Update categoryMapping in config/changelog-config.json
+       - Update categoryMapping in .config/changelog-config.json
        - Modify regex patterns in CategorizationModule.psm1
        - Update test expectations in CategorizationModule.Tests.ps1
        - Ensure priority order matches requirements (breaking > feat > fix, etc.)

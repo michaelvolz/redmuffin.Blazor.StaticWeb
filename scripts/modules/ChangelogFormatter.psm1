@@ -14,7 +14,7 @@ function Get-FormattingConfig {
     #>
     param(
         [Parameter(Mandatory = $false)]
-        [string]$ConfigPath = "config/changelog-config.json"
+        [string]$ConfigPath = ".config/changelog-config.json"
     )
     
     try {
@@ -47,7 +47,7 @@ function Get-EmojiConfig {
     #>
     param(
         [Parameter(Mandatory = $false)]
-        [string]$ConfigPath = "config/changelog-config.json"
+        [string]$ConfigPath = ".config/changelog-config.json"
     )
     
     try {
@@ -86,7 +86,7 @@ function Get-CategoryEmoji {
         [string]$CategoryName,
         
         [Parameter(Mandatory = $false)]
-        [string]$ConfigPath = "config/changelog-config.json"
+        [string]$ConfigPath = ".config/changelog-config.json"
     )
     
     $emojiConfig = Get-EmojiConfig -ConfigPath $ConfigPath
@@ -122,7 +122,7 @@ function Get-CommitTypeEmoji {
         [string]$CommitMessage,
         
         [Parameter(Mandatory = $false)]
-        [string]$ConfigPath = "config/changelog-config.json"
+        [string]$ConfigPath = ".config/changelog-config.json"
     )
     
     $emojiConfig = Get-EmojiConfig -ConfigPath $ConfigPath
@@ -167,7 +167,7 @@ function Format-CommitEntry {
         [string]$Format = "{message} ({hash})",
         
         [Parameter(Mandatory = $false)]
-        [string]$ConfigPath = "config/changelog-config.json"
+        [string]$ConfigPath = ".config/changelog-config.json"
     )
     
     # Get emoji for commit type
@@ -289,7 +289,7 @@ function Format-CategorySection {
         [array]$CommitList,
         
         [Parameter(Mandatory = $false)]
-        [string]$ConfigPath = "config/changelog-config.json"
+        [string]$ConfigPath = ".config/changelog-config.json"
     )
     
     if ($CommitList.Count -eq 0) {
@@ -349,7 +349,7 @@ function Format-ChangelogDocument {
         [hashtable]$CategorizedCommits,
         
         [Parameter(Mandatory = $false)]
-        [string]$ConfigPath = "config/changelog-config.json"
+        [string]$ConfigPath = ".config/changelog-config.json"
     )
     
     # Load configuration for output settings

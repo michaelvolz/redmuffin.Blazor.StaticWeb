@@ -14,7 +14,7 @@ function Get-CategorizationConfig {
     #>
     param(
         [Parameter(Mandatory = $false)]
-        [string]$ConfigPath = "config/changelog-config.json"
+        [string]$ConfigPath = ".config/changelog-config.json"
     )
     
     try {
@@ -84,7 +84,7 @@ function Get-CommitCategory {
         [string]$Message,
         
         [Parameter(Mandatory = $false)]
-        [string]$ConfigPath = "config/changelog-config.json"
+        [string]$ConfigPath = ".config/changelog-config.json"
     )
     
     # Load configuration
@@ -226,7 +226,7 @@ function Categorize-Commits {
         [array]$CommitList,
         
         [Parameter(Mandatory = $false)]
-        [string]$ConfigPath = "config/changelog-config.json"
+        [string]$ConfigPath = ".config/changelog-config.json"
     )
     
     $categorizedCommits = @{}
@@ -259,7 +259,7 @@ function Get-CategoryOrder {
     #>
     param(
         [Parameter(Mandatory = $false)]
-        [string]$ConfigPath = "config/changelog-config.json"
+        [string]$ConfigPath = ".config/changelog-config.json"
     )
     
     # Default order following Keep a Changelog standard (excluding Documentation)
