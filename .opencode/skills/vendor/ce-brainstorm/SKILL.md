@@ -312,7 +312,7 @@ If a document contains outstanding questions:
 
 ### Phase 3.5: Document Review
 
-When a requirements document was created or updated, run the `compound-engineering:document-review` skill on it before presenting handoff options. Pass the document path as the argument.
+When a requirements document was created or updated, run `/document-review` on it before presenting handoff options. Pass the document path as the argument.
 
 If document-review returns findings that were auto-applied, note them briefly when presenting handoff options. If residual P0/P1 findings were surfaced, mention them so the user can decide whether to address them before proceeding.
 
@@ -375,7 +375,7 @@ If the curl fails, skip silently. Then return to the Phase 4 options.
 
 **If user selects "Run additional document review":**
 
-Load the `compound-engineering:document-review` skill and apply it to the requirements document for another pass.
+Run `/document-review` on the requirements document for another pass.
 
 When document-review returns "Review complete", return to the normal Phase 4 options and present only the options that still apply. Do not show the closing summary yet.
 

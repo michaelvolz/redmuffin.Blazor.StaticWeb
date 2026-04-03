@@ -25,7 +25,7 @@ The caller receives findings with their original classifications intact and deci
 Callers invoke headless mode by including `mode:headless` in the skill arguments, e.g.:
 
 ```
-Skill("compound-engineering:document-review", "mode:headless docs/plans/my-plan.md")
+/document-review mode:headless docs/plans/my-plan.md
 ```
 
 If `mode:headless` is not present, the skill runs in its default interactive mode with no behavior change.
@@ -36,7 +36,7 @@ If `mode:headless` is not present, the skill runs in its default interactive mod
 
 **If no document is specified (interactive mode):** Ask which document to review, or find the most recent in `docs/brainstorms/` or `docs/plans/` using a file-search/glob tool (e.g., Glob in Claude Code).
 
-**If no document is specified (headless mode):** Output "Review failed: headless mode requires a document path. Re-invoke with: Skill(\"compound-engineering:document-review\", \"mode:headless <path>\")" without dispatching agents.
+**If no document is specified (headless mode):** Output "Review failed: headless mode requires a document path. Re-invoke with: `/document-review mode:headless <path>`" without dispatching agents.
 
 ### Classify Document Type
 
@@ -93,26 +93,26 @@ Tell the user which personas will review and why. For conditional personas, incl
 
 ```
 Reviewing with:
-- coherence-reviewer (always-on)
-- feasibility-reviewer (always-on)
-- scope-guardian-reviewer -- plan has 12 requirements across 3 priority levels
-- security-lens-reviewer -- plan adds API endpoints with auth flow
+- compound-engineering:review:coherence-reviewer (always-on)
+- compound-engineering:review:feasibility-reviewer (always-on)
+- compound-engineering:review:scope-guardian-reviewer -- plan has 12 requirements across 3 priority levels
+- compound-engineering:review:security-reviewer -- plan adds API endpoints with auth flow
 ```
 
 ### Build Agent List
 
 Always include:
 
-- `coherence-reviewer`
-- `feasibility-reviewer`
+- `compound-engineering:review:coherence-reviewer`
+- `compound-engineering:review:feasibility-reviewer`
 
 Add activated conditional personas:
 
-- `product-lens-reviewer`
-- `design-lens-reviewer`
-- `security-lens-reviewer`
-- `scope-guardian-reviewer`
-- `adversarial-document-reviewer`
+- `compound-engineering:review:product-lens-reviewer`
+- `compound-engineering:review:design-lens-reviewer`
+- `compound-engineering:review:security-reviewer`
+- `compound-engineering:review:scope-guardian-reviewer`
+- `compound-engineering:review:adversarial-reviewer`
 
 ### Dispatch
 

@@ -1007,7 +1007,7 @@ If research reveals a product-level ambiguity that should change behavior or sco
 
 ##### 5.3.8 Document Review
 
-After the confidence check (and any deepening), run the `compound-engineering:document-review` skill on the plan file. Pass the plan path as the argument. When this step is reached, it is mandatory — do not skip it because the confidence check already ran. The two tools catch different classes of issues.
+After the confidence check (and any deepening), run `/document-review` on the plan file. Pass the plan path as the argument. When this step is reached, it is mandatory — do not skip it because the confidence check already ran. The two tools catch different classes of issues.
 
 The confidence check and document-review are complementary:
 
@@ -1018,7 +1018,7 @@ If document-review returns findings that were auto-applied, note them briefly wh
 
 When document-review returns "Review complete", proceed to Final Checks.
 
-**Pipeline mode:** If invoked from an automated workflow such as LFG, SLFG, or any `disable-model-invocation` context, run `compound-engineering:document-review` with `mode:headless` and the plan path. Headless mode applies auto-fixes silently and returns structured findings without interactive prompts. Address any P0/P1 findings before returning control to the caller.
+**Pipeline mode:** If invoked from an automated workflow such as LFG, SLFG, or any `disable-model-invocation` context, run `/document-review mode:headless` with the plan path. Headless mode applies auto-fixes silently and returns structured findings without interactive prompts. Address any P0/P1 findings before returning control to the caller.
 
 ##### 5.3.9 Final Checks and Cleanup
 
@@ -1053,7 +1053,7 @@ After document-review completes, present the options using the platform's blocki
 Based on selection:
 
 - **Open plan in editor** → Open `docs/plans/<plan_filename>.md` using the current platform's file-open or editor mechanism (e.g., `open` on macOS, `xdg-open` on Linux, or the IDE's file-open API)
-- **Run additional document review** → Load the `compound-engineering:document-review` skill with the plan path for another pass
+- **Run additional document review** → Run `/document-review` with the plan path for another pass
 - **Share to Proof** → Upload the plan:
   ```bash
   CONTENT=$(cat docs/plans/<plan_filename>.md)
