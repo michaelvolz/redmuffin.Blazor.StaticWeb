@@ -21,19 +21,19 @@ Create clean, reviewable git commits from the working tree.
 2. Inspect the working tree and recent history.
 3. Decide whether changes belong in one commit or several.
 4. Stage only the intended files or hunks.
-5. Commit with Conventional Commits using multiple `-m` flags.
+5. Commit with Conventional Commits using PowerShell here-string piped to `git commit -F -`.
 6. Verify the result with `git status`.
 
 ## COMMANDS
 
-| Command                                             | Purpose                         | When                   |
-| --------------------------------------------------- | ------------------------------- | ---------------------- |
-| `git status`                                        | Show working tree status        | Always first           |
-| `git diff HEAD`                                     | Show all changes                | After status           |
-| `git branch --show-current`                         | Get current branch              | After diff             |
-| `git log --oneline -10`                             | Show recent history             | After branch           |
-| `git add -p`                                        | Stage partial hunks             | File has mixed changes |
-| `git commit -m "subject" -m "body" [-m "para" ...]` | Commit with multiple `-m` flags | Always                 |
+| Command                      | Purpose                          | When                   |
+| ---------------------------- | -------------------------------- | ---------------------- |
+| `git status`                 | Show working tree status         | Always first           |
+| `git diff HEAD`              | Show all changes                 | After status           |
+| `git branch --show-current`  | Get current branch               | After diff             |
+| `git log --oneline -10`      | Show recent history              | After branch           |
+| `git add -p`                 | Stage partial hunks              | File has mixed changes |
+| `@"..."@ \| git commit -F -` | Commit with here-string template | Always                 |
 
 ## WORKFLOWS
 
@@ -69,27 +69,7 @@ Rules:
 - Body: required for every commit; keep each line at or under 100 characters
 - Body: explain why, trade-offs, and impact — not just what changed
 - Footer: `Refs: #123`, `Co-authored-by:`, or `BREAKING CHANGE:`
-
-Example:
-
-```
-fix(frontend): prevent duplicate form submits
-
-Disable submit immediately so rapid clicks cannot queue
-duplicate requests.
-```
-
-Good:
-
-```bash
-git commit -m "fix(frontend): prevent duplicate form submits" -m "Disable submit immediately so rapid clicks cannot queue duplicate requests."
-```
-
-Bad:
-
-```bash
-git commit -m "fix(frontend): prevent duplicate form submits" -m "Disable submit immediately so rapid clicks cannot queue duplicate requests because the submit button stays enabled for too long and users can trigger duplicate server calls."
-```
+- **CRITICAL: Every line in the body must be ≤ 100 characters** — commitlint enforces `body-max-line-length: [2, 'always', 100]`
 
 ### 4. Stage Carefully
 
@@ -99,28 +79,63 @@ git commit -m "fix(frontend): prevent duplicate form submits" -m "Disable submit
 
 ### 5. Commit
 
-Use multiple `-m` flags — one per paragraph. Each `-m` value is a separate paragraph in the final message.
+Use a PowerShell here-string piped to `git commit -F -`. This preserves exact line breaks, avoids shell escaping issues, and works reliably in OpenCode's PowerShell environment on Windows.
+
+**Template:**
+
+```powershell
+@"
+type(scope): imperative subject
+
+First body paragraph. Each line must be ≤ 100 characters.
+Wrap manually at ~80 chars to stay safe.
+
+Second body paragraph if needed. Same line length rule.
+
+Refs: #123
+"@ | git commit -F -
+```
 
 **Basic commit (subject + body):**
 
-```bash
-git commit -m "type(scope): subject" -m "Body explaining why the change exists."
+```powershell
+@"
+fix(frontend): prevent duplicate form submits
+
+Disable submit immediately so rapid clicks cannot queue
+duplicate requests.
+"@ | git commit -F -
 ```
 
 **Multi-paragraph body with footer:**
 
-```bash
-git commit -m "refactor(core): extract validation logic" \
-  -m "Move input validation into a dedicated service so controllers stay thin." \
-  -m "This also makes it easier to reuse validation across API and web endpoints." \
-  -m "Refs: #123"
+```powershell
+@"
+refactor(core): extract validation logic
+
+Move input validation into a dedicated service so controllers
+stay thin.
+
+This also makes it easier to reuse validation across API and
+web endpoints.
+
+Refs: #123
+"@ | git commit -F -
 ```
 
-**Quoting rules:**
+**Line length enforcement:**
 
-- Use double quotes for `-m` values unless the message contains `$`, backticks, or `!`
-- If the message contains shell metacharacters (`$`, `` ` ``, `!`, `\`), use single quotes instead
-- If the message contains both single and double quotes, escape the inner ones with `\`
+- Wrap every body line at **≤ 80 characters** (safe margin under the 100-char limit)
+- Count characters if unsure — do NOT guess
+- The here-string preserves your exact line breaks, so what you type is what commitlint sees
+- **Good:** Each line is a short, readable sentence fragment
+- **Bad:** One long run-on line that exceeds 100 characters
+
+**Quoting rules for here-strings:**
+
+- Use `@"..."@` (double-quoted here-string) — variables like `$var` and backticks will be expanded
+- If the message contains `$`, backticks, or other PowerShell metacharacters that should be literal, use `@'...'@` (single-quoted here-string) instead
+- Single-quoted here-string: `@'...'@` — no variable expansion, no escape sequences
 
 ### 6. Verify
 
@@ -128,21 +143,44 @@ Run `git status` post-commit. Report hash and subject.
 
 ## PATTERNS
 
-### Multiple -m Commit
+### Here-String Commit (PowerShell)
 
 **Basic (subject + body):**
 
-```bash
-git commit -m "type(scope): imperative subject" -m "Body explaining why the change exists."
+```powershell
+@"
+type(scope): imperative subject
+
+Body explaining why the change exists.
+Keep each line under 80 characters.
+"@ | git commit -F -
 ```
 
 **Multi-paragraph with footer:**
 
-```bash
-git commit -m "type(scope): subject" \
-  -m "First paragraph." \
-  -m "Second paragraph." \
-  -m "Refs: #123"
+```powershell
+@"
+type(scope): subject
+
+First paragraph explaining the change.
+Wrap lines at ~80 characters.
+
+Second paragraph with additional context.
+Same line length discipline.
+
+Refs: #123
+"@ | git commit -F -
+```
+
+**Single-quoted here-string (no variable expansion):**
+
+```powershell
+@'
+fix(api): handle null $userId gracefully
+
+When $userId is null, return 401 instead of 500.
+The backtick ` character is also safe here.
+'@ | git commit -F -
 ```
 
 ### Partial Staging
