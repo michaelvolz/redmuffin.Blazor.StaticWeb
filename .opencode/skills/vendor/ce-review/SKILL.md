@@ -101,47 +101,48 @@ Routing rules:
 
 ## Reviewers
 
-16 reviewer personas in layered conditionals, plus CE-specific agents. See the persona catalog included below for the full catalog.
+17 reviewer personas in layered conditionals, plus CE-specific agents. See the persona catalog included below for the full catalog.
 
 **Always-on (every review):**
 
 | Agent | Focus |
 |-------|-------|
-| `compound-engineering:review:correctness-reviewer` | Logic errors, edge cases, state bugs, error propagation |
-| `compound-engineering:review:testing-reviewer` | Coverage gaps, weak assertions, brittle tests |
-| `compound-engineering:review:maintainability-reviewer` | Coupling, complexity, naming, dead code, abstraction debt |
-| `compound-engineering:review:project-standards-reviewer` | CLAUDE.md and AGENTS.md compliance -- frontmatter, references, naming, portability |
-| `compound-engineering:review:agent-native-reviewer` | Verify new features are agent-accessible |
-| `compound-engineering:research:learnings-researcher` | Search docs/solutions/ for past issues related to this PR |
+| `correctness-reviewer` | Logic errors, edge cases, state bugs, error propagation |
+| `testing-reviewer` | Coverage gaps, weak assertions, brittle tests |
+| `maintainability-reviewer` | Coupling, complexity, naming, dead code, abstraction debt |
+| `project-standards-reviewer` | CLAUDE.md and AGENTS.md compliance -- frontmatter, references, naming, portability |
+| `agent-native-reviewer` | Verify new features are agent-accessible |
+| `learnings-researcher` | Search docs/solutions/ for past issues related to this PR |
 
 **Cross-cutting conditional (selected per diff):**
 
 | Agent | Select when diff touches... |
 |-------|---------------------------|
-| `compound-engineering:review:security-reviewer` | Auth, public endpoints, user input, permissions |
-| `compound-engineering:review:performance-reviewer` | DB queries, data transforms, caching, async |
-| `compound-engineering:review:api-contract-reviewer` | Routes, serializers, type signatures, versioning |
-| `compound-engineering:review:data-migrations-reviewer` | Migrations, schema changes, backfills |
-| `compound-engineering:review:reliability-reviewer` | Error handling, retries, timeouts, background jobs |
-| `compound-engineering:review:adversarial-reviewer` | Diff >=50 changed non-test/non-generated/non-lockfile lines, or auth, payments, data mutations, external APIs |
-| `compound-engineering:review:previous-comments-reviewer` | Reviewing a PR that has existing review comments or threads |
+| `security-reviewer` | Auth, public endpoints, user input, permissions |
+| `performance-reviewer` | DB queries, data transforms, caching, async |
+| `api-contract-reviewer` | Routes, serializers, type signatures, versioning |
+| `data-migrations-reviewer` | Migrations, schema changes, backfills |
+| `reliability-reviewer` | Error handling, retries, timeouts, background jobs |
+| `adversarial-reviewer` | Diff >=50 changed non-test/non-generated/non-lockfile lines, or auth, payments, data mutations, external APIs |
+| `cli-readiness-reviewer` | CLI command definitions, argument parsing, CLI framework usage, command handler implementations |
+| `previous-comments-reviewer` | Reviewing a PR that has existing review comments or threads |
 
 **Stack-specific conditional (selected per diff):**
 
 | Agent | Select when diff touches... |
 |-------|---------------------------|
-| `compound-engineering:review:dhh-rails-reviewer` | Rails architecture, service objects, session/auth choices, or Hotwire-vs-SPA boundaries |
-| `compound-engineering:review:kieran-rails-reviewer` | Rails application code where conventions, naming, and maintainability are in play |
-| `compound-engineering:review:kieran-python-reviewer` | Python modules, endpoints, scripts, or services |
-| `compound-engineering:review:kieran-typescript-reviewer` | TypeScript components, services, hooks, utilities, or shared types |
-| `compound-engineering:review:julik-frontend-races-reviewer` | Stimulus/Turbo controllers, DOM events, timers, animations, or async UI flows |
+| `dhh-rails-reviewer` | Rails architecture, service objects, session/auth choices, or Hotwire-vs-SPA boundaries |
+| `kieran-rails-reviewer` | Rails application code where conventions, naming, and maintainability are in play |
+| `kieran-python-reviewer` | Python modules, endpoints, scripts, or services |
+| `kieran-typescript-reviewer` | TypeScript components, services, hooks, utilities, or shared types |
+| `julik-frontend-races-reviewer` | Stimulus/Turbo controllers, DOM events, timers, animations, or async UI flows |
 
 **CE conditional (migration-specific):**
 
 | Agent | Select when diff includes migration files |
 |-------|------------------------------------------|
-| `compound-engineering:review:schema-drift-detector` | Cross-references schema.rb against included migrations |
-| `compound-engineering:review:deployment-verification-agent` | Produces deployment checklist with SQL verification queries |
+| `schema-drift-detector` | Cross-references schema.rb against included migrations |
+| `deployment-verification-agent` | Produces deployment checklist with SQL verification queries |
 
 ## Review Scope
 

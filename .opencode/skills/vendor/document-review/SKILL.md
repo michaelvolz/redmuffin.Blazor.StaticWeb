@@ -15,7 +15,6 @@ Check the skill arguments for `mode:headless`. Arguments may contain a document 
 If `mode:headless` is present, set **headless mode** for the rest of the workflow.
 
 **Headless mode** changes the interaction model, not the classification boundaries. Document-review still applies the same judgment about what has one clear correct fix vs. what needs user judgment. The only difference is how non-auto findings are delivered:
-
 - `auto` fixes are applied silently (same as interactive)
 - `present` findings are returned as structured text for the caller to handle -- no AskUserQuestion prompts, no interactive approval
 - Phase 5 returns immediately with "Review complete" (no refine/complete question)
@@ -23,10 +22,10 @@ If `mode:headless` is present, set **headless mode** for the rest of the workflo
 The caller receives findings with their original classifications intact and decides what to do with them.
 
 Callers invoke headless mode by including `mode:headless` in the skill arguments, e.g.:
+```
+Skill("compound-engineering:document-review", "mode:headless docs/plans/my-plan.md")
+```
 
-```
-/document-review mode:headless docs/plans/my-plan.md
-```
 
 If `mode:headless` is not present, the skill runs in its default interactive mode with no behavior change.
 
@@ -36,12 +35,11 @@ If `mode:headless` is not present, the skill runs in its default interactive mod
 
 **If no document is specified (interactive mode):** Ask which document to review, or find the most recent in `docs/brainstorms/` or `docs/plans/` using a file-search/glob tool (e.g., Glob in Claude Code).
 
-**If no document is specified (headless mode):** Output "Review failed: headless mode requires a document path. Re-invoke with: `/document-review mode:headless <path>`" without dispatching agents.
+**If no document is specified (headless mode):** Output "Review failed: headless mode requires a document path. Re-invoke with: Skill(\"compound-engineering:document-review\", \"mode:headless <path>\")" without dispatching agents.
 
 ### Classify Document Type
 
 After reading, classify the document:
-
 - **requirements** -- from `docs/brainstorms/`, focuses on what to build and why
 - **plan** -- from `docs/plans/`, focuses on how to build it with implementation details
 
@@ -49,29 +47,33 @@ After reading, classify the document:
 
 Analyze the document content to determine which conditional personas to activate. Check for these signals:
 
-**product-lens** -- activate when the document contains:
+**product-lens** -- activate when the document makes challengeable claims about what to build and why, or when the proposed work carries strategic weight beyond the immediate problem. The system's users may be end users, developers, operators, maintainers, or any other audience -- the criteria are domain-agnostic. Check for either leg:
 
-- User-facing features, user stories, or customer-focused language
-- Market claims, competitive positioning, or business justification
-- Scope decisions, prioritization language, or priority tiers with feature assignments
-- Requirements with user/customer/business outcome focus
+*Leg 1 — Premise claims:* The document stakes a position on what to build or why that a knowledgeable stakeholder could reasonably challenge -- not merely describing a task or restating known requirements:
+- Problem framing where the stated need is non-obvious or debatable, not self-evident from existing context
+- Solution selection where alternatives plausibly exist (implicit or explicit)
+- Prioritization decisions that explicitly rank what gets built vs deferred
+- Goal statements that predict specific user outcomes, not just restate constraints or describe deliverables
+
+*Leg 2 — Strategic weight:* The proposed work could affect system trajectory, user perception, or competitive positioning, even if the premise is sound:
+- Changes that shape how the system is perceived or what it becomes known for
+- Complexity or simplicity bets that affect adoption, onboarding, or cognitive load
+- Work that opens or closes future directions (path dependencies, architectural commitments)
+- Opportunity cost implications -- building this means not building something else
 
 **design-lens** -- activate when the document contains:
-
 - UI/UX references, frontend components, or visual design language
 - User flows, wireframes, screen/page/view mentions
 - Interaction descriptions (forms, buttons, navigation, modals)
 - References to responsive behavior or accessibility
 
 **security-lens** -- activate when the document contains:
-
 - Auth/authorization mentions, login flows, session management
 - API endpoints exposed to external clients
 - Data handling, PII, payments, tokens, credentials, encryption
 - Third-party integrations with trust boundary implications
 
 **scope-guardian** -- activate when the document contains:
-
 - Multiple priority tiers (P0/P1/P2, must-have/should-have/nice-to-have)
 - Large requirement count (>8 distinct requirements or implementation units)
 - Stretch goals, nice-to-haves, or "future work" sections
@@ -79,7 +81,6 @@ Analyze the document content to determine which conditional personas to activate
 - Goals that don't clearly connect to requirements
 
 **adversarial** -- activate when the document contains:
-
 - More than 5 distinct requirements or implementation units
 - Explicit architectural or scope decisions with stated rationale
 - High-stakes domains (auth, payments, data migrations, external integrations)
@@ -93,38 +94,36 @@ Tell the user which personas will review and why. For conditional personas, incl
 
 ```
 Reviewing with:
-- compound-engineering:review:coherence-reviewer (always-on)
-- compound-engineering:review:feasibility-reviewer (always-on)
-- compound-engineering:review:scope-guardian-reviewer -- plan has 12 requirements across 3 priority levels
-- compound-engineering:review:security-reviewer -- plan adds API endpoints with auth flow
+- coherence-reviewer (always-on)
+- feasibility-reviewer (always-on)
+- scope-guardian-reviewer -- plan has 12 requirements across 3 priority levels
+- security-lens-reviewer -- plan adds API endpoints with auth flow
 ```
 
 ### Build Agent List
 
 Always include:
-
-- `compound-engineering:review:coherence-reviewer`
-- `compound-engineering:review:feasibility-reviewer`
+- `coherence-reviewer`
+- `feasibility-reviewer`
 
 Add activated conditional personas:
-
-- `compound-engineering:review:product-lens-reviewer`
-- `compound-engineering:review:design-lens-reviewer`
-- `compound-engineering:review:security-reviewer`
-- `compound-engineering:review:scope-guardian-reviewer`
-- `compound-engineering:review:adversarial-reviewer`
+- `product-lens-reviewer`
+- `design-lens-reviewer`
+- `security-lens-reviewer`
+- `scope-guardian-reviewer`
+- `adversarial-document-reviewer`
 
 ### Dispatch
 
 Dispatch all agents in **parallel** using the platform's task/agent tool (e.g., Agent tool in Claude Code, spawn in Codex). Each agent receives the prompt built from the subagent template included below with these variables filled:
 
-| Variable             | Value                                                |
-| -------------------- | ---------------------------------------------------- |
-| `{persona_file}`     | Full content of the agent's markdown file            |
-| `{schema}`           | Content of the findings schema included below        |
-| `{document_type}`    | "requirements" or "plan" from Phase 1 classification |
-| `{document_path}`    | Path to the document                                 |
-| `{document_content}` | Full text of the document                            |
+| Variable | Value |
+|----------|-------|
+| `{persona_file}` | Full content of the agent's markdown file |
+| `{schema}` | Content of the findings schema included below |
+| `{document_type}` | "requirements" or "plan" from Phase 1 classification |
+| `{document_path}` | Path to the document |
+| `{document_content}` | Full text of the document |
 
 Pass each agent the **full document** -- do not split into sections.
 
@@ -139,7 +138,6 @@ Process findings from all agents through this pipeline. **Order matters** -- eac
 ### 3.1 Validate
 
 Check each agent's returned JSON against the findings schema included below:
-
 - Drop findings missing any required field defined in the schema
 - Drop findings with invalid enum values
 - Note the agent name for any malformed output in the Coverage section
@@ -153,29 +151,25 @@ Suppress findings below 0.50 confidence. Store them as residual concerns for pot
 Fingerprint each finding using `normalize(section) + normalize(title)`. Normalization: lowercase, strip punctuation, collapse whitespace.
 
 When fingerprints match across personas:
-
 - If the findings recommend **opposing actions** (e.g., one says cut, the other says keep), do not merge -- preserve both for contradiction resolution in 3.5
 - Otherwise merge: keep the highest severity, keep the highest confidence, union all evidence arrays, note all agreeing reviewers (e.g., "coherence, feasibility")
-- **Coverage attribution:** Attribute the merged finding to the persona with the highest confidence. Decrement the losing persona's Findings count _and_ the corresponding route bucket (Auto or Present) so `Findings = Auto + Present` stays exact.
+- **Coverage attribution:** Attribute the merged finding to the persona with the highest confidence. Decrement the losing persona's Findings count *and* the corresponding route bucket (Auto or Present) so `Findings = Auto + Present` stays exact.
 
 ### 3.4 Promote Residual Concerns
 
 Scan the residual concerns (findings suppressed in 3.2) for:
-
 - **Cross-persona corroboration**: A residual concern from Persona A overlaps with an above-threshold finding from Persona B. Promote at P2 with confidence 0.55-0.65. Inherit `finding_type` from the corroborating above-threshold finding.
 - **Concrete blocking risks**: A residual concern describes a specific, concrete risk that would block implementation. Promote at P2 with confidence 0.55. Set `finding_type: omission` (blocking risks surfaced as residual concerns are inherently about something the document failed to address).
 
 ### 3.5 Resolve Contradictions
 
 When personas disagree on the same section:
-
 - Create a **combined finding** presenting both perspectives
 - Set `autofix_class: present`
 - Set `finding_type: error` (contradictions are by definition about conflicting things the document says, not things it omits)
 - Frame as a tradeoff, not a verdict
 
 Specific conflict patterns:
-
 - Coherence says "keep for consistency" + scope-guardian says "cut for simplicity" -> combined finding, let user decide
 - Feasibility says "this is impossible" + product-lens says "this is essential" -> P1 finding framed as a tradeoff
 - Multiple personas flag the same issue -> merge into single finding, note consensus, increase confidence
@@ -184,14 +178,14 @@ Specific conflict patterns:
 
 **Severity and autofix_class are independent.** A P1 finding can be `auto` if the correct fix is obvious. The test is not "how important?" but "is there one clear correct fix, or does this require judgment?"
 
-| Autofix Class | Route                                                                                                                                                                                       |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `auto`        | Apply automatically -- one clear correct fix. Includes both internal reconciliation (one part authoritative over another) and additions mechanically implied by the document's own content. |
-| `present`     | Present individually for user judgment                                                                                                                                                      |
+| Autofix Class | Route |
+|---------------|-------|
+| `auto` | Apply automatically -- one clear correct fix. Includes both internal reconciliation (one part authoritative over another) and additions mechanically implied by the document's own content. |
+| `present` | Present individually for user judgment |
 
 Demote any `auto` finding that lacks a `suggested_fix` to `present`.
 
-**Auto-eligible patterns:** summary/detail mismatch (body is authoritative over overview), wrong counts, missing list entries derivable from elsewhere in the document, stale internal cross-references, terminology drift, prose/diagram contradictions where prose is more detailed, missing steps mechanically implied by other content, unstated thresholds implied by surrounding context, completeness gaps where the correct addition is obvious. If the fix requires judgment about _what_ to do (not just _what to write_), it belongs in `present`.
+**Auto-eligible patterns:** summary/detail mismatch (body is authoritative over overview), wrong counts, missing list entries derivable from elsewhere in the document, stale internal cross-references, terminology drift, prose/diagram contradictions where prose is more detailed, missing steps mechanically implied by other content, unstated thresholds implied by surrounding context, completeness gaps where the correct addition is obvious. If the fix requires judgment about *what* to do (not just *what to write*), it belongs in `present`.
 
 ### 3.7 Sort
 
@@ -202,7 +196,6 @@ Sort findings for presentation: P0 -> P1 -> P2 -> P3, then by finding type (erro
 ### Apply Auto-fixes
 
 Apply all `auto` findings to the document in a **single pass**:
-
 - Edit the document inline using the platform's edit tool
 - Track what was changed for the "Auto-fixes Applied" section
 - Do not ask for approval -- these have one clear correct fix
@@ -242,7 +235,6 @@ Omit any section with zero items. Then proceed directly to Phase 5 (which return
 **Interactive mode:**
 
 Present `present` findings using the review output template included below. Within each severity level, separate findings by type:
-
 - **Errors** (design tensions, contradictions, incorrect statements) first -- these need resolution
 - **Omissions** (missing steps, absent details, forgotten entries) second -- these need additions
 
@@ -253,7 +245,6 @@ Include the Coverage table, auto-fixes applied, residual concerns, and deferred 
 ### Protected Artifacts
 
 During synthesis, discard any finding that recommends deleting or removing files in:
-
 - `docs/brainstorms/`
 - `docs/plans/`
 - `docs/solutions/`
@@ -267,7 +258,6 @@ These are pipeline artifacts and must not be flagged for removal.
 **Interactive mode:**
 
 **Ask using the platform's interactive question tool** -- do not print the question as plain text output:
-
 - Claude Code: `AskUserQuestion`
 - Codex: `request_user_input`
 - Gemini: `ask_user`

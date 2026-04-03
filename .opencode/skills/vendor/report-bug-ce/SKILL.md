@@ -47,7 +47,7 @@ uname -a
 ```
 
 **Plugin version:** Read the plugin manifest or installed plugin metadata. Common locations:
-- Claude Code: `~/.claude/plugins/installed_plugins.json`
+- Claude Code: `~/.config/opencode/plugins/installed_plugins.json`
 - Codex: `.codex/plugins/` or project config
 - Other platforms: check the platform's plugin registry
 

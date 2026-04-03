@@ -20,7 +20,7 @@ Determine whether you are currently running inside Claude Code or a different co
 
 > "This skill analyzes Claude Code session history and writes to Claude Code's settings.json. You're currently in [agent name], but I can still optimize your Claude Code permissions from here -- the results will apply next time you use Claude Code."
 
-Then proceed to Step 1 normally. The skill works from any environment as long as `~/.claude/` (or `$CLAUDE_CONFIG_DIR`) exists on the machine.
+Then proceed to Step 1 normally. The skill works from any environment as long as `~/.config/opencode/` (or `$CLAUDE_CONFIG_DIR`) exists on the machine.
 
 ## Step 1: Choose Analysis Scope
 
@@ -122,8 +122,8 @@ Use `greenRawCount` (the number of unique raw commands the green patterns cover)
 
 The recommendations table is already displayed. Use the platform's blocking question tool to ask for the decision:
 
-1. **Apply all to user settings** (`~/.claude/settings.json`)
-2. **Apply all to project settings** (`.claude/settings.json`)
+1. **Apply all to user settings** (`~/.config/opencode/settings.json`)
+2. **Apply all to project settings** (`.opencode/settings.json`)
 3. **Skip**
 
 If the user wants to exclude specific items, they can reply in free text (e.g., "all except 3 and 7 to user settings"). The numbered table is already visible for reference -- no need to re-list items in the question tool.
@@ -145,16 +145,16 @@ For each target settings file:
 After successful verification:
 
 ```
-Applied N rules to ~/.claude/settings.json
-Applied M rules to .claude/settings.json
+Applied N rules to ~/.config/opencode/settings.json
+Applied M rules to .opencode/settings.json
 
 These commands will no longer trigger permission prompts.
 ```
 
-If `.claude/settings.json` was modified and is tracked by git, mention that committing it would benefit teammates.
+If `.opencode/settings.json` was modified and is tracked by git, mention that committing it would benefit teammates.
 
 ## Edge Cases
 
 - **No project context** (running outside a project): Only offer user-level settings as write target.
-- **Settings file doesn't exist**: Create it with `{ "permissions": { "allow": [] } }`. For `.claude/settings.json`, also create the `.claude/` directory if needed.
+- **Settings file doesn't exist**: Create it with `{ "permissions": { "allow": [] } }`. For `.opencode/settings.json`, also create the `.opencode/` directory if needed.
 - **Deny rules**: If a deny rule already blocks a command, warn rather than adding an allow rule (deny takes precedence in Claude Code).
