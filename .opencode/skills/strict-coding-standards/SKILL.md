@@ -31,7 +31,7 @@ NEVER inject Scoped into Singleton (captive dependency). Use IServiceScopeFactor
 Validate scopes in dev (validateScopes: true).
 Configuration: Options pattern only (IOptions<T>, never raw IConfiguration).
 No Service Locator (GetService<T>() inside business code = anti-pattern).
-Keyed services (.NET 8+) for multiple impls of same interface.
+Keyed services for multiple impls of same interface.
 All services small, testable, no statics/stateful globals.
 
 3. TDD (RED-GREEN-REFACTOR - NON-NEGOTIABLE)
@@ -74,12 +74,12 @@ Performance: async/await everywhere possible; no .Result/.Wait.
 Security: validate inputs, least privilege, no secrets in code.
 
 6. FILE/PROJECT STRUCTURE (STANDARD)
-textSolution
-├── Domain/          (entities, value objects, interfaces, exceptions)
-├── Application/     (use cases, services, DTOs)
-├── Infrastructure/  (impls, EF, external clients, DI extensions)
-├── Presentation/    (API, Blazor, controllers/components)
-├── Tests/           (Unit, Integration)
+   textSolution
+   ├── Domain/ (entities, value objects, interfaces, exceptions)
+   ├── Application/ (use cases, services, DTOs)
+   ├── Infrastructure/ (impls, EF, external clients, DI extensions)
+   ├── Presentation/ (API, Blazor, controllers/components)
+   ├── Tests/ (Unit, Integration)
 7. AGENT WORKFLOW RULES
 
 For new feature: (1) Write tests first. (2) Implement via TDD. (3) Inject all deps. (4) Compose, never inherit. (5) Feature flag if not complete. (6) Small PR to trunk.
