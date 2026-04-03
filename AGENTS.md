@@ -8,6 +8,7 @@ For every coding, architecture, refactoring, or review task:
 - Strictly follow every rule in that skill when loaded. No exceptions.
 - NEVER answer without reading the actual code first
 - Research first: use Exa code search or web search before implementing unfamiliar APIs
+- NEVER run `git commit` without first loading the `rm-commit` skill. This is not optional. The skill enforces SRP (one concern per commit), SOC (separation of concerns across commits), and lockfile discipline. Bypassing it produces unreviewable history.
 
 ## CRITICAL BOUNDARIES
 
