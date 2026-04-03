@@ -76,5 +76,9 @@
   "tools": {
     "brave-search_brave_*": false,
     "brave-search_brave_web_search": true
+  },
+  "agent": {
+    "rm-build": { "disable": true },
+    "rm-plan": { "disable": true }
   }
 }
