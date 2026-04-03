@@ -500,34 +500,40 @@ window.pageLoadSpeed.wasmMetrics = {
         return metrics;
     },
 
-    // Find WASM runtime entry in resource timing (.NET 9 uses dotnet.native.*.js)
+    // Find the primary WASM resource entry in resource timing.
+    // Returns the largest .wasm file under _framework/ (the main app assembly).
+    // Falls back to the dotnet.native.*.js loader if no .wasm entries are found.
     findWasmEntry: function() {
         try {
             const resources = performance.getEntriesByType('resource');
-            // .NET 9+ uses dotnet.native.<hash>.js instead of dotnet.wasm
+
+            // Prefer actual .wasm files — pick the largest one by transferSize
+            const wasmFiles = resources.filter(r =>
+                r.name && r.name.includes('_framework') && r.name.endsWith('.wasm')
+            );
+
+            if (wasmFiles.length > 0) {
+                return wasmFiles.reduce((largest, current) =>
+                    (current.transferSize || 0) > (largest.transferSize || 0) ? current : largest
+                );
+            }
+
+            // Fallback: .NET 9+ JS loader (often cached, may report transferSize: 0)
             return resources.find(r => r.name && r.name.includes('dotnet.native') && r.name.endsWith('.js'));
         } catch (e) {
             return null;
         }
     },
 
-    // Get assembly information (.NET 9 bundles assemblies)
+    // Get assembly information — count only actual .wasm files under _framework/.
     getAssemblyInfo: function() {
         const info = { count: 0, totalSize: 0 };
         try {
             const resources = performance.getEntriesByType('resource');
-            // .NET 9 bundles assemblies into the runtime, so we count framework files as proxy
-            // Count dotnet.js, dotnet.runtime.*.js, dotnet.native.*.js, and blazor.boot.json
             resources.forEach(r => {
-                if (r.name && r.name.includes('_framework')) {
-                    const name = r.name.split('/').pop() || '';
-                    if (name === 'dotnet.js' || 
-                        name.startsWith('dotnet.runtime') || 
-                        name.startsWith('dotnet.native') ||
-                        name === 'blazor.boot.json') {
-                        info.count++;
-                        info.totalSize += r.transferSize || 0;
-                    }
+                if (r.name && r.name.includes('_framework') && r.name.endsWith('.wasm')) {
+                    info.count++;
+                    info.totalSize += r.transferSize || 0;
                 }
             });
         } catch (e) {
