@@ -4,8 +4,8 @@
 
 For every coding, architecture, refactoring, or review task:
 
-- Immediately load the skill "strict-coding-standards" via the skill tool
-- Strictly follow every rule in that skill. No exceptions.
+- Load the skill "strict-coding-standards" ONLY when creating new services/classes, designing feature architecture, performing structural refactoring, or reviewing code for design-pattern violations. Do NOT load for trivial bug fixes, config edits, CSS/SCSS changes, documentation, or running commands. If a bug fix requires structural changes, load the skill.
+- Strictly follow every rule in that skill when loaded. No exceptions.
 - NEVER answer without reading the actual code first
 - Research first: use Exa code search or web search before implementing unfamiliar APIs
 
@@ -42,18 +42,19 @@ docs/solutions/                           # Searchable knowledge store of past s
 
 ## SKILL REFERENCES
 
-| Skill                         | Trigger When...                                                        |
-| ----------------------------- | ---------------------------------------------------------------------- |
-| `rm-csharp-standards`         | Writing C# code, analyzer rules, LoggerMessage, async, design patterns |
-| `rm-testing`                  | Writing tests, TUnit patterns, TestScope, mocking                      |
-| `rm-dotnet`                   | .csproj, DI, build/test commands, Azure Functions, coverage            |
-| `rm-dev-workflows`            | Process management, port 5233, search tool selection, Everything CLI   |
-| `rm-ui-styling`               | Foundation CSS, SCSS, accessibility (WCAG 2.1 AA)                      |
-| `rm-commit`                   | Committing, commit messages, conventional commits                      |
-| `rm-security-secrets`         | API keys, tokens, passwords, MCP env vars, security config             |
-| `rm-output-style`             | C# formatting, naming, C# 12/13, nullable types                        |
-| `rm-markdown`                 | Writing markdown, MarkdownLint errors, documentation                   |
-| `rm-nuget-manager`            | Adding/removing/updating NuGet packages                                |
-| `rm-create-prd`               | Generating PRDs, requirements documents                                |
-| `rm-generate-tasks`           | Task lists from PRDs, implementation plans                             |
-| `rm-agent-markdown-optimizer` | "optimize for agents", "make agent-friendly"                           |
+| Skill                         | Trigger When...                                                                                        |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `strict-coding-standards`     | Creating new services/classes, feature architecture, structural refactoring, PR design-pattern reviews |
+| `rm-csharp-standards`         | Writing C# code, analyzer rules, LoggerMessage, async, design patterns                                 |
+| `rm-testing`                  | Writing tests, TUnit patterns, TestScope, mocking                                                      |
+| `rm-dotnet`                   | .csproj, DI, build/test commands, Azure Functions, coverage                                            |
+| `rm-dev-workflows`            | Process management, port 5233, search tool selection, Everything CLI                                   |
+| `rm-ui-styling`               | Foundation CSS, SCSS, accessibility (WCAG 2.1 AA)                                                      |
+| `rm-commit`                   | Committing, commit messages, conventional commits                                                      |
+| `rm-security-secrets`         | API keys, tokens, passwords, MCP env vars, security config                                             |
+| `rm-output-style`             | C# formatting, naming, C# 12/13, nullable types                                                        |
+| `rm-markdown`                 | Writing markdown, MarkdownLint errors, documentation                                                   |
+| `rm-nuget-manager`            | Adding/removing/updating NuGet packages                                                                |
+| `rm-create-prd`               | Generating PRDs, requirements documents                                                                |
+| `rm-generate-tasks`           | Task lists from PRDs, implementation plans                                                             |
+| `rm-agent-markdown-optimizer` | "optimize for agents", "make agent-friendly"                                                           |

@@ -1,6 +1,6 @@
 ---
 name: strict-coding-standards
-description: Enforces composition over inheritance, constructor DI only, TDD (Red-Green-Refactor), trunk-based development, and all related SOLID/Clean Architecture rules on EVERY code change or review.
+description: "Enforces composition over inheritance, constructor DI only, TDD (Red-Green-Refactor), trunk-based development, and SOLID/Clean Architecture rules. Use ONLY when creating new services/classes, designing feature architecture, performing structural refactoring, or reviewing code for design-pattern violations. Do NOT load for trivial bug fixes, config edits, CSS/SCSS changes, documentation, or running commands. If a bug fix requires structural changes, load the skill."
 ---
 
 # STRICT CODING RULES (MANDATORY - VIOLATION = REGENERATE)
@@ -89,4 +89,4 @@ Ask for clarification only on ambiguous requirements; never guess architecture.
 
 VIOLATIONS TRIGGER AUTO-REVIEW + REGENERATION. THESE RULES ARE NON-NEGOTIABLE FOR ALL OUTPUT.
 
-**Activation**: This skill applies to ALL architecture, refactoring, feature, bugfix, or review tasks. Load and follow immediately.
+**Activation**: This skill applies to new services/classes, feature architecture, structural refactoring, and code reviews. It does NOT apply to trivial bug fixes, config edits, CSS/SCSS changes, documentation, or running commands. If a bug fix requires structural changes, load the skill.
