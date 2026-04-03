@@ -1,6 +1,6 @@
 ---
 name: rm-commit
-description: "Shortcut: rm:commit. Use whenever the user says commit or wants help making a commit. Generates repo-specific conventional commit payloads."
+description: "Shortcut: rm:commit. Use when the user says commit or wants help making a commit. Generates repo-specific conventional commit payloads."
 ---
 
 # rm-commit
@@ -15,16 +15,25 @@ Create clean, reviewable git commits from the working tree.
 - ALWAYS check repo-specific rules in AGENTS.md/CLAUDE.md first
 - Treat "undo commit" as "undo the last commit and keep changes as unstaged edits"
 
+## FLOW
+
+1. Check repo rules first.
+2. Inspect the working tree and recent history.
+3. Decide whether changes belong in one commit or several.
+4. Stage only the intended files or hunks.
+5. Commit with Conventional Commits using multiple `-m` flags.
+6. Verify the result with `git status`.
+
 ## COMMANDS
 
-| Command                             | Purpose                  | When                   |
-| ----------------------------------- | ------------------------ | ---------------------- |
-| `git status`                        | Show working tree status | Always first           |
-| `git diff HEAD`                     | Show all changes         | After status           |
-| `git branch --show-current`         | Get current branch       | After diff             |
-| `git log --oneline -10`             | Show recent history      | After branch           |
-| `git add -p`                        | Stage partial hunks      | File has mixed changes |
-| `git commit -m "$(cat <<'EOF'...)"` | Commit with heredoc      | Always                 |
+| Command                                             | Purpose                         | When                   |
+| --------------------------------------------------- | ------------------------------- | ---------------------- |
+| `git status`                                        | Show working tree status        | Always first           |
+| `git diff HEAD`                                     | Show all changes                | After status           |
+| `git branch --show-current`                         | Get current branch              | After diff             |
+| `git log --oneline -10`                             | Show recent history             | After branch           |
+| `git add -p`                                        | Stage partial hunks             | File has mixed changes |
+| `git commit -m "subject" -m "body" [-m "para" ...]` | Commit with multiple `-m` flags | Always                 |
 
 ## WORKFLOWS
 
@@ -56,8 +65,9 @@ Types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `perf`, `ci`, `style`
 
 Rules:
 
-- Subject: ~50 chars, imperative
-- Body: wrap at 72 chars, explain why not what
+- Subject: concise, imperative, and specific
+- Body: required for every commit; keep each line at or under 100 characters
+- Body: explain why, trade-offs, and impact — not just what changed
 - Footer: `Refs: #123`, `Co-authored-by:`, or `BREAKING CHANGE:`
 
 Example:
@@ -69,6 +79,18 @@ Disable submit immediately so rapid clicks cannot queue
 duplicate requests.
 ```
 
+Good:
+
+```bash
+git commit -m "fix(frontend): prevent duplicate form submits" -m "Disable submit immediately so rapid clicks cannot queue duplicate requests."
+```
+
+Bad:
+
+```bash
+git commit -m "fix(frontend): prevent duplicate form submits" -m "Disable submit immediately so rapid clicks cannot queue duplicate requests because the submit button stays enabled for too long and users can trigger duplicate server calls."
+```
+
 ### 4. Stage Carefully
 
 - Stage by file or partial hunk
@@ -77,14 +99,28 @@ duplicate requests.
 
 ### 5. Commit
 
-```bash
-git commit -m "$(cat <<'EOF'
-type(scope): subject
+Use multiple `-m` flags — one per paragraph. Each `-m` value is a separate paragraph in the final message.
 
-Body explaining why.
-EOF
-)"
+**Basic commit (subject + body):**
+
+```bash
+git commit -m "type(scope): subject" -m "Body explaining why the change exists."
 ```
+
+**Multi-paragraph body with footer:**
+
+```bash
+git commit -m "refactor(core): extract validation logic" \
+  -m "Move input validation into a dedicated service so controllers stay thin." \
+  -m "This also makes it easier to reuse validation across API and web endpoints." \
+  -m "Refs: #123"
+```
+
+**Quoting rules:**
+
+- Use double quotes for `-m` values unless the message contains `$`, backticks, or `!`
+- If the message contains shell metacharacters (`$`, `` ` ``, `!`, `\`), use single quotes instead
+- If the message contains both single and double quotes, escape the inner ones with `\`
 
 ### 6. Verify
 
@@ -92,15 +128,21 @@ Run `git status` post-commit. Report hash and subject.
 
 ## PATTERNS
 
-### Heredoc Commit
+### Multiple -m Commit
+
+**Basic (subject + body):**
 
 ```bash
-git commit -m "$(cat <<'EOF'
-type(scope): imperative subject
+git commit -m "type(scope): imperative subject" -m "Body explaining why the change exists."
+```
 
-Body explaining why the change exists.
-EOF
-)"
+**Multi-paragraph with footer:**
+
+```bash
+git commit -m "type(scope): subject" \
+  -m "First paragraph." \
+  -m "Second paragraph." \
+  -m "Refs: #123"
 ```
 
 ### Partial Staging
