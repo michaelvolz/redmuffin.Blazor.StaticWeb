@@ -1,92 +1,118 @@
 ---
 name: rm-commit
-description: "Shortcut: rm:commit. Generate conventional commit payloads. Use when the user says 'commit', 'commit this', 'commit these changes', 'save my changes', 'save changes', 'create a commit', 'make a commit', 'git commit', 'check in', 'checkin', or wants to commit staged or unstaged work. Also trigger on any commit-related request, preparing to commit, writing commit messages, or commit-related questions. Produces well-structured conventional commit messages that follow this repo's conventions."
+description: "Shortcut: rm:commit. Use whenever the user says commit or wants help making a commit. Generates repo-specific conventional commit payloads."
 ---
 
-# rm-commits
+# rm-commit
 
-## WORKFLOW_CONTEXT
+Create (a) clean, reviewable git commit(s) from the current working tree.
 
-Trunk-based repo. Commits go directly to the default branch. Pushing is always manual — **never run `git push`**. The `/rm-commit` command is the primary invocation method.
+## Default intent
 
-## EXECUTION FLOW
+Use this skill to turn a messy change set into one or more logical commits that are easy to
+review, easy to revert, and easy to describe.
 
-Follow these steps in order. Do not skip.
+## Workflow
 
-1. **Gather** — Run `git status` and `git diff HEAD`. If clean tree, stop.
-2. **Group** — Scan changed files for distinct concerns. If clearly separate (e.g., unrelated fix + new feature), create separate commits. Group at file level only — no `git add -p`.
-3. **Generate** — Build the commit payload following MESSAGE FORMAT below.
-4. **Validate** — Check every body line ≤100 chars. If any line exceeds, rewrite before committing.
-5. **Stage** — Stage specific files by name. Never `git add -A` or `git add .`.
-6. **Commit** — Use heredoc to preserve formatting. Never use `--no-verify` or `--no-gpg-sign`.
-7. **Verify** — Run `git status` after commit. Report hash and subject.
+### 1. Gather context
 
-## MESSAGE FORMAT
+Run:
 
+```bash
+git status
+git diff HEAD
+git branch --show-current
+git log --oneline -10
 ```
+
+If the tree is clean, stop.
+
+If the repo instructions in `AGENTS.md`, `CLAUDE.md`, or similar already define commit
+conventions, follow those first.
+
+- never use `git revert`
+- never commit secrets
+- never push to remote
+- treat “undo commit” as “undo the last commit and keep the changes as unstaged edits”
+
+### 2. Decide the commit shape
+
+Look for distinct logical changes, not just distinct files.
+
+- Split unrelated work into separate commits whenever possible.
+- Use `git add -p` when one file contains more than one logical change.
+- Group by dependency order when multiple commits are needed:
+  1. scaffolding, renames, or refactors
+  2. behavior changes
+  3. tests
+  4. docs, changelog, and cleanup
+  5. formatting-only work, if it is separate
+- Keep each commit independently understandable.
+- If two changes fight for the same files and cannot be split cleanly, prefer the smaller,
+  more coherent commit and leave the rest for a follow-up.
+
+### 3. Choose the message convention
+
+Prefer Conventional Commits unless the repo already uses another pattern.
+
+Format:
+
+```text
+type(scope): imperative subject
+```
+
+Use one of these types when appropriate: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`,
+`perf`, `ci`, `style`, `build`.
+
+Rules:
+
+- Subject should be short, specific, and imperative.
+- Aim for about 50 characters for the subject.
+- Wrap body text around 72 characters when you include one.
+- Explain why the change exists, not just what changed.
+- Use a body for non-trivial work; omit it for obvious one-liners if the repo allows.
+- Use `BREAKING CHANGE:` in the footer, or `!` in the header, for breaking changes.
+- Keep footers for metadata like `Refs: #123` or `Co-authored-by:`.
+
+Good example:
+
+```text
+fix(frontend): prevent duplicate form submits
+
+Disable the submit action immediately so rapid clicks cannot queue
+duplicate requests and create double writes.
+```
+
+### 4. Stage carefully
+
+Stage by file name or partial hunk as needed.
+
+- Prefer `git add -p` or targeted staging when one file contains mixed changes.
+- Do not stage unrelated files together just because they were edited in the same session.
+- Avoid pulling in secrets, generated files, or accidental edits.
+
+### 5. Commit
+
+Use a heredoc so the message stays formatted correctly:
+
+```bash
+git commit -m "$(cat <<'EOF'
 type(scope): subject
 
-Body paragraph explaining why this change exists.
-Each line is a complete thought under 100 characters.
-Break at word boundaries, never mid-word.
-
-Co-authored-by: name <email>
+Body explaining why the change exists.
+EOF
+)"
 ```
 
-- **Header**: `type(scope): subject` — imperative mood, max 100 chars total
-- **Body**: Always required. Blank line after header. Explain _why_, not _what_.
-- **Footer**: Optional. Blank line after body. `BREAKING CHANGE:` must be uppercase.
-- **Breaking**: Use `!` after scope in header AND `BREAKING CHANGE:` in footer.
+### 6. Verify
 
-## LINE_LENGTH_RULES (PRIORITY 1)
+Run `git status` after the commit.
 
-Every body line must be ≤100 characters. This includes spaces. Count before committing.
+Report the commit hash and subject line.
 
-**GOOD** (each line is a short, complete thought):
+## Repo-specific guardrails
 
-```
-fix(blazor): prevent double-submit on form post
-
-The submit button was not disabled after the first click.
-Users could trigger duplicate requests by rapid clicking.
-This caused duplicate database entries and validation errors.
-The button is now disabled immediately on first click.
-```
-
-**BAD** (run-on lines that exceed 100 characters):
-
-```
-fix(blazor): prevent double-submit on form post
-
-The submit button was not disabled after the first click which allowed users to trigger duplicate requests by rapid clicking and this caused duplicate database entries and validation errors throughout the system.
-```
-
-**Rules:**
-
-- Compose each line as a complete thought from the start — do not write long then break
-- Break at word boundaries, never mid-word
-- If a sentence would exceed 100 chars, split it into two sentences
-- Never rely on commitlint to catch violations — validate yourself first
-- If commit fails twice due to line length, stop and ask
-
-## PRECOMMIT_GATES
-
-1. `.gitignore` staged? → NO: unstage first
-2. Dependencies changed? → NO: commit those separately first
-3. Multiple concerns? → YES: split into separate commits
-4. Body missing? → YES: add body (always required per commitlint)
-5. Lock files changed? → See LOCKFILES section below
-
-## ALLOWED_VALUES
-
-**TYPES**: `feat` `fix` `docs` `style` `refactor` `perf` `test` `build` `chore` `ci` `revert`
-
-**SCOPES**: `blazor` `api` `ui` `deps` `build` `scripts` `ci` `docs` `opencode`
-
-## LOCKFILES
-
-**Paths**: `**/packages.lock.json` in `src/`, `tests/`, and `src/SwaLauncher/`.
-
-**Exception**: If the only lockfile drift is `BuildWebCompiler2022` in `packages.lock.json`, treat it as a Debug-Sass artifact. Normalize first (`dotnet build -c Debug-Sass`), then commit only if a real dependency change remains.
-
-**Rule**: All other lockfile changes must be committed with the dependency change that caused them.
+- Do not push unless the user explicitly asks for it.
+- Do not force unrelated changes into one commit.
+- Do not use `git add -A` or `git add .` when safer staging is possible.
+- If the repo has stricter local commit rules, follow those over this baseline.

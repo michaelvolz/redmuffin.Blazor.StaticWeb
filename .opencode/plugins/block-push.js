@@ -12,6 +12,15 @@ export const BlockPushPlugin = async () => {
           "Ask the user to push manually when ready."
         );
       }
+
+      if (detectGitRevert(cmd)) {
+        throw new Error(
+          "BLOCKED by Policy: git revert is restricted to the repository owner only.\n\n" +
+          "Command: " + sanitize(cmd) + "\n\n" +
+          "Reason: Only humans may rewrite history with git revert. " +
+          "Ask the user to perform the revert manually when ready."
+        );
+      }
     },
   };
 };
@@ -20,6 +29,14 @@ function detectGitPush(cmd) {
   const segments = parseCommand(cmd);
   for (const segment of segments) {
     if (isGitPush(segment)) return true;
+  }
+  return false;
+}
+
+function detectGitRevert(cmd) {
+  const segments = parseCommand(cmd);
+  for (const segment of segments) {
+    if (isGitRevert(segment)) return true;
   }
   return false;
 }
@@ -42,6 +59,29 @@ function isGitPush(segment) {
   if (["python", "python3", "node", "ruby", "perl", "php"].includes(base)) {
     const execArg = extractExecArg(tokens);
     if (execArg && detectGitPush(execArg)) return true;
+  }
+
+  return false;
+}
+
+function isGitRevert(segment) {
+  const tokens = tokenize(segment);
+  if (tokens.length === 0) return false;
+
+  const base = basename(tokens[0]);
+  if (base === "git") {
+    const sub = tokens.find(t => !t.startsWith("-") && t !== "git");
+    if (sub === "revert") return true;
+  }
+
+  if (["bash", "sh", "zsh", "cmd", "powershell", "pwsh"].includes(base)) {
+    const execArg = extractExecArg(tokens);
+    if (execArg && detectGitRevert(execArg)) return true;
+  }
+
+  if (["python", "python3", "node", "ruby", "perl", "php"].includes(base)) {
+    const execArg = extractExecArg(tokens);
+    if (execArg && detectGitRevert(execArg)) return true;
   }
 
   return false;

@@ -206,12 +206,12 @@ Use only if you cannot run Docker. Note: Manual secret management required.
   ```
 
   **Push Protection:**
-  The project uses two complementary layers to prevent unauthorized remote pushes:
+  The project uses two complementary layers to prevent unauthorized remote pushes and protected history rewrites:
 
   | Layer            | Mechanism                                                  | Blocks                                       |
   | ---------------- | ---------------------------------------------------------- | -------------------------------------------- |
   | 1. cc-safety-net | Semantic command analysis via `tool.execute.before` hook   | `git push --force` / `-f` (destroys history) |
-  | 2. block-push.js | Custom OpenCode plugin (`.opencode/plugins/block-push.js`) | ALL `git push` with bypass-resistant parsing |
+  | 2. block-push.js | Custom OpenCode plugin (`.opencode/plugins/block-push.js`) | ALL `git push` and `git revert`              |
 
   **Blocked Commands (cc-safety-net Built-in Rules):**
 
@@ -503,8 +503,11 @@ See [docs/SSH-AGENT-SETUP.md](docs/SSH-AGENT-SETUP.md) for detailed SSH setup an
    # Use "Start both" profile
 
    # Or using CLI
-   dotnet run --project src/redmuffin.Blazor.StaticWeb/redmuffin.Blazor.StaticWeb.csproj
+   dotnet run --project src/redmuffin.Blazor.StaticWeb/redmuffin.Blazor.StaticWeb.csproj --launch-profile https
    ```
+
+   This is the normal day-to-day dev server command. `Start.ps1` is reserved for
+   final integration-style testing and broader environment validation.
 
 7. **Navigate to:**
    - Full Stack: http://localhost:4280
