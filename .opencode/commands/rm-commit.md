@@ -2,4 +2,4 @@
 description: Create conventional commit(s) following project standards
 ---
 
-RUN!! rm-commit skill. Scope: session files + packages.lock.json if changed. If user says "full/all/everything" → stage ALL open changes. Split by concern. No summary/confirmation.
+CRITICAL: execute the /rm-commit skill. Scope: session files + packages.lock.json if changed. If user says "full/all/everything" → stage ALL open changes. Split by concern. No summary/confirmation.
