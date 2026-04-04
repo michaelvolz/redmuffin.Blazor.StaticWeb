@@ -2,7 +2,15 @@
 
 Reference for converting sidenotes into actionable artifacts. The rm-sidenotes skill uses these patterns when the user selects a conversion target type.
 
+## CRITICAL
+
+- **ALWAYS trigger the appropriate skill** — do not manually create artifacts unless the skill is unavailable
+- The skill handles the full workflow: dialogue, document creation, review, handoff
+- Pass the sidenote text as context when invoking the skill
+
 ## Todo Conversion
+
+**Trigger:** Load `todo-create` skill with sidenote text as context
 
 **Target:** `.context/compound-engineering/todos/`
 
@@ -34,6 +42,8 @@ dependencies: []
 
 ## Brainstorm Conversion
 
+**Trigger:** Run `/ce:brainstorm` with the sidenote text as the feature description
+
 **Target:** `docs/brainstorms/`
 
 **Naming:** `YYYY-MM-DD-{topic}-requirements.md`
@@ -42,14 +52,16 @@ dependencies: []
 - Topic: derive from sidenote title (kebab-case)
 - If a file with the same name already exists, append `-2`, `-3`, etc.
 
-**Structure:** Minimal requirements document with:
+**Process:**
 
-- YAML frontmatter: `date`, `topic`, `source: docs/sidenotes/SN-NNNN.md`
-- Problem Frame: sidenote text as starting point
-- Requirements: to be fleshed out during brainstorm dialogue
-- Note at top: "Converted from sidenote SN-NNNN. This document is a starting point — refine through brainstorm dialogue."
+1. Invoke `ce:brainstorm` skill with sidenote text as input
+2. The skill handles: existing context scan, product pressure test, collaborative dialogue, requirements document creation, document review, handoff
+3. The brainstorm skill will create the requirements document in `docs/brainstorms/`
+4. After the brainstorm completes, update the sidenote with the path to the created document
 
 ## Plan Conversion
+
+**Trigger:** Run `/ce:plan` with the sidenote text as the feature description
 
 **Target:** `docs/plans/`
 
@@ -60,12 +72,22 @@ dependencies: []
 - Type: `feat` (default), `fix`, or `refactor` based on sidenote content
 - Descriptive name: derive from sidenote title (kebab-case, 3-5 words)
 
-**Structure:** Minimal plan with:
+**Process:**
 
-- YAML frontmatter: `title`, `type`, `status: active`, `date`, `source: docs/sidenotes/SN-NNNN.md`
-- Overview: sidenote text as starting point
-- Problem Frame: brief context
-- Note at top: "Converted from sidenote SN-NNNN. This plan is a starting point — refine through /ce:plan."
+1. Invoke `ce:plan` skill with sidenote text as input
+2. The skill handles: requirements analysis, repo scanning, technical design, implementation units, risk assessment
+3. The plan skill will create the plan document in `docs/plans/`
+4. After the plan completes, update the sidenote with the path to the created document
+
+## Work Conversion (Direct Execution)
+
+**Trigger:** Run `/ce:work` with the sidenote text as the task description
+
+**Process:**
+
+1. Invoke `ce:work` skill with sidenote text as input
+2. The skill handles: task execution, code changes, testing, validation
+3. After work completes, update the sidenote with a note about what was done
 
 ## Post-Conversion Sidenote Update
 

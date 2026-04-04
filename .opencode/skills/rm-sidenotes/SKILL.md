@@ -43,9 +43,13 @@ Pending sidenotes:
 
 1. Read `docs/sidenotes/SN-NNNN.md`. If file does not exist, respond: "Sidenote SN-NNNN not found."
 2. If status is already `converted`, respond: "Sidenote SN-NNNN was already converted to <converted-to path>."
-3. Present 3 options to the user: todo, brainstorm, plan
-4. On user selection, create the artifact following the patterns in `references/conversion.md`
-5. Update the sidenote file: set `status: converted`, add `converted-to: <artifact-path>` in frontmatter
+3. Present 4 options to the user: **brainstorm** (ce:brainstorm), **plan** (ce:plan), **work** (ce:work), **todo** (todo-create)
+4. On user selection, **trigger the appropriate skill** with the sidenote text as context:
+   - **brainstorm** → Run `/ce:brainstorm` with sidenote text as feature description
+   - **plan** → Run `/ce:plan` with sidenote text as feature description
+   - **work** → Run `/ce:work` with sidenote text as task description
+   - **todo** → Load `todo-create` skill with sidenote text as context
+5. After the skill completes and creates the artifact, update the sidenote file: set `status: converted`, add `converted-to: <artifact-path>` in frontmatter
 6. Confirm: "Sidenote SN-NNNN converted to <artifact-path>."
 
 ### 4. Dismissal (dismiss sidenote SN-NNNN)
@@ -76,7 +80,7 @@ Pending sidenotes:
 
 ### ASK FIRST
 
-- Conversion target type — always present 3 options (todo, brainstorm, plan) and let the user choose
+- Conversion target type — always present 4 options (brainstorm, plan, work, todo) and let the user choose
 
 ### NEVER
 
