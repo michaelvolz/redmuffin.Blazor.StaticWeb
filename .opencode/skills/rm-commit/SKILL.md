@@ -14,7 +14,8 @@ Create clean, reviewable git commits from the working tree.
 - NEVER push to remote
 - ALWAYS check repo-specific rules in AGENTS.md/CLAUDE.md first
 - Treat "undo commit" as "undo the last commit and keep changes as unstaged edits"
-- NEVER put `#NNNNN` (issue references) in the commit body — the conventional-commits-parser treats them as footers, making the body appear empty to commitlint. Always use `Refs: #NNNNN` in the footer instead.
+- NEVER put `#` followed by an identifier (`[A-Za-z0-9_-]+`, e.g., `#1234`, `#abc`, `#SN-0001`) in the commit body — the conventional-commits-parser regex `([\w-]+)(?=\s|$|[,;)\]])` treats it as an issue reference and moves everything after into the footer, making the body appear empty to commitlint. Always use `Refs: #NNNNN` in the footer instead. If you must mention an issue in the body, omit the `#` prefix.
+- Sidenotes are referenced as `SN-NNNN` (no `#` prefix) in commit bodies. They are local file IDs, not GitHub issues. Write `See SN-0003 for context`, never `See #SN-0003 for context`.
 
 ## FLOW
 

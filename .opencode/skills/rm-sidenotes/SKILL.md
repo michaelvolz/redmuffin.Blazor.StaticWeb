@@ -88,3 +88,27 @@ Pending sidenotes:
 ## CONTEXT
 
 Sidenotes are a lightweight capture system for tangential ideas during active work sessions. They persist as individual markdown files in `docs/sidenotes/` with YAML frontmatter for metadata. The system is additive — it does not modify existing brainstorm, plan, or todo systems. Conversion bridges sidenotes into those systems when the user is ready to act.
+
+## COMMIT MESSAGES
+
+When committing sidenote changes, reference sidenotes as `SN-NNNN` (no `#` prefix) in the commit body. The `#` prefix triggers a bug in `conventional-commits-parser` that treats `#` + identifier as an issue reference, moving everything after it into the footer and causing commitlint's `body-empty` rule to fail.
+
+**Good:**
+
+```
+feat(sidenotes): capture SN-0004
+
+Agent instructions should surface es.exe as a primary search tool.
+See SN-0004 for the full context.
+```
+
+**Bad (triggers commitlint body-empty):**
+
+```
+feat(sidenotes): capture SN-0004
+
+Agent instructions should surface es.exe as a primary search tool.
+See #SN-0004 for the full context.
+```
+
+For actual GitHub issue references, use the footer: `Refs: #1234`.
