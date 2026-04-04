@@ -20,11 +20,12 @@ Create clean, reviewable git commits from the working tree.
 ## FLOW
 
 1. Check repo rules first.
-2. Inspect the working tree and recent history.
-3. Decide whether changes belong in one commit or several.
-4. Stage only the intended files or hunks.
-5. Commit with Conventional Commits using PowerShell here-string piped to `git commit -F -`.
-6. Verify the result with `git status`.
+2. **Recover from stale git locks** (caused by interrupted sessions).
+3. Inspect the working tree and recent history.
+4. Decide whether changes belong in one commit or several.
+5. Stage only the intended files or hunks.
+6. Commit with Conventional Commits using PowerShell here-string piped to `git commit -F -`.
+7. Verify the result with `git status`.
 
 ## COMMANDS
 
@@ -37,6 +38,40 @@ Create clean, reviewable git commits from the working tree.
 | `git add -p`                 | Stage partial hunks              | File has mixed changes |
 | `@"..."@ \| git commit -F -` | Commit with here-string template | Always                 |
 
+## STALE LOCK RECOVERY
+
+Git creates `.git/index.lock` at the start of any write operation and removes it when done.
+If the agent session is interrupted (Esc, timeout, process kill) while git holds the lock,
+the file persists and blocks all subsequent git operations.
+
+**Root cause**: Session interruption during an active git operation. The pipe pattern
+(`@"..."@ | git commit -F -`) is NOT the cause — any git write operation killed mid-flight
+leaves the same orphaned lock.
+
+**Recovery**: Before any git write operation, check for a stale lock and remove it if safe.
+
+```powershell
+$lockFile = ".git/index.lock"
+if (Test-Path $lockFile) {
+    $age = (Get-Date) - (Get-Item $lockFile).LastWriteTime
+    $ageSeconds = [math]::Round($age.TotalSeconds)
+    if ($age -gt [TimeSpan]::FromMinutes(1)) {
+        Write-Warning "Stale git lock detected (${ageSeconds}s old). Removing..."
+        Remove-Item $lockFile -Force
+    } else {
+        Write-Error "Active git operation in progress (${ageSeconds}s old). Wait or investigate."
+        exit 1
+    }
+}
+```
+
+**Safety rules**:
+
+- Only remove locks older than 1 minute — no legitimate git operation holds a lock that long without progress
+- If the lock is fresh (< 1 min), abort and warn — something is actively running
+- Never remove `.git/refs/*.lock` or `.git/HEAD.lock` with this logic — those are separate lock files for different operations
+- This check runs BEFORE `git add` and BEFORE `git commit`
+
 ## WORKFLOWS
 
 ### 1. Gather Context
@@ -46,6 +81,9 @@ git status && git diff HEAD && git branch --show-current && git log --oneline -1
 ```
 
 Stop if tree is clean.
+
+**Stale lock check**: If `git status` fails with "Another git process seems to be running",
+run the stale lock recovery script from the STALE LOCK RECOVERY section, then retry.
 
 ### 2. Decide Commit Shape
 
@@ -80,6 +118,10 @@ Rules:
 - Exclude secrets, generated files, accidental edits
 
 ### 5. Commit
+
+**Pre-flight**: Run the stale lock check before committing. If `git add` or any prior git
+operation succeeded, the lock is clean — skip the check. If this is a resumed session or
+a prior git command failed with a lock error, run the check first.
 
 Use a PowerShell here-string piped to `git commit -F -`. This preserves exact line breaks, avoids shell escaping issues, and works reliably in OpenCode's PowerShell environment on Windows.
 

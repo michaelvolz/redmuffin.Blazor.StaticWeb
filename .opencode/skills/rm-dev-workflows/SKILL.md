@@ -212,6 +212,24 @@ Get-NetTCPConnection -LocalPort 5000 -ErrorAction SilentlyContinue
 - Use `chrome-devtools_*` MCP tools for browser interaction — not `agent-browser` unless session isolation is needed
 - Never mix `agent-browser` and `chrome-devtools_*` for the same browser session
 
+## COMMANDS
+
+| Command      | Purpose         | When                                   |
+| ------------ | --------------- | -------------------------------------- |
+| `rm:dev`     | Load this skill | Need dev workflow guidance             |
+| `rm:cleanup` | Run cleanup     | End of session, before switching tasks |
+| `rm:commit`  | Create commit   | Ready to commit changes                |
+| `rm:nuget`   | Manage packages | Add/remove/update NuGet packages       |
+
+## COMMANDS
+
+| Command      | Purpose         | When                                   |
+| ------------ | --------------- | -------------------------------------- |
+| `rm:dev`     | Load this skill | Need dev workflow guidance             |
+| `rm:cleanup` | Run cleanup     | End of session, before switching tasks |
+| `rm:commit`  | Create commit   | Ready to commit changes                |
+| `rm:nuget`   | Manage packages | Add/remove/update NuGet packages       |
+
 ## BOUNDARIES
 
 Rules are stated inline in each section. Key cross-references:

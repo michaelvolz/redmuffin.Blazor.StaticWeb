@@ -21,6 +21,12 @@ For every coding, architecture, refactoring, or review task:
 - ALWAYS `dotnet test` before commit
 - "Undo commit" means: undo the last commit and keep changes as unstaged edits.
 - Research first: use Exa code search or web search before implementing unfamiliar APIs
+- SKILL COMMANDS tables are intentionally duplicated across skills. Each skill is a
+  self-contained entry point — agents load one skill at a time and need the quick-ref
+  there. Never remove or consolidate COMMANDS tables as "duplication".
+- SKILL COMMANDS tables are intentionally duplicated across skills. Each skill is a
+  self-contained entry point — agents load one skill at a time and need the quick-ref
+  there. Never remove or consolidate COMMANDS tables as "duplication".
 
 ## SIDENOTES
 

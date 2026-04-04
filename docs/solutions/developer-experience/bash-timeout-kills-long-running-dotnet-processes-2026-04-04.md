@@ -1,6 +1,6 @@
 ---
 date: 2026-04-04
-topic: bash-timeout-kills-long-running-dotnet-processes
+title: Bash timeout kills long-running dotnet processes
 module: developer-experience
 tags: [opencode, bash, dotnet-watch, timeout, long-running-process]
 problem_type: integration-issue
@@ -24,28 +24,31 @@ The `bash` tool runs commands in a persistent shell session but **enforces a har
 
 ## Solution
 
-**Never run long-running dev servers via `bash`.** Use `Start-Process` to launch them in a separate window:
+**Never run long-running dev servers via `bash`.** Use `Start-Process powershell.exe` to launch in a separate window:
 
 ```powershell
 # CORRECT: Starts in a separate window, survives indefinitely
-Start-Process powershell -ArgumentList '-NoExit', '-Command', '$Host.UI.RawUI.WindowTitle = ''Frontend (5233)''; dotnet watch --non-interactive --project src/redmuffin.Blazor.StaticWeb'
+Start-Process powershell.exe -ArgumentList '-NoExit', '-Command', '$Host.UI.RawUI.WindowTitle = ''Frontend (5233)''; dotnet run --project src/redmuffin.Blazor.StaticWeb --launch-profile Watch'
 
 # WRONG: Killed after timeout expires
-dotnet watch --non-interactive --project src/redmuffin.Blazor.StaticWeb
+dotnet run --project src/redmuffin.Blazor.StaticWeb --launch-profile Watch
 ```
 
 Then poll for readiness:
 
 ```powershell
-while (-not (Get-NetTCPConnection -LocalPort 5233 -ErrorAction SilentlyContinue)) { Start-Sleep -Milliseconds 500 }
-Write-Host "Port 5233 is ready"
+$port = 5233  # from launchSettings.json
+while (-not (Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue)) { Start-Sleep -Milliseconds 500 }
+Write-Host "Port $port is ready"
 ```
+
+For the full executable reference (all profiles, hot reload behavior, troubleshooting), see `.opencode/skills/rm-dev-workflows/SKILL.md` under `SITE STARTUP`.
 
 ## When to Use Each Approach
 
 | Scenario                                    | Tool                               | Why                                       |
 | ------------------------------------------- | ---------------------------------- | ----------------------------------------- |
-| Start dev server (dotnet watch, dotnet run) | `Start-Process powershell`         | Long-running, must survive beyond timeout |
+| Start dev server (dotnet watch, dotnet run) | `Start-Process powershell.exe`     | Long-running, must survive beyond timeout |
 | Build, test, one-shot commands              | `bash`                             | Completes quickly, output needed          |
 | Check port availability                     | `bash` with `Get-NetTCPConnection` | Quick, returns immediately                |
 | Kill processes                              | `bash` with `Stop-Process`         | Quick, returns immediately                |
