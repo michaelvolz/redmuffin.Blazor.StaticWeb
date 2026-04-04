@@ -1,4 +1,7 @@
-# Analysis of Useless or Counterproductive Rules
+---
+title: Analysis of Useless or Counterproductive Rules
+date: 2025-08-05
+---
 
 This file lists rules from the attached files that I judge to be redundant (because I would already apply them 100% based on my built-in knowledge of C# 13, .NET 9, TDD with TUnit/bUnit/LightMock.Generator, and general best practices) or counterproductive (e.g., they might overcomplicate simple tasks, enforce outdated/rigid patterns, or conflict with efficient AI reasoning). Only flagged rules are included, with brief reasoning for each.
 

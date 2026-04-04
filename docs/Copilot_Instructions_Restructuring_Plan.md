@@ -1,4 +1,7 @@
-# Copilot Instructions Restructuring Plan
+---
+title: Copilot Instructions Restructuring Plan
+date: 2025-08-05
+---
 
 ## Super Plan: Restructuring the Copilot Instructions File
 

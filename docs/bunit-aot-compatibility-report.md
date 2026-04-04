@@ -1,4 +1,7 @@
-# bUnit AoT Compatibility Report
+---
+title: bUnit AoT Compatibility Report
+date: 2025-07-20
+---
 
 ## Overview
 

@@ -1,4 +1,7 @@
-# Trimming Warnings Documentation
+---
+title: Trimming Warnings Documentation
+date: 2025-07-13
+---
 
 ## Current Status
 

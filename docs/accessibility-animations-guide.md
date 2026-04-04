@@ -1,4 +1,7 @@
-# Accessibility and Animations Guide
+---
+title: Accessibility and Animations Guide
+date: 2024-12-01
+---
 
 ## Overview
 

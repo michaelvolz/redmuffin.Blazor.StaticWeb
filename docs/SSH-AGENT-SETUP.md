@@ -1,4 +1,7 @@
-# SSH Agent Setup for DevContainer
+---
+title: SSH Agent Setup for DevContainer
+date: 2026-03-30
+---
 
 This document describes how to configure SSH access for the devcontainer, enabling Git operations (push/pull) from within the container.
 

@@ -1,4 +1,7 @@
-# Start Script Documentation
+---
+title: Start Script Documentation
+date: 2025-07-19
+---
 
 ## Overview
 

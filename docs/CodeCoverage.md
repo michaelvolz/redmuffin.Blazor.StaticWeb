@@ -1,4 +1,7 @@
-# Code Coverage Guide
+---
+title: Code Coverage Guide
+date: 2025-07-12
+---
 
 This guide explains how to use code coverage in the redmuffin.Blazor.StaticWeb project using Coverlet and ReportGenerator.
 

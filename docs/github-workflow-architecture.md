@@ -1,4 +1,7 @@
-# GitHub Actions CI/CD Workflow Architecture
+---
+title: GitHub Actions CI/CD Workflow Architecture
+date: 2026-03-31
+---
 
 ## New Developer Quick Start Guide
 

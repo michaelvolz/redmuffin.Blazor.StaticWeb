@@ -1,4 +1,7 @@
-# Secrets Management Guide
+---
+title: Secrets Management Guide
+date: 2026-03-30
+---
 
 This document describes the secure secrets management system for the redmuffin.Blazor.StaticWeb devcontainer.
 

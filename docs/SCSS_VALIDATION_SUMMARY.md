@@ -1,4 +1,7 @@
-# SCSS Structure Validation Summary
+---
+title: SCSS Structure Validation Summary
+date: 2025-01-16
+---
 
 ## Overview
 

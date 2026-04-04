@@ -1,4 +1,7 @@
-# Test Double Best Practices
+---
+title: Test Double Best Practices
+date: 2025-08-02
+---
 
 ## Introduction
 

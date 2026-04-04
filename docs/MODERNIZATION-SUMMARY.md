@@ -1,4 +1,7 @@
-# SCSS Modernization Summary
+---
+title: SCSS Modernization Summary
+date: 2025-07-16
+---
 
 ## Overview
 

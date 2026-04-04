@@ -1,4 +1,7 @@
-# Azure Static Web Apps Performance Optimization Report
+---
+title: Azure Static Web Apps Performance Optimization Report
+date: 2025-01-27
+---
 
 **PRD-007 Implementation Report**
 **Date**: January 27, 2025

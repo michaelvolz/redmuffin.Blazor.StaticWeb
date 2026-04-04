@@ -1,4 +1,7 @@
-# Mock Naming Conventions
+---
+title: Mock Naming Conventions
+date: 2025-07-17
+---
 
 ## Overview
 

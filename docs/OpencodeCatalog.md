@@ -1,7 +1,7 @@
 ---
 title: Opencode Commands, Skills, Snippets, and Agents Catalog
 description: Quick reference index for all local and global opencode assets in this repo
-last-updated: 2026-04-02
+date: 2026-04-02
 ---
 
 # Opencode Catalog
