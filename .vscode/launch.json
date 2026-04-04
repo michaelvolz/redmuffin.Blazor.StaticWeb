@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Blazor WebApp",
+      "type": "pwa-chrome",
+      "request": "launch",
+      "url": "http://localhost:5233",
+      "webRoot": "${workspaceFolder}/src/redmuffin.Blazor.StaticWeb",
+      "preLaunchTask": "start-blazor-app"
+    },
+    {
+      "name": "Full Stack (SWA)",
+      "type": "pwa-chrome",
+      "request": "launch",
+      "url": "http://localhost:4280",
+      "webRoot": "${workspaceFolder}/src/redmuffin.Blazor.StaticWeb",
+      "preLaunchTask": "start-full-stack"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug Full Stack",
+      "configurations": ["Full Stack (SWA)"]
+    }
+  ]
+}
