@@ -18,7 +18,15 @@ For every coding, architecture, refactoring, or review task:
 - ALWAYS `dotnet test` before commit
 - "Undo commit" means: undo the last commit and keep changes as unstaged edits.
 - Research first: use Exa code search or web search before implementing unfamiliar APIs
-- 
+
+## SIDENOTES
+
+When the user says "sidenote:" or mentions a tangential idea during active work:
+
+- Append it to `docs/sidenotes.md` as a checklist item
+- Do not act on sidenotes until the current task is 100% complete
+- Sidenotes are a backlog of improvements, not active work
+
 ## STACK
 
 | Technology      | Version     | Purpose        |
