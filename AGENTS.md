@@ -21,11 +21,15 @@ For every coding, architecture, refactoring, or review task:
 
 ## SIDENOTES
 
-When the user says "sidenote:" or mentions a tangential idea during active work:
+When the user says "sidenote:" or "/sidenote", load the `rm-sidenotes` skill. The skill handles capture, storage, retrieval, and conversion.
 
-- Append it to `docs/sidenotes.md` as a checklist item
-- Do not act on sidenotes until the current task is 100% complete
-- Sidenotes are a backlog of improvements, not active work
+Behavioral rules:
+
+- NEVER act on a sidenote during the current task — not now, not later in the same turn
+- NEVER ask follow-up questions about a sidenote ("want to tackle it now?", "should I...?")
+- NEVER suggest, propose, or discuss the sidenote beyond the capture confirmation
+- Sidenotes are a backlog — the user will explicitly reference one when ready to convert it to a task
+- The current task continues uninterrupted after capture
 
 ## STACK
 
