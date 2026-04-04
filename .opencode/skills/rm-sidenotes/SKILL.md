@@ -1,6 +1,6 @@
 ---
 name: rm-sidenotes
-description: "Shortcut: rm:sn. Use when the user says 'sidenote:' or '/sidenote' to capture a tangential idea, or says 'show sidenotes', 'list sidenotes', 'convert sidenote', 'tackle sidenote', or 'dismiss sidenote' to manage the sidenote backlog. Handles capture, storage, retrieval, conversion, and dismissal of sidenotes during active work sessions."
+description: "Shortcut: rm:sn. Use for sidenote capture (sidenote:, /sidenote, /sidenotes) and management commands (sidenotes list, sidenotes show, sidenote list, sidenote show, sidenote convert SN-NNNN, sidenote tackle SN-NNNN, sidenote dismiss SN-NNNN, sidenotes dismiss SN-NNNN). Handles capture, storage, retrieval, conversion, and dismissal of sidenotes during active work sessions."
 ---
 
 # rm-sidenotes
@@ -9,11 +9,16 @@ Capture tangential ideas mid-conversation without derailing the current task. St
 
 ## CRITICAL
 
-- When you see `sidenote:` or `/sidenote` in user input, ALWAYS use this skill — do not handle inline
+- When you see `sidenote:`, `sidenotes`, `/sidenote`, `/sidenotes` in user input, ALWAYS use this skill — do not handle inline
 - NEVER act on a sidenote immediately after capture — the current task continues uninterrupted
 - NEVER ask follow-up questions about a captured sidenote
 - NEVER auto-suggest sidenotes to the user — they explicitly request retrieval
-- Trigger detection: `sidenote:` must be the first non-whitespace token on a line, or `/sidenote` must be at message start. Do NOT trigger on casual prose containing the word "sidenote"
+- Trigger detection:
+  - `sidenote:` must be the first non-whitespace token on a line (capture)
+  - `/sidenote` or `/sidenote` at message start (capture/command)
+  - `sidenote ` (singular, space-separated) for commands like "sidenote convert 5", "sidenote dismiss 1"
+  - `sidenotes` (plural) for commands like "sidenotes list", "sidenotes show"
+  - Do NOT trigger on casual prose containing the word "sidenote"
 
 ## FLOW
 
@@ -21,10 +26,10 @@ Capture tangential ideas mid-conversation without derailing the current task. St
 
 1. Create `docs/sidenotes/` if it does not exist
 2. Compute next ID: glob `docs/sidenotes/SN-*.md`, extract numeric suffix from filename, take max + 1, zero-pad to 4 digits (e.g., SN-0003). If no files exist, start at SN-0001. Re-scan immediately before write — if the computed ID already exists (rapid successive captures), increment and retry once
-3. Derive a brief title from the first few words of the sidenote text (kebab-case)
+3. Use the first 149 characters of the sidenote text as the title (preserve whitespace, no transformation)
 4. Write `docs/sidenotes/SN-NNNN.md` with frontmatter and body
-5. Confirm in one line: "Sidenote SN-NNNN captured."
-6. Do nothing else — the current task continues
+5. VERIFY the file was created and contains the sidenote content. If verification fails, retry the write up to 2 times. Only proceed after confirmed write.
+6. IMMEDIATELY continue the previous task — NO confirmation, NO acknowledgment, NO message of any kind
 
 ### 2. Retrieval (show sidenotes / list sidenotes)
 
@@ -35,8 +40,8 @@ Capture tangential ideas mid-conversation without derailing the current task. St
 
 ```
 Pending sidenotes:
-1. SN-0001 (2026-04-04) — Research a good sidenote solution
-2. SN-0002 (2026-04-04) — Prevent many open about:blank tabs
+1. SN-0004 (2026-04-04) — Add to AGENTS.md that I am a Trunk Based Developer and prefer staying on trunk if possible. If the risk is too high we can branch, otherwise I like master.
+2. SN-0005 (2026-04-04) — We need to make sure sidenote always triggers and the note is written before reporting it was done. I have experienced data loss multiple times when the agent failed to load the rm-sidenotes skill and did not create the file.
 ```
 
 ### 3. Conversion (convert sidenote SN-NNNN / tackle sidenote SN-NNNN)
@@ -61,13 +66,13 @@ Pending sidenotes:
 
 ## COMMANDS
 
-| Command                                                | Purpose             | When                                |
-| ------------------------------------------------------ | ------------------- | ----------------------------------- |
-| `sidenote: <text>`                                     | Capture inline      | Mid-conversation tangential thought |
-| `/sidenote <text>`                                     | Capture via command | Explicit capture                    |
-| `show sidenotes` / `list sidenotes`                    | List pending        | Ready to review backlog             |
-| `convert sidenote SN-NNNN` / `tackle sidenote SN-NNNN` | Convert to task     | Ready to act on specific item       |
-| `dismiss sidenote SN-NNNN`                             | Dismiss item        | No longer relevant                  |
+| Command                                                                                                           | Purpose             | When                                |
+| ----------------------------------------------------------------------------------------------------------------- | ------------------- | ----------------------------------- |
+| `sidenote: <text>`                                                                                                | Capture inline      | Mid-conversation tangential thought |
+| `/sidenote <text>`                                                                                                | Capture via command | Explicit capture                    |
+| `sidenotes list` / `sidenotes show` / `sidenote list` / `sidenote show`                                           | List pending        | Ready to review backlog             |
+| `sidenote convert SN-NNNN` / `sidenote tackle SN-NNNN` / `sidenotes convert SN-NNNN` / `sidenotes tackle SN-NNNN` | Convert to task     | Ready to act on specific item       |
+| `sidenote dismiss SN-NNNN` / `sidenotes dismiss SN-NNNN` / `dismiss sidenote SN-NNNN`                             | Dismiss item        | No longer relevant                  |
 
 ## BOUNDARIES
 
@@ -75,7 +80,7 @@ Pending sidenotes:
 
 - Create `docs/sidenotes/` if missing
 - Use 4-digit sequential IDs (SN-0001, SN-0002, ...)
-- Confirm capture in one line only
+- NEVER output any confirmation or acknowledgment after capture — file and continue silently
 - Re-scan directory before each write to avoid ID collisions
 
 ### ASK FIRST

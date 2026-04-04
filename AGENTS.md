@@ -59,6 +59,10 @@ tests/                                    # Tests (mirrors src)
 docs/solutions/                           # Searchable knowledge store of past solutions (bugs, best practices, patterns), organized by category with YAML frontmatter (module, tags, problem_type). Relevant when implementing or debugging in documented areas.
 ```
 
+## DEVELOPMENT PHILOSOPHY
+
+- **Trunk-Based Development**: Prefer staying on trunk/main if possible. Branch only when the risk is too high.
+
 ## SKILL REFERENCES
 
 | Skill                         | Trigger When...                                                                                        |
