@@ -59,6 +59,24 @@ tests/                                    # Tests (mirrors src)
 docs/solutions/                           # Searchable knowledge store of past solutions (bugs, best practices, patterns), organized by category with YAML frontmatter (module, tags, problem_type). Relevant when implementing or debugging in documented areas.
 ```
 
+## DOCUMENTATION
+
+When creating new markdown files in `docs/`:
+
+- **Always add `date:` frontmatter** — Extract from filename first (e.g., `2026-04-04-name.md` → `date: 2026-04-04`), then fall back to current date
+- **Do this before the user reviews changes** — Not during skill execution, but during the commit preparation phase
+- **Pattern**: If filename matches `YYYY-MM-DD-*.md` or `*-YYYY-MM-DD.md`, use that date. Otherwise use today's date
+- **Applies to**: All new docs files (brainstorms, plans, solutions, sidenotes, or any other docs)
+
+Example frontmatter:
+
+```yaml
+---
+title: My Doc Title
+date: 2026-04-04
+---
+```
+
 ## DEVELOPMENT PHILOSOPHY
 
 - **Trunk-Based Development**: Prefer staying on trunk/main if possible. Branch only when the risk is too high.
