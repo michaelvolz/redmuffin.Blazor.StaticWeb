@@ -1,9 +1,10 @@
 ---
 title: "fix: Stop Chrome DevTools MCP from reopening blank tabs"
 type: fix
-status: active
+status: superseded
 date: 2026-04-03
 origin: null
+superseded-by: docs/plans/2026-04-04-009-fix-prevent-about-blank-tabs-in-dev-chrome-plan.md
 ---
 
 # Fix: Stop Chrome DevTools MCP from Reopening Blank Tabs

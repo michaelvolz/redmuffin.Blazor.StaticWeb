@@ -12,6 +12,9 @@ For every coding, architecture, refactoring, or review task:
 - NEVER restore a file from git without asking. We could have had multiple uncommitted changes.
 - NEVER use `git revert`.
 - NEVER commit secrets, NEVER push to remote (HARD BLOCKED)
+- NEVER run `git commit`, `git add`, or any git commit-related command unless the user explicitly asks you to. The user reviews all changes before committing. Bypassing this breaks the entire review process. (HARD BLOCKED)
+- NEVER use `chrome-devtools_close_page` for cleanup. Use process-level identification only.
+- ALWAYS navigate existing browser tabs to target URLs. Never create new blank tabs when an existing tab can be reused.
 - NEVER answer without reading the actual code first
 - ALWAYS `dotnet build --verbosity quiet` after C# changes
 - ALWAYS `dotnet build -c Debug-Sass` after SCSS/JS changes

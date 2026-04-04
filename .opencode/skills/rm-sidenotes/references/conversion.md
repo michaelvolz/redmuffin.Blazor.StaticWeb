@@ -7,6 +7,7 @@ Reference for converting sidenotes into actionable artifacts. The rm-sidenotes s
 - **ALWAYS trigger the appropriate skill** — do not manually create artifacts unless the skill is unavailable
 - The skill handles the full workflow: dialogue, document creation, review, handoff
 - Pass the sidenote text as context when invoking the skill
+- **Fallback:** If the target skill is unavailable, create the artifact manually following the patterns below and note in the sidenote that the skill was not available
 
 ## Todo Conversion
 
