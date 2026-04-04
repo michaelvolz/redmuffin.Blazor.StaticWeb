@@ -49,11 +49,12 @@ Pending sidenotes:
 1. Read `docs/sidenotes/SN-NNNN.md`. If file does not exist, respond: "Sidenote SN-NNNN not found."
 2. If status is already `converted`, respond: "Sidenote SN-NNNN was already converted to <converted-to path>."
 3. Present 4 options to the user: **brainstorm** (ce:brainstorm), **plan** (ce:plan), **work** (ce:work), **todo** (todo-create)
-4. On user selection, **trigger the appropriate skill** with the sidenote text as context:
-   - **brainstorm** → Run `/ce:brainstorm` with sidenote text as feature description
-   - **plan** → Run `/ce:plan` with sidenote text as feature description
-   - **work** → Run `/ce:work` with sidenote text as task description
-   - **todo** → Load `todo-create` skill with sidenote text as context
+4. On user selection, **load the appropriate skill** with the sidenote text as context using the `skill` tool:
+   - **brainstorm** → Load skill `ce:brainstorm` with sidenote text as feature description
+   - **plan** → Load skill `ce:plan` with sidenote text as feature description  
+   - **work** → Load skill `ce:work` with sidenote text as task description
+   - **todo** → Load skill `todo-create` with sidenote text as context
+   - **IMPORTANT**: These are SKILLS loaded via the `skill` tool, NOT agents loaded via the `Task` tool. Never use Task with agent types like `vendor/ce_brainstorm`.
 5. After the skill completes and creates the artifact, update the sidenote file: set `status: converted`, add `converted-to: <artifact-path>` in frontmatter
 6. Confirm: "Sidenote SN-NNNN converted to <artifact-path>."
 

@@ -4,7 +4,9 @@ Reference for converting sidenotes into actionable artifacts. The rm-sidenotes s
 
 ## CRITICAL
 
-- **ALWAYS trigger the appropriate skill** — do not manually create artifacts unless the skill is unavailable
+- **ALWAYS load the appropriate skill** — do not manually create artifacts unless the skill is unavailable
+- Use the `skill` tool to load: `ce:brainstorm`, `ce:plan`, `ce:work`, or `todo-create`
+- **NEVER use the Task tool** with agent types — these are SKILLS, not agents
 - The skill handles the full workflow: dialogue, document creation, review, handoff
 - Pass the sidenote text as context when invoking the skill
 - **Fallback:** If the target skill is unavailable, create the artifact manually following the patterns below and note in the sidenote that the skill was not available
@@ -43,7 +45,7 @@ dependencies: []
 
 ## Brainstorm Conversion
 
-**Trigger:** Run `/ce:brainstorm` with the sidenote text as the feature description
+**Trigger:** Load skill `ce:brainstorm` with the sidenote text as the feature description
 
 **Target:** `docs/brainstorms/`
 
@@ -55,14 +57,14 @@ dependencies: []
 
 **Process:**
 
-1. Invoke `ce:brainstorm` skill with sidenote text as input
+1. Load `ce:brainstorm` skill with sidenote text as input
 2. The skill handles: existing context scan, product pressure test, collaborative dialogue, requirements document creation, document review, handoff
 3. The brainstorm skill will create the requirements document in `docs/brainstorms/`
 4. After the brainstorm completes, update the sidenote with the path to the created document
 
 ## Plan Conversion
 
-**Trigger:** Run `/ce:plan` with the sidenote text as the feature description
+**Trigger:** Load skill `ce:plan` with the sidenote text as the feature description
 
 **Target:** `docs/plans/`
 
@@ -75,18 +77,18 @@ dependencies: []
 
 **Process:**
 
-1. Invoke `ce:plan` skill with sidenote text as input
+1. Load `ce:plan` skill with sidenote text as input
 2. The skill handles: requirements analysis, repo scanning, technical design, implementation units, risk assessment
 3. The plan skill will create the plan document in `docs/plans/`
 4. After the plan completes, update the sidenote with the path to the created document
 
 ## Work Conversion (Direct Execution)
 
-**Trigger:** Run `/ce:work` with the sidenote text as the task description
+**Trigger:** Load skill `ce:work` with the sidenote text as the task description
 
 **Process:**
 
-1. Invoke `ce:work` skill with sidenote text as input
+1. Load `ce:work` skill with sidenote text as input
 2. The skill handles: task execution, code changes, testing, validation
 3. After work completes, update the sidenote with a note about what was done
 
