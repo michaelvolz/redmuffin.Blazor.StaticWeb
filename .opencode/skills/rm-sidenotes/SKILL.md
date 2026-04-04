@@ -10,7 +10,8 @@ Capture tangential ideas mid-conversation without derailing the current task. St
 ## CRITICAL
 
 - When you see `sidenote:`, `sidenotes`, `/sidenote`, `/sidenotes` in user input, ALWAYS use this skill — do not handle inline
-- NEVER act on a sidenote immediately after capture — the current task continues uninterrupted
+- Capture writes directly in the main flow, then verification runs asynchronously in the background
+- Capture returns exactly one short line containing the created filename and nothing else
 - NEVER ask follow-up questions about a captured sidenote
 - NEVER auto-suggest sidenotes to the user — they explicitly request retrieval
 - Trigger detection:
@@ -24,36 +25,22 @@ Capture tangential ideas mid-conversation without derailing the current task. St
 
 ### 1. Capture (sidenote: / /sidenote)
 
-**FIRE-AND-FORGET: Spawn async subagent and continue immediately.**
-
-Do NOT process the sidenote content in the main agent. Spawn a background subagent and continue the conversation without waiting.
-
 1. Extract the sidenote text from the user input
-2. Spawn a subagent with `run_in_background: true`:
-   - Description: "sidenote capture"
-   - Prompt: Create the sidenote file using the provided text
-   - Instructions for subagent:
-     a. Glob `docs/sidenotes/SN-*.md` to find next available ID (max + 1, zero-pad to 4 digits)
-     b. Create `docs/sidenotes/` if missing
-     c. Use first 149 characters of text as title (preserve whitespace)
-     d. Write `docs/sidenotes/SN-NNNN.md` with frontmatter (id, date, title, status: pending) and body
-     e. Proofread: fix obvious typos (spelling, transposed letters) but NEVER change unclear areas — leave them as-is to preserve intent
-     f. Verify file created with content
-     g. If verification fails, retry write up to 2 times
-     h. Return "done" when verified
-3. Wait 1 second (non-blocking pause), then verify the file was created
-   - If file exists: continue silently
-   - If file missing: return to step 2 (spawn new subagent, up to 2 retries)
-4. IMMEDIATELY continue the previous task — NO waiting, NO confirmation, NO message of any kind
-
-The main agent never processes the sidenote content — it only spawns the subagent and continues.
+2. Create `docs/sidenotes/` if missing
+3. Glob `docs/sidenotes/SN-*.md`, find the highest numeric ID, and choose the next sequential ID (SN-0001, SN-0002, ...)
+4. Use the first 149 characters of the sidenote text as the frontmatter `title:` value
+5. Write `docs/sidenotes/SN-NNNN.md` with frontmatter (`id`, `date`, `title`, `status: pending`) and the full captured body
+6. Return exactly one line with the created filename (for example: `SN-NNNN.md`)
+7. Spawn a lightweight background verification pass that checks the file exists and records a failure marker if retries are exhausted
 
 ### 2. Retrieval (show sidenotes / list sidenotes)
 
 1. Glob `docs/sidenotes/SN-*.md`
 2. Filter files where frontmatter `status` is `pending`
-3. If none found, respond: "No pending sidenotes."
-4. Otherwise display as numbered list
+3. Read each file's frontmatter `title:` for display
+4. If a file is malformed, skip it with a clear `[malformed sidenote]` marker in the list
+5. If none found, respond: "No pending sidenotes."
+6. Otherwise display as numbered list
 
 ### 3. Verification (sidenotes verify)
 
@@ -109,7 +96,7 @@ Pending sidenotes:
 
 - Create `docs/sidenotes/` if missing
 - Use 4-digit sequential IDs (SN-0001, SN-0002, ...)
-- NEVER output any confirmation or acknowledgment after capture — file and continue silently
+- Capture returns exactly one short filename line and nothing else
 - Re-scan directory before each write to avoid ID collisions
 
 ### ASK FIRST
