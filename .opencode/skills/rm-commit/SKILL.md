@@ -14,6 +14,7 @@ Create clean, reviewable git commits from the working tree.
 - NEVER push to remote
 - ALWAYS check repo-specific rules in AGENTS.md/CLAUDE.md first
 - Treat "undo commit" as "undo the last commit and keep changes as unstaged edits"
+- NEVER put `#NNNNN` (issue references) in the commit body — the conventional-commits-parser treats them as footers, making the body appear empty to commitlint. Always use `Refs: #NNNNN` in the footer instead.
 
 ## FLOW
 
