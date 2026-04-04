@@ -126,10 +126,35 @@ Rules:
 operation succeeded, the lock is clean — skip the check. If this is a resumed session or
 a prior git command failed with a lock error, run the check first.
 
-Write the PowerShell here-string to a temp file, then commit from the file. This is faster
-than the pipe pattern (no stdin setup) and more atomic (message fully materialized before
-git starts). The here-string still provides the visual template and line-length discipline.
-Use `utf8NoBOM` encoding to avoid BOM corruption in commit messages.
+**CRITICAL: Here-string must start at the beginning of a line.** The `@"` delimiter must be
+on its own line — no other code can precede it on the same line. This is valid:
+
+```powershell
+$msg = [System.IO.Path]::GetTempFileName()
+try {
+@"
+type(scope): subject
+
+Body line one.
+"@ | Set-Content -Path $msg -Encoding utf8NoBOM
+    git commit -F $msg
+} finally { ... }
+```
+
+This is **INVALID** (causes parser error):
+
+```powershell
+$msg = [System.IO.Path]::GetTempFileName(); try { @"invalid"
+```
+
+If you cannot use multi-line here-strings reliably, use the **Write to temp file** method instead:
+
+```powershell
+$msg = [System.IO.Path]::GetTempFileName()
+"type(scope): subject`n`nBody line one." | Set-Content -Path $msg -Encoding utf8NoBOM
+git commit -F $msg
+Remove-Item $msg -Force
+```
 
 **Retry wrapper**: If the commit fails with a lock error, remove the stale lock and retry
 once. If it fails again, surface the error — do not loop.
