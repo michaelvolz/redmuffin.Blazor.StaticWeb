@@ -31,11 +31,11 @@ Capture tangential ideas mid-conversation without derailing the current task. St
 4. Build the frontmatter: `id`, `date`, `title` (first 100 chars of sidenote text, hard cap 110), `status: pending`.
 5. **Call the `write` tool** to create `docs/sidenotes/SN-NNNN.md` with frontmatter and the full captured body.
 6. Respond with exactly one line: `SN-NNNN.md created — "<title>"`
-7. Spawn a lightweight background verification pass that checks the file exists and records a failure marker if retries are exhausted.
+7. After responding, glob `docs/sidenotes/` to confirm the file exists. If missing, retry the write once.
 
 ### 2. Retrieval (show sidenotes / list sidenotes)
 
-1. Run: `$tempFile = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), 'rm-sidenotes-output.txt'); pwsh -NoProfile -File scripts/List-Sidenotes.ps1 > $tempFile 2>&1`
+1. Run: `$tempFile = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), 'rm-sidenotes-output.txt'); pwsh -NoProfile -File (git rev-parse --show-toplevel)/scripts/List-Sidenotes.ps1 6>&1 > $tempFile 2>&1`
 2. Read the output file silently — do not display it to the user.
 3. Parse the results and present a clean, formatted list to the user.
 4. If the output file contains title-length warnings (⚠ lines), note them when presenting the list.

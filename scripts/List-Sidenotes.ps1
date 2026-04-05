@@ -27,7 +27,9 @@ param(
     [string]$SidenotesPath
 )
 
-$ErrorActionPreference = 'SilentlyContinue'
+# Let genuine errors surface; use -ErrorAction SilentlyContinue only where
+# individual file read failures are expected and acceptable.
+$ErrorActionPreference = 'Continue'
 
 # Resolve sidenotes path: default to docs/sidenotes relative to repo root
 if (-not $SidenotesPath) {
@@ -59,7 +61,7 @@ foreach ($file in $files) {
     }
 
     # Extract frontmatter block (between --- markers)
-    $fmMatch = [regex]::Match($content, '^---\s*\r?\n(.*?)\r?\n---', [System.Text.RegularExpressions.RegexOptions]::Singleline)
+    $fmMatch = [regex]::Match($content, '^---\s*\r?\n(.*?)\r?\n---(?:\r?\n|$)', [System.Text.RegularExpressions.RegexOptions]::Singleline)
     if (-not $fmMatch.Success) {
         # No frontmatter — malformed
         $id = $file.BaseName
@@ -96,10 +98,10 @@ foreach ($file in $files) {
     $title = if ($titleMatch.Success) {
         $titleMatch.Groups[1].Value.Trim().Trim('"').Trim("'")
     } else {
-        # Fallback: use first 149 chars of body
+        # Fallback: use first 110 chars of body (matches the capture hard cap)
         $bodyStart = $fmMatch.Index + $fmMatch.Length
         $body = $content.Substring($bodyStart).Trim()
-        if ($body.Length -gt 149) { $body.Substring(0, 149) + '...' } else { $body }
+        if ($body.Length -gt 110) { $body.Substring(0, 110) + '...' } else { $body }
     }
 
     # Track long titles for soft warning
@@ -123,7 +125,7 @@ if ($pending.Count -eq 0) {
 }
 
 # Sort by ID (natural sort on SN-NNNN)
-$pending = $pending | Sort-Object { [int]($_.Id -replace 'SN-0*', '') }
+$pending = $pending | Sort-Object { [int]($_.Id -replace '^SN-', '') }
 
 # Output numbered list
 Write-Host "Pending sidenotes:"

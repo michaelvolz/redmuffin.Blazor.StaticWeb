@@ -24,7 +24,7 @@ Create clean, reviewable git commits from the working tree.
 3. Inspect the working tree and recent history.
 4. Decide whether changes belong in one commit or several.
 5. Stage only the intended files or hunks.
-6. Commit with Conventional Commits using a single-quoted multi-line string piped to `git commit -F -`.
+6. Commit with Conventional Commits using the Write tool to create a temp file, then `git commit -F <file>`.
 7. Verify the result with `git status`.
 
 ## COMMANDS
@@ -120,56 +120,78 @@ Rules:
 operation succeeded, the lock is clean — skip the check. If this is a resumed session or
 a prior git command failed with a lock error, run the check first.
 
-**Commit method**: Use a **single-quoted multi-line string** piped to `git commit -F -`.
+**Commit method**: Use the **Write tool** to create the commit message file, then `git commit -F`.
 
-```powershell
-'type(scope): imperative subject
+This approach has zero parser error risk — no shell quoting, no here-string delimiters,
+no escaping. The Write tool writes raw text exactly as you compose it.
+
+**Step 1 — Write the message file** (Write tool):
+
+```
+File: $env:TEMP\commit-msg.txt
+Content:
+type(scope): imperative subject
 
 Body paragraph one. Each line ≤ 80 chars.
 Wrap manually at ~80 to stay safe.
 
-Refs: #123' | git commit -F -
+Refs: #123
+```
+
+**Step 2 — Commit** (bash):
+
+```powershell
+git commit -F "$env:TEMP\commit-msg.txt"
+```
+
+**Step 3 — Cleanup** (bash):
+
+```powershell
+Remove-Item "$env:TEMP\commit-msg.txt" -Force -ErrorAction SilentlyContinue
 ```
 
 **Why this works:**
 
-- **No `@"` delimiter** — PowerShell here-strings require `@"` on its own line, which the AI agent consistently violates. Single-quoted strings have no such constraint.
-- **No heredoc** — AI coding tools mangle `<<'EOF'` heredoc syntax (confirmed bugs in Claude Code #4315, OpenCode #15810).
-- **Single quotes** — `$variables` and `` `backticks `` are treated as literal text. No expansion, no escaping needed.
-- **Multi-line native** — PowerShell natively supports line breaks inside single-quoted strings. What you type is what git receives.
-- **One call, one pipe** — nothing to squash, nothing to combine. The string is the only content in the bash call.
-- **No temp file** — no cleanup, no orphaned files, no try/finally blocks.
+- **No shell parsing** — The Write tool writes raw text. No quoting, no escaping, no delimiters.
+- **No parser errors** — Apostrophes, `$variables`, backticks, `@"` — all safe. No syntax to get wrong.
+- **Line length preserved** — The Write tool preserves exact line breaks. What you type is what git receives.
+- **Retry-safe** — The file persists after a failed commit. Retry is just `git commit -F "$env:TEMP\commit-msg.txt"` again. No message reconstruction needed.
+- **No temp file generation** — No `[System.IO.Path]::GetTempFileName()`, no try/finally. Fixed path, simple cleanup.
 
-**CRITICAL: Wrap every body line at ≤ 80 characters.** The single-quoted string preserves your exact line breaks, so what you type is what commitlint sees. Count characters if unsure — do NOT guess.
-
-**Retry wrapper**: If the commit fails with a lock error, remove the stale lock and retry once. If it fails again, surface the error — do not loop.
+**CRITICAL: Wrap every body line at ≤ 80 characters.** The file preserves your exact line breaks, so what you type is what commitlint sees. Count characters if unsure — do NOT guess.
 
 **Template:**
 
-```powershell
-'type(scope): imperative subject
+```
+File: $env:TEMP\commit-msg.txt
+Content:
+type(scope): imperative subject
 
 First body paragraph. Each line must be ≤ 80 characters.
 Wrap manually at ~80 chars to stay safe.
 
 Second body paragraph if needed. Same line length rule.
 
-Refs: #123' | git commit -F -
+Refs: #123
 ```
 
 **Basic commit (subject + body):**
 
-```powershell
-'fix(frontend): prevent duplicate form submits
+```
+File: $env:TEMP\commit-msg.txt
+Content:
+fix(frontend): prevent duplicate form submits
 
 Disable submit button immediately so rapid clicks
-cannot queue duplicate requests.' | git commit -F -
+cannot queue duplicate requests.
 ```
 
 **Multi-paragraph body with footer:**
 
-```powershell
-'refactor(core): extract validation logic
+```
+File: $env:TEMP\commit-msg.txt
+Content:
+refactor(core): extract validation logic
 
 Move input validation into a dedicated service so
 controllers stay thin.
@@ -177,25 +199,27 @@ controllers stay thin.
 This also makes it easier to reuse validation across
 API and web endpoints.
 
-Refs: #123' | git commit -F -
+Refs: #123
 ```
 
-**Message with `$` or backticks (always safe in single quotes):**
+**Message with `$` or backticks (always safe — no shell parsing):**
 
-```powershell
-'fix(api): handle null $userId gracefully
+```
+File: $env:TEMP\commit-msg.txt
+Content:
+fix(api): handle null $userId gracefully
 
 When $userId is null, return 401 instead of 500.
 The backtick ` character is also safe here.
 
-Refs: #456' | git commit -F -
+Refs: #456
 ```
 
 **Line length enforcement:**
 
 - Wrap every body line at **≤ 80 characters** (safe margin under the 100-char limit)
 - Count characters if unsure — do NOT guess
-- The single-quoted string preserves your exact line breaks, so what you type is what commitlint sees
+- The file preserves your exact line breaks, so what you type is what commitlint sees
 - **Good:** Each line is a short, readable sentence fragment
 - **Bad:** One long run-on line that exceeds 100 characters
 
@@ -205,21 +229,27 @@ Run `git status` post-commit. Report hash and subject.
 
 ## PATTERNS
 
-### Simple Commit (Single-Quoted String)
+### Write Tool + `git commit -F`
 
 **Basic (subject + body):**
 
-```powershell
-'type(scope): imperative subject
+```
+File: $env:TEMP\commit-msg.txt
+Content:
+type(scope): imperative subject
 
 Body explaining why the change exists.
-Keep each line under 80 characters.' | git commit -F -
+Keep each line under 80 characters.
 ```
+
+Then: `git commit -F "$env:TEMP\commit-msg.txt"`
 
 **Multi-paragraph with footer:**
 
-```powershell
-'type(scope): subject
+```
+File: $env:TEMP\commit-msg.txt
+Content:
+type(scope): subject
 
 First paragraph explaining the change.
 Wrap lines at ~80 characters.
@@ -227,17 +257,23 @@ Wrap lines at ~80 characters.
 Second paragraph with additional context.
 Same line length discipline.
 
-Refs: #123' | git commit -F -
+Refs: #123
 ```
 
-**With `$` or backticks (safe in single quotes):**
+Then: `git commit -F "$env:TEMP\commit-msg.txt"`
 
-```powershell
-'fix(api): handle null $userId gracefully
+**With `$` or backticks (safe — no shell parsing):**
+
+```
+File: $env:TEMP\commit-msg.txt
+Content:
+fix(api): handle null $userId gracefully
 
 When $userId is null, return 401 instead of 500.
-The backtick ` character is also safe here.' | git commit -F -
+The backtick ` character is also safe here.
 ```
+
+Then: `git commit -F "$env:TEMP\commit-msg.txt"`
 
 ### Partial Staging
 
