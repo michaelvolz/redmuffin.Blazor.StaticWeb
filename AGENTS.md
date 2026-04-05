@@ -18,6 +18,7 @@ For every coding, architecture, refactoring, or review task:
 - NEVER answer without reading the actual code first
 - Before using `apply_patch` from OpenCode, read the latest version of the target file directly first; otherwise you will most likely hit a patch error. This is usually the fastest path.
 - For any commit, always invoke the `rm-commit` skill first. Do not improvise a manual commit workflow.
+- When creating commit-message temp files, include a timestamp in the filename so retries stay unique and resilient.
 - Keep commit bodies wrapped to about 80 characters per line; longer body lines are likely to trigger commitlint failures.
 - Stage and commit only files that belong together for one clear reason. Do not bundle unrelated changes or default to "all files" staging.
 - ALWAYS `dotnet build --verbosity quiet` after C# changes
