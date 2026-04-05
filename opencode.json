@@ -84,6 +84,10 @@
   },
   "agent": {
     "rm-build": { "disable": true },
-    "rm-plan": { "disable": true }
-  }
+    "rm-plan": { "disable": true },
+    "uncle-bob-csharp-reviewer": { "model": "github-copilot/grok-code-fast-1" },
+    "dotnet-csharp-reviewer": { "model": "github-copilot/grok-code-fast-1" },
+    "blazor-reviewer": { "model": "github-copilot/grok-code-fast-1" },
+    "html-css-blazor-reviewer": { "model": "github-copilot/grok-code-fast-1" },
+    "powershell-reviewer": { "model": "github-copilot/grok-code-fast-1" }  }
 }

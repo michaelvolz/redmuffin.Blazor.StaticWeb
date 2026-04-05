@@ -20,13 +20,13 @@ Reviews code changes using dynamically selected reviewer personas. Spawns parall
 
 Parse `$ARGUMENTS` for the following optional tokens. Strip each recognized token before interpreting the remainder as the PR number, GitHub URL, or branch name.
 
-| Token | Example | Effect |
-|-------|---------|--------|
-| `mode:autofix` | `mode:autofix` | Select autofix mode (see Mode Detection below) |
-| `mode:report-only` | `mode:report-only` | Select report-only mode |
-| `mode:headless` | `mode:headless` | Select headless mode for programmatic callers (see Mode Detection below) |
-| `base:<sha-or-ref>` | `base:abc1234` or `base:origin/main` | Skip scope detection — use this as the diff base directly |
-| `plan:<path>` | `plan:docs/plans/2026-03-25-001-feat-foo-plan.md` | Load this plan for requirements verification |
+| Token               | Example                                           | Effect                                                                   |
+| ------------------- | ------------------------------------------------- | ------------------------------------------------------------------------ |
+| `mode:autofix`      | `mode:autofix`                                    | Select autofix mode (see Mode Detection below)                           |
+| `mode:report-only`  | `mode:report-only`                                | Select report-only mode                                                  |
+| `mode:headless`     | `mode:headless`                                   | Select headless mode for programmatic callers (see Mode Detection below) |
+| `base:<sha-or-ref>` | `base:abc1234` or `base:origin/main`              | Skip scope detection — use this as the diff base directly                |
+| `plan:<path>`       | `plan:docs/plans/2026-03-25-001-feat-foo-plan.md` | Load this plan for requirements verification                             |
 
 All tokens are optional. Each one present means one less thing to infer. When absent, fall back to existing behavior for that stage.
 
@@ -34,12 +34,12 @@ All tokens are optional. Each one present means one less thing to infer. When ab
 
 ## Mode Detection
 
-| Mode | When | Behavior |
-|------|------|----------|
-| **Interactive** (default) | No mode token present | Review, apply safe_auto fixes automatically, present findings, ask for policy decisions on gated/manual findings, and optionally continue into fix/push/PR next steps |
-| **Autofix** | `mode:autofix` in arguments | No user interaction. Review, apply only policy-allowed `safe_auto` fixes, re-review in bounded rounds, write a run artifact, and emit residual downstream work when needed |
-| **Report-only** | `mode:report-only` in arguments | Strictly read-only. Review and report only, then stop with no edits, artifacts, todos, commits, pushes, or PR actions |
-| **Headless** | `mode:headless` in arguments | Programmatic mode for skill-to-skill invocation. Apply `safe_auto` fixes silently (single pass), return all other findings as structured text output, write run artifacts, skip todos, and return "Review complete" signal. No interactive prompts. |
+| Mode                      | When                            | Behavior                                                                                                                                                                                                                                            |
+| ------------------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Interactive** (default) | No mode token present           | Review, apply safe_auto fixes automatically, present findings, ask for policy decisions on gated/manual findings, and optionally continue into fix/push/PR next steps                                                                               |
+| **Autofix**               | `mode:autofix` in arguments     | No user interaction. Review, apply only policy-allowed `safe_auto` fixes, re-review in bounded rounds, write a run artifact, and emit residual downstream work when needed                                                                          |
+| **Report-only**           | `mode:report-only` in arguments | Strictly read-only. Review and report only, then stop with no edits, artifacts, todos, commits, pushes, or PR actions                                                                                                                               |
+| **Headless**              | `mode:headless` in arguments    | Programmatic mode for skill-to-skill invocation. Apply `safe_auto` fixes silently (single pass), return all other findings as structured text output, write run artifacts, skip todos, and return "Review complete" signal. No interactive prompts. |
 
 ### Autofix mode rules
 
@@ -74,23 +74,23 @@ All tokens are optional. Each one present means one less thing to infer. When ab
 
 All reviewers use P0-P3:
 
-| Level | Meaning | Action |
-|-------|---------|--------|
-| **P0** | Critical breakage, exploitable vulnerability, data loss/corruption | Must fix before merge |
-| **P1** | High-impact defect likely hit in normal usage, breaking contract | Should fix |
+| Level  | Meaning                                                                                    | Action                 |
+| ------ | ------------------------------------------------------------------------------------------ | ---------------------- |
+| **P0** | Critical breakage, exploitable vulnerability, data loss/corruption                         | Must fix before merge  |
+| **P1** | High-impact defect likely hit in normal usage, breaking contract                           | Should fix             |
 | **P2** | Moderate issue with meaningful downside (edge case, perf regression, maintainability trap) | Fix if straightforward |
-| **P3** | Low-impact, narrow scope, minor improvement | User's discretion |
+| **P3** | Low-impact, narrow scope, minor improvement                                                | User's discretion      |
 
 ## Action Routing
 
 Severity answers **urgency**. Routing answers **who acts next** and **whether this skill may mutate the checkout**.
 
-| `autofix_class` | Default owner | Meaning |
-|-----------------|---------------|---------|
-| `safe_auto` | `review-fixer` | Local, deterministic fix suitable for the in-skill fixer when the current mode allows mutation |
-| `gated_auto` | `downstream-resolver` or `human` | Concrete fix exists, but it changes behavior, contracts, permissions, or another sensitive boundary that should not be auto-applied by default |
-| `manual` | `downstream-resolver` or `human` | Actionable work that should be handed off rather than fixed in-skill |
-| `advisory` | `human` or `release` | Report-only output such as learnings, rollout notes, or residual risk |
+| `autofix_class` | Default owner                    | Meaning                                                                                                                                        |
+| --------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `safe_auto`     | `review-fixer`                   | Local, deterministic fix suitable for the in-skill fixer when the current mode allows mutation                                                 |
+| `gated_auto`    | `downstream-resolver` or `human` | Concrete fix exists, but it changes behavior, contracts, permissions, or another sensitive boundary that should not be auto-applied by default |
+| `manual`        | `downstream-resolver` or `human` | Actionable work that should be handed off rather than fixed in-skill                                                                           |
+| `advisory`      | `human` or `release`             | Report-only output such as learnings, rollout notes, or residual risk                                                                          |
 
 Routing rules:
 
@@ -101,47 +101,52 @@ Routing rules:
 
 ## Reviewers
 
-17 reviewer personas in layered conditionals, plus CE-specific agents. See the persona catalog included below for the full catalog.
+23 reviewer personas in layered conditionals, plus CE-specific agents. See the persona catalog included below for the full catalog.
 
 **Always-on (every review):**
 
-| Agent | Focus |
-|-------|-------|
-| `correctness-reviewer` | Logic errors, edge cases, state bugs, error propagation |
-| `testing-reviewer` | Coverage gaps, weak assertions, brittle tests |
-| `maintainability-reviewer` | Coupling, complexity, naming, dead code, abstraction debt |
+| Agent                        | Focus                                                                              |
+| ---------------------------- | ---------------------------------------------------------------------------------- |
+| `correctness-reviewer`       | Logic errors, edge cases, state bugs, error propagation                            |
+| `testing-reviewer`           | Coverage gaps, weak assertions, brittle tests                                      |
+| `maintainability-reviewer`   | Coupling, complexity, naming, dead code, abstraction debt                          |
 | `project-standards-reviewer` | CLAUDE.md and AGENTS.md compliance -- frontmatter, references, naming, portability |
-| `agent-native-reviewer` | Verify new features are agent-accessible |
-| `learnings-researcher` | Search docs/solutions/ for past issues related to this PR |
+| `agent-native-reviewer`      | Verify new features are agent-accessible                                           |
+| `learnings-researcher`       | Search docs/solutions/ for past issues related to this PR                          |
 
 **Cross-cutting conditional (selected per diff):**
 
-| Agent | Select when diff touches... |
-|-------|---------------------------|
-| `security-reviewer` | Auth, public endpoints, user input, permissions |
-| `performance-reviewer` | DB queries, data transforms, caching, async |
-| `api-contract-reviewer` | Routes, serializers, type signatures, versioning |
-| `data-migrations-reviewer` | Migrations, schema changes, backfills |
-| `reliability-reviewer` | Error handling, retries, timeouts, background jobs |
-| `adversarial-reviewer` | Diff >=50 changed non-test/non-generated/non-lockfile lines, or auth, payments, data mutations, external APIs |
-| `cli-readiness-reviewer` | CLI command definitions, argument parsing, CLI framework usage, command handler implementations |
-| `previous-comments-reviewer` | Reviewing a PR that has existing review comments or threads |
+| Agent                        | Select when diff touches...                                                                                   |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `security-reviewer`          | Auth, public endpoints, user input, permissions                                                               |
+| `performance-reviewer`       | DB queries, data transforms, caching, async                                                                   |
+| `api-contract-reviewer`      | Routes, serializers, type signatures, versioning                                                              |
+| `data-migrations-reviewer`   | Migrations, schema changes, backfills                                                                         |
+| `reliability-reviewer`       | Error handling, retries, timeouts, background jobs                                                            |
+| `adversarial-reviewer`       | Diff >=50 changed non-test/non-generated/non-lockfile lines, or auth, payments, data mutations, external APIs |
+| `cli-readiness-reviewer`     | CLI command definitions, argument parsing, CLI framework usage, command handler implementations               |
+| `previous-comments-reviewer` | Reviewing a PR that has existing review comments or threads                                                   |
 
 **Stack-specific conditional (selected per diff):**
 
-| Agent | Select when diff touches... |
-|-------|---------------------------|
-| `dhh-rails-reviewer` | Rails architecture, service objects, session/auth choices, or Hotwire-vs-SPA boundaries |
-| `kieran-rails-reviewer` | Rails application code where conventions, naming, and maintainability are in play |
-| `kieran-python-reviewer` | Python modules, endpoints, scripts, or services |
-| `kieran-typescript-reviewer` | TypeScript components, services, hooks, utilities, or shared types |
-| `julik-frontend-races-reviewer` | Stimulus/Turbo controllers, DOM events, timers, animations, or async UI flows |
+| Agent                           | Select when diff touches...                                                                                                     |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `dhh-rails-reviewer`            | Rails architecture, service objects, session/auth choices, or Hotwire-vs-SPA boundaries                                         |
+| `kieran-rails-reviewer`         | Rails application code where conventions, naming, and maintainability are in play                                               |
+| `kieran-python-reviewer`        | Python modules, endpoints, scripts, or services                                                                                 |
+| `kieran-typescript-reviewer`    | TypeScript components, services, hooks, utilities, or shared types                                                              |
+| `julik-frontend-races-reviewer` | Stimulus/Turbo controllers, DOM events, timers, animations, or async UI flows                                                   |
+| `rm-dotnet-csharp-reviewer`     | C# code, domain logic, public APIs, perf-sensitive code, security-sensitive behavior, or maintainability-critical refactors     |
+| `rm-powershell-reviewer`        | PowerShell scripts, modules, CI automation, package tooling, or DevOps helpers                                                  |
+| `rm-blazor-reviewer`            | Blazor components, render modes, component state, lifecycle behavior, authz in Razor components, or rendering performance       |
+| `rm-html-css-blazor-reviewer`   | Semantic HTML, CSS, responsive layout, styling, or Blazor markup                                                                |
+| `rm-uncle-bob-csharp-reviewer`  | C# code, architecture boundaries, dependency direction, testability, craftsmanship, or Clean Code / Clean Architecture concerns |
 
 **CE conditional (migration-specific):**
 
-| Agent | Select when diff includes migration files |
-|-------|------------------------------------------|
-| `schema-drift-detector` | Cross-references schema.rb against included migrations |
+| Agent                           | Select when diff includes migration files                   |
+| ------------------------------- | ----------------------------------------------------------- |
+| `schema-drift-detector`         | Cross-references schema.rb against included migrations      |
 | `deployment-verification-agent` | Produces deployment checklist with SQL verification queries |
 
 ## Review Scope
@@ -312,7 +317,7 @@ Intent: Simplify tax calculation by replacing the multi-tier rate lookup
 with a flat-rate computation. Must not regress edge cases in tax-exempt handling.
 ```
 
-Pass this to every reviewer in their spawn prompt. Intent shapes *how hard each reviewer looks*, not which reviewers are selected.
+Pass this to every reviewer in their spawn prompt. Intent shapes _how hard each reviewer looks_, not which reviewers are selected.
 
 **When intent is ambiguous:**
 
@@ -328,6 +333,7 @@ Locate the plan document so Stage 6 can verify requirements completeness. Check 
 3. **Auto-discover.** Extract 2-3 keywords from the branch name (e.g., `feat/onboarding-skill` -> `onboarding`, `skill`). Glob `docs/plans/*` and filter filenames containing those keywords. If exactly one match, use it. If multiple matches or the match looks ambiguous (e.g., generic keywords like `review`, `fix`, `update` that could hit many plans), **skip auto-discovery** — a wrong plan is worse than no plan. If zero matches, skip.
 
 **Confidence tagging:** Record how the plan was found:
+
 - `plan:` argument -> `plan_source: explicit` (high confidence)
 - Single unambiguous PR body match -> `plan_source: explicit` (high confidence)
 - Multiple/ambiguous PR body matches -> `plan_source: inferred` (lower confidence)
@@ -344,6 +350,7 @@ Read the diff and file list from Stage 1. The 4 always-on personas and 2 CE alwa
 Stack-specific personas are additive. A Rails UI change may warrant `kieran-rails` plus `julik-frontend-races`; a TypeScript API diff may warrant `kieran-typescript` plus `api-contract` and `reliability`.
 
 For CE conditional agents, check if the diff includes files matching `db/migrate/*.rb`, `db/schema.rb`, or data backfill scripts.
+For rm stack-specific agents, check for the Blazor, C#, or PowerShell surfaces they own, and keep `rm-blazor-reviewer` distinct from `rm-html-css-blazor-reviewer` when the diff mixes behavior and markup. `rm-uncle-bob-csharp-reviewer` is an additional C# craftsmanship reviewer that should be selected for architecture-heavy, testability-heavy, or dependency-direction-sensitive diffs.
 
 Announce the team before spawning:
 
@@ -358,6 +365,11 @@ Review team:
 - security -- new endpoint in routes.rb accepts user-provided redirect URL
 - kieran-rails -- controller and Turbo flow changed in app/controllers and app/views
 - dhh-rails -- diff adds service objects around ordinary Rails CRUD
+- rm-dotnet-csharp -- domain logic and public contracts changed in .cs files
+- rm-powershell -- script or tooling automation changed in .ps1 files
+- rm-blazor -- component lifecycle/rendering changed in Razor component files
+- rm-html-css-blazor -- semantic markup, accessibility, or styling changed in Razor markup
+- rm-uncle-bob-csharp -- C# architecture, dependency direction, testability, or craftsmanship-heavy refactors
 - data-migrations -- adds migration 20260303_add_index_to_orders
 - schema-drift-detector -- migration files present
 ```
@@ -424,15 +436,15 @@ Convert multiple reviewer JSON payloads into one deduplicated, confidence-gated 
 3. **Deduplicate.** Compute fingerprint: `normalize(file) + line_bucket(line, +/-3) + normalize(title)`. When fingerprints match, merge: keep highest severity, keep highest confidence with strongest evidence, union evidence, note which reviewers flagged it.
 4. **Cross-reviewer agreement.** When 2+ independent reviewers flag the same issue (same fingerprint), boost the merged confidence by 0.10 (capped at 1.0). Cross-reviewer agreement is strong signal -- independent reviewers converging on the same issue is more reliable than any single reviewer's confidence. Note the agreement in the Reviewer column of the output (e.g., "security, correctness").
 5. **Separate pre-existing.** Pull out findings with `pre_existing: true` into a separate list.
-5. **Resolve disagreements.** When reviewers flag the same code region but disagree on severity, autofix_class, or owner, record the disagreement in the finding's evidence (e.g., "security rated P0, correctness rated P1 -- keeping P0"). This transparency helps the user understand why a finding was routed the way it was.
-6. **Normalize routing.** For each merged finding, set the final `autofix_class`, `owner`, and `requires_verification`. If reviewers disagree, keep the most conservative route. Synthesis may narrow a finding from `safe_auto` to `gated_auto` or `manual`, but must not widen it without new evidence.
-7. **Partition the work.** Build three sets:
+6. **Resolve disagreements.** When reviewers flag the same code region but disagree on severity, autofix_class, or owner, record the disagreement in the finding's evidence (e.g., "security rated P0, correctness rated P1 -- keeping P0"). This transparency helps the user understand why a finding was routed the way it was.
+7. **Normalize routing.** For each merged finding, set the final `autofix_class`, `owner`, and `requires_verification`. If reviewers disagree, keep the most conservative route. Synthesis may narrow a finding from `safe_auto` to `gated_auto` or `manual`, but must not widen it without new evidence.
+8. **Partition the work.** Build three sets:
    - in-skill fixer queue: only `safe_auto -> review-fixer`
    - residual actionable queue: unresolved `gated_auto` or `manual` findings whose owner is `downstream-resolver`
    - report-only queue: `advisory` findings plus anything owned by `human` or `release`
-8. **Sort.** Order by severity (P0 first) -> confidence (descending) -> file path -> line number.
-9. **Collect coverage data.** Union residual_risks and testing_gaps across reviewers.
-10. **Preserve CE agent artifacts.** Keep the learnings, agent-native, schema-drift, and deployment-verification outputs alongside the merged finding set. Do not drop unstructured agent output just because it does not match the persona JSON schema.
+9. **Sort.** Order by severity (P0 first) -> confidence (descending) -> file path -> line number.
+10. **Collect coverage data.** Union residual_risks and testing_gaps across reviewers.
+11. **Preserve CE agent artifacts.** Keep the learnings, agent-native, schema-drift, and deployment-verification outputs alongside the merged finding set. Do not drop unstructured agent output just because it does not match the persona JSON schema.
 
 ### Stage 6: Synthesize and present
 
@@ -443,7 +455,7 @@ Assemble the final report using **pipe-delimited markdown tables for findings** 
 3. **Requirements Completeness.** Include only when a plan was found in Stage 2b. For each requirement (R1, R2, etc.) and implementation unit in the plan, report whether corresponding work appears in the diff. Use a simple checklist: met / not addressed / partially addressed. Routing depends on `plan_source`:
    - **`explicit`** (caller-provided or PR body): Flag unaddressed requirements as P1 findings with `autofix_class: manual`, `owner: downstream-resolver`. These enter the residual actionable queue and can become todos.
    - **`inferred`** (auto-discovered): Flag unaddressed requirements as P3 findings with `autofix_class: advisory`, `owner: human`. These stay in the report only — no todos, no autonomous follow-up. An inferred plan match is a hint, not a contract.
-   Omit this section entirely when no plan was found — do not mention the absence of a plan.
+     Omit this section entirely when no plan was found — do not mention the absence of a plan.
 4. **Applied Fixes.** Include only if a fix phase ran in this invocation.
 5. **Residual Actionable Work.** Include when unresolved actionable findings were handed off or should be handed off.
 6. **Pre-existing.** Separate section, does not count toward verdict.
@@ -523,6 +535,7 @@ Review complete
 ```
 
 **Formatting rules:**
+
 - The `[needs-verification]` marker appears only on findings where `requires_verification: true`.
 - The `Artifact:` line gives callers the path to the full run artifact for machine-readable access to the complete findings schema. The text envelope is the primary handoff; the artifact is for debugging and full-fidelity access.
 - Findings with `owner: release` appear in the Advisory section (they are operational/rollout items, not code fixes).
@@ -571,6 +584,7 @@ After presenting findings and verdict (Stage 6), route the next steps by mode. R
 - Ask a policy question **using the platform's blocking question tool** (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini) only when `gated_auto` or `manual` findings remain after safe fixes. Do not replace with a conversational open-ended question. Adapt the options to match what actually remains:
 
   **When `gated_auto` findings are present** (with or without `manual`):
+
   ```
   Safe fixes have been applied. What should I do with the remaining findings?
   1. Review and approve specific gated fixes (Recommended)
@@ -579,6 +593,7 @@ After presenting findings and verdict (Stage 6), route the next steps by mode. R
   ```
 
   **When only `manual` findings remain** (no `gated_auto`):
+
   ```
   Safe fixes have been applied. The remaining findings need manual resolution. What should I do?
   1. Leave as residual work (Recommended)
@@ -586,6 +601,7 @@ After presenting findings and verdict (Stage 6), route the next steps by mode. R
   ```
 
   If no blocking question tool is available, present the applicable numbered options as text and wait for the user's selection before proceeding.
+
 - If no `gated_auto` or `manual` findings remain after safe fixes, skip the policy question entirely — report what was fixed and proceed to next steps.
 - Only include `gated_auto` findings in the fixer queue after the user explicitly approves the specific items. Do not widen the queue based on severity alone.
 
