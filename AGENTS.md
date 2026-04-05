@@ -27,9 +27,6 @@ For every coding, architecture, refactoring, or review task:
 - SKILL COMMANDS tables are intentionally duplicated across skills. Each skill is a
   self-contained entry point — agents load one skill at a time and need the quick-ref
   there. Never remove or consolidate COMMANDS tables as "duplication".
-- SKILL COMMANDS tables are intentionally duplicated across skills. Each skill is a
-  self-contained entry point — agents load one skill at a time and need the quick-ref
-  there. Never remove or consolidate COMMANDS tables as "duplication".
 
 ## SIDENOTES
 
