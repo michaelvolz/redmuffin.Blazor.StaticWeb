@@ -10,9 +10,9 @@
       },
       "Meziantou.Analyzer": {
         "type": "Direct",
-        "requested": "[3.0.39, )",
-        "resolved": "3.0.39",
-        "contentHash": "El6VDCzPsTnrVL2uVbRSmaNjGIEi4jFwpjwJChcS91G/OSr+vzVM2y/H6MxChwfZ5FH1zRIhB5b0o2uRscwfOA=="
+        "requested": "[3.0.44, )",
+        "resolved": "3.0.44",
+        "contentHash": "lUecKj+n4OtXMKzV5lPqIBgE22+9qTdAovT9nctyVSYfAr82UKuPPSS1XooSftwES4Cj8LULpEp7mamDlburYA=="
       },
       "Microsoft.AspNetCore.Components.Analyzers": {
         "type": "Direct",
@@ -101,7 +101,7 @@
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "CentralTransitive",
-        "requested": "[9.0.14, )",
+        "requested": "[10.0.3, )",
         "resolved": "9.0.14",
         "contentHash": "LezJ0enh6upO5EnPwACOZc/DdT1A8lvX6HPl/0rbe0eGt9rTDDPfx+Ny9OYZqf4g25Y3hOfWBQtRfMzueINNVQ=="
       }
