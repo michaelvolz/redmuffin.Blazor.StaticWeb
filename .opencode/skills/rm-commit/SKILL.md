@@ -24,19 +24,19 @@ Create clean, reviewable git commits from the working tree.
 3. Inspect the working tree and recent history.
 4. Decide whether changes belong in one commit or several.
 5. Stage only the intended files or hunks.
-6. Commit with Conventional Commits using PowerShell here-string written to a temp file, then `git commit -F $file`.
+6. Commit with Conventional Commits using a single-quoted multi-line string piped to `git commit -F -`.
 7. Verify the result with `git status`.
 
 ## COMMANDS
 
-| Command                                            | Purpose                          | When                   |
-| -------------------------------------------------- | -------------------------------- | ---------------------- |
-| `git status`                                       | Show working tree status         | Always first           |
-| `git diff HEAD`                                    | Show all changes                 | After status           |
-| `git branch --show-current`                        | Get current branch               | After diff             |
-| `git log --oneline -10`                            | Show recent history              | After branch           |
-| `git add -p`                                       | Stage partial hunks              | File has mixed changes |
-| See WORKFLOWS → Commit (here-string via temp file) | Commit with Conventional Commits | After staging          |
+| Command                     | Purpose                          | When                   |
+| --------------------------- | -------------------------------- | ---------------------- |
+| `git status`                | Show working tree status         | Always first           |
+| `git diff HEAD`             | Show all changes                 | After status           |
+| `git branch --show-current` | Get current branch               | After diff             |
+| `git log --oneline -10`     | Show recent history              | After branch           |
+| `git add -p`                | Stage partial hunks              | File has mixed changes |
+| See WORKFLOWS → Commit      | Commit with Conventional Commits | After staging          |
 
 ## STALE LOCK RECOVERY
 
@@ -44,12 +44,6 @@ Git creates `.git/index.lock` at the start of any write operation and removes it
 If the agent session is interrupted (Esc, timeout, process kill) or the bash tool's shell
 session is killed by an API rate limit retry while git holds the lock, the file persists
 and blocks all subsequent git operations.
-
-**Root cause**: Session interruption during an active git operation. The pipe pattern
-(`@"..."@ | git commit -F -`) is NOT the cause — any git write operation killed mid-flight
-leaves the same orphaned lock. The temp file approach (see WORKFLOWS → Commit) reduces the
-vulnerable window by eliminating pipe setup and stdin streaming, but the commit-msg hook
-(commitlint) still holds the lock for ~1-2s. A retry wrapper provides a second layer of defense.
 
 **Recovery**: Before any git write operation, check for a stale lock and remove it if safe.
 
@@ -126,145 +120,84 @@ Rules:
 operation succeeded, the lock is clean — skip the check. If this is a resumed session or
 a prior git command failed with a lock error, run the check first.
 
-**CRITICAL: Here-string must start at the beginning of a line.** The `@"` delimiter must be
-on its own line — no other code can precede it on the same line. This is valid:
+**Commit method**: Use a **single-quoted multi-line string** piped to `git commit -F -`.
 
 ```powershell
-$msg = [System.IO.Path]::GetTempFileName()
-try {
-@"
-type(scope): subject
+'type(scope): imperative subject
 
-Body line one.
-"@ | Set-Content -Path $msg -Encoding utf8NoBOM
-    git commit -F $msg
-} finally { ... }
+Body paragraph one. Each line ≤ 80 chars.
+Wrap manually at ~80 to stay safe.
+
+Refs: #123' | git commit -F -
 ```
 
-This is **INVALID** (causes parser error):
+**Why this works:**
 
-```powershell
-$msg = [System.IO.Path]::GetTempFileName(); try { @"invalid"
-```
+- **No `@"` delimiter** — PowerShell here-strings require `@"` on its own line, which the AI agent consistently violates. Single-quoted strings have no such constraint.
+- **No heredoc** — AI coding tools mangle `<<'EOF'` heredoc syntax (confirmed bugs in Claude Code #4315, OpenCode #15810).
+- **Single quotes** — `$variables` and `` `backticks `` are treated as literal text. No expansion, no escaping needed.
+- **Multi-line native** — PowerShell natively supports line breaks inside single-quoted strings. What you type is what git receives.
+- **One call, one pipe** — nothing to squash, nothing to combine. The string is the only content in the bash call.
+- **No temp file** — no cleanup, no orphaned files, no try/finally blocks.
 
-If you cannot use multi-line here-strings reliably, use the **Write to temp file** method instead:
+**CRITICAL: Wrap every body line at ≤ 80 characters.** The single-quoted string preserves your exact line breaks, so what you type is what commitlint sees. Count characters if unsure — do NOT guess.
 
-```powershell
-$msg = [System.IO.Path]::GetTempFileName()
-"type(scope): subject`n`nBody line one." | Set-Content -Path $msg -Encoding utf8NoBOM
-git commit -F $msg
-Remove-Item $msg -Force
-```
-
-**Retry wrapper**: If the commit fails with a lock error, remove the stale lock and retry
-once. If it fails again, surface the error — do not loop.
+**Retry wrapper**: If the commit fails with a lock error, remove the stale lock and retry once. If it fails again, surface the error — do not loop.
 
 **Template:**
 
 ```powershell
-$msg = [System.IO.Path]::GetTempFileName()
-try {
-@"
-type(scope): imperative subject
+'type(scope): imperative subject
 
-First body paragraph. Each line must be ≤ 100 characters.
+First body paragraph. Each line must be ≤ 80 characters.
 Wrap manually at ~80 chars to stay safe.
 
 Second body paragraph if needed. Same line length rule.
 
-Refs: #123
-"@ | Set-Content -Path $msg -Encoding utf8NoBOM
-    git commit -F $msg
-    if ($LASTEXITCODE -ne 0) {
-        # Retry: stale lock may have been created during commit
-        $lockFile = ".git/index.lock"
-        if (Test-Path $lockFile) {
-            $age = (Get-Date) - (Get-Item $lockFile).LastWriteTime
-            if ($age -gt [TimeSpan]::FromMinutes(1)) {
-                Remove-Item $lockFile -Force
-                git commit -F $msg
-            }
-        }
-    }
-} finally {
-    if (Test-Path $msg) { Remove-Item $msg -Force }
-}
+Refs: #123' | git commit -F -
 ```
 
 **Basic commit (subject + body):**
 
 ```powershell
-$msg = [System.IO.Path]::GetTempFileName()
-try {
-@"
-fix(frontend): prevent duplicate form submits
+'fix(frontend): prevent duplicate form submits
 
-Disable submit immediately so rapid clicks cannot queue
-duplicate requests.
-"@ | Set-Content -Path $msg -Encoding utf8NoBOM
-    git commit -F $msg
-    if ($LASTEXITCODE -ne 0) {
-        $lockFile = ".git/index.lock"
-        if (Test-Path $lockFile) {
-            $age = (Get-Date) - (Get-Item $lockFile).LastWriteTime
-            if ($age -gt [TimeSpan]::FromMinutes(1)) {
-                Remove-Item $lockFile -Force
-                git commit -F $msg
-            }
-        }
-    }
-} finally {
-    if (Test-Path $msg) { Remove-Item $msg -Force }
-}
+Disable submit button immediately so rapid clicks
+cannot queue duplicate requests.' | git commit -F -
 ```
 
 **Multi-paragraph body with footer:**
 
 ```powershell
-$msg = [System.IO.Path]::GetTempFileName()
-try {
-@"
-refactor(core): extract validation logic
+'refactor(core): extract validation logic
 
-Move input validation into a dedicated service so controllers
-stay thin.
+Move input validation into a dedicated service so
+controllers stay thin.
 
-This also makes it easier to reuse validation across API and
-web endpoints.
+This also makes it easier to reuse validation across
+API and web endpoints.
 
-Refs: #123
-"@ | Set-Content -Path $msg -Encoding utf8NoBOM
-    git commit -F $msg
-    if ($LASTEXITCODE -ne 0) {
-        $lockFile = ".git/index.lock"
-        if (Test-Path $lockFile) {
-            $age = (Get-Date) - (Get-Item $lockFile).LastWriteTime
-            if ($age -gt [TimeSpan]::FromMinutes(1)) {
-                Remove-Item $lockFile -Force
-                git commit -F $msg
-            }
-        }
-    }
-} finally {
-    if (Test-Path $msg) { Remove-Item $msg -Force }
-}
+Refs: #123' | git commit -F -
+```
+
+**Message with `$` or backticks (always safe in single quotes):**
+
+```powershell
+'fix(api): handle null $userId gracefully
+
+When $userId is null, return 401 instead of 500.
+The backtick ` character is also safe here.
+
+Refs: #456' | git commit -F -
 ```
 
 **Line length enforcement:**
 
 - Wrap every body line at **≤ 80 characters** (safe margin under the 100-char limit)
 - Count characters if unsure — do NOT guess
-- The here-string preserves your exact line breaks, so what you type is what commitlint sees
+- The single-quoted string preserves your exact line breaks, so what you type is what commitlint sees
 - **Good:** Each line is a short, readable sentence fragment
 - **Bad:** One long run-on line that exceeds 100 characters
-
-**Quoting rules for here-strings:**
-
-- Use `@"..."@` (double-quoted here-string) — variables like `$var` and backticks will be expanded
-- If the message contains `$`, backticks, or other PowerShell metacharacters that should be literal, use `@'...'@` (single-quoted here-string) instead
-- Single-quoted here-string: `@'...'@` — no variable expansion, no escape sequences
-
-**Encoding:** Always use `-Encoding utf8NoBOM` with `Set-Content`. UTF-8 with BOM corrupts commit messages (the BOM bytes appear before the subject line).
 
 ### 6. Verify
 
@@ -272,32 +205,21 @@ Run `git status` post-commit. Report hash and subject.
 
 ## PATTERNS
 
-### Temp File Commit (PowerShell)
+### Simple Commit (Single-Quoted String)
 
 **Basic (subject + body):**
 
 ```powershell
-$msg = [System.IO.Path]::GetTempFileName()
-try {
-@"
-type(scope): imperative subject
+'type(scope): imperative subject
 
 Body explaining why the change exists.
-Keep each line under 80 characters.
-"@ | Set-Content -Path $msg -Encoding utf8NoBOM
-    git commit -F $msg
-} finally {
-    if (Test-Path $msg) { Remove-Item $msg -Force }
-}
+Keep each line under 80 characters.' | git commit -F -
 ```
 
 **Multi-paragraph with footer:**
 
 ```powershell
-$msg = [System.IO.Path]::GetTempFileName()
-try {
-@"
-type(scope): subject
+'type(scope): subject
 
 First paragraph explaining the change.
 Wrap lines at ~80 characters.
@@ -305,29 +227,16 @@ Wrap lines at ~80 characters.
 Second paragraph with additional context.
 Same line length discipline.
 
-Refs: #123
-"@ | Set-Content -Path $msg -Encoding utf8NoBOM
-    git commit -F $msg
-} finally {
-    if (Test-Path $msg) { Remove-Item $msg -Force }
-}
+Refs: #123' | git commit -F -
 ```
 
-**Single-quoted here-string (no variable expansion):**
+**With `$` or backticks (safe in single quotes):**
 
 ```powershell
-$msg = [System.IO.Path]::GetTempFileName()
-try {
-@'
-fix(api): handle null $userId gracefully
+'fix(api): handle null $userId gracefully
 
 When $userId is null, return 401 instead of 500.
-The backtick ` character is also safe here.
-'@ | Set-Content -Path $msg -Encoding utf8NoBOM
-    git commit -F $msg
-} finally {
-    if (Test-Path $msg) { Remove-Item $msg -Force }
-}
+The backtick ` character is also safe here.' | git commit -F -
 ```
 
 ### Partial Staging
