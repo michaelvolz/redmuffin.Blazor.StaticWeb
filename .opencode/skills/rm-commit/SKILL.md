@@ -23,18 +23,18 @@ Create clean, reviewable git commits from the working tree.
 2. Inspect the working tree and recent history.
 3. Decide whether changes belong in one commit or several.
 4. Stage only the intended files or hunks.
-5. Commit with Conventional Commits using the Write tool to create a unique temp file, then `git commit -F <file>`.
+5. Commit with Conventional Commits using here-string piped to `git commit -F -`.
 
 ## COMMANDS
 
-| Command                     | Purpose                          | When                   |
-| --------------------------- | -------------------------------- | ---------------------- |
-| `git status`                | Show working tree status         | Always first           |
-| `git diff HEAD`             | Show all changes                 | After status           |
-| `git branch --show-current` | Get current branch               | After diff             |
-| `git log --oneline -10`     | Show recent history              | After branch           |
-| `git add -p`                | Stage partial hunks              | File has mixed changes |
-| See WORKFLOWS → Commit      | Commit with Conventional Commits | After staging          |
+| Command                     | Purpose                      | When                   |
+| --------------------------- | ---------------------------- | ---------------------- |
+| `git status`                | Show working tree status     | Always first           |
+| `git diff HEAD`             | Show all changes             | After status           |
+| `git branch --show-current` | Get current branch           | After diff             |
+| `git log --oneline -10`     | Show recent history          | After branch           |
+| `git add -p`                | Stage partial hunks          | File has mixed changes |
+| See WORKFLOWS → Commit      | Commit with here-string pipe | After staging          |
 
 ## WORKFLOWS
 
@@ -84,46 +84,35 @@ Rules:
 - Avoid `git add -A` or `git add .` when safer staging exists
 - Exclude secrets, generated files, accidental edits
 
-### 5. Commit
+### 5. Commit with Here-String Pipe
 
-**Commit method**: Use the **Write tool** to create the commit message file, then `git commit -F`.
+Use this single bash command for the commit:
 
-This approach has zero parser error risk — no shell quoting, no here-string delimiters, no escaping. The Write tool writes raw text exactly as you compose it.
-
-**Step 1 — Write the message file** (Write tool):
-
-```
-File: $env:TEMP\commit-msg-<unique>.txt
-Content:
+```powershell
+@"
 type(scope): imperative subject
 
 Body paragraph one. Each line ≤ 80 chars.
 Wrap manually at ~80 to stay safe.
 
 Refs: #123
-```
-
-**Step 2 — Commit** (bash):
-
-```powershell
-git commit -F "$env:TEMP\commit-msg-<unique>.txt"
+"@ | git commit -F -
 ```
 
 **Why this works:**
 
-- **No shell parsing** — The Write tool writes raw text. No quoting, no escaping, no delimiters.
-- **No parser errors** — Apostrophes, `$variables`, backticks, `@"` — all safe. No syntax to get wrong.
-- **Line length preserved** — The Write tool preserves exact line breaks. What you type is what git receives.
-- **Retry-safe** — A failed attempt just uses a fresh unique temp file on the next run. No message reconstruction needed.
-- **No manual cleanup** — The unique temp file name removes the need for an explicit delete step.
+- **No temp files** — Message piped directly to git via stdin
+- **No shell parsing** — Here-string is literal, no variable expansion
+- **No parser errors** — Single isolated command, no squashing issues
+- **Line length preserved** — Exact line breaks piped to git
+- **No cleanup needed** — Nothing written to disk
 
-**CRITICAL: Wrap every body line at ≤ 80 characters.** The file preserves your exact line breaks, so what you type is what commitlint sees. Count characters if unsure — do NOT guess.
+**CRITICAL: Wrap every body line at ≤ 80 characters.** The here-string preserves your exact line breaks, so what you type is what commitlint sees. Count characters if unsure — do NOT guess.
 
 **Template:**
 
-```
-File: $env:TEMP\commit-msg-<unique>.txt
-Content:
+```powershell
+@"
 type(scope): imperative subject
 
 First body paragraph. Each line must be ≤ 80 characters.
@@ -132,24 +121,24 @@ Wrap manually at ~80 chars to stay safe.
 Second body paragraph if needed. Same line length rule.
 
 Refs: #123
+"@ | git commit -F -
 ```
 
 **Basic commit (subject + body):**
 
-```
-File: $env:TEMP\commit-msg-<unique>.txt
-Content:
+```powershell
+@"
 fix(frontend): prevent duplicate form submits
 
 Disable submit button immediately so rapid clicks
 cannot queue duplicate requests.
+"@ | git commit -F -
 ```
 
 **Multi-paragraph body with footer:**
 
-```
-File: $env:TEMP\commit-msg-<unique>.txt
-Content:
+```powershell
+@"
 refactor(core): extract validation logic
 
 Move input validation into a dedicated service so
@@ -159,51 +148,49 @@ This also makes it easier to reuse validation across
 API and web endpoints.
 
 Refs: #123
+"@ | git commit -F -
 ```
 
 **Message with `$` or backticks (always safe — no shell parsing):**
 
-```
-File: $env:TEMP\commit-msg-<unique>.txt
-Content:
+```powershell
+@"
 fix(api): handle null $userId gracefully
 
 When $userId is null, return 401 instead of 500.
 The backtick ` character is also safe here.
 
 Refs: #456
+"@ | git commit -F -
 ```
 
 **Line length enforcement:**
 
 - Wrap every body line at **≤ 80 characters** (safe margin under the 100-char limit)
 - Count characters if unsure — do NOT guess
-- The file preserves your exact line breaks, so what you type is what commitlint sees
+- The here-string preserves your exact line breaks, so what you type is what commitlint sees
 - **Good:** Each line is a short, readable sentence fragment
 - **Bad:** One long run-on line that exceeds 100 characters
 
 ## PATTERNS
 
-### Write Tool + `git commit -F`
+### Here-String Pipe to `git commit -F -`
 
 **Basic (subject + body):**
 
-```
-File: $env:TEMP\commit-msg-<unique>.txt
-Content:
+```powershell
+@"
 type(scope): imperative subject
 
 Body explaining why the change exists.
 Keep each line under 80 characters.
+"@ | git commit -F -
 ```
-
-Then: `git commit -F "$env:TEMP\commit-msg-<unique>.txt"`
 
 **Multi-paragraph with footer:**
 
-```
-File: $env:TEMP\commit-msg-<unique>.txt
-Content:
+```powershell
+@"
 type(scope): subject
 
 First paragraph explaining the change.
@@ -213,22 +200,19 @@ Second paragraph with additional context.
 Same line length discipline.
 
 Refs: #123
+"@ | git commit -F -
 ```
-
-Then: `git commit -F "$env:TEMP\commit-msg-<unique>.txt"`
 
 **With `$` or backticks (safe — no shell parsing):**
 
-```
-File: $env:TEMP\commit-msg-<unique>.txt
-Content:
+```powershell
+@"
 fix(api): handle null $userId gracefully
 
 When $userId is null, return 401 instead of 500.
 The backtick ` character is also safe here.
+"@ | git commit -F -
 ```
-
-Then: `git commit -F "$env:TEMP\commit-msg-<unique>.txt"`
 
 ### Partial Staging
 
