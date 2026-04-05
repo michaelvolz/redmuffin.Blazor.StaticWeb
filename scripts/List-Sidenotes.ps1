@@ -124,8 +124,10 @@ if ($pending.Count -eq 0) {
     exit 0
 }
 
-# Sort by ID (natural sort on SN-NNNN)
-$pending = $pending | Sort-Object { [int]($_.Id -replace '^SN-', '') }
+# Sort by numeric ID and keep malformed IDs last instead of crashing
+$pending = $pending | Sort-Object @{ Expression = {
+    if ($_.Id -match '^SN-(\d+)$') { [int]$Matches[1] } else { [int]::MaxValue }
+} }, Id
 
 # Output numbered list
 Write-Host "Pending sidenotes:"
