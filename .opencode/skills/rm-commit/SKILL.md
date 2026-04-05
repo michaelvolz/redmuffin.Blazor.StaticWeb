@@ -67,8 +67,14 @@ Types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `perf`, `ci`, `style`
 Rules:
 
 - Subject: concise, imperative, and specific
+- Subject must describe the actual user-visible or repo-behavior change,
+  not just the file type or a vague editorial action.
+- Avoid generic subjects like `clarify`, `update`, or `tweak` unless the
+  change is purely editorial and the intent would otherwise be unclear.
 - Body: required for every commit; keep each line at or under 100 characters
-- Body: explain why, trade-offs, and impact — not just what changed
+- Body: explain why, impact, and any trade-offs — not just what changed or
+  which file was edited
+- Body should mention the concrete behavior being changed in plain language.
 - Footer: `Refs: #123`, `Co-authored-by:`, or `BREAKING CHANGE:`
 - **CRITICAL: Every line in the body must be ≤ 100 characters** — commitlint enforces `body-max-line-length: [2, 'always', 100]`
 
