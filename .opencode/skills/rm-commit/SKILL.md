@@ -29,14 +29,14 @@ Create clean, reviewable git commits from the working tree.
 
 ## COMMANDS
 
-| Command                                                                                                                                    | Purpose                               | When                   |
-| ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- | ---------------------- |
-| `git status`                                                                                                                               | Show working tree status              | Always first           |
-| `git diff HEAD`                                                                                                                            | Show all changes                      | After status           |
-| `git branch --show-current`                                                                                                                | Get current branch                    | After diff             |
-| `git log --oneline -10`                                                                                                                    | Show recent history                   | After branch           |
-| `git add -p`                                                                                                                               | Stage partial hunks                   | File has mixed changes |
-| `$msg = [System.IO.Path]::GetTempFileName(); @"..."@ \| Set-Content $msg -Encoding utf8NoBOM; git commit -F $msg; Remove-Item $msg -Force` | Commit with here-string via temp file | Always                 |
+| Command                                            | Purpose                          | When                   |
+| -------------------------------------------------- | -------------------------------- | ---------------------- |
+| `git status`                                       | Show working tree status         | Always first           |
+| `git diff HEAD`                                    | Show all changes                 | After status           |
+| `git branch --show-current`                        | Get current branch               | After diff             |
+| `git log --oneline -10`                            | Show recent history              | After branch           |
+| `git add -p`                                       | Stage partial hunks              | File has mixed changes |
+| See WORKFLOWS → Commit (here-string via temp file) | Commit with Conventional Commits | After staging          |
 
 ## STALE LOCK RECOVERY
 
