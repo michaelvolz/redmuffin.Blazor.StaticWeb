@@ -35,10 +35,10 @@ Capture tangential ideas mid-conversation without derailing the current task. St
 
 ### 2. Retrieval (show sidenotes / list sidenotes)
 
-1. Run: `$tempFile = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), 'rm-sidenotes-output.txt'); pwsh -NoProfile -File (git rev-parse --show-toplevel)/scripts/List-Sidenotes.ps1 6>&1 > $tempFile 2>&1`
-2. Read the output file silently — do not display it to the user.
+1. Run: `pwsh -NoProfile -File (git rev-parse --show-toplevel)/scripts/List-Sidenotes.ps1`
+2. Read the command output directly — do not write a temp file or do a second read.
 3. Parse the results and present a clean, formatted list to the user.
-4. If the output file contains title-length warnings (⚠ lines), note them when presenting the list.
+4. If the output includes title-length warnings (⚠ lines), note them when presenting the list.
 
 ### 3. Verification (sidenotes verify)
 
