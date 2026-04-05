@@ -140,7 +140,7 @@ for ($i = 0; $i -lt $pending.Count; $i++) {
 if ($longTitles.Count -gt 0) {
     Write-Host ""
     foreach ($lt in $longTitles) {
-        Write-Host "⚠ $($lt.Id) title is $($lt.Length) chars (target ~100, max 110)" -ForegroundColor Yellow
+        Write-Host "⚠ $($lt.Id) exceeds the preferred title length: $($lt.Length) chars (target ~100, max 110)" -ForegroundColor Yellow
     }
 }
 
