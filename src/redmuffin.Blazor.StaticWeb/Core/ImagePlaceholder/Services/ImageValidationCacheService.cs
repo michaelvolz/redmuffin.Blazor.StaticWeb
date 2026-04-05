@@ -1,3 +1,4 @@
+using System.Globalization;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Services;
@@ -49,7 +50,7 @@ public sealed partial class ImageValidationCacheService : IImageValidationCacheS
         {
             // Use only cached values - no network requests during initial render
             var imageUrl = await GetCachedImageUrlAsync(item, cancellationToken).ConfigureAwait(false);
-            var cacheKey = item.Link ?? item.Id.ToString();
+            var cacheKey = item.Link ?? item.Id.ToString(CultureInfo.InvariantCulture);
             imageUrlCache[cacheKey] = imageUrl;
 
             // If we don't have a cached valid result, start background validation
@@ -128,7 +129,7 @@ public sealed partial class ImageValidationCacheService : IImageValidationCacheS
                 : _imagePlaceholderService.GenerateSimplePlaceholder(result.FailureReason ?? "Image not available");
 
             // Update cache only if the validation result is different from current cache
-            var cacheKey = item.Link ?? item.Id.ToString();
+            var cacheKey = item.Link ?? item.Id.ToString(CultureInfo.InvariantCulture);
             var currentCachedUrl = imageUrlCache.TryGetValue(cacheKey, out var cachedUrl) ? cachedUrl : string.Empty;
             if (!string.Equals(currentCachedUrl, imageUrl, StringComparison.Ordinal))
             {
@@ -142,7 +143,7 @@ public sealed partial class ImageValidationCacheService : IImageValidationCacheS
         }
         catch (Exception ex)
         {
-            var cacheKey = item.Link ?? item.Id.ToString();
+            var cacheKey = item.Link ?? item.Id.ToString(CultureInfo.InvariantCulture);
             LogBackgroundValidationFailed(_logger, cacheKey, ex);
 
             // On error, ensure we have a placeholder

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
@@ -42,7 +43,7 @@ public sealed partial class ImagePlaceholderService : IImagePlaceholderService
         ArgumentNullException.ThrowIfNull(item);
         ArgumentNullException.ThrowIfNull(imageUrlCache);
 
-        var cacheKey = item.Link ?? item.Id.ToString();
+        var cacheKey = item.Link ?? item.Id.ToString(CultureInfo.InvariantCulture);
 
         // Check if there's a cached result
         if (imageUrlCache.TryGetValue(cacheKey, out var cachedResult))
@@ -95,7 +96,7 @@ public sealed partial class ImagePlaceholderService : IImagePlaceholderService
         // Has fallback if no cover URL or if cached as failed
         if (string.IsNullOrEmpty(item.Cover)) return true;
 
-        var cacheKey = item.Link ?? item.Id.ToString();
+        var cacheKey = item.Link ?? item.Id.ToString(CultureInfo.InvariantCulture);
         if (imageUrlCache.TryGetValue(cacheKey, out var cachedResult) && string.Equals(cachedResult, "FAILED", StringComparison.Ordinal)) return true;
 
         return false;
@@ -109,7 +110,7 @@ public sealed partial class ImagePlaceholderService : IImagePlaceholderService
 
         if (string.IsNullOrEmpty(item.Cover)) return SvgPlaceholderTemplate.MapFailureReasonToDisplayText("NO_IMAGE");
 
-        var cacheKey = item.Link ?? item.Id.ToString();
+        var cacheKey = item.Link ?? item.Id.ToString(CultureInfo.InvariantCulture);
         if (imageUrlCache.TryGetValue(cacheKey, out var cachedResult) && string.Equals(cachedResult, "FAILED", StringComparison.Ordinal))
             return SvgPlaceholderTemplate.MapFailureReasonToDisplayText("LOAD_FAILED");
 
