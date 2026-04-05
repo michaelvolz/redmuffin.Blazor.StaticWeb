@@ -28,7 +28,7 @@ Capture tangential ideas mid-conversation without derailing the current task. St
 1. Extract the sidenote text from the user input.
 2. Ensure `docs/sidenotes/` exists (create if missing).
 3. Glob `docs/sidenotes/SN-*.md`, find the highest numeric ID, choose the next sequential ID (SN-0001, SN-0002, ...).
-4. Build the frontmatter: `id`, `date`, `title` (first 100 chars of sidenote text, hard cap 110), `status: pending`.
+4. Build the frontmatter: `id`, `date`, `title` (concise summary, max 100 chars, ideally ~90; do not copy the full body), `status: pending`.
 5. **Call the `write` tool** to create `docs/sidenotes/SN-NNNN.md` with frontmatter and the full captured body.
 6. Respond with exactly one line: `SN-NNNN.md created — "<title>"`
 7. After responding, glob `docs/sidenotes/` to confirm the file exists. If missing, retry the write once.

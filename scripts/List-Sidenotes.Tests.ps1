@@ -89,7 +89,7 @@ Body
 
         $output = & $script:ScriptPath -SidenotesPath $script:TestSidenotesPath *>&1 | ForEach-Object { $_.ToString() }
 
-        ($output -join "`n") | Should Match '⚠ SN-0010 title is'
+        ($output -join "`n") | Should Match '⚠ SN-0010 exceeds the hard title limit:'
         ($output -join "`n") | Should Match '1\. SN-0010 \(2026-04-05\) - '
     }
 }

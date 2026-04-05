@@ -98,10 +98,10 @@ foreach ($file in $files) {
     $title = if ($titleMatch.Success) {
         $titleMatch.Groups[1].Value.Trim().Trim('"').Trim("'")
     } else {
-        # Fallback: use first 110 chars of body (matches the capture hard cap)
+        # Fallback: use first 100 chars of body (matches the capture hard cap)
         $bodyStart = $fmMatch.Index + $fmMatch.Length
         $body = $content.Substring($bodyStart).Trim()
-        if ($body.Length -gt 110) { $body.Substring(0, 110) + '...' } else { $body }
+        if ($body.Length -gt 100) { $body.Substring(0, 100) + '...' } else { $body }
     }
 
     # Track long titles for soft warning
@@ -136,11 +136,11 @@ for ($i = 0; $i -lt $pending.Count; $i++) {
     Write-Host "$($i + 1). $($item.Id) ($($item.Date)) - $($item.Title)"
 }
 
-# Soft warnings for long titles (target ~100 chars, max 110)
+# Soft warnings for long titles (hard warning at >110 chars)
 if ($longTitles.Count -gt 0) {
     Write-Host ""
     foreach ($lt in $longTitles) {
-        Write-Host "⚠ $($lt.Id) exceeds the preferred title length: $($lt.Length) chars (target ~100, max 110)" -ForegroundColor Yellow
+        Write-Host "⚠ $($lt.Id) exceeds the hard title limit: $($lt.Length) chars (max 110)" -ForegroundColor Yellow
     }
 }
 
