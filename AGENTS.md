@@ -28,6 +28,8 @@ For every coding, architecture, refactoring, or review task:
 - Use `scripts/Update-PackageVersions.ps1` for NuGet package updates, then
   finish with `dotnet clean && dotnet build --verbosity quiet && dotnet test`
   as the final verification step.
+- When invoking repository PowerShell scripts (`.ps1`), use `pwsh -NoProfile`
+  unless a script explicitly requires profile loading.
 - Keep every package version value centralized in the top property section of
   `Directory.Packages.props`; item groups should reference properties instead
   of hard-coded version literals.
