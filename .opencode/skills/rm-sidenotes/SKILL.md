@@ -10,13 +10,13 @@ Capture tangential ideas mid-conversation without derailing the current task. St
 ## CRITICAL
 
 - When you see `sidenote:`, `sidenotes`, `/sidenote`, `/sidenotes` in user input, ALWAYS use this skill — do not handle inline
-- Capture writes directly in the main flow, then verification runs asynchronously in the background
-- Capture returns exactly one short line containing the created filename and nothing else
+- **FILE FIRST**: You MUST call the `write` tool to create the sidenote file on disk BEFORE responding to the user. The file must exist before you say a single word.
+- After the file is written, respond with exactly one line: `SN-NNNN.md created — "<title>"`
 - NEVER ask follow-up questions about a captured sidenote
 - NEVER auto-suggest sidenotes to the user — they explicitly request retrieval
 - Trigger detection:
   - `sidenote:` must be the first non-whitespace token on a line (capture)
-  - `/sidenote` or `/sidenote` at message start (capture/command)
+  - `/sidenote` or `/sidenotes` at message start (capture/command)
   - `sidenote ` (singular, space-separated) for commands like "sidenote convert 5", "sidenote dismiss 1"
   - `sidenotes` (plural) for commands like "sidenotes list", "sidenotes show"
   - Do NOT trigger on casual prose containing the word "sidenote"
@@ -25,22 +25,20 @@ Capture tangential ideas mid-conversation without derailing the current task. St
 
 ### 1. Capture (sidenote: / /sidenote)
 
-1. Extract the sidenote text from the user input
-2. Create `docs/sidenotes/` if missing
-3. Glob `docs/sidenotes/SN-*.md`, find the highest numeric ID, and choose the next sequential ID (SN-0001, SN-0002, ...)
-4. Use the first 149 characters of the sidenote text as the frontmatter `title:` value
-5. Write `docs/sidenotes/SN-NNNN.md` with frontmatter (`id`, `date`, `title`, `status: pending`) and the full captured body
-6. Return exactly one line with the created filename (for example: `SN-NNNN.md`)
-7. Spawn a lightweight background verification pass that checks the file exists and records a failure marker if retries are exhausted
+1. Extract the sidenote text from the user input.
+2. Ensure `docs/sidenotes/` exists (create if missing).
+3. Glob `docs/sidenotes/SN-*.md`, find the highest numeric ID, choose the next sequential ID (SN-0001, SN-0002, ...).
+4. Build the frontmatter: `id`, `date`, `title` (first 100 chars of sidenote text, hard cap 110), `status: pending`.
+5. **Call the `write` tool** to create `docs/sidenotes/SN-NNNN.md` with frontmatter and the full captured body.
+6. Respond with exactly one line: `SN-NNNN.md created — "<title>"`
+7. Spawn a lightweight background verification pass that checks the file exists and records a failure marker if retries are exhausted.
 
 ### 2. Retrieval (show sidenotes / list sidenotes)
 
-1. Glob `docs/sidenotes/SN-*.md`
-2. Filter files where frontmatter `status` is `pending`
-3. Read each file's frontmatter `title:` for display
-4. If a file is malformed, skip it with a clear `[malformed sidenote]` marker in the list
-5. If none found, respond: "No pending sidenotes."
-6. Otherwise display as numbered list
+1. Run: `$tempFile = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), 'rm-sidenotes-output.txt'); pwsh -NoProfile -File scripts/List-Sidenotes.ps1 > $tempFile 2>&1`
+2. Read the output file silently — do not display it to the user.
+3. Parse the results and present a clean, formatted list to the user.
+4. If the output file contains title-length warnings (⚠ lines), note them when presenting the list.
 
 ### 3. Verification (sidenotes verify)
 
@@ -50,7 +48,7 @@ Capture tangential ideas mid-conversation without derailing the current task. St
 4. If all captured: "All sidenotes verified."
 5. If some missing: "Missing: SN-NNNN, SN-NNNN"
 
-### 4. Conversion (convert sidenote SN-NNNN / tackle sidenote SN-NNNN)
+#### Example output:
 
 ```
 Pending sidenotes:
@@ -96,7 +94,7 @@ Pending sidenotes:
 
 - Create `docs/sidenotes/` if missing
 - Use 4-digit sequential IDs (SN-0001, SN-0002, ...)
-- Capture returns exactly one short filename line and nothing else
+- Respond with exactly one line after the file is written: `SN-NNNN.md created — "<title>"`
 - Re-scan directory before each write to avoid ID collisions
 
 ### ASK FIRST
