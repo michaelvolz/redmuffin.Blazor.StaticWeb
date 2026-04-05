@@ -35,8 +35,7 @@ For every coding, architecture, refactoring, or review task:
 - Keep every package version value centralized in the top property section of
   `Directory.Packages.props`; item groups should reference properties instead
   of hard-coded version literals.
-- Ignore the `.github` folder for now. The files there are outdated and should
-  be transformed, converted, updated, or deleted soon.
+- Use the `.github` folder for workflows and dependabot configurations. Ignore the subfolders `chatmodes`, `guides`, and `prompts` as they are outdated and should be transformed, converted, updated, or deleted soon.
 - SKILL COMMANDS tables are intentionally duplicated across skills. Each skill is a
   self-contained entry point — agents load one skill at a time and need the quick-ref
   there. Never remove or consolidate COMMANDS tables as "duplication".
