@@ -1,11 +1,14 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Update-PackageVersions.ps1 — report CPM-safe package updates.
+    Update-PackageVersions.ps1 — report or apply CPM-safe package updates.
 
 .DESCRIPTION
     Reads the root global.json, lists outdated packages with the .NET CLI, and
-    prints a minimal update report for Directory.Packages.props.
+    can apply the version updates directly to Directory.Packages.props.
+
+.PARAMETER Apply
+    Apply the selected package version changes to Directory.Packages.props.
 
 .PARAMETER Json
     Emit JSON instead of human-readable output.
@@ -19,6 +22,7 @@
 
 [CmdletBinding()]
 param(
+    [switch]$Apply,
     [switch]$Json,
     [string]$PackageId,
     [string]$RepositoryRoot,
@@ -28,6 +32,10 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+
+if ($Apply -and $Json) {
+    throw 'Apply and Json cannot be combined.'
+}
 
 function Get-RepoRoot {
     param([string]$OverrideRoot)
@@ -80,7 +88,11 @@ function Read-PackageList {
 }
 
 function Get-ReportItems {
-    param($PackageList, [string]$PackageFilter)
+    param(
+        $PackageList,
+        [string]$PackageFilter,
+        [int]$SdkMajor
+    )
 
     $packages = @{}
 
@@ -89,6 +101,7 @@ function Get-ReportItems {
             foreach ($package in $framework.topLevelPackages) {
                 if ($package.latestVersion -eq 'Not found at the sources') { continue }
                 if ($PackageFilter -and $package.id -ne $PackageFilter) { continue }
+                if ((Get-MajorVersion -Version $package.latestVersion) -gt $SdkMajor) { continue }
 
                 if ($packages.ContainsKey($package.id)) {
                     $current = $packages[$package.id]
@@ -113,6 +126,179 @@ function Get-ReportItems {
     return @($packages.Values | Sort-Object Id)
 }
 
+function Load-XmlDocument {
+    param([string]$Path)
+
+    $document = [System.Xml.XmlDocument]::new()
+    $document.PreserveWhitespace = $true
+    $document.Load($Path)
+
+    return $document
+}
+
+function Get-PackageVersionNodes {
+    param(
+        [System.Xml.XmlDocument]$Document,
+        [string]$PackageId
+    )
+
+    return @($Document.SelectNodes("//PackageVersion[@Include='$PackageId' or @Update='$PackageId']"))
+}
+
+function Resolve-PackageUpdateTarget {
+    param(
+        [System.Xml.XmlDocument]$Document,
+        $Item
+    )
+
+    $nodes = Get-PackageVersionNodes -Document $Document -PackageId $Item.Id
+    if (-not $nodes -or $nodes.Count -eq 0) {
+        throw "Package '$($Item.Id)' was reported as outdated, but no CPM entry was found in Directory.Packages.props."
+    }
+
+    $includeNodes = @($nodes | Where-Object { $_.HasAttribute('Include') })
+    $candidateNodes = if ($includeNodes.Count -gt 0) { $includeNodes } else { $nodes }
+
+    $propertyNames = @()
+    foreach ($node in $candidateNodes) {
+        $version = [string]$node.GetAttribute('Version')
+        if ($version -match '^\$\(([^)]+)\)$') {
+            $propertyNames += $Matches[1]
+        }
+    }
+
+    $uniqueProperties = @($propertyNames | Sort-Object -Unique)
+    if ($uniqueProperties.Count -gt 1) {
+        throw "Package '$($Item.Id)' maps to multiple shared properties: $($uniqueProperties -join ', ')."
+    }
+
+    if ($uniqueProperties.Count -eq 1) {
+        return [pscustomobject]@{
+            Kind = 'Property'
+            Name = $uniqueProperties[0]
+            PackageId = $Item.Id
+            LatestVersion = $Item.LatestVersion
+        }
+    }
+
+    $selectedNode = $includeNodes | Select-Object -First 1
+    if (-not $selectedNode) {
+        $selectedNode = @($nodes | Where-Object { $_.HasAttribute('Update') }) | Select-Object -First 1
+    }
+
+    if (-not $selectedNode) {
+        throw "Package '$($Item.Id)' could not be mapped to a CPM entry."
+    }
+
+    return [pscustomobject]@{
+        Kind = 'Inline'
+        Node = $selectedNode
+        PackageId = $Item.Id
+        LatestVersion = $Item.LatestVersion
+    }
+}
+
+function Get-PackageUpdateTargets {
+    param(
+        [System.Xml.XmlDocument]$Document,
+        [object[]]$Items
+    )
+
+    $targets = @{}
+
+    foreach ($item in $Items) {
+        $target = Resolve-PackageUpdateTarget -Document $Document -Item $item
+        $key = if ($target.Kind -eq 'Property') { "Property::$($target.Name)" } else { "Package::$($target.PackageId)" }
+
+        if ($targets.ContainsKey($key)) {
+            if ($targets[$key].LatestVersion -ne $target.LatestVersion) {
+                throw "Package target '$key' has conflicting latest versions: '$($targets[$key].LatestVersion)' and '$($target.LatestVersion)'."
+            }
+
+            continue
+        }
+
+        $targets[$key] = $target
+    }
+
+    return @($targets.Values)
+}
+
+function Save-XmlDocumentAtomically {
+    param(
+        [System.Xml.XmlDocument]$Document,
+        [string]$Path
+    )
+
+    $directory = Split-Path $Path -Parent
+    $tempPath = Join-Path $directory ([System.IO.Path]::GetRandomFileName() + '.tmp')
+    $settings = [System.Xml.XmlWriterSettings]::new()
+    $settings.Encoding = [System.Text.UTF8Encoding]::new($true)
+    $settings.Indent = $false
+    $settings.NewLineChars = "`r`n"
+    $settings.NewLineHandling = [System.Xml.NewLineHandling]::Replace
+    $settings.OmitXmlDeclaration = $false
+
+    $writer = $null
+    try {
+        $writer = [System.Xml.XmlWriter]::Create($tempPath, $settings)
+        $Document.Save($writer)
+        $writer.Flush()
+    }
+    finally {
+        if ($writer) {
+            $writer.Dispose()
+        }
+    }
+
+    Move-Item -Path $tempPath -Destination $Path -Force
+}
+
+function Apply-PackageUpdates {
+    param(
+        [string]$Path,
+        [System.Xml.XmlDocument]$Document,
+        [object[]]$Items
+    )
+
+    $targets = Get-PackageUpdateTargets -Document $Document -Items $Items
+    if (-not $targets -or $targets.Count -eq 0) {
+        return $false
+    }
+
+    $changed = $false
+
+    foreach ($target in $targets) {
+        if ($target.Kind -eq 'Property') {
+            $propertyNodes = @($Document.SelectNodes("//PropertyGroup/$($target.Name)"))
+            if (-not $propertyNodes -or $propertyNodes.Count -eq 0) {
+                throw "Shared property '$($target.Name)' was not found in Directory.Packages.props."
+            }
+
+            foreach ($propertyNode in $propertyNodes) {
+                if ([string]$propertyNode.InnerText -ne $target.LatestVersion) {
+                    $propertyNode.InnerText = $target.LatestVersion
+                    $changed = $true
+                }
+            }
+
+            continue
+        }
+
+        $currentVersion = [string]$target.Node.GetAttribute('Version')
+        if ($currentVersion -ne $target.LatestVersion) {
+            $target.Node.SetAttribute('Version', $target.LatestVersion)
+            $changed = $true
+        }
+    }
+
+    if ($changed) {
+        Save-XmlDocumentAtomically -Document $Document -Path $Path
+    }
+
+    return $changed
+}
+
 $repoRoot = Get-RepoRoot -OverrideRoot $RepositoryRoot
 $sdkVersion = Read-RootSdkVersion -RepoRoot $repoRoot
 $sdkMajor = Get-MajorVersion -Version $sdkVersion
@@ -122,7 +308,7 @@ if (-not $sdkVersion.StartsWith('9.')) {
 }
 
 $packageList = Read-PackageList -Target $TargetPath -JsonInput $PackageListJson
-$items = Get-ReportItems -PackageList $packageList -PackageFilter $PackageId
+$items = Get-ReportItems -PackageList $packageList -PackageFilter $PackageId -SdkMajor $sdkMajor
 
 if (-not $items -or $items.Count -eq 0) {
     Write-Output 'No outdated packages found.'
@@ -136,9 +322,13 @@ if ($Json) {
 
 Write-Output 'Outdated packages:'
 foreach ($item in $items) {
-    if ((Get-MajorVersion -Version $item.LatestVersion) -gt $sdkMajor) {
-        continue
-    }
-
     Write-Output "$($item.Id) $($item.ResolvedVersion) -> $($item.LatestVersion)"
+}
+
+if ($Apply) {
+    $propsPath = Join-Path $repoRoot 'Directory.Packages.props'
+    $propsDocument = Load-XmlDocument -Path $propsPath
+    if (Apply-PackageUpdates -Path $propsPath -Document $propsDocument -Items $items) {
+        Write-Output 'Applied package updates to Directory.Packages.props.'
+    }
 }
