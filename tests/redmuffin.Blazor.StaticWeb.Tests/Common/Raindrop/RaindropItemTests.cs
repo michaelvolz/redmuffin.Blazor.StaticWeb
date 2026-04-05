@@ -91,7 +91,7 @@ public class RaindropItemTests
     }
 
     [Test]
-    public async Task ToPruned_WithNullStrings_ConvertsToEmptyStrings()
+    public async Task ToPruned_WithNullStrings_PreservesNulls()
     {
         // Arrange
         var item = new RaindropItem
@@ -109,10 +109,10 @@ public class RaindropItemTests
         // Assert
         await Assert.That(result).IsNotNull();
         await Assert.That(result.Id).IsEqualTo(123);
-        await Assert.That(result.Link).IsEqualTo(string.Empty);
-        await Assert.That(result.Title).IsEqualTo(string.Empty);
-        await Assert.That(result.Excerpt).IsEqualTo(string.Empty);
-        await Assert.That(result.Cover).IsEqualTo(string.Empty);
+        await Assert.That(result.Link).IsNull();
+        await Assert.That(result.Title).IsNull();
+        await Assert.That(result.Excerpt).IsNull();
+        await Assert.That(result.Cover).IsNull();
     }
 
     [Test]
@@ -181,11 +181,11 @@ public class RaindropItemTests
         // Assert
         await Assert.That(result.Count).IsEqualTo(2);
         await Assert.That(result[0].Id).IsEqualTo(1);
-        await Assert.That(result[0].Link).IsEqualTo(string.Empty);
+        await Assert.That(result[0].Link).IsNull();
         await Assert.That(result[0].Title).IsEqualTo("Title1");
         await Assert.That(result[1].Id).IsEqualTo(2);
         await Assert.That(result[1].Link).IsEqualTo("link2");
-        await Assert.That(result[1].Title).IsEqualTo(string.Empty);
+        await Assert.That(result[1].Title).IsNull();
     }
 
     [Test]

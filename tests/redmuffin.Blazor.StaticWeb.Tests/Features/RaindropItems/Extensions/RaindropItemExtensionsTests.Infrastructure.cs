@@ -45,9 +45,9 @@ public sealed partial class RaindropItemExtensionsTests
         await Assert.That(fullItem.Cover).IsEqualTo(prunedItem.Cover);
 
         // Verify non-essential fields have default values
-        await Assert.That(fullItem.Note).IsEqualTo(string.Empty);
-        await Assert.That(fullItem.Type).IsEqualTo(string.Empty);
-        await Assert.That(fullItem.Domain).IsEqualTo(string.Empty);
+        await Assert.That(fullItem.Note).IsNull();
+        await Assert.That(fullItem.Type).IsNull();
+        await Assert.That(fullItem.Domain).IsNull();
         await Assert.That(fullItem.Important).IsFalse();
         await Assert.That(fullItem.Removed).IsFalse();
         await Assert.That(fullItem.Created).IsEqualTo(DateTime.MinValue);

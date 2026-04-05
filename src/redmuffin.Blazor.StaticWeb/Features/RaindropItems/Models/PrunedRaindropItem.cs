@@ -19,28 +19,28 @@ public sealed class PrunedRaindropItem
     /// </summary>
     [JsonPropertyName("l")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public string Link { get; set; } = string.Empty;
+    public string? Link { get; set; }
 
     /// <summary>
     ///     Gets or sets the title of the raindrop item.
     /// </summary>
     [JsonPropertyName("t")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public string Title { get; set; } = string.Empty;
+    public string? Title { get; set; }
 
     /// <summary>
     ///     Gets or sets the excerpt or description of the raindrop item.
     /// </summary>
     [JsonPropertyName("e")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public string Excerpt { get; set; } = string.Empty;
+    public string? Excerpt { get; set; }
 
     /// <summary>
     ///     Gets or sets the cover image URL of the raindrop item.
     /// </summary>
     [JsonPropertyName("c")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public string Cover { get; set; } = string.Empty;
+    public string? Cover { get; set; }
 
     /// <summary>
     ///     Validates the integrity of the pruned raindrop item data.
@@ -52,20 +52,20 @@ public sealed class PrunedRaindropItem
         if (Id <= 0)
             return false;
 
-        // Link must be a valid URI if not empty
-        if (!string.IsNullOrEmpty(Link) && !Uri.TryCreate(Link, UriKind.Absolute, out _))
+        // Link must be a valid URI if not null
+        if (Link is not null && !Uri.TryCreate(Link, UriKind.Absolute, out _))
             return false;
 
-        // Cover must be a valid URI if not empty
-        if (!string.IsNullOrEmpty(Cover) && !Uri.TryCreate(Cover, UriKind.Absolute, out _))
+        // Cover must be a valid URI if not null
+        if (Cover is not null && !Uri.TryCreate(Cover, UriKind.Absolute, out _))
             return false;
 
         // Title should not be excessively long (reasonable limit)
-        if (Title.Length > 500)
+        if (Title?.Length > 500)
             return false;
 
         // Excerpt should not be excessively long (reasonable limit)
-        if (Excerpt.Length > 2000)
+        if (Excerpt?.Length > 2000)
             return false;
 
         return true;
@@ -80,16 +80,16 @@ public sealed class PrunedRaindropItem
         if (Id <= 0)
             throw new InvalidOperationException("ID must be a positive value.");
 
-        if (!string.IsNullOrEmpty(Link) && !Uri.TryCreate(Link, UriKind.Absolute, out _))
+        if (Link is not null && !Uri.TryCreate(Link, UriKind.Absolute, out _))
             throw new InvalidOperationException("Link must be a valid absolute URI.");
 
-        if (!string.IsNullOrEmpty(Cover) && !Uri.TryCreate(Cover, UriKind.Absolute, out _))
+        if (Cover is not null && !Uri.TryCreate(Cover, UriKind.Absolute, out _))
             throw new InvalidOperationException("Cover must be a valid absolute URI.");
 
-        if (Title.Length > 500)
+        if (Title?.Length > 500)
             throw new InvalidOperationException("Title cannot exceed 500 characters.");
 
-        if (Excerpt.Length > 2000)
+        if (Excerpt?.Length > 2000)
             throw new InvalidOperationException("Excerpt cannot exceed 2000 characters.");
     }
 }
