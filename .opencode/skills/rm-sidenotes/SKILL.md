@@ -10,7 +10,7 @@ Capture tangential ideas mid-conversation without derailing the current task. St
 ## CRITICAL
 
 - When you see `sidenote:`, `sidenotes`, `/sidenote`, `/sidenotes` in user input, ALWAYS use this skill — do not handle inline
-- **FILE FIRST**: You MUST call the `write` tool to create the sidenote file on disk BEFORE responding to the user. The file must exist before you say a single word.
+- **FILE FIRST**: You MUST use the file-edit tool (`apply_patch`) to create the sidenote file on disk BEFORE responding to the user. The file must exist before you say a single word.
 - After the file is written, respond with exactly one line: `SN-NNNN.md created — "<title>"`
 - NEVER ask follow-up questions about a captured sidenote
 - NEVER auto-suggest sidenotes to the user — they explicitly request retrieval
@@ -35,7 +35,7 @@ Capture tangential ideas mid-conversation without derailing the current task. St
 
 ### 2. Retrieval (show sidenotes / list sidenotes)
 
-1. Run: `pwsh -NoProfile -File (git rev-parse --show-toplevel)/scripts/List-Sidenotes.ps1`
+1. Run: `pwsh -NoProfile -Command "& (Join-Path (git rev-parse --show-toplevel) 'scripts/List-Sidenotes.ps1')"`
 2. Read the command output directly — do not write a temp file or do a second read.
 3. Parse the results and present a clean, formatted list to the user.
 4. If the output includes title-length warnings (⚠ lines), note them when presenting the list.
