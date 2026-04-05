@@ -42,8 +42,10 @@ public sealed partial class ImagePlaceholderService : IImagePlaceholderService
         ArgumentNullException.ThrowIfNull(item);
         ArgumentNullException.ThrowIfNull(imageUrlCache);
 
+        var cacheKey = item.Link ?? item.Id.ToString();
+
         // Check if there's a cached result
-        if (imageUrlCache.TryGetValue(item.Link, out var cachedResult))
+        if (imageUrlCache.TryGetValue(cacheKey, out var cachedResult))
         {
             // If cached as failed, return placeholder
             if (string.Equals(cachedResult, "FAILED", StringComparison.Ordinal)) return GetDefaultPlaceholder();
@@ -93,7 +95,8 @@ public sealed partial class ImagePlaceholderService : IImagePlaceholderService
         // Has fallback if no cover URL or if cached as failed
         if (string.IsNullOrEmpty(item.Cover)) return true;
 
-        if (imageUrlCache.TryGetValue(item.Link, out var cachedResult) && string.Equals(cachedResult, "FAILED", StringComparison.Ordinal)) return true;
+        var cacheKey = item.Link ?? item.Id.ToString();
+        if (imageUrlCache.TryGetValue(cacheKey, out var cachedResult) && string.Equals(cachedResult, "FAILED", StringComparison.Ordinal)) return true;
 
         return false;
     }
@@ -106,7 +109,8 @@ public sealed partial class ImagePlaceholderService : IImagePlaceholderService
 
         if (string.IsNullOrEmpty(item.Cover)) return SvgPlaceholderTemplate.MapFailureReasonToDisplayText("NO_IMAGE");
 
-        if (imageUrlCache.TryGetValue(item.Link, out var cachedResult) && string.Equals(cachedResult, "FAILED", StringComparison.Ordinal))
+        var cacheKey = item.Link ?? item.Id.ToString();
+        if (imageUrlCache.TryGetValue(cacheKey, out var cachedResult) && string.Equals(cachedResult, "FAILED", StringComparison.Ordinal))
             return SvgPlaceholderTemplate.MapFailureReasonToDisplayText("LOAD_FAILED");
 
         return string.Empty;

@@ -21,10 +21,10 @@ public static class RaindropItemExtensions
         return new PrunedRaindropItem
         {
             Id = item.Id,
-            Link = item.Link,
-            Title = item.Title,
-            Excerpt = item.Excerpt,
-            Cover = item.Cover
+            Link = item.Link ?? string.Empty,
+            Title = item.Title ?? string.Empty,
+            Excerpt = item.Excerpt ?? string.Empty,
+            Cover = item.Cover ?? string.Empty
         };
     }
 
@@ -57,8 +57,10 @@ public static class RaindropItemExtensions
             Link = prunedItem.Link,
             Title = prunedItem.Title,
             Excerpt = prunedItem.Excerpt,
-            Cover = prunedItem.Cover
-            // Other properties will use their default values
+            Cover = prunedItem.Cover,
+            Note = string.Empty,
+            Type = string.Empty,
+            Domain = string.Empty
         };
     }
 

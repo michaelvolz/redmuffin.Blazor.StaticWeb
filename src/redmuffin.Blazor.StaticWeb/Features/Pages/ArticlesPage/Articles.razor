@@ -35,8 +35,8 @@ else if (_articleItems != null && _articleItems.Any())
                          loading="@(index < 6 ? "eager" : "lazy")"
                          fetchpriority="@(index < 6 ? "high" : "low")"
                          decoding="async"
-                         @onload="@(() => HandleImageLoadAsync($"shimmer-{article.Id}", article.Link, true))"
-                         @onerror="@(() => HandleImageLoadAsync($"shimmer-{article.Id}", article.Link, false))"/>
+                          @onload="@(() => HandleImageLoadAsync($"shimmer-{article.Id}", article.Link ?? article.Id.ToString(), true))"
+                                                   @onerror="@(() => HandleImageLoadAsync($"shimmer-{article.Id}", article.Link ?? article.Id.ToString(), false))"/>
                     @if (HasFallbackPlaceholder(article))
                     {
                         <div class="fallback-placeholder-overlay">

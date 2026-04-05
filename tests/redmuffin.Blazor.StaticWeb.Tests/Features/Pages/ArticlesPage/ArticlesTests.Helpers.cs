@@ -207,7 +207,8 @@ public partial class ArticlesTests
 
         public string GetImageUrl(RaindropItem item, IDictionary<string, string> imageUrlCache)
         {
-            if (imageUrlCache.TryGetValue(item.Link, out var cachedUrl)) return cachedUrl;
+            var key = item.Link ?? item.Id.ToString();
+            if (imageUrlCache.TryGetValue(key, out var cachedUrl)) return cachedUrl;
             return "/images/placeholder.svg";
         }
 
@@ -218,7 +219,8 @@ public partial class ArticlesTests
 
         public bool HasFallbackPlaceholder(RaindropItem item, IDictionary<string, string> imageUrlCache)
         {
-            return !imageUrlCache.ContainsKey(item.Link);
+            var key = item.Link ?? item.Id.ToString();
+            return !imageUrlCache.ContainsKey(key);
         }
 
         public Task HandleImageLoadAsync(string elementId, string itemLink, bool loadSuccess, IDictionary<string, string> imageUrlCache, IJSRuntime jsRuntime,
@@ -237,7 +239,10 @@ public partial class ArticlesTests
         {
             foreach (var item in items)
                 if (!string.IsNullOrEmpty(item.Cover))
-                    imageUrlCache[item.Link] = item.Cover;
+                {
+                    var key = item.Link ?? item.Id.ToString();
+                    imageUrlCache[key] = item.Cover;
+                }
 
             return stateHasChangedCallback();
         }

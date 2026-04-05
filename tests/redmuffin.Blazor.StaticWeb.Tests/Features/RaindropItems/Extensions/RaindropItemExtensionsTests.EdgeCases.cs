@@ -152,9 +152,9 @@ public sealed partial class RaindropItemExtensionsTests
         // Assert
         await Assert.That(prunedItem).IsNotNull();
         await Assert.That(prunedItem.Id).IsEqualTo(456);
-        await Assert.That(prunedItem.Link).IsNull();
-        await Assert.That(prunedItem.Title).IsNull();
-        await Assert.That(prunedItem.Excerpt).IsNull();
-        await Assert.That(prunedItem.Cover).IsNull();
+        await Assert.That(prunedItem.Link).IsEqualTo(string.Empty);
+        await Assert.That(prunedItem.Title).IsEqualTo(string.Empty);
+        await Assert.That(prunedItem.Excerpt).IsEqualTo(string.Empty);
+        await Assert.That(prunedItem.Cover).IsEqualTo(string.Empty);
     }
 }

@@ -8,25 +8,22 @@ public record RaindropItem
     public long Id { get; init; }
 
     [JsonPropertyName("link")]
-    public string Link { get; init; } = string.Empty;
+    public string? Link { get; init; }
 
     [JsonPropertyName("title")]
-    public string Title { get; init; } = string.Empty;
+    public string? Title { get; init; }
 
     [JsonPropertyName("excerpt")]
-    public string Excerpt { get; init; } = string.Empty;
+    public string? Excerpt { get; init; }
 
     [JsonPropertyName("note")]
-    public string Note { get; init; } = string.Empty;
+    public string? Note { get; init; }
 
     [JsonPropertyName("type")]
-    public string Type { get; init; } = string.Empty;
-
-    [JsonPropertyName("user")]
-    public UserReference User { get; init; } = new();
+    public string? Type { get; init; }
 
     [JsonPropertyName("cover")]
-    public string Cover { get; init; } = string.Empty;
+    public string? Cover { get; init; }
 
     [JsonPropertyName("media")]
     public IReadOnlyList<MediaItem> Media { get; init; } = [];
@@ -53,7 +50,7 @@ public record RaindropItem
     public IReadOnlyList<Highlight> Highlights { get; init; } = [];
 
     [JsonPropertyName("domain")]
-    public string Domain { get; init; } = string.Empty;
+    public string? Domain { get; init; }
 
     [JsonPropertyName("collectionId")]
     public long CollectionId { get; init; }

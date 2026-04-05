@@ -272,19 +272,22 @@ public sealed partial class VideosTests
             _simplePlaceholders[reason] = result;
         }
 
-        public void SetupImageUrl(string itemLink, string resultUrl)
+        public void SetupImageUrl(string? itemLink, string resultUrl)
         {
-            _imageUrls[itemLink] = resultUrl;
+            var key = itemLink ?? "null-link";
+            _imageUrls[key] = resultUrl;
         }
 
-        public void SetupFallbackStatus(string itemLink, bool hasFallback)
+        public void SetupFallbackStatus(string? itemLink, bool hasFallback)
         {
-            _fallbackStatuses[itemLink] = hasFallback;
+            var key = itemLink ?? "null-link";
+            _fallbackStatuses[key] = hasFallback;
         }
 
-        public void SetupFallbackReason(string itemLink, string reason)
+        public void SetupFallbackReason(string? itemLink, string reason)
         {
-            _fallbackReasons[itemLink] = reason;
+            var key = itemLink ?? "null-link";
+            _fallbackReasons[key] = reason;
         }
 
         public void Reset()
@@ -308,7 +311,7 @@ public sealed partial class VideosTests
 
         public string GetImageUrl(RaindropItem item, IDictionary<string, string> imageUrlCache)
         {
-            var key = item.Link;
+            var key = item.Link ?? item.Id.ToString();
             return _imageUrls.TryGetValue(key, out var url) ? url : imageUrlCache.TryGetValue(key, out var cachedUrl) ? cachedUrl : _defaultPlaceholder;
         }
 
@@ -325,12 +328,14 @@ public sealed partial class VideosTests
 
         public bool HasFallbackPlaceholder(RaindropItem item, IDictionary<string, string> imageUrlCache)
         {
-            return _fallbackStatuses.TryGetValue(item.Link, out var status) && status;
+            var key = item.Link ?? item.Id.ToString();
+            return _fallbackStatuses.TryGetValue(key, out var status) && status;
         }
 
         public string GetFallbackReason(RaindropItem item, IDictionary<string, string> imageUrlCache)
         {
-            return _fallbackReasons.TryGetValue(item.Link, out var reason) ? reason : string.Empty;
+            var key = item.Link ?? item.Id.ToString();
+            return _fallbackReasons.TryGetValue(key, out var reason) ? reason : string.Empty;
         }
     }
 

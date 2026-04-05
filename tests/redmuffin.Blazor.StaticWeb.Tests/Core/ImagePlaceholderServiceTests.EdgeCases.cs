@@ -14,7 +14,7 @@ public sealed partial class ImagePlaceholderServiceTests
         using var scope = CreateTestScope();
         var service = scope.ServiceProvider.GetRequiredService<ImagePlaceholderService>();
         var testItem = CreateTestItem();
-        var imageUrlCache = CreateCacheWithFailedItem(testItem.Link);
+        var imageUrlCache = CreateCacheWithFailedItem(testItem.Link ?? testItem.Id.ToString());
 
         // Act
         var result = service.GetFallbackReason(testItem, imageUrlCache);
@@ -62,7 +62,7 @@ public sealed partial class ImagePlaceholderServiceTests
         using var scope = CreateTestScope();
         var service = scope.ServiceProvider.GetRequiredService<ImagePlaceholderService>();
         var testItem = CreateTestItem();
-        var imageUrlCache = CreateCacheWithFailedItem(testItem.Link);
+        var imageUrlCache = CreateCacheWithFailedItem(testItem.Link ?? testItem.Id.ToString());
 
         // Act
         var result = service.GetImageUrl(testItem, imageUrlCache);
@@ -126,7 +126,7 @@ public sealed partial class ImagePlaceholderServiceTests
         using var scope = CreateTestScope();
         var service = scope.ServiceProvider.GetRequiredService<ImagePlaceholderService>();
         var testItem = CreateTestItem();
-        var imageUrlCache = CreateCacheWithFailedItem(testItem.Link);
+        var imageUrlCache = CreateCacheWithFailedItem(testItem.Link ?? testItem.Id.ToString());
 
         // Act
         var result = service.HasFallbackPlaceholder(testItem, imageUrlCache);

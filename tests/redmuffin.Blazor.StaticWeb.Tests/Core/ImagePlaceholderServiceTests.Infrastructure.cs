@@ -14,7 +14,7 @@ public sealed partial class ImagePlaceholderServiceTests
         var service = scope.ServiceProvider.GetRequiredService<ImagePlaceholderService>();
         var testItem = CreateTestItem();
         var cachedUrl = "https://cached.example.com/image.jpg";
-        var imageUrlCache = CreateCacheWithValidItem(testItem.Link, cachedUrl);
+        var imageUrlCache = CreateCacheWithValidItem(testItem.Link ?? testItem.Id.ToString(), cachedUrl);
 
         // Act
         var result = service.GetImageUrl(testItem, imageUrlCache);

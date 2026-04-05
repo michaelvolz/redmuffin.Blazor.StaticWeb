@@ -29,8 +29,8 @@
                          loading="@(index < 6 ? "eager" : "lazy")"
                          fetchpriority="@(index < 6 ? "high" : "low")"
                          decoding="async"
-                         @onload="@(() => HandleImageLoadAsync($"shimmer-{video.Id}", video.Link, true))"
-                         @onerror="@(() => HandleImageLoadAsync($"shimmer-{video.Id}", video.Link, false))"/>
+                          @onload="@(() => HandleImageLoadAsync($"shimmer-{video.Id}", video.Link ?? video.Id.ToString(), true))"
+                                                   @onerror="@(() => HandleImageLoadAsync($"shimmer-{video.Id}", video.Link ?? video.Id.ToString(), false))"/>
                     @if (HasFallbackPlaceholder(video))
                     {
                         <div class="fallback-placeholder-overlay">

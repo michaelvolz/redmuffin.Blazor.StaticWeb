@@ -49,7 +49,8 @@ public sealed partial class ImageValidationCacheService : IImageValidationCacheS
         {
             // Use only cached values - no network requests during initial render
             var imageUrl = await GetCachedImageUrlAsync(item, cancellationToken).ConfigureAwait(false);
-            imageUrlCache[item.Link] = imageUrl;
+            var cacheKey = item.Link ?? item.Id.ToString();
+            imageUrlCache[cacheKey] = imageUrl;
 
             // If we don't have a cached valid result, start background validation
             if (string.IsNullOrEmpty(item.Cover) ||
@@ -69,7 +70,7 @@ public sealed partial class ImageValidationCacheService : IImageValidationCacheS
                         }
                         catch (Exception ex)
                         {
-                            LogBackgroundValidationFailed(_logger, item.Link, ex);
+                            LogBackgroundValidationFailed(_logger, cacheKey, ex);
                         }
                     },
                     cancellationToken);
@@ -127,24 +128,26 @@ public sealed partial class ImageValidationCacheService : IImageValidationCacheS
                 : _imagePlaceholderService.GenerateSimplePlaceholder(result.FailureReason ?? "Image not available");
 
             // Update cache only if the validation result is different from current cache
-            var currentCachedUrl = imageUrlCache.TryGetValue(item.Link, out var cachedUrl) ? cachedUrl : string.Empty;
+            var cacheKey = item.Link ?? item.Id.ToString();
+            var currentCachedUrl = imageUrlCache.TryGetValue(cacheKey, out var cachedUrl) ? cachedUrl : string.Empty;
             if (!string.Equals(currentCachedUrl, imageUrl, StringComparison.Ordinal))
             {
-                imageUrlCache[item.Link] = imageUrl;
+                imageUrlCache[cacheKey] = imageUrl;
 
                 // Trigger UI update on the main thread
                 await stateHasChangedCallback().ConfigureAwait(false);
 
-                LogBackgroundValidationCompleted(_logger, item.Link, result.IsValid, null);
+                LogBackgroundValidationCompleted(_logger, cacheKey, result.IsValid, null);
             }
         }
         catch (Exception ex)
         {
-            LogBackgroundValidationFailed(_logger, item.Link, ex);
+            var cacheKey = item.Link ?? item.Id.ToString();
+            LogBackgroundValidationFailed(_logger, cacheKey, ex);
 
             // On error, ensure we have a placeholder
             var placeholder = _imagePlaceholderService.GenerateSimplePlaceholder("Validation error");
-            imageUrlCache[item.Link] = placeholder;
+            imageUrlCache[cacheKey] = placeholder;
 
             // Trigger UI update on the main thread
             await stateHasChangedCallback().ConfigureAwait(false);
