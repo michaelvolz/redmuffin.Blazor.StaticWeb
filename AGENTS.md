@@ -38,6 +38,14 @@ For every coding, architecture, refactoring, or review task:
   self-contained entry point — agents load one skill at a time and need the quick-ref
   there. Never remove or consolidate COMMANDS tables as "duplication".
 
+## TODO TOOL USAGE
+
+- Before using the OpenCode todo tool, always check the current task list and
+  completed tasks so you do not duplicate work or miss existing context.
+- Keep the todo list current while working, and clean it up after all tasks are
+  finished.
+- Do not leave stale in_progress items behind once the work is complete.
+
 ## SIDENOTES
 
 When the user says "sidenote:" or "/sidenote", load the `rm-sidenotes` skill. The skill handles capture, storage, retrieval, and conversion.
