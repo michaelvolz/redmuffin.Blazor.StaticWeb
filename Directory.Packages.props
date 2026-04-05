@@ -1,19 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <PropertyGroup Label="SharedVersions">
     <MicrosoftExtensionsVersion>9.0.14</MicrosoftExtensionsVersion>
-    <TUnitVersion>1.22.3</TUnitVersion>
-    <AzureFunctionsWorkerVersion>2.0.0</AzureFunctionsWorkerVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>10.0.3</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+    <TUnitVersion>1.28.0</TUnitVersion>
+    <AzureFunctionsWorkerVersion>2.51.0</AzureFunctionsWorkerVersion>
+    <AzureFunctionsWorkerApplicationInsightsVersion>2.50.0</AzureFunctionsWorkerApplicationInsightsVersion>
+    <AzureFunctionsWorkerExtensionsHttpVersion>3.3.0</AzureFunctionsWorkerExtensionsHttpVersion>
+    <AzureFunctionsWorkerExtensionsHttpAspNetCoreVersion>2.1.0</AzureFunctionsWorkerExtensionsHttpAspNetCoreVersion>
+    <AzureFunctionsWorkerSdkVersion>2.0.7</AzureFunctionsWorkerSdkVersion>
+    <ApplicationInsightsWorkerServiceVersion>3.1.0</ApplicationInsightsWorkerServiceVersion>
     <CoverletVersion>8.0.1</CoverletVersion>
+    <BunitVersion>2.7.2</BunitVersion>
+    <MicrosoftTestingPlatformVersion>2.1.0</MicrosoftTestingPlatformVersion>
+    <AngleSharpVersion>1.4.0</AngleSharpVersion>
+    <BlazoredLocalStorageVersion>4.5.0</BlazoredLocalStorageVersion>
+    <BuildWebCompiler2022Version>1.14.15</BuildWebCompiler2022Version>
+    <LZStringCSharpVersion>1.4.0</LZStringCSharpVersion>
+    <MarkdigVersion>1.1.2</MarkdigVersion>
+    <NewtonsoftJsonVersion>13.0.4</NewtonsoftJsonVersion>
+    <MeziantouAnalyzerVersion>3.0.44</MeziantouAnalyzerVersion>
     <VSThreadingAnalyzersVersion>17.14.15</VSThreadingAnalyzersVersion>
     <RoslynatorVersion>4.15.0</RoslynatorVersion>
     <StyleCopAnalyzersVersion>1.2.0-beta.556</StyleCopAnalyzersVersion>
     <AsyncFixerVersion>2.1.0</AsyncFixerVersion>
   </PropertyGroup>
   <ItemGroup Label="MicrosoftExtensions">
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsVersion)" />
   </ItemGroup>
@@ -27,31 +43,31 @@
   </ItemGroup>
   <ItemGroup Label="AzureFunctions">
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="$(AzureFunctionsWorkerVersion)" />
-    <PackageVersion Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="$(AzureFunctionsWorkerVersion)" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="$(AzureFunctionsWorkerApplicationInsightsVersion)" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Core" Version="$(AzureFunctionsWorkerVersion)" />
-    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.3.0" />
-    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.0.2" />
-    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.7" />
-    <PackageVersion Include="Microsoft.ApplicationInsights.WorkerService" Version="2.23.0" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="$(AzureFunctionsWorkerExtensionsHttpVersion)" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="$(AzureFunctionsWorkerExtensionsHttpAspNetCoreVersion)" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Sdk" Version="$(AzureFunctionsWorkerSdkVersion)" />
+    <PackageVersion Include="Microsoft.ApplicationInsights.WorkerService" Version="$(ApplicationInsightsWorkerServiceVersion)" />
   </ItemGroup>
   <ItemGroup Label="Testing">
     <PackageVersion Include="TUnit" Version="$(TUnitVersion)" />
     <PackageVersion Include="TUnit.Assertions" Version="$(TUnitVersion)" />
-    <PackageVersion Include="bunit" Version="2.6.2" />
+    <PackageVersion Include="bunit" Version="$(BunitVersion)" />
     <PackageVersion Include="coverlet.msbuild" Version="$(CoverletVersion)" />
     <PackageVersion Include="LightMock.Generator" Version="1.2.3" />
-    <PackageVersion Include="Microsoft.Testing.Platform" Version="2.1.0" />
+    <PackageVersion Include="Microsoft.Testing.Platform" Version="$(MicrosoftTestingPlatformVersion)" />
   </ItemGroup>
   <ItemGroup Label="Other">
-    <PackageVersion Include="AngleSharp" Version="1.4.0" />
-    <PackageVersion Include="Blazored.LocalStorage" Version="4.5.0" />
-    <PackageVersion Include="BuildWebCompiler2022" Version="1.14.15" />
-    <PackageVersion Include="LZStringCSharp" Version="1.4.0" />
-    <PackageVersion Include="Markdig" Version="1.1.2" />
-    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageVersion Include="AngleSharp" Version="$(AngleSharpVersion)" />
+    <PackageVersion Include="Blazored.LocalStorage" Version="$(BlazoredLocalStorageVersion)" />
+    <PackageVersion Include="BuildWebCompiler2022" Version="$(BuildWebCompiler2022Version)" />
+    <PackageVersion Include="LZStringCSharp" Version="$(LZStringCSharpVersion)" />
+    <PackageVersion Include="Markdig" Version="$(MarkdigVersion)" />
+    <PackageVersion Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
   </ItemGroup>
   <ItemGroup Label="Analyzers">
-    <PackageVersion Include="Meziantou.Analyzer" Version="3.0.39" />
+    <PackageVersion Include="Meziantou.Analyzer" Version="$(MeziantouAnalyzerVersion)" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="$(VSThreadingAnalyzersVersion)" />
     <PackageVersion Include="Roslynator.Analyzers" Version="$(RoslynatorVersion)" />
     <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="$(RoslynatorVersion)" />

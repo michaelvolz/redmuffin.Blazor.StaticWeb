@@ -346,11 +346,15 @@ Located in `scripts/`:
 
 | Script                        | Purpose                                      |
 | ----------------------------- | -------------------------------------------- |
+| `Update-PackageVersions.ps1`  | Updates CPM-managed NuGet package versions   |
 | `opencode-secure.ps1`         | Starts devcontainer and runs opencode inside |
 | `devcontainer-down.ps1`       | Stops the devcontainer                       |
 | `Generate-CoverageReport.ps1` | Generates code coverage                      |
 | `View-CoverageReport.ps1`     | Views coverage report                        |
 | `Setup-GitHooks.ps1`          | Configures git hooks for commit validation   |
+
+For package updates, run `scripts/Update-PackageVersions.ps1` and finish with
+`dotnet clean && dotnet build --verbosity quiet && dotnet test`.
 
 **Creating an alias (optional):**
 Add to your PowerShell profile (`$PROFILE`):

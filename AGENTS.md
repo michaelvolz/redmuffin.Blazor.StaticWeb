@@ -16,6 +16,7 @@ For every coding, architecture, refactoring, or review task:
 - NEVER use `chrome-devtools_close_page` for cleanup. Use process-level identification only.
 - ALWAYS navigate existing browser tabs to target URLs. Never create new blank tabs when an existing tab can be reused.
 - NEVER answer without reading the actual code first
+- Before using `apply_patch` from OpenCode, read the latest version of the target file directly first; otherwise you will most likely hit a patch error. This is usually the fastest path.
 - For any commit, always invoke the `rm-commit` skill first. Do not improvise a manual commit workflow.
 - Keep commit bodies wrapped to about 80 characters per line; longer body lines are likely to trigger commitlint failures.
 - Stage and commit only files that belong together for one clear reason. Do not bundle unrelated changes or default to "all files" staging.
@@ -24,6 +25,12 @@ For every coding, architecture, refactoring, or review task:
 - ALWAYS `dotnet test` before commit
 - "Undo commit" means: undo the last commit and keep changes as unstaged edits.
 - Research first: use Exa code search or web search before implementing unfamiliar APIs
+- Use `scripts/Update-PackageVersions.ps1` for NuGet package updates, then
+  finish with `dotnet clean && dotnet build --verbosity quiet && dotnet test`
+  as the final verification step.
+- Keep every package version value centralized in the top property section of
+  `Directory.Packages.props`; item groups should reference properties instead
+  of hard-coded version literals.
 - SKILL COMMANDS tables are intentionally duplicated across skills. Each skill is a
   self-contained entry point — agents load one skill at a time and need the quick-ref
   there. Never remove or consolidate COMMANDS tables as "duplication".
