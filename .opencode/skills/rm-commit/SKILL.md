@@ -20,12 +20,10 @@ Create clean, reviewable git commits from the working tree.
 ## FLOW
 
 1. Check repo rules first.
-2. **Recover from stale git locks** (caused by interrupted sessions or API rate limits).
-3. Inspect the working tree and recent history.
-4. Decide whether changes belong in one commit or several.
-5. Stage only the intended files or hunks.
-6. Commit with Conventional Commits using the Write tool to create a temp file, then `git commit -F <file>`.
-7. Verify the result with `git status`.
+2. Inspect the working tree and recent history.
+3. Decide whether changes belong in one commit or several.
+4. Stage only the intended files or hunks.
+5. Commit with Conventional Commits using the Write tool to create a unique temp file, then `git commit -F <file>`.
 
 ## COMMANDS
 
@@ -38,37 +36,6 @@ Create clean, reviewable git commits from the working tree.
 | `git add -p`                | Stage partial hunks              | File has mixed changes |
 | See WORKFLOWS → Commit      | Commit with Conventional Commits | After staging          |
 
-## STALE LOCK RECOVERY
-
-Git creates `.git/index.lock` at the start of any write operation and removes it when done.
-If the agent session is interrupted (Esc, timeout, process kill) or the bash tool's shell
-session is killed by an API rate limit retry while git holds the lock, the file persists
-and blocks all subsequent git operations.
-
-**Recovery**: Before any git write operation, check for a stale lock and remove it if safe.
-
-```powershell
-$lockFile = ".git/index.lock"
-if (Test-Path $lockFile) {
-    $age = (Get-Date) - (Get-Item $lockFile).LastWriteTime
-    $ageSeconds = [math]::Round($age.TotalSeconds)
-    if ($age -gt [TimeSpan]::FromMinutes(1)) {
-        Write-Warning "Stale git lock detected (${ageSeconds}s old). Removing..."
-        Remove-Item $lockFile -Force
-    } else {
-        Write-Error "Active git operation in progress (${ageSeconds}s old). Wait or investigate."
-        exit 1
-    }
-}
-```
-
-**Safety rules**:
-
-- Only remove locks older than 1 minute — no legitimate git operation holds a lock that long without progress
-- If the lock is fresh (< 1 min), abort and warn — something is actively running
-- Never remove `.git/refs/*.lock` or `.git/HEAD.lock` with this logic — those are separate lock files for different operations
-- This check runs BEFORE `git add` and BEFORE `git commit`
-
 ## WORKFLOWS
 
 ### 1. Gather Context
@@ -78,9 +45,6 @@ git status && git diff HEAD && git branch --show-current && git log --oneline -1
 ```
 
 Stop if tree is clean.
-
-**Stale lock check**: If `git status` fails with "Another git process seems to be running",
-run the stale lock recovery script from the STALE LOCK RECOVERY section, then retry.
 
 ### 2. Decide Commit Shape
 
@@ -116,19 +80,14 @@ Rules:
 
 ### 5. Commit
 
-**Pre-flight**: Run the stale lock check before committing. If `git add` or any prior git
-operation succeeded, the lock is clean — skip the check. If this is a resumed session or
-a prior git command failed with a lock error, run the check first.
-
 **Commit method**: Use the **Write tool** to create the commit message file, then `git commit -F`.
 
-This approach has zero parser error risk — no shell quoting, no here-string delimiters,
-no escaping. The Write tool writes raw text exactly as you compose it.
+This approach has zero parser error risk — no shell quoting, no here-string delimiters, no escaping. The Write tool writes raw text exactly as you compose it.
 
 **Step 1 — Write the message file** (Write tool):
 
 ```
-File: $env:TEMP\commit-msg.txt
+File: $env:TEMP\commit-msg-<unique>.txt
 Content:
 type(scope): imperative subject
 
@@ -141,13 +100,7 @@ Refs: #123
 **Step 2 — Commit** (bash):
 
 ```powershell
-git commit -F "$env:TEMP\commit-msg.txt"
-```
-
-**Step 3 — Cleanup** (bash):
-
-```powershell
-Remove-Item "$env:TEMP\commit-msg.txt" -Force -ErrorAction SilentlyContinue
+git commit -F "$env:TEMP\commit-msg-<unique>.txt"
 ```
 
 **Why this works:**
@@ -155,15 +108,15 @@ Remove-Item "$env:TEMP\commit-msg.txt" -Force -ErrorAction SilentlyContinue
 - **No shell parsing** — The Write tool writes raw text. No quoting, no escaping, no delimiters.
 - **No parser errors** — Apostrophes, `$variables`, backticks, `@"` — all safe. No syntax to get wrong.
 - **Line length preserved** — The Write tool preserves exact line breaks. What you type is what git receives.
-- **Retry-safe** — The file persists after a failed commit. Retry is just `git commit -F "$env:TEMP\commit-msg.txt"` again. No message reconstruction needed.
-- **No temp file generation** — No `[System.IO.Path]::GetTempFileName()`, no try/finally. Fixed path, simple cleanup.
+- **Retry-safe** — A failed attempt just uses a fresh unique temp file on the next run. No message reconstruction needed.
+- **No manual cleanup** — The unique temp file name removes the need for an explicit delete step.
 
 **CRITICAL: Wrap every body line at ≤ 80 characters.** The file preserves your exact line breaks, so what you type is what commitlint sees. Count characters if unsure — do NOT guess.
 
 **Template:**
 
 ```
-File: $env:TEMP\commit-msg.txt
+File: $env:TEMP\commit-msg-<unique>.txt
 Content:
 type(scope): imperative subject
 
@@ -178,7 +131,7 @@ Refs: #123
 **Basic commit (subject + body):**
 
 ```
-File: $env:TEMP\commit-msg.txt
+File: $env:TEMP\commit-msg-<unique>.txt
 Content:
 fix(frontend): prevent duplicate form submits
 
@@ -189,7 +142,7 @@ cannot queue duplicate requests.
 **Multi-paragraph body with footer:**
 
 ```
-File: $env:TEMP\commit-msg.txt
+File: $env:TEMP\commit-msg-<unique>.txt
 Content:
 refactor(core): extract validation logic
 
@@ -205,7 +158,7 @@ Refs: #123
 **Message with `$` or backticks (always safe — no shell parsing):**
 
 ```
-File: $env:TEMP\commit-msg.txt
+File: $env:TEMP\commit-msg-<unique>.txt
 Content:
 fix(api): handle null $userId gracefully
 
@@ -223,10 +176,6 @@ Refs: #456
 - **Good:** Each line is a short, readable sentence fragment
 - **Bad:** One long run-on line that exceeds 100 characters
 
-### 6. Verify
-
-Run `git status` post-commit. Report hash and subject.
-
 ## PATTERNS
 
 ### Write Tool + `git commit -F`
@@ -234,7 +183,7 @@ Run `git status` post-commit. Report hash and subject.
 **Basic (subject + body):**
 
 ```
-File: $env:TEMP\commit-msg.txt
+File: $env:TEMP\commit-msg-<unique>.txt
 Content:
 type(scope): imperative subject
 
@@ -242,12 +191,12 @@ Body explaining why the change exists.
 Keep each line under 80 characters.
 ```
 
-Then: `git commit -F "$env:TEMP\commit-msg.txt"`
+Then: `git commit -F "$env:TEMP\commit-msg-<unique>.txt"`
 
 **Multi-paragraph with footer:**
 
 ```
-File: $env:TEMP\commit-msg.txt
+File: $env:TEMP\commit-msg-<unique>.txt
 Content:
 type(scope): subject
 
@@ -260,12 +209,12 @@ Same line length discipline.
 Refs: #123
 ```
 
-Then: `git commit -F "$env:TEMP\commit-msg.txt"`
+Then: `git commit -F "$env:TEMP\commit-msg-<unique>.txt"`
 
 **With `$` or backticks (safe — no shell parsing):**
 
 ```
-File: $env:TEMP\commit-msg.txt
+File: $env:TEMP\commit-msg-<unique>.txt
 Content:
 fix(api): handle null $userId gracefully
 
@@ -273,7 +222,7 @@ When $userId is null, return 401 instead of 500.
 The backtick ` character is also safe here.
 ```
 
-Then: `git commit -F "$env:TEMP\commit-msg.txt"`
+Then: `git commit -F "$env:TEMP\commit-msg-<unique>.txt"`
 
 ### Partial Staging
 
@@ -287,7 +236,6 @@ git diff --cached  # Review staged changes
 ### ALWAYS
 
 - Check AGENTS.md/CLAUDE.md for repo-specific rules
-- Run `git status` after commit to verify
 
 ### ASK FIRST
 
@@ -302,4 +250,4 @@ git diff --cached  # Review staged changes
 
 ## CONTEXT
 
-This skill creates conventional commits. It handles staging, message formatting, and verification. It respects repo-specific rules defined in AGENTS.md or similar files.
+This skill creates conventional commits. It handles staging and message formatting. It respects repo-specific rules defined in AGENTS.md or similar files.

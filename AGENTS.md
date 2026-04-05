@@ -16,6 +16,9 @@ For every coding, architecture, refactoring, or review task:
 - NEVER use `chrome-devtools_close_page` for cleanup. Use process-level identification only.
 - ALWAYS navigate existing browser tabs to target URLs. Never create new blank tabs when an existing tab can be reused.
 - NEVER answer without reading the actual code first
+- For any commit, always invoke the `rm-commit` skill first. Do not improvise a manual commit workflow.
+- Keep commit bodies wrapped to about 80 characters per line; longer body lines are likely to trigger commitlint failures.
+- Stage and commit only files that belong together for one clear reason. Do not bundle unrelated changes or default to "all files" staging.
 - ALWAYS `dotnet build --verbosity quiet` after C# changes
 - ALWAYS `dotnet build -c Debug-Sass` after SCSS/JS changes
 - ALWAYS `dotnet test` before commit
