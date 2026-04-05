@@ -9,6 +9,7 @@ For every coding, architecture, refactoring, or review task:
 
 ## CRITICAL BOUNDARIES
 
+- Whenever you try to activate a reviewer agent make sure you have the correct subfolder selected for the name. Use local reviewers only for this project
 - NEVER restore a file from git without asking. We could have had multiple uncommitted changes.
 - NEVER use `git revert`.
 - NEVER commit secrets, NEVER push to remote (HARD BLOCKED)
