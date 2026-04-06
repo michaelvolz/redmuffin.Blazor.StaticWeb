@@ -1067,6 +1067,45 @@ Docker Desktop handles the containerization layer.
 
 **Note:** Context7 uses HTTP endpoint, not Docker.
 
+#### File Search Tools
+
+##### Everything Search (es.exe)
+
+For optimal performance when searching files in large codebases, this project uses **Everything Search** with its command-line interface `es.exe`.
+
+**Why es.exe?**
+
+- **Lightning Fast**: Leverages NTFS Master File Table for near-instantaneous results (milliseconds vs. seconds/minutes with grep)
+- **Comprehensive**: Searches file names, paths, and content across entire drives
+- **Developer Optimized**: Perfect for .NET projects with many files
+
+**Installation:**
+
+1. Download from [voidtools.com](https://www.voidtools.com/)
+2. Install Everything (the GUI app)
+3. The CLI `es.exe` will be available in the installation directory (usually `C:\Program Files\Everything\es.exe`)
+
+**Usage Examples:**
+
+```bash
+# Search for files containing "opencode"
+es.exe opencode
+
+# Search for C# files with "interface"
+es.exe interface *.cs
+
+# Find all .md files
+es.exe *.md
+```
+
+**Tips:**
+
+- Results are returned instantly for indexed drives
+- Use for both local and external file searches
+- If es.exe fails to load, ensure Everything is running and indexing is complete
+
+This tool significantly speeds up development workflows in this project.
+
 ---
 
 ## Build and Deployment
