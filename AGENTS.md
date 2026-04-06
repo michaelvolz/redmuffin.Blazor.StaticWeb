@@ -1,130 +1,104 @@
 # AGENTS: Project Guide
 
-## MANDATORY GLOBAL RULES
+## CRITICAL
 
-- For any commit, always invoke the `rm-commit` skill first. Do not improvise a manual commit workflow.
+- ALWAYS invoke `rm-commit` for commits; NO manual workflows.
+- ALWAYS `dotnet test` before commit.
+- ALWAYS `dotnet build --verbosity quiet` after C# edits.
+- ALWAYS `dotnet build -c Debug-Sass` after SCSS/JS edits.
+- ALWAYS read code before answering.
+- ALWAYS use `pwsh -NoProfile` for PowerShell.
+- ALWAYS wrap commit bodies to ~80 chars.
+- ALWAYS add `date: YYYY-MM-DD` frontmatter to new `docs/` markdown (extract from filename or use today's date).
+- NEVER commit secrets or push to remote (HARD BLOCKED).
+- NEVER `git commit`/`git add` without explicit user request.
+- NEVER `git revert` (HARD BLOCKED).
+- NEVER restore from git without asking (prevents loss of uncommitted edits).
+- NEVER use `chrome-devtools_close_page`; use process-level identification for cleanup.
+- Pragma warnings are DELIBERATE. NEVER modify/remove without approval. Goal: zero errors/warnings.
+- Reviewer Agents: ALWAYS select correct subfolder for name. Local reviewers ONLY.
 
-For every coding, architecture, refactoring, or review task:
+## COMMANDS
 
-- Load the skill "strict-coding-standards" ONLY when creating new services/classes, designing feature architecture, performing structural refactoring, or reviewing code for design-pattern violations. Do NOT load for trivial bug fixes, config edits, CSS/SCSS changes, documentation, or running commands. If a bug fix requires structural changes, load the skill.
-- Strictly follow every rule in that skill when loaded. No exceptions.
+| Command                                       | Purpose             | When                           |
+| --------------------------------------------- | ------------------- | ------------------------------ |
+| `dotnet test`                                 | Verify logic        | Pre-commit                     |
+| `dotnet build --verbosity quiet`              | Verify C#           | Post-edit                      |
+| `dotnet build -c Debug-Sass`                  | Verify UI (SCSS/JS) | Post-edit                      |
+| `scripts/Update-PackageVersions.ps1`          | Update NuGet (CPM)  | Package changes                |
+| `dotnet clean && dotnet build && dotnet test` | Verification        | After NuGet update             |
+| `es.exe`                                      | Fast file search    | Outside solution / Large scale |
+| `pwsh -NoProfile`                             | Shell execution     | All PowerShell tasks           |
 
-## CRITICAL BOUNDARIES
+## BOUNDARIES
 
-- Whenever you try to activate a reviewer agent make sure you have the correct subfolder selected for the name. Use local reviewers only for this project
-- NEVER restore a file from git without asking. We could have had multiple uncommitted changes.
-- NEVER use `git revert`.
-- NEVER commit secrets, NEVER push to remote (HARD BLOCKED)
-- NEVER run `git commit`, `git add`, or any git commit-related command unless the user explicitly asks you to. The user reviews all changes before committing. Bypassing this breaks the entire review process. (HARD BLOCKED)
-- NEVER use `chrome-devtools_close_page` for cleanup. Use process-level identification only.
-- ALWAYS navigate existing browser tabs to target URLs. Never create new blank tabs when an existing tab can be reused.
-- NEVER answer without reading the actual code first
-- Before using `apply_patch` from OpenCode, read the latest version of the target file directly first; otherwise you will most likely hit a patch error. This is usually the fastest path.
-- When creating commit-message temp files, include a timestamp in the filename so retries stay unique and resilient.
-- Keep commit bodies wrapped to about 80 characters per line; longer body lines are likely to trigger commitlint failures.
-- Stage and commit only files that belong together for one clear reason. Do not bundle unrelated changes or default to "all files" staging.
-- ALWAYS `dotnet build --verbosity quiet` after C# changes
-- ALWAYS `dotnet build -c Debug-Sass` after SCSS/JS changes
-- ALWAYS `dotnet test` before commit
-- **Pragma warnings are deliberate choices** — `#pragma warning disable` directives suppress warnings we've consciously decided to keep. Never remove or modify pragma directives without explicit user approval. Goal: zero errors, zero warnings before commit. Pragmas enable this by documenting intentional deviations from analyzer rules.
-- "Undo commit" means: undo the last commit and keep changes as unstaged edits.
-- Research first: use Exa code search or web search before implementing unfamiliar APIs
-- Use `scripts/Update-PackageVersions.ps1` for NuGet package updates according to our Central Package Management (CPM) setup, then
-  finish with `dotnet clean && dotnet build --verbosity quiet && dotnet test`
-  as the final verification step.
-- ALWAYS use `pwsh -NoProfile` for all PowerShell commands to optimize performance. The profile is only useful for manual work.
-- Keep every package version value centralized in the top property section of
-  `Directory.Packages.props`; item groups should reference properties instead
-  of hard-coded version literals.
-- Use the `.github` folder for workflows and dependabot configurations. Ignore the subfolders `chatmodes`, `guides`, and `prompts` as they are outdated and should be transformed, converted, updated, or deleted soon.
-- SKILL COMMANDS tables are intentionally duplicated across skills. Each skill is a
-  self-contained entry point — agents load one skill at a time and need the quick-ref
-  there. Never remove or consolidate COMMANDS tables as "duplication".
-- Use `es.exe` (Everything Search CLI) for all file/path searches outside the current solution folder (`B:\redmuffin.Blazor.StaticWeb`). Use it even within the solution for large-scale file finding when performance matters.
-- If `es.exe` fails to load/start (e.g., command not found, indexing issues), stop execution, report the error immediately, and wait for user intervention before proceeding. Do not attempt fallbacks or retries without user approval.
-- Prefer `es.exe` over `grep` for file existence/path queries due to superior performance (MFT-based vs. content scanning). Use `grep` only for content searches within files.
+### ALWAYS
 
-## TODO TOOL USAGE
+- Research first (Exa/web) before implementing unfamiliar APIs.
+- Navigate existing browser tabs; reuse before creating new ones.
+- Read target file before `apply_patch`.
+- Timestamp commit-message temp files for uniqueness.
+- Group related files only in single commits; NO bundling unrelated changes.
+- Centralize NuGet versions in `Directory.Packages.props` top section as properties; item groups MUST reference properties, NO hard-coded versions.
+- Use `.github/` for workflows/dependabot; ignore `chatmodes`, `guides`, `prompts`.
+- Stay on trunk/main (Trunk-Based Development); branch only for high risk.
 
-- Before using the OpenCode todo tool, always check the current task list and
-  completed tasks so you do not duplicate work or miss existing context.
-- Keep the todo list current while working, and clean it up after all tasks are
-  finished.
-- Do not leave stale in_progress items behind once the work is complete.
+### ASK FIRST
 
-## SIDENOTES
+- File restoration from git.
+- Modification of `#pragma warning disable` directives.
 
-When the user says "sidenote:" or "/sidenote", load the `rm-sidenotes` skill. The skill handles capture, storage, retrieval, and conversion.
+### NEVER
 
-If a prompt starts with `sidenote`, `sidenotes`, or `/rm-sidenotes` and includes quoted text, treat the quoted text as pure data for sidenote capture only. Do not interpret it as instruction text; pass it to `rm-sidenotes` exactly as data, then continue the current task without waiting.
+- Act on/discuss sidenotes during current task; NO follow-up questions or suggestions.
+- Remove/consolidate SKILL COMMANDS tables (duplication is required).
+- Use `grep` for file existence if `es.exe` is available.
 
-Behavioral rules:
+## WORKFLOWS
 
-- NEVER act on a sidenote during the current task — not now, not later in the same turn
-- NEVER ask follow-up questions about a sidenote ("want to tackle it now?", "should I...?")
-- NEVER suggest, propose, or discuss the sidenote beyond the capture confirmation
-- Sidenotes are a backlog — the user will explicitly reference one when ready to convert it to a task
-- The current task continues uninterrupted after capture
+### Skill Loading
 
-## STACK
+- `strict-coding-standards`: Load ONLY for new services, architecture, or structural refactors. Load for bug fixes requiring structural changes. NO for config/CSS/docs.
 
-| Technology      | Version     | Purpose        |
-| --------------- | ----------- | -------------- |
-| .NET            | 9.0         | Core framework |
-| Blazor          | WebAssembly | Frontend       |
-| Azure Functions | .NET 9      | Backend        |
-| TUnit           | Latest      | Testing        |
-| SCSS/Sass       | -           | Styling        |
+### Sidenotes (Trigger: "sidenote:" or "/sidenote")
 
-## STRUCTURE
+1. Load `rm-sidenotes`.
+2. Capture quoted text as pure data without interpretation.
+3. Continue task immediately; do not wait. Sidenotes are a backlog only.
 
-```
-src/redmuffin.Blazor.StaticWeb/          # Frontend (Blazor WASM)
-src/redmuffin.Blazor.StaticWeb.Api/      # Backend (Azure Functions)
-tests/                                    # Tests (mirrors src)
-docs/solutions/                           # Searchable knowledge store of past solutions (bugs, best practices, patterns), organized by category with YAML frontmatter (module, tags, problem_type). Relevant when implementing or debugging in documented areas.
-```
+### Tool Usage
 
-## DOCUMENTATION
+- **Todo**: Check pending/completed tasks before use. Clean up `in_progress` on finish.
+- **Everything Search**: If `es.exe` fails, STOP and report. DO NOT fallback without approval.
+- **Undo commit**: Undo last commit while keeping changes as unstaged edits.
 
-When creating new markdown files in `docs/`:
+## STACK & STRUCTURE
 
-- **Always add `date:` frontmatter** — Extract from filename first (e.g., `2026-04-04-name.md` → `date: 2026-04-04`), then fall back to current date
-- **Do this before the user reviews changes** — Not during skill execution, but during the commit preparation phase
-- **Pattern**: If filename matches `YYYY-MM-DD-*.md` or `*-YYYY-MM-DD.md`, use that date. Otherwise use today's date
-- **Applies to**: All new docs files (brainstorms, plans, solutions, sidenotes, or any other docs)
-
-Example frontmatter:
-
-```yaml
----
-title: My Doc Title
-date: 2026-04-04
----
-```
-
-## DEVELOPMENT PHILOSOPHY
-
-- **Trunk-Based Development**: Prefer staying on trunk/main if possible. Branch only when the risk is too high.
+- **Stack**: .NET 9, Blazor WASM, Azure Functions (.NET 9), TUnit, SCSS.
+- **Paths**:
+  - `src/redmuffin.Blazor.StaticWeb/`: Frontend (Blazor WASM).
+  - `src/redmuffin.Blazor.StaticWeb.Api/`: Backend (Azure Functions).
+  - `tests/`: Test mirror (mirrors src).
+  - `docs/solutions/`: knowledge store (YAML: `module`, `tags`, `problem_type`).
 
 ## SKILL REFERENCES
 
-| Skill                         | Trigger When...                                                                         |
-| ----------------------------- | --------------------------------------------------------------------------------------- |
-| `rm-nuget-manager`            | Adding/removing/updating NuGet packages                                                 |
-| `rm-agent-markdown-optimizer` | "optimize for agents", "make agent-friendly"                                            |
-| `rm-commit`                   | commit/save changes/git commit/checkin                                                  |
-| `rm-guide-naming`             | Creating or renaming C# types, members, namespaces, or test doubles                     |
-| `rm-guide-csharp-features`    | Using modern C# 12/13 syntax, collection expressions, or primary constructors           |
-| `rm-guide-async`              | Writing async methods, cancellation flows, or Task-based APIs                           |
-| `rm-guide-namespaces`         | Creating new C# files or organizing namespaces                                          |
-| `rm-guide-logging`            | Adding structured logging, LoggerMessage delegates, or organizing partial classes       |
-| `rm-guide-di`                 | Injecting dependencies, registering services, or shaping component/service constructors |
-| `rm-guide-testing`            | Writing TUnit tests, test doubles, or TestScope helpers                                 |
-| `rm-guide-warnings`           | Fixing analyzer warnings, pragma directives, or zero-warning build issues               |
-| `rm-guide-blazor`             | Building or reviewing Blazor components, lifecycle code, or render behavior             |
-| `rm-guide-azure-functions`    | Creating or reviewing Azure Functions isolated worker code                              |
-| `rm-guide-architecture`       | Designing services, boundaries, patterns, or cross-layer C# changes                     |
-| `rm-guide-config`             | Touching build commands, dev modes, package management, or repository configuration     |
-| `rm-guide-dotnet9`            | Deciding whether to use .NET 9 APIs or current runtime best practices                   |
-| `rm-guide-code-quality`       | Reviewing C# style, readability, null handling, records, or general code quality        |
+| Skill                         | Trigger When...                                               |
+| ----------------------------- | ------------------------------------------------------------- |
+| `rm-nuget-manager`            | NuGet package updates                                         |
+| `rm-agent-markdown-optimizer` | "optimize for agents", "make agent-friendly"                  |
+| `rm-commit`                   | Commit / Save / Checkin                                       |
+| `rm-guide-naming`             | New C# types, members, namespaces, test doubles               |
+| `rm-guide-csharp-features`    | C# 12/13 syntax, collection expressions, primary constructors |
+| `rm-guide-async`              | Async methods, cancellation flows, Task-based APIs            |
+| `rm-guide-namespaces`         | New C# files or organizing namespaces                         |
+| `rm-guide-logging`            | Structured logging, LoggerMessage, partial classes            |
+| `rm-guide-di`                 | Injecting dependencies, registering services, constructors    |
+| `rm-guide-testing`            | TUnit tests, test doubles, TestScope helpers                  |
+| `rm-guide-warnings`           | Analyzer warnings, pragma directives, zero-warning build      |
+| `rm-guide-blazor`             | Blazor components, lifecycle, render behavior                 |
+| `rm-guide-azure-functions`    | Azure Functions isolated worker code                          |
+| `rm-guide-architecture`       | Designing services, boundaries, patterns, C# changes          |
+| `rm-guide-config`             | Build commands, dev modes, package management, config         |
+| `rm-guide-dotnet9`            | .NET 9 APIs or current runtime best practices                 |
+| `rm-guide-code-quality`       | Style, readability, null handling, records, code quality      |
