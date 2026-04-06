@@ -1,7 +1,7 @@
 ---
 title: feat: Verify test locations mirror production structure
 type: feat
-status: active
+status: completed
 date: 2026-04-06
 ---
 
