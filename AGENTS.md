@@ -2,6 +2,8 @@
 
 ## MANDATORY GLOBAL RULES
 
+- For any commit, always invoke the `rm-commit` skill first. Do not improvise a manual commit workflow.
+
 For every coding, architecture, refactoring, or review task:
 
 - Load the skill "strict-coding-standards" ONLY when creating new services/classes, designing feature architecture, performing structural refactoring, or reviewing code for design-pattern violations. Do NOT load for trivial bug fixes, config edits, CSS/SCSS changes, documentation, or running commands. If a bug fix requires structural changes, load the skill.
@@ -18,13 +20,13 @@ For every coding, architecture, refactoring, or review task:
 - ALWAYS navigate existing browser tabs to target URLs. Never create new blank tabs when an existing tab can be reused.
 - NEVER answer without reading the actual code first
 - Before using `apply_patch` from OpenCode, read the latest version of the target file directly first; otherwise you will most likely hit a patch error. This is usually the fastest path.
-- For any commit, always invoke the `rm-commit` skill first. Do not improvise a manual commit workflow.
 - When creating commit-message temp files, include a timestamp in the filename so retries stay unique and resilient.
 - Keep commit bodies wrapped to about 80 characters per line; longer body lines are likely to trigger commitlint failures.
 - Stage and commit only files that belong together for one clear reason. Do not bundle unrelated changes or default to "all files" staging.
 - ALWAYS `dotnet build --verbosity quiet` after C# changes
 - ALWAYS `dotnet build -c Debug-Sass` after SCSS/JS changes
 - ALWAYS `dotnet test` before commit
+- **Pragma warnings are deliberate choices** — `#pragma warning disable` directives suppress warnings we've consciously decided to keep. Never remove or modify pragma directives without explicit user approval. Goal: zero errors, zero warnings before commit. Pragmas enable this by documenting intentional deviations from analyzer rules.
 - "Undo commit" means: undo the last commit and keep changes as unstaged edits.
 - Research first: use Exa code search or web search before implementing unfamiliar APIs
 - Use `scripts/Update-PackageVersions.ps1` for NuGet package updates according to our Central Package Management (CPM) setup, then

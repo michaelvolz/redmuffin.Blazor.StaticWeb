@@ -65,6 +65,45 @@ public sealed class DelayProvider_Stub : IDelayProvider
 }
 ```
 
+### Disposable Pattern for Test Doubles
+
+All test doubles that own disposable resources (e.g., `MemoryStream`, `HttpClient`, `IDisposable` fields) **must implement `IDisposable`**:
+
+```csharp
+// ✅ CORRECT: Mock with disposable resources implements IDisposable
+public sealed class HttpRequestData_Mock : HttpRequestData, IDisposable
+{
+    private readonly MemoryStream _bodyStream = new();
+
+    public override Stream Body => _bodyStream;
+
+    public void Dispose()
+    {
+        _bodyStream.Dispose();
+    }
+}
+
+// ❌ INCORRECT: Missing IDisposable causes CA2001/CA1001 warnings
+public sealed class HttpRequestData_Mock : HttpRequestData
+{
+    private readonly MemoryStream _bodyStream = new(); // Warning: disposable field
+}
+```
+
+**Why this matters:**
+
+- Prevents CA2001 ("Call System.IDisposable.Dispose on object") warnings
+- Prevents CA1001 ("Type owns disposable field(s) but is not disposable") warnings
+- Ensures zero-warning builds as required by project policy
+- Tests using `using var request = ...` pattern dispose correctly
+
+**Pattern for test usage:**
+
+```csharp
+// ✅ CORRECT: Using statement ensures disposal
+using var request = TestScope.CreateHttpRequestData(functionContext, requestBody);
+```
+
 ## Organizational Standards
 
 ### Partial Class Structure
@@ -117,8 +156,12 @@ Before committing any test changes:
 - [ ] All helpers placed in corresponding partial files
 - [ ] TUnit standards followed
 - [ ] ConfigureAwait(false) properly applied
+- [ ] Disposable test doubles implement `IDisposable` (CA2001/CA1001 compliance)
 
 ## References
 
-- [Test Double Best Practices](TestDoubleBestPractices.md)
-- [PRD-011 Standardizing Test Doubles](../tasks/PRD-011-StandardizingTestDoubles.md)
+| Document                            | Path                                        | Purpose                              |
+| ----------------------------------- | ------------------------------------------- | ------------------------------------ |
+| Test Double Best Practices          | `docs/TestDoubleBestPractices.md`           | Naming conventions and examples      |
+| PRD-011: Standardizing Test Doubles | `tasks/PRD-011-StandardizingTestDoubles.md` | Requirements and acceptance criteria |
+| Testing Guidelines                  | `docs/TestingGuidelines.md`                 | Central reference (this document)    |

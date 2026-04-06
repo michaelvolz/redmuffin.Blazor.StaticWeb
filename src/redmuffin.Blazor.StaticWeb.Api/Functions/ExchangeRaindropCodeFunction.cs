@@ -50,14 +50,22 @@ public sealed partial class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindro
 
     private async Task<ExchangeRequest?> DeserializeRequestAsync(HttpRequestData req, CancellationToken token)
     {
-        var request = await JsonSerializer.DeserializeAsync<ExchangeRequest>(req.Body, cancellationToken: token).ConfigureAwait(false);
-        if (request is null || string.IsNullOrWhiteSpace(request.Code))
+        try
+        {
+            var request = await JsonSerializer.DeserializeAsync<ExchangeRequest>(req.Body, cancellationToken: token).ConfigureAwait(false);
+            if (request is null || string.IsNullOrWhiteSpace(request.Code))
+            {
+                Log_MissingCodeOrRequest(logger);
+                return null;
+            }
+
+            return request;
+        }
+        catch (JsonException)
         {
             Log_MissingCodeOrRequest(logger);
             return null;
         }
-
-        return request;
     }
 
     private string? ValidateRedirectUri(string? redirectUri)
@@ -117,7 +125,8 @@ public sealed partial class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindro
     private async Task<HttpResponseData> HandleFailedResponseAsync(HttpRequestData req, HttpStatusCode statusCode, string json, CancellationToken token)
     {
         Log_TokenRequestFailed(logger, statusCode, json);
-        var errResp = req.CreateResponse(HttpStatusCode.BadRequest);
+        // Preserve the original status code from the Raindrop API for proper error propagation
+        var errResp = req.CreateResponse(statusCode);
         await errResp.WriteAsJsonAsync(new ExchangeResponse { Error = $"Token request failed: {statusCode}" }, token).ConfigureAwait(false);
         return errResp;
     }

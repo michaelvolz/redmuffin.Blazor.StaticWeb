@@ -49,11 +49,18 @@ public sealed partial class RaindropListVideos(ILogger<RaindropListVideos> logge
             {
                 Log_ResponseReceived(logger);
                 using var jsonDoc = JsonDocument.Parse(json);
-                var items = jsonDoc.RootElement.TryGetProperty("items", out var itemsElement) ? itemsElement.Clone() : jsonDoc.RootElement.Clone();
+                if (jsonDoc.RootElement.TryGetProperty("items", out var itemsElement))
+                {
+                    var okResp = request.CreateResponse(HttpStatusCode.OK);
+                    await okResp.WriteAsJsonAsync(itemsElement.Clone(), token).ConfigureAwait(false);
+                    return okResp;
+                }
 
-                var okResp = request.CreateResponse(HttpStatusCode.OK);
-                await okResp.WriteAsJsonAsync(items, token).ConfigureAwait(false);
-                return okResp;
+                // Fallback: API should always return 'items', but if not, log warning and return full response
+                Log_MissingItemsProperty(logger);
+                var fallbackResp = request.CreateResponse(HttpStatusCode.OK);
+                await fallbackResp.WriteAsJsonAsync(jsonDoc.RootElement.Clone(), token).ConfigureAwait(false);
+                return fallbackResp;
             }
 
             Log_RequestFailed(logger, response.StatusCode, json);

@@ -23,4 +23,7 @@ public sealed partial class RaindropListArticles
 
     [LoggerMessage(6, LogLevel.Information, "Operation was canceled.", EventName = nameof(Log_OperationCanceled))]
     public static partial void Log_OperationCanceled(ILogger logger);
+
+    [LoggerMessage(7, LogLevel.Warning, "Raindrop API response missing 'items' property, returning full response.", EventName = nameof(Log_MissingItemsProperty))]
+    public static partial void Log_MissingItemsProperty(ILogger logger);
 }
