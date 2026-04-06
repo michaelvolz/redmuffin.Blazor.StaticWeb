@@ -48,7 +48,7 @@ Stop if tree is clean.
 
 ### 2. Decide Commit Shape
 
-- Split unrelated work into separate commits
+- Group changes by concern: cleanup (deletions) separate from construction (additions), features separate from infrastructure. Split when changes serve different purposes and can be reviewed/reverted independently.
 - Use `git add -p` for mixed changes in one file
 - Order: scaffolding → behavior → tests → docs → formatting
 - Keep each commit independently understandable
