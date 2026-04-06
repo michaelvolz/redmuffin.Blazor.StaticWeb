@@ -111,7 +111,6 @@ date: 2026-04-04
 
 | Skill                         | Trigger When...                                                                                        |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `strict-coding-standards`     | Creating new services/classes, feature architecture, structural refactoring, PR design-pattern reviews |
 | `rm-nuget-manager`            | Adding/removing/updating NuGet packages                                                                |
 | `rm-agent-markdown-optimizer` | "optimize for agents", "make agent-friendly"                                                           |
 | `rm-commit`                   | commit/save changes/git commit/checkin                                                                 |
