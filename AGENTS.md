@@ -115,3 +115,17 @@ date: 2026-04-04
 | `rm-nuget-manager`            | Adding/removing/updating NuGet packages                                                                |
 | `rm-agent-markdown-optimizer` | "optimize for agents", "make agent-friendly"                                                           |
 | `rm-commit`                   | commit/save changes/git commit/checkin                                                                 |
+| `rm-guide-naming`             | Creating or renaming C# types, members, namespaces, or test doubles                                    |
+| `rm-guide-csharp-features`    | Using modern C# 12/13 syntax, collection expressions, or primary constructors                          |
+| `rm-guide-async`              | Writing async methods, cancellation flows, or Task-based APIs                                          |
+| `rm-guide-namespaces`         | Creating new C# files or organizing namespaces                                                         |
+| `rm-guide-logging`            | Adding structured logging or LoggerMessage delegates                                                   |
+| `rm-guide-di`                 | Injecting dependencies, registering services, or shaping component/service constructors                |
+| `rm-guide-testing`            | Writing TUnit tests, test doubles, or TestScope helpers                                                |
+| `rm-guide-warnings`           | Fixing analyzer warnings, pragma directives, or zero-warning build issues                              |
+| `rm-guide-blazor`             | Building or reviewing Blazor components, lifecycle code, or render behavior                            |
+| `rm-guide-azure-functions`    | Creating or reviewing Azure Functions isolated worker code                                             |
+| `rm-guide-architecture`       | Designing services, boundaries, patterns, or cross-layer C# changes                                    |
+| `rm-guide-config`             | Touching build commands, dev modes, package management, or repository configuration                    |
+| `rm-guide-dotnet9`            | Deciding whether to use .NET 9 APIs or current runtime best practices                                  |
+| `rm-guide-code-quality`       | Reviewing style, readability, null handling, records, or general C# code quality                       |
