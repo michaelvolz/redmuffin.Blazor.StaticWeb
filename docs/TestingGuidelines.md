@@ -160,8 +160,9 @@ Before committing any test changes:
 
 ## References
 
-| Document                            | Path                                        | Purpose                              |
-| ----------------------------------- | ------------------------------------------- | ------------------------------------ |
-| Test Double Best Practices          | `docs/TestDoubleBestPractices.md`           | Naming conventions and examples      |
-| PRD-011: Standardizing Test Doubles | `tasks/PRD-011-StandardizingTestDoubles.md` | Requirements and acceptance criteria |
-| Testing Guidelines                  | `docs/TestingGuidelines.md`                 | Central reference (this document)    |
+| Document                            | Path                                                                         | Purpose                              |
+| ----------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------ |
+| Test Double Best Practices          | `docs/TestDoubleBestPractices.md`                                            | Naming conventions and examples      |
+| PRD-011: Standardizing Test Doubles | `tasks/PRD-011-StandardizingTestDoubles.md`                                  | Requirements and acceptance criteria |
+| Test Double Disposable Pattern      | `docs/solutions/best-practices/test-double-disposable-pattern-2026-04-06.md` | CA2001/CA1001 compliance             |
+| Testing Guidelines                  | `docs/TestingGuidelines.md`                                                  | Central reference (this document)    |
