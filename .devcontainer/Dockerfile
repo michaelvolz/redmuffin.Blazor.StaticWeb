@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM mcr.microsoft.com/devcontainers/dotnet:9.0
+FROM mcr.microsoft.com/devcontainers/dotnet:10.0
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
