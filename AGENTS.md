@@ -54,7 +54,17 @@
 - **Everything Search**: If `es.exe` fails, STOP and report. DO NOT fallback without approval.
 - **Undo Commit**: Undo last commit while keeping changes as unstaged edits.
 
-## STACK & STRUCTURE
+## PowerShell on Windows
+- You are running in PowerShell 7+ (`pwsh.exe`).
+- Always prefer native cmdlets and modules over bash-style commands.
+- Use proper PowerShell quoting/escaping (backticks for special chars, `@' '@` for literals).
+- Prefer structured output (`ConvertTo-Json`, `Out-String -Width 4096`).
+- Handle errors with `try/catch`; use `-ErrorAction Stop`.
+- Use full paths with `\` or `/` interchangeably; prefer `Join-Path`.
+- Modules available: PSReadLine, Microsoft.PowerShell.Management, etc. (your profile modules load if -NoProfile is false).
+- Never assume bash, sh, or Unix tools unless explicitly requested.
+
+- ## STACK & STRUCTURE
 
 - **Stack**: .NET 9, Blazor WASM, Azure Functions (.NET 9), TUnit, SCSS.
 - **Paths**:
