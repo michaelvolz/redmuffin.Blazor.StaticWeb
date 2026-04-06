@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.NewTests.Features.Pages.ArticlesPage;
+namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.ArticlesPage;
 
 [Category("Feature:Articles")]
 public sealed partial class ArticlesPageCacheTests

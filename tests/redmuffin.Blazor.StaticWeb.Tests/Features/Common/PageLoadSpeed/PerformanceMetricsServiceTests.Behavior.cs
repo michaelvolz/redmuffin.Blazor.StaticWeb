@@ -3,7 +3,7 @@ using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed;
 using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Core;
 using redmuffin.Blazor.StaticWeb.Services;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.NewTests.Features.Common.PageLoadSpeed;
+namespace redmuffin.Blazor.StaticWeb.Tests.Features.Common.PageLoadSpeed;
 
 [Category("Feature:Common")]
 public sealed partial class PerformanceMetricsServiceTests

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Features.Pages.VideosPage;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.NewTests.Features.Pages.VideosPage;
+namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.VideosPage;
 
 [Category("Feature:Videos")]
 public sealed partial class VideosPageCacheTests

@@ -2,7 +2,7 @@
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.NewTests.Features.Pages.ArticlesPage;
+namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.ArticlesPage;
 
 /// <summary>
 ///     Integration tests for Articles page caching functionality.

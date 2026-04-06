@@ -5,18 +5,18 @@ using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
-using redmuffin.Blazor.StaticWeb.Features.Pages.VideosPage;
+using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
 using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Models;
 using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Services;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.NewTests.Features.Pages.VideosPage;
+namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.ArticlesPage;
 
 /// <summary>
-///     Helper methods and infrastructure for VideosPageCacheTests.
+///     Helper methods and infrastructure for ArticlesPageCacheTests.
 /// </summary>
-[Category("Feature:Videos")]
-public partial class VideosPageCacheTests
+[Category("Feature:Articles")]
+public partial class ArticlesPageCacheTests
 {
     /// <summary>
     ///     Creates a new test scope with standard configuration.
@@ -35,14 +35,14 @@ public partial class VideosPageCacheTests
     /// <param name="excerpt">The item excerpt.</param>
     /// <param name="link">The item link (optional).</param>
     /// <returns>A configured test RaindropItem.</returns>
-    private static RaindropItem CreateTestVideo(string id, string title, string excerpt, string? link = null)
+    private static RaindropItem CreateTestArticle(string id, string title, string excerpt, string? link = null)
     {
         return new RaindropItem
         {
             Id = long.Parse(id),
             Title = title,
             Excerpt = excerpt,
-            Link = link ?? $"https://example.com/video/{id}",
+            Link = link ?? $"https://example.com/article/{id}",
             Cover = $"https://example.com/cover/{id}.jpg",
             Created = DateTime.UtcNow.AddDays(-1)
         };
@@ -80,9 +80,9 @@ public partial class VideosPageCacheTests
         public ImageValidationCacheService_Mock ImageValidationCacheService_Mock { get; } = new();
 
         /// <summary>
-        ///     Gets the mock logger for Videos component (external dependency - uses LightMock).
+        ///     Gets the mock logger for Articles component (external dependency - uses LightMock).
         /// </summary>
-        public Mock<ILogger<Videos>> Logger_Mock { get; } = new();
+        public Mock<ILogger<Articles>> Logger_Mock { get; } = new();
 
         /// <summary>
         ///     Configures the test scope with standard services for component testing.
@@ -139,7 +139,7 @@ public partial class VideosPageCacheTests
             if (_cache.TryGetValue(cacheType, out var data))
                 return Task.FromResult(RaindropCacheResultFactory.Success(data as IList<RaindropItem>, new RaindropCacheMetadata
                 {
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTimeOffset.UtcNow,
                     Version = "1.0",
                     ItemCount = data.Count,
                     CompressedSize = 1000,
@@ -178,13 +178,15 @@ public partial class VideosPageCacheTests
     /// </summary>
     public sealed class RaindropAPI_Mock : IRaindropAPI
     {
-        private List<RaindropItem> _videos = new();
+        private List<RaindropItem> _articles = new();
         private string? _failureMessage;
         private int _delayMs;
+        private bool _preventDoubleRefresh;
+        private bool _refreshInProgress;
 
-        public void SetupVideos(IEnumerable<RaindropItem> videos)
+        public void SetupArticles(IEnumerable<RaindropItem> articles)
         {
-            _videos = videos.ToList();
+            _articles = articles.ToList();
             _failureMessage = null;
         }
 
@@ -198,18 +200,34 @@ public partial class VideosPageCacheTests
             _delayMs = milliseconds;
         }
 
-        public async Task<IEnumerable<RaindropItem>> GetVideosAsync(CancellationToken cancellationToken = default)
+        public void SetupDoubleRefreshPrevention(bool prevent)
         {
-            if (_delayMs > 0) await Task.Delay(_delayMs, cancellationToken).ConfigureAwait(false);
-
-            if (_failureMessage != null) throw new HttpRequestException(_failureMessage);
-
-            return _videos;
+            _preventDoubleRefresh = prevent;
         }
 
-        public Task<IEnumerable<RaindropItem>> GetArticlesAsync(CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<RaindropItem>> GetArticlesAsync(CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException("Articles not needed for Videos page tests");
+            if (_preventDoubleRefresh && _refreshInProgress) throw new InvalidOperationException("Double refresh prevented");
+
+            _refreshInProgress = true;
+
+            try
+            {
+                if (_delayMs > 0) await Task.Delay(_delayMs, cancellationToken).ConfigureAwait(false);
+
+                if (_failureMessage != null) throw new HttpRequestException(_failureMessage);
+
+                return _articles;
+            }
+            finally
+            {
+                _refreshInProgress = false;
+            }
+        }
+
+        public Task<IEnumerable<RaindropItem>> GetVideosAsync(CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException("Videos not needed for Articles page tests");
         }
     }
 

@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Tests.NewTests.Features.Cache.Components;
+namespace redmuffin.Blazor.StaticWeb.Tests.Features.Cache.Components;
 
 /// <summary>
 ///     Unit tests for RefreshBadge component functionality and state management.
