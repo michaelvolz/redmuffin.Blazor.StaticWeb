@@ -1,6 +1,11 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "default_agent": "rm-daily-dotnet-coder.md",
+  "shell": {
+    "path": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+    "args": [ "-NoLogo", "-NoProfile" ] // Omit -NoProfile if you want your $PROFILE loaded
+  },
+  "bash": "ask", // Or "allow" once trusted; use "ask" for safety during initial testing
   "watcher": {
     "ignore": [
       ".git/**",
@@ -13,7 +18,7 @@
       "**/publish/**"
     ]
   },
-  "plugin": ["opencode-snippets", "cc-safety-net", "block-push"],
+  "plugin": [ "opencode-snippets", "cc-safety-net", "block-push" ],
   "permission": {
     "skill": {
       "git-commit": "deny",
@@ -22,12 +27,12 @@
   },
   "formatter": {
     "dotnet-format": {
-      "command": ["dotnet", "format", "--include", "$FILE"],
-      "extensions": [".cs", ".razor"]
+      "command": [ "dotnet", "format", "--include", "$FILE" ],
+      "extensions": [ ".cs", ".razor" ]
     },
     "prettier": {
-      "command": ["prettier", "--write", "$FILE"],
-      "extensions": [".scss", ".css", ".json", ".md", ".yml", ".yaml"]
+      "command": [ "prettier", "--write", "$FILE" ],
+      "extensions": [ ".scss", ".css", ".json", ".md", ".yml", ".yaml" ]
     }
   },
   "mcp": {
@@ -60,7 +65,7 @@
     },
     "sequentialthinking": {
       "type": "local",
-      "command": ["docker", "run", "-i", "--rm", "mcp/sequentialthinking"],
+      "command": [ "docker", "run", "-i", "--rm", "mcp/sequentialthinking" ],
       "enabled": true
     },
     "chrome-devtools": {
