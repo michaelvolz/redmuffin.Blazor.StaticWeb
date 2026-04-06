@@ -2,84 +2,66 @@
 
 ## CRITICAL
 
-- ALWAYS invoke `rm-commit` for commits; NO manual workflows.
-- ALWAYS `dotnet test` before commit.
-- ALWAYS `dotnet build --verbosity quiet` after C# edits.
-- ALWAYS `dotnet build -c Debug-Sass` after SCSS/JS edits.
-- ALWAYS read code before answering.
-- ALWAYS use `pwsh -NoProfile` for PowerShell.
-- ALWAYS wrap commit bodies to ~80 chars.
-- ALWAYS add `date: YYYY-MM-DD` frontmatter to new `docs/` markdown (extract from filename or use today's date).
-- NEVER commit secrets or push to remote (HARD BLOCKED).
-- NEVER `git commit`/`git add` without explicit user request.
-- NEVER `git revert` (HARD BLOCKED).
-- NEVER restore from git without asking (prevents loss of uncommitted edits).
-- NEVER use `chrome-devtools_close_page`; use process-level identification for cleanup.
-- Pragma warnings are DELIBERATE. NEVER modify/remove without approval. Goal: zero errors/warnings.
-- Reviewer Agents: ALWAYS select correct subfolder for name. Local reviewers ONLY.
+- **ALWAYS**: `rm-commit` for commits (NO manual); `dotnet test` pre-commit.
+- **ALWAYS**: `dotnet build --verbosity quiet` (C#) / `dotnet build -c Debug-Sass` (SCSS/JS) post-edit.
+- **ALWAYS**: Read code before answering; `pwsh -NoProfile` for PowerShell; 80-char commit wrap.
+- **ALWAYS**: `date: YYYY-MM-DD` frontmatter on new `docs/` (from filename or today).
+- **NEVER**: Commit secrets; push remote; `git commit/add` without request; `git revert`.
+- **NEVER**: Restore from git without asking; use `chrome-devtools_close_page` (use process-level cleanup).
+- **POLICY**: Pragma warnings DELIBERATE; Goal zero warnings; Reviewers: correct subfolder/Local only.
 
 ## COMMANDS
 
-| Command                                       | Purpose             | When                           |
-| --------------------------------------------- | ------------------- | ------------------------------ |
-| `dotnet test`                                 | Verify logic        | Pre-commit                     |
-| `dotnet build --verbosity quiet`              | Verify C#           | Post-edit                      |
-| `dotnet build -c Debug-Sass`                  | Verify UI (SCSS/JS) | Post-edit                      |
-| `scripts/Update-PackageVersions.ps1`          | Update NuGet (CPM)  | Package changes                |
-| `dotnet clean && dotnet build && dotnet test` | Verification        | After NuGet update             |
-| `es.exe`                                      | Fast file search    | Outside solution / Large scale |
-| `pwsh -NoProfile`                             | Shell execution     | All PowerShell tasks           |
+| Command                                       | Purpose             | When                         |
+| --------------------------------------------- | ------------------- | ---------------------------- |
+| `dotnet test`                                 | Verify logic        | Pre-commit                   |
+| `dotnet build --verbosity quiet`              | Verify C#           | Post-edit                    |
+| `dotnet build -c Debug-Sass`                  | Verify UI (SCSS/JS) | Post-edit                    |
+| `scripts/Update-PackageVersions.ps1`          | Update NuGet (CPM)  | Package changes              |
+| `dotnet clean && dotnet build && dotnet test` | Verification        | After NuGet update           |
+| `es.exe`                                      | Fast file search    | Large scale/outside solution |
+| `pwsh -NoProfile`                             | Shell execution     | PowerShell tasks             |
 
 ## BOUNDARIES
 
 ### ALWAYS
 
-- Research first (Exa/web) before implementing unfamiliar APIs.
-- Navigate existing browser tabs; reuse before creating new ones.
+- Research (Exa/web) before unfamiliar APIs.
+- Reuse existing browser tabs.
 - Read target file before `apply_patch`.
-- Timestamp commit-message temp files for uniqueness.
-- Group related files only in single commits; NO bundling unrelated changes.
-- Centralize NuGet versions in `Directory.Packages.props` top section as properties; item groups MUST reference properties, NO hard-coded versions.
-- Use `.github/` for workflows/dependabot; ignore `chatmodes`, `guides`, `prompts`.
-- Stay on trunk/main (Trunk-Based Development); branch only for high risk.
+- Timestamp commit-message temp files.
+- Single-purpose commits only (no bundling unrelated changes).
+- `Directory.Packages.props`: properties for versions; items ref properties; NO hard-coding.
+- `.github/` for workflows/dependabot; IGNORE `chatmodes`, `guides`, `prompts`.
+- Trunk-Based Development (main); branch only for high risk.
 
 ### ASK FIRST
 
-- File restoration from git.
-- Modification of `#pragma warning disable` directives.
+- Git restoration.
+- `#pragma warning disable` changes.
 
 ### NEVER
 
-- Act on/discuss sidenotes during current task; NO follow-up questions or suggestions.
-- Remove/consolidate SKILL COMMANDS tables (duplication is required).
-- Use `grep` for file existence if `es.exe` is available.
+- Discuss/act on sidenotes during task.
+- Remove/consolidate SKILL COMMANDS tables (duplication mandatory).
+- `grep` for file existence if `es.exe` is available.
 
 ## WORKFLOWS
 
-### Skill Loading
-
-- `strict-coding-standards`: Load ONLY for new services, architecture, or structural refactors. Load for bug fixes requiring structural changes. NO for config/CSS/docs.
-
-### Sidenotes (Trigger: "sidenote:" or "/sidenote")
-
-1. Load `rm-sidenotes`.
-2. Capture quoted text as pure data without interpretation.
-3. Continue task immediately; do not wait. Sidenotes are a backlog only.
-
-### Tool Usage
-
-- **Todo**: Check pending/completed tasks before use. Clean up `in_progress` on finish.
+- **Skill Loading (`strict-coding-standards`)**: ONLY for new services, architecture, or structural refactors (including structural bug fixes). NOT for config/CSS/docs.
+- **Sidenotes ("sidenote:" / "/sidenote")**: Load `rm-sidenotes`; capture raw quoted text; continue task immediately. Sidenotes = backlog only.
+- **Todo Tool**: Check tasks before use; clear `in_progress` on finish.
 - **Everything Search**: If `es.exe` fails, STOP and report. DO NOT fallback without approval.
-- **Undo commit**: Undo last commit while keeping changes as unstaged edits.
+- **Undo Commit**: Undo last commit while keeping changes as unstaged edits.
 
 ## STACK & STRUCTURE
 
 - **Stack**: .NET 9, Blazor WASM, Azure Functions (.NET 9), TUnit, SCSS.
 - **Paths**:
-  - `src/redmuffin.Blazor.StaticWeb/`: Frontend (Blazor WASM).
-  - `src/redmuffin.Blazor.StaticWeb.Api/`: Backend (Azure Functions).
-  - `tests/`: Test mirror (mirrors src).
-  - `docs/solutions/`: knowledge store (YAML: `module`, `tags`, `problem_type`).
+  - `src/redmuffin.Blazor.StaticWeb/`: Frontend.
+  - `src/redmuffin.Blazor.StaticWeb.Api/`: Backend.
+  - `tests/`: Test mirror.
+  - `docs/solutions/`: Knowledge store (YAML: `module`, `tags`, `problem_type`).
 
 ## SKILL REFERENCES
 
@@ -92,7 +74,7 @@
 | `rm-guide-csharp-features`    | C# 12/13 syntax, collection expressions, primary constructors |
 | `rm-guide-async`              | Async methods, cancellation flows, Task-based APIs            |
 | `rm-guide-namespaces`         | New C# files or organizing namespaces                         |
-| `rm-guide-logging`            | Structured logging, LoggerMessage, partial classes            |
+| `rm-guide-logging`            | Structured logging, LoggerMessage, partial class organization |
 | `rm-guide-di`                 | Injecting dependencies, registering services, constructors    |
 | `rm-guide-testing`            | TUnit tests, test doubles, TestScope helpers                  |
 | `rm-guide-warnings`           | Analyzer warnings, pragma directives, zero-warning build      |
