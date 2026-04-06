@@ -105,7 +105,7 @@ foreach ($file in $files) {
     }
 
     # Track long titles for soft warning
-    if ($title.Length -gt 110) {
+    if ($title.Length -gt 116) {
         $longTitles += [PSCustomObject]@{
             Id    = $id
             Length = $title.Length
@@ -136,11 +136,11 @@ for ($i = 0; $i -lt $pending.Count; $i++) {
     Write-Host "$($i + 1). $($item.Id) ($($item.Date)) - $($item.Title)"
 }
 
-# Soft warnings for long titles (hard warning at >110 chars)
+# Soft warnings for long titles (hard warning at >116 chars)
 if ($longTitles.Count -gt 0) {
     Write-Host ""
     foreach ($lt in $longTitles) {
-        Write-Host "⚠ $($lt.Id) exceeds the hard title limit: $($lt.Length) chars (max 110)" -ForegroundColor Yellow
+        Write-Host "⚠ $($lt.Id) exceeds the hard title limit: $($lt.Length) chars (max 116)" -ForegroundColor Yellow
     }
 }
 
