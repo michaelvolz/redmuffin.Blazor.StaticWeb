@@ -39,6 +39,9 @@ For every coding, architecture, refactoring, or review task:
 - SKILL COMMANDS tables are intentionally duplicated across skills. Each skill is a
   self-contained entry point — agents load one skill at a time and need the quick-ref
   there. Never remove or consolidate COMMANDS tables as "duplication".
+- Use `es.exe` (Everything Search CLI) for all file/path searches outside the current solution folder (`B:\redmuffin.Blazor.StaticWeb`). Use it even within the solution for large-scale file finding when performance matters.
+- If `es.exe` fails to load/start (e.g., command not found, indexing issues), stop execution, report the error immediately, and wait for user intervention before proceeding. Do not attempt fallbacks or retries without user approval.
+- Prefer `es.exe` over `grep` for file existence/path queries due to superior performance (MFT-based vs. content scanning). Use `grep` only for content searches within files.
 
 ## TODO TOOL USAGE
 
