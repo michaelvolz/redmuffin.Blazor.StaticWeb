@@ -13,11 +13,6 @@
       "**/publish/**"
     ]
   },
-  "compaction": {
-    "auto": false,
-    "prune": true,
-    "reserved": 20000
-  },
   "plugin": ["opencode-snippets", "cc-safety-net", "block-push"],
   "permission": {
     "skill": {
@@ -95,13 +90,8 @@
     },
     "adversarial-reviewer": { "model": "github-copilot/grok-code-fast-1" },
     "agent-native-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "ankane-readme-writer": { "model": "github-copilot/grok-code-fast-1" },
     "api-contract-reviewer": { "model": "github-copilot/grok-code-fast-1" },
     "architecture-strategist": { "model": "github-copilot/grok-code-fast-1" },
-    "best-practices-researcher": { "model": "github-copilot/grok-code-fast-1" },
-    "bug-reproduction-validator": {
-      "model": "github-copilot/grok-code-fast-1"
-    },
     "cli-agent-readiness-reviewer": {
       "model": "github-copilot/grok-code-fast-1"
     },
@@ -109,25 +99,13 @@
     "code-simplicity-reviewer": { "model": "github-copilot/grok-code-fast-1" },
     "coherence-reviewer": { "model": "github-copilot/grok-code-fast-1" },
     "correctness-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "data-integrity-guardian": { "model": "github-copilot/grok-code-fast-1" },
-    "data-migration-expert": { "model": "github-copilot/grok-code-fast-1" },
     "data-migrations-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "deployment-verification-agent": {
-      "model": "github-copilot/grok-code-fast-1"
-    },
     "design-implementation-reviewer": {
       "model": "github-copilot/grok-code-fast-1"
     },
-    "design-iterator": { "model": "github-copilot/grok-code-fast-1" },
     "design-lens-reviewer": { "model": "github-copilot/grok-code-fast-1" },
     "dhh-rails-reviewer": { "model": "github-copilot/grok-code-fast-1" },
     "feasibility-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "figma-design-sync": { "model": "github-copilot/grok-code-fast-1" },
-    "framework-docs-researcher": { "model": "github-copilot/grok-code-fast-1" },
-    "git-history-analyzer": { "model": "github-copilot/grok-code-fast-1" },
-    "issue-intelligence-analyst": {
-      "model": "github-copilot/grok-code-fast-1"
-    },
     "julik-frontend-races-reviewer": {
       "model": "github-copilot/grok-code-fast-1"
     },
@@ -136,15 +114,8 @@
     "kieran-typescript-reviewer": {
       "model": "github-copilot/grok-code-fast-1"
     },
-    "learnings-researcher": { "model": "github-copilot/grok-code-fast-1" },
-    "lint": { "model": "github-copilot/grok-code-fast-1" },
     "maintainability-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "pattern-recognition-specialist": {
-      "model": "github-copilot/grok-code-fast-1"
-    },
-    "performance-oracle": { "model": "github-copilot/grok-code-fast-1" },
     "performance-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "pr-comment-resolver": { "model": "github-copilot/grok-code-fast-1" },
     "previous-comments-reviewer": {
       "model": "github-copilot/grok-code-fast-1"
     },
@@ -153,13 +124,9 @@
       "model": "github-copilot/grok-code-fast-1"
     },
     "reliability-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "repo-research-analyst": { "model": "github-copilot/grok-code-fast-1" },
-    "schema-drift-detector": { "model": "github-copilot/grok-code-fast-1" },
     "scope-guardian-reviewer": { "model": "github-copilot/grok-code-fast-1" },
     "security-lens-reviewer": { "model": "github-copilot/grok-code-fast-1" },
     "security-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "security-sentinel": { "model": "github-copilot/grok-code-fast-1" },
-    "spec-flow-analyzer": { "model": "github-copilot/grok-code-fast-1" },
     "testing-reviewer": { "model": "github-copilot/grok-code-fast-1" }
   }
 }
