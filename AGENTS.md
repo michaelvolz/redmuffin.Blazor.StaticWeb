@@ -27,7 +27,7 @@ For every coding, architecture, refactoring, or review task:
 - ALWAYS `dotnet test` before commit
 - "Undo commit" means: undo the last commit and keep changes as unstaged edits.
 - Research first: use Exa code search or web search before implementing unfamiliar APIs
-- Use `scripts/Update-PackageVersions.ps1` for NuGet package updates, then
+- Use `scripts/Update-PackageVersions.ps1` for NuGet package updates according to our Central Package Management (CPM) setup, then
   finish with `dotnet clean && dotnet build --verbosity quiet && dotnet test`
   as the final verification step.
 - When invoking repository PowerShell scripts (`.ps1`), use `pwsh -NoProfile`

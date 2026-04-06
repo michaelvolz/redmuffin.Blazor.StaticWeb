@@ -97,27 +97,29 @@ function Get-ReportItems {
     $packages = @{}
 
     foreach ($project in $PackageList.projects) {
-        foreach ($framework in $project.frameworks) {
-            foreach ($package in $framework.topLevelPackages) {
-                if ($package.latestVersion -eq 'Not found at the sources') { continue }
-                if ($PackageFilter -and $package.id -ne $PackageFilter) { continue }
-                if ((Get-MajorVersion -Version $package.latestVersion) -gt $SdkMajor) { continue }
+        if ($project.PSObject.Properties.Name -contains 'frameworks' -and $project.frameworks) {
+            foreach ($framework in $project.frameworks) {
+                foreach ($package in $framework.topLevelPackages) {
+                    if ($package.latestVersion -eq 'Not found at the sources') { continue }
+                    if ($PackageFilter -and $package.id -ne $PackageFilter) { continue }
+                    if ((Get-MajorVersion -Version $package.latestVersion) -gt $SdkMajor) { continue }
 
-                if ($packages.ContainsKey($package.id)) {
-                    $current = $packages[$package.id]
-                    if ($current.LatestVersion -ne $package.latestVersion) {
-                        throw "Package '$($package.id)' has conflicting latest versions: '$($current.LatestVersion)' and '$($package.latestVersion)'."
+                    if ($packages.ContainsKey($package.id)) {
+                        $current = $packages[$package.id]
+                        if ($current.LatestVersion -ne $package.latestVersion) {
+                            throw "Package '$($package.id)' has conflicting latest versions: '$($current.LatestVersion)' and '$($package.latestVersion)'."
+                        }
+                        continue
                     }
-                    continue
-                }
 
-                $packages[$package.id] = [pscustomobject]@{
-                    Id = $package.id
-                    RequestedVersion = $package.requestedVersion
-                    ResolvedVersion = $package.resolvedVersion
-                    LatestVersion = $package.latestVersion
-                    File = $project.path
-                    Framework = $framework.framework
+                    $packages[$package.id] = [pscustomobject]@{
+                        Id = $package.id
+                        RequestedVersion = $package.requestedVersion
+                        ResolvedVersion = $package.resolvedVersion
+                        LatestVersion = $package.latestVersion
+                        File = $project.path
+                        Framework = $framework.framework
+                    }
                 }
             }
         }
