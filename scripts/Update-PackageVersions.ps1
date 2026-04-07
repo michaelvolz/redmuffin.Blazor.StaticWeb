@@ -77,14 +77,92 @@ function Read-PackageList {
 
     $args = @('list')
     if ($Target) { $args += $Target }
-    $args += @('package', '--outdated', '--highest-minor', '--format', 'json')
+    $args += @('package', '--outdated', '--format', 'json')
 
-    $raw = & dotnet @args
-    if ($LASTEXITCODE -ne 0) {
+    # Use explicit process to ensure UTF-8 encoding is preserved
+    $processInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $processInfo.FileName = 'dotnet'
+    $processInfo.Arguments = $args -join ' '
+    $processInfo.RedirectStandardOutput = $true
+    $processInfo.RedirectStandardError = $true
+    $processInfo.UseShellExecute = $false
+    $processInfo.CreateNoWindow = $true
+    $processInfo.StandardOutputEncoding = [System.Text.Encoding]::UTF8
+
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = $processInfo
+    $process.Start() | Out-Null
+    $stdout = $process.StandardOutput.ReadToEnd()
+    $process.WaitForExit()
+
+    if ($process.ExitCode -ne 0) {
         throw 'Failed to list outdated packages.'
     }
 
-    return $raw | ConvertFrom-Json
+    return $stdout | ConvertFrom-Json
+}
+
+# Known package incompatibilities - packages that should not be upgraded past certain versions
+# due to breaking changes or known incompatibilities with other dependencies
+function Get-IncompatiblePackageConstraints {
+    return @{
+        'Microsoft.ApplicationInsights.WorkerService' = @{
+            MaxVersion = '2.23.0'
+            Reason = 'Version 3.x+ is incompatible with Microsoft.Azure.Functions.Worker.ApplicationInsights 2.x (ITelemetryInitializer breaking change)'
+        }
+    }
+}
+
+function Test-PackageCompatibility {
+    param(
+        [string]$PackageId,
+        [string]$LatestVersion,
+        [string]$CurrentVersion
+    )
+
+    $constraints = Get-IncompatiblePackageConstraints
+
+    if (-not $constraints.ContainsKey($PackageId)) {
+        return @{
+            IsCompatible = $true
+            Skip = $false
+            Reason = $null
+        }
+    }
+
+    $constraint = $constraints[$PackageId]
+    $maxVersion = $constraint.MaxVersion
+
+    # Parse versions for comparison
+    $latestParts = $LatestVersion -split '\.'
+    $maxParts = $maxVersion -split '\.'
+
+    $isNewerThanMax = $false
+    for ($i = 0; $i -lt [Math]::Min($latestParts.Count, $maxParts.Count); $i++) {
+        $latestPart = [int]$latestParts[$i]
+        $maxPart = [int]$maxParts[$i]
+        if ($latestPart -gt $maxPart) {
+            $isNewerThanMax = $true
+            break
+        }
+        if ($latestPart -lt $maxPart) {
+            break
+        }
+    }
+
+    if ($isNewerThanMax) {
+        return @{
+            IsCompatible = $false
+            Skip = $true
+            Reason = "SKIPPED: $LatestVersion exceeds max compatible version $maxVersion - $($constraint.Reason)"
+        }
+    }
+
+    return @{
+        IsCompatible = $true
+        Skip = $false
+        Reason = $null
+    }
 }
 
 function Get-ReportItems {
@@ -103,6 +181,13 @@ function Get-ReportItems {
                     if ($package.latestVersion -eq 'Not found at the sources') { continue }
                     if ($PackageFilter -and $package.id -ne $PackageFilter) { continue }
                     if ((Get-MajorVersion -Version $package.latestVersion) -gt $SdkMajor) { continue }
+
+                    # Check for known package incompatibilities
+                    $compatibility = Test-PackageCompatibility -PackageId $package.id -LatestVersion $package.latestVersion -CurrentVersion $package.resolvedVersion
+                    if ($compatibility.Skip) {
+                        Write-Host "  [SKIP] $($package.id) $($package.latestVersion) - blocked by compatibility constraint"
+                        continue
+                    }
 
                     if ($packages.ContainsKey($package.id)) {
                         $current = $packages[$package.id]
