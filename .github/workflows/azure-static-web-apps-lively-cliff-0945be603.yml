@@ -269,20 +269,54 @@ jobs:
           echo ""
           echo "✅ All checks passed"
 
-      # Health check after deployment
+  # JOB: Verify both frontend and API are healthy after deployment
+  health_check:
+    needs: test_and_build_job
+    runs-on: ubuntu-latest
+    name: Health Check
+    steps:
       - name: Verify deployment health
         run: |
-          echo "Verifying deployment health..."
-          sleep 5  # Minimum required wait time
+          set -e  # Exit on any error
 
-          echo "Performing basic connectivity test..."
-          if curl -f -s --max-time 5 --retry 1 --retry-delay 2 \
-             "https://redmuffin.net" > /dev/null; then
-            echo "Deployment health check passed - site is accessible"
-          else
-            echo "⚠️ Site may not be fully ready yet - this is normal for new deployments"
-            echo "Manual verification: https://redmuffin.net"
-          fi
+          echo "=== Health Check ==="
+          echo "Checking both frontend and API endpoints..."
+
+          # Wait for deployment to settle
+          sleep 5
+
+          # Run both checks in parallel
+          check_site() {
+            echo "Checking frontend: https://redmuffin.net"
+            curl -f -s --max-time 10 --retry 2 --retry-delay 5 "https://redmuffin.net" > /dev/null
+            echo "✅ Frontend is accessible"
+          }
+
+          check_api() {
+            echo "Checking API: https://redmuffin.net/api/HelloWorld"
+            RESPONSE=$(curl -f -s --max-time 10 --retry 2 --retry-delay 5 "https://redmuffin.net/api/HelloWorld")
+            if echo "$RESPONSE" | grep -q "Welcome to Azure Functions!"; then
+              echo "✅ API is accessible and returning expected response"
+            else
+              echo "❌ API response unexpected: $RESPONSE"
+              return 1
+            fi
+          }
+
+          # Execute both checks in parallel
+          check_site &
+          SITE_PID=$!
+          check_api &
+          API_PID=$!
+
+          # Wait for both to complete
+          wait $SITE_PID || { echo "❌ Frontend check failed"; kill $API_PID 2>/dev/null; exit 1; }
+          wait $API_PID || { echo "❌ API check failed"; exit 1; }
+
+          echo ""
+          echo "=== Health Check Complete ==="
+          echo "✅ All endpoints verified successfully"
+          echo "Total time: ~20-25 seconds"
 
   # JOB: Handle documentation-only changes (skipped deployment)
   docs_only_changed_job:
