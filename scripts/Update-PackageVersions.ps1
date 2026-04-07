@@ -110,6 +110,10 @@ function Get-IncompatiblePackageConstraints {
             MaxVersion = '2.23.0'
             Reason = 'Version 3.x+ is incompatible with Microsoft.Azure.Functions.Worker.ApplicationInsights 2.x (ITelemetryInitializer breaking change)'
         }
+        'Microsoft.Testing.Platform' = @{
+            MaxVersion = '2.1.0'
+            Reason = 'Version 2.2+ is incompatible with TUnit 1.28.7 (MissingMethodException: PlatformResources.get_UnexpectedExceptionDuringByteConversionErrorMessage)'
+        }
     }
 }
 
