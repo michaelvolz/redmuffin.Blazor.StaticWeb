@@ -15,7 +15,7 @@
     <ApplicationInsightsWorkerServiceVersion>2.23.0</ApplicationInsightsWorkerServiceVersion>
     <CoverletVersion>8.0.1</CoverletVersion>
     <BunitVersion>2.7.2</BunitVersion>
-    <MicrosoftTestingPlatformVersion>2.1.0</MicrosoftTestingPlatformVersion>
+    <MicrosoftTestingPlatformVersion>2.2.1</MicrosoftTestingPlatformVersion>
     <AngleSharpVersion>1.4.0</AngleSharpVersion>
     <BlazoredLocalStorageVersion>4.5.0</BlazoredLocalStorageVersion>
     <BuildWebCompiler2022Version>1.14.15</BuildWebCompiler2022Version>
