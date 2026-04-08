@@ -119,35 +119,34 @@ Suitable for experimentation, learning, and development environments.
 - **Node.js** (Latest LTS) - Required for DevContainer CLI
 - **DevContainer CLI**: `npm install -g @devcontainers/cli`
 - **PowerShell** 5.1+ or PowerShell Core
-- **SSH Keys** for GitHub authentication (see below)
+- **GitHub CLI** for GitHub authentication (see below)
 
-#### SSH Key Setup (Required)
+#### GitHub Authentication (Required)
 
-You need SSH keys configured for Git operations inside the devcontainer:
+You need GitHub CLI authentication configured for Git operations inside the devcontainer:
 
-1. **Check if you have SSH keys:**
+1. **Install GitHub CLI if not present:**
 
-   ```powershell
-   ls $HOME\.ssh\id_*
+   ```bash
+   # On Arch Linux
+   yay -S github-cli
    ```
 
-2. **Generate keys if needed:**
+2. **Authenticate with GitHub:**
 
-   ```powershell
-   ssh-keygen -t ed25519 -C "your-email@example.com"
+   ```bash
+   gh auth login
    ```
 
-3. **Add to GitHub:**
-   - Copy public key: `Get-Content $HOME\.ssh\id_ed25519.pub | Set-Clipboard`
-   - Go to https://github.com/settings/keys
-   - Click "New SSH key" and paste
+   Follow the prompts to authenticate (choose HTTPS, not SSH).
 
-4. **Test connection:**
-   ```powershell
-   ssh -T git@github.com
+3. **Verify authentication:**
+
+   ```bash
+   gh auth status
    ```
 
-The devcontainer will automatically mount your `.ssh` directory and configure SSH authentication. See [docs/SSH-AGENT-SETUP.md](docs/SSH-AGENT-SETUP.md) for complete details.
+The devcontainer will automatically use HTTPS authentication for Git operations. No manual key management required.
 
 ### For Local Development
 
@@ -377,8 +376,8 @@ Before starting, ensure you have:
 
 - [ ] **Docker Desktop** with WSL2 backend installed
 - [ ] **DevContainer CLI**: `npm install -g @devcontainers/cli`
-- [ ] **SSH Keys** in `C:\Users\<username>\.ssh\` for Git authentication
-- [ ] **GitHub account** with SSH keys added
+- [ ] **GitHub CLI**: `yay -S github-cli` (for authentication)
+- [ ] **GitHub account** authenticated with `gh auth login`
 
 #### Step-by-Step Setup
 
@@ -389,22 +388,13 @@ Before starting, ensure you have:
    cd redmuffin.Blazor.StaticWeb
    ```
 
-2. **Verify SSH keys are configured:**
+2. **Authenticate with GitHub:**
 
-   ```powershell
-   # Check if SSH keys exist
-   ls $HOME\.ssh\id_*
-
-   # Test GitHub connection
-   ssh -T git@github.com
+   ```bash
+   gh auth login
    ```
 
-   If you don't have SSH keys, generate them:
-
-   ```powershell
-   ssh-keygen -t ed25519 -C "your-email@example.com"
-   # Add to GitHub: https://github.com/settings/keys
-   ```
+   Choose HTTPS authentication when prompted.
 
 3. **Start the devcontainer:**
 
@@ -414,7 +404,7 @@ Before starting, ensure you have:
 
    This script will:
    - Build and start the devcontainer
-   - Mount your SSH keys (read-only) for Git authentication
+   - Use HTTPS authentication for Git operations
    - Install all development tools automatically
    - Launch opencode inside the container
 
@@ -424,14 +414,13 @@ Before starting, ensure you have:
    - `RAINDROP_CLIENT_ID` - For Raindrop.io integration
    - `RAINDROP_CLIENT_SECRET` - For Raindrop.io integration
 
-4. **Verify SSH in container:**
+4. **Verify GitHub authentication in container:**
 
-   Once opencode starts, verify Git authentication:
+   Once opencode starts, verify GitHub CLI authentication:
 
    ```bash
    # Inside the container
-   ssh-add -l
-   ssh -T git@github.com
+   gh auth status
    ```
 
 5. **When finished:**
@@ -451,19 +440,18 @@ The devcontainer automatically provides:
 - **opencode** - AI coding assistant
 - **Prettier, commitlint** - Code formatting and commit validation
 - **Docker-in-Docker** - For running MCP servers
-- **SSH Agent** - Configured for Git authentication
+- **GitHub CLI** - Configured for HTTPS authentication
 
-#### SSH Key Security
+#### HTTPS Authentication
 
-Your SSH keys are handled securely:
+The devcontainer uses HTTPS with GitHub CLI for secure Git authentication:
 
-- Keys are **mounted read-only** from Windows host
-- Copied into container with **Unix permissions (600)**
-- **Container-local ssh-agent** holds decrypted keys in memory only
-- Keys **never stored in Docker images**
-- All copies are **deleted when container stops**
+- **Authentication**: Handled by `gh auth login` with token-based access
+- **Security**: Personal access tokens are stored securely by GitHub CLI
+- **No manual key management**: GitHub CLI manages authentication automatically
+- **Cross-platform**: Works identically on Windows, macOS, and Linux
 
-See [docs/SSH-AGENT-SETUP.md](docs/SSH-AGENT-SETUP.md) for detailed SSH setup and troubleshooting.
+See [GitHub CLI documentation](https://cli.github.com/manual/gh_auth_login) for authentication options.
 
 ### Local Development Workflow
 
