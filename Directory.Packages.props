@@ -6,7 +6,7 @@
   <PropertyGroup Label="SharedVersions">
     <MicrosoftExtensionsVersion>9.0.14</MicrosoftExtensionsVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>10.0.3</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
-    <TUnitVersion>1.28.7</TUnitVersion>
+    <TUnitVersion>1.29.0</TUnitVersion>
     <AzureFunctionsWorkerVersion>2.51.0</AzureFunctionsWorkerVersion>
     <AzureFunctionsWorkerApplicationInsightsVersion>2.50.0</AzureFunctionsWorkerApplicationInsightsVersion>
     <AzureFunctionsWorkerExtensionsHttpVersion>3.3.0</AzureFunctionsWorkerExtensionsHttpVersion>
