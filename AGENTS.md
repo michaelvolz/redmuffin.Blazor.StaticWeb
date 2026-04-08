@@ -54,6 +54,7 @@
 - **Todo Tool**: Check tasks before use; clear `in_progress` on finish.
 - **Everything Search**: If `es.exe` fails, STOP and report. DO NOT fallback without approval.
 - **Undo Commit**: Undo last commit while keeping changes as unstaged edits.
+- **Review Skills**: Check subfolders for analyzers and reviewers before starting them to have the correct name. Retry if one fails and doublecheck the name.
 
 ## PowerShell (Cross-Platform)
 
