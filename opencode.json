@@ -13,7 +13,7 @@
       "**/publish/**"
     ]
   },
-  "plugin": [ "opencode-snippets", "cc-safety-net", "block-push" ],
+  "plugin": ["opencode-snippets", "cc-safety-net", "block-push"],
   "permission": {
     "skill": {
       "git-commit": "deny",
@@ -22,12 +22,12 @@
   },
   "formatter": {
     "dotnet-format": {
-      "command": [ "dotnet", "format", "--include", "$FILE" ],
-      "extensions": [ ".cs", ".razor" ]
+      "command": ["dotnet", "format", "--include", "$FILE"],
+      "extensions": [".cs", ".razor"]
     },
     "prettier": {
-      "command": [ "prettier", "--write", "$FILE" ],
-      "extensions": [ ".scss", ".css", ".json", ".md", ".yml", ".yaml" ]
+      "command": ["prettier", "--write", "$FILE"],
+      "extensions": [".scss", ".css", ".json", ".md", ".yml", ".yaml"]
     }
   },
   "mcp": {
@@ -60,7 +60,7 @@
     },
     "sequentialthinking": {
       "type": "local",
-      "command": [ "docker", "run", "-i", "--rm", "mcp/sequentialthinking" ],
+      "command": ["docker", "run", "-i", "--rm", "mcp/sequentialthinking"],
       "enabled": true
     },
     "chrome-devtools": {
@@ -80,53 +80,53 @@
   "agent": {
     "rm-build": { "disable": true },
     "rm-plan": { "disable": true },
-    "uncle-bob-csharp-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "dotnet-csharp-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "blazor-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "html-css-blazor-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "powershell-reviewer": { "model": "github-copilot/grok-code-fast-1" },
+    "uncle-bob-csharp-reviewer": { "model": "xai/grok-code-fast-1" },
+    "dotnet-csharp-reviewer": { "model": "xai/grok-code-fast-1" },
+    "blazor-reviewer": { "model": "xai/grok-code-fast-1" },
+    "html-css-blazor-reviewer": { "model": "xai/grok-code-fast-1" },
+    "powershell-reviewer": { "model": "xai/grok-code-fast-1" },
     "adversarial-document-reviewer": {
-      "model": "github-copilot/grok-code-fast-1"
+      "model": "xai/grok-code-fast-1"
     },
-    "adversarial-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "agent-native-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "api-contract-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "architecture-strategist": { "model": "github-copilot/grok-code-fast-1" },
+    "adversarial-reviewer": { "model": "xai/grok-code-fast-1" },
+    "agent-native-reviewer": { "model": "xai/grok-code-fast-1" },
+    "api-contract-reviewer": { "model": "xai/grok-code-fast-1" },
+    "architecture-strategist": { "model": "xai/grok-code-fast-1" },
     "cli-agent-readiness-reviewer": {
-      "model": "github-copilot/grok-code-fast-1"
+      "model": "xai/grok-code-fast-1"
     },
-    "cli-readiness-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "code-simplicity-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "coherence-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "correctness-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "data-migrations-reviewer": { "model": "github-copilot/grok-code-fast-1" },
+    "cli-readiness-reviewer": { "model": "xai/grok-code-fast-1" },
+    "code-simplicity-reviewer": { "model": "xai/grok-code-fast-1" },
+    "coherence-reviewer": { "model": "xai/grok-code-fast-1" },
+    "correctness-reviewer": { "model": "xai/grok-code-fast-1" },
+    "data-migrations-reviewer": { "model": "xai/grok-code-fast-1" },
     "design-implementation-reviewer": {
-      "model": "github-copilot/grok-code-fast-1"
+      "model": "xai/grok-code-fast-1"
     },
-    "design-lens-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "dhh-rails-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "feasibility-reviewer": { "model": "github-copilot/grok-code-fast-1" },
+    "design-lens-reviewer": { "model": "xai/grok-code-fast-1" },
+    "dhh-rails-reviewer": { "model": "xai/grok-code-fast-1" },
+    "feasibility-reviewer": { "model": "xai/grok-code-fast-1" },
     "julik-frontend-races-reviewer": {
-      "model": "github-copilot/grok-code-fast-1"
+      "model": "xai/grok-code-fast-1"
     },
-    "kieran-python-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "kieran-rails-reviewer": { "model": "github-copilot/grok-code-fast-1" },
+    "kieran-python-reviewer": { "model": "xai/grok-code-fast-1" },
+    "kieran-rails-reviewer": { "model": "xai/grok-code-fast-1" },
     "kieran-typescript-reviewer": {
-      "model": "github-copilot/grok-code-fast-1"
+      "model": "xai/grok-code-fast-1"
     },
-    "maintainability-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "performance-reviewer": { "model": "github-copilot/grok-code-fast-1" },
+    "maintainability-reviewer": { "model": "xai/grok-code-fast-1" },
+    "performance-reviewer": { "model": "xai/grok-code-fast-1" },
     "previous-comments-reviewer": {
-      "model": "github-copilot/grok-code-fast-1"
+      "model": "xai/grok-code-fast-1"
     },
-    "product-lens-reviewer": { "model": "github-copilot/grok-code-fast-1" },
+    "product-lens-reviewer": { "model": "xai/grok-code-fast-1" },
     "project-standards-reviewer": {
-      "model": "github-copilot/grok-code-fast-1"
+      "model": "xai/grok-code-fast-1"
     },
-    "reliability-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "scope-guardian-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "security-lens-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "security-reviewer": { "model": "github-copilot/grok-code-fast-1" },
-    "testing-reviewer": { "model": "github-copilot/grok-code-fast-1" }
+    "reliability-reviewer": { "model": "xai/grok-code-fast-1" },
+    "scope-guardian-reviewer": { "model": "xai/grok-code-fast-1" },
+    "security-lens-reviewer": { "model": "xai/grok-code-fast-1" },
+    "security-reviewer": { "model": "xai/grok-code-fast-1" },
+    "testing-reviewer": { "model": "xai/grok-code-fast-1" }
   }
 }
