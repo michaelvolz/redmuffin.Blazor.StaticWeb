@@ -3,6 +3,7 @@
 ## CRITICAL
 
 - **ALWAYS**: `rm-commit` for commits (NO manual); `dotnet test` pre-commit.
+- **ALWAYS**: Use batched commits by concern (config, agents, skills, docs) even when 'all changes' is requested.
 - **ALWAYS**: `dotnet build --verbosity quiet` (C#) / `dotnet build -c Debug-Sass` (SCSS/JS) post-edit.
 - **ALWAYS**: Read code before answering; `pwsh -NoProfile` for PowerShell; 80-char commit wrap.
 - **ALWAYS**: `date: YYYY-MM-DD` frontmatter on new `docs/` (from filename or today).
