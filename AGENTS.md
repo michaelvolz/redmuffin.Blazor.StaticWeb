@@ -65,6 +65,32 @@
 - Modules available: PSReadLine, Microsoft.PowerShell.Management, etc. (your profile modules load if -NoProfile is false).
 - Never assume bash, sh, or Unix tools unless explicitly requested.
 
+## NPM Global Packages (Supply Chain Security)
+
+- **Global packages** are protected by a 7-day release age filter (`min-release-age=10080` in `.npmrc`).
+- This delay protects against supply chain attacks (typosquatting, malicious releases).
+- **NEVER bypass this protection** — always find the latest version older than 7 days.
+
+### Updating Global NPM Packages
+
+1. Check release dates: `npm view <pkg> time --json`
+2. Identify versions older than 7 days from today.
+3. Install safe version: `npm config delete min-release-age && npm install -g <pkg>@<safe-version> && npm config set min-release-age 10080`
+4. Verify: `npm list -g --depth=0`
+
+Example for updating prettier:
+
+```
+# 1. Check versions and dates
+npm view prettier time --json
+
+# 2. Find latest version older than 7 days
+# 3.29 days ago = 3.8.1 (01/21/2026)
+npm config delete min-release-age
+npm install -g prettier@3.8.1
+npm config set min-release-age 10080
+```
+
 ### CRITICAL: Shell-Aware Command Execution
 
 The `bash` tool's shell differs by platform. This determines how PowerShell commands must be written:
