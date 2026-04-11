@@ -54,8 +54,9 @@
 - **Everything Search**: If `es.exe` fails, STOP and report. DO NOT fallback without approval.
 - **Undo Commit**: Undo last commit while keeping changes as unstaged edits.
 
-## PowerShell on Windows
-- You are running in PowerShell 7+ (`pwsh.exe`).
+## PowerShell (Cross-Platform)
+
+- You are running in PowerShell 7+ (`pwsh`).
 - Always prefer native cmdlets and modules over bash-style commands.
 - Use proper PowerShell quoting/escaping (backticks for special chars, `@' '@` for literals).
 - Prefer structured output (`ConvertTo-Json`, `Out-String -Width 4096`).
@@ -64,7 +65,47 @@
 - Modules available: PSReadLine, Microsoft.PowerShell.Management, etc. (your profile modules load if -NoProfile is false).
 - Never assume bash, sh, or Unix tools unless explicitly requested.
 
-- ## STACK & STRUCTURE
+### CRITICAL: Shell-Aware Command Execution
+
+The `bash` tool's shell differs by platform. This determines how PowerShell commands must be written:
+
+| Platform      | Shell  | Simple commands                                  | Complex scripts                    |
+| ------------- | ------ | ------------------------------------------------ | ---------------------------------- |
+| Windows       | `pwsh` | Direct — no wrapper                              | `pwsh -NoProfile -File script.ps1` |
+| Linux/omarchy | `bash` | `pwsh -NoProfile -Command '...'` (single quotes) | `pwsh -NoProfile -File script.ps1` |
+
+**Windows (shell = pwsh)**: The shell is already pwsh. Never wrap in `pwsh -NoProfile -Command "..."`.
+The outer pwsh interpolates `$`, `@{}`, `$_`, `()` **before** the inner pwsh sees them, causing
+silent data loss and parse errors.
+
+**Linux/omarchy (shell = bash)**: You MUST use `pwsh -NoProfile -Command '...'` with **single quotes**
+so bash passes `$variables` through to pwsh untouched. Double quotes let bash interpolate first.
+
+**DO** on Windows (shell is pwsh — run directly):
+
+```
+Get-ChildItem | ForEach-Object { $_.Name }
+```
+
+**DO** on Linux/omarchy (shell is bash — single-quoted wrapper):
+
+```
+pwsh -NoProfile -Command 'Get-ChildItem | ForEach-Object { $_.Name }'
+```
+
+**DON'T** on Windows (double-evaluation destroys `$` and `@`):
+
+```
+pwsh -NoProfile -Command "Get-ChildItem | ForEach-Object { $_.Name }"
+```
+
+**For complex scripts** (both platforms): Write a `.ps1` file with the `write` tool, then execute:
+
+```
+pwsh -NoProfile -File path/to/script.ps1
+```
+
+## STACK & STRUCTURE
 
 - **Stack**: .NET 9, Blazor WASM, Azure Functions (.NET 9), TUnit, SCSS.
 - **Paths**:
