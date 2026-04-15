@@ -1,6 +1,7 @@
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb;
 using redmuffin.Blazor.StaticWeb.Core.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
@@ -15,6 +16,11 @@ using redmuffin.Blazor.StaticWeb.Services;
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
+
+// Set minimum log level to Warning in production to reduce browser console noise
+// Users who need verbose logs can use browser DevTools directly
+builder.Logging.SetMinimumLevel(
+    builder.HostEnvironment.IsProduction() ? LogLevel.Warning : LogLevel.Information);
 
 builder.Services.AddHttpClient(string.Empty, client =>
 {
