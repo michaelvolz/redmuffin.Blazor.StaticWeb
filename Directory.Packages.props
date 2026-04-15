@@ -4,7 +4,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <PropertyGroup Label="SharedVersions">
-    <MicrosoftExtensionsVersion>9.0.14</MicrosoftExtensionsVersion>
+    <MicrosoftExtensionsVersion>10.0.6</MicrosoftExtensionsVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>10.0.3</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
     <TUnitVersion>1.28.7</TUnitVersion>
     <AzureFunctionsWorkerVersion>2.51.0</AzureFunctionsWorkerVersion>

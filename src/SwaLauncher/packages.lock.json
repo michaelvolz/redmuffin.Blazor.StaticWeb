@@ -16,9 +16,9 @@
       },
       "Microsoft.AspNetCore.Components.Analyzers": {
         "type": "Direct",
-        "requested": "[9.0.14, )",
-        "resolved": "9.0.14",
-        "contentHash": "2yrkT+Akish37Bm4ECSCPg8lrjCkqszzqahAI0elI1wZlAbsXaoW6W5eEp3k5lUua5ZgQBTy9N3+RQGoOWQFWw=="
+        "requested": "[10.0.6, )",
+        "resolved": "10.0.6",
+        "contentHash": "xsF4gW3bHj9zzgfpeGOiW1IePPOX7X4JfU1WAZTpOFd2mPEV0/3jwaB8eBvRkjxTHRHRRt2pGwfTDxL2nUpe2A=="
       },
       "Microsoft.VisualStudio.Threading.Analyzers": {
         "type": "Direct",
