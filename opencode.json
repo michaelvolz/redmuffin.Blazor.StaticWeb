@@ -33,21 +33,7 @@
   "mcp": {
     "brave-search": {
       "type": "local",
-      "command": [
-        "docker",
-        "run",
-        "-i",
-        "--rm",
-        "-e",
-        "BRAVE_API_KEY",
-        "-e",
-        "BRAVE_MCP_TRANSPORT",
-        "mcp/brave-search"
-      ],
-      "environment": {
-        "BRAVE_API_KEY": "{env:BRAVE_API_KEY}",
-        "BRAVE_MCP_TRANSPORT": "stdio"
-      },
+      "command": ["docker", "run", "-i", "--rm", "-e", "BRAVE_API_KEY", "mcp/brave-search"],
       "enabled": true
     },
     "context7": {
@@ -58,7 +44,7 @@
       },
       "enabled": true
     },
-    "sequentialthinking": {
+    "sequential-thinking": {
       "type": "local",
       "command": ["docker", "run", "-i", "--rm", "mcp/sequentialthinking"],
       "enabled": true

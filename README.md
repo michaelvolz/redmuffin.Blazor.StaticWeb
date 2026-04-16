@@ -155,6 +155,7 @@ Use only if you cannot run Docker. Note: Manual secret management required.
 - **Visual Studio 2026 (Community)**
 - **.NET 9 SDK** - For all projects
 - **Node.js** (Latest LTS)
+- **PowerShell** - Required for running project scripts (install on Linux: `yay -S powershell`)
 
 ### Global Tools
 
