@@ -13,7 +13,7 @@
       "**/publish/**"
     ]
   },
-  "plugin": ["opencode-snippets", "cc-safety-net"],
+  "plugin": ["opencode-snippets", "cc-safety-net", "context-mode"],
   "permission": {
     "skill": {
       "git-commit": "deny",
@@ -93,6 +93,10 @@
       "type": "local",
       "command": ["node", "scripts/mcp/chrome-devtools-launch.mjs"],
       "enabled": true
+    },
+    "context-mode": {
+      "type": "local",
+      "command": ["context-mode"]
     }
   },
   "tools": {
