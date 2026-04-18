@@ -12,26 +12,41 @@ import { existsSync } from 'node:fs';
 // Cross-platform browser paths
 const browserPaths = {
   win32: 'C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',
-  linux: '/usr/bin/brave',
-  darwin: '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser'
+  linux: '/usr/bin/brave'
 };
 
 // Get executable path - fall back to brave or chrome
 const getExecutablePath = () => {
-  const osBrowserPaths = browserPaths[platform()] ?? browserPaths.linux;
+  const currentPlatform = platform();
+
+  if (currentPlatform === 'win32') {
+    // Try to get Brave path from Windows registry
+    try {
+      const { execSync } = require('node:child_process');
+      const path = execSync('powershell -Command "Get-ItemProperty \'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\Brave.exe\' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty \'(default)\'"', { encoding: 'utf8' }).trim();
+      if (path && existsSync(path)) {
+        return path;
+      }
+    } catch (e) {
+      // Fall back to search
+    }
+
+    // Search for brave.exe in common locations
+    const searchPaths = [
+      'C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',
+      'C:\\Program Files (x86)\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',
+      'C:\\Users\\${process.env.USERNAME}\\AppData\\Local\\BraveSoftware\\Brave-Browser\\Application\\brave.exe'
+    ];
+    for (const p of searchPaths) {
+      if (existsSync(p)) {
+        return p;
+      }
+    }
+  }
+
+  const osBrowserPaths = browserPaths[currentPlatform] ?? browserPaths.linux;
   if (existsSync(osBrowserPaths)) {
     return osBrowserPaths;
-  }
-  // Fallback to Chrome on Linux
-  if (platform() === 'linux') {
-    const chromePaths = [
-      '/usr/bin/google-chrome',
-      '/usr/bin/chromium',
-      '/usr/bin/chromium-browser'
-    ];
-    for (const p of chromePaths) {
-      if (existsSync(p)) return p;
-    }
   }
   return osBrowserPaths;
 };
@@ -42,7 +57,9 @@ const npmCmd = platform() === 'win32' ? 'npx.cmd' : 'npx';
 // Build args for npx
 const args = ['-y', 'chrome-devtools-mcp'];
 if (executablePath) {
-  args.push('--executablePath', executablePath);
+  // Quote the path if it contains spaces
+  const quotedPath = executablePath.includes(' ') ? `"${executablePath}"` : executablePath;
+  args.push('--executablePath', quotedPath);
 }
 
 console.error(`[chrome-devtools] Platform: ${platform()}, Arch: ${arch()}`);
