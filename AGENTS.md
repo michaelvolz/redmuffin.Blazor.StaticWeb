@@ -136,6 +136,7 @@ pwsh -NoProfile -File path/to/script.ps1
 ## STACK & STRUCTURE
 
 - **Stack**: .NET 9, Blazor WASM, Azure Functions (.NET 9), TUnit, SCSS.
+- **Knowledge base**: `docs/solutions/` — documented solutions to past problems (bugs, best practices, workflow patterns), searchable by category and tags.
 - **Paths**:
   - `src/redmuffin.Blazor.StaticWeb/`: Frontend.
   - `src/redmuffin.Blazor.StaticWeb.Api/`: Backend.
