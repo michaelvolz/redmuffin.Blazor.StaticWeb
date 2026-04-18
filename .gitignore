@@ -409,3 +409,5 @@ src/redmuffin.Blazor.StaticWeb/wwwroot/css/app.css
 .env.local
 .env.*.local
 .devcontainer/.env
+# Added by code-review-graph
+.code-review-graph/
