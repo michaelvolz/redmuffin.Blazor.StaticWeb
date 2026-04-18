@@ -1,11 +1,11 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <PropertyGroup Label="SharedVersions">
     <MicrosoftExtensionsVersion>9.0.14</MicrosoftExtensionsVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>10.0.3</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>10.0.5</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
     <TUnitVersion>1.28.7</TUnitVersion>
     <AzureFunctionsWorkerVersion>2.51.0</AzureFunctionsWorkerVersion>
     <AzureFunctionsWorkerApplicationInsightsVersion>2.50.0</AzureFunctionsWorkerApplicationInsightsVersion>
