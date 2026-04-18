@@ -155,9 +155,29 @@ Use only if you cannot run Docker. Note: Manual secret management required.
 - **Visual Studio 2026 (Community)**
 - **.NET 9 SDK** - For all projects
 - **Node.js** (Latest LTS)
+- **Python 3.10+** - Required for code-review-graph MCP server
 - **PowerShell** - Required for running project scripts (install on Linux: `yay -S powershell`)
 
 ### Global Tools
+
+#### Python Tools (pip)
+
+- **code-review-graph** (Optional - for token-efficient code reviews)
+  Local knowledge graph for AI-assisted code understanding. Provides blast radius analysis, community detection, and semantic search:
+
+  ```bash
+  pip install code-review-graph
+  code-review-graph install     # Configure for OpenCode
+  code-review-graph build      # Build the knowledge graph
+  ```
+
+  **What it provides:**
+  - 28 MCP tools for code analysis
+  - Blast radius analysis (what changes break)
+  - Community detection (architectural boundaries)
+  - 6.8x-49x token reduction on code reviews
+
+  > **Note**: On Windows, OpenCode's MCP stdio layer has known issues (#16449). The tool works via shell execution but may not appear in OpenCode's MCP list. This is a known OpenCode bug, not a config issue.
 
 #### Node.js Tools (npm)
 
@@ -1261,6 +1281,31 @@ The development environment includes several **Model Context Protocol (MCP) serv
 - **[Brave Search MCP Server](https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search)**: Provides real-time web search and local business search capabilities (requires API key)
 - **[Sequential Thinking MCP Server](https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking)**: Enables structured, multi-step reasoning and problem-solving through dynamic thought processes
 - **[Chrome DevTools MCP Server](https://github.com/ChromeDevTools/chrome-devtools-mcp)**: Provides browser automation, performance analysis, network inspection, and debugging capabilities (requires Node.js and Chrome)
+- **[code-review-graph](https://github.com/tirth8205/code-review-graph)**: Local knowledge graph for token-efficient code reviews. Builds structural map of codebase with Tree-sitter, provides blast radius analysis, and 28 MCP tools for code understanding (Python 3.10+ required)
+
+### Context-Mode (Token Optimization)
+
+The project uses **context-mode** for context window optimization when running OpenCode. This tool executes commands in a sandboxed subprocess, keeping raw output out of the context window.
+
+**Already Configured:**
+context-mode is pre-configured in the project's `opencode.json` plugin list. No additional installation required.
+
+**Usage:**
+
+```powershell
+# Run commands in sandbox (output stays in subprocess)
+ctx_execute --command "dotnet build"
+
+# Analyze files without loading into context
+ctx_execute_file --path "src/Program.cs" --language "csharp" --code "console.log(' analyzing...')"
+```
+
+**Benefits:**
+
+- Command output stays in sandbox, only parsed results enter context
+- 5x+ token reduction on large outputs
+- Works with any CLI command (git, dotnet, npm, etc.)
+- File analysis without full content in context
 
 ### Key Benefits
 
