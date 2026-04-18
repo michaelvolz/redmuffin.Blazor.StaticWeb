@@ -16,6 +16,7 @@ Create clean, reviewable git commits from the working tree.
 - Treat "undo commit" as "undo the last commit and keep changes as unstaged edits"
 - NEVER put `#` followed by an identifier (`[A-Za-z0-9_-]+`, e.g., `#1234`, `#abc`, `#SN-0001`) in the commit body — the conventional-commits-parser regex `([\w-]+)(?=\s|$|[,;)\]])` treats it as an issue reference and moves everything after into the footer, making the body appear empty to commitlint. Always use `Refs: #NNNNN` in the footer instead. If you must mention an issue in the body, omit the `#` prefix.
 - Sidenotes are referenced as `SN-NNNN` (no `#` prefix) in commit bodies. They are local file IDs, not GitHub issues. Write `See SN-0003 for context`, never `See #SN-0003 for context`.
+- Use `--no-optional-locks` when running git status/diff in background processes to avoid index lock contention.
 
 ## FLOW
 
@@ -27,21 +28,23 @@ Create clean, reviewable git commits from the working tree.
 
 ## COMMANDS
 
-| Command                     | Purpose                      | When                   |
-| --------------------------- | ---------------------------- | ---------------------- |
-| `git status`                | Show working tree status     | Always first           |
-| `git diff HEAD`             | Show all changes             | After status           |
-| `git branch --show-current` | Get current branch           | After diff             |
-| `git log --oneline -10`     | Show recent history          | After branch           |
-| `git add -p`                | Stage partial hunks          | File has mixed changes |
-| See WORKFLOWS → Commit      | Commit with here-string pipe | After staging          |
+| Command                              | Purpose                      | When                   |
+| ------------------------------------ | ---------------------------- | ---------------------- |
+| `git status --porcelain=v2 --branch` | Machine-readable status      | Scripted workflows     |
+| `git diff --numstat`                 | Line counts per file         | After status           |
+| `git diff HEAD`                      | Show all changes             | After status           |
+| `git branch --show-current`          | Get current branch           | After diff             |
+| `git log --oneline -n 10`            | Show recent history          | After branch           |
+| `git add -p`                         | Stage partial hunks          | File has mixed changes |
+| `git --no-optional-locks status`     | No lock contention           | Background check       |
+| See WORKFLOWS → Commit               | Commit with here-string pipe | After staging          |
 
 ## WORKFLOWS
 
 ### 1. Gather Context
 
 ```
-git status && git diff HEAD && git branch --show-current && git log --oneline -10
+git status --porcelain=v2 --branch && git diff --numstat && git branch --show-current && git log --oneline -n 10
 ```
 
 Stop if tree is clean.

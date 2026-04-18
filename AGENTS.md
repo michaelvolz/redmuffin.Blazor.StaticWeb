@@ -23,6 +23,21 @@
 | `es.exe`                                      | Fast file search    | Large scale/outside solution |
 | `pwsh -NoProfile`                             | Shell execution     | PowerShell tasks             |
 
+## Git CLI Optimizations
+
+| Command                                                                  | Purpose                     | When                       |
+| ------------------------------------------------------------------------ | --------------------------- | -------------------------- |
+| `git status --porcelain=v2 --branch`                                     | Machine-readable status     | Scripted workflows         |
+| `git diff --numstat`                                                     | Line counts (tab-separated) | Code review, analysis      |
+| `git diff --name-status`                                                 | File status (M/A/D/R)       | Change categorization      |
+| `git for-each-ref --format='%(refname:short)' --merged HEAD refs/heads/` | Safe branch list            | Cleanup scripts            |
+| `git --no-optional-locks status`                                         | No index lock               | Background/parallel agents |
+| `git log --format='%H\|%an\|%s'`                                         | Custom log fields           | Release notes, analysis    |
+| `git remote get-url origin 2>/dev/null`                                  | Get remote URL              | Automation                 |
+| `gh pr list --json number,title`                                         | GitHub PR list              | PR workflows               |
+
+**Why:** Porcelain output is stable across Git versions and user configs. Use `--no-optional-locks` to prevent index lock contention in parallel agent scenarios.
+
 ## BOUNDARIES
 
 ### ALWAYS
