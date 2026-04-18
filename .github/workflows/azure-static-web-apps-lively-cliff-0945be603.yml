@@ -135,8 +135,8 @@ jobs:
       # OPTIMIZATION: Single .NET setup with WASM workload for Blazor builds
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: "9.0.x"
+        with
+          dotnet-version: "9.0.305"
           workloads: wasm-tools
 
       # OPTIMIZATION: Cache NuGet packages for faster subsequent builds
@@ -240,8 +240,18 @@ jobs:
             --verbosity quiet \
             --nologo
 
-          echo ""
-          echo "Building Azure Functions API..."
+           echo ""
+           echo "Verifying trimming effectiveness..."
+           ASSEMBLY_COUNT=$(jq '.resources.assembly | length' "${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot/_framework/blazor.boot.json")
+           echo "Number of assemblies in blazor.boot.json: $ASSEMBLY_COUNT"
+           if [ "$ASSEMBLY_COUNT" -gt 100 ]; then
+             echo "❌ WARNING: High assembly count ($ASSEMBLY_COUNT) suggests trimming may not be working properly"
+           else
+             echo "✅ Assembly count ($ASSEMBLY_COUNT) looks good for trimmed build"
+           fi
+
+           echo ""
+           echo "Building Azure Functions API..."
           dotnet publish ${{ env.API_LOCATION }} \
             -c Release \
             -o ${{ env.API_LOCATION }}/bin/Release/publish \
