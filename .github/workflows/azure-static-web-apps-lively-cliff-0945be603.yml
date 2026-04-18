@@ -44,7 +44,7 @@ jobs:
         id: check
         uses: tj-actions/changed-files@v47.0.6
         with:
-          since_last_remote_commit: true
+          since_last_remote_commit: ${{ github.event_name == 'pull_request' }}
           files: |
             README.md
             AGENTS.md
