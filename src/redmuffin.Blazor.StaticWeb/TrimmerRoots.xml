@@ -3,44 +3,49 @@
   <!--
     Trimmer Roots Configuration for redmuffin.Blazor.StaticWeb
     
-    This file specifies which types and assemblies should be preserved
-    when using full trimming mode. Be conservative here - only preserve
-    what's absolutely necessary to prevent runtime errors.
+    OPTIMIZED: Changed from preserve="all" to preserve="minimal" for framework assemblies
+    to enable effective IL trimming. The trimmer can now remove unused types from
+    these assemblies while preserving only what's needed for the app to function.
     
     For CI/CD compatibility: This file must be committed to git and will
     be used by the GitHub Actions pipeline during Release builds.
   -->
 
-  <!-- Preserve the main application assembly -->
-  <assembly fullname="redmuffin.Blazor.StaticWeb" preserve="all" />
-  
-  <!-- Preserve the Common project assembly -->
-  <assembly fullname="redmuffin.Blazor.StaticWeb.Common" preserve="all" />
+  <!-- Preserve app assemblies (minimal - let trimmer remove unused code) -->
+  <assembly fullname="redmuffin.Blazor.StaticWeb" preserve="minimal" />
+  <assembly fullname="redmuffin.Blazor.StaticWeb.Common" preserve="minimal" />
 
-  <!-- Preserve Blazor WebAssembly core assemblies -->
-  <assembly fullname="Microsoft.AspNetCore.Components" preserve="all" />
-  <assembly fullname="Microsoft.AspNetCore.Components.Web" preserve="all" />
-  <assembly fullname="Microsoft.AspNetCore.Components.WebAssembly" preserve="all" />
+  <!-- Preserve Blazor WebAssembly core assemblies (minimal) -->
+  <assembly fullname="Microsoft.AspNetCore.Components" preserve="minimal" />
+  <assembly fullname="Microsoft.AspNetCore.Components.Web" preserve="minimal" />
+  <assembly fullname="Microsoft.AspNetCore.Components.WebAssembly" preserve="minimal" />
+  <assembly fullname="Microsoft.AspNetCore.Components.Authorization" preserve="minimal" />
+  <assembly fullname="Microsoft.AspNetCore.Components.Forms" preserve="minimal" />
   
-  <!-- Preserve Blazor Authorization (if using authentication) -->
-  <assembly fullname="Microsoft.AspNetCore.Components.Authorization" preserve="all" />
+  <!-- Preserve JSON serialization (minimal) -->
+  <assembly fullname="System.Text.Json" preserve="minimal" />
   
-  <!-- Preserve JSON serialization (System.Text.Json) -->
-  <assembly fullname="System.Text.Json" preserve="all" />
+  <!-- Preserve HttpClient (minimal) -->
+  <assembly fullname="System.Net.Http" preserve="minimal" />
   
-  <!-- Preserve HttpClient -->
-  <assembly fullname="System.Net.Http" preserve="all" />
+  <!-- Preserve DI abstractions (keep all for safety - reflection-based behavior) -->
+  <assembly fullname="Microsoft.Extensions.DependencyInjection.Abstractions" preserve="all" />
   
-  <!-- Preserve dependency injection -->
-  <assembly fullname="Microsoft.Extensions.DependencyInjection" preserve="all" />
+  <!-- Preserve logging abstractions (keep all for safety) -->
+  <assembly fullname="Microsoft.Extensions.Logging.Abstractions" preserve="all" />
   
-  <!-- Preserve logging -->
-  <assembly fullname="Microsoft.Extensions.Logging" preserve="all" />
-  
-  <!-- Preserve Blazored.LocalStorage -->
+  <!-- Preserve third-party libraries (keep all for safety) -->
   <assembly fullname="Blazored.LocalStorage" preserve="all" />
-  
-  <!-- Preserve Markdig for markdown processing -->
   <assembly fullname="Markdig" preserve="all" />
+  <assembly fullname="LZStringCSharp" preserve="all" />
+  
+  <!-- Preserve JS Interop (minimal) -->
+  <assembly fullname="Microsoft.JSInterop" preserve="minimal" />
+  <assembly fullname="Microsoft.JSInterop.WebAssembly" preserve="minimal" />
+
+  <!-- Preserve WebAssembly runtime (minimal) -->
+  <assembly fullname="System.Private.CoreLib" preserve="minimal" />
+  <assembly fullname="mscorlib" preserve="minimal" />
+  <assembly fullname="netstandard" preserve="minimal" />
 
 </linker>

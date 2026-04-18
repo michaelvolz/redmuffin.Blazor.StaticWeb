@@ -49,6 +49,8 @@
     <TrimMode>full</TrimMode>
     <!-- Specify trimmer descriptor to preserve essential types -->
     <TrimmerRootDescriptor>TrimmerRoots.xml</TrimmerRootDescriptor>
+    <!-- Enable lazy loading for non-critical assemblies -->
+    <BlazorWebAssemblyLazyLoad>true</BlazorWebAssemblyLazyLoad>
   </PropertyGroup>
 
   <ItemGroup>
