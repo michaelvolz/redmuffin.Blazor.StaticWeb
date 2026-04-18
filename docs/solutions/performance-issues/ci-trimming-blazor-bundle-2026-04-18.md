@@ -1,16 +1,17 @@
 ---
 title: CI not applying Blazor trimming, causing large bundle size
 date: 2026-04-18
+last_updated: 2026-04-18
 category: performance-issues
 module: Blazor StaticWeb
 problem_type: performance_issue
 component: tooling
 symptoms:
-  - Production bundle size significantly larger than local
+  - Production bundle size significantly larger than local (e.g., 7.5MB / 200+ assemblies)
 root_cause: config_error
 resolution_type: config_change
 severity: high
-tags: blazor, trimming, ci, bundle-size, .net
+tags: [blazor, trimming, ci, bundle-size, .net, publish, no-dependencies]
 ---
 
 # CI not applying Blazor trimming, causing large bundle size
@@ -31,11 +32,23 @@ Initial CI builds without specifying an exact .NET version used a default versio
 
 ## Solution
 
-Updated the GitHub Actions workflow to specify exact .NET version and added trimming verification:
+Updated the GitHub Actions workflow to specify exact .NET version, remove invalid flags, and add trimming verification:
 
-1. Changed `dotnet-version: "9.0.x"` to `dotnet-version: "9.0.305"` in CI
+**Workflow publish command (before):**
+
+```yaml
+dotnet publish ... --no-restore --no-dependencies --verbosity quiet
+```
+
+**After:**
+
+```yaml
+dotnet publish ... --no-restore --verbosity quiet
+```
+
+1. Changed `dotnet-version: "9.0.x"` to `dotnet-version: "9.0.305"` + `workloads: wasm-tools`
 2. Fixed TrimmerRootDescriptor path to `$(MSBuildProjectDirectory)/TrimmerRoots.xml`
-3. Added verification step counting assemblies in blazor.boot.json
+3. Added verification: `jq '.resources.assembly | length' blazor.boot.json` → warn if >100
 
 ## Why This Works
 
@@ -43,10 +56,11 @@ CI was using inconsistent .NET versions where trimming support varied. Pinning t
 
 ## Prevention
 
-- Pin exact .NET SDK versions in CI configurations
-- Add build verification steps for bundle size and assembly count
-- Include trimming descriptor path fixes for cross-platform compatibility
-- Document CI environment requirements in project README
+- Pin exact .NET SDK + `workloads: wasm-tools` in CI (`actions/setup-dotnet@v5`)
+- Remove `--no-dependencies` from `dotnet publish` (breaks dep trimming)
+- Post-publish: `jq '.resources.assembly | length' wwwroot/_framework/blazor.boot.json < 100`
+- Test: Add Release publish assembly count test (<100)
+- Monitor PR bundles via artifact analysis
 
 ## Related Issues
 
