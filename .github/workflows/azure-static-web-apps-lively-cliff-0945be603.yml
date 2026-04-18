@@ -232,13 +232,12 @@ jobs:
           echo ""
           echo "Building Blazor WebAssembly Application..."
           # Build with optimizations for production deployment
-          dotnet publish ${{ env.APP_LOCATION }} \
-            -c Release \
-            -o ${{ env.APP_LOCATION }}/bin/Release/publish \
-            --no-restore \
-            --no-dependencies \
-            --verbosity quiet \
-            --nologo
+            dotnet publish ${{ env.APP_LOCATION }} \
+              -c Release \
+              -o ${{ env.APP_LOCATION }}/bin/Release/publish \
+              --no-restore \
+              --verbosity quiet \
+              --nologo
 
            echo ""
            echo "Verifying trimming effectiveness..."
