@@ -44,7 +44,7 @@ jobs:
         id: check
         uses: tj-actions/changed-files@v47.0.6
         with:
-          since_last_remote_commit: ${{ github.event_name == 'pull_request' }}
+          since_last_remote_commit: true
           files: |
             README.md
             AGENTS.md
@@ -135,7 +135,7 @@ jobs:
       # OPTIMIZATION: Single .NET setup with WASM workload for Blazor builds
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
-        with
+        with:
           dotnet-version: "9.0.305"
           workloads: wasm-tools
 
