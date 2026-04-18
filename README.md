@@ -261,6 +261,47 @@ Use only if you cannot run Docker. Note: Manual secret management required.
   dotnet tool install --global dotnet-reportgenerator-globaltool
   ```
 
+#### AI Assistant Tools
+
+- **RTK (Rust Token Killer)** - CLI proxy that reduces LLM token consumption by 60-90% on common dev commands
+  Required for optimal OpenCode performance by compressing verbose command outputs (git, tests, package managers, etc.).
+
+  **Installation (Windows):**
+
+  ```powershell
+  # Download the latest Windows binary
+  curl -L -o rtk.zip https://github.com/rtk-ai/rtk/releases/latest/download/rtk-x86_64-pc-windows-msvc.zip
+
+  # Extract to a directory in PATH (e.g., C:\Users\<username>\bin)
+  Expand-Archive -Path rtk.zip -DestinationPath .
+  Move-Item rtk.exe C:\Users\$env:USERNAME\bin\rtk.exe
+
+  # Verify installation
+  rtk --version
+  ```
+
+  **OpenCode Integration:**
+
+  ```powershell
+  # Initialize RTK for OpenCode (installs plugin automatically)
+  rtk init -g --opencode
+
+  # Restart OpenCode for plugin to load
+  ```
+
+  **What RTK Does:**
+  - Automatically compresses `git status`, `cargo test`, `pnpm list`, etc.
+  - Reduces token usage by 60-90% for development commands
+  - Works transparently - no changes needed to your workflow
+  - Plugin integrates directly with OpenCode's tool execution
+
+  **Token Savings Examples:**
+  - `git status`: ~2,000 tokens → ~400 tokens
+  - `cargo test`: ~25,000 tokens → ~2,500 tokens
+  - `pnpm list`: ~8,000 tokens → ~2,400 tokens
+
+  > **Note**: RTK requires restarting OpenCode after installation. The plugin handles all command rewriting automatically.
+
 ### Optional Tools
 
 - **Azure CLI** - For Azure resource management and deployment
