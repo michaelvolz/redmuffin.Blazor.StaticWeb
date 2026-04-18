@@ -42,7 +42,7 @@ jobs:
 
       - name: Check if only documentation files changed
         id: check
-        uses: tj-actions/changed-files@v47.0.5
+        uses: tj-actions/changed-files@v47.0.6
         with:
           since_last_remote_commit: true
           files: |
