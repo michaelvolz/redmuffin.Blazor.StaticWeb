@@ -13,12 +13,36 @@
       "**/publish/**"
     ]
   },
-  "plugin": ["opencode-snippets", "cc-safety-net", "block-push"],
+  "plugin": ["opencode-snippets", "cc-safety-net"],
   "permission": {
     "skill": {
       "git-commit": "deny",
       "git-commit-push-pr": "deny"
-    }
+    },
+    "read": {
+      "*": "allow",
+      "**/.env*": "deny",
+      "**/secrets*": "deny",
+      "**/*.env.example": "allow",
+      "docs/**": "allow",
+      ".github/**": "allow"
+    },
+    "lsp": "allow",
+    "edit": "ask",
+    "bash": {
+      "*": "ask",
+      "dotnet *": "allow",
+      "pwsh *": "allow",
+      "powershell *": "allow",
+      "git *": "allow",
+      "npm *": "allow",
+      "npx *": "allow",
+      "node *": "allow",
+      "dir *": "allow",
+      "ls *": "allow",
+      "grep *": "allow"
+    },
+    "external_directory": "ask"
   },
   "formatter": {
     "dotnet-format": {
