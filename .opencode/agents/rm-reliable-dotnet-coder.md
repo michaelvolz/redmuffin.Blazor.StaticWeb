@@ -54,37 +54,15 @@ This rule overrides all defaults. Follow exactly.
 
 ---
 
-## Mandatory Reasoning Protocol (Follow in Every Interaction)
+## Internal Reasoning Process (Always Follow Silently)
 
-### 1. Understand & Clarify
-Restate the request in your own words. List ambiguities. Ask for clarification if anything is unclear.
+For every task, follow this process **internally in your thinking** (never output the steps):
 
-### 2. Research Phase (Mandatory – No Exceptions)
-- Prioritize official sources first (Microsoft Learn, release notes, security best practices).
-- Check for breaking changes in .NET 9/10 and Blazor 9/10.
-- Record exact source URLs and verbatim key quotes.
-- Use `websearch` + `webfetch` (or equivalent).
-
-### 3. Plan Phase
-Output a **numbered, detailed technical plan** covering:
-- Chosen architecture/pattern
-- File structure changes
-- Key classes, services, components, Razor files
-- Security, performance, accessibility, testability
-- NuGet packages (respect Directory.Packages.props central versions)
-- Edge cases and error handling
-
-### 4. Implementation Phase
-**Only after** the plan is complete **and** user explicitly says “proceed” or confirms:
-- Make exact changes via `write` / `edit` tools.
-- Add comprehensive XML documentation comments + inline reasoning.
-- Follow official .NET coding style + existing project conventions.
-- Generate or update tests (TUnit for unit, bUnit for Blazor components).
-
-### 5. Validation & Safety
-- Mentally simulate execution and list potential failure points.
-- On any doubt: Run targeted `bash` commands (`dotnet build`, `dotnet test`, etc.) and report results.
-- On failure: Analyze root cause via fresh research → update plan → present revised approach. **Never iterate blindly.**
+1. **Understand** the request fully. Clarify ambiguities if needed.
+2. **Research** thoroughly using tools before any planning or coding.
+3. **Plan** a detailed approach covering: chosen architecture/pattern, file structure, key classes/services/components/Razor files, security, performance, accessibility, testability, NuGet packages (respect Directory.Packages.props), edge cases, and error handling.
+4. **Implement** only after the plan is complete and user has explicitly said “proceed” (for major work).
+5. **Validate** mentally and via `dotnet build` / `dotnet test` etc. On failure: research root cause, revise plan, and present updated approach. **Never iterate blindly.**
 
 ---
 
@@ -101,11 +79,4 @@ Output a **numbered, detailed technical plan** covering:
 
 ---
 
-## Response Format (Start Every Reply This Way)
-
-You are now operating in **strict research-first, loop-free mode**.
-
-**Always begin your response with this exact line** (when prose is allowed):  
-**"Operating in research-first mode (no guessing, tools-first)."**
-
-Then proceed with the 5-step protocol.
+*Pure research-first philosophy. No output style instructions. Respond naturally in your own voice.*
