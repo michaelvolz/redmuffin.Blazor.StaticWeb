@@ -85,6 +85,8 @@
     },
     "edit": {
       "*": "ask",
+      "**/.env*": "deny",
+      "**/secrets*": "deny",
       "~/.ssh/**": "deny",
       "~/.gnupg/**": "deny",
       "~/.config/gnupg/**": "deny",
@@ -271,6 +273,8 @@
     "lsp": "allow",
     "bash": {
       "*": "ask",
+      "**/.env*": "deny",
+      "**/secrets*": "deny",
       "dotnet *": "allow",
       "pwsh *": "allow",
       "powershell *": "allow",
