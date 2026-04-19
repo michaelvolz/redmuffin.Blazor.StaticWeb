@@ -1,12 +1,257 @@
 {
-  "mcpServers": {
-    "code-review-graph": {
-      "command": "code-review-graph",
-      "args": [
-        "serve"
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "rm-reliable-dotnet-coder",
+  "watcher": {
+    "ignore": [
+      ".git/**",
+      "**/bin/**",
+      "**/obj/**",
+      ".vs/**",
+      "**/packages/**",
+      "**/TestResults/**",
+      "**/artifacts/**",
+      "**/publish/**"
+    ]
+  },
+  "plugin": ["opencode-snippets", "cc-safety-net"],
+  "permission": {
+    "skill": {
+      "git-commit": "deny",
+      "git-commit-push-pr": "deny"
+    },
+    "read": {
+      "*": "allow",
+      "**/.env*": "deny",
+      "**/secrets*": "deny",
+      "**/*.env.example": "allow",
+      "docs/**": "allow",
+      ".github/**": "allow"
+    },
+    "lsp": "allow",
+    "edit": "ask",
+    "bash": {
+      "*": "ask",
+      "dotnet *": "allow",
+      "pwsh *": "allow",
+      "powershell *": "allow",
+      "git *": "allow",
+      "npm *": "allow",
+      "npx *": "allow",
+      "node *": "allow",
+      "dir *": "allow",
+      "ls *": "allow",
+      "grep *": "allow"
+    },
+    "external_directory": "ask"
+  },
+  "formatter": {
+    "dotnet-format": {
+      "command": ["dotnet", "format", "--include", "$FILE"],
+      "extensions": [".cs", ".razor"]
+    },
+    "prettier": {
+      "command": ["prettier", "--write", "$FILE"],
+      "extensions": [".scss", ".css", ".json", ".md", ".yml", ".yaml"]
+    }
+  },
+  "mcp": {
+    "brave-search": {
+      "type": "local",
+      "command": [
+        "docker",
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "BRAVE_API_KEY",
+        "-e",
+        "BRAVE_MCP_TRANSPORT",
+        "mcp/brave-search"
       ],
-      "type": "stdio",
-      "env": []
+      "environment": {
+        "BRAVE_API_KEY": "{env:BRAVE_API_KEY}",
+        "BRAVE_MCP_TRANSPORT": "stdio"
+      },
+      "enabled": true
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "CONTEXT7_API_KEY": "{env:CONTEXT7_API_KEY}"
+      },
+      "enabled": true
+    },
+    "sequential-thinking": {
+      "type": "local",
+      "command": [
+        "docker",
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "DISABLE_THOUGHT_LOGGING=true",
+        "mcp/sequentialthinking"
+      ],
+      "enabled": true
+    },
+    "chrome-devtools": {
+      "type": "local",
+      "command": [
+        "npx",
+        "chrome-devtools-mcp",
+        "--executablePath",
+        "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe"
+      ],
+      "enabled": true
+    },
+    "code-review-graph": {
+      "type": "local",
+      "command": ["code-review-graph", "serve"],
+      "environment": {},
+      "enabled": true
+    }
+  },
+  "tools": {
+    "brave-search_brave_*": false,
+    "brave-search_brave_web_search": true
+  },
+  "agent": {
+    "rm-uncle-bob-csharp-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "rm-dotnet-csharp-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "rm-blazor-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "rm-html-css-blazor-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "rm-powershell-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "adversarial-document-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "adversarial-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "agent-native-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "api-contract-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "architecture-strategist": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "cli-agent-readiness-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "cli-readiness-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "code-simplicity-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "coherence-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "correctness-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "data-migrations-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "design-implementation-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "design-lens-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "dhh-rails-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "feasibility-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "julik-frontend-races-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "kieran-python-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "kieran-rails-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "kieran-typescript-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "maintainability-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "performance-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "previous-comments-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "product-lens-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "project-standards-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "reliability-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "scope-guardian-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "security-lens-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "security-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "testing-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
     }
   }
 }
