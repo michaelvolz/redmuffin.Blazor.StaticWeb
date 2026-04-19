@@ -550,7 +550,7 @@
     "plan": {
       "disable": true
     },
-    "rm-daily": {
+    "rm-daily-dotnet-coder": {
       "disable": true
     }
   }
