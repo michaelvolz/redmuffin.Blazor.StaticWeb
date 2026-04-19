@@ -79,7 +79,6 @@ description: Compacted single-file version. ALL original information preserved v
 - **Updating**:
   1. Check release dates: `npm view <pkg> time --json`
   2. Identify versions older than 7 days from today.
-  3. Install safe version: `npm config delete min-release-age && npm install -g <pkg>@<safe-version> && npm config set min-release-age 10080`
   4. Verify: `npm list -g --depth=0`
 - Example (prettier): Check `npm view prettier time --json` → find latest >7 days old (e.g. 3.8.1) → install as above.
 
