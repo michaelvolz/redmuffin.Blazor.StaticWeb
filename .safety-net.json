@@ -15,6 +15,26 @@
       "reason": "BLOCKED by Policy: git push is restricted to the repository owner only.\n\nCommand: rtk git push\n\nReason: Only humans may push to remote repositories. Ask the user to push manually when ready."
     },
     {
+      "name": "block-git-push-force-with-lease",
+      "command": "git",
+      "subcommand": "push",
+      "block_args": ["--force-with-lease"],
+      "reason": "BLOCKED: Even --force-with-lease carries risk. Only humans should force-push after review."
+    },
+    {
+      "name": "block-git-reflog-expire-now",
+      "command": "git",
+      "subcommand": "reflog",
+      "block_args": ["expire", "--expire=now", "--all"],
+      "reason": "BLOCKED: git reflog expire --expire=now --all permanently deletes reflog history and can hide malicious activity."
+    },
+    {
+      "name": "block-git-update-ref",
+      "command": "git",
+      "subcommand": "update-ref",
+      "reason": "BLOCKED: git update-ref can forcefully rewrite references and is dangerous without review."
+    },
+    {
       "name": "block-rtk-git-checkout",
       "command": "rtk",
       "subcommand": "git",
@@ -71,6 +91,23 @@
       "reason": "git worktree remove --force deletes worktree without checking for changes."
     },
     {
+      "name": "block-dotnet-ef-database-drop",
+      "command": "dotnet",
+      "subcommand": "ef",
+      "block_args": ["database", "drop"],
+      "reason": "BLOCKED: dotnet ef database drop permanently deletes the entire database. Only humans should do this."
+    },
+    {
+      "name": "block-eval",
+      "command": "eval",
+      "reason": "BLOCKED: eval can execute arbitrary code from strings and is a common attack vector."
+    },
+    {
+      "name": "block-source-untrusted",
+      "command": "source",
+      "reason": "BLOCKED: source (or .) on untrusted files can execute malicious code. Only source trusted files."
+    },
+    {
       "name": "block-rtk-find-delete",
       "command": "rtk",
       "subcommand": "find",
@@ -90,43 +127,6 @@
       "subcommand": "parallel",
       "block_args": ["rm"],
       "reason": "parallel rm -rf is dangerous - dynamic input makes targets unpredictable."
-    },
-    {
-      "name": "block-git-reflog-expire-now",
-      "command": "git",
-      "subcommand": "reflog",
-      "block_args": ["expire", "--expire=now", "--all"],
-      "reason": "BLOCKED: git reflog expire --expire=now --all permanently deletes reflog history and can hide malicious activity."
-    },
-    {
-      "name": "block-git-update-ref",
-      "command": "git",
-      "subcommand": "update-ref",
-      "reason": "BLOCKED: git update-ref can forcefully rewrite references and is dangerous without review."
-    },
-    {
-      "name": "block-dotnet-ef-database-drop",
-      "command": "dotnet",
-      "subcommand": "ef",
-      "block_args": ["database", "drop"],
-      "reason": "BLOCKED: dotnet ef database drop permanently deletes the entire database. Only humans should do this."
-    },
-    {
-      "name": "block-eval",
-      "command": "eval",
-      "reason": "BLOCKED: eval can execute arbitrary code from strings and is a common attack vector."
-    },
-    {
-      "name": "block-source-untrusted",
-      "command": "source",
-      "reason": "BLOCKED: source (or .) on untrusted files can execute malicious code. Only source trusted files."
-    },
-    {
-      "name": "block-git-push-force-with-lease",
-      "command": "git",
-      "subcommand": "push",
-      "block_args": ["--force-with-lease"],
-      "reason": "BLOCKED: Even --force-with-lease carries risk. Only humans should force-push after review."
     }
   ]
 }
