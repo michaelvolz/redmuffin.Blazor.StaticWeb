@@ -15,6 +15,10 @@
   },
   "plugin": ["opencode-snippets", "cc-safety-net", "context-mode"],
   "permission": {
+    // IMPORTANT: The following long deny list is INTENTIONALLY duplicated
+    // in read, edit, glob, grep, and bash for maximum defense-in-depth.
+    // Glob and grep can leak secrets, so they must have the full list.
+    // Do NOT remove or shorten any entry.
     "skill": {
       "git-commit": "deny",
       "git-commit-push-pr": "deny"
