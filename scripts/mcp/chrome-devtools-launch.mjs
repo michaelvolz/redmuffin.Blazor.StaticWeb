@@ -6,7 +6,7 @@
  * Note: chrome-devtools-mcp only has npm package, no Docker image
  */
 import { spawn } from 'node:child_process';
-import { platform, arch } from 'node:os';
+import { platform, arch, homedir } from 'node:os';
 import { existsSync } from 'node:fs';
 
 // Cross-platform browser paths
@@ -35,7 +35,7 @@ const getExecutablePath = () => {
     const searchPaths = [
       'C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',
       'C:\\Program Files (x86)\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',
-      'C:\\Users\\${process.env.USERNAME}\\AppData\\Local\\BraveSoftware\\Brave-Browser\\Application\\brave.exe'
+      `${homedir()}\\AppData\\Local\\BraveSoftware\\Brave-Browser\\Application\\brave.exe`
     ];
     for (const p of searchPaths) {
       if (existsSync(p)) {
@@ -61,6 +61,8 @@ if (executablePath) {
   const quotedPath = executablePath.includes(' ') ? `"${executablePath}"` : executablePath;
   args.push('--executablePath', quotedPath);
 }
+// Prevent Brave from restoring personal tabs - isolated mode still restores from main profile
+args.push('--chromeArg=no-restore-session');
 
 console.error(`[chrome-devtools] Platform: ${platform()}, Arch: ${arch()}`);
 console.error(`[chrome-devtools] Browser: ${executablePath}`);
