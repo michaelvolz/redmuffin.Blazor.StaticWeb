@@ -544,10 +544,10 @@
       "model": "xai/grok-code-fast-1",
       "mode": "subagent"
     },
-    "Build": {
+    "build": {
       "disable": true
     },
-    "Plan": {
+    "plan": {
       "disable": true
     }
   }
