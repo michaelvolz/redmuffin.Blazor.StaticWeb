@@ -239,6 +239,12 @@
     "testing-reviewer": {
       "model": "xai/grok-code-fast-1",
       "mode": "subagent"
+    },
+    "Build": {
+      "disable": true
+    },
+    "Plan": {
+      "disable": true
     }
   }
 }
