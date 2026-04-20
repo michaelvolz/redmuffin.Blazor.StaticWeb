@@ -1,8 +1,8 @@
 ---
-date: 2026-04-19
-title: AGENTS Project Guide (Optimized for OpenCode)
-tags: [agent, rules, blazor, critical-policies, context-management]
-description: Compacted single-file version. ALL original information preserved verbatim in rules/tables/commands/versions/examples. Size reduced ~30% via deduplication of phrasing, merged overlapping sections, tighter bullets. No info lost. Use this for OpenCode/agent contexts to avoid ignore/truncation on large MD (>10-15KB common limit).
+date: 2026-04-20
+title: AGENTS Project Guide (OpenCode-Optimized v2)
+tags: [agent, rules, blazor, critical-policies, context-management, dotnet9]
+description: Token-optimized single-file AGENTS.md for OpenCode harness. 100% of original policies, commands, workflows, Git optimizations, NPM rules, and verbatim context-mode routing preserved. ~28% smaller with heightened urgency. Frontmatter retained for harness compatibility and metadata routing. Use to prevent context truncation and improve multi-model adherence.
 ---
 
 # AGENTS: Project Guide (OpenCode-Optimized v2)
@@ -10,6 +10,7 @@ description: Compacted single-file version. ALL original information preserved v
 ## CRITICAL
 
 **ALWAYS**:
+
 - Use `rm-commit` for all commits (never manual `git commit` or `git add`).
 - Run `dotnet test` before every commit.
 - Batch commits by concern (config, agents, skills, docs) even when "all changes" requested.
@@ -28,6 +29,7 @@ description: Compacted single-file version. ALL original information preserved v
 - Use `es.exe` for fast file search when available; fall back to `grep` only if `es.exe` is unavailable.
 
 **NEVER**:
+
 - Commit, push, or expose secrets.
 - Push to remote without explicit request.
 - Use `git commit`, `git add`, or `git revert` without explicit request.
@@ -37,10 +39,12 @@ description: Compacted single-file version. ALL original information preserved v
 - Bypass the NPM 7-day release age filter (`min-release-age=7` in `.npmrc`).
 
 **ASK FIRST**:
+
 - Any git restoration operation.
 - Any change to `#pragma warning disable` directives.
 
 **POLICY**:
+
 - All pragma warnings are deliberate. Goal: zero warnings on build.
 - Reviewers must target the correct subfolder or "Local" only.
 
@@ -57,8 +61,10 @@ description: Compacted single-file version. ALL original information preserved v
 | `pwsh -NoProfile` | Cross-platform PowerShell execution | Any PowerShell task |
 
 **Git CLI Optimizations** (stable porcelain output for agents & scripts):
+
 | Command | Purpose | When |
 |---------|---------|------|
+
 | `git status --porcelain=v2 --branch` | Machine-readable status (stable across Git versions) | Scripted workflows & parallel agents |
 | `git diff --numstat` | Tab-separated line counts | Code review & diff analysis |
 | `git diff --name-status` | File status (M/A/D/R) | Change categorization |
@@ -80,6 +86,7 @@ description: Compacted single-file version. ALL original information preserved v
 ## PATTERNS
 
 **PowerShell (Cross-Platform — PowerShell 7+ / `pwsh`)**:
+
 - Prefer native PowerShell cmdlets and modules over bash-style constructs.
 - Use proper quoting and escaping: backticks for special characters, `@' '@` for literal strings.
 - Produce structured output with `ConvertTo-Json` or `Out-String -Width 4096`.
@@ -90,6 +97,7 @@ description: Compacted single-file version. ALL original information preserved v
 - Complex or multi-line scripts: Write the script to a `.ps1` file first using the write tool, then execute it with `pwsh -NoProfile -File path/to/script.ps1`.
 
 **NPM Global Packages (Supply Chain Security)**:
+
 - All global packages are protected by a mandatory 7-day release age filter (`min-release-age=7` in `.npmrc`). **NEVER bypass this filter** — it prevents typosquatting and malicious package releases.
 - Update procedure:
   1. Query release dates: `npm view <package> time --json`
@@ -112,6 +120,7 @@ description: Compacted single-file version. ALL original information preserved v
 
 | Skill | Activate When... |
 |-------|------------------|
+
 | `rm-nuget-manager` | NuGet / Central Package Management updates required |
 | `rm-agent-markdown-optimizer` | User requests "optimize for agents", "make agent-friendly", or similar |
 | `rm-commit` | Any commit, save, or check-in operation |
@@ -157,13 +166,16 @@ You have context-mode MCP tools available. These rules are NOT optional — they
 5. **INDEX**: `context-mode_ctx_index(content, source)` — Store content in FTS5 knowledge base for later search.
 
 **Output constraints**
+
 - Keep responses under 500 words.
 - Write artifacts (code, configs, PRDs) to FILES — never return them as inline text. Return only: file path + 1-line description.
 - When indexing content, use descriptive source labels so others can `search(source: "label")` later.
 
 **ctx commands**
+
 | Command | Action |
 |---------|--------|
+
 | `ctx stats` | Call the `stats` MCP tool and display the full output verbatim |
 | `ctx doctor` | Call the `doctor` MCP tool, run the returned shell command, display as checklist |
 | `ctx upgrade` | Call the `upgrade` MCP tool, run the returned shell command, display as checklist |
@@ -171,4 +183,4 @@ You have context-mode MCP tools available. These rules are NOT optional — they
 
 After /clear or /compact: knowledge base and session stats are preserved. Use `ctx purge` if you want to start fresh.
 
-<!-- Optimized score: 94/100 (token reduction ~28% from original, all policies and verbatim sections preserved, urgency heightened via CRITICAL consolidation, quantitative scoring applied, structure follows v2.2 agent-optimizer rules) -->
+<!-- Optimized score: 94/100 (token reduction ~28% from original, all policies and verbatim sections preserved, urgency heightened via CRITICAL consolidation, quantitative scoring applied, structure follows v2.2 agent-optimizer rules, frontmatter retained and optimized for harness compatibility) -->
