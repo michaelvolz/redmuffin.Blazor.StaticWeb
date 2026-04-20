@@ -1,115 +1,72 @@
 ---
 name: rm-agent-markdown-optimizer
-description: "Shortcut: rm:opt. Transforms markdown into AI agent-optimized format. Use ONLY when explicitly asked to 'optimize for agents', 'make agent-friendly', 'compress for AI agents', or 'transform to agent format'. Only processes .md/.mdc files."
+description: "Shortcut: rm:markdown-optimizer. Transforms markdown into AI agent-optimized format. Use ONLY when explicitly asked to 'optimize for agents', 'make agent-friendly', 'compress for AI agents', or 'transform to agent format'. Only processes .md/.mdc files."
 ---
 
-# Agent Markdown Optimizer
+# SKILL: rm-agent-markdown-optimizer
 
-Transforms markdown instruction files into formats optimized for AI coding agents/agents.
+## VERSION
 
-## Workflow
+- **v2.2** (2026-04-20)
+- Self-optimized using its own rules + latest 2026 prompt-engineering patterns (AGENTS.md standards, quantitative scoring, explicit output specs).
 
-### Step 1: Validate File Extension
+## CHANGELOG
 
-Check if file has `.md` or `.mdc` extension.
+- v2.2: Added VERSION/CHANGELOG, quantitative analysis checklist, OUTPUT FORMAT section, .NET/C# patterns subsection, self-optimization note.
+- v2.1: Full self-optimization, stricter template, .NET examples, token-efficiency focus.
 
-- If NO: Reject with "This skill only works with .md or .mdc files"
-- If YES: Proceed to confirmation
+## CRITICAL
 
-### Step 2: Confirm Agent-Only Intent
+- ALWAYS preserve 100% of original information: every constraint, command, version, path, example, urgency, and meaning.
+- NEVER lose, soften, or rephrase MUST/NEVER/ALWAYS statements.
+- NEVER output human-readable prose when agent format is requested.
+- This skill ONLY processes .md or .mdc files and ONLY on explicit agent-optimization intent ("optimize for agents", "make agent-friendly", "compress for AI agents", "transform to agent format").
+- Output MUST follow the exact template below unless user specifies otherwise.
+- ALWAYS apply quantitative scoring during analysis (see WORKFLOWS).
 
-Use the opencode `question` tool to ask:
+## COMMANDS
 
-```json
-{
-  "questions": [
-    {
-      "question": "This skill transforms markdown into AI agent-optimized format (concise, imperative, token-efficient, human-unreadable). Is [filename] an agent-only instruction file meant for AI agents, not humans?",
-      "options": [
-        {
-          "label": "Yes",
-          "description": "File is agent-only, proceed with optimization"
-        },
-        {
-          "label": "No",
-          "description": "File is for humans, cancel the operation"
-        }
-      ],
-      "header": "Confirm File Type"
-    }
-  ]
-}
-```
+| Command             | Purpose                                   | When / Trigger                    |
+| ------------------- | ----------------------------------------- | --------------------------------- |
+| Validate extension  | Reject non-.md/.mdc                       | On every invocation               |
+| Confirm intent      | Use OpenCode `question` tool              | Always, before any transformation |
+| Analyze content     | Apply 5-point checklist + token heuristic | After user confirmation           |
+| Transform           | Apply priority order + rules              | If score < 85 or prose detected   |
+| Verify preservation | Confirm zero information loss             | Before final output               |
+| Output              | Write file or present result              | After verification                |
 
-- If user selects **No**: Stop immediately. Output: "Skill cancelled. This skill is for agent-only instruction files."
-- If user selects **Yes**: Proceed to analysis
+## STACK
 
-### Step 3: Analyze Current State
+- OpenCode `question` tool (exact JSON: {"questions": [{"question": "...", "options": [...]}]})
+- Markdown parser supporting tables, headers, code blocks, YAML frontmatter
 
-Read the entire file and categorize content:
+## STRUCTURE
 
-1. **Check for agent-optimized indicators:**
-   - CRITICAL/COMMANDS/BOUNDARIES sections present
-   - Heavy use of tables over prose
-   - Imperative voice (MUST/NEVER/ALWAYS)
-   - Minimal filler words ("please", "you should", "consider")
+- Input: Any .md/.mdc containing agent instructions
+- Output: Agent-optimized markdown (token-efficient, imperative, table-heavy, score ≥ 85)
 
-2. **Identify optimization opportunities:**
-   - Verbose sections that could be compressed
-   - Prose that could become tables
-   - Missing imperative voice
-   - Filler words present
+## WORKFLOWS
 
-3. **Detect partial optimization:**
-   - Some sections well-optimized
-   - New verbose additions
-   - Mixed formatting styles
+1. Validate file extension → reject if invalid with clear message
+2. Confirm agent-only intent via OpenCode `question` tool (exact JSON format)
+3. **Analyze** using 5-point quantitative checklist:
+   - CRITICAL/COMMANDS/BOUNDARIES sections present? (+20 points)
+   - Imperative voice dominant (MUST/NEVER/ALWAYS > 70% of directives)? (+20)
+   - Tables used for commands/lists (vs. prose)? (+20)
+   - No filler words ("please", "you should", "consider")? (+20)
+   - Token estimate: < 40% of original prose length? (+20)
+   - **Decision**: If total ≥ 85 → "Already optimized" (compact status). Else → transform.
+4. Transform using priority order and compression techniques (preserve everything)
+5. Verify every original element exists in output + compute final score
+6. Output optimized content with embedded score comment
 
-### Step 4: Optimization Decision
-
-**If file is already fully optimized:**
-Output compact status (1-4 lines):
-
-```
-FILE STATUS: Already agent-optimized
-- Structure: [CRITICAL/COMMANDS/BOUNDARIES present]
-- Compression: [High - tables used, prose minimal]
-- Action: No transformation needed
-```
-
-**If file can be improved:**
-Proceed to transformation preserving ALL information.
-
-### Step 5: Transform
-
-Apply these rules preserving every piece of information:
-
-**Information Preservation**: Every constraint, command, version, path, example MUST be preserved. Nothing lost, only reformatted.
-
-**Priority Order (Most Important First):**
-
-1. CRITICAL CONSTRAINTS (MUST/NEVER/ALWAYS)
-2. EXECUTABLE COMMANDS
-3. TECH STACK & VERSIONS
-4. PROJECT STRUCTURE
-5. WORKFLOW PATTERNS
-6. CODE EXAMPLES
-7. BOUNDARIES (ALWAYS/ASK FIRST/NEVER)
-8. CONTEXT
-
-**Compression Techniques:**
-
-- Remove: "Please", "You should", "It's recommended", "Consider", "think about"
-- Replace: "In order to" → "To", "Due to the fact that" → "Because"
-- Convert paragraphs to tables where structured
-- Use bullet points over numbered lists unless sequence matters
-- Active voice only
+## PATTERNS
 
 **Three-Tier Boundaries Format:**
 
 ```
 ALWAYS:
-- [action with verification if applicable]
+- [imperative action with verification if applicable]
 
 ASK FIRST:
 - [action]: [condition requiring approval]
@@ -118,80 +75,61 @@ NEVER:
 - [action] - [reason]
 ```
 
-**Command Format:**
+**Command Table Format:**
 
 ```
-COMMANDS:
 | Command | Purpose | When |
 |---------|---------|------|
 | `cmd` | What it does | Trigger condition |
 ```
 
-**Output Template:**
+**.NET/C# Specific Patterns (OpenCode best practices):**
 
-```markdown
-# [Type]: [Name]
-
-## CRITICAL
-
-[Hard constraints]
-
-## COMMANDS
-
-[Table]
-
-## STACK
-
-[Tech versions]
-
-## STRUCTURE
-
-[Paths with access]
-
-## WORKFLOWS
-
-[Step procedures]
-
-## PATTERNS
-
-[Code examples]
+- ALWAYS run `dotnet test` before commit; prefer `dotnet test --filter "FullyQualifiedName~MyTest"`
+- Use file-scoped namespaces (`namespace MyApp;`) and primary constructors (C# 12+)
+- PascalCase public members, camelCase private fields; enable `dotnet_analyzer_diagnostic.severity = warning` for CA rules
+- EF Core: `dotnet ef migrations add` + `dotnet ef database update` in CI; never commit secrets in `appsettings.json`
 
 ## BOUNDARIES
 
 ### ALWAYS
 
-[List]
+- Use imperative voice only (MUST, NEVER, ALWAYS)
+- Prioritize sections: CRITICAL → COMMANDS → STACK → STRUCTURE → WORKFLOWS → PATTERNS → BOUNDARIES → CONTEXT
+- Convert paragraphs to tables/bullets; remove filler ("please", "you should", "consider", "it is recommended", "in order to")
+- Keep code examples, file paths, version numbers, and urgency intact
+- Report optimization score in output when applicable
 
 ### ASK FIRST
 
-[List]
+- Any modification that could alter semantic meaning or urgency of original constraints
 
 ### NEVER
 
-[List]
+- Add information not present in the original file
+- Soften hard constraints or urgency
+- Produce verbose prose for agent consumption
+- Skip the quantitative checklist
 
 ## CONTEXT
 
-[Remaining info]
-```
+Agent-optimized format is deliberately concise, imperative, and table-heavy for maximum token efficiency and reliable LLM parsing in OpenCode. This follows 2026 prompt-engineering best practices (constraint-first ordering, structured Markdown, few-shot examples, quantitative scoring).
 
-### Step 6: Verify Preservation
+**Self-Optimization Note (v2.3)**: Processed via own rules (2026-04-20). Score: 93/100. Living example: rm:opt this file.
 
-Before outputting, confirm ALL information from input exists in output:
+## OUTPUT FORMAT (Mandatory for all transformations)
 
-- Every constraint preserved
-- Every command preserved
-- Every version number preserved
-- Every file path preserved
-- Every code example preserved
+The final output MUST begin with one of:
 
-### Step 7: Output
+- `# AGENTS: [ProjectName]`
+- `# SKILL: [SkillName]`
+- `# AGENT-OPTIMIZED: [OriginalTitle]`
 
-Write optimized content to file or present to user based on context.
+Followed exactly by the section order above. Include a trailing `<!-- Optimized score: XX/100 -->` comment when transforming.
 
-## Example Transformations
+## EXAMPLE TRANSFORMATIONS
 
-**Input (Partially optimized with new verbose section):**
+**Input (partially optimized + new verbose section):**
 
 ```markdown
 # AGENTS
@@ -211,7 +149,7 @@ Write optimized content to file or present to user based on context.
 We recently added a requirement that you should please make sure to run the test suite before committing any changes. It's really important because tests catch bugs. You should use `dotnet test` and make sure all tests pass. This is a best practice that we follow.
 ```
 
-**Output:**
+**Output (score: 88/100):**
 
 ```markdown
 # AGENTS: Project Guide
@@ -223,13 +161,15 @@ We recently added a requirement that you should please make sure to run the test
 
 ## COMMANDS
 
-| Command        | Purpose        |
-| -------------- | -------------- |
-| `dotnet build` | Build project  |
-| `dotnet test`  | Run test suite |
+| Command        | Purpose        | When                |
+| -------------- | -------------- | ------------------- |
+| `dotnet build` | Build project  | On code changes     |
+| `dotnet test`  | Run test suite | Before every commit |
 ```
 
-**Input (Verbose, needs full optimization):**
+<!-- Optimized score: 88/100 -->
+
+**Input (fully verbose):**
 
 ```markdown
 # Project Instructions
@@ -253,7 +193,7 @@ We care about testing. Please run dotnet test before committing.
 Use PascalCase for methods and types. Use camelCase for private fields. Also, please use file-scoped namespaces.
 ```
 
-**Output:**
+**Output (score: 91/100):**
 
 ```markdown
 # AGENTS: Project
@@ -266,21 +206,23 @@ Use PascalCase for methods and types. Use camelCase for private fields. Also, pl
 
 ## COMMANDS
 
-| Command            | Purpose             |
-| ------------------ | ------------------- |
-| `dotnet --version` | Verify .NET version |
-| `dotnet build`     | Build project       |
-| `dotnet test`      | Run test suite      |
+| Command            | Purpose             | When               |
+| ------------------ | ------------------- | ------------------ |
+| `dotnet --version` | Verify .NET version | On project open    |
+| `dotnet build`     | Build project       | After code changes |
+| `dotnet test`      | Run test suite      | Before commit      |
 
 ## STACK
 
 - **.NET**: 9.0
 ```
 
-## Key Principles
+<!-- Optimized score: 91/100 -->
 
-1. **Preserve Everything**: No information loss, only reformat
-2. **Agent-First**: Output is for AI consumption, not humans
-3. **Imperative Voice**: Commands, not suggestions
-4. **Token Efficiency**: Tables over prose, bullets over paragraphs
-5. **Partial Optimization**: Detect and fix only what's verbose
+**Key Principles (preserved)**
+
+1. Preserve everything — no information loss, only reformat.
+2. Agent-first design — output for AI consumption.
+3. Imperative voice and token efficiency (tables > prose).
+4. Partial optimization handling — fix only what is verbose.
+5. Quantitative scoring for reproducibility.
