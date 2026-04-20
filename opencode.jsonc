@@ -352,7 +352,7 @@
     "context-mode": {
       "type": "local",
       "command": ["context-mode"],
-      "enabled": false
+      "enabled": true
     }
   },
   "tools": {
