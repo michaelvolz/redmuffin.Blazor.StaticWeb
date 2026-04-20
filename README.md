@@ -157,6 +157,7 @@ Use only if you cannot run Docker. Note: Manual secret management required.
 - **Node.js** (Latest LTS)
 - **Python 3.10+** - Required for code-review-graph MCP server
 - **PowerShell** - Required for running project scripts (install on Linux: `yay -S powershell`)
+- **RTK (Rust Token Killer)** - Required for OpenCode (reduces token consumption by 60-90%)
 
 ### Global Tools
 
@@ -295,6 +296,22 @@ Use only if you cannot run Docker. Note: Manual secret management required.
   # Extract to a directory in PATH (e.g., C:\Users\<username>\bin)
   Expand-Archive -Path rtk.zip -DestinationPath .
   Move-Item rtk.exe C:\Users\$env:USERNAME\bin\rtk.exe
+
+  # Verify installation
+  rtk --version
+  ```
+
+  **Installation (Linux/Omarchy):**
+
+  ```bash
+  # Quick install script
+  curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/master/install.sh | sh
+
+  # Or manual installation
+  curl -L -o rtk.tar.gz https://github.com/rtk-ai/rtk/releases/latest/download/rtk-x86_64-unknown-linux-musl.tar.gz
+  tar -xzf rtk.tar.gz
+  chmod +x rtk
+  sudo mv rtk /usr/local/bin/rtk
 
   # Verify installation
   rtk --version
