@@ -2,8 +2,9 @@
 /**
  * Cross-platform Chrome DevTools MCP launcher
  * Works on Windows (win32), Linux, and macOS (darwin)
- * 
+ *
  * Note: chrome-devtools-mcp only has npm package, no Docker image
+ * This script is executable and ready to run.
  */
 import { spawn } from 'node:child_process';
 import { platform, arch, homedir } from 'node:os';
