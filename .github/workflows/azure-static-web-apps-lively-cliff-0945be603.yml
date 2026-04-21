@@ -136,7 +136,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.305"
+          dotnet-version: "9.0.*"
           workloads: wasm-tools
 
       # OPTIMIZATION: Cache NuGet packages for faster subsequent builds
