@@ -7,7 +7,7 @@
     <MicrosoftExtensionsVersion>9.0.14</MicrosoftExtensionsVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>10.0.5</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
     <TUnitVersion>1.28.7</TUnitVersion>
-    <AzureFunctionsWorkerVersion>2.51.0</AzureFunctionsWorkerVersion>
+    <AzureFunctionsWorkerVersion>2.52.0</AzureFunctionsWorkerVersion>
     <AzureFunctionsWorkerApplicationInsightsVersion>2.50.0</AzureFunctionsWorkerApplicationInsightsVersion>
     <AzureFunctionsWorkerExtensionsHttpVersion>3.3.0</AzureFunctionsWorkerExtensionsHttpVersion>
     <AzureFunctionsWorkerExtensionsHttpAspNetCoreVersion>2.1.0</AzureFunctionsWorkerExtensionsHttpAspNetCoreVersion>
