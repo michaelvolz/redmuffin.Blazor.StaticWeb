@@ -1,0 +1,505 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "autoupdate": false,
+  "default_agent": "rm-strategist",
+  "watcher": {
+    "ignore": [
+      ".git/**",
+      "**/bin/**",
+      "**/obj/**",
+      ".vs/**",
+      "**/packages/**",
+      "**/TestResults/**",
+      "**/artifacts/**",
+      "**/publish/**"
+    ]
+  },
+  "plugin": ["opencode-snippets", "cc-safety-net", "context-mode"],
+  "permission": {
+    // IMPORTANT: The following long deny list is INTENTIONALLY duplicated
+    // in read, edit, glob, grep, and bash for maximum defense-in-depth.
+    // Glob and grep can leak secrets, so they must have the full list.
+    // Do NOT remove or shorten any entry.
+    "skill": {
+      "git-commit": "deny",
+      "git-commit-push-pr": "deny"
+    },
+    "read": {
+      "*": "allow",
+      "**/.env*": "deny",
+      "**/secrets*": "deny",
+      "**/*.env.example": "allow",
+      "~/.ssh/**": "deny",
+      "~/.gnupg/**": "deny",
+      "~/.config/gnupg/**": "deny",
+      "~/.aws/**": "deny",
+      "~/.azure/**": "deny",
+      "~/.config/gcloud/**": "deny",
+      "~/.config/azure/**": "deny",
+      "~/.kube/**": "deny",
+      "~/.docker/**": "deny",
+      "~/.config/docker/**": "deny",
+      "~/.config/1Password/**": "deny",
+      "~/.config/Bitwarden/**": "deny",
+      "~/.local/share/keyrings/**": "deny",
+      "~/AppData/Local/Google/Chrome/User Data/**": "deny",
+      "~/AppData/Local/Microsoft/Edge/User Data/**": "deny",
+      "~/.mozilla/**": "deny",
+      "~/.bash_history": "deny",
+      "~/.zsh_history": "deny",
+      "~/.config/fish/fish_history": "deny",
+      "~/.local/share/fish/fish_history": "deny",
+      "~/Documents/**": "deny",
+      "~/OneDrive/Documents/**": "deny",
+      "~/Desktop/**": "deny",
+      "~/OneDrive/Desktop/**": "deny",
+      "~/Pictures/**": "deny",
+      "~/OneDrive/Pictures/**": "deny",
+      "~/Videos/**": "deny",
+      "~/OneDrive/Videos/**": "deny",
+      "~/Music/**": "deny",
+      "~/OneDrive/Music/**": "deny",
+      "~/Downloads/**": "deny",
+      "~/Favorites/**": "deny",
+      "~/Public/**": "deny",
+      "~/.config/autostart/**": "deny",
+      "~/.config/systemd/user/**": "deny",
+      "~/.gitconfig": "deny",
+      "~/.config/git/**": "deny",
+      "~/.config/Code/User/**": "deny",
+      "~/AppData/Roaming/Code/User/**": "deny",
+      "**/.vscode/tasks.json": "deny",
+      "**/.vscode/settings.json": "deny",
+      "**/.vscode/launch.json": "deny",
+      "~/AppData/Local/Microsoft/VisualStudio/**": "deny",
+      "~/AppData/Roaming/Microsoft/VisualStudio/**": "deny",
+      "**/.git/hooks/**": "deny",
+      "**/.git/config": "deny",
+      "~/.local/share/applications/**": "deny"
+    },
+    "edit": {
+      "*": "ask",
+      "**/.env*": "deny",
+      "**/secrets*": "deny",
+      "~/.ssh/**": "deny",
+      "~/.gnupg/**": "deny",
+      "~/.config/gnupg/**": "deny",
+      "~/.aws/**": "deny",
+      "~/.azure/**": "deny",
+      "~/.config/gcloud/**": "deny",
+      "~/.config/azure/**": "deny",
+      "~/.kube/**": "deny",
+      "~/.docker/**": "deny",
+      "~/.config/docker/**": "deny",
+      "~/.config/1Password/**": "deny",
+      "~/.config/Bitwarden/**": "deny",
+      "~/.local/share/keyrings/**": "deny",
+      "~/AppData/Local/Google/Chrome/User Data/**": "deny",
+      "~/AppData/Local/Microsoft/Edge/User Data/**": "deny",
+      "~/.mozilla/**": "deny",
+      "~/.bash_history": "deny",
+      "~/.zsh_history": "deny",
+      "~/.config/fish/fish_history": "deny",
+      "~/.local/share/fish/fish_history": "deny",
+      "~/Documents/**": "deny",
+      "~/OneDrive/Documents/**": "deny",
+      "~/Desktop/**": "deny",
+      "~/OneDrive/Desktop/**": "deny",
+      "~/Pictures/**": "deny",
+      "~/OneDrive/Pictures/**": "deny",
+      "~/Videos/**": "deny",
+      "~/OneDrive/Videos/**": "deny",
+      "~/Music/**": "deny",
+      "~/OneDrive/Music/**": "deny",
+      "~/Downloads/**": "deny",
+      "~/Favorites/**": "deny",
+      "~/Public/**": "deny",
+      "~/.config/autostart/**": "deny",
+      "~/.config/systemd/user/**": "deny",
+      "~/.gitconfig": "deny",
+      "~/.config/git/**": "deny",
+      "~/.config/Code/User/**": "deny",
+      "~/AppData/Roaming/Code/User/**": "deny",
+      "**/.vscode/tasks.json": "deny",
+      "**/.vscode/settings.json": "deny",
+      "**/.vscode/launch.json": "deny",
+      "~/AppData/Local/Microsoft/VisualStudio/**": "deny",
+      "~/AppData/Roaming/Microsoft/VisualStudio/**": "deny",
+      "**/.git/hooks/**": "deny",
+      "**/.git/config": "deny",
+      "~/.local/share/applications/**": "deny",
+      "~/Documents/PowerShell/**": "ask",
+      "~/Documents/WindowsPowerShell/**": "ask",
+      "~/AppData/Roaming/npm/**": "ask",
+      "~/.local/share/pnpm/global/**": "ask",
+      "/usr/local/lib/node_modules/**": "ask",
+      "~/.config/yarn/global/**": "ask",
+      "/etc/**": "ask",
+      "~/AppData/Local/Microsoft/WinGet/**": "ask"
+    },
+    "glob": {
+      "~/.ssh/**": "deny",
+      "~/.gnupg/**": "deny",
+      "~/.config/gnupg/**": "deny",
+      "~/.aws/**": "deny",
+      "~/.azure/**": "deny",
+      "~/.config/gcloud/**": "deny",
+      "~/.config/azure/**": "deny",
+      "~/.kube/**": "deny",
+      "~/.docker/**": "deny",
+      "~/.config/docker/**": "deny",
+      "~/.config/1Password/**": "deny",
+      "~/.config/Bitwarden/**": "deny",
+      "~/.local/share/keyrings/**": "deny",
+      "~/AppData/Local/Google/Chrome/User Data/**": "deny",
+      "~/AppData/Local/Microsoft/Edge/User Data/**": "deny",
+      "~/.mozilla/**": "deny",
+      "~/.bash_history": "deny",
+      "~/.zsh_history": "deny",
+      "~/.config/fish/fish_history": "deny",
+      "~/.local/share/fish/fish_history": "deny",
+      "~/Documents/**": "deny",
+      "~/OneDrive/Documents/**": "deny",
+      "~/Desktop/**": "deny",
+      "~/OneDrive/Desktop/**": "deny",
+      "~/Pictures/**": "deny",
+      "~/OneDrive/Pictures/**": "deny",
+      "~/Videos/**": "deny",
+      "~/OneDrive/Videos/**": "deny",
+      "~/Music/**": "deny",
+      "~/OneDrive/Music/**": "deny",
+      "~/Downloads/**": "deny",
+      "~/Favorites/**": "deny",
+      "~/Public/**": "deny",
+      "~/.config/autostart/**": "deny",
+      "~/.config/systemd/user/**": "deny",
+      "~/.gitconfig": "deny",
+      "~/.config/git/**": "deny",
+      "~/.config/Code/User/**": "deny",
+      "~/AppData/Roaming/Code/User/**": "deny",
+      "**/.vscode/tasks.json": "deny",
+      "**/.vscode/settings.json": "deny",
+      "**/.vscode/launch.json": "deny",
+      "~/AppData/Local/Microsoft/VisualStudio/**": "deny",
+      "~/AppData/Roaming/Microsoft/VisualStudio/**": "deny",
+      "**/.git/hooks/**": "deny",
+      "**/.git/config": "deny",
+      "~/.local/share/applications/**": "deny"
+    },
+    "grep": {
+      "~/.ssh/**": "deny",
+      "~/.gnupg/**": "deny",
+      "~/.config/gnupg/**": "deny",
+      "~/.aws/**": "deny",
+      "~/.azure/**": "deny",
+      "~/.config/gcloud/**": "deny",
+      "~/.config/azure/**": "deny",
+      "~/.kube/**": "deny",
+      "~/.docker/**": "deny",
+      "~/.config/docker/**": "deny",
+      "~/.config/1Password/**": "deny",
+      "~/.config/Bitwarden/**": "deny",
+      "~/.local/share/keyrings/**": "deny",
+      "~/AppData/Local/Google/Chrome/User Data/**": "deny",
+      "~/AppData/Local/Microsoft/Edge/User Data/**": "deny",
+      "~/.mozilla/**": "deny",
+      "~/.bash_history": "deny",
+      "~/.zsh_history": "deny",
+      "~/.config/fish/fish_history": "deny",
+      "~/.local/share/fish/fish_history": "deny",
+      "~/Documents/**": "deny",
+      "~/OneDrive/Documents/**": "deny",
+      "~/Desktop/**": "deny",
+      "~/OneDrive/Desktop/**": "deny",
+      "~/Pictures/**": "deny",
+      "~/OneDrive/Pictures/**": "deny",
+      "~/Videos/**": "deny",
+      "~/OneDrive/Videos/**": "deny",
+      "~/Music/**": "deny",
+      "~/OneDrive/Music/**": "deny",
+      "~/Downloads/**": "deny",
+      "~/Favorites/**": "deny",
+      "~/Public/**": "deny",
+      "~/.config/autostart/**": "deny",
+      "~/.config/systemd/user/**": "deny",
+      "~/.gitconfig": "deny",
+      "~/.config/git/**": "deny",
+      "~/.config/Code/User/**": "deny",
+      "~/AppData/Roaming/Code/User/**": "deny",
+      "**/.vscode/tasks.json": "deny",
+      "**/.vscode/settings.json": "deny",
+      "**/.vscode/launch.json": "deny",
+      "~/AppData/Local/Microsoft/VisualStudio/**": "deny",
+      "~/AppData/Roaming/Microsoft/VisualStudio/**": "deny",
+      "**/.git/hooks/**": "deny",
+      "**/.git/config": "deny",
+      "~/.local/share/applications/**": "deny"
+    },
+    "lsp": "allow",
+    "bash": {
+      "*": "ask",
+      "dotnet *": "allow",
+      "pwsh *": "allow",
+      "powershell *": "allow",
+      "git *": "allow",
+      "npm *": "allow",
+      "npx *": "allow",
+      "node *": "allow",
+      "dir *": "allow",
+      "ls *": "allow",
+      "grep *": "allow",
+      "**/.env*": "deny",
+      "**/secrets*": "deny",
+      "~/.ssh/**": "deny",
+      "~/.gnupg/**": "deny",
+      "~/.config/gnupg/**": "deny",
+      "~/.aws/**": "deny",
+      "~/.azure/**": "deny",
+      "~/.config/gcloud/**": "deny",
+      "~/.config/azure/**": "deny",
+      "~/.kube/**": "deny",
+      "~/.docker/**": "deny",
+      "~/.config/docker/**": "deny",
+      "~/.config/1Password/**": "deny",
+      "~/.config/Bitwarden/**": "deny",
+      "~/.local/share/keyrings/**": "deny",
+      "~/AppData/Local/Google/Chrome/User Data/**": "deny",
+      "~/AppData/Local/Microsoft/Edge/User Data/**": "deny",
+      "~/.mozilla/**": "deny",
+      "~/.bash_history": "deny",
+      "~/.zsh_history": "deny",
+      "~/.config/fish/fish_history": "deny",
+      "~/.local/share/fish/fish_history": "deny",
+      "~/Documents/**": "deny",
+      "~/OneDrive/Documents/**": "deny",
+      "~/Desktop/**": "deny",
+      "~/OneDrive/Desktop/**": "deny",
+      "~/Pictures/**": "deny",
+      "~/OneDrive/Pictures/**": "deny",
+      "~/Videos/**": "deny",
+      "~/OneDrive/Videos/**": "deny",
+      "~/Music/**": "deny",
+      "~/OneDrive/Music/**": "deny",
+      "~/Downloads/**": "deny",
+      "~/Favorites/**": "deny",
+      "~/Public/**": "deny",
+      "~/.config/autostart/**": "deny",
+      "~/.config/systemd/user/**": "deny",
+      "~/.gitconfig": "deny",
+      "~/.config/git/**": "deny",
+      "~/.config/Code/User/**": "deny",
+      "~/AppData/Roaming/Code/User/**": "deny",
+      "**/.vscode/tasks.json": "deny",
+      "**/.vscode/settings.json": "deny",
+      "**/.vscode/launch.json": "deny",
+      "~/AppData/Local/Microsoft/VisualStudio/**": "deny",
+      "~/AppData/Roaming/Microsoft/VisualStudio/**": "deny",
+      "**/.git/hooks/**": "deny",
+      "**/.git/config": "deny",
+      "~/.local/share/applications/**": "deny"
+    },
+    "external_directory": "ask"
+  },
+  "formatter": {
+    "dotnet-format": {
+      "command": ["dotnet", "format", "--include", "$FILE"],
+      "extensions": [".cs", ".razor"]
+    },
+    "prettier": {
+      "command": ["prettier", "--write", "$FILE"],
+      "extensions": [".scss", ".css", ".json", ".md", ".yml", ".yaml"]
+    }
+  },
+  "mcp": {
+    "brave-search": {
+      "type": "local",
+      "command": [
+        "docker",
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "BRAVE_API_KEY",
+        "mcp/brave-search"
+      ],
+      "enabled": true
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "CONTEXT7_API_KEY": "{env:CONTEXT7_API_KEY}"
+      },
+      "enabled": true
+    },
+    "sequential-thinking": {
+      "type": "local",
+      "command": [
+        "docker",
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "DISABLE_THOUGHT_LOGGING=true",
+        "mcp/sequentialthinking"
+      ],
+      "enabled": true
+    },
+    "chrome-devtools": {
+      "type": "local",
+      "command": [
+        "node",
+        "-e",
+        "require(require('path').join(require('os').homedir(),'.config','opencode','scripts','browser-launcher.js'))"
+      ],
+      "enabled": true
+    },
+    "context-mode": {
+      "type": "local",
+      "command": ["context-mode"],
+      "enabled": true
+    }
+  },
+  "tools": {
+    "brave-search_brave_*": false,
+    "brave-search_brave_web_search": true
+  },
+  "agent": {
+    "rm-uncle-bob-csharp-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "rm-dotnet-csharp-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "rm-blazor-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "rm-html-css-blazor-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "rm-powershell-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "adversarial-document-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "adversarial-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "agent-native-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "api-contract-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "architecture-strategist": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "cli-agent-readiness-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "cli-readiness-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "code-simplicity-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "coherence-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "correctness-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "data-migrations-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "design-implementation-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "design-lens-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "dhh-rails-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "feasibility-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "julik-frontend-races-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "kieran-python-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "kieran-rails-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "kieran-typescript-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "maintainability-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "performance-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "previous-comments-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "product-lens-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "project-standards-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "reliability-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "scope-guardian-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "security-lens-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "security-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    },
+    "testing-reviewer": {
+      "model": "xai/grok-code-fast-1",
+      "mode": "subagent"
+    }
+  }
+}

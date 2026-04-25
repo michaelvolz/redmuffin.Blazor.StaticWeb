@@ -1,8 +1,8 @@
 ---
-name: ce:work-beta
-description: "[BETA] Execute work with external delegate support. Same as ce:work but includes experimental Codex delegation mode for token-conserving code implementation."
+name: ce-work-beta
+description: "[BETA] Execute work with external delegate support. Same as ce-work but includes experimental Codex delegation mode for token-conserving code implementation."
 disable-model-invocation: true
-argument-hint: "[Plan doc path or description of work. Blank to auto use latest plan doc] [delegate/codex]"
+argument-hint: "[Plan doc path or description of work. Blank to auto use latest plan doc] [delegate:codex]"
 ---
 
 # Work Execution Command
@@ -11,9 +11,9 @@ Execute work efficiently while maintaining quality and finishing features.
 
 ## Introduction
 
-This command takes a work document (plan, specification, or todo file) or a bare prompt describing the work, and executes it systematically. The focus is on **shipping complete features** by understanding requirements quickly, following existing patterns, and maintaining quality throughout.
+This command takes a work document (plan or specification) or a bare prompt describing the work, and executes it systematically. The focus is on **shipping complete features** by understanding requirements quickly, following existing patterns, and maintaining quality throughout.
 
-**Beta rollout note:** Invoke `ce:work-beta` manually when you want to trial Codex delegation. During the beta period, planning and workflow handoffs remain pointed at stable `ce:work` to avoid dual-path orchestration complexity.
+**Beta rollout note:** Invoke skill({ name: "ce-work-beta" }) manually when you want to trial Codex delegation. During the beta period, planning and workflow handoffs remain pointed at stable skill({ name: "ce-work" }) to avoid dual-path orchestration complexity.
 
 ## Input Document
 
@@ -25,20 +25,20 @@ Parse `$ARGUMENTS` for the following optional tokens. Strip each recognized toke
 
 | Token | Example | Effect |
 |-------|---------|--------|
-| `delegate/codex` | `delegate/codex` | Activate Codex delegation mode for plan execution |
-| `delegate/local` | `delegate/local` | Deactivate delegation even if enabled in config |
+| `delegate:codex` | `delegate:codex` | Activate Codex delegation mode for plan execution |
+| `delegate:local` | `delegate:local` | Deactivate delegation even if enabled in config |
 
 All tokens are optional. When absent, fall back to the resolution chain below.
 
-**Fuzzy activation:** Also recognize imperative delegation-intent phrases such as "use codex", "delegate to codex", "codex mode", or "delegate mode" as equivalent to `delegate/codex`. A bare mention of "codex" in a prompt (e.g., "fix codex converter bugs") must NOT activate delegation -- only clear delegation intent triggers it.
+**Fuzzy activation:** Also recognize imperative delegation-intent phrases such as "use codex", "delegate to codex", "codex mode", or "delegate mode" as equivalent to `delegate:codex`. A bare mention of "codex" in a prompt (e.g., "fix codex converter bugs") must NOT activate delegation -- only clear delegation intent triggers it.
 
-**Fuzzy deactivation:** Also recognize phrases such as "no codex", "local mode", "standard mode" as equivalent to `delegate/local`.
+**Fuzzy deactivation:** Also recognize phrases such as "no codex", "local mode", "standard mode" as equivalent to `delegate:local`.
 
 ### Settings Resolution Chain
 
 After extracting tokens from arguments, resolve the delegation state using this precedence chain:
 
-1. **Argument flag** -- `delegate/codex` or `delegate/local` from the current invocation (highest priority)
+1. **Argument flag** -- `delegate:codex` or `delegate:local` from the current invocation (highest priority)
 2. **Config file** -- extract settings from the config block below. Value `codex` for `work_delegate` activates delegation; `false` deactivates.
 3. **Hard default** -- `false` (delegation off)
 
@@ -75,7 +75,7 @@ Store the resolved state for downstream consumption:
 
 Determine how to proceed based on what was provided in `<input_document>`.
 
-**Plan document** (input is a file path to an existing plan, specification, or todo file) → skip to Phase 1.
+**Plan document** (input is a file path to an existing plan or specification) → skip to Phase 1.
 
 **Bare prompt** (input is a description of work, not a file path):
 
@@ -91,7 +91,7 @@ Determine how to proceed based on what was provided in `<input_document>`.
    |-----------|---------|--------|
    | **Trivial** | 1-2 files, no behavioral change (typo, config, rename) | Proceed to Phase 1 step 2 (environment setup), then implement directly — no task list, no execution loop. Apply Test Discovery if the change touches behavior-bearing code |
    | **Small / Medium** | Clear scope, under ~10 files | Build a task list from discovery. Proceed to Phase 1 step 2 |
-   | **Large** | Cross-cutting, architectural decisions, 10+ files, touches auth/payments/migrations | Inform the user this would benefit from `/ce/brainstorm` or `/ce/plan` to surface edge cases and scope boundaries. Honor their choice. If proceeding, build a task list and continue to Phase 1 step 2 |
+   | **Large** | Cross-cutting, architectural decisions, 10+ files, touches auth/payments/migrations | Inform the user this would benefit from `skill({ name: "ce-brainstorm" })` or `skill({ name: "ce-plan" })` to surface edge cases and scope boundaries. Honor their choice. If proceeding, build a task list and continue to Phase 1 step 2 |
 
 ---
 
@@ -108,8 +108,9 @@ Determine how to proceed based on what was provided in `<input_document>`.
    - Review any references or links provided in the plan
    - If the user explicitly asks for TDD, test-first, or characterization-first execution in this session, honor that request even if the plan has no `Execution note`
    - If anything is unclear or ambiguous, ask clarifying questions now
-   - Get user approval to proceed
+   - If clarifying questions were needed above, get user approval on the resolved answers. If no clarifications were needed, proceed without a separate approval step — plan scope is the plan's authority, not something to renegotiate
    - **Do not skip this** - better to ask questions now than build the wrong thing
+   - **Do not edit the plan body during execution.** The plan is a decision artifact; progress lives in git commits and the task tracker. The only plan mutation during ce-work is the final `status: active → completed` flip at shipping (see `references/shipping-workflow.md` Phase 4 Step 2). Legacy plans may contain `- [ ]` / `- [x]` marks on unit headings — ignore them as state; per-unit completion is determined during execution by reading the current file state.
 
 2. **Setup Environment**
 
@@ -150,7 +151,7 @@ Determine how to proceed based on what was provided in `<input_document>`.
 
    **Option B: Use a worktree (recommended for parallel development)**
    ```bash
-   skill: git-worktree
+   skill: ce-worktree
    # The skill will create a new branch from the default branch in an isolated worktree
    ```
 
@@ -164,9 +165,10 @@ Determine how to proceed based on what was provided in `<input_document>`.
    - You want to keep the default branch clean while experimenting
    - You plan to switch between branches frequently
 
-3. **Create Todo List** _(skip if Phase 0 already built one, or if Phase 0 routed as Trivial)_
-   - Use your available task tracking tool (e.g., TodoWrite, task lists) to break the plan into actionable tasks
+3. **Create Task List** _(skip if Phase 0 already built one, or if Phase 0 routed as Trivial)_
+   - Use the platform's task tracking tool (`TaskCreate`/`TaskUpdate`/`TaskList` in Claude Code, `update_plan` in Codex, or the equivalent on other harnesses) to break the plan into actionable tasks
    - Derive tasks from the plan's implementation units, dependencies, files, test targets, and verification criteria
+   - When the plan defines U-IDs for Implementation Units, preserve the unit's U-ID as a prefix in the task subject (e.g., "U3: Add parser coverage"). This keeps blocker references, deferred-work notes, and final summaries anchored to the same identifier the plan uses, so progress and traceability remain unambiguous across plan edits
    - Carry each unit's `Execution note` into the task when present
    - For each unit, read the `Patterns to follow` field before implementing — these point to specific files or conventions to mirror
    - Use each unit's `Verification` field as the primary "done" signal for that task
@@ -186,7 +188,15 @@ Determine how to proceed based on what was provided in `<input_document>`.
    |----------|-------------|
    | **Inline** | 1-2 small tasks, or tasks needing user interaction mid-flight. **Default for bare-prompt work** — bare prompts rarely produce enough structured context to justify subagent dispatch |
    | **Serial subagents** | 3+ tasks with dependencies between them. Each subagent gets a fresh context window focused on one unit — prevents context degradation across many tasks. Requires plan-unit metadata (Goal, Files, Approach, Test scenarios) |
-   | **Parallel subagents** | 3+ tasks where some units have no shared dependencies and touch non-overlapping files. Dispatch independent units simultaneously, run dependent units after their prerequisites complete. Requires plan-unit metadata |
+   | **Parallel subagents** | 3+ tasks that pass the Parallel Safety Check (below). Dispatch independent units simultaneously, run dependent units after their prerequisites complete. Requires plan-unit metadata |
+
+   **Parallel Safety Check** — required before choosing parallel dispatch:
+
+   1. Build a file-to-unit mapping from every candidate unit's `Files:` section (Create, Modify, and Test paths)
+   2. Check for intersection — any file path appearing in 2+ units means overlap
+   3. If any overlap is found, downgrade to serial subagents. Log the reason (e.g., "Units 2 and 4 share `config/routes.rb` — using serial dispatch"). Serial subagents still provide context-window isolation without shared-directory risks
+
+   Even with no file overlap, parallel subagents sharing a working directory face git index contention (concurrent staging/committing corrupts the index) and test interference (concurrent test runs pick up each other's in-progress changes). The parallel subagent constraints below mitigate these.
 
    **Subagent dispatch** uses your available subagent or task spawning mechanism. For each unit, give the subagent:
    - The full plan file path (for overall context)
@@ -194,9 +204,26 @@ Determine how to proceed based on what was provided in `<input_document>`.
    - Any resolved deferred questions relevant to that unit
    - Instruction to check whether the unit's test scenarios cover all applicable categories (happy paths, edge cases, error paths, integration) and supplement gaps before writing tests
 
+   **Parallel subagent constraints** — when dispatching units in parallel (not serial or inline):
+   - Instruct each subagent: "Do not stage files (`git add`), create commits, or run the project test suite. The orchestrator handles testing, staging, and committing after all parallel units complete."
+   - These constraints prevent git index contention and test interference between concurrent subagents
+
    **Permission mode:** Omit the `mode` parameter when dispatching subagents so the user's configured permission settings apply. Do not pass `mode: "auto"` — it overrides user-level settings like `bypassPermissions`.
 
-   After each subagent completes, update the plan checkboxes and task list before dispatching the next dependent unit.
+   **After each subagent completes (serial mode):**
+   1. Review the subagent's diff — verify changes match the unit's scope and `Files:` list
+   2. Run the relevant test suite to confirm the tree is healthy
+   3. If tests fail, diagnose and fix before proceeding — do not dispatch dependent units on a broken tree
+   4. Update the task list (do not edit the plan body — progress is carried by the commit)
+   5. Dispatch the next unit
+
+   **After all parallel subagents in a batch complete:**
+   1. Wait for every subagent in the current parallel batch to finish before acting on any of their results
+   2. Cross-check for discovered file collisions: compare the actual files modified by all subagents in the batch (not just their declared `Files:` lists). Subagents may create or modify files not anticipated during planning — this is expected, since plans describe *what* not *how*. A collision only matters when 2+ subagents in the same batch modified the same file. In a shared working directory, only the last writer's version survives — the other unit's changes to that file are lost. If a collision is detected: commit all non-colliding files from all units first, then re-run the affected units serially for the shared file so each builds on the other's committed work
+   3. For each completed unit, in dependency order: review the diff, run the relevant test suite, stage only that unit's files, and commit with a conventional message derived from the unit's Goal
+   4. If tests fail after committing a unit's changes, diagnose and fix before committing the next unit
+   5. Update the task list (do not edit the plan body — progress is carried by the commits just made)
+   6. Dispatch the next batch of independent units, or the next dependent unit
 
 ### Phase 2: Execute
 
@@ -208,6 +235,7 @@ Determine how to proceed based on what was provided in `<input_document>`.
    while (tasks remain):
      - Mark task as in-progress
      - Read any referenced files from the plan or discovered during Phase 0
+     - **If the unit's work is already present and matches the plan's intent** (files exist with the expected capability, or the unit's `Verification` criteria are already satisfied by the current code), the work has likely shipped on a prior branch or session. Verify it matches, mark the task complete, and move on. Do not silently reimplement.
      - Look for similar patterns in codebase
      - Find existing test files for implementation files being changed (Test Discovery — see below)
      - If delegation_active: branch to the Codex Delegation Execution Loop
@@ -286,6 +314,8 @@ Determine how to proceed based on what was provided in `<input_document>`.
 
    **Note:** Incremental commits use clean conventional messages without attribution footers. The final Phase 4 commit/PR includes the full attribution.
 
+   **Parallel subagent mode:** When units run as parallel subagents, the subagents do not commit — the orchestrator handles staging and committing after the entire parallel batch completes (see Parallel subagent constraints in Phase 1 Step 4). The commit guidance in this section applies to inline and serial execution, and to the orchestrator's commit decisions after parallel batch completion.
+
 3. **Follow Existing Patterns**
 
    - The plan should reference similar code - read those files first
@@ -315,7 +345,7 @@ Determine how to proceed based on what was provided in `<input_document>`.
    For UI work with Figma designs:
 
    - Implement components following design specs
-   - Use figma-design-sync agent iteratively to compare
+   - Use ce-figma-design-sync agent iteratively to compare
    - Fix visual differences identified
    - Repeat until implementation matches design
 
@@ -323,7 +353,7 @@ Determine how to proceed based on what was provided in `<input_document>`.
 
    For UI tasks without a Figma design -- where the implementation touches view, template, component, layout, or page files, creates user-visible routes, or the plan contains explicit UI/frontend/design language:
 
-   - Load the `frontend-design` skill before implementing
+   - Load the skill({ name: "ce-frontend-design" }) skill before implementing
    - Follow its detection, guidance, and verification flow
    - If the skill produced a verification screenshot, it satisfies Phase 4's screenshot requirement -- no need to capture separately. If the skill fell back to mental review (no browser access), Phase 4's screenshot capture still applies
 
@@ -332,6 +362,7 @@ Determine how to proceed based on what was provided in `<input_document>`.
    - Note any blockers or unexpected discoveries
    - Create new tasks if scope expands
    - Keep user informed of major milestones
+   - When the plan defines U-IDs for Implementation Units, or the plan or origin document carries stable R-IDs (and optionally A/F/AE IDs), reference them in blockers, deferred-work notes, task summaries, and final verification — not routine status updates. U-IDs anchor units across plan edits; R/A/F/AE anchor product intent across the brainstorm-plan handoff. Use the IDs the plan supplies and do not invent ones it does not. This preserves traceability without burying signal under noise.
 
 ### Phase 3-4: Quality Check and Ship It
 
@@ -387,3 +418,4 @@ When `delegation_active` is true after argument parsing, read `references/codex-
 - **Forgetting to track progress** - Update task status as you go or lose track of what's done
 - **80% done syndrome** - Finish the feature, don't move on early
 - **Skipping review** - Every change gets reviewed; only the depth varies
+- **Re-scoping the plan into human-time phases** - The plan's Implementation Units define the scope of execution. Do not estimate human-hours per unit, propose multi-day breakdowns, or ask the user to pick a subset of units for "this session". Agents execute at agent speed, and context-window pressure is addressed by subagent dispatch (Phase 1 Step 4), not by phased sessions. If a plan-file input is genuinely too large for a single execution, say so plainly and suggest the user return to `skill({ name: "ce-plan" })` to reduce scope — don't invent session phases as a workaround. For bare-prompt input, Phase 0's Large routing already handles oversized work
