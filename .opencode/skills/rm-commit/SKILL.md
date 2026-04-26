@@ -18,6 +18,31 @@ Create clean, reviewable git commits from the working tree.
 - Sidenotes are referenced as `SN-NNNN` (no `#` prefix) in commit bodies. They are local file IDs, not GitHub issues. Write `See SN-0003 for context`, never `See #SN-0003 for context`.
 - Use `--no-optional-locks` when running git status/diff in background processes to avoid index lock contention.
 
+## PLATFORM-SPECIFIC COMMANDS
+
+### Windows 11 (PowerShell)
+
+```powershell
+@"
+type(scope): imperative subject
+
+Body paragraph. Each line ≤ 80 chars.
+
+Refs: #123
+"@ | git commit -F -
+```
+
+### Linux / WSL / macOS (bash)
+
+```bash
+echo 'type(scope): imperative subject
+
+Body paragraph. Each line ≤ 80 chars.
+Wrap at ~80 to stay safe.
+
+Refs: #123' | git commit -F -
+```
+
 ## FLOW
 
 1. Check repo rules first.
