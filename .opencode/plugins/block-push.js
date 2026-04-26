@@ -23,6 +23,33 @@ export const BlockPushPlugin = async () => {
             "Ask the user to perform the revert manually when ready."
           );
         }
+
+        if (detectGitCommand(cmd, "update-ref")) {
+          throw new Error(
+            "BLOCKED by Policy: git update-ref is restricted to the repository owner only.\n\n" +
+            "Command: " + sanitize(cmd) + "\n\n" +
+            "Reason: Only humans may forcefully rewrite git references. " +
+            "Ask the user to perform the update-ref manually when ready."
+          );
+        }
+
+        if (cmd.trim().startsWith("eval")) {
+          throw new Error(
+            "BLOCKED by Policy: eval is restricted to the repository owner only.\n\n" +
+            "Command: " + sanitize(cmd) + "\n\n" +
+            "Reason: eval can execute arbitrary code from strings and is a common attack vector. " +
+            "Ask the user to run this command manually when ready."
+          );
+        }
+
+        if (cmd.trim().startsWith("source") || cmd.trim().startsWith(".")) {
+          throw new Error(
+            "BLOCKED by Policy: source is restricted to the repository owner only.\n\n" +
+            "Command: " + sanitize(cmd) + "\n\n" +
+            "Reason: source on untrusted files can execute malicious code. " +
+            "Ask the user to run this command manually when ready."
+          );
+        }
       } catch (err) {
         // Re-throw blocked commands so they're enforced
         if (err.message.startsWith("BLOCKED by Policy:")) {
