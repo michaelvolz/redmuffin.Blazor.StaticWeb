@@ -256,7 +256,7 @@ Use only if you cannot run Docker. Note: Manual secret management required.
   | `SAFETY_NET_PARANOID_RM=1`           | Block ALL `rm -rf` (even within cwd)                  |
   | `SAFETY_NET_PARANOID_INTERPRETERS=1` | Block interpreter one-liners (`node -e`, `python -c`) |
 
-  > **Note**: This plugin is registered in `opencode.json` and intercepts all bash commands via the `tool.execute.before` hook. It provides semantic command analysis (not simple pattern matching), shell wrapper detection, and interpreter one-liner detection. Default mode blocks only truly destructive operations while allowing safe git workflows. Configured with `min-release-age=7` in `.npmrc` to prevent supply chain attacks from newly published packages.
+  > **Note**: This plugin is registered in `opencode.json` and intercepts all bash commands via the `tool.execute.before` hook. It provides semantic command analysis (not simple pattern matching), shell wrapper detection, and interpreter one-liner detection. Default mode blocks only truly destructive operations while allowing safe git workflows. See [Supply Chain Attack Protection](#supply-chain-attack-protection) for npm security settings.
 
 #### .NET Tools
 
@@ -1543,3 +1543,79 @@ Developers can easily switch between approaches:
 - The "Start both" profile in Visual Studio simplifies launching both projects together
 - OAuth flows and API integration work seamlessly in this local development setup
 - The simplified workflow is particularly beneficial for design-focused tasks and rapid development
+
+---
+
+## Supply Chain Attack Protection
+
+This project implements defense-in-depth protections against package manager and dependency chain attacks. All protections were added in April 2025.
+
+### What Are Supply Chain Attacks?
+
+Attackers compromise trusted packages to infiltrate downstream applications. Common vectors include:
+
+- Typosquatting (malicious packages with similar names)
+- Dependency confusion (internal packages masquerading as public)
+- Malicious maintainers publishing compromised updates
+- Compromised package maintainer accounts
+
+### Protections Implemented
+
+| Layer     | Protection               | How It Works                                                                                          |
+| --------- | ------------------------ | ----------------------------------------------------------------------------------------------------- |
+| **npm**   | 7-day release age filter | Blocks packages published within 7 days, preventing fresh supply chain attacks (e.g., Axios incident) |
+| **npm**   | Ignore scripts           | Blocks `postinstall` scripts that could execute malicious code during install                         |
+| **npm**   | Exact versions           | `save-exact=true` prevents unexpected version changes from `^` or `~` ranges                          |
+| **npm**   | Strict peer deps         | Prevents malformed peer dependency resolution attacks                                                 |
+| **NuGet** | Locked-mode restore      | `RestoreLockedMode=true` prevents dependency hijacking during restore                                 |
+| **NuGet** | Package lock files       | `packages.lock.json` with contentHashes ensures bit-for-bit identical restores                        |
+| **NuGet** | Signature validation     | `signatureValidationMode=accept` validates signed packages while allowing unsigned popular ones       |
+
+### Configuration Files
+
+```text
+.npmrc                    # npm supply chain settings
+nuget.config              # NuGet supply chain settings
+Directory.Build.props     # MSBuild restore settings
+packages.lock.json       # Per-project NuGet lock files (6 total)
+```
+
+### npm Configuration (.npmrc)
+
+```
+min-release-age=7         # Block recent packages
+ignore-scripts=true        # No postinstall code
+save-exact=true           # Exact versions only
+strict-peer-deps=true      # Strict peer resolution
+engine-strict=true        # Enforce Node.js version
+```
+
+### NuGet Configuration (nuget.config)
+
+```xml
+<config>
+  <add key="signatureValidationMode" value="accept" />
+</config>
+```
+
+### Directory.Build.props
+
+```xml
+<PropertyGroup>
+  <RestoreLockedMode>true</RestoreLockedMode>
+  <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  <NuGetLockFilePath>packages.lock.json</NuGetLockFilePath>
+</PropertyGroup>
+```
+
+### Why These Protections Matter
+
+- **Locked-mode restore**: Without this, attackers who compromise a transitive dependency can inject malicious code during any restore
+- **7-day filter**: The Axios compromise used a same-day malicious release; this blocks that vector entirely
+- **Content hashes**: Lock files include SHA512 hashes that detect any tampering after publication
+
+### Maintenance Notes
+
+- NuGet lock files must be regenerated after adding/removing packages: `dotnet restore`
+- The `accept` mode allows unsigned packages (BenchmarkDotNet, Dapper, MediatR) while validating signed ones
+- npm settings are repository-scoped via `.npmrc` — applies to all projects in the repo
