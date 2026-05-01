@@ -50,20 +50,20 @@ description: Token-optimized single-file AGENTS.md for OpenCode harness. 100% of
 
 ## COMMANDS
 
-| Command | Purpose | When |
-|---------|---------|------|
-| `dotnet test` | Verify logic & prevent regressions | Pre-commit (mandatory) |
-| `dotnet build --verbosity quiet` | Verify C# compilation | Immediately after any C# edit |
-| `dotnet build -c Debug-Sass` | Verify UI layer (SCSS/JS) | Immediately after any SCSS/JS edit |
-| `scripts/Update-PackageVersions.ps1` | Update NuGet packages (Central Package Management) | After any package change |
-| `dotnet clean && dotnet build && dotnet test` | Full verification cycle | After NuGet updates or repeated failures |
-| `es.exe` | Ultra-fast file search | Large solutions or searches outside project |
-| `pwsh -NoProfile` | Cross-platform PowerShell execution | Any PowerShell task |
+| Command                                       | Purpose                                            | When                                        |
+| --------------------------------------------- | -------------------------------------------------- | ------------------------------------------- |
+| `dotnet test`                                 | Verify logic & prevent regressions                 | Pre-commit (mandatory)                      |
+| `dotnet build --verbosity quiet`              | Verify C# compilation                              | Immediately after any C# edit               |
+| `dotnet build -c Debug-Sass`                  | Verify UI layer (SCSS/JS)                          | Immediately after any SCSS/JS edit          |
+| `scripts/Update-PackageVersions.ps1`          | Update NuGet packages (Central Package Management) | After any package change                    |
+| `dotnet clean && dotnet build && dotnet test` | Full verification cycle                            | After NuGet updates or repeated failures    |
+| `es.exe`                                      | Ultra-fast file search                             | Large solutions or searches outside project |
+| `pwsh -NoProfile`                             | Cross-platform PowerShell execution                | Any PowerShell task                         |
 
 **Git CLI Optimizations** (stable porcelain output for agents & scripts):
 
 | Command | Purpose | When |
-|---------|---------|------|
+| ------- | ------- | ---- |
 
 | `git status --porcelain=v2 --branch` | Machine-readable status (stable across Git versions) | Scripted workflows & parallel agents |
 | `git diff --numstat` | Tab-separated line counts | Code review & diff analysis |
@@ -116,29 +116,6 @@ description: Token-optimized single-file AGENTS.md for OpenCode harness. 100% of
   - `tests/` — Test project mirror
   - `docs/solutions/` — Persistent knowledge store
 
-## SKILL REFERENCES
-
-| Skill | Activate When... |
-|-------|------------------|
-
-| `rm-nuget-manager` | NuGet / Central Package Management updates required |
-| `rm-agent-markdown-optimizer` | User requests "optimize for agents", "make agent-friendly", or similar |
-| `rm-commit` | Any commit, save, or check-in operation |
-| `rm-guide-naming` | Creating or renaming C# types, members, namespaces, or test doubles |
-| `rm-guide-csharp-features` | Using C# 12/13 syntax, collection expressions, or primary constructors |
-| `rm-guide-async` | Implementing async methods, cancellation tokens, or Task-based APIs |
-| `rm-guide-namespaces` | Organizing or creating new C# files and namespace structures |
-| `rm-guide-logging` | Implementing structured logging, LoggerMessage attributes, or partial class logging |
-| `rm-guide-di` | Dependency injection registration, service constructors, or DI container configuration |
-| `rm-guide-testing` | Writing TUnit tests, test doubles, or using TestScope helpers |
-| `rm-guide-warnings` | Addressing analyzer warnings, pragma directives, or enforcing zero-warning builds |
-| `rm-guide-blazor` | Developing Blazor components, lifecycle methods, or render behavior |
-| `rm-guide-azure-functions` | Writing Azure Functions isolated worker code |
-| `rm-guide-architecture` | Designing service boundaries, architectural patterns, or major C# refactoring |
-| `rm-guide-config` | Modifying build commands, development modes, package management, or configuration |
-| `rm-guide-dotnet9` | Using .NET 9 specific APIs or current runtime best practices |
-| `rm-guide-code-quality` | Enforcing style, readability, null handling, records, or general code quality rules |
-
 ## context-mode — MANDATORY routing rules (Preserved verbatim for correctness)
 
 You have context-mode MCP tools available. These rules are NOT optional — they protect your context window from flooding. A single unrouted command can dump 56 KB into context and waste the entire session.
@@ -174,7 +151,7 @@ You have context-mode MCP tools available. These rules are NOT optional — they
 **ctx commands**
 
 | Command | Action |
-|---------|--------|
+| ------- | ------ |
 
 | `ctx stats` | Call the `stats` MCP tool and display the full output verbatim |
 | `ctx doctor` | Call the `doctor` MCP tool, run the returned shell command, display as checklist |
