@@ -36,7 +36,7 @@ Capture tangential ideas mid-conversation without derailing the current task. St
 
 ### 2. Retrieval (show sidenotes / list sidenotes)
 
-1. Run: `pwsh -NoProfile -Command "& (Join-Path (git rev-parse --show-toplevel) 'scripts/List-Sidenotes.ps1')"`
+1. Run: `pwsh -NoProfile -File .opencode/skills/rm-sidenotes/scripts/List-Sidenotes.ps1`
 2. Read the command output directly — do not write a temp file or do a second read.
 3. Parse the results and present a clean, formatted list to the user.
 4. If the output includes title-length warnings (⚠ lines), note them when presenting the list.
