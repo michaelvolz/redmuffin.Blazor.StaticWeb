@@ -9,13 +9,6 @@
       "reason": "BLOCKED by Policy: git push is restricted to the repository owner only.\n\nCommand: rtk git push\n\nReason: Only humans may push to remote repositories. Ask the user to push manually when ready."
     },
     {
-      "name": "block-git-push-force-with-lease",
-      "command": "git",
-      "subcommand": "push",
-      "block_args": ["--force-with-lease"],
-      "reason": "BLOCKED: Even --force-with-lease carries risk. Only humans should force-push after review."
-    },
-    {
       "name": "block-git-reflog-expire-now",
       "command": "git",
       "subcommand": "reflog",
@@ -23,74 +16,11 @@
       "reason": "BLOCKED: git reflog expire --expire=now --all permanently deletes reflog history and can hide malicious activity."
     },
     {
-      "name": "block-rtk-git-checkout",
-      "command": "rtk",
-      "subcommand": "git",
-      "block_args": ["checkout"],
-      "reason": "git checkout -- discards uncommitted changes permanently. Use 'git stash' first."
-    },
-    {
-      "name": "block-rtk-git-restore",
-      "command": "rtk",
-      "subcommand": "git",
-      "block_args": ["restore"],
-      "reason": "git restore discards uncommitted changes. Use --staged to only unstage."
-    },
-    {
-      "name": "block-rtk-git-reset",
-      "command": "rtk",
-      "subcommand": "git",
-      "block_args": ["reset"],
-      "reason": "git reset --hard destroys all uncommitted changes. Use 'git stash' first."
-    },
-    {
-      "name": "block-rtk-git-clean",
-      "command": "rtk",
-      "subcommand": "git",
-      "block_args": ["clean"],
-      "reason": "git clean -f removes untracked files permanently."
-    },
-    {
-      "name": "block-rtk-git-branch",
-      "command": "rtk",
-      "subcommand": "git",
-      "block_args": ["branch"],
-      "reason": "git branch -D force-deletes branch without merge check. Use -d instead."
-    },
-    {
-      "name": "block-rtk-git-stash",
-      "command": "rtk",
-      "subcommand": "git",
-      "block_args": ["stash"],
-      "reason": "git stash drop permanently deletes stashed changes. Use 'git stash pop' to recover."
-    },
-    {
-      "name": "block-rtk-git-stash-clear",
-      "command": "rtk",
-      "subcommand": "git",
-      "block_args": ["stash", "clear"],
-      "reason": "git stash clear deletes ALL stashed changes permanently."
-    },
-    {
-      "name": "block-rtk-git-worktree",
-      "command": "rtk",
-      "subcommand": "git",
-      "block_args": ["worktree"],
-      "reason": "git worktree remove --force deletes worktree without checking for changes."
-    },
-    {
       "name": "block-dotnet-ef-database-drop",
       "command": "dotnet",
       "subcommand": "ef",
       "block_args": ["database", "drop"],
       "reason": "BLOCKED: dotnet ef database drop permanently deletes the entire database. Only humans should do this."
-    },
-    {
-      "name": "block-rtk-find-delete",
-      "command": "rtk",
-      "subcommand": "find",
-      "block_args": ["delete"],
-      "reason": "find -delete permanently removes files matching criteria."
     },
     {
       "name": "block-rtk-xargs-rm",
