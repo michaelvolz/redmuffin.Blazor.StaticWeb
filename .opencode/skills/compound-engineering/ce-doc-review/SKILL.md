@@ -6,7 +6,7 @@ argument-hint: "[mode:headless] [path/to/document.md]"
 
 # Document Review
 
-Review requirements or plan documents through multi-persona analysis. Dispatches specialized reviewer agents in parallel, auto-applies `safe_auto` fixes, and routes remaining findings through a four-option interaction (per-finding walk-through, LFG, Append-to-Open-Questions, Report-only) for user decision.
+Review requirements or plan documents through multi-persona analysis. Dispatches specialized reviewer agents in parallel, auto-applies `safe_auto` fixes, and routes remaining findings through a four-option interaction (per-finding walk-through, auto-resolve with best judgment, Append-to-Open-Questions, Report-only) for user decision.
 
 ## Interactive mode rules
 
@@ -46,6 +46,7 @@ If `mode:headless` is not present, the skill runs in its default interactive mod
 ### Classify Document Type
 
 After reading, classify the document:
+
 - **requirements** -- from `docs/brainstorms/`, focuses on what to build and why
 - **plan** -- from `docs/plans/`, focuses on how to build it with implementation details
 
@@ -55,31 +56,36 @@ Analyze the document content to determine which conditional personas to activate
 
 **product-lens** -- activate when the document makes challengeable claims about what to build and why, or when the proposed work carries strategic weight beyond the immediate problem. The system's users may be end users, developers, operators, maintainers, or any other audience -- the criteria are domain-agnostic. Check for either leg:
 
-*Leg 1 — Premise claims:* The document stakes a position on what to build or why that a knowledgeable stakeholder could reasonably challenge -- not merely describing a task or restating known requirements:
+_Leg 1 — Premise claims:_ The document stakes a position on what to build or why that a knowledgeable stakeholder could reasonably challenge -- not merely describing a task or restating known requirements:
+
 - Problem framing where the stated need is non-obvious or debatable, not self-evident from existing context
 - Solution selection where alternatives plausibly exist (implicit or explicit)
 - Prioritization decisions that explicitly rank what gets built vs deferred
 - Goal statements that predict specific user outcomes, not just restate constraints or describe deliverables
 
-*Leg 2 — Strategic weight:* The proposed work could affect system trajectory, user perception, or competitive positioning, even if the premise is sound:
+_Leg 2 — Strategic weight:_ The proposed work could affect system trajectory, user perception, or competitive positioning, even if the premise is sound:
+
 - Changes that shape how the system is perceived or what it becomes known for
 - Complexity or simplicity bets that affect adoption, onboarding, or cognitive load
 - Work that opens or closes future directions (path dependencies, architectural commitments)
 - Opportunity cost implications -- building this means not building something else
 
 **design-lens** -- activate when the document contains:
+
 - UI/UX references, frontend components, or visual design language
 - User flows, wireframes, screen/page/view mentions
 - Interaction descriptions (forms, buttons, navigation, modals)
 - References to responsive behavior or accessibility
 
 **security-lens** -- activate when the document contains:
+
 - Auth/authorization mentions, login flows, session management
 - API endpoints exposed to external clients
 - Data handling, PII, payments, tokens, credentials, encryption
 - Third-party integrations with trust boundary implications
 
 **scope-guardian** -- activate when the document contains:
+
 - Multiple priority tiers (P0/P1/P2, must-have/should-have/nice-to-have)
 - Large requirement count (>8 distinct requirements or implementation units)
 - Stretch goals, nice-to-haves, or "future work" sections
@@ -87,6 +93,7 @@ Analyze the document content to determine which conditional personas to activate
 - Goals that don't clearly connect to requirements
 
 **adversarial** -- activate when the document contains:
+
 - More than 5 distinct requirements or implementation units
 - Explicit architectural or scope decisions with stated rationale
 - High-stakes domains (auth, payments, data migrations, external integrations)
@@ -109,10 +116,12 @@ Reviewing with:
 ### Build Agent List
 
 Always include:
+
 - @compound-engineering/ce-coherence-reviewer
 - @compound-engineering/ce-feasibility-reviewer
 
 Add activated conditional personas:
+
 - @compound-engineering/ce-product-lens-reviewer
 - @compound-engineering/ce-design-lens-reviewer
 - @compound-engineering/ce-security-lens-reviewer
@@ -123,14 +132,14 @@ Add activated conditional personas:
 
 Dispatch all agents in **parallel** using the platform's subagent primitive (e.g., `Agent` in Claude Code, `spawn_agent` in Codex, `subagent` in Pi via the `pi-subagents` extension). Omit the `mode` parameter so the user's configured permission settings apply. Each agent receives the prompt built from the subagent template included below with these variables filled:
 
-| Variable | Value |
-|----------|-------|
-| `{persona_file}` | Full content of the agent's markdown file |
-| `{schema}` | Content of the findings schema included below |
-| `{document_type}` | "requirements" or "plan" from Phase 1 classification |
-| `{document_path}` | Path to the document |
-| `{document_content}` | Full text of the document |
-| `{decision_primer}` | Cumulative prior-round decisions in the current session, or an empty `<prior-decisions>` block on round 1. See "Decision primer" below. |
+| Variable             | Value                                                                                                                                   |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `{persona_file}`     | Full content of the agent's markdown file                                                                                               |
+| `{schema}`           | Content of the findings schema included below                                                                                           |
+| `{document_type}`    | "requirements" or "plan" from Phase 1 classification                                                                                    |
+| `{document_path}`    | Path to the document                                                                                                                    |
+| `{document_content}` | Full text of the document                                                                                                               |
+| `{decision_primer}`  | Cumulative prior-round decisions in the current session, or an empty `<prior-decisions>` block on round 1. See "Decision primer" below. |
 
 Pass each agent the **full document** — do not split into sections.
 
@@ -165,7 +174,7 @@ Round 2 — applied (N entries):
 </prior-decisions>
 ```
 
-Each entry carries an `Evidence:` line because synthesis R29 (rejected-finding suppression) and R30 (fix-landed verification) both use an evidence-substring overlap check as part of their matching predicate — without the evidence snippet in the primer, the orchestrator cannot compute the `>50%` overlap test and has to fall back to fingerprint-only matching, which either re-surfaces rejected findings or suppresses too aggressively. The `{evidence_snippet}` is the first evidence quote from the finding, truncated to the first ~120 characters (preserving whole words at the boundary) and with internal quotes escaped. If a finding has multiple evidence entries, use the first one; the rest live in the run artifact and are not needed for the overlap check.
+Each entry carries an `Evidence:` line because synthesis R29 (rejected-finding suppression) and R30 (fix-landed verification) both use an evidence-substring overlap check as part of their matching predicate — without the evidence snippet in the primer, the orchestrator cannot compute the `>50%` overlap test and has to fall back to fingerprint-only matching, which either re-surfaces rejected findings or suppresses too aggressively. The `{evidence_snippet}` is the first evidence quote from the finding, truncated to the first 120 characters (preserving whole words at the boundary) and with internal quotes escaped. If a finding has multiple evidence entries, use the first one; the rest live in the run artifact and are not needed for the overlap check.
 
 Accumulate across all rounds in the current session. Skip, Defer, and Acknowledge actions all count as "rejected" for suppression purposes — each signals the user decided the finding wasn't worth actioning this round (Acknowledge is the no-fix-guard variant: the user saw a finding with no `suggested_fix`, chose not to defer or skip explicitly, and recorded acknowledgement instead; for round-to-round suppression that is semantically equivalent to Skip). Applied findings stay on the applied list so round-N+1 personas can verify fixes landed (see R30 in `references/synthesis-and-presentation.md`).
 
@@ -179,7 +188,7 @@ Cross-session persistence is out of scope. A new invocation of ce-doc-review on 
 
 After all dispatched agents return, read `references/synthesis-and-presentation.md` for the synthesis pipeline (validate, anchor-based gate, dedup, cross-persona agreement promotion, resolve contradictions, auto-promotion, route by three tiers with FYI subsection), `safe_auto` fix application, headless-envelope output, and the handoff to the routing question.
 
-For the four-option routing question and per-finding walk-through (interactive mode), read `references/walkthrough.md`. For the bulk-action preview used by LFG, Append-to-Open-Questions, and walk-through `LFG-the-rest`, read `references/bulk-preview.md`. Do not load these files before agent dispatch completes.
+For the four-option routing question and per-finding walk-through (interactive mode), read `references/walkthrough.md`. For the bulk-action preview used by best-judgment routing, Append-to-Open-Questions, and walk-through `Auto-resolve with best judgment on the rest`, read `references/bulk-preview.md`. Do not load these files before agent dispatch completes.
 
 ---
 

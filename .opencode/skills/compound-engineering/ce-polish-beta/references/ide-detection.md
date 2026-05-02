@@ -1,3 +1,5 @@
+---
+---
 # IDE detection for browser handoff
 
 Polish attempts to hand the running dev-server URL off to an IDE's embedded browser so the user can test without a context switch. Detection is best-effort — failure falls through to printing the URL in the interactive summary.

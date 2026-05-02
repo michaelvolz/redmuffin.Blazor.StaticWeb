@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
-"""Extract error signals from a Claude Code, Codex, or Cursor JSONL session file.
+"""Extract error signals from a Claude Code, Codex, Cursor, or OpenCode JSONL session file.
 
 Usage: cat <session.jsonl> | python3 extract-errors.py
 
 Auto-detects platform from the JSONL structure.
-Note: Cursor agent transcripts do not log tool results, so no errors can be extracted.
+OpenCode sessions route through the Claude Code handler (export format is
+Claude-compatible). Cursor agent transcripts do not log tool results, so no
+errors can be extracted from Cursor sessions.
 Finds failed tool calls / commands and outputs them with timestamps.
 Outputs a _meta line at the end with processing stats.
 """
+
 import sys
 import json
 
@@ -50,7 +53,9 @@ def handle_codex(obj):
             exit_match = None
             if "Process exited with code " in output:
                 try:
-                    code_str = output.split("Process exited with code ")[1].split("\n")[0]
+                    code_str = output.split("Process exited with code ")[1].split("\n")[
+                        0
+                    ]
                     exit_code = int(code_str)
                     if exit_code != 0:
                         exit_match = exit_code
@@ -60,7 +65,9 @@ def handle_codex(obj):
             if exit_match is not None or stderr:
                 ts = obj.get("timestamp", "")[:19]
                 error_summary = summarize_error(stderr if stderr else output)
-                print(f"[{ts}] [error] exit={exit_match} cmd={cmd_str[:120]}: {error_summary}")
+                print(
+                    f"[{ts}] [error] exit={exit_match} cmd={cmd_str[:120]}: {error_summary}"
+                )
                 print("---")
                 stats["errors_found"] += 1
 
@@ -79,18 +86,27 @@ for line in sys.stdin:
     if not detected and len(buffer) <= 10:
         try:
             obj = json.loads(line)
-            if obj.get("type") in ("user", "assistant"):
+            if "_opencode" in obj:
+                detected = "claude"  # OpenCode temp-export, format is Claude-compatible
+            elif obj.get("type") in ("user", "assistant"):
                 detected = "claude"
-            elif obj.get("type") in ("session_meta", "turn_context", "response_item", "event_msg"):
+            elif obj.get("type") in (
+                "session_meta",
+                "turn_context",
+                "response_item",
+                "event_msg",
+            ):
                 detected = "codex"
             elif obj.get("role") in ("user", "assistant") and "type" not in obj:
                 detected = "cursor"
         except (json.JSONDecodeError, KeyError):
             pass
 
+
 # Cursor transcripts don't log tool results — no errors to extract
 def handle_noop(obj):
     pass
+
 
 handlers = {"claude": handle_claude, "codex": handle_codex, "cursor": handle_noop}
 handler = handlers.get(detected, handle_noop)

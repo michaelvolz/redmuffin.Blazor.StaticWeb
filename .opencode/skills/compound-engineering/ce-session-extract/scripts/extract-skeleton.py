@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Extract the conversation skeleton from a Claude Code, Codex, or Cursor JSONL session file.
+"""Extract the conversation skeleton from a Claude Code, Codex, Cursor, or OpenCode JSONL session file.
 
 Usage: cat <session.jsonl> | python3 extract-skeleton.py
 
-Auto-detects platform (Claude Code, Codex, or Cursor) from the JSONL structure.
+Auto-detects platform (Claude Code, Codex, Cursor, or OpenCode) from the JSONL
+structure. OpenCode sessions route through the Claude handler (export format is
+Claude-compatible).
 Extracts:
   - User messages (text only, no tool results)
   - Assistant text (no thinking/reasoning blocks)
@@ -14,6 +16,7 @@ Consecutive tool calls of the same type are collapsed:
 Codex call/result pairs are deduplicated (only the result with status is kept).
 Outputs a _meta line at the end with processing stats.
 """
+
 import sys
 import json
 import re
@@ -38,6 +41,7 @@ def clean_text(text):
     text = _STRIP_TAG.sub("", text)
     text = re.sub(r"\n{3,}", "\n\n", text).strip()
     return text
+
 
 # Buffer for pending tool entries: [{"ts", "name", "target", "status"}]
 pending_tools = []
@@ -206,7 +210,9 @@ def handle_codex(obj):
             status = "ok"
             if "Process exited with code " in output:
                 try:
-                    code = int(output.split("Process exited with code ")[1].split("\n")[0])
+                    code = int(
+                        output.split("Process exited with code ")[1].split("\n")[0]
+                    )
                     if code != 0:
                         status = f"error(exit {code})"
                 except (IndexError, ValueError):
@@ -215,13 +221,18 @@ def handle_codex(obj):
             if cmd_str:
                 # Shorten common patterns for readability
                 short_cmd = cmd_str[:120]
-                pending_tools.append({"ts": ts, "name": "exec", "target": short_cmd, "status": status})
+                pending_tools.append(
+                    {"ts": ts, "name": "exec", "target": short_cmd, "status": status}
+                )
 
     elif msg_type == "response_item":
         p = obj.get("payload", {})
         if p.get("type") == "message" and p.get("role") == "assistant":
             for block in p.get("content", []):
-                if block.get("type") == "output_text" and len(block.get("text", "")) > 20:
+                if (
+                    block.get("type") == "output_text"
+                    and len(block.get("text", "")) > 20
+                ):
                     flush_tools()
                     print(f"[{ts}] [assistant] {block['text'][:800]}")
                     print("---")
@@ -237,7 +248,7 @@ def handle_cursor(obj):
 
     if role == "user":
         texts = []
-        for block in (content if isinstance(content, list) else []):
+        for block in content if isinstance(content, list) else []:
             if block.get("type") == "text":
                 texts.append(block.get("text", ""))
         text = clean_text(" ".join(texts))
@@ -250,7 +261,7 @@ def handle_cursor(obj):
 
     elif role == "assistant":
         has_text = False
-        for block in (content if isinstance(content, list) else []):
+        for block in content if isinstance(content, list) else []:
             if block.get("type") == "text":
                 text = block.get("text", "")
                 # Skip [REDACTED] placeholder blocks
@@ -293,9 +304,16 @@ for line in sys.stdin:
     if not detected and len(buffer) <= 10:
         try:
             obj = json.loads(line)
-            if obj.get("type") in ("user", "assistant"):
+            if "_opencode" in obj:
+                detected = "claude"  # OpenCode temp-export, format is Claude-compatible
+            elif obj.get("type") in ("user", "assistant"):
                 detected = "claude"
-            elif obj.get("type") in ("session_meta", "turn_context", "response_item", "event_msg"):
+            elif obj.get("type") in (
+                "session_meta",
+                "turn_context",
+                "response_item",
+                "event_msg",
+            ):
                 detected = "codex"
             elif obj.get("role") in ("user", "assistant") and "type" not in obj:
                 detected = "cursor"
