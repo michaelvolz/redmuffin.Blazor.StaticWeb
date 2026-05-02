@@ -4,8 +4,8 @@
     "omarchyBg": "#1a1b26",
     "omarchyFg": "#a9b1d6",
     "omarchyAccent": "#7aa2f7",
-    "omarchyRed": "#f7768e",
-    "omarchyGreen": "#9ece6a",
+    "omarchyRed": "#ff6b6b",
+    "omarchyGreen": "#7ee787",
     "omarchyYellow": "#e0af68",
     "omarchyBlue": "#7aa2f7",
     "omarchyMagenta": "#ad8ee6",
@@ -82,7 +82,7 @@
       "light": "omarchyRed"
     },
     "diffContext": {
-      "dark": "#444b6a",
+      "dark": "#565f89",
       "light": "#4c566a"
     },
     "diffHunkHeader": {
@@ -98,12 +98,12 @@
       "light": "omarchyRed"
     },
     "diffAddedBg": {
-      "dark": "#1f2335",
-      "light": "#e5e9f0"
+      "dark": "#1a2f23",
+      "light": "#d4edda"
     },
     "diffRemovedBg": {
-      "dark": "#1f2335",
-      "light": "#e5e9f0"
+      "dark": "#2f1a1a",
+      "light": "#f8d7da"
     },
     "diffContextBg": {
       "dark": "omarchyBg",
