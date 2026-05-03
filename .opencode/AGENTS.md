@@ -134,16 +134,14 @@ interactive:
 ### CRITICAL
 
 - Use `rm-commit` for all commits (never manual `git commit` or `git add`).
-- Batch commits by concern (config, agents, skills, docs) even when "all
-  changes" requested.
 - Read relevant code before answering any question.
 - Use `pwsh -NoProfile` for all PowerShell execution.
-- Wrap commit messages at 80 characters.
 - Timestamp temporary files referenced in commit messages.
-- Make single-purpose commits only.
 
 ### NEVER
 
+- **DO NOT COMMIT WITHOUT BEING INSTRUCTED FIRST.** Never `git commit`,
+  `git add`, or stage files for commit unless the user explicitly asks.
 - Commit, push, or expose secrets.
 - Push to remote without explicit request.
 - Use `git commit`, `git add`, or `git revert` without explicit request.
@@ -177,6 +175,26 @@ skill. Every rule is defined there.
 token consumption. You do not see it, you do not use it, you do not mention
 it. Call commands normally (e.g., `git status`, `npm install`). Ignore.
 
+## API Rate Limits — Web Search & Fetch (CRITICAL)
+
+Brave Search and Exa (web fetch) have hard rate limits. You MUST self-regulate
+to avoid 429 errors. Lost requests are unacceptable.
+
+### Self-throttle
+
+- **1 web search or fetch call per message** (never parallel).
+- Prefer batching: use `brave-search_brave_web_search` once rather than
+  multiple times, and `context-mode_ctx_fetch_and_index` + `ctx_search`
+  rather than multiple individual fetches.
+- Browser testing (`ce-test-browser`) and web fetch tools share the same
+  constraint — do not call them in the same message as a search/fetch.
+
+### When rate-limited
+
+- If any search or fetch returns a 429 or rate-limit error, **STOP all other
+  web calls immediately**, wait at least 2 seconds, then retry that specific
+  call before proceeding. Never discard or skip a rate-limited request.
+
 ## Workflows
 
 - **Sidenotes** ("sidenote:" or "/sidenote"): Immediately load
@@ -185,3 +203,17 @@ it. Call commands normally (e.g., `git status`, `npm install`). Ignore.
 - **Documented Solutions**: `docs/solutions/` — searchable knowledge store
   of past bugs, best practices, and workflow patterns, organized by category
   with YAML frontmatter (`module`, `tags`, `problem_type`)
+
+## Design Constraints — Document-Level Guardrails
+
+Skills and docs under `docs/` may contain a `## What Belongs in This File` section
+near the top of the file. This section defines what the file is for, what
+belongs in it, and what does NOT belong.
+
+**When editing any file that has this section:** read it first. If your
+edit would add something listed under "What does NOT belong", reject it.
+If the section exists and your edit adds a new category of content not
+covered by the constraints, update the constraints to reflect the new scope.
+
+**When creating a new doc via `rm-custom-docs`:** that skill enforces that
+a Design Constraints section is included. Do not create docs without one.
