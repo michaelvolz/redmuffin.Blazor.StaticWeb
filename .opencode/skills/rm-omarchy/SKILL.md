@@ -4,9 +4,10 @@ description: >
   LOAD FIRST for ANY system-level change on this machine — installing,
   updating, or removing packages, adding language runtimes, modifying
   system services, changing PATH, or running system administration
-  commands. Contains the Omarchy package management philosophy: pacman
-  first, no version managers, language runtime rules, update workflow,
-  and the distinction between system packages and user-level tools.
+  commands.   Contains the Omarchy package management philosophy: pacman
+  first for system packages, mise for development runtimes, language
+  runtime rules, update workflow, and the distinction between system
+  packages and user-level tools.
   USE FOR: pacman, yay, AUR, omarchy-pkg-*, omarchy-update, npm
   install -g, pip install, cargo install, gem install, adding a
   package, removing a package, updating the system, troubleshooting
@@ -20,6 +21,16 @@ description: >
 Omarchy is an opinionated Arch Linux distribution by DHH. This skill covers
 system-level administration under its philosophy.
 
+## User's Omarchy Stance
+
+**This user strictly adheres to Omarchy philosophy, guidelines, and DHH's
+design decisions.** When making system changes, always follow Omarchy's
+opinionated defaults — never override them unless the user explicitly
+asks for an exception. System packages first. Mise for runtimes. Omarchy
+defaults are the defaults for a reason.
+
+---
+
 ## Core Philosophy
 
 **System packages first.** Everything that can come from pacman (core, extra,
@@ -27,9 +38,11 @@ multilib) or the Omarchy repository should. Language-specific package
 managers (npm, pip, cargo, gem) are for project dependencies only — never
 for system-wide tools or runtimes.
 
-**No version managers.** Do not install or suggest mise, fnm, nvm, pyenv,
-uv, pipx, rustup, rbenv, or any other runtime version manager. Arch packages
-provide the system runtime.
+**Mise for development runtimes.** Omarchy uses [Mise](https://mise.jdx.dev/)
+to manage development language runtimes (Node.js, Ruby, Python, etc.).
+System packages (pacman) handle OS-level tools; mise handles development
+environments. As DHH puts it in the Omarchy Manual: "The majority of these
+environments are managed by Mise."
 
 **Arch repos take precedence over Omarchy's.** When the same package exists
 in both, the Arch version wins. The Omarchy repo is for desktop components
@@ -45,14 +58,17 @@ and curated defaults.
 
 ## Language Runtime Rules
 
-Every runtime must come from pacman. Never from a version manager.
+Development runtimes are managed by [Mise](https://mise.jdx.dev/), which
+is installed as a base pacman package. Use `mise use -g` to install and
+set global defaults. For toolchain-level tools (like Rust), pacman is
+used directly.
 
-| Language | Package                       | NEVER use       |
-| -------- | ----------------------------- | --------------- |
-| Node.js  | `pacman -S nodejs npm`        | mise, fnm, nvm  |
-| Python   | `pacman -S python python-pip` | pyenv, uv, pipx |
-| Rust     | `pacman -S rust`              | rustup          |
-| Ruby     | `pacman -S ruby`              | rbenv, rvm      |
+| Language | Install via               | NEVER use   |
+| -------- | ------------------------- | ----------- |
+| Node.js  | `mise use -g node@latest` | fnm, nvm    |
+| Ruby     | `mise use -g ruby`        | rbenv, rvm  |
+| Python   | `mise use -g python`      | pyenv, pipx |
+| Rust     | `pacman -S rust`          | rustup      |
 
 For project dependencies, use the language's own tooling (`npm install`,
 `pip install` in a venv, `cargo build`, `bundle install`) — but never
@@ -61,10 +77,11 @@ are explicitly discouraged.
 
 ## npm / JavaScript
 
+- Runtime: `mise use -g node@latest`
 - One-off commands: `npx --yes <package>`
 - Persistent tools: `omarchy-npx-install <package> <command>`
 - Never: `npm install -g`, `pnpm add -g`, `yarn global add`
-- Never: any node version manager
+- Never: fnm, nvm, or any node version manager other than mise
 
 ## Omarchy Package Commands
 
@@ -139,11 +156,21 @@ yay -S <package>
 sudo pacman -Rns <package>
 ```
 
+**Install a development runtime:**
+
+```
+mise use -g node@latest    # Node.js
+mise use -g ruby           # Ruby
+mise use -g python         # Python
+```
+
 **Add a Node.js CLI tool (persistent):**
 
 ```
 omarchy-npx-install <package> <command>
 ```
+
+(Wraps via mise-managed Node.js — no `npm install -g`.)
 
 **Add a Python project dependency:**
 
@@ -207,7 +234,15 @@ cat $(which omarchy-theme-set)
 4. **Is it a theme change?** `omarchy-theme-set <name>`
 5. **Need to reset config?** `omarchy-refresh-<component>` — always confirm first
 6. **Unsure if a command exists?** Search with `compgen -c | grep omarchy`
-   omarchy-update
+
+## References
+
+Source material backing this skill:
+
+- [Development Tools — The Omarchy Manual by DHH](https://learn.omacom.io/2/the-omarchy-manual/62/development-tools) — _"The majority of these environments are managed by Mise."_
+- [omarchy-base.packages](https://github.com/basecamp/omarchy/blob/dev/install/omarchy-base.packages) — `mise` is a base package; `nodejs` is not
+- [install/config/mise-work.sh](https://github.com/basecamp/omarchy/blob/dev/install/config/mise-work.sh) — `mise use -g node@latest` runs during Omarchy setup
+- [bin/omarchy-npx-install](https://github.com/basecamp/omarchy/blob/dev/bin/omarchy-npx-install) — wrappers resolve Node.js via `mise where node@latest`
 
 ```
 

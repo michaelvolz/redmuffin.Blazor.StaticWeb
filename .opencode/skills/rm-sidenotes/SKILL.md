@@ -36,10 +36,8 @@ Capture tangential ideas mid-conversation without derailing the current task. St
 
 ### 2. Retrieval (show sidenotes / list sidenotes)
 
-1. Run: `pwsh -NoProfile -File .opencode/skills/rm-sidenotes/scripts/List-Sidenotes.ps1`
-2. Read the command output directly — do not write a temp file or do a second read.
-3. Parse the results and present a clean, formatted list to the user.
-4. If the output includes title-length warnings (⚠ lines), note them when presenting the list.
+1. Run: `pwsh -NoProfile -File "$HOME/.config/opencode/skills/rm-sidenotes/scripts/List-Sidenotes.ps1"`
+2. **Stop.** The script output is the list — the user sees it directly in the terminal. Do NOT parse, reformat, repeat, or annotate the output. Do not add any text before or after the command.
 
 ### 3. Verification (sidenotes verify)
 

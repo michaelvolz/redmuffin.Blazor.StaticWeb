@@ -9,6 +9,17 @@ Create clean, reviewable git commits from the working tree. Enforces
 commitlint rules (body required, blank lines, 100-char line limit)
 via Conventional Commits.
 
+## What Belongs in This File
+
+- **Viewpoint**: Information as reference, not recipes. The model
+  already knows how to use git.
+- **What belongs**: constraints (commitlint rules), conventions (type
+  checklist, scope patterns), gotchas (`#` parser behavior, body
+  template), the heredoc/here-string syntax.
+- **What does NOT belong**: ordered workflow steps, diagnostic command
+  recipes, staging instructions, anti-redundancy rules, hard numeric
+  thresholds, anything the model already knows how to do.
+
 ## Commitlint Rules (ENFORCED — non-negotiable)
 
 All commits must pass these rules from the repo's commitlint config:
@@ -72,54 +83,43 @@ Safe alternatives: `git stash` before destructive operations,
 - Use `git --no-optional-locks` for background status/diff to avoid
   index lock contention.
 
-## FLOW
+If the working tree is clean (no modified or untracked files),
+there is nothing to commit — stop and report to the user.
 
-1. Check repo rules in AGENTS.md/CLAUDE.md first. Look for
-   commit message conventions, scope lists, type restrictions,
-   or branch-specific rules. If none exist, use the conventions
-   in this skill as defaults.
-2. Inspect the working tree and recent history.
-3. Decide whether changes belong in one commit or several.
-4. Stage only the intended files or hunks.
-5. Format the message per WORKFLOWS §4 (commit types, scope,
-   subject/body rules, breaking changes).
-6. Commit with here-string pipe or heredoc (WORKFLOWS §5).
-7. Verify: confirm clean `git status`, confirm HEAD matches
-   intent, report the commit SHA to the user.
+Check AGENTS.md/CLAUDE.md for repo-specific conventions (scope lists,
+type restrictions, branch-specific rules). If none exist, use the
+conventions in this skill as defaults.
 
-## WORKFLOWS
-
-### 1. Gather Context
-
-```
-git status --porcelain=v2 --branch && git diff --numstat && git branch --show-current && git log --oneline -n 10
-```
-
-If tree is clean, there is nothing to commit — stop and report
-to the user.
-
-### 2. Decide Commit Shape
+## Commit Shape
 
 Group by concern — split when changes serve different purposes and
 can be reviewed/reverted independently:
 
 - Cleanup (deletions) separate from construction (additions)
 - Features separate from infrastructure
-- Order commits: scaffolding → behavior → tests → docs → formatting
 - Keep each commit independently understandable
 
-### 3. Stage Carefully
+**Commit ordering** — scan the diff for import/export chains. Skip
+elaboration when there is nothing to find:
 
-- Stage by file or partial hunk
-- `git add -p` for mixed changes in one file — note: this is
-  interactive and may not work in non-interactive environments;
-  fall back to `git add <file>` and verify with `git diff --cached`
-- Exclude secrets, generated files, accidental edits
-- `git commit -a` stages all tracked changes automatically. Use
-  only when the working tree has no untracked files that need
-  separate handling. Prefer explicit `git add` for control.
+1. Does file A define something (export, type, interface, base class,
+   config schema) that file B imports or depends on?
+   → File A commits first. Resolve all import chains before committing
+   the files that depend on them.
+2. No dependencies between groups?
+   → Static fallback: cleanup → scaffold → behavior → tests → docs
+   → format.
 
-### 4. Format Message
+Example — `src/types.ts` exports `User` and `Session`; `src/auth/login.ts`
+and `src/auth/refresh.ts` import from it:
+
+```
+# Commit 1: types (depended on by auth)
+# Commit 2: auth login + refresh (depend on types)
+# Commit 3: tests (depend on auth behavior)
+```
+
+## Commit Message Format
 
 Use Conventional Commits (enforced by commitlint rules above):
 
@@ -132,20 +132,21 @@ line (commitlint enforces ≤ 100; 80 is a safe margin).
 Refs: #123
 ```
 
-#### Commit types
+#### Commit type — ordered decision checklist
 
-| Type       | Use when                                                |
-| ---------- | ------------------------------------------------------- |
-| `feat`     | New user-facing feature or capability                   |
-| `fix`      | Bug fix (user-visible or internal)                      |
-| `docs`     | Documentation changes only                              |
-| `refactor` | Code change that neither fixes a bug nor adds a feature |
-| `test`     | Adding or updating tests                                |
-| `chore`    | Build, CI, dependency, tooling, config maintenance      |
-| `perf`     | Performance improvement                                 |
-| `ci`       | CI/CD pipeline changes                                  |
-| `style`    | Formatting, whitespace, linting (no logic change)       |
-| `build`    | Build system or external dependency changes             |
+Scan top-to-bottom. Stop at the first match. Do not evaluate
+further items.
+
+1. User-facing new capability or behavior? → `feat`
+2. Fixing a bug, crash, regression, or incorrect behavior? → `fix`
+3. Only `.md`, docstrings, comments, no code logic changed? → `docs`
+4. Only test files? → `test`
+5. Moving/renaming/restructuring, no behavior change? → `refactor`
+6. CI/CD pipeline changes? → `ci`
+7. `.yml`/`.json` config, deps, build scripts, tooling? → `chore`
+8. Measurable perf improvement (benchmark/profile evidence)? → `perf`
+9. Pure formatting, whitespace, lint fixes (no logic change)? → `style`
+10. Build system or external dependency changes? → `build`
 
 #### Scope
 
@@ -171,6 +172,19 @@ component name affected (e.g., `feat(skills):`, `fix(core):`,
 - Footer: `Refs: #123`, `Co-authored-by:`, or `BREAKING CHANGE:`
 - **Blank line before footer** — `footer-leading-blank` is enforced
 
+**Body template** — every message: one summary line, 1-2 why lines:
+
+```
+<One-line concrete summary of what changed>
+
+<1-2 lines: why this change exists or what it fixes.
+Keep each line ≤ 80 chars.>
+```
+
+No "this commit" meta-talk. No filler. Target 2-3 lines of body for
+most commits; use more only when a trade-off or edge case must be
+explained.
+
 #### Breaking changes
 
 When a commit introduces a breaking API or behavior change, add
@@ -186,7 +200,7 @@ BREAKING CHANGE: response format changed from flat JSON to
   JSON:API. Clients must update response parsing.
 ```
 
-### 5. Commit
+## Commit Syntax
 
 Two methods — both produce identical results. The here-string
 approach is canonical (matches AGENTS.md `pwsh -NoProfile` rule).
@@ -195,13 +209,10 @@ approach is canonical (matches AGENTS.md `pwsh -NoProfile` rule).
 
 ```powershell
 @"
-type(scope): imperative subject
+fix(auth): handle null userId in token refresh
 
-Body explaining why the change exists. Wrap each line
-at ≤ 80 characters (commitlint enforces ≤ 100, but
-80 gives a safe margin since models miscount).
-
-Refs: #123
+Null userId was causing 500 errors when the refresh
+token grant returned an unrecognized user_id.
 "@ | git commit -F -
 ```
 
@@ -211,13 +222,10 @@ Why: no temp files, no shell parsing, exact line breaks preserved.
 
 ```bash
 git commit -F - <<'EOF'
-type(scope): imperative subject
+fix(auth): handle null userId in token refresh
 
-Body explaining why the change exists. Wrap each line
-at ≤ 80 characters (commitlint enforces ≤ 100, but
-80 gives a safe margin since models miscount).
-
-Refs: #123
+Null userId was causing 500 errors when the refresh
+token grant returned an unrecognized user_id.
 EOF
 ```
 
@@ -253,7 +261,7 @@ EOF
 | Command                              | Purpose                                                                                          | When                     |
 | ------------------------------------ | ------------------------------------------------------------------------------------------------ | ------------------------ |
 | `git status --porcelain=v2 --branch` | Machine-readable status                                                                          | Gather context           |
-| `git diff --numstat`                 | Line counts per file                                                                             | After status             |
+| `git diff --stat`                    | Change summary per file                                                                          | After status             |
 | `git diff HEAD`                      | Show all changes                                                                                 | After status             |
 | `git branch --show-current`          | Get current branch                                                                               | After diff               |
 | `git log --oneline -n 10`            | Show recent history                                                                              | After branch             |

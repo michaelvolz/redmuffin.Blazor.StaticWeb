@@ -38,7 +38,7 @@ For each expectation:
 2. **Determine verdict**:
    - **PASS**: Clear evidence the expectation is true AND the evidence reflects genuine task completion, not just surface-level compliance
    - **FAIL**: No evidence, or evidence contradicts the expectation, or the evidence is superficial (e.g., correct filename but empty/wrong content)
-3. **Cite the evidence**: Quote the specific text or describe what you found
+3. **Cite the evidence**: Quote the specific text or describe what you found. Use the Read, Glob, and Grep tools to examine files.
 
 ### Step 4: Extract and Verify Claims
 

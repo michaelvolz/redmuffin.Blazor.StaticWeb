@@ -27,11 +27,7 @@ If `mode:headless` is present, set **headless mode** for the rest of the workflo
 
 The caller receives findings with their original classifications intact and decides what to do with them.
 
-Callers invoke headless mode by including `mode:headless` in the skill arguments, e.g.:
-
-```
-Skill("ce-doc-review", "mode:headless docs/plans/my-plan.md")
-```
+Callers invoke headless mode by including `mode:headless` in the skill arguments. In Claude Code: `Skill("ce-doc-review", "mode:headless docs/plans/my-plan.md")`. In OpenCode, invoke `skill({ name: "ce-doc-review" })` and state the intent in conversation (e.g., "Run a headless review of docs/plans/my-plan.md") — the skill detects `mode:headless` and the document path from context. The path may also be passed implicitly: if the caller provides a document path in the same message, the skill reads it per the "If a document path is provided" branch in Phase 1.
 
 If `mode:headless` is not present, the skill runs in its default interactive mode with the routing question, walk-through, and bulk-preview behaviors documented in `references/walkthrough.md` and `references/bulk-preview.md`.
 
@@ -41,7 +37,7 @@ If `mode:headless` is not present, the skill runs in its default interactive mod
 
 **If no document is specified (interactive mode):** Ask which document to review, or find the most recent in `docs/brainstorms/` or `docs/plans/` using a file-search/glob tool (e.g., Glob in Claude Code).
 
-**If no document is specified (headless mode):** Output "Review failed: headless mode requires a document path. Re-invoke with: Skill(\"ce-doc-review\", \"mode:headless <path>\")" without dispatching agents.
+**If no document is specified (headless mode):** Output "Review failed: headless mode requires a document path. Re-invoke with `skill({ name: \"ce-doc-review\" })` and provide the document path in conversation." without dispatching agents.
 
 ### Classify Document Type
 

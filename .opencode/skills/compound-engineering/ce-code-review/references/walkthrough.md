@@ -1,5 +1,6 @@
 ---
 ---
+
 # Per-finding Walk-through
 
 This reference defines Interactive mode's per-finding walk-through — the path the user enters by picking option A (`Review each finding one by one — accept the recommendation or choose another action`) from the routing question. It also covers the unified completion report that every terminal path (walk-through, best-judgment, File tickets, zero findings) emits.
@@ -22,7 +23,7 @@ Each finding's recommended action has already been normalized by Stage 5 (step 7
 
 ## Per-finding presentation
 
-Each finding is presented in two parts: a **terminal output block** carrying the explanation, and a **question** via the platform's blocking question tool (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension)) carrying the decision. Never merge the two — the terminal block uses markdown; the question uses plain text.
+Each finding is presented in two parts: a **terminal output block** carrying the explanation, and a **question** via the platform's blocking question tool (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension)). In OpenCode, use the `question` tool (no `ToolSearch` pre-load needed — its schema is always available). carrying the decision. Never merge the two — the terminal block uses markdown; the question uses plain text.
 
 In Claude Code the tool should already be loaded from the Interactive-mode pre-load step in `SKILL.md` — if it isn't, call `ToolSearch` with query `select:AskUserQuestion` now. Fall back to presenting the per-finding options as a numbered list only when the harness genuinely lacks a blocking tool — `ToolSearch` returns no match, the tool call explicitly fails, or the runtime mode does not expose it (e.g., Codex edit modes without `request_user_input`). A pending schema load is not a fallback trigger. Never silently skip the question.
 
@@ -57,10 +58,10 @@ Substitutions:
 - **`suggested_fix`:** from the merged finding's `suggested_fix` field. Render as prose describing **intent**, not as syntax. The fixer subagent owns the exact code — the walk-through just needs enough for the user to trust or reject the action. Rules:
   - **Default — one sentence describing the effect.** What does the fix achieve, and where does it live? Prefer intent language over quoted code.
     - ✅ `Throw on non-2xx response before parsing JSON.`
-    - ✅ `` Replace `==` with `===` on line 42. ``
-    - ✅ `` Add a `response.ok` check after the fetch and throw on non-2xx. ``
+    - ✅ ``Replace `==` with `===` on line 42.``
+    - ✅ ``Add a `response.ok` check after the fetch and throw on non-2xx.``
     - ✅ `Extract the request-building logic into a helper and call it from both sites.`
-    - ❌ `` Add `if (!response.ok) throw new Error(`HTTP ${response.status}`);` after the `await fetch(...)` call, before `response.json()`. `` — nested backticks, multiple code spans, full statement quoted; renders broken in terminal.
+    - ❌ ``Add `if (!response.ok) throw new Error(`HTTP ${response.status}`);` after the `await fetch(...)` call, before `response.json()`.`` — nested backticks, multiple code spans, full statement quoted; renders broken in terminal.
   - **Code-span budget: at most 2 inline backtick spans per sentence, each a single identifier, operator, or short phrase** (e.g., `` `response.ok` ``, `` `===` ``, `` `fetchUserById` ``). Never embed full statements, template literals, or code requiring nested backticks. If the intent can't be stated within that budget, the prose is too close to syntax — restate at a higher level, or switch to summary + artifact pointer.
   - **Always leave a space before and after every backtick span.** Without it, the terminal's markdown renderer eats the delimiters and runs the words together.
   - **Raw code block — only for short (≤5 line) genuinely additive new code** where no before-state exists (new file, new function, new guard at the top of an empty body). Above 5 lines, switch to summary + pointer.
@@ -83,7 +84,7 @@ Finding {N} of {M} — {severity} {short handle}.
 Where:
 
 - **Short handle:** matches the `{plain-English title}` from the terminal block heading.
-- **Action framing:** one phrase describing what the *single recommended action* does, as a yes/no question. Examples: `Apply the format-validation + path.resolve guard?`, `Skip the fix since the fixture is being deleted?`, `Defer and file a rotation ticket?`.
+- **Action framing:** one phrase describing what the _single recommended action_ does, as a yes/no question. Examples: `Apply the format-validation + path.resolve guard?`, `Skip the fix since the fixture is being deleted?`, `Defer and file a rotation ticket?`.
 
 Never enumerate alternatives in the stem. One recommendation as a yes/no — the option list carries the alternatives. When the recommendation is close, surface the disagreement in the R15 conflict context line, not as a multi-option stem.
 
