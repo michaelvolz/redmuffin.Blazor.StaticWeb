@@ -241,3 +241,18 @@ covered by the constraints, update the constraints to reflect the new scope.
 
 **When creating a new doc via `rm-custom-docs`:** that skill enforces that
 a Design Constraints section is included. Do not create docs without one.
+
+## Agent skills
+
+### Issue tracker
+
+GitHub Issues at michaelvolz/redmuffin.Blazor.StaticWeb. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix;
+category labels: bug, enhancement. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` at root + `docs/adr/`. See `docs/agents/domain.md`.
