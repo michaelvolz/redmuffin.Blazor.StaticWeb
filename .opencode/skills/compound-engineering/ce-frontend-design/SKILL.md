@@ -1,6 +1,7 @@
 ---
 name: ce-frontend-design
-description: "Build web interfaces with genuine design quality, not AI slop. Use for any frontend work - landing pages, web apps, dashboards, admin panels, components, interactive experiences. Activates for both greenfield builds and modifications to existing applications. Detects existing design systems and respects them. Covers composition, typography, color, motion, and copy. Verifies results via screenshots before declaring done."
+description: 'Build web interfaces with genuine design quality, not AI slop. Use for any frontend work - landing pages, web apps, dashboards, admin panels, components, interactive experiences. Activates for both greenfield builds and modifications to existing applications. Detects existing design systems and respects them. Covers composition, typography, color, motion, and copy. Verifies results via screenshots before declaring done.'
+
 ---
 
 # Frontend Design
@@ -52,7 +53,7 @@ Based on detected signals, choose a mode:
 
 ### Asking the User
 
-When context is ambiguous, use the platform's blocking question tool: `AskUserQuestion` in Claude Code (call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded), `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension). In OpenCode, use the `question` tool (no `ToolSearch` pre-load needed — its schema is always available). Fall back to presenting options in chat only when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes) — not because a schema load is required. Never silently skip. If the user declines to pick, assume "partial" mode and proceed conservatively.
+When context is ambiguous, use the platform's blocking question tool: `AskUserQuestion` in Claude Code (call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded), `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension). In OpenCode, use the `question` tool (no `ToolSearch` pre-load needed — its schema is always available).  Fall back to presenting options in chat only when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes) — not because a schema load is required. Never silently skip. If the user declines to pick, assume "partial" mode and proceed conservatively.
 
 Example question: "I found [detected signals]. Should I follow your existing design patterns or create something distinctive?"
 
@@ -64,7 +65,7 @@ Before writing code, write three short statements. These create coherence and gi
 
 1. **Visual thesis** -- one sentence describing the mood, material, and energy
    - Greenfield examples: "Clean editorial feel, lots of whitespace, serif headlines, muted earth tones" or "Dense data-forward dashboard, monospace accents, dark surface hierarchy"
-   - Existing codebase: Describe the _existing_ aesthetic and how the new work will extend it
+   - Existing codebase: Describe the *existing* aesthetic and how the new work will extend it
 
 2. **Content plan** -- what goes on the page and in what order
    - Landing page: hero, support, detail, CTA
@@ -85,21 +86,21 @@ These principles apply across all context types. Each yields to existing design 
 
 - Choose distinctive, characterful fonts. Avoid the usual suspects (Inter, Roboto, Arial, system defaults) unless the existing codebase uses them.
 - Two typefaces maximum without a clear reason for more. Pair a display/headline font with a body font.
-- _Yields to existing font choices when detected in Layer 0._
+- *Yields to existing font choices when detected in Layer 0.*
 
 ### Color & Theme
 
 - Commit to a cohesive palette using CSS variables. A dominant color with sharp accents outperforms timid, evenly-distributed palettes.
 - No purple-on-white bias, no dark-mode bias. Vary between light and dark based on context.
 - One accent color by default unless the product already has a multi-color system.
-- _Yields to existing color tokens when detected._
+- *Yields to existing color tokens when detected.*
 
 ### Composition
 
 - Start with composition, not components. Treat the first viewport as a poster, not a document.
 - Use whitespace, alignment, scale, cropping, and contrast before adding chrome (borders, shadows, cards).
 - Default to cardless layouts. Cards are allowed when they serve as the container for a user interaction (clickable item, draggable unit, selectable option). If removing the card styling would not hurt comprehension, it should not be a card.
-- _All composition rules are defaults. The user can override them._
+- *All composition rules are defaults. The user can override them.*
 
 ### Motion
 
@@ -134,14 +135,12 @@ Select the module that fits what is being built. When working inside an existing
 ### Module A: Landing Pages & Marketing (Greenfield)
 
 **Default section sequence:**
-
 1. Hero -- brand/product, promise, CTA, one dominant visual
 2. Support -- one concrete feature, offer, or proof point
 3. Detail -- atmosphere, workflow, product depth, or story
 4. Final CTA -- convert, start, visit, or contact
 
 **Hero rules (defaults):**
-
 - One composition, not a dashboard. Full-bleed image or dominant visual plane.
 - Brand first, headline second, body third, CTA fourth.
 - Keep the text column narrow and anchored to a calm area of the image.
@@ -149,7 +148,6 @@ Select the module that fits what is being built. When working inside an existing
 - One H1 headline. One primary CTA above the fold.
 
 **Copy:**
-
 - Let the headline carry the meaning. Supporting copy is usually one short sentence.
 - Write in product language, not design commentary. No prompt language or AI commentary in the UI.
 - Each section gets one job: explain, prove, deepen, or convert.
@@ -158,13 +156,11 @@ Select the module that fits what is being built. When working inside an existing
 ### Module B: Apps & Dashboards (Greenfield)
 
 **Default patterns:**
-
 - Calm surface hierarchy, strong typography and spacing, few colors, dense but readable information, minimal chrome.
 - Organize around: primary workspace, navigation, secondary context/inspector, one clear accent for action or state.
 - Cards only when the card is the interaction (clickable item, draggable unit, selectable option). If a panel can become plain layout without losing meaning, remove the card treatment.
 
 **Copy (utility, not marketing):**
-
 - Prioritize orientation, status, and action over promise, mood, or brand voice.
 - Section headings should say what the area is or what the user can do there. Good: "Plan status", "Search metrics". Bad: "Unlock Your Potential".
 - If a sentence could appear in a homepage hero, rewrite it until it sounds like product UI.
@@ -248,7 +244,7 @@ Use the first available option:
 
 One iteration. Take a screenshot, assess against the litmus checks, fix any glaring issues, and move on. Include the screenshot in the deliverable (PR description, conversation output, etc.).
 
-For iterative refinement beyond a single pass (multiple rounds of screenshot-assess-fix), see the @compound-engineering/ce-design-iterator agent.
+For iterative refinement beyond a single pass (multiple rounds of screenshot-assess-fix), see the `@compound-engineering/ce-design-iterator` agent.
 
 ---
 

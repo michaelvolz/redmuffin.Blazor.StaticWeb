@@ -3,6 +3,7 @@ name: ce-test-xcode
 description: "Build and test iOS apps on simulator using XcodeBuildMCP. Use after making iOS code changes, before creating a PR, or when verifying app behavior and checking for crashes on simulator."
 argument-hint: "[scheme name or 'current' to use default]"
 disable-model-invocation: true
+
 ---
 
 # Xcode Test Skill
@@ -23,7 +24,6 @@ Build, install, and test iOS apps on the simulator using XcodeBuildMCP. Captures
 Check that the XcodeBuildMCP MCP server is connected by calling its `list_simulators` tool.
 
 MCP tool names vary by platform:
-
 - Claude Code: `mcp__xcodebuildmcp__list_simulators`
 - Other platforms: use the equivalent MCP tool call for the `XcodeBuildMCP` server's `list_simulators` method
 
@@ -61,12 +61,10 @@ Wait for the simulator to be ready before proceeding.
 Call `build_ios_sim_app` with the project path and scheme name.
 
 **On failure:**
-
 - Capture build errors
 - Report to user with specific error details
 
 **On success:**
-
 - Note the built app path for installation
 - Proceed to step 4
 
@@ -84,7 +82,6 @@ For each key screen in the app:
 Call `take_screenshot` with the simulator UUID and a descriptive filename (e.g., `screen-home.png`).
 
 **Review screenshot for:**
-
 - UI elements rendered correctly
 - No error messages visible
 - Expected content displayed
@@ -92,7 +89,6 @@ Call `take_screenshot` with the simulator UUID and a descriptive filename (e.g.,
 
 **Check logs for errors:**
 Call `get_sim_logs` with the simulator UUID. Look for:
-
 - Crashes
 - Exceptions
 - Error-level log messages
@@ -105,13 +101,13 @@ Simulated taps (via XcodeBuildMCP or any simulator automation tool) do not trigg
 
 Pause for human input when testing touches flows that require device interaction.
 
-| Flow Type          | What to Ask                                                                                      |
-| ------------------ | ------------------------------------------------------------------------------------------------ |
-| Sign in with Apple | "Please complete Sign in with Apple on the simulator"                                            |
-| Push notifications | "Send a test push and confirm it appears"                                                        |
-| In-app purchases   | "Complete a sandbox purchase"                                                                    |
-| Camera/Photos      | "Grant permissions and verify camera works"                                                      |
-| Location           | "Allow location access and verify map updates"                                                   |
+| Flow Type | What to Ask |
+|-----------|-------------|
+| Sign in with Apple | "Please complete Sign in with Apple on the simulator" |
+| Push notifications | "Send a test push and confirm it appears" |
+| In-app purchases | "Complete a sandbox purchase" |
+| Camera/Photos | "Grant permissions and verify camera works" |
+| Location | "Allow location access and verify map updates" |
 | SwiftUI Text links | "Please tap on [element description] manually — automated taps cannot trigger inline text links" |
 
 Ask the user using the platform's blocking question tool: `AskUserQuestion` in Claude Code (call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded), `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension). In OpenCode, use the `question` tool (no `ToolSearch` pre-load needed — its schema is always available). Fall back to numbered options in chat only when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes) — not because a schema load is required. Never silently skip the question:
@@ -168,24 +164,21 @@ After all tests complete, present a summary:
 
 ### Screens Tested: [count]
 
-| Screen   | Status | Notes          |
-| -------- | ------ | -------------- |
-| Launch   | Pass   |                |
-| Home     | Pass   |                |
-| Settings | Fail   | Crash on tap   |
-| Profile  | Skip   | Requires login |
+| Screen | Status | Notes |
+|--------|--------|-------|
+| Launch | Pass | |
+| Home | Pass | |
+| Settings | Fail | Crash on tap |
+| Profile | Skip | Requires login |
 
 ### Console Errors: [count]
-
 - [List any errors found]
 
 ### Human Verifications: [count]
-
 - Sign in with Apple: Confirmed
 - Push notifications: Confirmed
 
 ### Failures: [count]
-
 - Settings screen - crash on navigation
 
 ### Result: [PASS / FAIL / PARTIAL]
@@ -202,15 +195,15 @@ After testing:
 
 ```bash
 # Test with default scheme
-skill({ name: "ce-test-xcode" })
+/ce-test-xcode
 
 # Test specific scheme
-skill({ name: "ce-test-xcode" }) MyApp-Debug
+/ce-test-xcode MyApp-Debug
 
 # Test after making changes
-skill({ name: "ce-test-xcode" }) current
+/ce-test-xcode current
 ```
 
-## Integration with ce-code-review
+## Integration with skill({ name: "ce-code-review" })
 
-When reviewing PRs that touch iOS code, the skill({ name: "ce-code-review" }) workflow can spawn an agent to run this skill, build on the simulator, test key screens, and check for crashes.
+When reviewing PRs that touch iOS code, the `skill({ name: "ce-code-review" })` workflow can spawn an agent to run this skill, build on the simulator, test key screens, and check for crashes.

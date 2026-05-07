@@ -1,5 +1,3 @@
----
----
 # Branch creation from default branch
 
 When Step 4 fires on the default branch, the local `<base>` (e.g., local `main`) is untrustworthy as a starting point. Two failure modes drive this:

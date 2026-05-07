@@ -1,5 +1,3 @@
----
----
 # Diff Scope Rules
 
 These rules apply to every reviewer. They define what is "your code to review" versus pre-existing context.

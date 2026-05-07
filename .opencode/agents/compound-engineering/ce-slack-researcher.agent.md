@@ -1,26 +1,27 @@
 ---
-
 name: ce-slack-researcher
 description: "Searches Slack for organizational context relevant to the current task -- decisions, constraints, and discussions that may not be documented elsewhere. Use when the user explicitly asks to search Slack for context during ideation, planning, or brainstorming. Always surfaces the workspace identity so the user can verify the correct Slack instance was searched."
+
 ---
+
 <examples>
 <example>
-Context: ce-ideate is running Phase 1 and dispatches research agents in parallel to gather grounding context.
+Context: skill({ name: "ce-ideate" }) is running Phase 1 and dispatches research agents in parallel to gather grounding context.
 user: "skill({ name: "ce-ideate" }) authentication improvements"
-assistant: "I'll dispatch the ce-slack-researcher agent to search Slack for organizational discussions about authentication that could ground the ideation."
-<commentary>The ce-ideate skill dispatches this agent as a conditional parallel Phase 1 scan alongside codebase context, learnings search, and (conditional) issue intelligence. The agent searches Slack for relevant org context about the focus area.</commentary>
+assistant: "I'll dispatch the @compound-engineering/ce-slack-researcher agent to search Slack for organizational discussions about authentication that could ground the ideation."
+<commentary>The skill({ name: "ce-ideate" }) skill dispatches this agent as a conditional parallel Phase 1 scan alongside codebase context, learnings search, and (conditional) issue intelligence. The agent searches Slack for relevant org context about the focus area.</commentary>
 </example>
 <example>
-Context: ce-plan is gathering context before structuring an implementation plan for a billing migration.
+Context: skill({ name: "ce-plan" }) is gathering context before structuring an implementation plan for a billing migration.
 user: "Plan the migration from Stripe to the new billing provider"
-assistant: "I'll dispatch the ce-slack-researcher agent to search Slack for discussions about the billing migration -- there may be decisions or constraints discussed there that aren't in the codebase."
-<commentary>The ce-plan skill dispatches this agent during Phase 1.1 Local Research to surface organizational context that might affect implementation decisions -- prior discussions about the migration, constraints from other teams, or decisions already made.</commentary>
+assistant: "I'll dispatch the @compound-engineering/ce-slack-researcher agent to search Slack for discussions about the billing migration -- there may be decisions or constraints discussed there that aren't in the codebase."
+<commentary>The skill({ name: "ce-plan" }) skill dispatches this agent during Phase 1.1 Local Research to surface organizational context that might affect implementation decisions -- prior discussions about the migration, constraints from other teams, or decisions already made.</commentary>
 </example>
 <example>
 Context: A developer wants to understand what the team has discussed about a topic before making changes.
 user: "What has the team discussed about moving to PostgreSQL?"
-assistant: "I'll use the ce-slack-researcher agent to search Slack for discussions about the PostgreSQL migration."
-<commentary>The user wants organizational context from Slack about a specific technical topic. The ce-slack-researcher agent searches across channels for relevant discussions, decisions, and constraints.</commentary>
+assistant: "I'll use the @compound-engineering/ce-slack-researcher agent to search Slack for discussions about the PostgreSQL migration."
+<commentary>The user wants organizational context from Slack about a specific technical topic. The @compound-engineering/ce-slack-researcher agent searches across channels for relevant discussions, decisions, and constraints.</commentary>
 </example>
 </examples>
 

@@ -1,5 +1,3 @@
----
----
 # Resolution Templates
 
 Choose the template matching the problem_type track (see `references/schema.yaml`).

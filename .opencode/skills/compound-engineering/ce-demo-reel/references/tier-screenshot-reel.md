@@ -1,5 +1,3 @@
----
----
 # Tier: Screenshot Reel
 
 Render styled terminal frames from text and stitch into an animated GIF. Each frame shows one step of a CLI demo (command + output).
@@ -31,7 +29,7 @@ All checks passed
 
 **Tips:**
 - Include the `$` prompt to show what the user types
-- Keep each frame under 80 characters wide for readability
+- Keep each frame under ~80 characters wide for readability
 - 3-5 frames is ideal -- enough to tell the story, not so many the GIF is huge
 - Strip unicode characters that silicon's default font can't render (checkmarks, fancy arrows)
 

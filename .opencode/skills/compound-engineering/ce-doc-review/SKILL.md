@@ -2,6 +2,7 @@
 name: ce-doc-review
 description: Review requirements or plan documents using parallel persona agents that surface role-specific issues. Use when a requirements document or plan document exists and the user wants to improve it.
 argument-hint: "[mode:headless] [path/to/document.md]"
+
 ---
 
 # Document Review
@@ -19,7 +20,7 @@ Check the skill arguments for `mode:headless`. Arguments may contain a document 
 
 If `mode:headless` is present, set **headless mode** for the rest of the workflow.
 
-**Headless mode** changes the interaction model, not the classification boundaries. ce-doc-review still applies the same judgment about which tier each finding belongs in. The only difference is how non-safe_auto findings are delivered:
+**Headless mode** changes the interaction model, not the classification boundaries. skill({ name: "ce-doc-review" }) still applies the same judgment about which tier each finding belongs in. The only difference is how non-safe_auto findings are delivered:
 
 - `safe_auto` fixes are applied silently (same as interactive)
 - `gated_auto`, `manual`, and FYI findings are returned as structured text for the caller to handle — no blocking-question prompts, no interactive routing
@@ -27,7 +28,11 @@ If `mode:headless` is present, set **headless mode** for the rest of the workflo
 
 The caller receives findings with their original classifications intact and decides what to do with them.
 
-Callers invoke headless mode by including `mode:headless` in the skill arguments. In Claude Code: `Skill("ce-doc-review", "mode:headless docs/plans/my-plan.md")`. In OpenCode, invoke `skill({ name: "ce-doc-review" })` and state the intent in conversation (e.g., "Run a headless review of docs/plans/my-plan.md") — the skill detects `mode:headless` and the document path from context. The path may also be passed implicitly: if the caller provides a document path in the same message, the skill reads it per the "If a document path is provided" branch in Phase 1.
+Callers invoke headless mode by including `mode:headless` in the skill arguments, e.g.:
+
+```
+Skill("ce-doc-review", "mode:headless docs/plans/my-plan.md")
+```
 
 If `mode:headless` is not present, the skill runs in its default interactive mode with the routing question, walk-through, and bulk-preview behaviors documented in `references/walkthrough.md` and `references/bulk-preview.md`.
 
@@ -37,12 +42,11 @@ If `mode:headless` is not present, the skill runs in its default interactive mod
 
 **If no document is specified (interactive mode):** Ask which document to review, or find the most recent in `docs/brainstorms/` or `docs/plans/` using a file-search/glob tool (e.g., Glob in Claude Code).
 
-**If no document is specified (headless mode):** Output "Review failed: headless mode requires a document path. Re-invoke with `skill({ name: \"ce-doc-review\" })` and provide the document path in conversation." without dispatching agents.
+**If no document is specified (headless mode):** Output "Review failed: headless mode requires a document path. Re-invoke with: Skill(\"skill({ name: "ce-doc-review" })\", \"mode:headless <path>\")" without dispatching agents.
 
 ### Classify Document Type
 
 After reading, classify the document:
-
 - **requirements** -- from `docs/brainstorms/`, focuses on what to build and why
 - **plan** -- from `docs/plans/`, focuses on how to build it with implementation details
 
@@ -52,36 +56,31 @@ Analyze the document content to determine which conditional personas to activate
 
 **product-lens** -- activate when the document makes challengeable claims about what to build and why, or when the proposed work carries strategic weight beyond the immediate problem. The system's users may be end users, developers, operators, maintainers, or any other audience -- the criteria are domain-agnostic. Check for either leg:
 
-_Leg 1 — Premise claims:_ The document stakes a position on what to build or why that a knowledgeable stakeholder could reasonably challenge -- not merely describing a task or restating known requirements:
-
+*Leg 1 — Premise claims:* The document stakes a position on what to build or why that a knowledgeable stakeholder could reasonably challenge -- not merely describing a task or restating known requirements:
 - Problem framing where the stated need is non-obvious or debatable, not self-evident from existing context
 - Solution selection where alternatives plausibly exist (implicit or explicit)
 - Prioritization decisions that explicitly rank what gets built vs deferred
 - Goal statements that predict specific user outcomes, not just restate constraints or describe deliverables
 
-_Leg 2 — Strategic weight:_ The proposed work could affect system trajectory, user perception, or competitive positioning, even if the premise is sound:
-
+*Leg 2 — Strategic weight:* The proposed work could affect system trajectory, user perception, or competitive positioning, even if the premise is sound:
 - Changes that shape how the system is perceived or what it becomes known for
 - Complexity or simplicity bets that affect adoption, onboarding, or cognitive load
 - Work that opens or closes future directions (path dependencies, architectural commitments)
 - Opportunity cost implications -- building this means not building something else
 
 **design-lens** -- activate when the document contains:
-
 - UI/UX references, frontend components, or visual design language
 - User flows, wireframes, screen/page/view mentions
 - Interaction descriptions (forms, buttons, navigation, modals)
 - References to responsive behavior or accessibility
 
 **security-lens** -- activate when the document contains:
-
 - Auth/authorization mentions, login flows, session management
 - API endpoints exposed to external clients
 - Data handling, PII, payments, tokens, credentials, encryption
 - Third-party integrations with trust boundary implications
 
 **scope-guardian** -- activate when the document contains:
-
 - Multiple priority tiers (P0/P1/P2, must-have/should-have/nice-to-have)
 - Large requirement count (>8 distinct requirements or implementation units)
 - Stretch goals, nice-to-haves, or "future work" sections
@@ -89,7 +88,6 @@ _Leg 2 — Strategic weight:_ The proposed work could affect system trajectory, 
 - Goals that don't clearly connect to requirements
 
 **adversarial** -- activate when the document contains:
-
 - More than 5 distinct requirements or implementation units
 - Explicit architectural or scope decisions with stated rationale
 - High-stakes domains (auth, payments, data migrations, external integrations)
@@ -112,30 +110,30 @@ Reviewing with:
 ### Build Agent List
 
 Always include:
-
-- @compound-engineering/ce-coherence-reviewer
-- @compound-engineering/ce-feasibility-reviewer
+- `@compound-engineering/ce-coherence-reviewer`
+- `@compound-engineering/ce-feasibility-reviewer`
 
 Add activated conditional personas:
-
-- @compound-engineering/ce-product-lens-reviewer
-- @compound-engineering/ce-design-lens-reviewer
-- @compound-engineering/ce-security-lens-reviewer
-- @compound-engineering/ce-scope-guardian-reviewer
-- @compound-engineering/ce-adversarial-document-reviewer
+- `@compound-engineering/ce-product-lens-reviewer`
+- `@compound-engineering/ce-design-lens-reviewer`
+- `@compound-engineering/ce-security-lens-reviewer`
+- `@compound-engineering/ce-scope-guardian-reviewer`
+- `@compound-engineering/ce-adversarial-document-reviewer`
 
 ### Dispatch
 
-Dispatch all agents in **parallel** using the platform's subagent primitive (e.g., `Agent` in Claude Code, `spawn_agent` in Codex, `subagent` in Pi via the `pi-subagents` extension). Omit the `mode` parameter so the user's configured permission settings apply. Each agent receives the prompt built from the subagent template included below with these variables filled:
+Dispatch agents using **bounded parallelism** with the platform's subagent primitive (e.g., `Agent` in Claude Code, `spawn_agent` in Codex, `subagent` in Pi via the `pi-subagents` extension). Omit the `mode` parameter so the user's configured permission settings apply. Respect the current harness's active-subagent limit: queue selected reviewers, dispatch only as many as the harness accepts, and fill freed slots as reviewers complete. Treat active-agent/thread/concurrency-limit spawn errors as backpressure, not reviewer failure: leave the reviewer queued and retry after a slot frees. Record a reviewer as failed only after a successful dispatch times out/fails, or when dispatch fails for a non-capacity reason.
 
-| Variable             | Value                                                                                                                                   |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `{persona_file}`     | Full content of the agent's markdown file                                                                                               |
-| `{schema}`           | Content of the findings schema included below                                                                                           |
-| `{document_type}`    | "requirements" or "plan" from Phase 1 classification                                                                                    |
-| `{document_path}`    | Path to the document                                                                                                                    |
-| `{document_content}` | Full text of the document                                                                                                               |
-| `{decision_primer}`  | Cumulative prior-round decisions in the current session, or an empty `<prior-decisions>` block on round 1. See "Decision primer" below. |
+Each agent receives the prompt built from the subagent template included below with these variables filled:
+
+| Variable | Value |
+|----------|-------|
+| `{persona_file}` | Full content of the agent's markdown file |
+| `{schema}` | Content of the findings schema included below |
+| `{document_type}` | "requirements" or "plan" from Phase 1 classification |
+| `{document_path}` | Path to the document |
+| `{document_content}` | Full text of the document |
+| `{decision_primer}` | Cumulative prior-round decisions in the current session, or an empty `<prior-decisions>` block on round 1. See "Decision primer" below. |
 
 Pass each agent the **full document** — do not split into sections.
 
@@ -170,15 +168,15 @@ Round 2 — applied (N entries):
 </prior-decisions>
 ```
 
-Each entry carries an `Evidence:` line because synthesis R29 (rejected-finding suppression) and R30 (fix-landed verification) both use an evidence-substring overlap check as part of their matching predicate — without the evidence snippet in the primer, the orchestrator cannot compute the `>50%` overlap test and has to fall back to fingerprint-only matching, which either re-surfaces rejected findings or suppresses too aggressively. The `{evidence_snippet}` is the first evidence quote from the finding, truncated to the first 120 characters (preserving whole words at the boundary) and with internal quotes escaped. If a finding has multiple evidence entries, use the first one; the rest live in the run artifact and are not needed for the overlap check.
+Each entry carries an `Evidence:` line because synthesis R29 (rejected-finding suppression) and R30 (fix-landed verification) both use an evidence-substring overlap check as part of their matching predicate — without the evidence snippet in the primer, the orchestrator cannot compute the `>50%` overlap test and has to fall back to fingerprint-only matching, which either re-surfaces rejected findings or suppresses too aggressively. The `{evidence_snippet}` is the first evidence quote from the finding, truncated to the first ~120 characters (preserving whole words at the boundary) and with internal quotes escaped. If a finding has multiple evidence entries, use the first one; the rest live in the run artifact and are not needed for the overlap check.
 
 Accumulate across all rounds in the current session. Skip, Defer, and Acknowledge actions all count as "rejected" for suppression purposes — each signals the user decided the finding wasn't worth actioning this round (Acknowledge is the no-fix-guard variant: the user saw a finding with no `suggested_fix`, chose not to defer or skip explicitly, and recorded acknowledgement instead; for round-to-round suppression that is semantically equivalent to Skip). Applied findings stay on the applied list so round-N+1 personas can verify fixes landed (see R30 in `references/synthesis-and-presentation.md`).
 
-Cross-session persistence is out of scope. A new invocation of ce-doc-review on the same document starts with a fresh round 1 and no carried primer, even if prior sessions deferred findings into the document's Open Questions section.
+Cross-session persistence is out of scope. A new invocation of skill({ name: "ce-doc-review" }) on the same document starts with a fresh round 1 and no carried primer, even if prior sessions deferred findings into the document's Open Questions section.
 
 **Error handling:** If an agent fails or times out, proceed with findings from agents that completed. Note the failed agent in the Coverage section. Do not block the entire review on a single agent failure.
 
-**Dispatch limit:** Even at maximum (7 agents), use parallel dispatch. These are document reviewers with bounded scope reading a single document -- parallel is safe and fast.
+**Dispatch limit:** Even at maximum (7 agents), use bounded parallel dispatch. If the harness cap is lower than the selected team size, queue the remainder and launch them as active reviewers complete.
 
 ## Phases 3-5: Synthesis, Presentation, and Next Action
 

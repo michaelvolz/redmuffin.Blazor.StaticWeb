@@ -1,5 +1,3 @@
----
----
 # Synthesis Summary
 
 **Synthesis ≠ requirements doc.** The synthesis is NOT a preview, draft, or substitute for the requirements doc — it's the scope checkpoint that doc-write consumes as input. The requirements doc itself is written in Phase 3 from the confirmed synthesis. Both the synthesis and the requirements doc stay scope-only — implementation detail (file paths, code shapes, exact error wording) is downstream (ce-plan's job), not the requirements doc. If the synthesis reads like a doc preview, it's misshaped — re-cut to scope-only.
@@ -91,7 +89,7 @@ Each Stated and Inferred bullet should be affirmable or rejectable by the user *
 
 | Doc-body in synthesis (wrong) | Decision-level (right) |
 |---|---|
-| Manifest discovery walks `/printing-press/manuscripts/<api-slug>/` and picks the newest run containing `*-absorb-manifest.md` under `research/` | Discovery rule: most-recent prior run for that API |
+| Manifest discovery walks `~/printing-press/manuscripts/<api-slug>/` and picks the newest run containing `*-absorb-manifest.md` under `research/` | Discovery rule: most-recent prior run for that API |
 | Recorded in `.printing-press.json` under `absorb_source_run` | Provenance: each run records which prior manifest it reused |
 | Skill prints "Reusing absorb manifest from run \<run-id\>" | Visible reuse signal in the transcript when the flag fires |
 

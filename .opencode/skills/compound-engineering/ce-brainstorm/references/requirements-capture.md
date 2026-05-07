@@ -1,5 +1,3 @@
----
----
 # Requirements Capture
 
 This content is loaded when Phase 3 begins — after the collaborative dialogue (Phases 0-2) has produced durable decisions worth preserving.
@@ -197,7 +195,7 @@ topic: <kebab-case-topic>
 ## Size heuristics
 
 - If a capability-named group has only one requirement, ungroup it.
-- If total requirements exceed 15-20, stop and ask whether this is one brainstorm or several.
+- If total requirements exceed ~15-20, stop and ask whether this is one brainstorm or several.
 - If a requirement can be fully described in a single short bullet with no sub-items, it probably doesn't need grouping at all.
 - For Lightweight docs with only 1-3 simple requirements, plain bullets without R-IDs are acceptable.
 
@@ -214,7 +212,7 @@ Include a visual aid when the requirements would be significantly easier to unde
 
 Before finalizing:
 
-- What would skill({ name: "ce-plan" }) still have to invent if this brainstorm ended now?
+- What would `ce-plan` still have to invent if this brainstorm ended now?
 - Does every Standard/Deep requirement have either an observable behavior or a stated reason it is structural?
 - Do Success Criteria cover both human outcome and downstream-agent handoff quality?
 - If Actors are named, is each actor mentioned in the problem represented in at least one requirement, flow, or scope boundary?

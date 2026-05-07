@@ -3,9 +3,7 @@
 
 Usage: cat <session.jsonl> | python3 extract-skeleton.py
 
-Auto-detects platform (Claude Code, Codex, Cursor, or OpenCode) from the JSONL
-structure. OpenCode sessions route through the Claude handler (export format is
-Claude-compatible).
+Auto-detects platform (Claude Code, Codex, or Cursor) from the JSONL structure.
 Extracts:
   - User messages (text only, no tool results)
   - Assistant text (no thinking/reasoning blocks)
@@ -304,8 +302,12 @@ for line in sys.stdin:
     if not detected and len(buffer) <= 10:
         try:
             obj = json.loads(line)
-            if "_opencode" in obj:
-                detected = "claude"  # OpenCode temp-export, format is Claude-compatible
+            if (
+                obj.get("role") in ("user", "assistant")
+                and "agent" in obj
+                and "model" in obj
+            ):
+                detected = "opencode"
             elif obj.get("type") in ("user", "assistant"):
                 detected = "claude"
             elif obj.get("type") in (
@@ -320,7 +322,13 @@ for line in sys.stdin:
         except (json.JSONDecodeError, KeyError):
             pass
 
-handlers = {"claude": handle_claude, "codex": handle_codex, "cursor": handle_cursor}
+# OpenCode temp-export bridge produces Claude Code-compatible JSONL
+handlers = {
+    "claude": handle_claude,
+    "codex": handle_codex,
+    "opencode": handle_claude,
+    "cursor": handle_cursor,
+}
 handler = handlers.get(detected, handle_codex)
 
 for line in buffer:

@@ -1,5 +1,3 @@
----
----
 # Code Review Output Template
 
 Use this **exact format** when presenting synthesized review findings. Findings are grouped by severity, not by reviewer.

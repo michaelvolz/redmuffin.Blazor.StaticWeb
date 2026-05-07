@@ -1,5 +1,3 @@
----
----
 <overview>
 Agent-native architecture has consequences for how products feel, not just how they're built. This document covers progressive disclosure of complexity, discovering latent demand through agent usage, and designing approval flows that match stakes and reversibility.
 </overview>

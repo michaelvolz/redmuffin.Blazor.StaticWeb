@@ -1,5 +1,3 @@
----
----
 # Tier: Static Screenshots
 
 Capture individual PNG screenshots. No animation, no stitching.

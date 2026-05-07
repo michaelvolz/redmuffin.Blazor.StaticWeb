@@ -1,5 +1,3 @@
----
----
 # Frontend - DHH Rails Style
 
 <turbo_patterns>
@@ -390,7 +388,7 @@ Vanilla CSS with modern features, no preprocessors.
 }
 ```
 
-**60 minimal utilities** vs Tailwind's hundreds.
+**~60 minimal utilities** vs Tailwind's hundreds.
 
 **Modern features used:**
 - `@starting-style` for enter animations

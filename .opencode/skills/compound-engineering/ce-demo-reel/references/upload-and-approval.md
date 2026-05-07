@@ -1,5 +1,3 @@
----
----
 # Upload and Approval
 
 Upload a temporary preview for the user to review, then either promote to permanent hosting or save locally based on user choice.
@@ -20,13 +18,13 @@ For multiple files (static screenshots tier), upload each file separately.
 
 ## Step 2: Destination Choice
 
-Present the preview URL to the user and ask how to handle the evidence. Use the platform's blocking question tool: `AskUserQuestion` in Claude Code (call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded), `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension). In OpenCode, use the `question` tool (no `ToolSearch` pre-load needed — its schema is always available). Fall back to presenting options in chat only when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes) — not because a schema load is required. Never silently skip the question.
+Present the preview URL to the user and ask how to handle the evidence. Use the platform's blocking question tool: `AskUserQuestion` in Claude Code (call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded), `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension). In OpenCode, use the `question` tool (no `ToolSearch` pre-load needed — its schema is always available).  Fall back to presenting options in chat only when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes) — not because a schema load is required. Never silently skip the question.
 
 **Question:** "Evidence preview (1h link): [PREVIEW_URL]. Where should the evidence go?"
 
 **Options:**
 1. **Upload to catbox (public URL)** -- promote to permanent hosting for PR embedding
-2. **Save locally** -- save to a stable OS-temp path (/tmp/compound-engineeringskill({ name: "ce-demo-reel" })/)
+2. **Save locally** -- save to a stable OS-temp path (/tmp/compound-engineering/ce-demo-reel/)
 3. **Recapture** -- provide instructions on what to change
 4. **Proceed without evidence** -- set evidence to null and proceed
 

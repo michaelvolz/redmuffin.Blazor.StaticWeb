@@ -1,5 +1,3 @@
----
----
 # Tier: Browser Reel
 
 Capture 3-5 browser screenshots at key UI states and stitch into an animated GIF.

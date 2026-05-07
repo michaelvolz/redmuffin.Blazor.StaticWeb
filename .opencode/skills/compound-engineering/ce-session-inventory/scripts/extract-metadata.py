@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Extract session metadata from Claude Code, Codex, and Cursor JSONL files.
+"""Extract session metadata from Claude Code, Codex, Cursor, and OpenCode JSONL files.
 
 Batch mode (preferred — one invocation for all files):
   python3 extract-metadata.py /path/to/dir/*.jsonl
@@ -58,6 +58,29 @@ def try_codex(lines):
     return meta if meta else None
 
 
+def try_opencode(lines):
+    """Detection signal (Section 9.2): top-level 'role' key AND 'agent'/'model' keys.
+    Distinguished from Cursor which has 'role' but no 'agent'/'model'."""
+    for line in lines:
+        try:
+            obj = json.loads(line.strip())
+            if (
+                obj.get("role") in ("user", "assistant")
+                and "agent" in obj
+                and "model" in obj
+            ):
+                return {
+                    "platform": "opencode",
+                    "cwd": obj.get("directory", ""),
+                    "ts": obj.get("timestamp", ""),
+                    "session": obj.get("sessionId", ""),
+                    "model": obj.get("model", ""),
+                }
+        except (json.JSONDecodeError, KeyError):
+            pass
+    return None
+
+
 def try_cursor(lines):
     """Cursor agent transcripts: role-based entries, no timestamps or metadata fields."""
     for line in lines:
@@ -71,32 +94,11 @@ def try_cursor(lines):
     return None
 
 
-def try_opencode(lines):
-    """OpenCode sessions exported via temp-export bridge.
-    Detected by _opencode marker in the first user message."""
-    for line in lines:
-        try:
-            obj = json.loads(line.strip())
-            if "_opencode" in obj:
-                meta = obj["_opencode"]
-                return {
-                    "platform": "opencode",
-                    "session": meta.get("session", ""),
-                    "cwd": meta.get("directory", ""),
-                    "ts": obj.get("timestamp", ""),
-                    "model": meta.get("model", ""),
-                    "agent": meta.get("agent", ""),
-                }
-        except (json.JSONDecodeError, KeyError):
-            pass
-    return None
-
-
 def extract_from_lines(lines):
     return (
-        try_opencode(lines)
-        or try_claude(lines)
+        try_claude(lines)
         or try_codex(lines)
+        or try_opencode(lines)
         or try_cursor(lines)
     )
 

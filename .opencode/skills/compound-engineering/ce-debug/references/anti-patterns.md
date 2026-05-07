@@ -1,5 +1,3 @@
----
----
 # Debugging Anti-Patterns
 
 Read this before forming hypotheses. These patterns describe the most common ways debugging goes wrong. They feel productive in the moment — that is what makes them dangerous.

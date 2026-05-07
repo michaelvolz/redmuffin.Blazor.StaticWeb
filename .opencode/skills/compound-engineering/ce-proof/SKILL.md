@@ -6,6 +6,7 @@ allowed-tools:
   - Read
   - Write
   - WebFetch
+
 ---
 
 # Proof - Collaborative Markdown Editor
@@ -29,7 +30,7 @@ Set the display name once per doc session by posting to presence with the `X-Age
 Human-in-the-loop iteration over an existing local markdown file: upload to Proof, let the user annotate in Proof's web UI, ingest feedback as in-thread replies and tracked edits, and sync the final doc back to disk. Two entry points, identical mechanics — load `references/hitl-review.md` for the full loop spec (invocation contract, mark classification, idempotent ingest passes, exception-based terminal reporting, end-sync atomic write) in either case:
 
 - **Direct user request** — a bare user phrase naming a local markdown file and asking to iterate collaboratively via Proof: "share this to proof so we can iterate", "iterate with proof on this doc", "HITL this file with me", "let's get feedback on this in proof", "open this in proof editor so I can review". The file is whichever markdown the user just created, edited, or referenced; if ambiguous, ask which file. This is a first-class entry point — do not require an upstream caller.
-- **Upstream skill handoff** — skill({ name: "ce-brainstorm" }), skill({ name: "ce-ideate" }), or skill({ name: "ce-plan" }) finishes a draft and hands it off for human review before the next phase, passing the file path and title explicitly.
+- **Upstream skill handoff** — `skill({ name: "ce-brainstorm" })`, `skill({ name: "ce-ideate" })`, or `skill({ name: "ce-plan" })` finishes a draft and hands it off for human review before the next phase, passing the file path and title explicitly.
 
 ## Web API (Primary for Sharing)
 
@@ -44,7 +45,6 @@ curl -X POST https://www.proofeditor.ai/share/markdown \
 ```
 
 **Response format:**
-
 ```json
 {
   "slug": "abc123",
@@ -74,7 +74,6 @@ All operations go to `POST https://www.proofeditor.ai/api/agent/{slug}/ops`
 **Note:** Use the `/api/agent/{slug}/ops` path (from `_links` in create response), NOT `/api/documents/{slug}/ops`.
 
 **Authentication for protected docs:**
-
 - Header: `x-share-token: <token>` or `Authorization: Bearer <token>`
 - Token comes from the URL parameter: `?token=xxx` or the `accessToken` from create response
 - Header: `X-Agent-Id: ai:compound-engineering` (required for presence; include on ops for consistent attribution)
@@ -91,74 +90,41 @@ All operations go to `POST https://www.proofeditor.ai/api/agent/{slug}/ops`
 - `ANCHOR_NOT_FOUND`, `ANCHOR_AMBIGUOUS` — pre-commit, but the `quote` no longer uniquely matches content. Re-reading does not help by itself; the caller must tighten or regenerate the anchor before retrying. Do not auto-retry blindly.
 - `INVALID_OPERATIONS`, `INVALID_REQUEST`, `INVALID_REF`, `INVALID_BLOCK_MARKDOWN`, `INVALID_RANGE`, `INVALID_MARKDOWN`, 422 — pre-commit, but the payload is wrong. Do not retry blindly; fix the payload first.
 - `COLLAB_SYNC_FAILED`, `REWRITE_BARRIER_FAILED`, `PROJECTION_STALE`, `INTERNAL_ERROR`, 5xx, network timeout, and any **202 with `collab.status: "pending"`** — the canonical doc may have been written even though the call looks like a failure. Before any retry, re-read `/state` and check whether the intended mark/edit is already present; only retry if it isn't.
-- `Idempotency-Key` (see below) protects against double-apply _on the same request_ (e.g., TCP-level retry). It does not help if you build a new request body and send a second call — that is a new logical write with a new key.
+- `Idempotency-Key` (see below) protects against double-apply *on the same request* (e.g., TCP-level retry). It does not help if you build a new request body and send a second call — that is a new logical write with a new key.
 
 Duplicate-mark incidents usually come from retrying a `comment.add` or `suggestion.add` after a timeout without verifying. When in doubt: re-read, diff, then decide.
 
 **`Idempotency-Key` header** is recommended on every mutation for safe automation retries; required when `/state.contract.idempotencyRequired` is true. Use the same key when retrying the exact same logical write (same payload) so the server can collapse the retry. A new key means a new write — even if the payload is identical.
 
 **Comment on text:**
-
 ```json
-{
-  "type": "comment.add",
-  "quote": "text to comment on",
-  "by": "ai:compound-engineering",
-  "text": "Your comment here",
-  "baseToken": "<token>"
-}
+{"type": "comment.add", "quote": "text to comment on", "by": "ai:compound-engineering", "text": "Your comment here", "baseToken": "<token>"}
 ```
 
 **Reply to a comment:**
-
 ```json
-{
-  "type": "comment.reply",
-  "markId": "<id>",
-  "by": "ai:compound-engineering",
-  "text": "Reply text",
-  "baseToken": "<token>"
-}
+{"type": "comment.reply", "markId": "<id>", "by": "ai:compound-engineering", "text": "Reply text", "baseToken": "<token>"}
 ```
 
 **Resolve / unresolve a comment:**
-
 ```json
 {"type": "comment.resolve", "markId": "<id>", "by": "ai:compound-engineering", "baseToken": "<token>"}
 {"type": "comment.unresolve", "markId": "<id>", "by": "ai:compound-engineering", "baseToken": "<token>"}
 ```
 
 **Suggest a replacement (pending — user must accept/reject):**
-
 ```json
-{
-  "type": "suggestion.add",
-  "kind": "replace",
-  "quote": "original text",
-  "by": "ai:compound-engineering",
-  "content": "replacement text",
-  "baseToken": "<token>"
-}
+{"type": "suggestion.add", "kind": "replace", "quote": "original text", "by": "ai:compound-engineering", "content": "replacement text", "baseToken": "<token>"}
 ```
 
 **Suggest and immediately apply (tracked but committed — user can reject to revert):**
-
 ```json
-{
-  "type": "suggestion.add",
-  "kind": "replace",
-  "quote": "original text",
-  "by": "ai:compound-engineering",
-  "content": "replacement text",
-  "status": "accepted",
-  "baseToken": "<token>"
-}
+{"type": "suggestion.add", "kind": "replace", "quote": "original text", "by": "ai:compound-engineering", "content": "replacement text", "status": "accepted", "baseToken": "<token>"}
 ```
 
 `status: "accepted"` creates the suggestion mark and commits the change in one call. The mark persists as an audit trail with per-edit attribution and a reject-to-revert affordance. Works with `kind: "insert" | "delete" | "replace"`.
 
 **Accept or reject an existing suggestion:**
-
 ```json
 {"type": "suggestion.accept", "markId": "<id>", "by": "ai:compound-engineering", "baseToken": "<token>"}
 {"type": "suggestion.reject", "markId": "<id>", "by": "ai:compound-engineering", "baseToken": "<token>"}
@@ -167,18 +133,11 @@ Duplicate-mark incidents usually come from retrying a `comment.add` or `suggesti
 `suggestion.resolve` is not supported — use accept or reject instead.
 
 **Bulk rewrite (whole-doc replacement):**
-
 ```json
-{
-  "type": "rewrite.apply",
-  "content": "full new markdown",
-  "by": "ai:compound-engineering",
-  "baseToken": "<token>"
-}
+{"type": "rewrite.apply", "content": "full new markdown", "by": "ai:compound-engineering", "baseToken": "<token>"}
 ```
 
 **Block-level edits via `/edit/v2`** (separate endpoint, separate shape):
-
 ```bash
 curl -X POST "https://www.proofeditor.ai/api/agent/{slug}/edit/v2" \
   -H "Content-Type: application/json" \
@@ -197,13 +156,13 @@ curl -X POST "https://www.proofeditor.ai/api/agent/{slug}/edit/v2" \
 
 Per-op body shape (singular `block` vs plural `blocks` is load-bearing — sending the wrong one returns 422):
 
-| op                      | body fields                                              |
-| ----------------------- | -------------------------------------------------------- |
-| `replace_block`         | `ref`, `block: {markdown}`                               |
-| `insert_after`          | `ref`, `blocks: [{markdown}, ...]`                       |
-| `insert_before`         | `ref`, `blocks: [{markdown}, ...]`                       |
-| `delete_block`          | `ref`                                                    |
-| `replace_range`         | `fromRef`, `toRef`, `blocks: [{markdown}, ...]`          |
+| op | body fields |
+|---|---|
+| `replace_block` | `ref`, `block: {markdown}` |
+| `insert_after` | `ref`, `blocks: [{markdown}, ...]` |
+| `insert_before` | `ref`, `blocks: [{markdown}, ...]` |
+| `delete_block` | `ref` |
+| `replace_range` | `fromRef`, `toRef`, `blocks: [{markdown}, ...]` |
 | `find_replace_in_block` | `ref`, `find`, `replace`, `occurrence: "first" \| "all"` |
 
 Read `/snapshot` to get stable block `ref` IDs. `operations` commits atomically — either every op lands or none do — so one `/edit/v2` call can batch dozens of block edits safely and efficiently (see the bulk-sweep guidance in `references/hitl-review.md` Phase 2.4).
@@ -221,29 +180,28 @@ Read `/snapshot` to get stable block `ref` IDs. `operations` commits atomically 
 Requires Proof.app running. Bridge at `http://localhost:9847`.
 
 **Required headers:**
-
 - `X-Agent-Id: claude` (identity for presence)
 - `Content-Type: application/json`
 - `X-Window-Id: <uuid>` (when multiple docs open)
 
 ### Key Endpoints
 
-| Method | Endpoint                 | Purpose                                                                    |
-| ------ | ------------------------ | -------------------------------------------------------------------------- |
-| GET    | `/windows`               | List open documents                                                        |
-| GET    | `/state`                 | Read markdown, cursor, word count                                          |
-| GET    | `/marks`                 | List all suggestions and comments                                          |
-| POST   | `/marks/suggest-replace` | `{"quote":"old","by":"ai:compound-engineering","content":"new"}`           |
-| POST   | `/marks/suggest-insert`  | `{"quote":"after this","by":"ai:compound-engineering","content":"insert"}` |
-| POST   | `/marks/suggest-delete`  | `{"quote":"delete this","by":"ai:compound-engineering"}`                   |
-| POST   | `/marks/comment`         | `{"quote":"text","by":"ai:compound-engineering","text":"comment"}`         |
-| POST   | `/marks/reply`           | `{"markId":"<id>","by":"ai:compound-engineering","text":"reply"}`          |
-| POST   | `/marks/resolve`         | `{"markId":"<id>","by":"ai:compound-engineering"}`                         |
-| POST   | `/marks/accept`          | `{"markId":"<id>"}`                                                        |
-| POST   | `/marks/reject`          | `{"markId":"<id>"}`                                                        |
-| POST   | `/rewrite`               | `{"content":"full markdown","by":"ai:compound-engineering"}`               |
-| POST   | `/presence`              | `{"status":"reading","summary":"..."}`                                     |
-| GET    | `/events/pending`        | Poll for user actions                                                      |
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| GET | `/windows` | List open documents |
+| GET | `/state` | Read markdown, cursor, word count |
+| GET | `/marks` | List all suggestions and comments |
+| POST | `/marks/suggest-replace` | `{"quote":"old","by":"ai:compound-engineering","content":"new"}` |
+| POST | `/marks/suggest-insert` | `{"quote":"after this","by":"ai:compound-engineering","content":"insert"}` |
+| POST | `/marks/suggest-delete` | `{"quote":"delete this","by":"ai:compound-engineering"}` |
+| POST | `/marks/comment` | `{"quote":"text","by":"ai:compound-engineering","text":"comment"}` |
+| POST | `/marks/reply` | `{"markId":"<id>","by":"ai:compound-engineering","text":"reply"}` |
+| POST | `/marks/resolve` | `{"markId":"<id>","by":"ai:compound-engineering"}` |
+| POST | `/marks/accept` | `{"markId":"<id>"}` |
+| POST | `/marks/reject` | `{"markId":"<id>"}` |
+| POST | `/rewrite` | `{"content":"full markdown","by":"ai:compound-engineering"}` |
+| POST | `/presence` | `{"status":"reading","summary":"..."}` |
+| GET | `/events/pending` | Poll for user actions |
 
 ### Presence Statuses
 
@@ -340,7 +298,7 @@ curl -s "https://www.proofeditor.ai/api/agent/$SLUG/state" \
 REVISION=$(jq -r '.revision' "$STATE_TMP")
 
 # Atomic write: stream .markdown bytes directly to a temp sibling, then rename.
-TMP="${LOCAL}.proof-sync.$$"
+TMP="${LOCAL}.proof-sync.$"
 jq -jr '.markdown' "$STATE_TMP" > "$TMP" && mv "$TMP" "$LOCAL"
 rm "$STATE_TMP"
 ```

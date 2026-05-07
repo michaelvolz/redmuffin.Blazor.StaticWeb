@@ -1,6 +1,7 @@
 ---
 name: ce-gemini-imagegen
 description: This skill should be used when generating and editing images using the Gemini API (Nano Banana Pro). It applies when creating images from text prompts, editing existing images, applying style transfers, generating logos with text, creating stickers, product mockups, or any image generation/manipulation task. Supports text-to-image, image editing, multi-turn refinement, and composition from multiple reference images.
+
 ---
 
 # Gemini Image Generation (Nano Banana Pro)
@@ -9,26 +10,23 @@ Generate and edit images using Google's Gemini API. The environment variable `GE
 
 ## Default Model
 
-| Model                        | Resolution | Best For                       |
-| ---------------------------- | ---------- | ------------------------------ |
-| `gemini-3-pro-image-preview` | 1K-4K      | All image generation (default) |
+| Model | Resolution | Best For |
+|-------|------------|----------|
+| `gemini-3-pro-image-preview` | 1K-4K | All image generation (default) |
 
 **Note:** Always use this Pro model. Only use a different model if explicitly requested.
 
 ## Quick Reference
 
 ### Default Settings
-
 - **Model:** `gemini-3-pro-image-preview`
 - **Resolution:** 1K (default, options: 1K, 2K, 4K)
 - **Aspect Ratio:** 1:1 (default)
 
 ### Available Aspect Ratios
-
 `1:1`, `2:3`, `3:2`, `3:4`, `4:3`, `4:5`, `5:4`, `9:16`, `16:9`, `21:9`
 
 ### Available Resolutions
-
 `1K` (default), `2K`, `4K`
 
 ## Core API Pattern
@@ -146,33 +144,24 @@ response = chat.send_message("Make the text bolder and add a blue gradient")
 ## Prompting Best Practices
 
 ### Photorealistic Scenes
-
 Include camera details: lens type, lighting, angle, mood.
-
 > "A photorealistic close-up portrait, 85mm lens, soft golden hour light, shallow depth of field"
 
 ### Stylized Art
-
 Specify style explicitly:
-
 > "A kawaii-style sticker of a happy red panda, bold outlines, cel-shading, white background"
 
 ### Text in Images
-
 Be explicit about font style and placement:
-
 > "Create a logo with text 'Daily Grind' in clean sans-serif, black and white, coffee bean motif"
 
 ### Product Mockups
-
 Describe lighting setup and surface:
-
 > "Studio-lit product photo on polished concrete, three-point softbox setup, 45-degree angle"
 
 ## Advanced Features
 
 ### Google Search Grounding
-
 Generate images based on real-time data:
 
 ```python
@@ -187,7 +176,6 @@ response = client.models.generate_content(
 ```
 
 ### Multiple Reference Images (Up to 14)
-
 Combine elements from multiple sources:
 
 ```python

@@ -1,5 +1,3 @@
----
----
 # Experiment Worker Prompt Template
 
 This template is used by the orchestrator to dispatch each experiment to a subagent or Codex. Variable substitution slots are filled at spawn time.

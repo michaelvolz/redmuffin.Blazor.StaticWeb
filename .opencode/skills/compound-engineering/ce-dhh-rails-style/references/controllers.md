@@ -1,5 +1,3 @@
----
----
 # Controllers - DHH Rails Style
 
 <rest_mapping>

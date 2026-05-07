@@ -1,6 +1,4 @@
----
----
-# skill({ name: "ce-optimize" })
+# `ce-optimize`
 
 Run iterative optimization loops for problems where you can try multiple variants and score them with the same measurement setup.
 

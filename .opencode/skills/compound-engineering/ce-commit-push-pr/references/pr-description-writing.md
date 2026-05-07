@@ -1,8 +1,6 @@
----
----
 # PR Description Writing
 
-How to resolve the right commit range and compose a PR title and body. Loaded on demand by skill({ name: "ce-commit-push-pr" }) callers — do not load earlier.
+How to resolve the right commit range and compose a PR title and body. Loaded on demand by `ce-commit-push-pr` callers — do not load earlier.
 
 Step Pre-A resolves the commit range, diff, and (for existing PRs) the current PR body. Steps A through H assume Pre-A's outputs are in context.
 
@@ -115,7 +113,7 @@ Decide whether to include an evidence section in the body.
 **Decision logic:**
 
 1. **Existing PR body contains a `## Demo` or `## Screenshots` section with image embeds:** preserve it verbatim unless the user's focus asks to refresh or remove it. Include the preserved block in the body.
-2. **No existing evidence block:** omit the evidence section entirely unless the caller already captured evidence and passed it in (e.g., a skill({ name: "ce-demo-reel" }) URL).
+2. **No existing evidence block:** omit the evidence section entirely unless the caller already captured evidence and passed it in (e.g., a `ce-demo-reel` URL).
 
 Do not label test output as "Demo" or "Screenshots". Place any preserved evidence block before the Compound Engineering badge.
 
@@ -139,10 +137,10 @@ Assess size (files, diff volume) and complexity (design decisions, trade-offs, c
 
 | Change profile | Description approach |
 |---|---|
-| Small + simple (typo, config, dep bump) | 1-2 sentences, no headers. Under 300 characters. |
-| Small + non-trivial (bugfix, behavioral change) | Short narrative, 3-5 sentences. No headers unless two distinct concerns. |
+| Small + simple (typo, config, dep bump) | 1-2 sentences, no headers. Under ~300 characters. |
+| Small + non-trivial (bugfix, behavioral change) | Short narrative, ~3-5 sentences. No headers unless two distinct concerns. |
 | Medium feature or refactor | Narrative frame (before/after/scope), then what changed and why. Call out design decisions. |
-| Large or architecturally significant | Narrative frame + up to 3-5 design-decision callouts + 1-2 sentence test summary + key docs links. Target 100 lines, cap 150. For PRs with many mechanisms, use a Summary-level table to list them; do NOT create an H3 subsection per mechanism. Reviewers scrutinize decisions, not inventories — the diff and spec files carry the detail. If you find yourself writing 10+ subsections, consolidate to a table. |
+| Large or architecturally significant | Narrative frame + up to 3-5 design-decision callouts + 1-2 sentence test summary + key docs links. Target ~100 lines, cap ~150. For PRs with many mechanisms, use a Summary-level table to list them; do NOT create an H3 subsection per mechanism. Reviewers scrutinize decisions, not inventories — the diff and spec files carry the detail. If you find yourself writing 10+ subsections, consolidate to a table. |
 | Performance improvement | Include before/after measurements if available. Markdown table works well. |
 
 When in doubt, shorter is better. Match description weight to change weight. Large PRs need MORE selectivity, not MORE content.
@@ -268,7 +266,7 @@ Assemble the body in this order:
 | Codex | (omit logo param) | `000000` |
 | Gemini CLI | `googlegemini` | `4285F4` |
 
-**Model slug:** Replace spaces with underscores. Append context window and thinking level in parentheses if known. Examples: `Opus_4.6_(1M,_Extended_Thinking)`, `Sonnet_4.6_(200K)`, `Gemini_3.1_Pro`.
+**Model slug:** Replace spaces with underscores. Append context window and thinking level in parentheses if known. URL-encode literal parens as `%28` and `%29` — unencoded `(` and `)` inside a markdown image URL break some commit-message parsers (notably release-please's conventional-commits parser, which fails the whole commit on encountering them and silently skips it from the changelog). Examples: `Opus_4.6_%281M,_Extended_Thinking%29`, `Sonnet_4.6_%28200K%29`, `Gemini_3.1_Pro`.
 
 ---
 

@@ -1,5 +1,3 @@
----
----
 # `.claude/launch.json` schema
 
 Polish reads `.claude/launch.json` at the repo root to resolve the dev-server start command. The schema is a subset of VS Code's `launch.json` format — chosen because Claude Code, Cursor, and VS Code all understand it and because users often already have one for editor integration.

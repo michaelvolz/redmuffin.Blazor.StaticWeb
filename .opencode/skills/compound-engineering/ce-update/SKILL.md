@@ -10,6 +10,7 @@ description: |
 disable-model-invocation: true
 ce_platforms: [claude]
 allowed-tools: Bash(bash *upstream-version.sh), Bash(bash *currently-loaded-version.sh), Bash(bash *marketplace-name.sh)
+
 ---
 
 # Check Plugin Version
@@ -28,13 +29,13 @@ between releases).
 
 Run these three scripts in parallel via the Bash tool. Each prints a single
 line of output; capture the values for the decision logic below. Use
-`!`echo $HOME`/.config/opencode/skills/compound-engineering` so the path resolves correctly in both `claude --plugin-dir`
+`${CLAUDE_SKILL_DIR}` so the path resolves correctly in both `claude --plugin-dir`
 local-development sessions and standard marketplace-cached installs.
 
 ```bash
-bash "!`echo $HOME`/.config/opencode/skills/compound-engineering/scripts/upstream-version.sh"
-bash "!`echo $HOME`/.config/opencode/skills/compound-engineering/scripts/currently-loaded-version.sh"
-bash "!`echo $HOME`/.config/opencode/skills/compound-engineering/scripts/marketplace-name.sh"
+bash "${CLAUDE_SKILL_DIR}/scripts/upstream-version.sh"
+bash "${CLAUDE_SKILL_DIR}/scripts/currently-loaded-version.sh"
+bash "${CLAUDE_SKILL_DIR}/scripts/marketplace-name.sh"
 ```
 
 `scripts/upstream-version.sh` reads `plugin.json` on `main` via `gh api`. It
@@ -42,8 +43,8 @@ prints the version string, or the sentinel `__CE_UPDATE_VERSION_FAILED__` if
 `gh` is unavailable or rate-limited.
 
 `scripts/currently-loaded-version.sh` and `scripts/marketplace-name.sh` parse
-`!`echo $HOME`/.config/opencode/skills/compound-engineering` against the marketplace-cache layout
-`/.claude/plugins/cache/<marketplace>/compound-engineering/<version>/skillsskill({ name: "ce-update" })`.
+`${CLAUDE_SKILL_DIR}` against the marketplace-cache layout
+`~/.config/opencode/plugins/cache/<marketplace>/compound-engineering/<version>/skillsskill({ name: "ce-update" })`.
 They print the version segment / marketplace segment, or the sentinel
 `__CE_UPDATE_NOT_MARKETPLACE__` if the path doesn't match (typical for
 `claude --plugin-dir` local development).
@@ -64,7 +65,7 @@ platform (this skill is Claude Code-only because it relies on the plugin
 harness cache layout). Tell the user:
 
 > "Skill is loaded from outside the marketplace cache at
-> `/.claude/plugins/cache/`. This is normal when using
+> `~/.config/opencode/plugins/cache/`. This is normal when using
 > `claude --plugin-dir` for local development. No action for this session.
 > Your marketplace install (if any) is unaffected — run `skill({ name: "ce-update" })` in a
 > regular Claude Code session (no `--plugin-dir`) to check that cache."
@@ -82,11 +83,9 @@ Then stop.
 > "compound-engineering is on **v{currently_loaded}** but **v{upstream}** is available.
 >
 > Update with:
->
 > ```
 > claude plugin update compound-engineering@{marketplace_name}
 > ```
->
 > Then restart Claude Code to apply."
 
 The `claude plugin update` command ships with Claude Code itself and updates

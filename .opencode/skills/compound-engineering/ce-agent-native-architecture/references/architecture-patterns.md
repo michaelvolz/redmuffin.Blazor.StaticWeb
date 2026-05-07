@@ -1,5 +1,3 @@
----
----
 <overview>
 Architectural patterns for building agent-native systems. These patterns emerge from the five core principles: Parity, Granularity, Composability, Emergent Capability, and Improvement Over Time.
 

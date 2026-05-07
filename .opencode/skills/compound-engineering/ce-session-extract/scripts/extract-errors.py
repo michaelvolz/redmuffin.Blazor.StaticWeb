@@ -4,9 +4,7 @@
 Usage: cat <session.jsonl> | python3 extract-errors.py
 
 Auto-detects platform from the JSONL structure.
-OpenCode sessions route through the Claude Code handler (export format is
-Claude-compatible). Cursor agent transcripts do not log tool results, so no
-errors can be extracted from Cursor sessions.
+Note: Cursor agent transcripts do not log tool results, so no errors can be extracted.
 Finds failed tool calls / commands and outputs them with timestamps.
 Outputs a _meta line at the end with processing stats.
 """
@@ -86,8 +84,12 @@ for line in sys.stdin:
     if not detected and len(buffer) <= 10:
         try:
             obj = json.loads(line)
-            if "_opencode" in obj:
-                detected = "claude"  # OpenCode temp-export, format is Claude-compatible
+            if (
+                obj.get("role") in ("user", "assistant")
+                and "agent" in obj
+                and "model" in obj
+            ):
+                detected = "opencode"
             elif obj.get("type") in ("user", "assistant"):
                 detected = "claude"
             elif obj.get("type") in (
@@ -108,7 +110,12 @@ def handle_noop(obj):
     pass
 
 
-handlers = {"claude": handle_claude, "codex": handle_codex, "cursor": handle_noop}
+handlers = {
+    "claude": handle_claude,
+    "codex": handle_codex,
+    "opencode": handle_claude,
+    "cursor": handle_noop,
+}
 handler = handlers.get(detected, handle_noop)
 
 for line in buffer:

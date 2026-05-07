@@ -1,5 +1,3 @@
----
----
 # Deepening Workflow
 
 This file contains the confidence-check execution path (5.3.3-5.3.7). Load it only when the deepening gate at 5.3.2 determines that deepening is warranted.
@@ -101,43 +99,43 @@ Use fully-qualified agent names inside Task calls.
 **Deterministic Section-to-Agent Mapping:**
 
 **Requirements / Open Questions classification**
-- @compound-engineering/ce-spec-flow-analyzer for missing user flows, edge cases, and handoff gaps
-- @compound-engineering/ce-repo-research-analyst (Scope: `architecture, patterns`) for repo-grounded patterns, conventions, and implementation reality checks
+- `ce-spec-flow-analyzer` for missing user flows, edge cases, and handoff gaps
+- `ce-repo-research-analyst` (Scope: `architecture, patterns`) for repo-grounded patterns, conventions, and implementation reality checks
 
 **Context & Research / Sources & References gaps**
-- @compound-engineering/ce-learnings-researcher for institutional knowledge and past solved problems
-- @compound-engineering/ce-framework-docs-researcher for official framework or library behavior
-- @compound-engineering/ce-best-practices-researcher for current external patterns and industry guidance
-- Add @compound-engineering/ce-git-history-analyzer only when historical rationale or prior art is materially missing
+- `ce-learnings-researcher` for institutional knowledge and past solved problems
+- `ce-framework-docs-researcher` for official framework or library behavior
+- `ce-best-practices-researcher` for current external patterns and industry guidance
+- Add `ce-git-history-analyzer` only when historical rationale or prior art is materially missing
 
 **Key Technical Decisions**
-- @compound-engineering/ce-architecture-strategist for design integrity, boundaries, and architectural tradeoffs
-- Add @compound-engineering/ce-framework-docs-researcher or @compound-engineering/ce-best-practices-researcher when the decision needs external grounding beyond repo evidence
+- `ce-architecture-strategist` for design integrity, boundaries, and architectural tradeoffs
+- Add `ce-framework-docs-researcher` or `ce-best-practices-researcher` when the decision needs external grounding beyond repo evidence
 
 **High-Level Technical Design**
-- @compound-engineering/ce-architecture-strategist for validating that the technical design accurately represents the intended approach and identifying gaps
-- @compound-engineering/ce-repo-research-analyst (Scope: `architecture, patterns`) for grounding the technical design in existing repo patterns and conventions
-- Add @compound-engineering/ce-best-practices-researcher when the technical design involves a DSL, API surface, or pattern that benefits from external validation
+- `ce-architecture-strategist` for validating that the technical design accurately represents the intended approach and identifying gaps
+- `ce-repo-research-analyst` (Scope: `architecture, patterns`) for grounding the technical design in existing repo patterns and conventions
+- Add `ce-best-practices-researcher` when the technical design involves a DSL, API surface, or pattern that benefits from external validation
 
 **Implementation Units / Verification**
-- @compound-engineering/ce-repo-research-analyst (Scope: `patterns`) for concrete file targets, patterns to follow, and repo-specific sequencing clues
-- @compound-engineering/ce-pattern-recognition-specialist for consistency, duplication risks, and alignment with existing patterns
-- Add @compound-engineering/ce-spec-flow-analyzer when sequencing depends on user flow or handoff completeness
+- `ce-repo-research-analyst` (Scope: `patterns`) for concrete file targets, patterns to follow, and repo-specific sequencing clues
+- `ce-pattern-recognition-specialist` for consistency, duplication risks, and alignment with existing patterns
+- Add `ce-spec-flow-analyzer` when sequencing depends on user flow or handoff completeness
 
 **System-Wide Impact**
-- @compound-engineering/ce-architecture-strategist for cross-boundary effects, interface surfaces, and architectural knock-on impact
+- `ce-architecture-strategist` for cross-boundary effects, interface surfaces, and architectural knock-on impact
 - Add the specific specialist that matches the risk:
-  - @compound-engineering/ce-performance-oracle for scalability, latency, throughput, and resource-risk analysis
-  - @compound-engineering/ce-security-sentinel for auth, validation, exploit surfaces, and security boundary review
-  - @compound-engineering/ce-data-integrity-guardian for migrations, persistent state safety, consistency, and data lifecycle risks
+  - `ce-performance-oracle` for scalability, latency, throughput, and resource-risk analysis
+  - `ce-security-sentinel` for auth, validation, exploit surfaces, and security boundary review
+  - `ce-data-integrity-guardian` for migrations, persistent state safety, consistency, and data lifecycle risks
 
 **Risks & Dependencies / Operational Notes**
 - Use the specialist that matches the actual risk:
-  - @compound-engineering/ce-security-sentinel for security, auth, privacy, and exploit risk
-  - @compound-engineering/ce-data-integrity-guardian for persistent data safety, constraints, and transaction boundaries
-  - @compound-engineering/ce-data-migration-expert for migration realism, backfills, and production data transformation risk
-  - @compound-engineering/ce-deployment-verification-agent for rollout checklists, rollback planning, and launch verification
-  - @compound-engineering/ce-performance-oracle for capacity, latency, and scaling concerns
+  - `ce-security-sentinel` for security, auth, privacy, and exploit risk
+  - `ce-data-integrity-guardian` for persistent data safety, constraints, and transaction boundaries
+  - `ce-data-migration-expert` for migration realism, backfills, and production data transformation risk
+  - `ce-deployment-verification-agent` for rollout checklists, rollback planning, and launch verification
+  - `ce-performance-oracle` for capacity, latency, and scaling concerns
 
 **Agent Prompt Shape:**
 
@@ -248,4 +246,4 @@ Do **not**:
 If research reveals a product-level ambiguity that should change behavior or scope:
 - Do not silently decide it here
 - Record it under `Open Questions`
-- Recommend skill({ name: "ce-brainstorm" }) if the gap is truly product-defining
+- Recommend `ce-brainstorm` if the gap is truly product-defining

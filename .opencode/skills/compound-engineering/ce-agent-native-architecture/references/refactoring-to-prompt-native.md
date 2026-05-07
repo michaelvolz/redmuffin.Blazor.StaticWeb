@@ -1,5 +1,3 @@
----
----
 <overview>
 How to refactor existing agent code to follow prompt-native principles. The goal: move behavior from code into prompts, and simplify tools into primitives.
 </overview>

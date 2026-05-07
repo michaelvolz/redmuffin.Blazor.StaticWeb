@@ -16,17 +16,15 @@ Captures problem solutions while context is fresh, creating structured documenta
 ## Usage
 
 ```bash
-skill({ name: "ce-compound" })                    # Document the most recent fix
-skill({ name: "ce-compound" }) [brief context]    # Provide additional context hint
+/ce-compound                    # Document the most recent fix
+/ce-compound [brief context]    # Provide additional context hint
 ```
 
 ## Pre-resolved context
 
-**Repo name (pre-resolved):** !`git rev-parse --path-format=absolute --git-common-dir 2>/dev/null | sed -E 's|/\.git/?$||; s|.*/||'`
+**Git branch (pre-resolved):** !`git rev-parse --abbrev-ref HEAD 2>/dev/null || true`
 
-**Git branch (pre-resolved):** !`git rev-parse --abbrev-ref HEAD 2>/dev/null`
-
-If the lines above resolved to plain values (a folder name like `my-repo` and a branch name like `feat/my-branch`), pass them into the Session Historian dispatch in Phase 1 so the agent does not waste a turn deriving them. If they still contain backtick command strings or are empty, omit them from the dispatch and let the agent derive them at runtime.
+If the line above resolved to a plain branch name (like `feat/my-branch`), pass it into the Session Historian dispatch in Phase 1 so the agent does not waste a turn deriving it. If it still contains a backtick command string or is empty, omit it and let the agent derive it at runtime.
 
 ## Support Files
 
@@ -40,28 +38,14 @@ When spawning subagents, pass the relevant file contents into the task prompt so
 
 ## Execution Strategy
 
-Present the user with two options before proceeding, using the platform's blocking question tool: `AskUserQuestion` in Claude Code (call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded), `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension). In OpenCode, use the `question` tool (no `ToolSearch` pre-load needed — its schema is always available). Fall back to presenting options in chat only when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes) — not because a schema load is required. Never silently skip the question.
+Call the `question` tool now with these options. Never output this as text.
 
-```
-1. Full (recommended) — the complete compound workflow. Researches,
-   cross-references, and reviews your solution to produce documentation
-   that compounds your team's knowledge.
+- Full (recommended) — the complete compound workflow. Researches, cross-references, and reviews your solution to produce documentation that compounds your team's knowledge.
+- Lightweight — same documentation, single pass. Faster and uses fewer tokens, but won't detect duplicates or cross-reference existing docs. Best for simple fixes or long sessions nearing context limits.
 
-2. Lightweight — same documentation, single pass. Faster and uses
-   fewer tokens, but won't detect duplicates or cross-reference
-   existing docs. Best for simple fixes or long sessions nearing
-   context limits.
-```
+Do NOT pre-select a mode. Wait for the user's choice before proceeding.
 
-Do NOT pre-select a mode. Do NOT skip this prompt. Wait for the user's choice before proceeding.
-
-**If the user chooses Full**, ask one follow-up question before proceeding. Detect which harness is running (Claude Code, Codex, or Cursor) and ask:
-
-```
-Would you also like to search your [harness name] session history
-for relevant knowledge to help the Compound process? This adds
-time and token usage.
-```
+**If the user chooses Full**, ask one follow-up question before proceeding. Fire the `question` tool: "Would you also like to search your OpenCode session history for relevant knowledge to help the Compound process? This adds time and token usage." Options: Yes / No.
 
 If the user says yes, dispatch the Session Historian in Phase 1. If no, skip it. Do not ask this in lightweight mode.
 
@@ -103,7 +87,7 @@ Launch research subagents. Each returns text data to the orchestrator.
 **Dispatch order:**
 
 - Launch `Context Analyzer`, `Solution Extractor`, and `Related Docs Finder` in parallel (background)
-- Then dispatch @compound-engineering/ce-session-historian in foreground — it reads session files outside the working directory that background agents may not have access to
+- Then dispatch `@compound-engineering/ce-session-historian` in foreground — it reads session files outside the working directory that background agents may not have access to
 - The foreground dispatch runs while the background agents work, adding no wall-clock time
 
 <parallel_tasks>
@@ -181,8 +165,8 @@ Prefer the `gh` CLI for searching related issues: `gh issue list --search "<keyw
 #### 4. **Session Historian** (foreground, after launching the above — only if the user opted in)
 
 - **Skip entirely** if the user declined session history in the follow-up question
-- Dispatched as @compound-engineering/ce-session-historian
-- Dispatch in **foreground** — this agent reads session files outside the working directory (`/.claude/projects/`, `/.codex/sessions/`, `/.cursor/projects/`) which background agents may not have access to
+- Dispatched as `@compound-engineering/ce-session-historian`
+- Dispatch in **foreground** — this agent reads session files outside the working directory (`~/.config/opencode/projects/`, `~/.codex/sessions/`, `~/.cursor/projects/`) which background agents may not have access to
 - Omit the `mode` parameter so the user's configured permission settings apply
 - Dispatch on the mid-tier model (e.g., `model: "sonnet"` in Claude Code) — the synthesis feeds into compound assembly and doesn't need frontier reasoning
 
@@ -202,7 +186,7 @@ Prefer the `gh` CLI for searching related issues: `gh issue list --search "<keyw
   - Related context
   ```
 
-Do not append additional context blocks, exclusion lists, or topic-keyword bullets — verbose dispatch prompts give the agent license to keep widening the search and rapidly compound wall time. If the agent needs keyword search, it owns that decision via the `--keyword` mode on skill({ name: "ce-session-inventory" }).
+Do not append additional context blocks, exclusion lists, or topic-keyword bullets — verbose dispatch prompts give the agent license to keep widening the search and rapidly compound wall time. If the agent needs keyword search, it owns that decision via the `--keyword` mode on `skill({ name: "ce-session-inventory" })`.
 
 - Returns: structured digest of findings from prior sessions, or "no relevant prior sessions" if none found
 
@@ -246,9 +230,9 @@ When creating a new doc, preserve the section order from `assets/resolution-temp
 
 After writing the new learning, decide whether this new solution is evidence that older docs should be refreshed.
 
-skill({ name: "ce-compound-refresh" }) is **not** a default follow-up. Use it selectively when the new learning suggests an older learning or pattern doc may now be inaccurate.
+`skill({ name: "ce-compound-refresh" })` is **not** a default follow-up. Use it selectively when the new learning suggests an older learning or pattern doc may now be inaccurate.
 
-It makes sense to invoke skill({ name: "ce-compound-refresh" }) when one or more of these are true:
+It makes sense to invoke `skill({ name: "ce-compound-refresh" })` when one or more of these are true:
 
 1. A related learning or pattern doc recommends an approach that the new fix now contradicts
 2. The new fix clearly supersedes an older documented solution
@@ -257,7 +241,7 @@ It makes sense to invoke skill({ name: "ce-compound-refresh" }) when one or more
 5. The Related Docs Finder surfaced high-confidence refresh candidates in the same problem space
 6. The Related Docs Finder reported **moderate overlap** with an existing doc — there may be consolidation opportunities that benefit from a focused review
 
-It does **not** make sense to invoke skill({ name: "ce-compound-refresh" }) when:
+It does **not** make sense to invoke `skill({ name: "ce-compound-refresh" })` when:
 
 1. No related docs were found
 2. Related docs still appear consistent with the new learning
@@ -266,11 +250,11 @@ It does **not** make sense to invoke skill({ name: "ce-compound-refresh" }) when
 
 Use these rules:
 
-- If there is **one obvious stale candidate**, invoke skill({ name: "ce-compound-refresh" }) with a narrow scope hint after the new learning is written
+- If there is **one obvious stale candidate**, invoke `skill({ name: "ce-compound-refresh" })` with a narrow scope hint after the new learning is written
 - If there are **multiple candidates in the same area**, ask the user whether to run a targeted refresh for that module, category, or pattern set
-- If context is already tight or you are in lightweight mode, do not expand into a broad refresh automatically; instead recommend skill({ name: "ce-compound-refresh" }) as the next step with a scope hint
+- If context is already tight or you are in lightweight mode, do not expand into a broad refresh automatically; instead recommend `skill({ name: "ce-compound-refresh" })` as the next step with a scope hint
 
-When invoking or recommending skill({ name: "ce-compound-refresh" }), be explicit about the argument to pass. Prefer the narrowest useful scope:
+When invoking or recommending `skill({ name: "ce-compound-refresh" })`, be explicit about the argument to pass. Prefer the narrowest useful scope:
 
 - **Specific file** when one learning or pattern doc is the likely stale artifact
 - **Module or component name** when several related docs may need review
@@ -286,7 +270,7 @@ Examples:
 
 A single scope hint may still expand to multiple related docs when the change is cross-cutting within one domain, category, or pattern area.
 
-Do not invoke skill({ name: "ce-compound-refresh" }) without an argument unless the user explicitly wants a broad sweep.
+Do not invoke `skill({ name: "ce-compound-refresh" })` without an argument unless the user explicitly wants a broad sweep.
 
 Always capture the new learning first. Refresh is a targeted maintenance follow-up, not a prerequisite for documentation.
 
@@ -325,7 +309,7 @@ After the learning is written and the refresh decision is made, check whether th
    `docs/solutions/` — documented solutions to past problems (bugs, best practices, workflow patterns), organized by category with YAML frontmatter (`module`, `tags`, `problem_type`). Relevant when implementing or debugging in documented areas.
    ```
 
-   c. In full mode, explain to the user why this matters — agents working in this repo (including fresh sessions, other tools, or collaborators without the plugin) won't know to check `docs/solutions/` unless the instruction file surfaces it. Show the proposed change and where it would go, then use the platform's blocking question tool to get consent before making the edit: `AskUserQuestion` in Claude Code (call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded), `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension). In OpenCode, use the `question` tool (no `ToolSearch` pre-load needed — its schema is always available). Fall back to presenting the proposal in chat only when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes) — not because a schema load is required. Never silently skip the question. In lightweight mode, output a one-liner note and move on
+   c. In full mode, explain to the user why this matters — agents working in this repo (including fresh sessions, other tools, or collaborators without the plugin) won't know to check `docs/solutions/` unless the instruction file surfaces it. Show the proposed change and where it would go, then use the platform's blocking question tool to get consent before making the edit: `AskUserQuestion` in Claude Code (call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded), `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension). Fall back to presenting the proposal in chat only when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes) — not because a schema load is required. Never silently skip the question. In lightweight mode, output a one-liner note and move on
 
 ### Phase 3: Optional Enhancement
 
@@ -335,13 +319,13 @@ After the learning is written and the refresh decision is made, check whether th
 
 Based on problem type, optionally invoke specialized agents to review the documentation:
 
-- **performance_issue** → @compound-engineering/ce-performance-oracle
-- **security_issue** → @compound-engineering/ce-security-sentinel
-- **database_issue** → @compound-engineering/ce-data-integrity-guardian
-- Any code-heavy issue → always run @compound-engineering/ce-code-simplicity-reviewer, and additionally run the kieran reviewer that matches the repo's primary stack:
-  - Ruby/Rails → also run @compound-engineering/ce-kieran-rails-reviewer
-  - Python → also run @compound-engineering/ce-kieran-python-reviewer
-  - TypeScript/JavaScript → also run @compound-engineering/ce-kieran-typescript-reviewer
+- **performance_issue** → `@compound-engineering/ce-performance-oracle`
+- **security_issue** → `@compound-engineering/ce-security-sentinel`
+- **database_issue** → `@compound-engineering/ce-data-integrity-guardian`
+- Any code-heavy issue → always run `@compound-engineering/ce-code-simplicity-reviewer`, and additionally run the kieran reviewer that matches the repo's primary stack:
+  - Ruby/Rails → also run `@compound-engineering/ce-kieran-rails-reviewer`
+  - Python → also run `@compound-engineering/ce-kieran-python-reviewer`
+  - TypeScript/JavaScript → also run `@compound-engineering/ce-kieran-typescript-reviewer`
   - Other stacks → no kieran reviewer needed
 
 </parallel_tasks>
@@ -380,12 +364,12 @@ a brief mention helps all agents discover these learnings.
 
 Note: This was created in lightweight mode. For richer documentation
 (cross-references, detailed prevention strategies, specialized reviews),
-re-run skill({ name: "ce-compound" }) in a fresh session.
+re-run /ce-compound in a fresh session.
 ```
 
 **No subagents are launched. No parallel tasks. One file written.**
 
-In lightweight mode, the overlap check is skipped (no Related Docs Finder subagent). This means lightweight mode may create a doc that overlaps with an existing one. That is acceptable — skill({ name: "ce-compound-refresh" }) will catch it later. Only suggest skill({ name: "ce-compound-refresh" }) if there is an obvious narrow refresh target. Do not broaden into a large refresh sweep from a lightweight session.
+In lightweight mode, the overlap check is skipped (no Related Docs Finder subagent). This means lightweight mode may create a doc that overlaps with an existing one. That is acceptable — `skill({ name: "ce-compound-refresh" })` will catch it later. Only suggest `skill({ name: "ce-compound-refresh" })` if there is an obvious narrow refresh target. Do not broaden into a large refresh sweep from a lightweight session.
 
 ---
 
@@ -534,22 +518,22 @@ Based on problem type, these agents can enhance documentation:
 
 ### Code Quality & Review
 
-- **ce-kieran-rails-reviewer**: Reviews code examples for Rails best practices
-- **ce-kieran-python-reviewer**: Reviews code examples for Python best practices
-- **ce-kieran-typescript-reviewer**: Reviews code examples for TypeScript best practices
-- **ce-code-simplicity-reviewer**: Ensures solution code is minimal and clear
-- **ce-pattern-recognition-specialist**: Identifies anti-patterns or repeating issues
+- **@compound-engineering/ce-kieran-rails-reviewer**: Reviews code examples for Rails best practices
+- **@compound-engineering/ce-kieran-python-reviewer**: Reviews code examples for Python best practices
+- **@compound-engineering/ce-kieran-typescript-reviewer**: Reviews code examples for TypeScript best practices
+- **@compound-engineering/ce-code-simplicity-reviewer**: Ensures solution code is minimal and clear
+- **@compound-engineering/ce-pattern-recognition-specialist**: Identifies anti-patterns or repeating issues
 
 ### Specific Domain Experts
 
-- **ce-performance-oracle**: Analyzes performance_issue category solutions
-- **ce-security-sentinel**: Reviews security_issue solutions for vulnerabilities
-- **ce-data-integrity-guardian**: Reviews database_issue migrations and queries
+- **@compound-engineering/ce-performance-oracle**: Analyzes performance_issue category solutions
+- **@compound-engineering/ce-security-sentinel**: Reviews security_issue solutions for vulnerabilities
+- **@compound-engineering/ce-data-integrity-guardian**: Reviews database_issue migrations and queries
 
 ### Enhancement & Research
 
-- **ce-best-practices-researcher**: Enriches solution with industry best practices
-- **ce-framework-docs-researcher**: Links to framework/library documentation references
+- **@compound-engineering/ce-best-practices-researcher**: Enriches solution with industry best practices
+- **@compound-engineering/ce-framework-docs-researcher**: Links to framework/library documentation references
 
 ### When to Invoke
 

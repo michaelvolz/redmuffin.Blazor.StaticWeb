@@ -2,15 +2,16 @@
 name: ce-setup
 description: "Diagnose and configure compound-engineering environment. Checks CLI dependencies, plugin version, and repo-local config. Offers guided installation for missing tools. Use when troubleshooting missing tools, verifying setup, or before onboarding."
 disable-model-invocation: true
+
 ---
 
 # Compound Engineering Setup
 
 ## Interaction Method
 
-Ask the user each question below using the platform's blocking question tool: `AskUserQuestion` in Claude Code (call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded), `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension). In OpenCode, use the `question` tool (no `ToolSearch` pre-load needed — its schema is always available). Fall back to presenting each question as a numbered list in chat only when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes) — not because a schema load is required. Never silently skip or auto-configure. For multiSelect questions, accept comma-separated numbers (e.g. `1, 3`).
+Ask the user each question below using the platform's blocking question tool: `AskUserQuestion` in Claude Code (call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded), `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension). In OpenCode, use the `question` tool (no `ToolSearch` pre-load needed — its schema is always available).  Fall back to presenting each question as a numbered list in chat only when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes) — not because a schema load is required. Never silently skip or auto-configure. For multiSelect questions, accept comma-separated numbers (e.g. `1, 3`).
 
-Interactive setup for compound-engineering — diagnoses environment health, cleans obsolete repo-local CE config, and helps configure required tools. Review agent selection is handled automatically by skill({ name: "ce-code-review" }); project-specific review guidance belongs in `CLAUDE.md` or `AGENTS.md`.
+Interactive setup for compound-engineering — diagnoses environment health, cleans obsolete repo-local CE config, and helps configure required tools. Review agent selection is handled automatically by `skill({ name: "ce-code-review" })`; project-specific review guidance belongs in `CLAUDE.md` or `AGENTS.md`.
 
 ## Phase 1: Diagnose
 
@@ -42,9 +43,9 @@ Display the script's output to the user.
 
 ### Step 3: Evaluate Results
 
-**Plugin root (pre-resolved):** !`echo "!`echo $HOME`/.config/opencode"`
+**Plugin root (pre-resolved):** !`echo "${CLAUDE_PLUGIN_ROOT}"`
 
-If the line above resolved to an absolute path (starts with `/` and contains no `${`), this is a Claude Code session and `skill({ name: "ce-update" })` is available. Anything else — empty, the literal `!`echo $HOME`/.config/opencode` token, or an unresolved command string like `echo "!`echo $HOME`/.config/opencode"` left in place by a non-Claude harness that doesn't process `!` pre-resolution — means this is not Claude Code; omit any `skill({ name: "ce-update" })` references from output.
+If the line above resolved to an absolute path (starts with `/` and contains no `${`), this is a Claude Code session and `skill({ name: "ce-update" })` is available. Anything else — empty, the literal `${CLAUDE_PLUGIN_ROOT}` token, or an unresolved command string like `echo "${CLAUDE_PLUGIN_ROOT}"` left in place by a non-Claude harness that doesn't process `!` pre-resolution — means this is not Claude Code; omit any `skill({ name: "ce-update" })` references from output.
 
 After the diagnostic report, check whether:
 
@@ -63,7 +64,7 @@ If everything is installed, no repo-local cleanup is needed, and `.compound-engi
     Skills: 🟢 ast-grep
     Config: ✅
 
-    Run skill({ name: "ce-setup" }) anytime to re-check.
+    Run /ce-setup anytime to re-check.
 ```
 
 If this is a Claude Code session (the **Plugin root** above resolved to a non-empty path), append to the message: "Run skill({ name: "ce-update" }) to grab the latest plugin version."
@@ -142,7 +143,7 @@ For each selected dependency, in order:
 
 2. **If approved:** Run the install command using a shell execution tool. After the command completes, verify installation:
    - For a CLI tool, run the dependency's check command (e.g., `command -v agent-browser`).
-   - For an agent skill, prefer `npx --yes skills list --global --json | jq -r '.[].name' | grep -qx <skill-name>` when `npx` is available; otherwise fall back to checking that `/.claude/skills/<skill-name>` exists (file, directory, or symlink).
+   - For an agent skill, prefer `npx --yes skills list --global --json | jq -r '.[].name' | grep -qx <skill-name>` when `npx` is available; otherwise fall back to checking that `~/.config/opencode/skills/<skill-name>`, `~/.agents/skills/<skill-name>`, or `~/.codex/skills/<skill-name>` exists (file, directory, or symlink).
 
 3. **If verification succeeds:** Report success.
 
@@ -158,7 +159,7 @@ Display a brief summary:
     Installed: agent-browser, gh, jq
     Skipped:   rtk
 
-    Run skill({ name: "ce-setup" }) anytime to re-check.
+    Run /ce-setup anytime to re-check.
 ```
 
 If this is a Claude Code session (per platform detection in Step 3), append: "Run skill({ name: "ce-update" }) to grab the latest plugin version."
