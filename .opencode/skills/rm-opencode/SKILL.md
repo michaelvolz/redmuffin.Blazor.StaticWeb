@@ -116,6 +116,21 @@ Any new command protections or safety rules go in this file.
 - Compound Engineering skills: `~/.config/opencode/skills/compound-engineering/<name>/SKILL.md`
 - Agents: `~/.config/opencode/agents/<name>.md` (flat)
 
+### Skill Discovery Depth
+
+OpenCode uses the globstar pattern `{skill,skills}/**/SKILL.md` (source:
+`packages/opencode/src/skill/index.ts`). The `**` matches **zero or more**
+directory levels. There is **no depth limit** — skills are discovered
+recursively. Any nesting is valid:
+
+- `skills/my-skill/SKILL.md` — 1 level, works
+- `skills/namespace/my-skill/SKILL.md` — 2 levels, works (e.g., compound-engineering)
+- `skills/ns/category/my-skill/SKILL.md` — 3 levels, works
+- Arbitrary depth: all discovered
+
+The docs state `skills/*/SKILL.md` as simplified notation, not a literal
+one-level glob. Treat the docs as approximate; the code uses `**`.
+
 ### Naming
 
 - The `name:` field in SKILL.md frontmatter must match the directory name
@@ -159,7 +174,7 @@ directory name.
 
 ## Key Docs
 
-- Conversion spec: `~/.config/opencode/docs/specs/2026-05-01-ce-opencode-conversion-spec.md`
+- Conversion spec: `~/docs/specs/2026-05-01-compound-engineering-opencode-conversion-spec.md`
 - Session scripts plan: `~/.config/opencode/docs/plans/2026-05-01-001-feat-opencode-session-scripts-plan.md`
 
 ---
