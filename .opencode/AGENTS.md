@@ -30,6 +30,30 @@ data/code protection):
 - I will explicitly say "proceed" or "go" when action can start
 - If unsure whether something is a question or a request, ask for clarification first
 
+## Research Means Online Research (CRITICAL)
+
+When I ask you to "research" something, I expect you to find new
+information that is not already in your training data, not on my local
+filesystem, and not something you can derive or guess. Thorough online
+research is the only acceptable response to a research request. Do not
+rely on built-in knowledge, do not treat local code as a substitute,
+and do not present educated guesses as findings. If the question needs
+external sources, go find them — nothing else qualifies as research.
+
+## Question Tool — OpenCode Quirk (CRITICAL)
+
+On some provider/model combinations (confirmed: deepseek-v4-pro via
+opencode-go), the `question` tool is available at the function-call layer
+but absent from the prose tool listing in the system prompt. Do NOT conclude
+the tool is unavailable based on the text listing alone.
+
+- **When a skill instructs you to use the `question` tool:** attempt the
+  call directly. The call itself is the detection mechanism.
+- **If the call errors** (tool not found, schema mismatch): fall back to
+  numbered options in chat text.
+- **If the call succeeds**: you have the tool — use it for all subsequent
+  questions in that session.
+
 ## context-mode — MANDATORY routing rules
 
 You have context-mode MCP tools available. These rules are NOT optional —

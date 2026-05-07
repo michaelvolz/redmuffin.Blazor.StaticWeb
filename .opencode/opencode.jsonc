@@ -14,7 +14,12 @@
             "**/publish/**",
         ],
     },
-    "plugin": ["opencode-snippets", "cc-safety-net", "context-mode", "opencode-bytheway"],
+    "plugin": [
+        "opencode-snippets",
+        "cc-safety-net",
+        "context-mode",
+        "opencode-bytheway"
+    ],
     "permission": {
         // IMPORTANT: The following long deny list is INTENTIONALLY duplicated
         // in read, edit, glob, grep, and bash for maximum defense-in-depth.
@@ -236,6 +241,7 @@
             "~/.local/share/applications/**": "deny",
         },
         "lsp": "allow",
+        "question": "allow",
         "bash": {
             "*": "ask",
             "dotnet *": "allow",
@@ -251,7 +257,10 @@
             "rtk *": "allow",
             "head *": "allow",
             "echo *": "allow",
+            "sort *": "allow",
             "tail *": "allow",
+            "read *": "allow",
+            "wc *": "allow",
             "**/.env*": "deny",
             "**/secrets*": "deny",
             "~/.ssh/**": "deny",
@@ -306,12 +315,31 @@
     },
     "formatter": {
         "dotnet-format": {
-            "command": ["dotnet", "format", "--include", "$FILE"],
-            "extensions": [".cs", ".razor"],
+            "command": [
+                "dotnet",
+                "format",
+                "--include",
+                "$FILE"
+            ],
+            "extensions": [
+                ".cs",
+                ".razor"
+            ],
         },
         "prettier": {
-            "command": ["prettier", "--write", "$FILE"],
-            "extensions": [".scss", ".css", ".json", ".md", ".yml", ".yaml"],
+            "command": [
+                "prettier",
+                "--write",
+                "$FILE"
+            ],
+            "extensions": [
+                ".scss",
+                ".css",
+                ".json",
+                ".md",
+                ".yml",
+                ".yaml"
+            ],
         },
     },
     "mcp": {
@@ -360,7 +388,9 @@
         },
         "context-mode": {
             "type": "local",
-            "command": ["context-mode"],
+            "command": [
+                "context-mode"
+            ],
             "enabled": true,
         },
     },
@@ -713,8 +743,26 @@
     "provider": {
         "deepseek": {
             "options": {
-                "baseURL": "http://127.0.0.1:9000/v1",
+                "baseURL": "http://127.0.0.1:9000/v1"
             },
+            "models": {
+                "deepseek-v4-pro": {
+                    "limit": {
+                        "context": 384000,
+                        "output": 128000
+                    }
+                }
+            }
         },
-    },
+        "opencode-go": {
+            "models": {
+                "deepseek-v4-pro": {
+                    "limit": {
+                        "context": 384000,
+                        "output": 128000
+                    }
+                }
+            }
+        }
+    }
 }
