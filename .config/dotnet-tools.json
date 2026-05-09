@@ -4,7 +4,16 @@
   "tools": {
     "microsoft.web.librarymanager.cli": {
       "version": "3.0.71",
-      "commands": ["libman"],
+      "commands": [
+        "libman"
+      ],
+      "rollForward": false
+    },
+    "redmuffin.tools.qualitygates": {
+      "version": "0.1.0",
+      "commands": [
+        "quality-gates"
+      ],
       "rollForward": false
     }
   }
