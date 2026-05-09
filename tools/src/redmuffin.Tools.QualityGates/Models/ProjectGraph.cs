@@ -8,10 +8,10 @@ public sealed record ProjectGraph(Dictionary<string, List<string>> Dependencies)
     {
         var csprojFiles = Directory.EnumerateFiles(
             projectPath, "*.csproj", SearchOption.AllDirectories)
-            .Where(f => !f.Contains("/bin/") && !f.Contains("/obj/")
-                && !f.Contains("\\bin\\") && !f.Contains("\\obj\\"));
+            .Where(f => !f.Contains("/bin/", StringComparison.Ordinal) && !f.Contains("/obj/", StringComparison.Ordinal)
+                && !f.Contains("\\bin\\", StringComparison.Ordinal) && !f.Contains("\\obj\\", StringComparison.Ordinal));
 
-        var dependencies = new Dictionary<string, List<string>>();
+        var dependencies = new Dictionary<string, List<string>>(StringComparer.Ordinal);
 
         foreach (var file in csprojFiles)
         {
@@ -24,7 +24,8 @@ public sealed record ProjectGraph(Dictionary<string, List<string>> Dependencies)
                 var include = refElem.Attribute("Include")?.Value;
                 if (include != null)
                 {
-                    refs.Add(System.IO.Path.GetFileNameWithoutExtension(include));
+                    var normalized = include.Replace('\\', System.IO.Path.DirectorySeparatorChar);
+                    refs.Add(System.IO.Path.GetFileNameWithoutExtension(normalized));
                 }
             }
 
