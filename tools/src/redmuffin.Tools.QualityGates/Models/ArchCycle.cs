@@ -1,3 +1,3 @@
 namespace redmuffin.Tools.QualityGates.Models;
 
-public sealed record ArchCycle(List<string> Components, int Length);
+public sealed record ArchCycle(IReadOnlyList<string> Components, int Length);

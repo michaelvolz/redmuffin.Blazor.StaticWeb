@@ -5,8 +5,8 @@ namespace redmuffin.Tools.QualityGates.Models;
 
 public sealed record ArchConfig
 {
-    public Dictionary<string, List<string>> AllowedDependencies { get; init; } = new();
-    public Dictionary<string, string> ComponentMap { get; init; } = new();
+    public Dictionary<string, List<string>> AllowedDependencies { get; init; } = [];
+    public Dictionary<string, string> ComponentMap { get; init; } = [];
     public List<string> IgnoredComponents { get; init; } = [];
     public bool FailOnCycles { get; init; } = true;
     public bool FailOnViolations { get; init; } = true;
@@ -28,8 +28,8 @@ public sealed record ArchConfig
 
         return new ArchConfig
         {
-            AllowedDependencies = dto.AllowedDependencies ?? new(),
-            ComponentMap = dto.ComponentMap ?? new(),
+            AllowedDependencies = dto.AllowedDependencies ?? [],
+            ComponentMap = dto.ComponentMap ?? [],
             IgnoredComponents = dto.IgnoredComponents ?? [],
             FailOnCycles = dto.FailOnCycles,
             FailOnViolations = dto.FailOnViolations,

@@ -25,6 +25,7 @@ public static class ScrapRecommender
     /// <summary>
     /// Decides the stability mode and AI-actionability for a file report.
     /// </summary>
+    /// <returns></returns>
     public static Recommendation Decide(FileScrapReport report)
     {
         var mode = ClassifyStability(report);
@@ -115,7 +116,7 @@ public static class ScrapRecommender
         var hasHarmfulDup = report.DuplicationResults.HarmfulDuplication.Count > 0;
         var hasHighScrap = report.MaxScrap > AutoRefactorMaxScrap;
 
-        var qualifiesForAutoRefactor = (hasZeroAssertion || hasHighLowAssert || hasHarmfulDup || hasHighScrap);
+        var qualifiesForAutoRefactor = hasZeroAssertion || hasHighLowAssert || hasHarmfulDup || hasHighScrap;
 
         if (qualifiesForAutoRefactor)
         {

@@ -10,6 +10,7 @@ public static class ExtractionPressure
     /// Computes D_before using Uncle Bob's extraction pressure formula:
     /// D_before = 0 if F ≤ 3 or V > 4, else max(0, F-3) * (I-1)^1.5 / (V+1)
     /// </summary>
+    /// <returns></returns>
     public static double ComputeDefore(int sharedForms, int instanceCount, int variablePoints)
     {
         if (sharedForms <= 3 || variablePoints > 4)
@@ -28,6 +29,7 @@ public static class ExtractionPressure
     /// max(0, D_before - D_after - H)
     /// where D_after = 0, H = F*0.5 + V*0.3
     /// </summary>
+    /// <returns></returns>
     public static double ComputeExtractionPressure(int sharedForms, int instanceCount, int variablePoints)
     {
         var dBefore = ComputeDefore(sharedForms, instanceCount, variablePoints);
@@ -40,6 +42,7 @@ public static class ExtractionPressure
     /// Computes file-level extraction pressure from duplication results.
     /// Sums pressure across harmful clusters minus matrix credit (1.5 per case-matrix cluster).
     /// </summary>
+    /// <returns></returns>
     public static FilePressure ComputeFilePressure(DuplicationResults results)
     {
         var clusterPressures = new List<double>();

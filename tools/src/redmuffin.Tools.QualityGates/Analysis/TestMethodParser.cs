@@ -46,6 +46,6 @@ public static class TestMethodParser
     {
         return method.AttributeLists
             .SelectMany(al => al.Attributes)
-            .Any(a => a.Name.ToString().Contains("Test"));
+            .Any(a => a.Name.ToString().Contains("Test", StringComparison.Ordinal));
     }
 }

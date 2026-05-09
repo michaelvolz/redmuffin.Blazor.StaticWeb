@@ -6,8 +6,8 @@ public sealed record ComponentGraph(
 {
     public static ComponentGraph From(ProjectGraph projects, ArchConfig config)
     {
-        var deps = new Dictionary<string, HashSet<string>>();
-        var unmapped = new HashSet<string>();
+        var deps = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+        var unmapped = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var (project, refs) in projects.Dependencies)
         {
@@ -18,7 +18,7 @@ public sealed record ComponentGraph(
                 continue;
             }
 
-            if (component == "Default")
+            if (string.Equals(component, "Default", StringComparison.Ordinal))
             {
                 unmapped.Add(project);
             }
@@ -31,14 +31,15 @@ public sealed record ComponentGraph(
                     continue;
                 }
 
-                if (targetComponent == component)
+                if (string.Equals(targetComponent, component, StringComparison.Ordinal))
                 {
                     continue;
                 }
 
-                if (!deps.ContainsKey(component))
+                if (!deps.TryGetValue(component, out var value))
                 {
-                    deps[component] = [];
+                    value = [];
+                    deps[component] = value;
                 }
 
                 if (!deps.ContainsKey(targetComponent))
@@ -46,7 +47,7 @@ public sealed record ComponentGraph(
                     deps[targetComponent] = [];
                 }
 
-                deps[component].Add(targetComponent);
+                value.Add(targetComponent);
             }
         }
 

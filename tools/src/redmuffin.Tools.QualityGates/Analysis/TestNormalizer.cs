@@ -16,7 +16,7 @@ public static class TestNormalizer
 
     private sealed class NormalizerWalker : CSharpSyntaxWalker
     {
-        public List<string> Features { get; } = new();
+        public List<string> Features { get; } = [];
 
         public override void VisitIdentifierName(IdentifierNameSyntax node)
         {

@@ -15,6 +15,7 @@ public static class ScrapScorer
     private const int MaxWorstExamples = 5;
 
     /// <summary>Computes per-example SCRAP metrics for a single test method.</summary>
+    /// <returns></returns>
     public static TestMethodMetrics ScoreMethod(TestMethod method)
     {
         var body = method.BodySyntax;
@@ -74,6 +75,7 @@ public static class ScrapScorer
     }
 
     /// <summary>Aggregates per-method metrics into a file-level report.</summary>
+    /// <returns></returns>
     public static FileScrapReport ScoreFile(
         IReadOnlyList<TestMethod> methods,
         DuplicationResults duplicationResults,
@@ -125,7 +127,7 @@ public static class ScrapScorer
                 {
                     var exprStr = ma.Expression.ToString();
                     return exprStr.StartsWith("Assert", StringComparison.Ordinal)
-                        && ma.Name.Identifier.Text == "That";
+                        && string.Equals(ma.Name.Identifier.Text, "That", StringComparison.Ordinal);
                 }
 
                 return false;

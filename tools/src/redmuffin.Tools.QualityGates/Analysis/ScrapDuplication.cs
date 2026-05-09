@@ -38,18 +38,19 @@ public static class ScrapDuplication
     /// similarity on normalized bodies. Clusters connected components
     /// and classifies into harmful, case-matrix, and subject channels.
     /// </summary>
+    /// <returns></returns>
     public static DuplicationResults Analyze(IReadOnlyList<TestMethod> methods)
     {
         if (methods.Count == 0)
         {
             return new DuplicationResults(
-                Array.Empty<DuplicationChannel>(),
-                Array.Empty<DuplicationChannel>(),
-                Array.Empty<DuplicationChannel>(),
+                [],
+                [],
+                [],
                 0.0);
         }
 
-        var byFile = methods.GroupBy(m => m.FilePath).ToList();
+        var byFile = methods.GroupBy(m => m.FilePath, StringComparer.Ordinal).ToList();
         var allHarmful = new List<DuplicationChannel>();
         var allCaseMatrix = new List<DuplicationChannel>();
         var allSubject = new List<DuplicationChannel>();
@@ -64,7 +65,7 @@ public static class ScrapDuplication
             }
 
             // Normalize all methods
-            var normalized = fileMethods.Select(m =>
+            var normalized = fileMethods.ConvertAll(m =>
             {
                 var methodDecl = m.BodySyntax as MethodDeclarationSyntax
                     ?? m.BodySyntax.AncestorsAndSelf()
@@ -73,13 +74,13 @@ public static class ScrapDuplication
 
                 return methodDecl is not null
                     ? TestNormalizer.Normalize(methodDecl)
-                    : (IReadOnlyList<string>)Array.Empty<string>();
-            }).ToList();
+                    : (IReadOnlyList<string>)[];
+            });
 
             // Build feature sets
             var featureSets = normalized
-                .Select(f => new HashSet<string>(f))
-                .ToList();
+                .ConvertAll(f => new HashSet<string>(f, StringComparer.Ordinal))
+;
 
             // Compute pairwise Jaccard and build adjacency
             var n = fileMethods.Count;
@@ -113,12 +114,13 @@ public static class ScrapDuplication
             for (var i = 0; i < n; i++)
             {
                 var root = Find(parent, i);
-                if (!clusters.ContainsKey(root))
+                if (!clusters.TryGetValue(root, out var value))
                 {
-                    clusters[root] = new List<int>();
+                    value = [];
+                    clusters[root] = value;
                 }
 
-                clusters[root].Add(i);
+                value.Add(i);
             }
 
             // Track which methods are in Jaccard-based clusters
@@ -138,11 +140,11 @@ public static class ScrapDuplication
                     clusteredIndices.Add(idx);
                 }
 
-                var clusterMethods = indices.Select(i => fileMethods[i]).ToList();
+                var clusterMethods = indices.ConvertAll(i => fileMethods[i]);
 
                 var sharedForms = ComputeSharedForms(indices, normalized);
                 var variablePoints = ComputeVariablePoints(indices, normalized);
-                var methodMetrics = clusterMethods.Select(ComputeSimpleMetrics).ToList();
+                var methodMetrics = clusterMethods.ConvertAll(ComputeSimpleMetrics);
 
                 var channel = ClassifyChannel(
                     clusterMethods,
@@ -180,8 +182,8 @@ public static class ScrapDuplication
                 .ToList();
 
             var subjectGroups = nonClustered
-                .GroupBy(x => x.Method.ContainerClassName)
-                .Where(g => g.Count() >= 3);
+                .GroupBy(x => x.Method.ContainerClassName, StringComparer.Ordinal)
+                .Where(g => g.Skip(2).Any());
 
             foreach (var subjectGroup in subjectGroups)
             {
@@ -240,7 +242,7 @@ public static class ScrapDuplication
             return 0;
         }
 
-        var firstSet = new HashSet<string>(normalized[indices[0]]);
+        var firstSet = new HashSet<string>(normalized[indices[0]], StringComparer.Ordinal);
         for (var i = 1; i < indices.Count; i++)
         {
             firstSet.IntersectWith(normalized[indices[i]]);
@@ -261,13 +263,13 @@ public static class ScrapDuplication
             return 0;
         }
 
-        var union = new HashSet<string>(normalized[indices[0]]);
+        var union = new HashSet<string>(normalized[indices[0]], StringComparer.Ordinal);
         for (var i = 1; i < indices.Count; i++)
         {
             union.UnionWith(normalized[indices[i]]);
         }
 
-        var intersection = new HashSet<string>(normalized[indices[0]]);
+        var intersection = new HashSet<string>(normalized[indices[0]], StringComparer.Ordinal);
         for (var i = 1; i < indices.Count; i++)
         {
             intersection.IntersectWith(normalized[indices[i]]);
@@ -292,7 +294,7 @@ public static class ScrapDuplication
                 {
                     var exprStr = ma.Expression.ToString();
                     return exprStr.StartsWith("Assert", StringComparison.Ordinal)
-                        && ma.Name.Identifier.Text == "That";
+                        && string.Equals(ma.Name.Identifier.Text, "That", StringComparison.Ordinal);
                 }
 
                 return false;
@@ -348,8 +350,7 @@ public static class ScrapDuplication
     {
         // Subject repetition: all methods share the same ContainerClassName
         // but have different structures (not enough shared forms for harmful)
-        var sameClass = methods.All(m =>
-            m.ContainerClassName == methods[0].ContainerClassName);
+        var sameClass = methods.All(m => string.Equals(m.ContainerClassName, methods[0].ContainerClassName, StringComparison.Ordinal));
 
         // Harmful: ≥3 shared forms AND ≤4 variable points
         if (sharedForms >= 3 && variablePoints <= 4)

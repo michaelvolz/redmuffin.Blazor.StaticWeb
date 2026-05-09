@@ -97,6 +97,7 @@ public static class CyclomaticComplexity
             {
                 DecisionPoints++;
             }
+
             base.VisitBinaryExpression(node);
         }
 
@@ -119,6 +120,7 @@ public static class CyclomaticComplexity
             {
                 DecisionPoints++;
             }
+
             base.VisitBinaryPattern(node);
         }
 
@@ -128,6 +130,7 @@ public static class CyclomaticComplexity
             {
                 DecisionPoints++;
             }
+
             base.VisitUnaryPattern(node);
         }
 
@@ -137,6 +140,7 @@ public static class CyclomaticComplexity
             {
                 DecisionPoints++;
             }
+
             base.VisitPostfixUnaryExpression(node);
         }
 
@@ -146,6 +150,7 @@ public static class CyclomaticComplexity
             {
                 DecisionPoints++;
             }
+
             base.VisitAssignmentExpression(node);
         }
 

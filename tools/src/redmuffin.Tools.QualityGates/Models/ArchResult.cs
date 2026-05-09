@@ -2,7 +2,7 @@ namespace redmuffin.Tools.QualityGates.Models;
 
 public sealed record ArchResult(
     int ExitCode,
-    List<ArchViolation> Violations,
-    List<ArchCycle> Cycles,
+    IReadOnlyList<ArchViolation> Violations,
+    IReadOnlyList<ArchCycle> Cycles,
     int ProjectsScanned,
     int ComponentsDefined);

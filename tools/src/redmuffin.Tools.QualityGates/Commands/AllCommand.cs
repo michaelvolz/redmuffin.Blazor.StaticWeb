@@ -118,6 +118,7 @@ public static class AllCommand
     /// Combines exit codes from individual gates. Returns the worst result:
     /// 2 (threshold breach) overrides 1 (error) overrides 0 (pass).
     /// </summary>
+    /// <returns></returns>
     public static int CombineExitCodes(int crapExit, int scrapExit, int archExit)
     {
         if (crapExit == 2 || scrapExit == 2 || archExit == 2)
