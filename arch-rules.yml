@@ -1,0 +1,17 @@
+component-map:
+  redmuffin.Blazor.StaticWeb.Common: Shared
+  redmuffin.Blazor.StaticWeb: Frontend
+  redmuffin.Blazor.StaticWeb.Api: Backend
+  SwaLauncher: Launcher
+
+ignored-components:
+  - Launcher
+
+allowed-dependencies:
+  Frontend:
+    - Shared
+  Backend:
+    - Shared
+
+fail-on-cycles: true
+fail-on-violations: true
