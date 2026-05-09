@@ -1,0 +1,5 @@
+# undo parent .gitignore blanket exclusion — plugins need their own package.json
+!package.json
+!package-lock.json
+!bun.lock
+!.gitignore
