@@ -15,26 +15,32 @@ description: >
 
 # OpenCode Config Reference
 
+> **GitHub:** [github.com/sst/open-code](https://github.com/sst/open-code) — open-source,
+> native binary (not an npm package). Issues, source, and release notes live here.
+
 Load before any task that touches OpenCode internals.
 
 ## Paths
 
 All paths use `~/` as the home directory. Forward slashes work on all platforms.
 
-| What                 | Where                                 |
-| -------------------- | ------------------------------------- |
-| Main config          | `~/.config/opencode/opencode.jsonc`   |
-| Agent instructions   | `~/.config/opencode/AGENTS.md`        |
-| TUI config           | `~/.config/opencode/tui.json`         |
-| Session database     | `~/.local/share/opencode/opencode.db` |
-| Skills               | `~/.config/opencode/skills/`          |
-| Agents               | `~/.config/opencode/agents/`          |
-| Plugins              | `~/.config/opencode/plugins/`         |
-| Docs & specs         | `~/.config/opencode/docs/`            |
-| Context-mode config  | `~/.config/opencode/context-mode/`    |
-| Server logs          | `~/.local/share/opencode/log/`        |
-| Plugin logs          | `~/.config/opencode/logs/`            |
-| Snippets plugin logs | `~/.config/opencode/logs/snippets/`   |
+| What                   | Where                                  |
+| ---------------------- | -------------------------------------- |
+| Main config            | `~/.config/opencode/opencode.jsonc`    |
+| Agent instructions     | `~/.config/opencode/AGENTS.md`         |
+| TUI config             | `~/.config/opencode/tui.json`          |
+| Session database       | `~/.local/share/opencode/opencode.db`  |
+| Skills                 | `~/.config/opencode/skills/`           |
+| Agents                 | `~/.config/opencode/agents/`           |
+| Plugins                | `~/.config/opencode/plugins/`          |
+| Docs & specs           | `~/.config/opencode/docs/`             |
+| Context-mode config    | `~/.config/opencode/context-mode/`     |
+| Server logs            | `~/.local/share/opencode/log/`         |
+| Plugin logs            | `~/.config/opencode/logs/`             |
+| Snippets plugin logs   | `~/.config/opencode/logs/snippets/`    |
+| Scripts                | `~/.config/opencode/scripts/`          |
+| Storage (session data) | `~/.local/share/opencode/storage/`     |
+| Tool output cache      | `~/.local/share/opencode/tool-output/` |
 
 Schema URLs:
 
@@ -164,18 +170,60 @@ directory name.
 
 ## Env Vars
 
-| Variable                 | Used by                  |
-| ------------------------ | ------------------------ |
-| `OPENCODE_ANALYST_MODEL` | Subagent model selection |
-| `CONTEXT7_API_KEY`       | Context7 MCP             |
-| `BRAVE_API_KEY`          | Brave Search MCP         |
+| Variable                 | Used by                                                                |
+| ------------------------ | ---------------------------------------------------------------------- |
+| `OPENCODE_ANALYST_MODEL` | Subagent model selection                                               |
+| `OPENCODE_PID`           | Process ID of the OpenCode TUI/server                                  |
+| `OPENCODE_RUN_ID`        | UUID for the current run (not the session ID)                          |
+| `OPENCODE_PROCESS_ROLE`  | Process role (`worker` for subprocess)                                 |
+| `OPENCODE_DISABLE_PRUNE` | UI filter — hides sessions >30d from TUI picker. Does NOT delete data. |
+| `CONTEXT7_API_KEY`       | Context7 MCP                                                           |
+| `BRAVE_API_KEY`          | Brave Search MCP                                                       |
+
+---
+
+## Session Management CLI
+
+```bash
+opencode session list          # List all sessions (--max-count N, --format json|table)
+opencode session delete <ID>   # Delete ONE session by ID (no bulk, no --older-than)
+opencode db [query]            # Run raw SQL query (--format json|tsv)
+opencode db path               # Print database file path
+```
+
+There is **no official bulk-delete or prune feature**. GitHub Issue #22110
+requested `opencode session prune --older-than 30d` — closed as "not planned."
+
+`OPENCODE_DISABLE_PRUNE` (env var) only filters the TUI `/sessions` picker to the
+last 30 days. It does not delete anything. All sessions remain in DB and on disk.
+
+### Session Cleanup Script
+
+**`~/.config/opencode/scripts/cleanup-sessions.ps1`** — Cross-platform PowerShell
+script to delete sessions older than N days. Uses `opencode session delete` in a
+loop (safe — handles DB + filesystem cleanup).
+
+```powershell
+# Delete sessions untouched for 5+ days (the default)
+.\cleanup-sessions.ps1
+
+# Preview only — no deletions
+.\cleanup-sessions.ps1 -WhatIf
+
+# Delete sessions untouched for 30+ days
+.\cleanup-sessions.ps1 -Days 30
+```
+
+Parameters: `-Days <int>` (default 5), `-WhatIf` (dry-run). Auto-excludes the
+current session (detected via max `time_updated` + PID check + recency guard).
+Handles forked session trees atomically (parent + all children must all be old,
+or none are deleted). Reports each deleted session title + ID verbosely.
 
 ---
 
 ## Key Docs
 
 - Conversion spec: `~/docs/specs/2026-05-01-compound-engineering-opencode-conversion-spec.md`
-- Session scripts plan: `~/.config/opencode/docs/plans/2026-05-01-001-feat-opencode-session-scripts-plan.md`
 
 ---
 
@@ -183,7 +231,12 @@ directory name.
 
 **File:** `~/.local/share/opencode/opencode.db` (SQLite)
 
-### Session
+Foreign keys are defined with `ON DELETE CASCADE` (session → message → part,
+session → todo, session → session_share, session → session_message). However,
+SQLite's `PRAGMA foreign_keys` defaults to OFF — raw `sqlite3` deletes without
+`PRAGMA foreign_keys = ON;` will **not** cascade. OpenCode's own code enables FKs.
+
+### All Tables (complete schema)
 
 ```sql
 session (
@@ -266,6 +319,62 @@ ALL OpenCode timestamps are **milliseconds** since Unix epoch.
 
 - SQLite: `datetime(time_created/1000, 'unixepoch')` → ISO 8601
 - Code: divide by 1000 → Unix epoch seconds
+
+### Additional Tables
+
+```sql
+todo (
+    session_id  TEXT NOT NULL,
+    content     TEXT NOT NULL,
+    status      TEXT NOT NULL,
+    priority    TEXT NOT NULL,
+    position    INTEGER NOT NULL,
+    time_created INTEGER NOT NULL,
+    time_updated INTEGER NOT NULL,
+    PRIMARY KEY (session_id, position),
+    FOREIGN KEY (session_id) REFERENCES session(id) ON DELETE CASCADE
+)
+
+session_share (
+    session_id   TEXT PRIMARY KEY,
+    id           TEXT NOT NULL,
+    secret       TEXT NOT NULL,
+    url          TEXT NOT NULL,
+    time_created INTEGER NOT NULL,
+    time_updated INTEGER NOT NULL,
+    FOREIGN KEY (session_id) REFERENCES session(id) ON DELETE CASCADE
+)
+
+session_message (
+    id           TEXT PRIMARY KEY,
+    session_id   TEXT NOT NULL,
+    type         TEXT NOT NULL,
+    time_created INTEGER NOT NULL,
+    time_updated INTEGER NOT NULL,
+    data         TEXT NOT NULL,
+    FOREIGN KEY (session_id) REFERENCES session(id) ON DELETE CASCADE
+)
+
+project (
+    id               TEXT PRIMARY KEY,
+    worktree         TEXT NOT NULL,
+    vcs              TEXT,
+    name             TEXT,
+    time_created     INTEGER NOT NULL,
+    time_updated     INTEGER NOT NULL,
+    sandboxes        TEXT NOT NULL
+)
+
+workspace (
+    id         TEXT PRIMARY KEY,
+    type       TEXT NOT NULL,
+    name       TEXT NOT NULL DEFAULT '',
+    branch     TEXT,
+    directory  TEXT,
+    project_id TEXT NOT NULL,
+    FOREIGN KEY (project_id) REFERENCES project(id) ON DELETE CASCADE
+)
+```
 
 ---
 
