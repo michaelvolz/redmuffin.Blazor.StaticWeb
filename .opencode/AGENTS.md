@@ -1,5 +1,34 @@
 # Global Rules for OpenCode
 
+## Communication Protocol — Ask vs. Act (CRITICAL — READ FIRST)
+
+This section is the single source of truth for when the agent may act
+versus when it may only report and ask. Every other rule in this file
+delegates to this section for action-gating authority.
+
+**Default: No Action**
+
+Unless the prompt is unmistakably a request to act, only provide information
+(answers, diagnosis, recommendations, analysis). Do not chain report → action.
+If unsure whether action is intended, ask.
+
+**Dotfiles Repo — Mandatory Post-Pull Protocol**
+
+When you execute `git pull` or `git fetch` in the `selective-omarchy-dotfiles`
+repo, you MUST immediately load the `rm-dotfiles` skill and run the change
+analysis protocol (Mode A). This is NOT optional — the pull may introduce
+files that cannot run on this machine. The change analysis produces a REPORT
+only. Do NOT edit SKILL.md, `.gitignore`, or install packages without explicit
+instruction.
+
+During change analysis:
+
+- Missing required tools (inferred from shebang/extension) are
+  **compatibility gaps**, not informational footnotes. The pull created a
+  state where a tracked feature cannot run on this machine.
+- Resolution paths cite `rm-omarchy` for install guidance.
+- Report findings and stop. Wait for explicit instruction before acting.
+
 ## Safety Blocks — cc-safety-net / Pushblocker (CRITICAL — NEVER BYPASS)
 
 When a tool call returns a safety alert from `cc-safety-net` or a custom
@@ -19,16 +48,6 @@ data/code protection):
    (e.g., bare `git` instead of `rtk` git, or `curl` instead of the
    sandbox fetcher) to bypass the wrapper. The blocks exist to protect
    data, code, and system integrity. Bypassing them is a critical error.
-
-## Communication Protocol (CRITICAL)
-
-**Questions = Discussion Phase Only**
-
-- When I ask a question, I ONLY want ANSWERS - NOT actions
-- Question means discussion, not action
-- It is NEVER okay to do/install/create/change something when asked a question
-- I will explicitly say "proceed" or "go" when action can start
-- If unsure whether something is a question or a request, ask for clarification first
 
 ## Research Means Online Research (CRITICAL)
 
@@ -241,18 +260,3 @@ covered by the constraints, update the constraints to reflect the new scope.
 
 **When creating a new doc via `rm-custom-docs`:** that skill enforces that
 a Design Constraints section is included. Do not create docs without one.
-
-## Agent skills
-
-### Issue tracker
-
-GitHub Issues at michaelvolz/redmuffin.Blazor.StaticWeb. See `docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix;
-category labels: bug, enhancement. See `docs/agents/triage-labels.md`.
-
-### Domain docs
-
-Single-context: `CONTEXT.md` at root + `docs/adr/`. See `docs/agents/domain.md`.
