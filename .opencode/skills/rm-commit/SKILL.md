@@ -35,6 +35,105 @@ These extend `@commitlint/config-conventional` (which also
 enforces `subject-empty`, `type-empty`, and `type-enum`).
 Failing any rule blocks the commit.
 
+## Pre-Commit Linting (ENFORCED — non-negotiable)
+
+Linting runs on staged files before every commit. The same gate as commitlint —
+findings block the commit.
+
+### What Gets Linted — NOT Everything
+
+We only lint **our own code**. Third-party scripts (vendored skills, auto-generated
+wrappers, pip entry points, npm bins, AUR helpers) must never be held to our
+linting standards. We determine ownership by **directory**, not by file markers
+or git blame.
+
+**Our code directories** (cross-linter, cross-language):
+
+| Directory                        | What lives there                                     |
+| -------------------------------- | ---------------------------------------------------- |
+| `.config/opencode/scripts/`      | Our PowerShell scripts, test suites                  |
+| `.config/opencode/plugins/`      | Our OpenCode plugins (JS/TS)                         |
+| `.config/opencode/skills/rm-*/`  | Our custom skills (`rm-commit`, `rm-opencode`, etc.) |
+| `.local/bin/` that we hand-wrote | Add specific files here if we author them            |
+
+**NOT our code** (never linted):
+
+| Directory / Pattern                             | What lives there                            |
+| ----------------------------------------------- | ------------------------------------------- |
+| `.config/opencode/skills/compound-engineering/` | CE third-party skills                       |
+| `.config/opencode/skills/matt-pocock/`          | Matt Pocock third-party skills              |
+| `.config/opencode/skills/vendor/`               | Other vendored skills                       |
+| `.local/bin/` (default)                         | Auto-generated pip/npm wrappers             |
+| `.config/omarchy/`                              | Omarchy package management — system scripts |
+
+**How filtering works:** Before any linter runs, filter staged files against
+the "our code" directories. Only files whose path starts with one of our
+directories are linted. This works identically for PowerShell, JavaScript,
+shell, and all future linters — no per-tool exclusion config needed.
+
+**When we create a new directory of our scripts, add it to the "our code" list
+above.**
+
+### PowerShell — PSScriptAnalyzer
+
+**Config:** `.config/opencode/PSScriptAnalyzerSettings.psd1`
+**Severity:** Error + Warning. Both block commits. Zero tolerance.
+
+```bash
+# Filter to our .ps1/.psm1 files, then lint
+our_files=$(git diff --cached --name-only --diff-filter=ACM |
+  grep -E '\.config/opencode/(scripts|plugins|skills/rm-)/.*\.ps[1m]$')
+if [ -n "$our_files" ]; then
+  pwsh -NoProfile -Command "Invoke-ScriptAnalyzer -Path $our_files -Settings .config/opencode/PSScriptAnalyzerSettings.psd1 -EnableExit"
+fi
+```
+
+No exceptions. No `-ExcludeRule` bandaids. Fix the code.
+
+### JavaScript/TypeScript — oxlint
+
+```bash
+our_files=$(git diff --cached --name-only --diff-filter=ACM |
+  grep -E '\.config/opencode/(scripts|plugins|skills/rm-)/.*\.(js|ts|jsx|tsx)$')
+if [ -n "$our_files" ]; then
+  npx oxlint $our_files
+fi
+```
+
+### Markdown (future) — markdownlint
+
+```bash
+our_files=$(git diff --cached --name-only --diff-filter=ACM |
+  grep -E '\.config/opencode/(scripts|plugins|skills/rm-)/.*\.md$')
+if [ -n "$our_files" ]; then
+  npx markdownlint $our_files
+fi
+```
+
+### Linter Inventory (per machine)
+
+This table tells each machine which linters are expected and which to install.
+
+| Linter           | Language      | Command                 | Installed here |
+| ---------------- | ------------- | ----------------------- | -------------- |
+| PSScriptAnalyzer | PowerShell    | `Invoke-ScriptAnalyzer` | Yes (1.25.0)   |
+| oxlint           | JavaScript/TS | `npx oxlint`            | Yes (1.62.0)   |
+| commitlint       | Git commits   | `commitlint`            | Yes            |
+| markdownlint     | Markdown      | `markdownlint`          | No             |
+| shellcheck       | Shell         | `shellcheck`            | No             |
+
+If a linter is not installed, **warn the user hard** — the other machine enforces
+it; this machine is out of compliance — but proceed. A missing optional dev tool
+should not block unrelated work.
+
+**Performance:** No overhead for commits without our script files. ~2-5 seconds
+when our `.ps1`/`.js` files are staged.
+| markdownlint | Markdown | `markdownlint` | No |
+| shellcheck | Shell | `shellcheck` | No |
+
+When the other machine loads this skill, the table tells it which
+linters to install.
+
 ## CRITICAL
 
 ### Destructive Git Commands — NEVER
