@@ -1295,10 +1295,7 @@ public sealed class RaindropCacheResult<T>
 
 ## Related Documents
 
-- **Contradictions Analysis**: `csharp-standards-contradictions-2026-04-06.md`
-- **Duplicates Analysis**: `csharp-standards-duplicates-analysis-2026-04-06.md`
-- **Consolidation Archive**: `csharp-standards-consolidation-2026-04-06.md`
-- **ce:compound Summary**: `csharp-standards-consolidation-resolution-2026-04-06.md`
+- **Consolidation Resolution**: `csharp-standards-consolidation-resolution-2026-04-06.md` — Process outcome and lessons learned from the standards consolidation effort
 
 ## Source Files (Archived)
 

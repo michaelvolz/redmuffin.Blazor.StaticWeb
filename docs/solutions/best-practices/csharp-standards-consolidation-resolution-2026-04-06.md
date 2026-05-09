@@ -282,9 +282,7 @@ Each section becomes a separate skill with prefix `rm-guide-`:
 
 ### Research Documents
 
-- **Main Consolidation**: `docs/solutions/best-practices/csharp-standards-consolidation-2026-04-06.md` — All 11 sources preserved (archive)
-- **Contradictions Analysis**: `docs/solutions/best-practices/csharp-standards-contradictions-2026-04-06.md` — Master resolution document with decisions
-- **Duplicates Analysis**: `docs/solutions/best-practices/csharp-standards-duplicates-analysis-2026-04-06.md` — Overlap analysis between sources
+The consolidation process analyzed 11 source documents. Intermediate work products (raw consolidation, contradictions analysis, duplicates analysis) were removed during the 2026-05-09 refresh — the key findings are preserved in this resolution document and the final standards reference below.
 
 ### Related Solutions
 
