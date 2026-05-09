@@ -306,7 +306,7 @@ function extractExecArg(tokens) {
 
 function basename(path) {
   if (!path) return "";
-  return path.replace(/^.*[\\\/]/, "").toLowerCase();
+  return path.replace(/^.*[\\/]/, "").toLowerCase();
 }
 
 // ─── Output Sanitization ────────────────────────────────────────────────────
