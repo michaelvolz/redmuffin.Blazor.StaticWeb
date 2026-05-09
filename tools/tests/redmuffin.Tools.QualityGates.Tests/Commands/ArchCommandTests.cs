@@ -423,7 +423,7 @@ public sealed class ArchCommandTests
         using var temp = new TempDir();
         temp.WriteProject("Test", []);
 
-        var exitCode = ArchHandler.Run(
+        var (exitCode, _) = ArchHandler.Run(
             "/nonexistent/config.yml",
             temp.Path);
 

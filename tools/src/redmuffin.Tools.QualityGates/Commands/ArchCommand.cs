@@ -24,7 +24,8 @@ public static class ArchCommand
             Description = "Output results as JSON",
         };
 
-        var command = new Command("arch",
+        var command = new Command(
+            "arch",
             "Check project dependency architecture against component rules")
         {
             projectOption,
@@ -46,7 +47,9 @@ public static class ArchCommand
 
     internal static int Execute(string projectPath, string configPath, bool json)
     {
-        var exitCode = ArchHandler.Run(configPath, projectPath);
+        var (exitCode, result) = ArchHandler.Run(configPath, projectPath);
+        var output = ArchOutputFormatter.Format(result, json);
+        Console.WriteLine(output);
         return exitCode;
     }
 }

@@ -1,3 +1,4 @@
+using System.Globalization;
 using redmuffin.Tools.QualityGates.Models;
 
 namespace redmuffin.Tools.QualityGates.Commands;
@@ -20,8 +21,8 @@ public static class ArchOutputFormatter
         {
             "Architecture Gate Results",
             "-------------------------",
-            $"{result.ProjectsScanned} projects scanned, " +
-                $"{result.ComponentsDefined} components defined",
+            string.Create(CultureInfo.InvariantCulture, $"{result.ProjectsScanned} projects scanned, ") +
+                string.Create(CultureInfo.InvariantCulture, $"{result.ComponentsDefined} components defined"),
             $"{result.Violations.Count} violations found, " +
                 $"{result.Cycles.Count} cycles found",
         };
@@ -52,7 +53,7 @@ public static class ArchOutputFormatter
 
     private static string FormatJson(ArchResult result)
     {
-        return $$"""
+        return string.Create(CultureInfo.InvariantCulture, $$"""
             {
               "exitCode": {{result.ExitCode}},
               "projectsScanned": {{result.ProjectsScanned}},
@@ -60,7 +61,7 @@ public static class ArchOutputFormatter
               "violations": {{FormatJsonViolations(result)}},
               "cycles": {{FormatJsonCycles(result)}}
             }
-            """;
+            """);
     }
 
     private static string FormatJsonViolations(ArchResult result)
@@ -106,5 +107,5 @@ public static class ArchOutputFormatter
     }
 
     private static string Escape(string value) =>
-        value.Replace("\\", "\\\\").Replace("\"", "\\\"");
+        value.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal);
 }

@@ -4,13 +4,13 @@ namespace redmuffin.Tools.QualityGates.Commands;
 
 public static class ArchHandler
 {
-    public static int Run(string configPath, string projectPath)
+    public static (int ExitCode, ArchResult Result) Run(string configPath, string projectPath)
     {
         try
         {
             if (!File.Exists(configPath))
             {
-                return 1;
+                return (1, new ArchResult(1, [], [], 0, 0));
             }
 
             var yaml = File.ReadAllText(configPath);
@@ -20,15 +20,23 @@ public static class ArchHandler
             var violations = FindViolations(componentGraph, config);
             var cycles = FindCycles(componentGraph);
 
-            return DecideExitCode(violations, cycles, config);
+            var result = new ArchResult(
+                0,
+                violations,
+                cycles,
+                projectGraph.Dependencies.Count,
+                config.ComponentMap.Count);
+
+            var exitCode = DecideExitCode(violations, cycles, config);
+            return (exitCode, result with { ExitCode = exitCode });
         }
         catch (DirectoryNotFoundException)
         {
-            return 1;
+            return (1, new ArchResult(1, [], [], 0, 0));
         }
         catch (FormatException)
         {
-            return 1;
+            return (1, new ArchResult(1, [], [], 0, 0));
         }
     }
 
@@ -49,6 +57,7 @@ public static class ArchHandler
 
         return 0;
     }
+
     public static List<ArchViolation> FindViolations(
         ComponentGraph graph, ArchConfig config)
     {
@@ -85,8 +94,8 @@ public static class ArchHandler
     public static List<ArchCycle> FindCycles(ComponentGraph graph)
     {
         var cycles = new List<ArchCycle>();
-        var visited = new HashSet<string>();
-        var stack = new HashSet<string>();
+        var visited = new HashSet<string>(StringComparer.Ordinal);
+        var stack = new HashSet<string>(StringComparer.Ordinal);
         var path = new List<string>();
 
         foreach (var node in graph.Dependencies.Keys)
@@ -127,7 +136,7 @@ public static class ArchHandler
                     {
                         var cycle = path.GetRange(cycleStart, path.Count - cycleStart);
                         var normalized = NormalizeCycle(cycle);
-                        if (!cycles.Any(c => c.Components.SequenceEqual(normalized)))
+                        if (!cycles.Exists(c => c.Components.SequenceEqual(normalized, StringComparer.Ordinal)))
                         {
                             cycles.Add(new ArchCycle(normalized, normalized.Count));
                         }
