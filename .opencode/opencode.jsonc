@@ -17,9 +17,13 @@
     "plugin": [
         "opencode-snippets",
         "cc-safety-net",
-        "context-mode",
+        "@cortexkit/opencode-magic-context",
         "opencode-bytheway"
     ],
+    "compaction": {
+        "auto": false,
+        "prune": false
+    },
     "permission": {
         // IMPORTANT: The following long deny list is INTENTIONALLY duplicated
         // in read, edit, glob, grep, and bash for maximum defense-in-depth.
@@ -391,7 +395,7 @@
             "command": [
                 "context-mode"
             ],
-            "enabled": true,
+            "enabled": false,
         },
     },
     "tools": {
@@ -748,8 +752,13 @@
             "models": {
                 "deepseek-v4-pro": {
                     "limit": {
-                        "context": 384000,
+                        "context": 700000,
                         "output": 128000
+                    },
+                    "options": {
+                        "max_tokens": 128000,
+                        "temperature": 0.75,
+                        "top_p": 0.95
                     }
                 }
             }
@@ -758,8 +767,13 @@
             "models": {
                 "deepseek-v4-pro": {
                     "limit": {
-                        "context": 384000,
+                        "context": 700000,
                         "output": 128000
+                    },
+                    "options": {
+                        "max_tokens": 128000,
+                        "temperature": 0.75,
+                        "top_p": 0.95
                     }
                 }
             }

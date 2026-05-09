@@ -8,13 +8,6 @@
         "libman"
       ],
       "rollForward": false
-    },
-    "redmuffin.tools.qualitygates": {
-      "version": "0.1.0",
-      "commands": [
-        "quality-gates"
-      ],
-      "rollForward": false
     }
   }
 }
