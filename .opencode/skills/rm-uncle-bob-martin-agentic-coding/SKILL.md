@@ -3,7 +3,18 @@ name: rm-uncle-bob-martin-agentic-coding
 description: One-stop comprehensive guide compiling all concepts, patterns, workflows, guidelines, tips, tricks, and tools from Robert C. Martin (Uncle Bob) on disciplined agentic coding. Includes full adaptation instructions for C#, PowerShell, and TypeScript environments. Enforces metrics-driven management (CRAP ≤8, mutation kill rate 100%, high 90s coverage, low duplication, dependency integrity) over manual code review or vibe coding. Designed for OpenCode agents to produce semantically stable, maintainable systems. Latest tool versions pinned to GitHub sources as of May 2026. All tools are convertible to native C#/PowerShell/TS equivalents via agent prompts provided.
 version: 1.0
 author: Compiled from primary sources (Uncle Bob's GitHub repositories, X posts, and Clean AI series)
-tags: [agentic-coding, clean-code, tdd, atdd, crap-metric, mutation-testing, metrics-driven-development, multi-agent-coordination, clojure-to-csharp-adaptation]
+tags:
+  [
+    agentic-coding,
+    clean-code,
+    tdd,
+    atdd,
+    crap-metric,
+    mutation-testing,
+    metrics-driven-development,
+    multi-agent-coordination,
+    clojure-to-csharp-adaptation,
+  ]
 languages: [C#, PowerShell, TypeScript, Java, Clojure]
 prerequisites: OpenCode agent with file I/O, test runner integration, and metric tooling execution capabilities
 ---
@@ -30,9 +41,34 @@ Agentic development succeeds only when the following axioms are enforced without
 
 Counter to any assumption that agentic coding relaxes quality standards: the opposite holds. Discipline prevents the exponential growth of technical debt that agents accelerate when left unchecked.
 
+### 1.1 TOP REQUIREMENT — Fidelity to Original Tools
+
+All tool implementations in this project must replicate Uncle Bob's original
+tools as closely as possible. This is the overriding requirement for every
+quality gate:
+
+- **Algorithm fidelity**: Thresholds, formulas, and clustering logic must
+  match the original source code exactly. Never invent thresholds or tweak
+  formulas without explicit evidence from the original repo.
+- **CLI interface fidelity**: Flag names, exit codes, and output formats
+  must match the original tools. If the original uses `--verbose`, `--json`,
+  and exits 0/2, our tool must do the same.
+- **Scope fidelity**: Implement only what Uncle Bob's tools actually do.
+  SCRAP analyzes test files — not production source. There is no separate
+  production-code duplication scanner. The dependency checker validates
+  architecture, not code style.
+- **Decision authority**: When in doubt, the original source code is the
+  answer. User preference, convenience, or "best practice" are irrelevant
+  unless the original tool explicitly supports them.
+- **Research before implementing**: Before building any gate, read the
+  original repo's README, AGENTS.md, and source code. Confirm existence,
+  scope, thresholds, and CLI interface. Never build from a third-party
+  summary or memory.
+
 ## 2. Core Workflows
 
 ### 2.1 Acceptance Test Driven Development (ATDD) + TDD Pipeline
+
 1. Write Gherkin-style acceptance tests in plain-text .txt or .feature files using Given-When-Then format tailored to the domain.
 2. Build or use a custom parser that converts Gherkin to language-specific test skeletons (e.g., Speclj for Clojure, xUnit/NUnit for C#, Jest for TS). Separate parser from generator with an intermediate JSON/EDN representation to prevent cheating.
 3. Implement production code strictly via TDD: red-green-refactor loop driven by the agent.
@@ -43,6 +79,7 @@ Counter to any assumption that agentic coding relaxes quality standards: the opp
 This workflow produced zero-bug first-run systems in Uncle Bob’s public experiments (AIR-J language, custom wiki, Empire game updates).
 
 ### 2.2 Metrics-Driven Refactoring Cycle (Run After Every Significant Change)
+
 - Coverage: Target high 90s percent (instruction-level where possible).
 - CRAP score: ≤8.0 per method/function. Formula (exact):
   CRAP = CC² × (1 − coverage)³ + CC
@@ -56,7 +93,9 @@ This workflow produced zero-bug first-run systems in Uncle Bob’s public experi
 If any gate fails, direct the agent to fix and re-run. Exit code conventions: 0 = pass, 2 = CRAP threshold breach.
 
 ### 2.3 Multi-Agent Coordination (Swarm Pattern)
+
 Use swarm-forge[](https://github.com/unclebob/swarm-forge) or equivalent:
+
 - Define roles (architect, coder, reviewer, tester) via role-specific prompt files.
 - Assign separate git worktrees per agent.
 - Coordinate via tmux panes and notification scripts.
@@ -66,6 +105,7 @@ Use swarm-forge[](https://github.com/unclebob/swarm-forge) or equivalent:
 For C#/PowerShell/TS: Replicate swarm-forge using PowerShell scripts for worktree management and named pipes or file-based messaging.
 
 ### 2.4 Differential Mutation and Incremental Checks
+
 - Initial full mutation scan embeds a manifest footer.
 - Subsequent runs mutate only changed code (differential strategy).
 - This keeps CI fast while maintaining full coverage guarantees.
@@ -91,11 +131,13 @@ All original tools are open-source under Uncle Bob’s GitHub. Convert them dire
   - Outputs refactoring recommendations (STABLE/LOCAL/SPLIT) and AI-actionability classes.
   - Replicate for C# (xUnit/NUnit specs) or TS (Jest) using AST parsing (Roslyn or TypeScript compiler API).
 
-- **Duplication Scanner**:
-  - Custom fuzzy matcher (recently built by agents under Uncle Bob’s direction). Searches for structurally similar code blocks (≥0.5 Jaccard on normalized forms). Direct agent to implement per-language version.
-
-- **Architecture Visualization**:
+- **Dependency / Architecture Checker**:
+  - dependency-checker: Pinned in AIR-J deps (SHA `e8f3579`). Parses project references, checks for cycles, validates layered architecture rules (no upward references).
   - arch-view: https://github.com/unclebob/arch-view (agent-built; generates dependency graphs and projections).
+  - Run with: `clj -M:check-dependencies`
+  - Replicate for C# using Roslyn to parse project references and `dotnet-format` workspace analysis.
+
+- **SCRAP** also handles test-code duplication internally: fuzzy Jaccard similarity (≥0.5) on normalized test bodies, three-channel classification (harmful, case-matrix, subject repetition), and extraction pressure. There is NO separate production-source-code duplication scanner in Uncle Bob's toolchain — SCRAP covers duplication detection for tests.
 
 - **Multi-Agent Orchestrator**:
   - swarm-forge: https://github.com/unclebob/swarm-forge (tmux + worktrees + role prompts).
@@ -114,17 +156,20 @@ All original tools are open-source under Uncle Bob’s GitHub. Convert them dire
 Feed this entire skill plus each original repo to your OpenCode agent. Explicit conversion instructions:
 
 For C#:
+
 - Use Roslyn for CC and duplication.
 - coverlet + xUnit for coverage.
 - Stryker.NET or custom mutant generator for mutation testing (preserve differential manifest).
 - Output as dotnet global tool.
 
 For PowerShell:
+
 - Use PSScriptAnalyzer for complexity.
 - Pester for tests/coverage.
 - Custom AST visitor for mutation/duplication.
 
 For TypeScript:
+
 - Use existing crap4ts as base.
 - ts-morph or TypeScript compiler API for CC/duplication.
 - Jest + custom mutator (or ts-mutate equivalent).
