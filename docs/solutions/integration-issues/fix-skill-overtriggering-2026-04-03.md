@@ -1,6 +1,6 @@
 ---
 title: "Fix skill over-triggering due to overly broad trigger descriptions"
-problem_type: knowledge
+problem_type: workflow_issue
 category: integration-issues
 date: 2026-04-03
 track: knowledge

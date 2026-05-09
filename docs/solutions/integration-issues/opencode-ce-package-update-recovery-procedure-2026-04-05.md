@@ -1,6 +1,6 @@
 ---
 title: OpenCode CE package update recovery procedure
-problem_type: knowledge
+problem_type: workflow_issue
 category: integration-issues
 date: 2026-04-05
 last_updated: 2026-04-05

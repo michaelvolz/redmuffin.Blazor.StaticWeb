@@ -1,6 +1,6 @@
 ---
 title: "OpenCode Instruction Management: Operational Lessons Learned"
-problem_type: knowledge
+problem_type: workflow_issue
 category: integration-issues
 date: 2026-04-03
 track: knowledge

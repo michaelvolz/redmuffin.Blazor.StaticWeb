@@ -1,6 +1,6 @@
 ---
 title: "OpenCode Instruction Architecture: Namespace-Isolated, Lazy-Loaded Pattern"
-problem_type: knowledge
+problem_type: architecture_pattern
 category: integration-issues
 date: 2026-04-03
 track: knowledge

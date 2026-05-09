@@ -1,6 +1,6 @@
 ---
 title: Compound Engineering Plugin Installation and npm Supply Chain Protection
-problem_type: knowledge
+problem_type: best_practice
 component: devops
 module: tooling
 tags:
