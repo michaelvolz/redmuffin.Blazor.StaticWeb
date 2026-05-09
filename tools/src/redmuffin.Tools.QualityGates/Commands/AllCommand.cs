@@ -24,6 +24,11 @@ public static class AllCommand
             Required = true,
         };
 
+        var archConfigOption = new Option<string>("--arch-config")
+        {
+            Description = "Path to the YAML architecture config file",
+        };
+
         var changedOption = new Option<bool>("--changed")
         {
             Description = "Only analyze files modified since HEAD (requires git)",
@@ -39,6 +44,7 @@ public static class AllCommand
             projectOption,
             testProjectOption,
             coverageOption,
+            archConfigOption,
             changedOption,
             verboseOption,
         };
@@ -48,10 +54,13 @@ public static class AllCommand
             var projectPath = parseResult.GetValue(projectOption)!.FullName;
             var testProjectPath = parseResult.GetValue(testProjectOption)!.FullName;
             var coveragePath = parseResult.GetValue(coverageOption)!.FullName;
+            var archConfig = parseResult.GetValue(archConfigOption);
             var changedOnly = parseResult.GetValue(changedOption);
             var verbose = parseResult.GetValue(verboseOption);
 
-            return Execute(projectPath, testProjectPath, coveragePath, changedOnly, verbose);
+            return Execute(
+                projectPath, testProjectPath, coveragePath,
+                archConfig, changedOnly, verbose);
         });
 
         return command;
@@ -61,6 +70,7 @@ public static class AllCommand
         string projectPath,
         string testProjectPath,
         string coveragePath,
+        string? archConfig,
         bool changedOnly,
         bool verbose)
     {
@@ -77,17 +87,29 @@ public static class AllCommand
             writeBaseline: false,
             comparePath: null);
 
-        Console.Out.WriteLine();
-        Console.Out.WriteLine("=== Duplication: NOT YET IMPLEMENTED ===");
-        Console.Out.WriteLine("=== Architecture: NOT YET IMPLEMENTED ===");
+        var archExit = 0;
+        if (archConfig is not null)
+        {
+            Console.Out.WriteLine();
+            Console.Out.WriteLine("=== Architecture (Dependency Checker) ===");
+            archExit = ArchCommand.Execute(projectPath, archConfig, json: false);
+        }
+        else
+        {
+            Console.Out.WriteLine();
+            Console.Out.WriteLine("=== Architecture: SKIPPED (no --arch-config) ===");
+        }
 
-        var overallExit = CombineExitCodes(crapExit, scrapExit);
+        var overallExit = CombineExitCodes(crapExit, scrapExit, archExit);
         var overallStatus = overallExit == 0 ? "PASS" : "FAIL";
 
         Console.Out.WriteLine();
         var crapStatus = crapExit == 0 ? "PASS" : (crapExit == 1 ? "ERROR" : "FAIL");
         var scrapStatus = scrapExit == 0 ? "PASS" : (scrapExit == 1 ? "ERROR" : "FAIL");
-        Console.Out.WriteLine($"CRAP: {crapStatus} | SCRAP: {scrapStatus} | Overall: {overallStatus}");
+        var archStatus = archConfig is null ? "N/A"
+            : (archExit == 0 ? "PASS" : (archExit == 1 ? "ERROR" : "FAIL"));
+        Console.Out.WriteLine(
+            $"CRAP: {crapStatus} | SCRAP: {scrapStatus} | ARCH: {archStatus} | Overall: {overallStatus}");
 
         return overallExit;
     }
@@ -96,14 +118,14 @@ public static class AllCommand
     /// Combines exit codes from individual gates. Returns the worst result:
     /// 2 (threshold breach) overrides 1 (error) overrides 0 (pass).
     /// </summary>
-    public static int CombineExitCodes(int crapExit, int scrapExit)
+    public static int CombineExitCodes(int crapExit, int scrapExit, int archExit)
     {
-        if (crapExit == 2 || scrapExit == 2)
+        if (crapExit == 2 || scrapExit == 2 || archExit == 2)
         {
             return 2;
         }
 
-        if (crapExit == 1 || scrapExit == 1)
+        if (crapExit == 1 || scrapExit == 1 || archExit == 1)
         {
             return 1;
         }
