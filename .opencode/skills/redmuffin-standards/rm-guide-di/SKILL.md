@@ -5,6 +5,9 @@ description: "Shortcut: rm:guide-di. Use when injecting dependencies, registerin
 
 # rm-guide-di
 
+See also: `rm-guide-cleanup` §6 for collection abstraction conventions
+(IReadOnlyList/IReadOnlyCollection vs List).
+
 ## CRITICAL
 
 - Use constructor injection for required dependencies.

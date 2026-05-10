@@ -5,11 +5,14 @@ description: "Shortcut: rm:guide-logging. Use when adding structured logging or 
 
 # rm-guide-logging
 
+See also: `rm-guide-cleanup` §7 for `[LoggerMessage]` source generator pattern.
+
 ## CRITICAL
 
 - Use structured `ILogger<T>` logging.
-- Put `LoggerMessage` declarations in `*.Logging.cs` files only.
-- Prefer `LoggerMessage` over ad hoc `LogError`/`LogInformation` calls in hot paths.
+- Prefer `[LoggerMessage]` source generators (compile-time, zero allocations)
+  over the legacy `LoggerMessage.Define` delegate pattern.
+- Put logging declarations in `*.Logging.cs` partial class files only.
 
 ## WHEN TO LOAD
 
@@ -19,14 +22,23 @@ description: "Shortcut: rm:guide-logging. Use when adding structured logging or 
 ## GUIDANCE
 
 ```csharp
-private static readonly Action<ILogger, string, Exception?> LogProcessing
-    = LoggerMessage.Define<string>(LogLevel.Information, new EventId(1), "Processing {Item}");
+private static partial class Log
+{
+    [LoggerMessage(Level = LogLevel.Warning,
+        Message = "Image load failed for {Url}: {Error}")]
+    public static partial void ImageLoadFailed(
+        ILogger logger, string url, string error);
+}
 ```
 
+- Dynamic messages (with `$` interpolation) defeat structured logging.
+  Use format templates with named placeholders.
 - Keep log messages short and parameterized.
 - Log the outcome, not noisy internal state.
 
 ## NEVER
 
-- Do not place `LoggerMessage` declarations in the main logic file.
+- Do not place logging declarations in the main logic file.
 - Do not log secrets or full payloads.
+- Do not use ad hoc `_logger.LogError($"message {variable}")` —
+  use source-generated methods.

@@ -5,6 +5,9 @@ description: "Shortcut: rm:guide-architecture. Use when designing services, boun
 
 # rm-guide-architecture
 
+See also: `rm-gates-cleanup` Gate 3 for the Architecture gate (`--arch-config`
+flag, `arch-rules.yml`), `rm-guide-cleanup` §1 for SLAP and method quality.
+
 ## CRITICAL
 
 - Prefer composition over inheritance.
@@ -21,6 +24,8 @@ description: "Shortcut: rm:guide-architecture. Use when designing services, boun
 - Use small, explicit abstractions.
 - Keep domain, application, infrastructure, and presentation concerns separate.
 - Introduce patterns only when they reduce complexity.
+- After structural changes, run `dotnet run -- arch --arch-config arch-rules.yml`
+  to verify no dependency violations.
 
 ## NEVER
 
