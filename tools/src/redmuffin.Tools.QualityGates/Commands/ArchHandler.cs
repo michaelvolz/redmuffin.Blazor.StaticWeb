@@ -41,8 +41,8 @@ public static class ArchHandler
     }
 
     public static int DecideExitCode(
-        List<ArchViolation> violations,
-        List<ArchCycle> cycles,
+        IReadOnlyList<ArchViolation> violations,
+        IReadOnlyList<ArchCycle> cycles,
         ArchConfig config)
     {
         if (config.FailOnViolations && violations.Count > 0)
@@ -58,7 +58,7 @@ public static class ArchHandler
         return 0;
     }
 
-    public static List<ArchViolation> FindViolations(
+    public static IReadOnlyList<ArchViolation> FindViolations(
         ComponentGraph graph, ArchConfig config)
     {
         var violations = new List<ArchViolation>();
@@ -73,8 +73,9 @@ public static class ArchHandler
 
         foreach (var (sourceComp, targets) in graph.Dependencies)
         {
-            var allowed = config.AllowedDependencies.GetValueOrDefault(
-                sourceComp, []);
+            var allowed = new HashSet<string>(
+                config.AllowedDependencies.GetValueOrDefault(sourceComp, []),
+                StringComparer.Ordinal);
 
             foreach (var targetComp in targets)
             {
@@ -91,7 +92,7 @@ public static class ArchHandler
         return violations;
     }
 
-    public static List<ArchCycle> FindCycles(ComponentGraph graph)
+    public static IReadOnlyList<ArchCycle> FindCycles(ComponentGraph graph)
     {
         var cycles = new List<ArchCycle>();
         var visited = new HashSet<string>(StringComparer.Ordinal);
@@ -111,7 +112,7 @@ public static class ArchHandler
 
     private static void Dfs(
         string node,
-        Dictionary<string, HashSet<string>> adj,
+        IReadOnlyDictionary<string, ISet<string>> adj,
         HashSet<string> visited,
         HashSet<string> stack,
         List<string> path,

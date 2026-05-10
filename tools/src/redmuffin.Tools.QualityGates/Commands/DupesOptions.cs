@@ -9,7 +9,7 @@ public sealed record DupesOptions(
     int MinLines = 4,
     int MinNodes = 20,
     string Format = "text",
-    List<string>? Paths = null)
+    IReadOnlyList<string>? Paths = null)
 {
-    public List<string> Paths { get; init; } = Paths ?? [];
+    public IReadOnlyList<string> Paths { get; init; } = Paths ?? [];
 }

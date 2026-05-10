@@ -1,5 +1,6 @@
 namespace redmuffin.Tools.QualityGates.Analysis;
 
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using redmuffin.Tools.QualityGates.Commands;
@@ -13,7 +14,7 @@ public static class DupesDetector
     /// <summary>
     ///     Scans C# source files for structural duplicate candidates.
     /// </summary>
-    public static List<DupesCandidate> FindDuplicates(DupesOptions options)
+    public static IReadOnlyList<DupesCandidate> FindDuplicates(DupesOptions options)
     {
         var paths = options.Paths.Count > 0 ? options.Paths : ["."];
         var entries = ScanFiles(paths, options.MinLines, options.MinNodes);
@@ -56,7 +57,7 @@ public static class DupesDetector
         return candidates;
     }
 
-    private static List<DupesEntry> ScanFiles(List<string> paths, int minLines, int minNodes)
+    private static List<DupesEntry> ScanFiles(IReadOnlyList<string> paths, int minLines, int minNodes)
     {
         var entries = new List<DupesEntry>();
 
@@ -125,10 +126,10 @@ public static class DupesDetector
         }
     }
 
-    private static double JaccardSimilarity(HashSet<string> a, HashSet<string> b)
+    private static double JaccardSimilarity(ISet<string> a, ISet<string> b)
     {
-        var intersection = a.Intersect(b, StringComparer.Ordinal).Count();
-        var union = a.Union(b, StringComparer.Ordinal).Count();
+        var intersection = Enumerable.Intersect(a, b, StringComparer.Ordinal).Count();
+        var union = Enumerable.Union(a, b, StringComparer.Ordinal).Count();
         return union == 0 ? 0.0 : (double)intersection / union;
     }
 
@@ -137,5 +138,5 @@ public static class DupesDetector
         int StartLine,
         int EndLine,
         int Nodes,
-        HashSet<string> Fingerprints);
+        ISet<string> Fingerprints);
 }

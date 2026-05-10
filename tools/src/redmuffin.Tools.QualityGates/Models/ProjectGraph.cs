@@ -2,7 +2,7 @@ using System.Xml.Linq;
 
 namespace redmuffin.Tools.QualityGates.Models;
 
-public sealed record ProjectGraph(Dictionary<string, List<string>> Dependencies)
+public sealed record ProjectGraph(IReadOnlyDictionary<string, IReadOnlyList<string>> Dependencies)
 {
     public static ProjectGraph From(string projectPath)
     {
@@ -11,7 +11,7 @@ public sealed record ProjectGraph(Dictionary<string, List<string>> Dependencies)
             .Where(f => !f.Contains("/bin/", StringComparison.Ordinal) && !f.Contains("/obj/", StringComparison.Ordinal)
                 && !f.Contains("\\bin\\", StringComparison.Ordinal) && !f.Contains("\\obj\\", StringComparison.Ordinal));
 
-        var dependencies = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+        var dependencies = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
 
         foreach (var file in csprojFiles)
         {

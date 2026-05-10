@@ -48,10 +48,10 @@ public static class ScrapHandler
                 ? report.WorstExamples[0].ScrapScore.ToString("F1", CultureInfo.InvariantCulture)
                 : "-";
 
-            output.WriteLine(string.Create(
+            var line = string.Create(
                 CultureInfo.InvariantCulture,
-                $"{report.FilePath,-60} {recommendation.Mode,-8} {recommendation.AiActionability,-14} " +
-                $"{status,-5} avg:{report.AvgScrap:F1} max:{report.MaxScrap:F1} worst:{worstExample}"));
+                $"{report.FilePath,-60} {recommendation.Mode,-8} {recommendation.AiActionability,-14} {status,-5} avg:{report.AvgScrap:F1} max:{report.MaxScrap:F1} worst:{worstExample}");
+            output.WriteLine(line);
 
             if (options.Verbose)
             {
@@ -70,10 +70,10 @@ public static class ScrapHandler
         foreach (var m in report.Metrics.OrderByDescending(m => m.ScrapScore))
         {
             var smells = string.Join(", ", m.SmellLabels.Select(s => s.ToString()));
-            output.WriteLine(string.Create(
+            var methodLine = string.Create(
                 CultureInfo.InvariantCulture,
-                $"  {m.Method.MethodName,-40} {m.ScrapScore,-8:F1} {m.AssertionCount,-7} " +
-                $"{m.SetupDepth,-6} {m.BranchCount,-9} {smells}"));
+                $"  {m.Method.MethodName,-40} {m.ScrapScore,-8:F1} {m.AssertionCount,-7} {m.SetupDepth,-6} {m.BranchCount,-9} {smells}");
+            output.WriteLine(methodLine);
         }
     }
 

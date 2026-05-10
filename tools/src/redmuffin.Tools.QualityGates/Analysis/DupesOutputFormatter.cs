@@ -28,11 +28,14 @@ public static class DupesOutputFormatter
         var lines = new List<string>();
         foreach (var c in candidates)
         {
-            lines.Add(string.Create(CultureInfo.InvariantCulture,
+            lines.Add(string.Create(
+                CultureInfo.InvariantCulture,
                 $"DUPLICATE score={c.Score:F2}"));
-            lines.Add(string.Create(CultureInfo.InvariantCulture,
+            lines.Add(string.Create(
+                CultureInfo.InvariantCulture,
                 $"  {c.LeftFile}:{c.LeftStartLine}-{c.LeftEndLine}"));
-            lines.Add(string.Create(CultureInfo.InvariantCulture,
+            lines.Add(string.Create(
+                CultureInfo.InvariantCulture,
                 $"  {c.RightFile}:{c.RightStartLine}-{c.RightEndLine}"));
             lines.Add(string.Empty);
         }

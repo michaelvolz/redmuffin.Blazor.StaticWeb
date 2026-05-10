@@ -14,7 +14,7 @@ public static class DupesNormalizer
     /// <summary>
     ///     Normalizes a syntax node into a structural tree.
     /// </summary>
-    public static List<object> Normalize(SyntaxNode root)
+    public static IReadOnlyList<object> Normalize(SyntaxNode root)
     {
         return NormalizeNode(root);
     }
@@ -23,7 +23,7 @@ public static class DupesNormalizer
     ///     Computes a set of structural fingerprints by walking the
     ///     normalized tree and serializing every sub-form to a string.
     /// </summary>
-    public static HashSet<string> ComputeFingerprints(List<object> normalized)
+    public static ISet<string> ComputeFingerprints(IReadOnlyList<object> normalized)
     {
         var fingerprints = new HashSet<string>(StringComparer.Ordinal);
         CollectFingerprints(normalized, fingerprints);
@@ -249,7 +249,7 @@ public static class DupesNormalizer
     /// <summary>
     ///     Serializes a normalized tree to a string for inspection or comparison.
     /// </summary>
-    public static string SerializeNormalized(List<object> normalized)
+    public static string SerializeNormalized(IReadOnlyList<object> normalized)
     {
         return Serialize(normalized);
     }

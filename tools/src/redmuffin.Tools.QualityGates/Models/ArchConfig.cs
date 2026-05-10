@@ -6,9 +6,11 @@ namespace redmuffin.Tools.QualityGates.Models;
 
 public sealed record ArchConfig
 {
-    public Dictionary<string, List<string>> AllowedDependencies { get; init; } = [];
-    public Dictionary<string, string> ComponentMap { get; init; } = [];
-    public List<string> IgnoredComponents { get; init; } = [];
+    public IReadOnlyDictionary<string, IReadOnlyList<string>> AllowedDependencies { get; init; }
+        = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
+    public IReadOnlyDictionary<string, string> ComponentMap { get; init; }
+        = new Dictionary<string, string>(StringComparer.Ordinal);
+    public IReadOnlyList<string> IgnoredComponents { get; init; } = [];
     public bool FailOnCycles { get; init; } = true;
     public bool FailOnViolations { get; init; } = true;
 
@@ -29,8 +31,12 @@ public sealed record ArchConfig
 
         return new ArchConfig
         {
-            AllowedDependencies = dto.AllowedDependencies ?? [],
-            ComponentMap = dto.ComponentMap ?? [],
+            AllowedDependencies = dto.AllowedDependencies?.ToDictionary(
+                kvp => kvp.Key,
+                kvp => (IReadOnlyList<string>)kvp.Value.AsReadOnly(),
+                StringComparer.Ordinal)
+                ?? new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal),
+            ComponentMap = dto.ComponentMap ?? new Dictionary<string, string>(StringComparer.Ordinal),
             IgnoredComponents = dto.IgnoredComponents ?? [],
             FailOnCycles = dto.FailOnCycles,
             FailOnViolations = dto.FailOnViolations,

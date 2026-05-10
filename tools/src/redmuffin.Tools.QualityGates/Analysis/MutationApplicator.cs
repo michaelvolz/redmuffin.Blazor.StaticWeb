@@ -21,7 +21,8 @@ public static class MutationApplicator
         var targetNode = root.DescendantNodes()
             .FirstOrDefault(n => n.Span == oldSpan && n.IsKind(site.OriginalKind))
             ?? throw new InvalidOperationException(
-                string.Create(CultureInfo.InvariantCulture,
+                string.Create(
+                    CultureInfo.InvariantCulture,
                     $"Cannot find node with span [{oldSpan.Start},{oldSpan.End}] and kind {site.OriginalKind}"));
 
         var rewriter = new MutationRewriter(targetNode, site);

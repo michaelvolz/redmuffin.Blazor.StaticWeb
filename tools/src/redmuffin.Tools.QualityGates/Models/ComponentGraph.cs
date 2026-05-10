@@ -1,19 +1,20 @@
 namespace redmuffin.Tools.QualityGates.Models;
 
 public sealed record ComponentGraph(
-    Dictionary<string, HashSet<string>> Dependencies,
-    HashSet<string> UnmappedProjects)
+    IReadOnlyDictionary<string, ISet<string>> Dependencies,
+    IReadOnlySet<string> UnmappedProjects)
 {
     public static ComponentGraph From(ProjectGraph projects, ArchConfig config)
     {
-        var deps = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+        var deps = new Dictionary<string, ISet<string>>(StringComparer.Ordinal);
         var unmapped = new HashSet<string>(StringComparer.Ordinal);
+        var ignored = new HashSet<string>(config.IgnoredComponents, StringComparer.Ordinal);
 
         foreach (var (project, refs) in projects.Dependencies)
         {
             var component = config.ComponentMap.GetValueOrDefault(project, "Default");
 
-            if (config.IgnoredComponents.Contains(component))
+            if (ignored.Contains(component))
             {
                 continue;
             }
@@ -26,7 +27,7 @@ public sealed record ComponentGraph(
             foreach (var targetRef in refs)
             {
                 var targetComponent = config.ComponentMap.GetValueOrDefault(targetRef, "Default");
-                if (config.IgnoredComponents.Contains(targetComponent))
+                if (ignored.Contains(targetComponent))
                 {
                     continue;
                 }
@@ -38,13 +39,13 @@ public sealed record ComponentGraph(
 
                 if (!deps.TryGetValue(component, out var value))
                 {
-                    value = [];
+                    value = new HashSet<string>(StringComparer.Ordinal);
                     deps[component] = value;
                 }
 
                 if (!deps.ContainsKey(targetComponent))
                 {
-                    deps[targetComponent] = [];
+                    deps[targetComponent] = new HashSet<string>(StringComparer.Ordinal);
                 }
 
                 value.Add(targetComponent);

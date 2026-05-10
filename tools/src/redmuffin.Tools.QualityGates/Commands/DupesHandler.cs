@@ -8,7 +8,7 @@ using redmuffin.Tools.QualityGates.Analysis;
 /// </summary>
 public static class DupesHandler
 {
-    public static (int ExitCode, List<DupesCandidate> Candidates) Run(DupesOptions options)
+    public static (int ExitCode, IReadOnlyList<DupesCandidate> Candidates) Run(DupesOptions options)
     {
         try
         {

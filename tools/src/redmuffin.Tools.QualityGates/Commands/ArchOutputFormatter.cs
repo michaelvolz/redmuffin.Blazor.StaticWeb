@@ -53,15 +53,19 @@ public static class ArchOutputFormatter
 
     private static string FormatJson(ArchResult result)
     {
-        return string.Create(CultureInfo.InvariantCulture, $$"""
+        var exitCode = result.ExitCode.ToString(CultureInfo.InvariantCulture);
+        var projectsScanned = result.ProjectsScanned.ToString(CultureInfo.InvariantCulture);
+        var componentsDefined = result.ComponentsDefined.ToString(CultureInfo.InvariantCulture);
+        var jsonText = $$"""
             {
-              "exitCode": {{result.ExitCode}},
-              "projectsScanned": {{result.ProjectsScanned}},
-              "componentsDefined": {{result.ComponentsDefined}},
+              "exitCode": {{exitCode}},
+              "projectsScanned": {{projectsScanned}},
+              "componentsDefined": {{componentsDefined}},
               "violations": {{FormatJsonViolations(result)}},
               "cycles": {{FormatJsonCycles(result)}}
             }
-            """);
+            """;
+        return jsonText;
     }
 
     private static string FormatJsonViolations(ArchResult result)
