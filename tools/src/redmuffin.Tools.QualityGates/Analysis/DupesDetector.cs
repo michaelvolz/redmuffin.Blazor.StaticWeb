@@ -127,8 +127,8 @@ public static class DupesDetector
 
     private static double JaccardSimilarity(HashSet<string> a, HashSet<string> b)
     {
-        var intersection = a.Intersect(b).Count();
-        var union = a.Union(b).Count();
+        var intersection = a.Intersect(b, StringComparer.Ordinal).Count();
+        var union = a.Union(b, StringComparer.Ordinal).Count();
         return union == 0 ? 0.0 : (double)intersection / union;
     }
 

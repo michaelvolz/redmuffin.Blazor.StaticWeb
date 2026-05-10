@@ -89,7 +89,7 @@ public static class MutateHandler
         var ci = CultureInfo.InvariantCulture;
         await output.WriteLineAsync($"=== Mutation Testing: {sourcePath} ===").ConfigureAwait(false);
         await output.WriteLineAsync(
-            $"Previous mutation test: {(existingManifest?.TestedAt.ToString("O", ci) ?? "none")}")
+            $"Previous mutation test: {existingManifest?.TestedAt.ToString("O", ci) ?? "none"}")
             .ConfigureAwait(false);
         await output.WriteLineAsync(
             $"Total mutation sites: {allSites.Count.ToString(ci)}").ConfigureAwait(false);
@@ -133,7 +133,7 @@ public static class MutateHandler
 
         await output.WriteLineAsync("=== Summary ===").ConfigureAwait(false);
         await output.WriteLineAsync(
-            $"{killed.ToString(ci)}/{totalTested.ToString(ci)} mutants killed ({100.0 * killed / totalTested:F1}%)")
+            $"{killed.ToString(ci)}/{totalTested.ToString(ci)} mutants killed ({(100.0 * killed / totalTested).ToString("F1", ci)}%)")
             .ConfigureAwait(false);
         await output.WriteLineAsync(
             $"{uncovered.Count.ToString(ci)} uncovered mutations skipped").ConfigureAwait(false);

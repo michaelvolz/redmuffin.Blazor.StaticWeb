@@ -80,7 +80,7 @@ public static class AllCommand
             var mutateScan = parseResult.GetValue(mutateScanOption);
             var runDupes = parseResult.GetValue(dupesOption);
 
-            return await Execute(
+            return await ExecuteAsync(
                 projectPath, testProjectPath, coveragePath,
                 archConfig, changedOnly, verbose, mutateSource, mutateScan, runDupes).ConfigureAwait(false);
         });
@@ -88,7 +88,7 @@ public static class AllCommand
         return command;
     }
 
-    internal static async Task<int> Execute(
+    internal static async Task<int> ExecuteAsync(
         string projectPath,
         string testProjectPath,
         string coveragePath,

@@ -1,5 +1,6 @@
 namespace redmuffin.Tools.QualityGates.Analysis;
 
+using System.Globalization;
 using System.Text.Json;
 
 /// <summary>
@@ -8,7 +9,9 @@ using System.Text.Json;
 /// </summary>
 public static class DupesOutputFormatter
 {
-    public static string Format(List<DupesCandidate> candidates, string format)
+    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+
+    public static string Format(IReadOnlyList<DupesCandidate> candidates, string format)
     {
         return format switch
         {
@@ -17,7 +20,7 @@ public static class DupesOutputFormatter
         };
     }
 
-    private static string FormatText(List<DupesCandidate> candidates)
+    private static string FormatText(IReadOnlyList<DupesCandidate> candidates)
     {
         if (candidates.Count == 0)
             return "No duplicate candidates found.";
@@ -25,18 +28,21 @@ public static class DupesOutputFormatter
         var lines = new List<string>();
         foreach (var c in candidates)
         {
-            lines.Add($"DUPLICATE score={c.Score:F2}");
-            lines.Add($"  {c.LeftFile}:{c.LeftStartLine}-{c.LeftEndLine}");
-            lines.Add($"  {c.RightFile}:{c.RightStartLine}-{c.RightEndLine}");
+            lines.Add(string.Create(CultureInfo.InvariantCulture,
+                $"DUPLICATE score={c.Score:F2}"));
+            lines.Add(string.Create(CultureInfo.InvariantCulture,
+                $"  {c.LeftFile}:{c.LeftStartLine}-{c.LeftEndLine}"));
+            lines.Add(string.Create(CultureInfo.InvariantCulture,
+                $"  {c.RightFile}:{c.RightStartLine}-{c.RightEndLine}"));
             lines.Add(string.Empty);
         }
 
         return string.Join(Environment.NewLine, lines).TrimEnd();
     }
 
-    private static string FormatJson(List<DupesCandidate> candidates)
+    private static string FormatJson(IReadOnlyList<DupesCandidate> candidates)
     {
         var result = new { candidates };
-        return JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
+        return JsonSerializer.Serialize(result, JsonOptions);
     }
 }

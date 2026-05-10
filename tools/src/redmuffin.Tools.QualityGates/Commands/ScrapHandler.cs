@@ -5,6 +5,11 @@ using redmuffin.Tools.QualityGates.Analysis;
 
 public static class ScrapHandler
 {
+    private static readonly System.Text.Json.JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true,
+    };
+
     public static int Run(
         IReadOnlyList<FileScrapReport> reports,
         ScrapOptions options,
@@ -74,10 +79,7 @@ public static class ScrapHandler
 
     private static int WriteJson(IReadOnlyList<FileScrapReport> reports, TextWriter output)
     {
-        var json = System.Text.Json.JsonSerializer.Serialize(reports, new System.Text.Json.JsonSerializerOptions
-        {
-            WriteIndented = true,
-        });
+        var json = System.Text.Json.JsonSerializer.Serialize(reports, JsonOptions);
         output.WriteLine(json);
         return HasAnyFailure(reports) ? 2 : 0;
     }

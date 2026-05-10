@@ -51,6 +51,7 @@ public static class DupesNormalizer
                     result.Add(NormalizeNode(stmt));
                 return result;
             }
+
             case ReturnStatementSyntax ret:
                 return ret.Expression != null
                     ? ["return", NormalizeNode(ret.Expression)]
@@ -78,6 +79,7 @@ public static class DupesNormalizer
 
                 return parts;
             }
+
             case VariableDeclarationSyntax:
                 // Handled by LocalDeclarationStatement; skip standalone
                 return ["declare"];
@@ -93,12 +95,14 @@ public static class DupesNormalizer
                 parts.Add(NormalizeNode(forStmt.Statement));
                 return parts;
             }
+
             case ForEachStatementSyntax forEach:
             {
                 var parts = new List<object> { "foreach" };
                 parts.Add(NormalizeNode(forEach.Statement));
                 return parts;
             }
+
             case WhileStatementSyntax whileStmt:
                 return ["while", NormalizeNode(whileStmt.Condition), NormalizeNode(whileStmt.Statement)];
             case SwitchStatementSyntax switchStmt:
@@ -116,6 +120,7 @@ public static class DupesNormalizer
 
                 return parts;
             }
+
             case ThrowStatementSyntax thr:
                 return thr.Expression != null ? ["throw", NormalizeNode(thr.Expression)] : ["throw"];
             case TryStatementSyntax tryStmt:
@@ -127,6 +132,7 @@ public static class DupesNormalizer
                     parts.Add(NormalizeNode(tryStmt.Finally.Block));
                 return parts;
             }
+
             case MethodDeclarationSyntax method:
                 return NormalizeMethod(method);
             case ClassDeclarationSyntax cls:
@@ -136,6 +142,7 @@ public static class DupesNormalizer
                     parts.Add(NormalizeNode(member));
                 return parts;
             }
+
             case CompilationUnitSyntax unit:
             {
                 var parts = new List<object> { "unit" };
@@ -143,6 +150,7 @@ public static class DupesNormalizer
                     parts.Add(NormalizeNode(member));
                 return parts;
             }
+
             case NamespaceDeclarationSyntax ns:
             {
                 var parts = new List<object> { "namespace" };
@@ -150,6 +158,7 @@ public static class DupesNormalizer
                     parts.Add(NormalizeNode(member));
                 return parts;
             }
+
             case FileScopedNamespaceDeclarationSyntax fileNs:
             {
                 var parts = new List<object> { "namespace" };

@@ -1,5 +1,6 @@
 namespace redmuffin.Tools.QualityGates.Analysis;
 
+using System.Globalization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -18,9 +19,10 @@ public static class MutationApplicator
 
         var oldSpan = site.Node.Span;
         var targetNode = root.DescendantNodes()
-            .FirstOrDefault(n => n.Span == oldSpan && n.Kind() == site.OriginalKind)
+            .FirstOrDefault(n => n.Span == oldSpan && n.IsKind(site.OriginalKind))
             ?? throw new InvalidOperationException(
-                $"Cannot find node with span [{oldSpan.Start},{oldSpan.End}] and kind {site.OriginalKind}");
+                string.Create(CultureInfo.InvariantCulture,
+                    $"Cannot find node with span [{oldSpan.Start},{oldSpan.End}] and kind {site.OriginalKind}"));
 
         var rewriter = new MutationRewriter(targetNode, site);
         var newRoot = rewriter.Visit(root);
@@ -96,7 +98,7 @@ public static class MutationApplicator
             return node;
         }
 
-        private SyntaxNode MutateConditional(SyntaxNode node)
+        private static SyntaxNode MutateConditional(SyntaxNode node)
         {
             if (node is ExpressionSyntax expression)
             {
@@ -109,7 +111,7 @@ public static class MutationApplicator
             return node;
         }
 
-        private SyntaxNode MutateConstant(SyntaxNode node)
+        private static SyntaxNode MutateConstant(SyntaxNode node)
         {
             if (node is LiteralExpressionSyntax literal && literal.Kind() == SyntaxKind.NumericLiteralExpression)
             {
