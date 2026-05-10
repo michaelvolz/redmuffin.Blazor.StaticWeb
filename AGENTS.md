@@ -50,15 +50,16 @@ description: Token-optimized single-file AGENTS.md for OpenCode harness. 100% of
 
 ## COMMANDS
 
-| Command                                       | Purpose                                            | When                                        |
-| --------------------------------------------- | -------------------------------------------------- | ------------------------------------------- |
-| `dotnet test`                                 | Verify logic & prevent regressions                 | Pre-commit (mandatory)                      |
-| `dotnet build --verbosity quiet`              | Verify C# compilation                              | Immediately after any C# edit               |
-| `dotnet build -c Debug-Sass`                  | Verify UI layer (SCSS/JS)                          | Immediately after any SCSS/JS edit          |
-| `scripts/Update-PackageVersions.ps1`          | Update NuGet packages (Central Package Management) | After any package change                    |
-| `dotnet clean && dotnet build && dotnet test` | Full verification cycle                            | After NuGet updates or repeated failures    |
-| `es.exe`                                      | Ultra-fast file search                             | Large solutions or searches outside project |
-| `pwsh -NoProfile`                             | Cross-platform PowerShell execution                | Any PowerShell task                         |
+| Command                                                         | Purpose                                            | When                                        |
+| --------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------- |
+| `dotnet test`                                                   | Verify logic & prevent regressions                 | Pre-commit (mandatory)                      |
+| `dotnet build --verbosity quiet`                                | Verify C# compilation                              | Immediately after any C# edit               |
+| `dotnet build -c Debug-Sass`                                    | Verify UI layer (SCSS/JS)                          | Immediately after any SCSS/JS edit          |
+| `scripts/Update-PackageVersions.ps1`                            | Update NuGet packages (Central Package Management) | After any package change                    |
+| `dotnet run --project tests/redmuffin.Tools.QualityGates.Tests` | Run quality gates tool tests (+ build)             | After any tools/ code change                |
+| `dotnet clean && dotnet build && dotnet test`                   | Full verification cycle                            | After NuGet updates or repeated failures    |
+| `es.exe`                                                        | Ultra-fast file search                             | Large solutions or searches outside project |
+| `pwsh -NoProfile`                                               | Cross-platform PowerShell execution                | Any PowerShell task                         |
 
 **Git CLI Optimizations** (stable porcelain output for agents & scripts):
 
@@ -115,6 +116,7 @@ description: Token-optimized single-file AGENTS.md for OpenCode harness. 100% of
   - `src/redmuffin.Blazor.StaticWeb.Api/` — Backend API
   - `tests/` — Test project mirror
   - `docs/solutions/` — Persistent knowledge store
+  - `tools/` — Quality Gates toolchain (CRAP, SCRAP, Architecture, Mutation). See `tools/README.md`.
 
 ## context-mode — MANDATORY routing rules (Preserved verbatim for correctness)
 

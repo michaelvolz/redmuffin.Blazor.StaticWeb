@@ -1092,6 +1092,13 @@ redmuffin.Blazor.StaticWeb/
 
 The project includes comprehensive development tools and integrations to enhance productivity and code quality.
 
+### Quality Gates Toolchain
+
+The [Quality Gates toolchain](tools/README.md) runs Uncle Bob Martin's full
+metric suite (CRAP, SCRAP, Architecture, Mutation) as a single `dotnet` tool.
+All four gates must pass before work is considered done. See
+[`tools/README.md`](tools/README.md) for full documentation.
+
 ### Prerequisites System Requirements
 
 - **Minimum RAM**: 8GB (16GB recommended)

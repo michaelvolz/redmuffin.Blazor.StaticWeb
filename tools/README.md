@@ -1,232 +1,299 @@
 # Quality Gates Toolchain
 
 A local `dotnet tool` that runs the full Uncle Bob agentic coding metric suite
-against this repo: CRAP, mutation, SCRAP, duplication, and architecture
-checks. Every gate must pass before work is considered done.
+against this repo. Every gate must pass before work is considered done.
 
 ## Why this exists
 
 The [rm-uncle-bob-martin-agentic-coding][uncle-bob-skill] skill mandates
 running a full metric suite after every significant change. Coverage alone is
 insufficient — it must be paired with cyclomatic complexity (CRAP score),
-mutation kill rate, structural test analysis (SCRAP), duplication detection,
-and dependency architecture checks.
+mutation kill rate, structural test analysis (SCRAP), and dependency
+architecture checks.
 
-This toolchain automates all of those gates as a single, unified command.
-
-## Architecture Decisions
-
-All decisions are documented in [ADR-0002][adr]. Key points:
-
-- **Separate solution** (`tools/redmuffin.Tools.sln`) — keeps Roslyn-heavy
-  tool builds out of the main Blazor WASM AOT build path.
-- **Monolith with subcommands** — the skill requires running all gates
-  together. A single tool with an `all` subcommand gives one command, one
-  report, one exit code.
-- **Local NuGet feed** (`tools/nupkgs/`) — installs as a standard
-  `dotnet tool` without ever touching nuget.org.
-- **Roslyn + Cobertura XML** — computes cyclomatic complexity directly via
-  `Microsoft.CodeAnalysis` and maps line-level coverage from TUnit's
-  Cobertura output to per-method coverage.
-
-## Quick Start
-
-```bash
-# 1. Pack the tool
-dotnet pack tools/redmuffin.Tools.QualityGates \
-  --output tools/nupkgs
-
-# 2. Install to local tool manifest
-dotnet tool install redmuffin.Tools.QualityGates \
-  --tool-manifest .config/dotnet-tools.json \
-  --add-source ./tools/nupkgs
-
-# 3. Run all gates
-dotnet quality-gates all \
-  --project src/redmuffin.Blazor.StaticWeb \
-  --test-project tests/redmuffin.Blazor.StaticWeb.Tests \
-  --coverage-file testresults/coverage.cobertura.xml
-
-# Or a single gate
-dotnet quality-gates crap --project src/redmuffin.Blazor.StaticWeb
-dotnet quality-gates scrap --test-project tests/redmuffin.Blazor.StaticWeb.Tests
-```
-
-After any tool code change, re-pack and re-install:
-
-```bash
-dotnet pack tools/redmuffin.Tools.QualityGates --output tools/nupkgs
-dotnet tool update redmuffin.Tools.QualityGates \
-  --tool-manifest .config/dotnet-tools.json \
-  --add-source ./tools/nupkgs
-```
+This toolchain automates all four gates as a single, unified command.
 
 ## Gates
 
-| Gate             | Subcommand | Description                                                                                                                                                                                                                                          | Status  |
-| ---------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| **CRAP**         | `crap`     | Cyclomatic complexity × coverage risk. Formula: `CC² × (1 − coverage)³ + CC`. Threshold: ≤ 8 per method. Exits 2 on breach. Uses Roslyn for CC, Cobertura XML for coverage. Replicates Uncle Bob's `crap4clj`/`crap4java`.                           | Done    |
-| **SCRAP**        | `scrap`    | Test structural analyzer. Detects zero-assertion tests, low-assertion smells, duplicated setup scaffolding. Uses Jaccard similarity on Roslyn-normalized test bodies. Outputs STABLE/LOCAL/SPLIT + AI-actionability. Replicates Uncle Bob's `scrap`. | Done    |
-| **Architecture** | `arch`     | Dependency graph and layer enforcement. Parses project references, checks for cycles, validates layered architecture rules (no upward references). Replicates Uncle Bob's `dependency-checker` + `arch-view`.                                        | Next    |
-| **Mutation**     | `mutate`   | Mutation testing with differential strategy. Generates mutants, runs tests, reports kill rate (target 100%). Supports --scan, --max-workers, manifest-based differential mode. Replicates Uncle Bob's `clj-mutate`.                                  | Planned |
-| **All**          | `all`      | Runs every gate in sequence. Unified pass/fail. Non-zero exit if any gate breaches. Replicates Uncle Bob's combined workflow: structure-check → spec → cov → crap → mutate → check-dependencies.                                                     | Done    |
+| Gate             | Subcommand | Description                                                                                                              | Exit Codes                    |
+| ---------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------- |
+| **CRAP**         | `crap`     | Cyclomatic complexity × coverage risk. `CC² × (1 − cov)³ + CC`. Threshold: ≤ 8. Uses Roslyn + Cobertura XML.             | 0=pass, 1=error, 2=breach     |
+| **SCRAP**        | `scrap`    | Test structural analyzer. Jaccard similarity on Roslyn-normalized test bodies. Outputs STABLE/LOCAL/SPLIT.               | 0=pass, 1=error, 2=violations |
+| **Architecture** | `arch`     | Dependency graph + cycle detection. YAML config with allowed-dependencies, component-map, fail-on-cycles.                | 0=pass, 1=error, 2=violations |
+| **Mutation**     | `mutate`   | Mutation testing with 6 categories (19 rules). In-place source mutation via Roslyn. Differential mode via JSON manifest. | 0=pass, 1=error               |
+| **All**          | `all`      | Runs all gates in sequence. All gates execute regardless of failures (run-all policy). Returns worst exit code.          | worst of all gates            |
 
-### CRAP details
+### CRAP (Complexity Risk Analysis)
 
-The CRAP formula measures the risk of a method based on its complexity and how
-well it is tested:
+Replicates Uncle Bob's `crap4clj` / `crap4java`.
 
+- `CyclomaticComplexity.Analyze(projectPath)` walks all `.cs` files via
+  `CSharpSyntaxWalker`, counts decision points per method
+- `CoverageParser.Parse(coveragePath)` reads Cobertura XML
+- `MethodMapper.Map(methods, coverage)` joins line coverage to methods
+- `CrapHandler.Run(results, maxCrap)` formats output, returns exit code
+
+Flags: `--max-crap N` (default 8), `--changed` (only files modified since HEAD).
+
+### SCRAP (Structural Analyzer)
+
+Replicates Uncle Bob's `scrap`. Analyzes test files only.
+
+- `TestMethodParser.FindTests(dir)` discovers TUnit test methods via Roslyn
+- `ScrapDuplication.Analyze(methods)` normalizes test bodies via
+  `CSharpSyntaxRewriter`, computes Jaccard similarity (threshold 0.5, n-gram
+  size 3, skip ≤3 token norm)
+- `ExtractionPressure.ComputeFilePressure(dupReport)` computes extraction
+  pressure
+- `ScrapRecommender.Decide(report)` classifies each file: STABLE, LOCAL, or
+  SPLIT with AI-actionability
+
+All thresholds locked to Uncle Bob's
+[`policy.clj`](https://github.com/unclebob/scrap/blob/master/src/scrap/policy.clj).
+
+Flags: `--verbose`, `--json`, `--write-baseline`, `--compare-path`,
+`--stability-threshold` (default 12.0).
+
+### Architecture (Dependency Checker)
+
+Replicates Uncle Bob's `dependency-checker` + `arch-view`.
+
+Requires a YAML config file with:
+
+- `component-map`: project-name → component-name
+- `allowed-dependencies`: component → [allowed targets]. Same-component
+  references are always allowed.
+- `ignored-components`: components to skip
+- `fail-on-cycles` / `fail-on-violations` (defaults: true)
+
+Pipeline: `ArchConfig` (YAML via YamlDotNet) → `ProjectGraph.From` (`.csproj`
+reference extraction) → `ComponentGraph.Resolve` (project-to-component mapping)
+→ `ArchHandler.Run` (violation + cycle detection) → `ArchOutputFormatter`
+(text or JSON).
+
+Flags: `--arch-config <path>`, `--json`.
+
+Cross-platform note: `.csproj` files use Windows `\` path separators.
+`ProjectGraph.From` normalizes them via `.Replace('\\', Path.DirectorySeparatorChar)`.
+
+### Mutation
+
+Replicates Uncle Bob's `clj-mutate`. Mutates source files in-place, runs the
+test project, and classifies each mutant as killed or survived.
+
+**6 mutation categories (19 rules):**
+
+- Arithmetic: `+` ↔ `-`, `*` → `/`, `++` ↔ `--` (pre/post)
+- Comparison: `>` ↔ `>=`, `<` ↔ `<=`
+- Equality: `==` ↔ `!=`
+- Boolean: `true` ↔ `false`
+- Conditional: negate `if` condition (`!(x)`)
+- Constant: `0` ↔ `1`
+
+**Pipeline:** `MutationDiscoverer.FindSites(source)` (CSharpSyntaxWalker) →
+`CoverageReader.PartitionByCoverage(sites, coveredLines)` (Cobertura XML
+line-level) → `MutationApplicator.Apply(source, index, site)`
+(CSharpSyntaxRewriter, node-identified by Span) → `MutationRunner.RunAsync`
+(executes `dotnet run --project`, classifies killed/survived, crash-safe backup).
+
+**Differential mode:** `MutationManifest` embeds a JSON footer comment block
+(not Clojure EDN — format fork for C# interop) with per-method SHA256 hashes.
+Subsequent runs only mutate forms whose hash changed.
+
+**Worker isolation:** `--max-workers N > 1` creates N temp directories cloning
+the test project, dispatching mutations in parallel (matching clj-mutate's
+worker design).
+
+Flags: `--scan`, `--max-workers` (default 1), `--since-last-run`,
+`--mutate-all`, `--lines`, `--mutation-warning` (default 50),
+`--timeout-factor` (default 10), `--reuse-coverage`.
+
+Test execution uses `dotnet run --project <test-project>` (NOT `dotnet test` —
+TUnit + Microsoft.Testing.Platform in AOT mode discovers zero tests with
+`dotnet test`).
+
+## Architecture Decisions
+
+All decisions documented in [ADR-0002][adr]. Key points:
+
+- **Separate solution** (`tools/redmuffin.Tools.sln`) — keeps Roslyn-heavy
+  builds out of the main Blazor WASM AOT build path.
+- **Monolith with subcommands** — single tool with `all` subcommand gives one
+  command, one report, one exit code.
+- **Roslyn + Cobertura XML** — computes cyclomatic complexity directly via
+  `Microsoft.CodeAnalysis` and maps line-level coverage from Cobertura output.
+- **Command/Handler separation** — every gate has a `Command` class for CLI
+  wiring (thin wrapper) and a `Handler` class with `public static` methods for
+  testability (no `InternalsVisibleTo`).
+- **Run-all policy** — `AllCommand` executes every gate regardless of
+  intermediate failures, returns the worst exit code. Architecture gate skips
+  when `--arch-config` not provided.
+- **TOP REQUIREMENT** (§1.1 of Uncle Bob skill): Algorithm, CLI flags, exit
+  codes, and scope must replicate original tools exactly. Research-before-
+  implementing is mandatory.
+
+## Development
+
+### Critical operational rules
+
+1. **Always run from `tools/` directory.** The repo root `global.json` pins
+   SDK 9.0; the tool targets .NET 10 (pinned in `tools/global.json`). Wrong
+   directory → `NETSDK1045`.
+2. **Use `dotnet run --project`, not `dotnet test`.** TUnit +
+   Microsoft.Testing.Platform in AOT mode discovers zero tests via
+   `dotnet test`. The only working test command is:
+   `dotnet run --project tests/redmuffin.Tools.QualityGates.Tests`.
+3. **Never suppress analyzer warnings with pragmas.** Warnings are signals
+   that code is not following best practices. Fix the root cause properly. If
+   a fix is truly impossible, stop and ask before suppressing.
+4. **Use `dotnet format` for style fixes.** `dotnet format src/<project> --severity info`
+   auto-fixes ~75% of StyleCop and Roslyn-analyzer violations. Only manually
+   fix what remains.
+5. **No `InternalsVisibleTo`.** Handlers are `public static` for testability.
+   Test the Handler directly, not the Command.
+
+### Build and test
+
+```bash
+cd tools
+
+# Build
+dotnet build src/redmuffin.Tools.QualityGates --verbosity quiet
+
+# Test (187 tests as of 2026-05-09)
+dotnet run --project tests/redmuffin.Tools.QualityGates.Tests
+
+# Smoke test a gate
+dotnet run --project src/redmuffin.Tools.QualityGates -- <gate> [options]
+
+# Full verify cycle
+dotnet clean src/redmuffin.Tools.QualityGates
+dotnet build src/redmuffin.Tools.QualityGates --verbosity quiet
+dotnet run --project tests/redmuffin.Tools.QualityGates.Tests
 ```
-CRAP(m) = CC(m)² × (1 − coverage(m))³ + CC(m)
-```
 
-- CC = cyclomatic complexity (from Roslyn)
-- coverage = fraction of lines covered (from Cobertura XML)
+### TDD pattern (enforced by rm-tdd)
 
-Methods scoring above 8 are flagged. The tool exits with code 2 if any method
-breaches the threshold.
+- Write ONE failing test → minimal production code → refactor → next test.
+- Test the Handler directly, never the Command:
+  ```csharp
+  var exitCode = SomeHandler.Run(results, options, output);
+  await Assert.That(exitCode).IsEqualTo(0);
+  ```
+- Plan document defines test scenarios per unit. Supplement missing categories
+  (happy path, edge cases, error paths) before writing tests.
 
-The `--changed` flag enables incremental mode: only methods in files modified
-since the last commit are analyzed.
+### TUnit assertion API
 
-```
-dotnet quality-gates crap --project src/Foo --changed --max-crap 8
-```
+Use `.IsEqualTo(n)`, `.Contains(str)`, `.IsLessThan(n)`, `.Count.IsEqualTo(n)`.
+Never `.HasCount()` or `.SequenceEqual(features).IsTrue()` — these fail silently.
 
-### SCRAP details
+### Command pattern
 
-SCRAP analyzes test structural quality — the _second_ quality gate after CRAP.
-It detects test smells that CRAP's coverage-based scoring cannot see:
+New gates follow `CrapCommand` / `CrapHandler` exactly:
 
-- **Zero-assertion tests** — tests that pass but verify nothing
-- **Low-assertion tests** — single-assertion coverage-table entries
-- **Duplicated setup scaffolding** — copy-pasted Arrange blocks across examples
-- **Extraction pressure** — measures how much helper extraction would reduce duplication
+- **Command**: `public static Command Create()` returns `Command` with options.
+  `internal static int Execute(...)` wires the pipeline. Uses `SetAction`
+  (not `SetHandler`).
+- **Handler**: `public static` class. `Run()` with `TextWriter? output` param.
+  Returns exit code (0=pass, 1=error, 2=threshold breach).
+- **Options**: `public sealed record` in `Commands/`. Mutable options via
+  `with` expressions.
 
-SCRAP uses Roslyn syntax-node normalization (preserving AST shape while
-abstracting identifier names) for fuzzy Jaccard similarity (threshold 0.5)
-on test bodies. All thresholds are locked to Uncle Bob's scrap
-[`policy.clj`][scrap-policy] values.
+### Analysis pipeline pattern
 
-Output per test file: STABLE / LOCAL / SPLIT classification with
-AI-actionability (LEAVE_ALONE, AUTO_TABLE_DRIVE, AUTO_REFACTOR,
-MANUAL_SPLIT, REVIEW_FIRST). Exit code 2 if any file is SPLIT or needs
-action. Exit code 0 if all files are STABLE.
+Every gate follows: **Parser → Normalizer → Analyzer → Scorer → Recommender → Handler**.
 
-```
-dotnet quality-gates scrap --test-project tests/Foo
-dotnet quality-gates scrap --test-project tests/Foo --verbose
-dotnet quality-gates scrap --test-project tests/Foo --json
-dotnet quality-gates scrap --test-project tests/Foo --changed
-```
+### Roslyn patterns
+
+- **CSharpSyntaxWalker subclass** — for tree traversal (CRAP, mutation
+  discovery). Override specific `Visit*` methods.
+- **CSharpSyntaxRewriter subclass** — for tree mutation (SCRAP normalization,
+  mutation applicator). Override `Visit(SyntaxNode?)`.
+- **Per-file parsing** via `CSharpSyntaxTree.ParseText(source)` — not
+  `MSBuildWorkspace`.
+- **Span-based node identity** — store `SyntaxNode` references in data models
+  and identify nodes by `Span` in rewritten trees. `CSharpSyntaxWalker` and
+  `CSharpSyntaxRewriter` have incompatible base classes — use Span identity,
+  not index counting.
+
+### Adding a new gate
+
+1. Research the original Uncle Bob tool repo (see References). Confirm
+   existence, scope, thresholds, and CLI interface. Never build from memory.
+2. Create: `Analysis/` classes, `Commands/XxxCommand.cs`,
+   `Commands/XxxHandler.cs`, `Commands/XxxOptions.cs`, test files.
+3. Wire into `Program.cs`: `rootCommand.Subcommands.Add(XxxCommand.Create());`
+4. Hook into `AllCommand.cs` with appropriate flags.
+5. Add test fixture projects under `tests/.../Fixtures/` if the gate needs
+   real project execution. Add `Content Include` to the test `.csproj` for
+   output copying and `Compile Remove` to avoid duplicating source.
+6. Update the gates table and project structure in this README.
+
+### Known issues
+
+- `dotnet tool install` broken with .NET 10 packaging (`DotnetToolSettings.xml`
+  path). Smoke test with `dotnet run` instead.
+- `all` command requires a Cobertura XML coverage file — not available on dev
+  machines without running the full test suite with coverage collection.
+- Mutation runner tests (`MutationRunnerTests`) use `[NotInParallel]` because
+  they modify shared fixture files. Keep this attribute on any test that
+  mutates disk state.
 
 ## Project Structure
 
 ```
 tools/
-├── redmuffin.Tools.QualityGates/     Monolith project
-│   ├── Commands/
-│   │   ├── CrapCommand.cs            CRAP gate
-│   │   ├── CrapHandler.cs            CRAP output formatter
-│   │   ├── ScrapCommand.cs           SCRAP gate
-│   │   ├── ScrapHandler.cs           SCRAP output formatter
-│   │   ├── ScrapOptions.cs           SCRAP CLI options record
-│   │   ├── AllCommand.cs             Runs all gates in sequence
-│   │   ├── ArchCommand.cs            Architecture gate (next)
-│   │   └── MutateCommand.cs          Mutation testing gate (future)
-│   ├── Analysis/
-│   │   ├── CyclomaticComplexity.cs   Roslyn-based CC computation
-│   │   ├── CoverageParser.cs         Cobertura XML parser
-│   │   ├── MethodMapper.cs           Maps line coverage to methods
-│   │   ├── TestMethodParser.cs       TUnit test method discovery
-│   │   ├── TestNormalizer.cs         Syntax-node normalization
-│   │   ├── ScrapDuplication.cs       Jaccard similarity + channel detection
-│   │   ├── ExtractionPressure.cs     D_before formula + file pressure
-│   │   ├── ScrapScorer.cs            Per-example + per-file SCRAP scoring
-│   │   └── ScrapRecommender.cs       STABLE/LOCAL/SPLIT classification
-│   └── redmuffin.Tools.QualityGates.csproj
-├── nupkgs/                           Local NuGet feed (gitignored)
+├── global.json                        .NET 10 SDK pin
 ├── redmuffin.Tools.sln               Separate solution
-├── nuget.config                      Adds ./nupkgs/ as local source
-└── README.md                         This file
+├── nuget.config                       Local NuGet feed
+├── README.md                          This file
+├── src/redmuffin.Tools.QualityGates/
+│   ├── Program.cs                     CLI root
+│   ├── Commands/
+│   │   ├── AllCommand.cs              Runs all gates
+│   │   ├── CrapCommand.cs             CRAP gate CLI
+│   │   ├── CrapHandler.cs             CRAP output formatting
+│   │   ├── ScrapCommand.cs            SCRAP gate CLI
+│   │   ├── ScrapHandler.cs            SCRAP output formatting
+│   │   ├── ScrapOptions.cs            SCRAP options record
+│   │   ├── ArchCommand.cs             Architecture gate CLI
+│   │   ├── ArchHandler.cs             Architecture orchestration
+│   │   ├── ArchOutputFormatter.cs     Text/JSON output
+│   │   ├── MutateCommand.cs           Mutation gate CLI
+│   │   ├── MutateHandler.cs           Mutation orchestration
+│   │   └── MutateOptions.cs           Mutation options record
+│   ├── Analysis/
+│   │   ├── CyclomaticComplexity.cs    CRAP: Roslyn CC walker
+│   │   ├── CoverageParser.cs          CRAP/Mutation: Cobertura XML
+│   │   ├── CoverageReader.cs          Mutation: line-level coverage
+│   │   ├── MethodMapper.cs            CRAP: maps coverage to methods
+│   │   ├── MethodComplexity.cs        CRAP: method analysis record
+│   │   ├── MethodCrap.cs              CRAP: final score record
+│   │   ├── TestMethodParser.cs        SCRAP: TUnit test discovery
+│   │   ├── TestNormalizer.cs          SCRAP: syntax normalization
+│   │   ├── ScrapDuplication.cs        SCRAP: Jaccard similarity
+│   │   ├── ExtractionPressure.cs      SCRAP: D_before formula
+│   │   ├── ScrapScorer.cs             SCRAP: per-file scoring
+│   │   ├── ScrapRecommender.cs        SCRAP: classification
+│   │   ├── MutationRules.cs           Mutation: 19 rule definitions
+│   │   ├── MutationDiscoverer.cs      Mutation: site discovery via walker
+│   │   ├── MutationApplicator.cs      Mutation: apply via rewriter
+│   │   ├── MutationRunner.cs          Mutation: process execution + backup
+│   │   ├── MutationManifest.cs        Mutation: JSON footer + differential
+│   │   ├── MutationCategory.cs        Mutation: category enum
+│   │   ├── MutationRule.cs            Mutation: rule record
+│   │   └── MutationSite.cs            Mutation: site record (carries SyntaxNode)
+│   └── Models/
+│       └── ArchConfig.cs              Architecture: YAML config parsing
+├── tests/redmuffin.Tools.QualityGates.Tests/
+│   ├── Commands/                      Handler + composition tests
+│   ├── Analysis/                      Per-gate unit tests (187 total)
+│   └── Fixtures/
+│       ├── coverage-basic.xml         CoverageReader fixture
+│       └── MutationTarget/            MutationRunner fixture project
+└── nupkgs/                            Local NuGet feed (gitignored)
 ```
-
-## Adding a New Gate
-
-**TOP REQUIREMENT**: All gates must replicate Uncle Bob's original tools as
-closely as possible. Before implementing, read the original repo's README,
-AGENTS.md, and source code. Confirm existence, scope, thresholds, and CLI
-interface. Never build from memory or third-party summaries.
-
-1. Research the original Uncle Bob tool repo (see References below)
-2. Create a command class in `Commands/` implementing the subcommand pattern
-3. Add the command to the CLI root in `Program.cs`
-4. Hook it into `AllCommand.cs` so it runs with `all`
-5. Update the gates table in this README
-6. Update the project structure below
-7. Re-pack and re-install
-
-## CI Integration
-
-In CI, the tool runs as part of the quality gate stage after tests:
-
-```yaml
-- name: Quality Gates
-  run: |
-    dotnet tool restore
-    dotnet quality-gates all --project src/redmuffin.Blazor.StaticWeb
-```
-
-## Development
-
-> **All commands must run from the `tools/` directory.** The repo root
-> `global.json` pins SDK 9.0, but this tool targets .NET 10 (pinned in
-> `tools/global.json`). Running from the repo root produces
-> `NETSDK1045: does not support targeting .NET 10.0`.
-
-### Build
-
-```bash
-cd tools
-dotnet build src/redmuffin.Tools.QualityGates --verbosity quiet
-```
-
-### Test
-
-TUnit + Microsoft.Testing.Platform in AOT mode — `dotnet test` discovers
-**zero tests**. Use `dotnet run` instead:
-
-```bash
-cd tools
-dotnet run --project tests/redmuffin.Tools.QualityGates.Tests
-```
-
-### Smoke test a gate
-
-```bash
-cd tools
-dotnet run --project src/redmuffin.Tools.QualityGates -- scrap --test-project ../tests/redmuffin.Blazor.StaticWeb.Tests
-```
-
-### TDD and command patterns
-
-- Follow `rm-tdd` skill: write ONE failing test, minimal code to pass, refactor.
-- Test the **Handler** directly (`ScrapHandler.Run()`), not `Command.Execute()`.
-- New gates mirror `CrapCommand`/`CrapHandler` exactly.
-- TUnit assertions: `.IsEqualTo(n)`, `.Contains("text")`, `Count.IsEqualTo(n)`.
-- No `InternalsVisibleTo` — handlers are `public static`.
-
-### Analysis pipeline
-
-```
-TestMethodParser → ScrapDuplication.Analyze (normalizes internally) →
-ExtractionPressure → ScrapScorer → ScrapRecommender → ScrapHandler
-```
-
-### Known issues
-
-- `dotnet tool install` broken with .NET 10 packaging. Use `dotnet run` for now.
-- No coverage file available on dev machines — `all` command needs one.
 
 ## References
 
@@ -239,7 +306,8 @@ ExtractionPressure → ScrapScorer → ScrapRecommender → ScrapHandler
 - [Uncle Bob's SCRAP](https://github.com/unclebob/scrap)
 - [Uncle Bob's SCRAP policy](https://github.com/unclebob/scrap/blob/master/src/scrap/policy.clj)
 - [Uncle Bob's arch-view](https://github.com/unclebob/arch-view)
-- [Uncle Bob's dependency-checker (pinned in AIR-J)](https://github.com/unclebob/AIR-J/blob/master/dependency-checker.edn)
+- [Uncle Bob's dependency-checker](https://github.com/unclebob/AIR-J/blob/master/dependency-checker.edn)
+- [Uncle Bob's clj-mutate](https://github.com/unclebob/clj-mutate)
 
 [adr]: ../docs/adr/0002-quality-gates-toolchain.md
 [uncle-bob-skill]: ../.opencode/skills/rm-uncle-bob-martin-agentic-coding/SKILL.md
