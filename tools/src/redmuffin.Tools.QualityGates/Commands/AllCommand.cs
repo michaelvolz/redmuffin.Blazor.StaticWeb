@@ -39,6 +39,16 @@ public static class AllCommand
             Description = "Show detailed per-gate output",
         };
 
+        var mutateSourceOption = new Option<string?>("--mutate-source")
+        {
+            Description = "Path to source file for mutation testing",
+        };
+
+        var mutateScanOption = new Option<bool>("--mutate-scan")
+        {
+            Description = "Run mutation in scan-only mode (no test execution)",
+        };
+
         var command = new Command("all", "Run all quality gates")
         {
             projectOption,
@@ -47,6 +57,8 @@ public static class AllCommand
             archConfigOption,
             changedOption,
             verboseOption,
+            mutateSourceOption,
+            mutateScanOption,
         };
 
         command.SetAction(parseResult =>
@@ -57,10 +69,12 @@ public static class AllCommand
             var archConfig = parseResult.GetValue(archConfigOption);
             var changedOnly = parseResult.GetValue(changedOption);
             var verbose = parseResult.GetValue(verboseOption);
+            var mutateSource = parseResult.GetValue(mutateSourceOption);
+            var mutateScan = parseResult.GetValue(mutateScanOption);
 
             return Execute(
                 projectPath, testProjectPath, coveragePath,
-                archConfig, changedOnly, verbose);
+                archConfig, changedOnly, verbose, mutateSource, mutateScan);
         });
 
         return command;
@@ -72,7 +86,9 @@ public static class AllCommand
         string coveragePath,
         string? archConfig,
         bool changedOnly,
-        bool verbose)
+        bool verbose,
+        string? mutateSource,
+        bool mutateScan)
     {
         Console.Out.WriteLine("=== CRAP (Complexity Risk Analysis) ===");
         var crapExit = CrapCommand.Execute(projectPath, coveragePath, maxCrap: 8, changedOnly);
@@ -100,7 +116,23 @@ public static class AllCommand
             Console.Out.WriteLine("=== Architecture: SKIPPED (no --arch-config) ===");
         }
 
-        var overallExit = CombineExitCodes(crapExit, scrapExit, archExit);
+        var mutateExit = 0;
+        if (mutateSource is not null)
+        {
+            Console.Out.WriteLine();
+            Console.Out.WriteLine("=== Mutation Testing ===");
+            var options = new MutateOptions(
+                Scan: mutateScan);
+            mutateExit = MutateHandler.RunAsync(
+                mutateSource, testProjectPath, options).GetAwaiter().GetResult();
+        }
+        else
+        {
+            Console.Out.WriteLine();
+            Console.Out.WriteLine("=== Mutation: SKIPPED (no --mutate-source) ===");
+        }
+
+        var overallExit = CombineExitCodes(crapExit, scrapExit, archExit, mutateExit);
         var overallStatus = overallExit == 0 ? "PASS" : "FAIL";
 
         Console.Out.WriteLine();
@@ -108,25 +140,22 @@ public static class AllCommand
         var scrapStatus = scrapExit == 0 ? "PASS" : (scrapExit == 1 ? "ERROR" : "FAIL");
         var archStatus = archConfig is null ? "N/A"
             : (archExit == 0 ? "PASS" : (archExit == 1 ? "ERROR" : "FAIL"));
+        var mutateStatus = mutateSource is null ? "N/A"
+            : (mutateExit == 0 ? "PASS" : (mutateExit == 1 ? "ERROR" : "FAIL"));
         Console.Out.WriteLine(
-            $"CRAP: {crapStatus} | SCRAP: {scrapStatus} | ARCH: {archStatus} | Overall: {overallStatus}");
+            $"CRAP: {crapStatus} | SCRAP: {scrapStatus} | ARCH: {archStatus} | MUTATE: {mutateStatus} | Overall: {overallStatus}");
 
         return overallExit;
     }
 
-    /// <summary>
-    /// Combines exit codes from individual gates. Returns the worst result:
-    /// 2 (threshold breach) overrides 1 (error) overrides 0 (pass).
-    /// </summary>
-    /// <returns></returns>
-    public static int CombineExitCodes(int crapExit, int scrapExit, int archExit)
+    public static int CombineExitCodes(int crapExit, int scrapExit, int archExit, int mutateExit = 0)
     {
-        if (crapExit == 2 || scrapExit == 2 || archExit == 2)
+        if (crapExit == 2 || scrapExit == 2 || archExit == 2 || mutateExit == 2)
         {
             return 2;
         }
 
-        if (crapExit == 1 || scrapExit == 1 || archExit == 1)
+        if (crapExit == 1 || scrapExit == 1 || archExit == 1 || mutateExit == 1)
         {
             return 1;
         }
