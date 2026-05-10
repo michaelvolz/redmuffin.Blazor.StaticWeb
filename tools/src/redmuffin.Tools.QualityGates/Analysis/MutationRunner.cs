@@ -2,21 +2,6 @@ namespace redmuffin.Tools.QualityGates.Analysis;
 
 using System.Diagnostics;
 
-public sealed record MutantResult(
-    int SiteIndex,
-    MutationCategory Category,
-    int Line,
-    string Description,
-    MutantResultType Result,
-    long DurationMs);
-
-public enum MutantResultType
-{
-    Killed,
-    Survived,
-    Error,
-}
-
 public static class MutationRunner
 {
     public static async Task<IReadOnlyList<MutantResult>> RunAsync(

@@ -8,18 +8,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-public sealed record Manifest(
-    int Version,
-    DateTime TestedAt,
-    string ModuleHash,
-    IReadOnlyList<FormEntry> Forms);
-
-public sealed record FormEntry(
-    string Id,
-    int Line,
-    int EndLine,
-    string Hash);
-
 public static class MutationManifest
 {
     private const string BeginMarker = "// clj-mutate-manifest-begin";
