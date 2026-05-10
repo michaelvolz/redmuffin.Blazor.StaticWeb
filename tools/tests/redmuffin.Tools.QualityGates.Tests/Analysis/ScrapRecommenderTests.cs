@@ -4,6 +4,7 @@ using redmuffin.Tools.QualityGates.Analysis;
 
 public sealed class ScrapRecommenderTests
 {
+    private static readonly double[] SingleLowPressure = [5.0];
     [Test]
     public async Task should_classify_stable_for_well_structured_file()
     {
@@ -194,7 +195,7 @@ public sealed class ScrapRecommenderTests
 
         var pressures = Enumerable.Range(0, highPressureBlocks)
             .Select(_ => 20.0)
-            .Concat(new[] { 5.0 })
+            .Concat(SingleLowPressure)
             .ToArray();
         var pressure = new FilePressure(pressures.Sum(), pressures, 0.0, pressures.Sum());
 
