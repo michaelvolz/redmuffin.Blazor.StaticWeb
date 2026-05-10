@@ -90,7 +90,7 @@ public static class ScrapCommand
 
             if (changedOnly)
             {
-                testMethods = FilterChangedFiles(testMethods, projectPath);
+                testMethods = GitFileFilter.FilterChanged(testMethods, projectPath, m => m.FilePath);
             }
 
             if (testMethods.Count == 0)
@@ -130,63 +130,5 @@ public static class ScrapCommand
         }
 
         return reports;
-    }
-
-    private static IReadOnlyList<TestMethod> FilterChangedFiles(
-        IReadOnlyList<TestMethod> methods,
-        string projectPath)
-    {
-        var changedFiles = GetChangedFiles(projectPath);
-        if (changedFiles is null)
-        {
-            return methods;
-        }
-
-        var changedSet = new HashSet<string>(changedFiles, StringComparer.OrdinalIgnoreCase);
-        return methods
-            .Where(m => changedSet.Contains(m.FilePath))
-            .ToList()
-            .AsReadOnly();
-    }
-
-    private static HashSet<string>? GetChangedFiles(string projectPath)
-    {
-        try
-        {
-            using var process = new System.Diagnostics.Process
-            {
-                StartInfo = new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = "git",
-                    Arguments = "diff HEAD --name-only",
-                    WorkingDirectory = projectPath,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                },
-            };
-
-            process.Start();
-            var output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
-
-            if (process.ExitCode != 0)
-            {
-                return null;
-            }
-
-            var files = output
-                .Split('\n', StringSplitOptions.RemoveEmptyEntries)
-                .Select(f => f.Trim())
-                .Where(f => f.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
-                .Select(f => Path.GetFullPath(f, projectPath));
-
-            return new HashSet<string>(files, StringComparer.OrdinalIgnoreCase);
-        }
-        catch
-        {
-            return null;
-        }
     }
 }
