@@ -5,6 +5,11 @@ description: "Shortcut: rm:guide-code-quality. Use when reviewing style, readabi
 
 # rm-guide-code-quality
 
+**Note:** The comprehensive code quality standard is now `rm-guide-cleanup`.
+Load it alongside this guide for superfluous code taxonomy, characterization
+tests, method quality standards, async patterns, collection abstractions, and
+the code review checklist. This guide covers style conventions only.
+
 ## CRITICAL
 
 - Prefer clear, self-documenting code.

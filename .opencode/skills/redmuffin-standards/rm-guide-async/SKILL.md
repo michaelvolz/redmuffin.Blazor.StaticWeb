@@ -5,12 +5,27 @@ description: "Shortcut: rm:guide-async. Use when writing async methods, cancella
 
 # rm-guide-async
 
+See also: `rm-guide-cleanup` §4 for the full ConfigureAwait rules table.
+
 ## CRITICAL
 
 - Use `Async` suffix on async methods.
 - Return `Task` / `Task<T>`; avoid `async void` except event handlers.
 - Never block on async work with `.Result`, `.Wait()`, or `GetAwaiter().GetResult()`.
-- Apply `ConfigureAwait(false)` on awaited work in library code.
+
+## ConfigureAwait(false) rules
+
+| Context                              | Use ConfigureAwait(false)?                  |
+| ------------------------------------ | ------------------------------------------- |
+| Blazor WASM (single-threaded)        | No — no SynchronizationContext exists       |
+| Library code (no UI context)         | Yes — avoid capturing unknown context       |
+| Blazor Server (SignalR circuit)      | No — need the Blazor SynchronizationContext |
+| ASP.NET Core (no HttpContext needed) | Yes                                         |
+| Console apps, background services    | Yes                                         |
+| Azure Functions (isolated)           | Not needed — no SynchronizationContext      |
+
+In **our** Blazor WASM project: do NOT use `ConfigureAwait(false)` in
+component code-behind. It is unnecessary and a noise indicator.
 
 ## WHEN TO LOAD
 
