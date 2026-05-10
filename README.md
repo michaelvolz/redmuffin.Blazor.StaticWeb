@@ -89,7 +89,7 @@ Suitable for experimentation, learning, and development environments.
 ### Development & Quality
 
 - **Modern C# (C# 12/13) features** - Primary constructors, collection expressions, ref readonly parameters
-- **Comprehensive Testing** - TUnit framework with LightMock.Generator mocking
+- **Comprehensive Testing** - TUnit framework with hand-rolled fakes (see `rm-guide-testing`)
 - **Code Coverage** - Automated coverage reports with Coverlet and ReportGenerator
 - **PowerShell Automation** - Scripts for coverage report generation and viewing
 - **SCSS Styling Only** - All styling should be done using SCSS files in the `wwwroot/scss/` directory.
@@ -718,7 +718,8 @@ This project embraces **[Test-Driven Development](https://martinfowler.com/bliki
 - **Test Names**: Use descriptive test names with underscores (e.g., `Should_Return_User_When_Valid_Id_Provided`)
 - **Fast Tests**: Keep tests fast-running to enable frequent execution
 - **Independent Tests**: Each test should be able to run independently of others
-- **Mock External Dependencies**: Use mocking to isolate units under test
+- **Mock External Dependencies**: Use hand-rolled fakes for test doubles
+  (see `rm-guide-testing` for patterns)
 
 #### TDD with Our Technology Stack
 
@@ -726,45 +727,18 @@ This project embraces **[Test-Driven Development](https://martinfowler.com/bliki
 - **Constructor Injection**: Design services with dependency injection for easy testing
 - **Component Testing**: Use `TestContext` for testing Blazor components
 - **API Testing**: Test Azure Functions with HTTP triggers and dependency injection
-- **Mocking**: Use LightMock.Generator for creating test doubles
+- **Test Doubles**: Hand-rolled fakes as primary pattern. LightMock.Generator available
+  as a compile-time source-gen fallback for large interfaces
+  (see `.opencode/skills/redmuffin-standards/rm-guide-testing/SKILL.md`)
 
-#### LightMock.Generator with Optional Parameters
+#### Testing Principles
 
-This project successfully uses **LightMock.Generator** for mocking, including with interfaces that have optional parameters. A common compilation issue (CS0854) occurs when interfaces contain optional parameters like `CancellationToken cancellationToken = default`. Here's the proven solution:
-
-**❌ Problem: CS0854 Compilation Error**
-
-```csharp
-// This fails with "expression tree may not contain optional arguments"
-_mockService.Arrange(f => f.GetItemAsync<T>("namespace", "key"))
-            .Returns(Task.FromResult<T>(expectedValue));
-```
-
-**✅ Solution: Explicit Parameter Specification**
-
-```csharp
-// Always specify ALL parameters explicitly, including optional ones
-_mockService.Arrange(f => f.GetItemAsync<T>("namespace", "key", CancellationToken.None))
-            .Returns(Task.FromResult<T>(expectedValue));
-
-// For nullable parameters, use appropriate defaults
-_mockService.Arrange(f => f.SetItemAsync("ns", "key", value, null, CancellationToken.None))
-            .Returns(Task.CompletedTask);
-
-// For any-value matching with optional parameters
-_mockService.Arrange(f => f.GetItemAsync<T>("ns", The<string>.IsAnyValue, CancellationToken.None))
-            .Returns(Task.FromResult<T>(default));
-```
-
-**Key Insights:**
-
-- LightMock.Generator cannot handle ANY interface method with optional parameters in expression trees
-- Always provide explicit values for ALL parameters, even optional ones
-- Use `CancellationToken.None`, `null`, or `The<T>.IsAnyValue` as appropriate
-- This pattern works universally for all optional parameter scenarios
-- Applies to both `Arrange()` and `Assert()` calls
-
-This solution enables mocking of modern .NET interfaces that commonly use optional `CancellationToken` parameters.
+- **Pure Functions First**: Extract complex logic into `public static` methods.
+  Test them directly with zero mocking.
+- **Fakes Over Mocks**: Hand-rolled `[Interface]_Fake` classes document the
+  contract explicitly and work under WASM/AOT.
+- **One Test, One Concept**: Each test asserts one logical behavior.
+  Multiple assertions for the same concept are fine.
 
 #### Tools and Automation
 
@@ -1027,30 +1001,9 @@ redmuffin.Blazor.StaticWeb/
      - **Fluent Assertions**: Utilizes fluent async assertions and provides detailed test metadata for expressive test writing.
 
 - **[LightMock.Generator](https://github.com/anton-yashin/LightMock.Generator)**
-  High-performance compile-time mocking library for .NET, providing superior speed and AOT compatibility. **LightMock.Generator is the primary mocking framework** - NSubstitute is deprecated and will be phased out.
-
-  #### Why LightMock.Generator Over NSubstitute?
-
-  LightMock.Generator offers significant advantages over NSubstitute, making it the preferred choice for modern .NET testing:
-  1. **Compile-Time Generation**:
-     - **Zero Runtime Overhead**: Mocks are generated at compile time, eliminating runtime reflection
-     - **AOT Compatibility**: Full support for Native AOT compilation and trimming
-     - **Better Performance**: Significantly faster execution compared to reflection-based mocking
-
-  2. **Type Safety**:
-     - **Compile-Time Validation**: Mock setup errors are caught at compile time
-     - **IntelliSense Support**: Full IDE support with autocomplete and refactoring
-     - **Strongly Typed**: All mock interactions are strongly typed
-
-  3. **Modern .NET Optimizations**:
-     - **Source Generation**: Leverages C# source generators for efficient code generation
-     - **Trimming Ready**: Works seamlessly with .NET trimming and size optimization
-     - **Performance Critical**: Designed for high-performance scenarios
-
-  4. **Migration Path**:
-     - **Familiar API**: Similar API surface to existing mocking libraries
-     - **Gradual Transition**: Existing NSubstitute tests can be migrated incrementally
-     - **Consistent Patterns**: Maintains established testing patterns and conventions
+  Compile-time source-gen mocking library. Used as a fallback when hand-rolled
+  fakes would be too large. For patterns and conventions, see
+  `.opencode/skills/redmuffin-standards/rm-guide-testing/SKILL.md`.
 
 ### Build and Analysis Tools
 

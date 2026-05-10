@@ -198,3 +198,9 @@ Before any change is complete, verify:
 - [ ] No speculative code (YAGNI)
 - [ ] No comment explaining what code does — code should be self-documenting
 - [ ] Tests pass (`dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests`)
+
+## Related
+
+- `rm-guide-testing` — comprehensive test patterns, test doubles, and file structure
+- `rm-guide-naming` — naming conventions for types, members, and test doubles
+- `rm-gates-cleanup` — CRAP, SCRAP, Architecture, Mutation gate remediation

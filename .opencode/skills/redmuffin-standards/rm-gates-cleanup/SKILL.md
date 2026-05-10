@@ -217,3 +217,9 @@ After each cleanup session:
 - [ ] `dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests` — all 265 tests pass
 - [ ] Build: `dotnet build src/redmuffin.Blazor.StaticWeb --verbosity quiet`
 - [ ] No new `#pragma warning disable`
+
+## Related
+
+- `rm-guide-testing` — test patterns for CRAP fixes (pure functions, fakes, scopes)
+- `rm-guide-cleanup` — universal code quality principles
+- `docs/pure-function-extraction-testing-guide-2026-05-10.md` — pure function pattern
