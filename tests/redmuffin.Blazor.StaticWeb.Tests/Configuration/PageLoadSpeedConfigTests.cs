@@ -73,4 +73,50 @@ public sealed partial class PageLoadSpeedConfigTests
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() => Task.FromResult(PageLoadSpeedConfig.ShouldDisplayComponent(null!)));
     }
+
+    // ────────────────────────────────────────
+    // IsLocalhostHost (pure function, extracted from ShouldDisplayComponent)
+    // ────────────────────────────────────────
+
+    [Test]
+    public async Task IsLocalhostHost_ReturnsTrue_ForLocalhost()
+    {
+        var result = PageLoadSpeedConfig.IsLocalhostHost("localhost");
+        await Assert.That(result).IsTrue();
+    }
+
+    [Test]
+    public async Task IsLocalhostHost_ReturnsTrue_ForLoopback()
+    {
+        var result = PageLoadSpeedConfig.IsLocalhostHost("127.0.0.1");
+        await Assert.That(result).IsTrue();
+    }
+
+    [Test]
+    public async Task IsLocalhostHost_ReturnsTrue_ForPrivate192()
+    {
+        var result = PageLoadSpeedConfig.IsLocalhostHost("192.168.1.1");
+        await Assert.That(result).IsTrue();
+    }
+
+    [Test]
+    public async Task IsLocalhostHost_ReturnsTrue_ForPrivate10()
+    {
+        var result = PageLoadSpeedConfig.IsLocalhostHost("10.0.0.5");
+        await Assert.That(result).IsTrue();
+    }
+
+    [Test]
+    public async Task IsLocalhostHost_ReturnsTrue_ForPrivate17216()
+    {
+        var result = PageLoadSpeedConfig.IsLocalhostHost("172.16.0.1");
+        await Assert.That(result).IsTrue();
+    }
+
+    [Test]
+    public async Task IsLocalhostHost_ReturnsFalse_ForPublicHost()
+    {
+        var result = PageLoadSpeedConfig.IsLocalhostHost("example.com");
+        await Assert.That(result).IsFalse();
+    }
 }

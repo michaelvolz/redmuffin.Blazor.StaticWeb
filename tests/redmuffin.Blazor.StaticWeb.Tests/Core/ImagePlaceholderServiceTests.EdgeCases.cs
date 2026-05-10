@@ -150,4 +150,25 @@ public sealed partial class ImagePlaceholderServiceTests
         // Assert
         await Assert.That(result).IsTrue();
     }
+
+    [Test]
+    public async Task GetImageUrl_WithNullItem_ThrowsArgumentNullException()
+    {
+        using var scope = CreateTestScope();
+        var service = scope.ServiceProvider.GetRequiredService<ImagePlaceholderService>();
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            Task.FromResult(service.GetImageUrl(null!, new Dictionary<string, string>())));
+    }
+
+    [Test]
+    public async Task GetImageUrl_WithNullCache_ThrowsArgumentNullException()
+    {
+        using var scope = CreateTestScope();
+        var service = scope.ServiceProvider.GetRequiredService<ImagePlaceholderService>();
+        var item = CreateTestItem();
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            Task.FromResult(service.GetImageUrl(item, null!)));
+    }
 }
