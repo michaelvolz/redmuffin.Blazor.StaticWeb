@@ -1,0 +1,24 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Debug-Sass" />
+    <BuildType Name="Release" />
+  </Configurations>
+  <Project Path="src/redmuffin.Blazor.StaticWeb.Api/redmuffin.Blazor.StaticWeb.Api.csproj">
+    <BuildType Solution="Debug-Sass|*" Project="Debug" />
+  </Project>
+  <Project Path="src/redmuffin.Blazor.StaticWeb.Common/redmuffin.Blazor.StaticWeb.Common.csproj">
+    <BuildType Solution="Debug-Sass|*" Project="Debug" />
+  </Project>
+  <Project Path="src/redmuffin.Blazor.StaticWeb/redmuffin.Blazor.StaticWeb.csproj" />
+  <Project Path="src/SwaLauncher/SwaLauncher.csproj">
+    <BuildType Solution="Debug-Sass|*" Project="Debug" />
+  </Project>
+  <Project Path="tests/redmuffin.Blazor.StaticWeb.Api.Tests/redmuffin.Blazor.StaticWeb.Api.Tests.csproj">
+    <BuildType Solution="Debug-Sass|*" Project="Debug" />
+  </Project>
+  <Project Path="tests/redmuffin.Blazor.StaticWeb.Tests/redmuffin.Blazor.StaticWeb.Tests.csproj">
+    <BuildDependency Project="src/redmuffin.Blazor.StaticWeb.Common/redmuffin.Blazor.StaticWeb.Common.csproj" />
+    <BuildType Solution="Debug-Sass|*" Project="Debug" />
+  </Project>
+</Solution>
