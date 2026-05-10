@@ -6,6 +6,13 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 public static class MutationRules
 {
+    private static readonly HashSet<string> RandomMethodNames = new(
+        StringComparer.OrdinalIgnoreCase)
+    {
+        "Random", "Next", "Seed", "RandomRange", "GenerateSeed",
+        "NewSeed", "CreateSeed", "GetRandom", "NextRandom", "RandomSeed"
+    };
+
     public static IReadOnlyList<MutationRule> All { get; } = new List<MutationRule>
     {
         // Arithmetic
@@ -134,13 +141,6 @@ public static class MutationRules
     public static IReadOnlyList<MutationRule> GetByCategory(MutationCategory category) =>
         All.Where(r => r.Category == category).ToList();
 
-    private static readonly HashSet<string> RandomMethodNames = new(
-        StringComparer.OrdinalIgnoreCase)
-    {
-        "Random", "Next", "Seed", "RandomRange", "GenerateSeed",
-        "NewSeed", "CreateSeed", "GetRandom", "NextRandom", "RandomSeed"
-    };
-
     private static bool IsLiteralZero(SyntaxNode node) =>
         node is LiteralExpressionSyntax literal
         && literal.Kind() == SyntaxKind.NumericLiteralExpression
@@ -178,7 +178,8 @@ public static class MutationRules
         }
 
         var name = memberAccess.Name.Identifier.Text;
-        return name == "Count" || name == "Length";
+        return string.Equals(name, "Count", StringComparison.Ordinal)
+            || string.Equals(name, "Length", StringComparison.Ordinal);
     }
 
     private static bool IsLiteralZeroOrOne(ExpressionSyntax expression)

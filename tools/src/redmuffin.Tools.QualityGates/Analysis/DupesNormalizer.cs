@@ -25,7 +25,7 @@ public static class DupesNormalizer
     /// </summary>
     public static HashSet<string> ComputeFingerprints(List<object> normalized)
     {
-        var fingerprints = new HashSet<string>();
+        var fingerprints = new HashSet<string>(StringComparer.Ordinal);
         CollectFingerprints(normalized, fingerprints);
         return fingerprints;
     }
@@ -166,6 +166,7 @@ public static class DupesNormalizer
                     parts.Add(NormalizeNode(member));
                 return parts;
             }
+
             default:
                 return WalkChildren(node);
         }
@@ -243,19 +244,6 @@ public static class DupesNormalizer
         }
 
         return parts;
-    }
-
-    private static IEnumerable<List<object>> CollectStatements(StatementSyntax node)
-    {
-        if (node is BlockSyntax block)
-        {
-            var statements = new List<List<object>>();
-            foreach (var stmt in block.Statements)
-                statements.Add(NormalizeNode(stmt));
-            return statements;
-        }
-
-        return new List<List<object>> { NormalizeNode(node) };
     }
 
     /// <summary>

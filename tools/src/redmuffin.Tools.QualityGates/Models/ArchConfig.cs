@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -36,6 +37,10 @@ public sealed record ArchConfig
         };
     }
 
+    [SuppressMessage(
+        "Design",
+        "CA1812",
+        Justification = "Instantiated by YamlDotNet reflection via Deserialize<ArchConfigDto>")]
     internal sealed class ArchConfigDto
     {
         public Dictionary<string, List<string>>? AllowedDependencies { get; set; }

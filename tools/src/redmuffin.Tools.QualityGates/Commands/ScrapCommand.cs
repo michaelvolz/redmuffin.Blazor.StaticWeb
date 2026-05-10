@@ -115,7 +115,7 @@ public static class ScrapCommand
         }
     }
 
-    private static IReadOnlyList<FileScrapReport> AnalyzeTestFiles(IReadOnlyList<TestMethod> testMethods)
+    private static List<FileScrapReport> AnalyzeTestFiles(IReadOnlyList<TestMethod> testMethods)
     {
         var reports = new List<FileScrapReport>();
         var groups = testMethods.GroupBy(m => m.FilePath, StringComparer.OrdinalIgnoreCase);

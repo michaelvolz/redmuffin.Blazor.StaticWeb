@@ -84,7 +84,7 @@ public static class ScrapDuplication
 
             // Compute pairwise Jaccard and build adjacency
             var n = fileMethods.Count;
-            var edges = new List<(int a, int b)>();
+            var edges = new List<(int A, int B)>();
             for (var i = 0; i < n; i++)
             {
                 for (var j = i + 1; j < n; j++)
@@ -343,7 +343,7 @@ public static class ScrapDuplication
     /// based on shared forms, variable points, and per-method metrics.
     /// </summary>
     private static ChannelType ClassifyChannel(
-        IReadOnlyList<TestMethod> methods,
+        List<TestMethod> methods,
         int sharedForms,
         int variablePoints,
         IReadOnlyList<SimpleMethodMetrics> metrics)
