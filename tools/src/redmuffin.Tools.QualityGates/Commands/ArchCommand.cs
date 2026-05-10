@@ -13,7 +13,7 @@ public static class ArchCommand
             Required = true,
         };
 
-        var configOption = new Option<string>("--config")
+        var configOption = new Option<string>("--arch-config")
         {
             Description = "Path to the YAML architecture config file",
             Required = true,
