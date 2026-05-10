@@ -11,7 +11,7 @@ public sealed class DupesNormalizerTests
     {
         var code = "class C { void M() { if (true) return; } }";
         var tree = CSharpSyntaxTree.ParseText(code);
-        var root = tree.GetRoot();
+        var root = await tree.GetRootAsync().ConfigureAwait(false);
 
         var result = DupesNormalizer.Normalize(root);
         var text = DupesNormalizer.SerializeNormalized(result);
@@ -25,7 +25,7 @@ public sealed class DupesNormalizerTests
     {
         var code = "class C { void M() { int x = y + z; } }";
         var tree = CSharpSyntaxTree.ParseText(code);
-        var root = tree.GetRoot();
+        var root = await tree.GetRootAsync().ConfigureAwait(false);
 
         var normalized = DupesNormalizer.Normalize(root);
         var fingerprints = DupesNormalizer.ComputeFingerprints(normalized);

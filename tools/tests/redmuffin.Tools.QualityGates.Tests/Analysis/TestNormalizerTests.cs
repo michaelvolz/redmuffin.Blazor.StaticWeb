@@ -82,4 +82,12 @@ public sealed class TestNormalizerTests
             .OfType<MethodDeclarationSyntax>()
             .First();
     }
+
+    [Test]
+    public async Task should_normalize_bool_and_null_literals()
+    {
+        var method = ParseMethod("public void Foo() { var a = true; var b = false; var c = null; var d = default(int); }");
+        var features = TestNormalizer.Normalize(method);
+        await Assert.That(features).IsNotEmpty();
+    }
 }

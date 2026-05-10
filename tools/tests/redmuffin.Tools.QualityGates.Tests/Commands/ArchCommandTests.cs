@@ -166,7 +166,7 @@ public sealed class ArchCommandTests
     public async Task should_map_projects_to_components()
     {
         var config = ConfigWithMap();
-        var graph = new ProjectGraph(new Dictionary<string, List<string>>
+        var graph = new ProjectGraph(new Dictionary<string, IReadOnlyList<string>>
         {
             ["MyApp.Web"] = ["MyApp.Core"],
             ["MyApp.Core"] = [],
@@ -183,7 +183,7 @@ public sealed class ArchCommandTests
     public async Task should_assign_unmapped_projects_to_default()
     {
         var config = ConfigWithoutMap();
-        var graph = new ProjectGraph(new Dictionary<string, List<string>>
+        var graph = new ProjectGraph(new Dictionary<string, IReadOnlyList<string>>
         {
             ["SomeLib"] = [],
         });
@@ -206,7 +206,7 @@ public sealed class ArchCommandTests
               MyTests: Tests
               MyApp.Web: Web
             """);
-        var graph = new ProjectGraph(new Dictionary<string, List<string>>
+        var graph = new ProjectGraph(new Dictionary<string, IReadOnlyList<string>>
         {
             ["MyTests"] = ["MyApp.Web"],
         });
@@ -223,8 +223,8 @@ public sealed class ArchCommandTests
     {
         var config = ConfigWithMap();
         var cg = new ComponentGraph(
-            new() { ["Web"] = ["Core"] },
-            []);
+            new Dictionary<string, ISet<string>> { ["Web"] = new HashSet<string> { "Core" } },
+            new HashSet<string>());
 
         var violations = ArchHandler.FindViolations(cg, config);
 
@@ -236,8 +236,8 @@ public sealed class ArchCommandTests
     {
         var config = ConfigWithMap();
         var cg = new ComponentGraph(
-            new() { ["Core"] = ["Web"] },
-            []);
+            new Dictionary<string, ISet<string>> { ["Core"] = new HashSet<string> { "Web" } },
+            new HashSet<string>());
 
         var violations = ArchHandler.FindViolations(cg, config);
 
@@ -251,8 +251,8 @@ public sealed class ArchCommandTests
     {
         var config = ConfigWithoutMap();
         var cg = new ComponentGraph(
-            new() { ["Default"] = [] },
-            ["SomeLib"]);
+            new Dictionary<string, ISet<string>> { ["Default"] = new HashSet<string>() },
+            new HashSet<string> { "SomeLib" });
 
         var violations = ArchHandler.FindViolations(cg, config);
 
@@ -265,8 +265,8 @@ public sealed class ArchCommandTests
     {
         var config = ConfigWithMap();
         var cg = new ComponentGraph(
-            new() { ["Web"] = [] },
-            []);
+            new Dictionary<string, ISet<string>> { ["Web"] = new HashSet<string>() },
+            new HashSet<string>());
 
         var violations = ArchHandler.FindViolations(cg, config);
 
@@ -279,8 +279,8 @@ public sealed class ArchCommandTests
     public async Task should_find_no_cycles_in_acyclic_graph()
     {
         var cg = new ComponentGraph(
-            new() { ["A"] = ["B"], ["B"] = ["C"] },
-            []);
+            new Dictionary<string, ISet<string>> { ["A"] = new HashSet<string> { "B" }, ["B"] = new HashSet<string> { "C" } },
+            new HashSet<string>());
 
         var cycles = ArchHandler.FindCycles(cg);
 
@@ -291,8 +291,8 @@ public sealed class ArchCommandTests
     public async Task should_detect_simple_two_component_cycle()
     {
         var cg = new ComponentGraph(
-            new() { ["A"] = ["B"], ["B"] = ["A"] },
-            []);
+            new Dictionary<string, ISet<string>> { ["A"] = new HashSet<string> { "B" }, ["B"] = new HashSet<string> { "A" } },
+            new HashSet<string>());
 
         var cycles = ArchHandler.FindCycles(cg);
 
@@ -303,8 +303,8 @@ public sealed class ArchCommandTests
     public async Task should_detect_three_component_cycle()
     {
         var cg = new ComponentGraph(
-            new() { ["A"] = ["B"], ["B"] = ["C"], ["C"] = ["A"] },
-            []);
+            new Dictionary<string, ISet<string>> { ["A"] = new HashSet<string> { "B" }, ["B"] = new HashSet<string> { "C" }, ["C"] = new HashSet<string> { "A" } },
+            new HashSet<string>());
 
         var cycles = ArchHandler.FindCycles(cg);
 
@@ -315,8 +315,8 @@ public sealed class ArchCommandTests
     public async Task should_detect_multiple_independent_cycles()
     {
         var cg = new ComponentGraph(
-            new() { ["A"] = ["B"], ["B"] = ["A"], ["C"] = ["D"], ["D"] = ["C"] },
-            []);
+            new Dictionary<string, ISet<string>> { ["A"] = new HashSet<string> { "B" }, ["B"] = new HashSet<string> { "A" }, ["C"] = new HashSet<string> { "D" }, ["D"] = new HashSet<string> { "C" } },
+            new HashSet<string>());
 
         var cycles = ArchHandler.FindCycles(cg);
 
