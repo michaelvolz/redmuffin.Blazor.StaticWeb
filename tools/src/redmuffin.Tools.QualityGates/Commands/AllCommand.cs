@@ -13,14 +13,13 @@ public static class AllCommand
 
     private static readonly Option<DirectoryInfo> TestProjectOption = new("--test-project")
     {
-        Description = "Path to the test project directory for SCRAP analysis",
+        Description = "Path to the test project directory (used by SCRAP, --auto-coverage, and mutation testing)",
         Required = true,
     };
 
-    private static readonly Option<FileInfo> CoverageOption = new("--coverage-file")
+    private static readonly Option<FileInfo?> CoverageOption = new("--coverage-file")
     {
-        Description = "Path to the Cobertura XML coverage file for CRAP",
-        Required = true,
+        Description = "Path to the Cobertura XML coverage file for CRAP. Optional when using --auto-coverage.",
     };
 
     private static readonly Option<string> ArchConfigOption = new("--arch-config")
@@ -53,29 +52,37 @@ public static class AllCommand
         Description = "Run the duplicate code detection gate",
     };
 
+    private static readonly Option<bool> AutoCoverageOption = new("--auto-coverage")
+    {
+        Description = "Auto-generate coverage from --test-project before CRAP analysis",
+    };
+
     public static Command Create()
     {
         var command = new Command("all", "Run all quality gates")
         {
             ProjectOption, TestProjectOption, CoverageOption, ArchConfigOption,
             ChangedOption, VerboseOption, MutateSourceOption, MutateScanOption, DupesOption,
+            AutoCoverageOption,
         };
 
         command.SetAction(async parseResult =>
         {
             var projectPath = parseResult.GetValue(ProjectOption)!.FullName;
             var testProjectPath = parseResult.GetValue(TestProjectOption)!.FullName;
-            var coveragePath = parseResult.GetValue(CoverageOption)!.FullName;
+            var coverageFile = parseResult.GetValue(CoverageOption);
             var archConfig = parseResult.GetValue(ArchConfigOption);
             var changedOnly = parseResult.GetValue(ChangedOption);
             var verbose = parseResult.GetValue(VerboseOption);
             var mutateSource = parseResult.GetValue(MutateSourceOption);
             var mutateScan = parseResult.GetValue(MutateScanOption);
             var runDupes = parseResult.GetValue(DupesOption);
+            var autoCoverage = parseResult.GetValue(AutoCoverageOption);
 
             return await ExecuteAsync(
-                projectPath, testProjectPath, coveragePath,
-                archConfig, changedOnly, verbose, mutateSource, mutateScan, runDupes).ConfigureAwait(false);
+                projectPath, testProjectPath, coverageFile?.FullName,
+                archConfig, changedOnly, verbose, mutateSource, mutateScan, runDupes,
+                autoCoverage).ConfigureAwait(false);
         });
 
         return command;
@@ -84,18 +91,21 @@ public static class AllCommand
     internal static async Task<int> ExecuteAsync(
         string projectPath,
         string testProjectPath,
-        string coveragePath,
+        string? coveragePath,
         string? archConfig,
         bool changedOnly,
         bool verbose,
         string? mutateSource,
         bool mutateScan,
-        bool runDupes = false)
+        bool runDupes = false,
+        bool autoCoverage = false)
     {
         var o = Console.Out;
 
         await o.WriteLineAsync("=== CRAP (Complexity Risk Analysis) ===").ConfigureAwait(false);
-        var crapExit = CrapCommand.Execute(projectPath, coveragePath, maxCrap: 8, changedOnly);
+        var crapExit = CrapCommand.Execute(
+            projectPath, coveragePath, maxCrap: 8, changedOnly,
+            autoCoverage, testProjectPath);
 
         await o.WriteLineAsync().ConfigureAwait(false);
         await o.WriteLineAsync("=== SCRAP (Structural Analyzer) ===").ConfigureAwait(false);
@@ -103,11 +113,13 @@ public static class AllCommand
             testProjectPath, verbose: verbose, json: false,
             changedOnly: changedOnly, writeBaseline: false, comparePath: null);
 
-        var archExit = await WriteArchHeaderAsync(o, archConfig).ConfigureAwait(false)
+        var archExit = await WriteGateHeaderAsync(o, archConfig,
+                "Architecture (Dependency Checker)", "--arch-config").ConfigureAwait(false)
             ? ArchCommand.Execute(projectPath, archConfig!, json: false)
             : 0;
 
-        var mutateExit = await WriteMutateHeaderAsync(o, mutateSource).ConfigureAwait(false)
+        var mutateExit = await WriteGateHeaderAsync(o, mutateSource,
+                "Mutation Testing", "--mutate-source").ConfigureAwait(false)
             ? await MutateHandler.RunAsync(
                 mutateSource!, testProjectPath, new MutateOptions(Scan: mutateScan)).ConfigureAwait(false)
             : 0;
@@ -129,29 +141,16 @@ public static class AllCommand
         return overallExit;
     }
 
-    private static async Task<bool> WriteArchHeaderAsync(TextWriter o, string? archConfig)
+    private static async Task<bool> WriteGateHeaderAsync(TextWriter o, string? config, string gateName, string missingFlag)
     {
         await o.WriteLineAsync().ConfigureAwait(false);
-        if (archConfig is not null)
+        if (config is not null)
         {
-            await o.WriteLineAsync("=== Architecture (Dependency Checker) ===").ConfigureAwait(false);
+            await o.WriteLineAsync($"=== {gateName} ===").ConfigureAwait(false);
             return true;
         }
 
-        await o.WriteLineAsync("=== Architecture: SKIPPED (no --arch-config) ===").ConfigureAwait(false);
-        return false;
-    }
-
-    private static async Task<bool> WriteMutateHeaderAsync(TextWriter o, string? mutateSource)
-    {
-        await o.WriteLineAsync().ConfigureAwait(false);
-        if (mutateSource is not null)
-        {
-            await o.WriteLineAsync("=== Mutation Testing ===").ConfigureAwait(false);
-            return true;
-        }
-
-        await o.WriteLineAsync("=== Mutation: SKIPPED (no --mutate-source) ===").ConfigureAwait(false);
+        await o.WriteLineAsync($"=== {gateName}: SKIPPED (no {missingFlag}) ===").ConfigureAwait(false);
         return false;
     }
 

@@ -5,57 +5,53 @@ using redmuffin.Tools.QualityGates.Analysis;
 
 public static class ScrapCommand
 {
+    private static readonly Option<DirectoryInfo> TestProjectOption = new("--test-project")
+    {
+        Description = "Path to the test project directory to analyze",
+        Required = true,
+    };
+
+    private static readonly Option<bool> VerboseOption = new("--verbose")
+    {
+        Description = "Show per-example metrics in output",
+    };
+
+    private static readonly Option<bool> JsonOption = new("--json")
+    {
+        Description = "Output results as JSON",
+    };
+
+    private static readonly Option<bool> ChangedOption = new("--changed")
+    {
+        Description = "Only analyze test files modified since HEAD (requires git)",
+    };
+
+    private static readonly Option<bool> WriteBaselineOption = new("--write-baseline")
+    {
+        Description = "Write baseline to target/scrap/ for future comparison",
+    };
+
+    private static readonly Option<string?> ComparePathOption = new("--compare")
+    {
+        Description = "Path to baseline JSON file for comparison",
+    };
+
     public static Command Create()
     {
-        var testProjectOption = new Option<DirectoryInfo>("--test-project")
-        {
-            Description = "Path to the test project directory to analyze",
-            Required = true,
-        };
-
-        var verboseOption = new Option<bool>("--verbose")
-        {
-            Description = "Show per-example metrics in output",
-        };
-
-        var jsonOption = new Option<bool>("--json")
-        {
-            Description = "Output results as JSON",
-        };
-
-        var changedOption = new Option<bool>("--changed")
-        {
-            Description = "Only analyze test files modified since HEAD (requires git)",
-        };
-
-        var writeBaselineOption = new Option<bool>("--write-baseline")
-        {
-            Description = "Write baseline to target/scrap/ for future comparison",
-        };
-
-        var compareOption = new Option<string?>("--compare")
-        {
-            Description = "Path to baseline JSON file for comparison",
-        };
-
         var command = new Command("scrap", "Analyze test structural quality")
         {
-            testProjectOption,
-            verboseOption,
-            jsonOption,
-            changedOption,
-            writeBaselineOption,
-            compareOption,
+            TestProjectOption, VerboseOption, JsonOption,
+            ChangedOption, WriteBaselineOption, ComparePathOption,
         };
 
         command.SetAction(parseResult =>
         {
-            var projectPath = parseResult.GetValue(testProjectOption)!.FullName;
-            var verbose = parseResult.GetValue(verboseOption);
-            var json = parseResult.GetValue(jsonOption);
-            var changedOnly = parseResult.GetValue(changedOption);
-            var writeBaseline = parseResult.GetValue(writeBaselineOption);
-            var comparePath = parseResult.GetValue(compareOption);
+            var projectPath = parseResult.GetValue(TestProjectOption)!.FullName;
+            var verbose = parseResult.GetValue(VerboseOption);
+            var json = parseResult.GetValue(JsonOption);
+            var changedOnly = parseResult.GetValue(ChangedOption);
+            var writeBaseline = parseResult.GetValue(WriteBaselineOption);
+            var comparePath = parseResult.GetValue(ComparePathOption);
 
             return Execute(projectPath, verbose, json, changedOnly, writeBaseline, comparePath);
         });
@@ -63,49 +59,53 @@ public static class ScrapCommand
         return command;
     }
 
-    internal static int Execute(
-        string projectPath,
-        bool verbose,
-        bool json,
-        bool changedOnly,
-        bool writeBaseline,
-        string? comparePath)
+    public static int Execute(
+        string projectPath, bool verbose, bool json,
+        bool changedOnly, bool writeBaseline, string? comparePath)
+    {
+        if (!Directory.Exists(projectPath))
+        {
+            Console.Error.WriteLine($"Test project directory not found: {projectPath}");
+            return 1;
+        }
+
+        if (comparePath is not null && !File.Exists(comparePath))
+        {
+            Console.Error.WriteLine($"Baseline file not found: {comparePath}. Run with --write-baseline first.");
+            return 1;
+        }
+
+        var testMethods = DiscoverTestMethods(projectPath, changedOnly);
+        if (testMethods.Count == 0)
+        {
+            Console.Out.WriteLine("No test methods found in the project.");
+            return 0;
+        }
+
+        return RunScrapAnalysis(testMethods, verbose, json, writeBaseline, comparePath);
+    }
+
+    public static IReadOnlyList<TestMethod> DiscoverTestMethods(string projectPath, bool changedOnly)
+    {
+        var testMethods = TestMethodParser.FindTests(projectPath);
+        if (changedOnly)
+        {
+            testMethods = GitFileFilter.FilterChanged(testMethods, projectPath, m => m.FilePath);
+        }
+
+        return testMethods;
+    }
+
+    public static int RunScrapAnalysis(
+        IReadOnlyList<TestMethod> testMethods, bool verbose, bool json,
+        bool writeBaseline, string? comparePath)
     {
         try
         {
-            if (!Directory.Exists(projectPath))
-            {
-                Console.Error.WriteLine($"Test project directory not found: {projectPath}");
-                return 1;
-            }
-
-            // Validate compare mode
-            if (comparePath is not null && !File.Exists(comparePath))
-            {
-                Console.Error.WriteLine($"Baseline file not found: {comparePath}. Run with --write-baseline first.");
-                return 1;
-            }
-
-            var testMethods = TestMethodParser.FindTests(projectPath);
-
-            if (changedOnly)
-            {
-                testMethods = GitFileFilter.FilterChanged(testMethods, projectPath, m => m.FilePath);
-            }
-
-            if (testMethods.Count == 0)
-            {
-                Console.Out.WriteLine("No test methods found in the project.");
-                return 0;
-            }
-
             var reports = AnalyzeTestFiles(testMethods);
             var options = new ScrapOptions(
-                Verbose: verbose,
-                Json: json,
-                WriteBaseline: writeBaseline,
-                ComparePath: comparePath);
-
+                Verbose: verbose, Json: json,
+                WriteBaseline: writeBaseline, ComparePath: comparePath);
             return ScrapHandler.Run(reports, options);
         }
         catch (Exception ex)

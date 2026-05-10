@@ -8,6 +8,7 @@ internal static class GitFileFilter
     /// <summary>
     ///     Filters methods to only those in files modified since HEAD.
     /// </summary>
+    /// <returns></returns>
     public static IReadOnlyList<T> FilterChanged<T>(
         IReadOnlyList<T> methods,
         string projectPath,

@@ -49,21 +49,17 @@ public static class DupesCommand
         command.SetAction(parseResult =>
         {
             var paths = parseResult.GetValue(PathsArg) ?? [];
-            var threshold = parseResult.GetValue(ThresholdOption);
-            if (threshold <= 0) threshold = 0.82;
-            var minLines = parseResult.GetValue(MinLinesOption);
-            if (minLines <= 0) minLines = 4;
-            var minNodes = parseResult.GetValue(MinNodesOption);
-            if (minNodes <= 0) minNodes = 20;
             var format = parseResult.GetValue(FormatOption) ?? "text";
-            var json = parseResult.GetValue(JsonOption);
 
-            if (json) format = "json";
+            if (parseResult.GetValue(JsonOption))
+            {
+                format = "json";
+            }
 
             var options = new DupesOptions(
-                Threshold: threshold,
-                MinLines: minLines,
-                MinNodes: minNodes,
+                Threshold: ApplyDefault(parseResult.GetValue(ThresholdOption), 0.82),
+                MinLines: ApplyDefault(parseResult.GetValue(MinLinesOption), 4),
+                MinNodes: ApplyDefault(parseResult.GetValue(MinNodesOption), 20),
                 Format: format,
                 Paths: [.. paths]);
 
@@ -74,4 +70,8 @@ public static class DupesCommand
 
         return command;
     }
+
+    private static double ApplyDefault(double value, double defaultValue) => value > 0 ? value : defaultValue;
+
+    private static int ApplyDefault(int value, int defaultValue) => value > 0 ? value : defaultValue;
 }

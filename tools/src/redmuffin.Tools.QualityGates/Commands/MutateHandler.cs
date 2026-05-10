@@ -6,9 +6,7 @@ using redmuffin.Tools.QualityGates.Analysis;
 public static class MutateHandler
 {
     public static async Task<int> RunAsync(
-        string sourcePath,
-        string testProjectPath,
-        MutateOptions options,
+        string sourcePath, string testProjectPath, MutateOptions options,
         TextWriter? output = null)
     {
         output ??= Console.Out;
@@ -19,106 +17,61 @@ public static class MutateHandler
             return 1;
         }
 
-        // 1. Read source, strip manifest, discover sites
-        var source = await File.ReadAllTextAsync(sourcePath).ConfigureAwait(false);
-        var strippedSource = MutationManifest.Strip(source);
-        var existingManifest = MutationManifest.Extract(source);
-        var allSites = MutationDiscoverer.FindSites(strippedSource);
-
-        // 2. Load coverage
-        var coveragePath = Path.Combine(
-            Path.GetDirectoryName(testProjectPath) ?? ".",
-            "coverage.cobertura.xml");
-
-        HashSet<int> coveredLines;
-
-        if (File.Exists(coveragePath))
+        var (sites, allSites, covered, uncovered, changedCount, existingManifest, strippedSource) =
+            await DiscoverSitesAsync(sourcePath, testProjectPath, options, output).ConfigureAwait(false);
+        if (sites is null)
         {
-            coveredLines = new HashSet<int>(CoverageReader.LoadCoverage(coveragePath));
-        }
-        else if (options.ReuseCoverage)
-        {
-            await output.WriteLineAsync(
-                "Error: --reuse-coverage specified but no coverage file found. Run coverage generation first.")
-                .ConfigureAwait(false);
             return 1;
         }
-        else
-        {
-            coveredLines = [];
-        }
 
-        var (covered, uncovered) = CoverageReader.PartitionByCoverage(allSites, coveredLines);
+        await PrintHeaderAsync(sourcePath, allSites, covered, uncovered,
+            changedCount, existingManifest, output).ConfigureAwait(false);
 
-        // 3. Apply manifest differential filtering
-        var sites = new List<MutationSite>(covered);
-        var changedCount = sites.Count;
-
-        if (existingManifest is not null && !options.MutateAll)
-        {
-            var currentManifest = MutationManifest.Build(strippedSource, DateTime.UtcNow);
-            var changedIndices = MutationManifest.ChangedFormIndices(existingManifest, currentManifest);
-
-            if (changedIndices.Count > 0)
-            {
-                var changedLines = new HashSet<int>();
-                foreach (var idx in changedIndices)
-                {
-                    if (idx < currentManifest.Forms.Count)
-                    {
-                        var form = currentManifest.Forms[idx];
-                        for (var l = form.Line; l <= form.EndLine; l++)
-                        {
-                            changedLines.Add(l);
-                        }
-                    }
-                }
-
-                sites = sites.Where(s => changedLines.Contains(s.Line)).ToList();
-                changedCount = sites.Count;
-            }
-        }
-
-        // 4. Apply --lines filtering
-        if (options.Lines is { Count: > 0 })
-        {
-            sites = sites.Where(s => options.Lines.Contains(s.Line)).ToList();
-        }
-
-        // 5. Print header
-        var ci = CultureInfo.InvariantCulture;
-        await output.WriteLineAsync($"=== Mutation Testing: {sourcePath} ===").ConfigureAwait(false);
-        await output.WriteLineAsync(
-            $"Previous mutation test: {existingManifest?.TestedAt.ToString("O", ci) ?? "none"}")
-            .ConfigureAwait(false);
-        await output.WriteLineAsync(
-            $"Total mutation sites: {allSites.Count.ToString(ci)}").ConfigureAwait(false);
-        await output.WriteLineAsync(
-            $"Covered mutation sites: {covered.Count.ToString(ci)}").ConfigureAwait(false);
-        await output.WriteLineAsync(
-            $"Uncovered mutation sites: {uncovered.Count.ToString(ci)}").ConfigureAwait(false);
-        await output.WriteLineAsync(
-            $"Changed mutation sites: {changedCount.ToString(ci)}").ConfigureAwait(false);
-        await output.WriteLineAsync(
-            $"Manifest exists: {(existingManifest is not null ? "yes" : "no")}").ConfigureAwait(false);
-        await output.WriteLineAsync(
-            $"Module hash changed: {(existingManifest is not null && !options.MutateAll ? "yes" : "n/a")}")
-            .ConfigureAwait(false);
-        await output.WriteLineAsync(
-            $"Differential surface area: {changedCount.ToString(ci)} mutations in changed forms")
-            .ConfigureAwait(false);
-        await output.WriteLineAsync().ConfigureAwait(false);
-
-        // 6. If scan mode, stop here
         if (options.Scan)
         {
             return 0;
         }
 
-        // 7. Run mutations
+        return await ExecuteMutationsAsync(sourcePath, testProjectPath, options,
+            sites, uncovered, strippedSource, existingManifest, output).ConfigureAwait(false);
+    }
+
+    public static async
+        Task<(IReadOnlyList<MutationSite>? Sites, IReadOnlyList<MutationSite> AllSites,
+            IReadOnlyList<MutationSite> Covered, IReadOnlyList<MutationSite> Uncovered,
+            int ChangedCount, Manifest? Manifest, string StrippedSource)>
+        DiscoverSitesAsync(string sourcePath, string testProjectPath, MutateOptions options, TextWriter output)
+    {
+        var source = await File.ReadAllTextAsync(sourcePath).ConfigureAwait(false);
+        var strippedSource = MutationManifest.Strip(source);
+        var existingManifest = MutationManifest.Extract(source);
+        var allSites = MutationDiscoverer.FindSites(strippedSource);
+
+        var coveredLines = LoadCoverage(testProjectPath, options, output);
+        if (coveredLines is null)
+        {
+            return (null, allSites, [], [], 0, existingManifest, strippedSource);
+        }
+
+        var (covered, uncovered) = CoverageReader.PartitionByCoverage(allSites, coveredLines);
+        var sites = new List<MutationSite>(covered);
+        var changedCount = ApplyDifferentialFilter(sites, strippedSource, existingManifest, options);
+
+        if (options.Lines is { Count: > 0 })
+        {
+            sites = [.. sites.Where(s => options.Lines.Contains(s.Line))];
+        }
+
+        return (sites, allSites, covered, uncovered, changedCount, existingManifest, strippedSource);
+    }
+
+    private static async Task<int> ExecuteMutationsAsync(
+        string sourcePath, string testProjectPath, MutateOptions options,
+        IReadOnlyList<MutationSite> sites, IReadOnlyList<MutationSite> uncovered,
+        string strippedSource, Manifest? existingManifest, TextWriter output)
+    {
         var results = await MutationRunner.RunAsync(
-            sourcePath, sites.AsReadOnly(), testProjectPath, options.TimeoutFactor)
-            .ConfigureAwait(false);
+            sourcePath, sites, testProjectPath, options.TimeoutFactor).ConfigureAwait(false);
 
         if (results.Count == 0)
         {
@@ -127,33 +80,138 @@ public static class MutateHandler
             return 1;
         }
 
+        PrintSummary(results, uncovered, output);
+        WriteManifest(sourcePath, strippedSource);
+        return 0;
+    }
+
+    private static void WriteManifest(string sourcePath, string strippedSource)
+    {
+        var newManifest = MutationManifest.Build(strippedSource, DateTime.UtcNow);
+        var newSource = MutationManifest.Embed(strippedSource, newManifest);
+        File.WriteAllText(sourcePath, newSource);
+    }
+
+    private static HashSet<int>? LoadCoverage(
+        string testProjectPath, MutateOptions options, TextWriter output)
+    {
+        var coveragePath = Path.Combine(
+            Path.GetDirectoryName(testProjectPath) ?? ".", "coverage.cobertura.xml");
+
+        if (File.Exists(coveragePath))
+        {
+            return [.. CoverageReader.LoadCoverage(coveragePath)];
+        }
+
+        if (options.ReuseCoverage)
+        {
+            output.Write("Error: --reuse-coverage specified but no coverage file found.");
+            return null;
+        }
+
+        return [];
+    }
+
+    public static int ApplyDifferentialFilter(
+        IList<MutationSite> sites, string strippedSource, Manifest? existingManifest,
+        MutateOptions options)
+    {
+        if (existingManifest is null || options.MutateAll)
+        {
+            return sites.Count;
+        }
+
+        var currentManifest = MutationManifest.Build(strippedSource, DateTime.UtcNow);
+        var changedIndices = MutationManifest.ChangedFormIndices(existingManifest, currentManifest);
+        if (changedIndices.Count == 0)
+        {
+            return sites.Count;
+        }
+
+        var changedLines = CollectChangedLines(changedIndices, currentManifest);
+        var filtered = sites.Where(s => changedLines.Contains(s.Line)).ToList();
+        sites.Clear();
+        foreach (var site in filtered)
+        {
+            sites.Add(site);
+        }
+
+        return sites.Count;
+    }
+
+    private static HashSet<int> CollectChangedLines(
+        IEnumerable<int> changedIndices, Manifest currentManifest)
+    {
+        var lines = new HashSet<int>();
+        foreach (var idx in changedIndices)
+        {
+            if (idx < currentManifest.Forms.Count)
+            {
+                var form = currentManifest.Forms[idx];
+                for (var l = form.Line; l <= form.EndLine; l++)
+                {
+                    lines.Add(l);
+                }
+            }
+        }
+
+        return lines;
+    }
+
+    private static async Task PrintHeaderAsync(
+        string sourcePath, IReadOnlyList<MutationSite> allSites,
+        IReadOnlyList<MutationSite> covered, IReadOnlyList<MutationSite> uncovered,
+        int changedCount, Manifest? existingManifest, TextWriter output)
+    {
+        foreach (var line in BuildHeaderLines(sourcePath, allSites.Count,
+            covered.Count, uncovered.Count, changedCount, existingManifest))
+        {
+            await output.WriteLineAsync(line).ConfigureAwait(false);
+        }
+
+        await output.WriteLineAsync().ConfigureAwait(false);
+    }
+
+    public static IReadOnlyList<string> BuildHeaderLines(
+        string sourcePath, int totalSites, int coveredSites, int uncoveredSites,
+        int changedCount, Manifest? existingManifest)
+    {
+        var ci = CultureInfo.InvariantCulture;
+        return
+        [
+            $"=== Mutation Testing: {sourcePath} ===",
+            $"Previous mutation test: {existingManifest?.TestedAt.ToString("O", ci) ?? "none"}",
+            $"Total mutation sites: {totalSites.ToString(ci)}",
+            $"Covered mutation sites: {coveredSites.ToString(ci)}",
+            $"Uncovered mutation sites: {uncoveredSites.ToString(ci)}",
+            $"Changed mutation sites: {changedCount.ToString(ci)}",
+            $"Manifest exists: {(existingManifest is not null ? "yes" : "no")}",
+            $"Module hash changed: {(existingManifest is not null && changedCount > 0 ? "yes" : "n/a")}",
+            $"Differential surface area: {changedCount.ToString(ci)} mutations in changed forms",
+        ];
+    }
+
+    private static void PrintSummary(
+        IReadOnlyList<MutantResult> results, IReadOnlyList<MutationSite> uncovered,
+        TextWriter output)
+    {
+        var ci = CultureInfo.InvariantCulture;
         var killed = results.Count(r => r.Result == MutantResultType.Killed);
         var survived = results.Where(r => r.Result == MutantResultType.Survived).ToList();
         var totalTested = killed + survived.Count;
 
-        await output.WriteLineAsync("=== Summary ===").ConfigureAwait(false);
-        await output.WriteLineAsync(
-            $"{killed.ToString(ci)}/{totalTested.ToString(ci)} mutants killed ({(100.0 * killed / totalTested).ToString("F1", ci)}%)")
-            .ConfigureAwait(false);
-        await output.WriteLineAsync(
-            $"{uncovered.Count.ToString(ci)} uncovered mutations skipped").ConfigureAwait(false);
+        output.WriteLine("=== Summary ===");
+        output.WriteLine(
+            $"{killed.ToString(ci)}/{totalTested.ToString(ci)} mutants killed ({(100.0 * killed / totalTested).ToString("F1", ci)}%)");
+        output.WriteLine($"{uncovered.Count.ToString(ci)} uncovered mutations skipped");
 
         if (survived.Count > 0)
         {
-            await output.WriteLineAsync("Survivors:").ConfigureAwait(false);
+            output.WriteLine("Survivors:");
             foreach (var s in survived)
             {
-                await output.WriteLineAsync(
-                    $"  #{s.SiteIndex.ToString(ci)}  L{s.Line.ToString(ci)}   {s.Description}")
-                    .ConfigureAwait(false);
+                output.WriteLine($"  #{s.SiteIndex.ToString(ci)}  L{s.Line.ToString(ci)}   {s.Description}");
             }
         }
-
-        // 8. Write updated manifest
-        var newManifest = MutationManifest.Build(strippedSource, DateTime.UtcNow);
-        var newSource = MutationManifest.Embed(strippedSource, newManifest);
-        await File.WriteAllTextAsync(sourcePath, newSource).ConfigureAwait(false);
-
-        return 0; // survivors are informational per clj-mutate
     }
 }

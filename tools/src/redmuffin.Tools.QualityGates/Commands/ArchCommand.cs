@@ -45,7 +45,7 @@ public static class ArchCommand
         return command;
     }
 
-    internal static int Execute(string projectPath, string configPath, bool json)
+    public static int Execute(string projectPath, string configPath, bool json)
     {
         var (exitCode, result) = ArchHandler.Run(configPath, projectPath);
         var output = ArchOutputFormatter.Format(result, json);
