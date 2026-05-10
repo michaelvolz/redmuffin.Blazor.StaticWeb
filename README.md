@@ -1099,6 +1099,25 @@ metric suite (CRAP, SCRAP, Architecture, Mutation) as a single `dotnet` tool.
 All four gates must pass before work is considered done. See
 [`tools/README.md`](tools/README.md) for full documentation.
 
+### Guiding Principles & Authors
+
+Our code quality standards are grounded in these authors. All code changes
+must improve the code per their principles. See `rm-guide-cleanup` and
+`rm-gates-cleanup` skills for the full rule set.
+
+| Author                       | Key Contribution                                                  |
+| ---------------------------- | ----------------------------------------------------------------- |
+| Robert C. Martin (Uncle Bob) | Clean Code, SOLID, TDD, metrics-driven development                |
+| Kent Beck                    | TDD, Test Desiderata, Extreme Programming, YAGNI                  |
+| Michael Feathers             | Working Effectively with Legacy Code, characterization tests      |
+| Dave Farley                  | Modern Software Engineering, Continuous Delivery, fast feedback   |
+| Martin Fowler                | Refactoring, patterns, decompose conditional                      |
+| Sandi Metz                   | Practical OOD, duplication vs wrong abstraction, Rule of Three    |
+| John Ousterhout              | A Philosophy of Software Design, deep modules (use for structure) |
+| Steve Freeman & Nat Pryce    | Growing OO Software, mock-object TDD                              |
+| Kevlin Henney                | Simplicity before generality, use before reuse                    |
+| Mary & Tom Poppendieck       | Lean Software Development, eliminate waste                        |
+
 ### Prerequisites System Requirements
 
 - **Minimum RAM**: 8GB (16GB recommended)
