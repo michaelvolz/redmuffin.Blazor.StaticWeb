@@ -131,7 +131,7 @@ public class CacheMonitoringService : ICacheMonitoringService
         return CacheHealthStatus.Healthy;
     }
 
-    public static List<string> AnalyzePerformanceIssues(CacheStats stats, double storageUtilization)
+    public static IReadOnlyList<string> AnalyzePerformanceIssues(CacheStats stats, double storageUtilization)
     {
         var issues = new List<string>();
 

@@ -33,7 +33,7 @@ public class CacheHealthMetrics
     /// <summary>
     ///     Performance issues detected.
     /// </summary>
-    public IList<string> PerformanceIssues { get; set; } = new List<string>();
+    public IReadOnlyList<string> PerformanceIssues { get; set; } = new List<string>();
 
     /// <summary>
     ///     Health check timestamp.
