@@ -49,6 +49,11 @@ public static class AllCommand
             Description = "Run mutation in scan-only mode (no test execution)",
         };
 
+        var dupesOption = new Option<bool>("--dupes")
+        {
+            Description = "Run the duplicate code detection gate",
+        };
+
         var command = new Command("all", "Run all quality gates")
         {
             projectOption,
@@ -59,6 +64,7 @@ public static class AllCommand
             verboseOption,
             mutateSourceOption,
             mutateScanOption,
+            dupesOption,
         };
 
         command.SetAction(parseResult =>
@@ -71,10 +77,11 @@ public static class AllCommand
             var verbose = parseResult.GetValue(verboseOption);
             var mutateSource = parseResult.GetValue(mutateSourceOption);
             var mutateScan = parseResult.GetValue(mutateScanOption);
+            var runDupes = parseResult.GetValue(dupesOption);
 
             return Execute(
                 projectPath, testProjectPath, coveragePath,
-                archConfig, changedOnly, verbose, mutateSource, mutateScan);
+                archConfig, changedOnly, verbose, mutateSource, mutateScan, runDupes);
         });
 
         return command;
@@ -88,7 +95,8 @@ public static class AllCommand
         bool changedOnly,
         bool verbose,
         string? mutateSource,
-        bool mutateScan)
+        bool mutateScan,
+        bool runDupes = false)
     {
         Console.Out.WriteLine("=== CRAP (Complexity Risk Analysis) ===");
         var crapExit = CrapCommand.Execute(projectPath, coveragePath, maxCrap: 8, changedOnly);
@@ -132,7 +140,18 @@ public static class AllCommand
             Console.Out.WriteLine("=== Mutation: SKIPPED (no --mutate-source) ===");
         }
 
-        var overallExit = CombineExitCodes(crapExit, scrapExit, archExit, mutateExit);
+        var dupesExit = 0;
+        if (runDupes)
+        {
+            Console.Out.WriteLine();
+            Console.Out.WriteLine("=== Dupes (Duplicate Code Detection) ===");
+            var dupesOptions = new DupesOptions(Paths: [projectPath]);
+            var (exitCode, candidates) = DupesHandler.Run(dupesOptions);
+            Console.Out.WriteLine(Analysis.DupesOutputFormatter.Format(candidates, "text"));
+            dupesExit = exitCode;
+        }
+
+        var overallExit = CombineExitCodes(crapExit, scrapExit, archExit, mutateExit, dupesExit);
         var overallStatus = overallExit == 0 ? "PASS" : "FAIL";
 
         Console.Out.WriteLine();
@@ -142,15 +161,18 @@ public static class AllCommand
             : (archExit == 0 ? "PASS" : (archExit == 1 ? "ERROR" : "FAIL"));
         var mutateStatus = mutateSource is null ? "N/A"
             : (mutateExit == 0 ? "PASS" : (mutateExit == 1 ? "ERROR" : "FAIL"));
+        var dupesStatus = runDupes
+            ? (dupesExit == 0 ? "PASS" : (dupesExit == 1 ? "ERROR" : "FAIL"))
+            : "N/A";
         Console.Out.WriteLine(
-            $"CRAP: {crapStatus} | SCRAP: {scrapStatus} | ARCH: {archStatus} | MUTATE: {mutateStatus} | Overall: {overallStatus}");
+            $"CRAP: {crapStatus} | SCRAP: {scrapStatus} | ARCH: {archStatus} | MUTATE: {mutateStatus} | DUPES: {dupesStatus} | Overall: {overallStatus}");
 
         return overallExit;
     }
 
-    public static int CombineExitCodes(int crapExit, int scrapExit, int archExit, int mutateExit = 0)
+    public static int CombineExitCodes(int crapExit, int scrapExit, int archExit, int mutateExit = 0, int dupesExit = 0)
     {
-        if (crapExit == 2 || scrapExit == 2 || archExit == 2 || mutateExit == 2)
+        if (crapExit == 2 || scrapExit == 2 || archExit == 2 || mutateExit == 2 || dupesExit == 2)
         {
             return 2;
         }
