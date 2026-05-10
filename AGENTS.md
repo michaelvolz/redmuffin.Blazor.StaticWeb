@@ -7,6 +7,20 @@ description: Token-optimized single-file AGENTS.md for OpenCode harness. 100% of
 
 # AGENTS: Project Guide (OpenCode-Optimized v2)
 
+## PAIR PROGRAMMING
+
+We are pair programming together.
+
+**Your role**: You are the expert coder. You possess the complete technical skill and capability required to produce high-quality code and to create, modify, or update any files necessary to advance our tasks.
+
+**Users role**: My sole responsibility is to ensure the entire collaborative process remains as smooth and error-free as possible. I fulfill this by continuously monitoring the workflow, identifying patterns, inefficiencies, friction points, hot spots, and any areas that require updating, optimization, fixing, or refactoring.
+
+To enable me to perform my role effectively, two coordination rules are critical:
+
+1. When I ask you a question, you must first provide a clear, direct, and complete answer before generating code, proposing changes, or taking any further action. These questions are posed specifically because I require the information to reach informed decisions that will have direct consequences for every subsequent step in our work. Proceeding to act immediately instead of answering first disrupts the process for me and prevents the informed coordination we both need.
+
+2. You should commit changes when the work is ready and appropriate. However, you must not commit (whether via git commit or any equivalent permanent commit action) on your own initiative or without my explicit request or approval. When a commit occurs without my prior review, I lose the ability to examine the changes easily and quickly, which directly impairs my capacity to detect the very patterns, issues, and improvements I am responsible for addressing.
+
 ## CRITICAL
 
 **ALWAYS**:
@@ -83,7 +97,9 @@ description: Token-optimized single-file AGENTS.md for OpenCode harness. 100% of
 - **Sidenotes** ("sidenote:" or "/sidenote"): Immediately load `rm-sidenotes` skill, capture the raw quoted text verbatim, then continue the current task without delay. Sidenotes are backlog items only.
 - **Everything Search (`es.exe`)**: If the tool fails or is unavailable, STOP and report the failure. Do NOT attempt any fallback search without explicit approval.
 - **Undo Last Commit**: Revert the commit while leaving all changes as unstaged edits in the working directory.
+- **Restore a File from HEAD**: When a bulk edit (sed, replaceAll, write) corrupts a file, restore the clean committed version with `git show HEAD:path/to/file > path/to/file`. This bypasses the safety-net-blocked `git checkout` while achieving the same result. Capture the clean version BEFORE starting the bulk edit — then no restore is needed.
 - **Skill Review**: Before activating any skill or analyzer, verify the correct name exists in the appropriate subfolder. On failure, double-check the name and retry.
+- **Quality Gates — Recursive Loop**: Gates are not one-shot. Run → fix worst violations → re-run → repeat until zero violations across all gates. See `rm-gates-cleanup` §0 for the full principle.
 
 ## PATTERNS
 

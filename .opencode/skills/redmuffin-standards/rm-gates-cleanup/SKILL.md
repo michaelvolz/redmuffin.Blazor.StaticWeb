@@ -8,6 +8,38 @@ prerequisite-skills:
 
 # rm-gates-cleanup
 
+## §0 Recursive Quality Loop (Governing Principle)
+
+Quality gates are not one-shot. The process is inherently recursive:
+run gates, fix the worst violations, re-run gates, and repeat until the
+solution is clean across every dimension. Never stop at "good enough."
+
+**The loop:**
+
+1. **Run all gates** — CRAP → SCRAP → Architecture → Mutation → Dupes.
+   Every gate must execute. A build failure on one gate does not excuse
+   skipping the rest.
+2. **Fix the worst violations first** — sort by severity: CRAP score
+   (highest first), then structural duplicates (Dupes), then LOCAL test
+   files (SCRAP), then architectural violations, then mutation survivors.
+3. **Re-run all gates** — verify every fix moved the needle. A fix that
+   reduces CRAP but introduces a Duck finding is not a net improvement.
+4. **Repeat until zero violations** — each iteration should converge
+   toward a narrower gap. If you're stuck on the same violations after
+   three passes, stop and reassess the approach.
+5. **When all gates are clean, you are done.** Not before.
+
+**Why recursion matters**: Every code change can introduce new quality
+issues. Extracting a method to reduce CRAP score may create a structural
+duplicate the Dupes gate catches. Changing a collection type for MA0016
+may expose a new mutation survivor. The gates reinforce each other —
+skip the loop and you ship half-verified code.
+
+**Dogfooding rule**: The tools that enforce quality on production code
+must themselves pass every gate. Run the gates against `tools/` before
+committing gate changes. If the gates can't pass on themselves, they're
+not trustworthy for anything else.
+
 Systematic cleanup workflows for each quality gate. Every remediation
 follows the same pattern: gate reveals problem → characterize behavior →
 fix → re-gate to verify.
