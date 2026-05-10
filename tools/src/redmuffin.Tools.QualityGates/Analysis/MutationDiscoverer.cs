@@ -18,14 +18,9 @@ public static class MutationDiscoverer
         return sites;
     }
 
-    private sealed class MutationWalker : CSharpSyntaxWalker
+    private sealed class MutationWalker(List<MutationSite> sites) : CSharpSyntaxWalker
     {
-        private readonly List<MutationSite> _sites;
-
-        public MutationWalker(List<MutationSite> sites)
-        {
-            _sites = sites;
-        }
+        private readonly List<MutationSite> _sites = sites;
 
         public override void Visit(SyntaxNode? node)
         {

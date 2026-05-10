@@ -31,16 +31,10 @@ public static class MutationApplicator
         return newRoot!.ToFullString();
     }
 
-    private sealed class MutationRewriter : CSharpSyntaxRewriter
+    private sealed class MutationRewriter(SyntaxNode targetNode, MutationSite site) : CSharpSyntaxRewriter
     {
-        private readonly SyntaxNode _targetNode;
-        private readonly MutationSite _site;
-
-        public MutationRewriter(SyntaxNode targetNode, MutationSite site)
-        {
-            _targetNode = targetNode;
-            _site = site;
-        }
+        private readonly SyntaxNode _targetNode = targetNode;
+        private readonly MutationSite _site = site;
 
         public override SyntaxNode? Visit(SyntaxNode? node)
         {

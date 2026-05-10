@@ -10,11 +10,11 @@ public static class MutationRules
         StringComparer.OrdinalIgnoreCase)
     {
         "Random", "Next", "Seed", "RandomRange", "GenerateSeed",
-        "NewSeed", "CreateSeed", "GetRandom", "NextRandom", "RandomSeed"
+        "NewSeed", "CreateSeed", "GetRandom", "NextRandom", "RandomSeed",
     };
 
-    public static IReadOnlyList<MutationRule> All { get; } = new List<MutationRule>
-    {
+    public static IReadOnlyList<MutationRule> All { get; } =
+    [
         // Arithmetic
         new(
             Category: MutationCategory.Arithmetic,
@@ -136,7 +136,7 @@ public static class MutationRules
             Description: "Replace 1 with 0",
             MatchPredicate: IsLiteralOne,
             SuppressionPredicate: ShouldSuppressConstantInRandomMethod),
-    };
+    ];
 
     public static IReadOnlyList<MutationRule> GetByCategory(MutationCategory category) =>
         All.Where(r => r.Category == category).ToList();

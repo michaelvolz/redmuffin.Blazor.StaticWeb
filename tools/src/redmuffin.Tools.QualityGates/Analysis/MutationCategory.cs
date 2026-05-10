@@ -7,5 +7,5 @@ public enum MutationCategory
     Equality,
     Boolean,
     Conditional,
-    Constant
+    Constant,
 }

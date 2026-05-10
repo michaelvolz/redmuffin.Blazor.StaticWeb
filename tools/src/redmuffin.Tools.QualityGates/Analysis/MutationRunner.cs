@@ -14,7 +14,7 @@ public static class MutationRunner
         var baselineResult = await RunTestsAsync(testProjectPath, timeout: null).ConfigureAwait(false);
         if (!baselineResult.Passed)
         {
-            return Array.Empty<MutantResult>();
+            return [];
         }
 
         var timeout = baselineResult.DurationMs * timeoutFactor;
@@ -69,7 +69,7 @@ public static class MutationRunner
         var startInfo = new ProcessStartInfo
         {
             FileName = "dotnet",
-            Arguments = $"run --project \"{projectPath}\"",
+            Arguments = $"run --project \"{projectPath}\" -p:TreatWarningsAsErrors=false",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
