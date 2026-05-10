@@ -43,11 +43,7 @@ public static class ScrapDuplication
     {
         if (methods.Count == 0)
         {
-            return new DuplicationResults(
-                [],
-                [],
-                [],
-                0.0);
+            return new DuplicationResults([], [], [], 0.0);
         }
 
         var byFile = methods.GroupBy(m => m.FilePath, StringComparer.Ordinal).ToList();
@@ -64,139 +60,23 @@ public static class ScrapDuplication
                 continue;
             }
 
-            // Normalize all methods
-            var normalized = fileMethods.ConvertAll(m =>
-            {
-                var methodDecl = m.BodySyntax as MethodDeclarationSyntax
-                    ?? m.BodySyntax.AncestorsAndSelf()
-                        .OfType<MethodDeclarationSyntax>()
-                        .FirstOrDefault();
-
-                return methodDecl is not null
-                    ? TestNormalizer.Normalize(methodDecl)
-                    : (IReadOnlyList<string>)[];
-            });
-
-            // Build feature sets
-            var featureSets = normalized
-                .ConvertAll(f => new HashSet<string>(f, StringComparer.Ordinal))
-;
-
-            // Compute pairwise Jaccard and build adjacency
-            var n = fileMethods.Count;
-            var edges = new List<(int A, int B)>();
-            for (var i = 0; i < n; i++)
-            {
-                for (var j = i + 1; j < n; j++)
-                {
-                    var sim = JaccardSimilarity(featureSets[i], featureSets[j]);
-                    if (sim >= JaccardThreshold)
-                    {
-                        edges.Add((i, j));
-                    }
-                }
-            }
-
-            // Union-find clustering
-            var parent = new int[n];
-            for (var i = 0; i < n; i++)
-            {
-                parent[i] = i;
-            }
-
+            var normalized = NormalizeFileMethods(fileMethods);
+            var featureSets = normalized.Select(f => new HashSet<string>(f, StringComparer.Ordinal)).ToList();
+            var edges = BuildJaccardEdges(fileMethods.Count, featureSets);
+            var parent = InitUnionFind(fileMethods.Count);
             foreach (var (a, b) in edges)
             {
                 Union(parent, a, b);
             }
 
-            // Group indices by root
-            var clusters = new Dictionary<int, List<int>>();
-            for (var i = 0; i < n; i++)
-            {
-                var root = Find(parent, i);
-                if (!clusters.TryGetValue(root, out var value))
-                {
-                    value = [];
-                    clusters[root] = value;
-                }
-
-                value.Add(i);
-            }
-
-            // Track which methods are in Jaccard-based clusters
+            var clusters = GroupByRoot(parent, fileMethods.Count);
             var clusteredIndices = new HashSet<int>();
 
-            // Classify non-singleton Jaccard clusters (harmful or case-matrix)
-            foreach (var kvp in clusters)
-            {
-                var indices = kvp.Value;
-                if (indices.Count < 2)
-                {
-                    continue;
-                }
+            clusterId = ClassifyAndCollectClusters(
+                clusters, fileMethods, normalized, clusteredIndices,
+                allHarmful, allCaseMatrix, allSubject, clusterId);
 
-                foreach (var idx in indices)
-                {
-                    clusteredIndices.Add(idx);
-                }
-
-                var clusterMethods = indices.ConvertAll(i => fileMethods[i]);
-
-                var sharedForms = ComputeSharedForms(indices, normalized);
-                var variablePoints = ComputeVariablePoints(indices, normalized);
-                var methodMetrics = clusterMethods.ConvertAll(ComputeSimpleMetrics);
-
-                var channel = ClassifyChannel(
-                    clusterMethods,
-                    sharedForms,
-                    variablePoints,
-                    methodMetrics);
-
-                clusterId++;
-                var dupChannel = new DuplicationChannel(
-                    ClusterId: clusterId,
-                    Methods: clusterMethods,
-                    SharedForms: sharedForms,
-                    VariablePoints: variablePoints,
-                    InstanceCount: clusterMethods.Count,
-                    ChannelType: channel);
-
-                switch (channel)
-                {
-                    case ChannelType.Harmful:
-                        allHarmful.Add(dupChannel);
-                        break;
-                    case ChannelType.CaseMatrix:
-                        allCaseMatrix.Add(dupChannel);
-                        break;
-                    case ChannelType.Subject:
-                        allSubject.Add(dupChannel);
-                        break;
-                }
-            }
-
-            // Subject repetition: non-clustered methods grouped by ContainerClassName
-            var nonClustered = fileMethods
-                .Select((m, idx) => (Method: m, Index: idx))
-                .Where(x => !clusteredIndices.Contains(x.Index))
-                .ToList();
-
-            var subjectGroups = nonClustered
-                .GroupBy(x => x.Method.ContainerClassName, StringComparer.Ordinal)
-                .Where(g => g.Skip(2).Any());
-
-            foreach (var subjectGroup in subjectGroups)
-            {
-                var subjectMethods = subjectGroup.Select(x => x.Method).ToList();
-                clusterId++;
-                allSubject.Add(new DuplicationChannel(
-                    ClusterId: clusterId,
-                    Methods: subjectMethods,
-                    SharedForms: 0,
-                    VariablePoints: normalized[0].Count,
-                    InstanceCount: subjectMethods.Count,
-                    ChannelType: ChannelType.Subject));
-            }
+            CollectSubjectRepetition(fileMethods, normalized, clusteredIndices, allSubject, ref clusterId);
         }
 
         return new DuplicationResults(
@@ -204,6 +84,140 @@ public static class ScrapDuplication
             CaseMatrixRepetition: allCaseMatrix,
             SubjectRepetition: allSubject,
             EffectiveDuplicationScore: 0.0);
+    }
+
+    private static List<IReadOnlyList<string>> NormalizeFileMethods(IReadOnlyList<TestMethod> fileMethods)
+    {
+        return fileMethods.Select(m =>
+        {
+            var methodDecl = m.BodySyntax as MethodDeclarationSyntax
+                ?? m.BodySyntax.AncestorsAndSelf()
+                    .OfType<MethodDeclarationSyntax>()
+                    .FirstOrDefault();
+
+            return methodDecl is not null
+                ? TestNormalizer.Normalize(methodDecl)
+                : (IReadOnlyList<string>)[];
+        }).ToList();
+    }
+
+    private static List<(int A, int B)> BuildJaccardEdges(
+        int n, List<HashSet<string>> featureSets)
+    {
+        var edges = new List<(int A, int B)>();
+        for (var i = 0; i < n; i++)
+        {
+            for (var j = i + 1; j < n; j++)
+            {
+                if (JaccardSimilarity(featureSets[i], featureSets[j]) >= JaccardThreshold)
+                    edges.Add((i, j));
+            }
+        }
+
+        return edges;
+    }
+
+    private static int[] InitUnionFind(int n)
+    {
+        var parent = new int[n];
+        for (var i = 0; i < n; i++)
+            parent[i] = i;
+        return parent;
+    }
+
+    private static Dictionary<int, List<int>> GroupByRoot(int[] parent, int n)
+    {
+        var clusters = new Dictionary<int, List<int>>();
+        for (var i = 0; i < n; i++)
+        {
+            var root = Find(parent, i);
+            if (!clusters.TryGetValue(root, out var value))
+            {
+                value = [];
+                clusters[root] = value;
+            }
+
+            value.Add(i);
+        }
+
+        return clusters;
+    }
+
+    private static int ClassifyAndCollectClusters(
+        Dictionary<int, List<int>> clusters,
+        List<TestMethod> fileMethods,
+        IReadOnlyList<IReadOnlyList<string>> normalized,
+        HashSet<int> clusteredIndices,
+        List<DuplicationChannel> allHarmful,
+        List<DuplicationChannel> allCaseMatrix,
+        List<DuplicationChannel> allSubject,
+        int clusterId)
+    {
+        foreach (var kvp in clusters)
+        {
+            var indices = kvp.Value;
+            if (indices.Count < 2)
+            {
+                continue;
+            }
+
+            foreach (var idx in indices)
+                clusteredIndices.Add(idx);
+
+            var clusterMethods = indices.ConvertAll(i => fileMethods[i]);
+            var sharedForms = ComputeSharedForms(indices, normalized);
+            var variablePoints = ComputeVariablePoints(indices, normalized);
+            var methodMetrics = clusterMethods.ConvertAll(ComputeSimpleMetrics);
+
+            var channel = ClassifyChannel(clusterMethods, sharedForms, variablePoints, methodMetrics);
+            clusterId++;
+            var dupChannel = new DuplicationChannel(
+                ClusterId: clusterId,
+                Methods: clusterMethods,
+                SharedForms: sharedForms,
+                VariablePoints: variablePoints,
+                InstanceCount: clusterMethods.Count,
+                ChannelType: channel);
+
+            switch (channel)
+            {
+                case ChannelType.Harmful: allHarmful.Add(dupChannel); break;
+                case ChannelType.CaseMatrix: allCaseMatrix.Add(dupChannel); break;
+                case ChannelType.Subject: allSubject.Add(dupChannel); break;
+            }
+        }
+
+        return clusterId;
+    }
+
+    private static void CollectSubjectRepetition(
+        IReadOnlyList<TestMethod> fileMethods,
+        List<IReadOnlyList<string>> normalized,
+        HashSet<int> clusteredIndices,
+        List<DuplicationChannel> allSubject,
+        ref int clusterId)
+    {
+        var nonClustered = fileMethods
+            .Select((m, idx) => (Method: m, Index: idx))
+            .Where(x => !clusteredIndices.Contains(x.Index))
+            .ToList();
+
+        var subjectGroups = nonClustered
+            .GroupBy(x => x.Method.ContainerClassName, StringComparer.Ordinal)
+            .Where(g => g.Skip(2).Any());
+
+        foreach (var subjectGroup in subjectGroups)
+        {
+            var subjectMethods = subjectGroup.Select(x => x.Method).ToList();
+            clusterId++;
+            allSubject.Add(new DuplicationChannel(
+                ClusterId: clusterId,
+                Methods: subjectMethods,
+                SharedForms: 0,
+                VariablePoints: normalized[0].Count,
+                InstanceCount: subjectMethods.Count,
+                ChannelType: ChannelType.Subject));
+        }
     }
 
     /// <summary>Union-find find with path compression.</summary>
@@ -235,7 +249,7 @@ public static class ScrapDuplication
     /// </summary>
     private static int ComputeSharedForms(
         List<int> indices,
-        List<IReadOnlyList<string>> normalized)
+        IReadOnlyList<IReadOnlyList<string>> normalized)
     {
         if (indices.Count == 0)
         {
@@ -256,7 +270,7 @@ public static class ScrapDuplication
     /// </summary>
     private static int ComputeVariablePoints(
         List<int> indices,
-        List<IReadOnlyList<string>> normalized)
+        IReadOnlyList<IReadOnlyList<string>> normalized)
     {
         if (indices.Count <= 1)
         {
@@ -350,7 +364,7 @@ public static class ScrapDuplication
     {
         // Subject repetition: all methods share the same ContainerClassName
         // but have different structures (not enough shared forms for harmful)
-        var sameClass = methods.All(m => string.Equals(m.ContainerClassName, methods[0].ContainerClassName, StringComparison.Ordinal));
+        var sameClass = methods.TrueForAll(m => string.Equals(m.ContainerClassName, methods[0].ContainerClassName, StringComparison.Ordinal));
 
         // Harmful: ≥3 shared forms AND ≤4 variable points
         if (sharedForms >= 3 && variablePoints <= 4)

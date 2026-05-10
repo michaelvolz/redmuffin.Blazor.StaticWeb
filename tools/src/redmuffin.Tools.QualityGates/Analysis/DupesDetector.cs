@@ -14,6 +14,7 @@ public static class DupesDetector
     /// <summary>
     ///     Scans C# source files for structural duplicate candidates.
     /// </summary>
+    /// <returns></returns>
     public static IReadOnlyList<DupesCandidate> FindDuplicates(DupesOptions options)
     {
         var paths = options.Paths.Count > 0 ? options.Paths : ["."];
@@ -24,37 +25,34 @@ public static class DupesDetector
         {
             for (var j = i + 1; j < entries.Count; j++)
             {
-                var left = entries[i];
-                var right = entries[j];
-
-                var score = JaccardSimilarity(left.Fingerprints, right.Fingerprints);
-                if (score >= options.Threshold)
-                {
-                    candidates.Add(new DupesCandidate(
-                        Score: Math.Round(score, 4),
-                        LeftFile: left.File,
-                        LeftStartLine: left.StartLine,
-                        LeftEndLine: left.EndLine,
-                        RightFile: right.File,
-                        RightStartLine: right.StartLine,
-                        RightEndLine: right.EndLine,
-                        LeftNodes: left.Nodes,
-                        RightNodes: right.Nodes));
-                }
+                TryAddCandidate(entries[i], entries[j], options.Threshold, candidates);
             }
         }
 
-        candidates.Sort((a, b) =>
-        {
-            var scoreCmp = b.Score.CompareTo(a.Score);
-            if (scoreCmp != 0) return scoreCmp;
-            var fileCmp = string.Compare(a.LeftFile, b.LeftFile, StringComparison.Ordinal);
-            if (fileCmp != 0) return fileCmp;
-            var lineCmp = a.LeftStartLine.CompareTo(b.LeftStartLine);
-            return lineCmp;
-        });
-
+        candidates.Sort(CandidateComparer);
         return candidates;
+    }
+
+    private static void TryAddCandidate(DupesEntry left, DupesEntry right, double threshold, List<DupesCandidate> candidates)
+    {
+        var score = JaccardSimilarity(left.Fingerprints, right.Fingerprints);
+        if (score >= threshold)
+        {
+            candidates.Add(new DupesCandidate(
+                Score: Math.Round(score, 4),
+                LeftFile: left.File, LeftStartLine: left.StartLine, LeftEndLine: left.EndLine,
+                RightFile: right.File, RightStartLine: right.StartLine, RightEndLine: right.EndLine,
+                LeftNodes: left.Nodes, RightNodes: right.Nodes));
+        }
+    }
+
+    private static int CandidateComparer(DupesCandidate a, DupesCandidate b)
+    {
+        var scoreCmp = b.Score.CompareTo(a.Score);
+        if (scoreCmp != 0) return scoreCmp;
+        var fileCmp = string.CompareOrdinal(a.LeftFile, b.LeftFile);
+        if (fileCmp != 0) return fileCmp;
+        return a.LeftStartLine.CompareTo(b.LeftStartLine);
     }
 
     private static List<DupesEntry> ScanFiles(IReadOnlyList<string> paths, int minLines, int minNodes)
@@ -68,19 +66,22 @@ public static class DupesDetector
             {
                 foreach (var file in Directory.EnumerateFiles(fullPath, "*.cs", SearchOption.AllDirectories))
                 {
-                    ScanFile(file, entries, minLines, minNodes);
+                    TryAddEntries(file, entries, minLines, minNodes);
                 }
             }
-            else if (File.Exists(fullPath) && fullPath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+            else if (IsCsFile(fullPath))
             {
-                ScanFile(fullPath, entries, minLines, minNodes);
+                TryAddEntries(fullPath, entries, minLines, minNodes);
             }
         }
 
         return entries;
     }
 
-    private static void ScanFile(string filePath, List<DupesEntry> entries, int minLines, int minNodes)
+    private static bool IsCsFile(string path) =>
+        File.Exists(path) && path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase);
+
+    private static void TryAddEntries(string filePath, List<DupesEntry> entries, int minLines, int minNodes)
     {
         SyntaxTree tree;
         try
@@ -97,33 +98,41 @@ public static class DupesDetector
 
         foreach (var method in methods)
         {
-            if (method.Body == null) continue;
-
-            var startLine = method.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
-            var endLine = method.GetLocation().GetLineSpan().EndLinePosition.Line + 1;
-            var lineCount = endLine - startLine + 1;
-
-            if (lineCount < minLines) continue;
+            if (!MethodQualifies(method, minLines, minNodes)) continue;
 
             try
             {
                 var normalized = DupesNormalizer.Normalize(method);
                 var fingerprints = DupesNormalizer.ComputeFingerprints(normalized);
 
-                if (fingerprints.Count < minNodes) continue;
-
-                entries.Add(new DupesEntry(
-                    File: filePath,
-                    StartLine: startLine,
-                    EndLine: endLine,
-                    Nodes: fingerprints.Count,
-                    Fingerprints: fingerprints));
+                if (fingerprints.Count >= minNodes)
+                {
+                    var startLine = method.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
+                    var endLine = method.GetLocation().GetLineSpan().EndLinePosition.Line + 1;
+                    entries.Add(new DupesEntry(
+                        File: filePath, StartLine: startLine, EndLine: endLine,
+                        Nodes: fingerprints.Count, Fingerprints: fingerprints));
+                }
             }
             catch
             {
                 // Skip methods that fail normalization
             }
         }
+    }
+
+    private static bool MethodQualifies(
+        Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax method,
+        int minLines,
+        int minNodes)
+    {
+        if (method.Body == null) return false;
+
+        var startLine = method.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
+        var endLine = method.GetLocation().GetLineSpan().EndLinePosition.Line + 1;
+        var lineCount = endLine - startLine + 1;
+
+        return lineCount >= minLines;
     }
 
     private static double JaccardSimilarity(ISet<string> a, ISet<string> b)

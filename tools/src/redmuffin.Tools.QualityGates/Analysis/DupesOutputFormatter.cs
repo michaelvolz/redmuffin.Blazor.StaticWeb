@@ -16,7 +16,7 @@ public static class DupesOutputFormatter
         return format switch
         {
             "json" => FormatJson(candidates),
-            _ => FormatText(candidates)
+            _ => FormatText(candidates),
         };
     }
 
