@@ -172,6 +172,37 @@ dotnet build src/redmuffin.Tools.QualityGates --verbosity quiet
 dotnet run --project tests/redmuffin.Tools.QualityGates.Tests
 ```
 
+### Generating coverage (required for CRAP, Mutation, and all gates)
+
+CRAP, Mutation, and the `all` command require a Cobertura XML coverage file.
+TUnit provides native coverage via `Microsoft.Testing.Extensions.CodeCoverage`
+— no extra NuGet packages needed.
+
+**Generate from the repo root** (not the `tools/` directory — this runs the
+main project's tests, not the tools tests):
+
+```bash
+# Generate coverage (Debug config — Release has lock file drift issues)
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests \
+  --coverage \
+  --coverage-output-format cobertura \
+  --coverage-output coverage/blazor-cobertura.xml
+```
+
+The actual file lands at:
+`tests/redmuffin.Blazor.StaticWeb.Tests/bin/Debug/net9.0/TestResults/coverage/blazor-cobertura.xml`
+
+A convenience script exists at `scripts/Generate-CoverageReport.ps1`.
+
+**Then run CRAP from the `tools/` directory:**
+
+```bash
+cd tools
+dotnet run --project src/redmuffin.Tools.QualityGates -- crap \
+  --project ../src/redmuffin.Blazor.StaticWeb \
+  --coverage-file ../tests/redmuffin.Blazor.StaticWeb.Tests/bin/Debug/net9.0/TestResults/coverage/blazor-cobertura.xml
+```
+
 ### TDD pattern (enforced by rm-tdd)
 
 - Write ONE failing test → minimal production code → refactor → next test.
@@ -234,8 +265,9 @@ Every gate follows: **Parser → Normalizer → Analyzer → Scorer → Recommen
 
 - `dotnet tool install` broken with .NET 10 packaging (`DotnetToolSettings.xml`
   path). Smoke test with `dotnet run` instead.
-- `all` command requires a Cobertura XML coverage file — not available on dev
-  machines without running the full test suite with coverage collection.
+- Generate coverage before running CRAP/all gates (see Generating Coverage below).
+- The Release build can fail with lock file drift (`NU1004`). Use Debug config
+  for coverage generation — it works reliably.
 - Mutation runner tests (`MutationRunnerTests`) use `[NotInParallel]` because
   they modify shared fixture files. Keep this attribute on any test that
   mutates disk state.
