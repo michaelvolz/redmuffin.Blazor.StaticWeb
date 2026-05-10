@@ -126,32 +126,28 @@ public static class CyclomaticComplexity
 
         public override void VisitUnaryPattern(UnaryPatternSyntax node)
         {
-            if (node.IsKind(SyntaxKind.NotPattern))
-            {
-                DecisionPoints++;
-            }
-
+            IncrementIfKind(node, SyntaxKind.NotPattern);
             base.VisitUnaryPattern(node);
         }
 
         public override void VisitPostfixUnaryExpression(PostfixUnaryExpressionSyntax node)
         {
-            if (node.IsKind(SyntaxKind.SuppressNullableWarningExpression))
-            {
-                DecisionPoints++;
-            }
-
+            IncrementIfKind(node, SyntaxKind.SuppressNullableWarningExpression);
             base.VisitPostfixUnaryExpression(node);
         }
 
         public override void VisitAssignmentExpression(AssignmentExpressionSyntax node)
         {
-            if (node.IsKind(SyntaxKind.CoalesceAssignmentExpression))
+            IncrementIfKind(node, SyntaxKind.CoalesceAssignmentExpression);
+            base.VisitAssignmentExpression(node);
+        }
+
+        private void IncrementIfKind(SyntaxNode node, SyntaxKind kind)
+        {
+            if (node.IsKind(kind))
             {
                 DecisionPoints++;
             }
-
-            base.VisitAssignmentExpression(node);
         }
 
         public override void VisitConditionalAccessExpression(ConditionalAccessExpressionSyntax node)

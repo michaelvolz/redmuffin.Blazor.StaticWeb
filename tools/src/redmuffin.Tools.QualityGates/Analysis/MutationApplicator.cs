@@ -55,7 +55,7 @@ public static class MutationApplicator
             {
                 MutationCategory.Arithmetic => MutateArithmetic(node),
                 MutationCategory.Comparison => MutateComparison(node),
-                MutationCategory.Equality => MutateEquality(node),
+                MutationCategory.Equality => MutateComparison(node),
                 MutationCategory.Boolean => MutateBoolean(node),
                 MutationCategory.Conditional => MutateConditional(node),
                 MutationCategory.Constant => MutateConstant(node),
@@ -76,17 +76,6 @@ public static class MutationApplicator
         }
 
         private SyntaxNode MutateComparison(SyntaxNode node)
-        {
-            if (node is BinaryExpressionSyntax binary)
-            {
-                return SyntaxFactory.BinaryExpression(_site.MutantKind, binary.Left, binary.Right)
-                    .WithTriviaFrom(binary);
-            }
-
-            return node;
-        }
-
-        private SyntaxNode MutateEquality(SyntaxNode node)
         {
             if (node is BinaryExpressionSyntax binary)
             {
