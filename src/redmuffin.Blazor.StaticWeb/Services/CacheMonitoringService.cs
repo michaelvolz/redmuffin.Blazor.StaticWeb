@@ -117,7 +117,7 @@ public class CacheMonitoringService : ICacheMonitoringService
         return baseTime * (1.0 + utilizationFactor);
     }
 
-    private static CacheHealthStatus DetermineHealthStatus(double storageUtilization, CacheStats stats)
+    public static CacheHealthStatus DetermineHealthStatus(double storageUtilization, CacheStats stats)
     {
         if (storageUtilization > CriticalStorageUtilizationThreshold)
             return CacheHealthStatus.Critical;
@@ -131,7 +131,7 @@ public class CacheMonitoringService : ICacheMonitoringService
         return CacheHealthStatus.Healthy;
     }
 
-    private static List<string> AnalyzePerformanceIssues(CacheStats stats, double storageUtilization)
+    public static List<string> AnalyzePerformanceIssues(CacheStats stats, double storageUtilization)
     {
         var issues = new List<string>();
 
@@ -189,7 +189,7 @@ public class CacheMonitoringService : ICacheMonitoringService
         return stats.TotalExpiredItemsCount > 0 ? 1 : 0;
     }
 
-    private static void AnalyzeStorageRecommendations(CacheStats stats, CacheRecommendations recommendations)
+    public static void AnalyzeStorageRecommendations(CacheStats stats, CacheRecommendations recommendations)
     {
         if (stats.QuotaUsagePercent > CriticalStorageUtilizationThreshold)
         {
@@ -212,7 +212,7 @@ public class CacheMonitoringService : ICacheMonitoringService
         }
     }
 
-    private static void AnalyzePerformanceRecommendations(CacheHealthMetrics healthMetrics, CacheRecommendations recommendations)
+    public static void AnalyzePerformanceRecommendations(CacheHealthMetrics healthMetrics, CacheRecommendations recommendations)
     {
         if (healthMetrics.IsMemoryPressureHigh)
         {

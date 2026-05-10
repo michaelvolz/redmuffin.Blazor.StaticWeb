@@ -38,15 +38,20 @@ public static class PageLoadSpeedConfig
 
         if (EnableOnLocalhost) return true;
 
-        // Check if running on localhost/development
-        var uri = new Uri(baseUri);
-        var isLocalhost = uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
-                          uri.Host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase) ||
-                          uri.Host.StartsWith("192.168.", StringComparison.OrdinalIgnoreCase) ||
-                          uri.Host.StartsWith("10.", StringComparison.OrdinalIgnoreCase) ||
-                          uri.Host.StartsWith("172.16.", StringComparison.OrdinalIgnoreCase);
-
         // If EnableOnLocalhost is false, only show on non-localhost (production)
-        return !isLocalhost;
+        return !IsLocalhostHost(new Uri(baseUri).Host);
+    }
+
+    /// <summary>
+    ///     Determines whether the given host string represents a localhost or
+    ///     private network address.
+    /// </summary>
+    public static bool IsLocalhostHost(string host)
+    {
+        return host.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
+               host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase) ||
+               host.StartsWith("192.168.", StringComparison.OrdinalIgnoreCase) ||
+               host.StartsWith("10.", StringComparison.OrdinalIgnoreCase) ||
+               host.StartsWith("172.16.", StringComparison.OrdinalIgnoreCase);
     }
 }
