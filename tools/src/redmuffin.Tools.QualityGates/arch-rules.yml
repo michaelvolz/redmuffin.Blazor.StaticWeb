@@ -1,0 +1,8 @@
+component-map:
+  redmuffin.Tools.QualityGates: Tools
+
+allowed-dependencies:
+  Tools: []
+
+fail-on-cycles: true
+fail-on-violations: true
