@@ -98,7 +98,7 @@ public static class MutateCommand
                     ReuseCoverage: reuseCoverage,
                     Lines: lines);
 
-                var exitCode = await MutateHandler.RunAsync(source, testProject, options);
+                var exitCode = await MutateHandler.RunAsync(source, testProject, options).ConfigureAwait(false);
                 return exitCode;
             });
 

@@ -1,6 +1,7 @@
 namespace redmuffin.Tools.QualityGates.Commands;
 
 using System.CommandLine;
+using redmuffin.Tools.QualityGates.Analysis;
 
 public static class AllCommand
 {
@@ -67,7 +68,7 @@ public static class AllCommand
             dupesOption,
         };
 
-        command.SetAction(parseResult =>
+        command.SetAction(async parseResult =>
         {
             var projectPath = parseResult.GetValue(projectOption)!.FullName;
             var testProjectPath = parseResult.GetValue(testProjectOption)!.FullName;
@@ -79,15 +80,15 @@ public static class AllCommand
             var mutateScan = parseResult.GetValue(mutateScanOption);
             var runDupes = parseResult.GetValue(dupesOption);
 
-            return Execute(
+            return await Execute(
                 projectPath, testProjectPath, coveragePath,
-                archConfig, changedOnly, verbose, mutateSource, mutateScan, runDupes);
+                archConfig, changedOnly, verbose, mutateSource, mutateScan, runDupes).ConfigureAwait(false);
         });
 
         return command;
     }
 
-    internal static int Execute(
+    internal static async Task<int> Execute(
         string projectPath,
         string testProjectPath,
         string coveragePath,
@@ -98,11 +99,13 @@ public static class AllCommand
         bool mutateScan,
         bool runDupes = false)
     {
-        Console.Out.WriteLine("=== CRAP (Complexity Risk Analysis) ===");
+        var o = Console.Out;
+
+        await o.WriteLineAsync("=== CRAP (Complexity Risk Analysis) ===").ConfigureAwait(false);
         var crapExit = CrapCommand.Execute(projectPath, coveragePath, maxCrap: 8, changedOnly);
 
-        Console.Out.WriteLine();
-        Console.Out.WriteLine("=== SCRAP (Structural Analyzer) ===");
+        await o.WriteLineAsync().ConfigureAwait(false);
+        await o.WriteLineAsync("=== SCRAP (Structural Analyzer) ===").ConfigureAwait(false);
         var scrapExit = ScrapCommand.Execute(
             testProjectPath,
             verbose: verbose,
@@ -114,47 +117,46 @@ public static class AllCommand
         var archExit = 0;
         if (archConfig is not null)
         {
-            Console.Out.WriteLine();
-            Console.Out.WriteLine("=== Architecture (Dependency Checker) ===");
+            await o.WriteLineAsync().ConfigureAwait(false);
+            await o.WriteLineAsync("=== Architecture (Dependency Checker) ===").ConfigureAwait(false);
             archExit = ArchCommand.Execute(projectPath, archConfig, json: false);
         }
         else
         {
-            Console.Out.WriteLine();
-            Console.Out.WriteLine("=== Architecture: SKIPPED (no --arch-config) ===");
+            await o.WriteLineAsync().ConfigureAwait(false);
+            await o.WriteLineAsync("=== Architecture: SKIPPED (no --arch-config) ===").ConfigureAwait(false);
         }
 
         var mutateExit = 0;
         if (mutateSource is not null)
         {
-            Console.Out.WriteLine();
-            Console.Out.WriteLine("=== Mutation Testing ===");
-            var options = new MutateOptions(
-                Scan: mutateScan);
-            mutateExit = MutateHandler.RunAsync(
-                mutateSource, testProjectPath, options).GetAwaiter().GetResult();
+            await o.WriteLineAsync().ConfigureAwait(false);
+            await o.WriteLineAsync("=== Mutation Testing ===").ConfigureAwait(false);
+            var options = new MutateOptions(Scan: mutateScan);
+            mutateExit = await MutateHandler.RunAsync(
+                mutateSource, testProjectPath, options).ConfigureAwait(false);
         }
         else
         {
-            Console.Out.WriteLine();
-            Console.Out.WriteLine("=== Mutation: SKIPPED (no --mutate-source) ===");
+            await o.WriteLineAsync().ConfigureAwait(false);
+            await o.WriteLineAsync("=== Mutation: SKIPPED (no --mutate-source) ===").ConfigureAwait(false);
         }
 
         var dupesExit = 0;
         if (runDupes)
         {
-            Console.Out.WriteLine();
-            Console.Out.WriteLine("=== Dupes (Duplicate Code Detection) ===");
+            await o.WriteLineAsync().ConfigureAwait(false);
+            await o.WriteLineAsync("=== Dupes (Duplicate Code Detection) ===").ConfigureAwait(false);
             var dupesOptions = new DupesOptions(Paths: [projectPath]);
             var (exitCode, candidates) = DupesHandler.Run(dupesOptions);
-            Console.Out.WriteLine(Analysis.DupesOutputFormatter.Format(candidates, "text"));
+            await o.WriteLineAsync(DupesOutputFormatter.Format(candidates, "text")).ConfigureAwait(false);
             dupesExit = exitCode;
         }
 
         var overallExit = CombineExitCodes(crapExit, scrapExit, archExit, mutateExit, dupesExit);
         var overallStatus = overallExit == 0 ? "PASS" : "FAIL";
 
-        Console.Out.WriteLine();
+        await o.WriteLineAsync().ConfigureAwait(false);
         var crapStatus = crapExit == 0 ? "PASS" : (crapExit == 1 ? "ERROR" : "FAIL");
         var scrapStatus = scrapExit == 0 ? "PASS" : (scrapExit == 1 ? "ERROR" : "FAIL");
         var archStatus = archConfig is null ? "N/A"
@@ -164,8 +166,9 @@ public static class AllCommand
         var dupesStatus = runDupes
             ? (dupesExit == 0 ? "PASS" : (dupesExit == 1 ? "ERROR" : "FAIL"))
             : "N/A";
-        Console.Out.WriteLine(
-            $"CRAP: {crapStatus} | SCRAP: {scrapStatus} | ARCH: {archStatus} | MUTATE: {mutateStatus} | DUPES: {dupesStatus} | Overall: {overallStatus}");
+        await o.WriteLineAsync(
+            $"CRAP: {crapStatus} | SCRAP: {scrapStatus} | ARCH: {archStatus} | MUTATE: {mutateStatus} | DUPES: {dupesStatus} | Overall: {overallStatus}")
+            .ConfigureAwait(false);
 
         return overallExit;
     }
@@ -177,7 +180,7 @@ public static class AllCommand
             return 2;
         }
 
-        if (crapExit == 1 || scrapExit == 1 || archExit == 1 || mutateExit == 1)
+        if (crapExit == 1 || scrapExit == 1 || archExit == 1 || mutateExit == 1 || dupesExit == 1)
         {
             return 1;
         }

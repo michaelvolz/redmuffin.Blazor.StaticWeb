@@ -26,7 +26,7 @@ public static class MutationRunner
         int timeoutFactor = 10)
     {
         // 1. Run baseline
-        var baselineResult = await RunTestsAsync(testProjectPath, timeout: null);
+        var baselineResult = await RunTestsAsync(testProjectPath, timeout: null).ConfigureAwait(false);
         if (!baselineResult.Passed)
         {
             return Array.Empty<MutantResult>();
@@ -36,8 +36,8 @@ public static class MutationRunner
 
         // 2. Backup original source
         var backupPath = sourcePath + ".mutate-backup";
-        var originalSource = await File.ReadAllTextAsync(sourcePath);
-        await File.WriteAllTextAsync(backupPath, originalSource);
+        var originalSource = await File.ReadAllTextAsync(sourcePath).ConfigureAwait(false);
+        await File.WriteAllTextAsync(backupPath, originalSource).ConfigureAwait(false);
 
         try
         {
@@ -46,12 +46,12 @@ public static class MutationRunner
             foreach (var site in sites)
             {
                 // Read current source, apply mutation, write back
-                var currentSource = await File.ReadAllTextAsync(sourcePath);
+                var currentSource = await File.ReadAllTextAsync(sourcePath).ConfigureAwait(false);
                 var mutated = MutationApplicator.Apply(currentSource, site.Index, site);
-                await File.WriteAllTextAsync(sourcePath, mutated);
+                await File.WriteAllTextAsync(sourcePath, mutated).ConfigureAwait(false);
 
                 // Run tests
-                var testResult = await RunTestsAsync(testProjectPath, timeout);
+                var testResult = await RunTestsAsync(testProjectPath, timeout).ConfigureAwait(false);
 
                 var resultType = testResult.Passed ? MutantResultType.Survived : MutantResultType.Killed;
 
@@ -64,7 +64,7 @@ public static class MutationRunner
                     testResult.DurationMs));
 
                 // Restore original source
-                await File.WriteAllTextAsync(sourcePath, originalSource);
+                await File.WriteAllTextAsync(sourcePath, originalSource).ConfigureAwait(false);
             }
 
             return results.AsReadOnly();
@@ -101,12 +101,16 @@ public static class MutationRunner
         if (timeout.HasValue)
         {
             await process.WaitForExitAsync(CancellationToken.None)
-                .WaitAsync(TimeSpan.FromMilliseconds(timeout.Value));
+                .WaitAsync(TimeSpan.FromMilliseconds(timeout.Value)).ConfigureAwait(false);
         }
         else
         {
-            await process.WaitForExitAsync(CancellationToken.None);
+            await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
         }
+
+        // Await output/error tasks to prevent disposal race
+        await outputTask.ConfigureAwait(false);
+        await errorTask.ConfigureAwait(false);
 
         sw.Stop();
 
