@@ -22,7 +22,8 @@ public static class CoverageGapDetector
     private static bool TryClassifyAsConductor(MethodCrap m, string projectPath, out MethodCrap result)
     {
         result = m;
-        if (m.Complexity > 3 || m.Coverage >= 0.01) return false;
+        if (m.Complexity > 4) return false;
+        if (m.Complexity <= 3 && m.Coverage >= 0.01) return false;
 
         var filePath = ResolvePath(m.FilePath, projectPath);
         if (!File.Exists(filePath)) return false;
@@ -50,8 +51,6 @@ public static class CoverageGapDetector
 
     public static bool IsCoverageGap(string sourceCode, string methodName, int cyclomaticComplexity)
     {
-        if (cyclomaticComplexity > 3) return false;
-
         var tree = CSharpSyntaxTree.ParseText(sourceCode);
         var root = tree.GetCompilationUnitRoot();
         var method = root.DescendantNodes()

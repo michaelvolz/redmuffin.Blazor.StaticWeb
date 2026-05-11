@@ -211,4 +211,36 @@ public sealed class CoverageGapDetectorTests
         var result = CoverageGapDetector.IsSwitchDispatcher(source, "Dispatch");
         await Assert.That(result).IsFalse();
     }
+
+    [Test]
+    public async Task ClassifyCoverageGaps_marks_switch_dispatchers()
+    {
+        var methods = new List<MethodCrap>
+        {
+            new("Dispatch", "Dispatcher.cs", 1, Complexity: 11, Coverage: 0.80, CrapScore: 12.9),
+        };
+        var dir = Path.Combine(Path.GetTempPath(), "sd-test-" + Guid.NewGuid());
+        Directory.CreateDirectory(dir);
+        try
+        {
+            var source = """
+                public static class C
+                {
+                    private static string Dispatch(int x)
+                    {
+                        return x switch
+                        {
+                            1 => HandleOne(x),
+                            2 => HandleTwo(x),
+                            _ => HandleDefault(x),
+                        };
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(Path.Combine(dir, "Dispatcher.cs"), source).ConfigureAwait(false);
+            var classified = CoverageGapDetector.ClassifyCoverageGaps(methods, dir);
+            await Assert.That(classified[0].IsCoverageGap).IsTrue();
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
 }
