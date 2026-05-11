@@ -66,6 +66,102 @@ Before refactoring any method without adequate tests:
 3. C# tools: `Verify` NuGet (snapshot testing), `ApprovalTests`.
 4. After refactoring, graduate to proper unit tests on extracted pieces.
 
+### 2.1 Feathers Seam Pattern (Extraction Discipline)
+
+These rules govern WHEN and HOW to extract methods during cleanup.
+Violating them produces fragmented code with no readability or CRAP benefit.
+
+**The characterization-first rule (non-negotiable):**
+
+```
+1. Characterize → 2. Extract → 3. Test → 4. Verify CRAP
+```
+
+Never extract first and characterize later. Every extraction starts with:
+"Do I know what this method currently does? Prove it with one golden-master
+test."
+
+**What is a real seam (Feathers definition):**
+
+A seam is a place where behavior can be replaced WITHOUT editing in that
+place. In C#, the primary seams are:
+
+| Seam type                | Example                           | When to use                        |
+| ------------------------ | --------------------------------- | ---------------------------------- |
+| Pure function extraction | `public static int Parse(string)` | Default — no side effects          |
+| Extract and override     | `protected virtual bool Check()`  | When side effects prevent purity   |
+| Interface injection      | `IValidator` via constructor      | Only when multiple implementations |
+
+Extract a method ONLY when it represents a seam — a distinct, replaceable
+unit of behavior. Do NOT extract:
+
+- **Algorithmic fragments** — a 3-line conditional that computes a value
+  is part of the method's algorithm, not a seam. Leave it inline.
+- **Single-line delegations** — `return DoTheThing(x)` is not a seam, it's
+  indirection.
+- **Switch arms** — unless the arm has significant logic (>5 lines), the
+  switch IS the method's responsibility.
+
+**Size threshold:** An extracted method must be ≥ 5 lines of actual logic
+(not counting braces and `return`). If it's smaller, inline it.
+
+**One seam per edit cycle:**
+
+```
+Extract one method → write its characterization test → run CRAP → verify
+the violation count dropped → commit mentally → next seam.
+```
+
+Jumping between seams without verifying each one produces regressions
+and file corruption from overlapping edits.
+
+**Survey first, then extract:**
+
+Before touching any code, read ALL CRAP violations in the target file.
+Plan all seams as a list. The first extraction might affect line numbers
+for subsequent ones. Order them top-to-bottom in the file to avoid drift.
+
+**Example — good extraction:**
+
+```csharp
+// BEFORE: 25-line method, CC=8, CRAP 18
+public int Analyze(Report r) {
+    var baseline = ComputeBaseline(r);         // 5 lines — seam
+    var adjusted = ApplyAdjustments(baseline); // 8 lines — seam
+    return Math.Max(0, adjusted);
+}
+
+// AFTER: extracted seams
+public static int ComputeBaseline(Report r) { ... }    // 5 lines, testable
+public static int ApplyAdjustments(int baseline) { ... } // 8 lines, testable
+public int Analyze(Report r) => Math.Max(0, ApplyAdjustments(ComputeBaseline(r)));
+// CC=1, CRAP=2
+```
+
+**Example — bad extraction:**
+
+```csharp
+// BEFORE
+return scoreCmp != 0 ? scoreCmp : Tiebreak(a, b);
+
+// AFTER — DO NOT DO THIS
+private static int Tiebreak(DupesCandidate a, DupesCandidate b) {
+    var fileCmp = string.CompareOrdinal(a.LeftFile, b.LeftFile);
+    return fileCmp != 0 ? fileCmp : a.LeftStartLine.CompareTo(b.LeftStartLine);
+}
+// This is algorithm logic, not a seam. It belongs inline.
+```
+
+### 2.2 Extraction Order in Cleanup Sessions
+
+When reducing CRAP violations across multiple files:
+
+1. **Survey** — list all methods with CRAP ≥ 8, sorted by score descending
+2. **Group by file** — extractions in one file don't affect another
+3. **Within a file, work top-to-bottom** — avoids line number drift
+4. **One seam per commit cycle** — characterize → extract → test → verify
+5. **Re-run all gates after each file** — extraction can create Dupes matches
+
 ## 3. Method Quality Standards
 
 ### Size and complexity

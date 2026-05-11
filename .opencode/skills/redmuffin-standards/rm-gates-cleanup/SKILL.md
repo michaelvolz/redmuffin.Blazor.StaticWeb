@@ -40,6 +40,52 @@ must themselves pass every gate. Run the gates against `tools/` before
 committing gate changes. If the gates can't pass on themselves, they're
 not trustworthy for anything else.
 
+### §0.1 Optimized Single-Pass Cleanup (Focused Sessions)
+
+For sessions targeting a specific violation class (CRAP, SCRAP, Dupes),
+the recursive loop is too slow — each gate run takes 17-600 seconds.
+Use this 4-step single-pass workflow instead:
+
+**Step 1: SURVEY** — run all gates ONCE, save output, classify.
+
+```bash
+pwsh -NoProfile -File scripts/Run-QualityGates.ps1
+```
+
+The script generates coverage, runs all gates, and saves the full output
+to `/tmp/gates-output.txt`. Working directory must be the repo root.
+
+**Step 2: EXTRACT** — work through fixable violations methodically.
+
+- Characterize FIRST (golden-master test), THEN extract seams per
+  rm-guide-cleanup §2.1.
+- One seam per edit cycle within a file. Work top-to-bottom.
+- Write all unit tests for extracted methods (rm-guide-testing pattern).
+- Do NOT re-run gates between methods — trust the Feathers pattern.
+
+**Step 3: VERIFY** — re-run the survey script ONCE at the end.
+
+```bash
+pwsh -NoProfile -File scripts/Run-QualityGates.ps1
+```
+
+Compare with the saved output from Step 1. Every violation that
+disappeared is a win. Regressions are rare if §2.1 was followed.
+
+**Step 4: DOCUMENT** — any remaining violations are either:
+
+- Tool limitations (Cobertura attribution gaps, structural formula limits)
+- Design decisions (semantic duplicates dry4clj can't distinguish)
+- Infrastructure (git-spawned methods, System.CommandLine factories)
+
+Document them in `tools/README.md` under Known Issues as justified
+exceptions per rm-guide-cleanup §3.
+
+**Why this works:** The Feathers Seam Pattern (characterize → extract →
+test) is deterministic. If extracted correctly, CRAP drops without
+re-verification. Per-method re-checking adds I/O overhead but zero
+decision value — it only confirms what §2.1 already guarantees.
+
 Systematic cleanup workflows for each quality gate. Every remediation
 follows the same pattern: gate reveals problem → characterize behavior →
 fix → re-gate to verify.
