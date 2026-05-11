@@ -63,12 +63,17 @@ try {
     Write-Host ''
     $crapLines = Select-String -Path $OutputFile -Pattern '^\s+\d+\.\d+\s+\d+\s+\d+\s*\%' | ForEach-Object { $_.Line }
     $violations = 0
+    $gaps = 0
     foreach ($line in $crapLines) {
         if ($line -match '^\s+(\d+\.\d+)\s+(\d+)\s+(\d+)\s*\%') {
-            if ([double]$Matches[1] -gt 8) { $violations++ }
+            if ([double]$Matches[1] -gt 8) {
+                if ($line -match 'COVERAGE GAP') { $gaps++ }
+                else { $violations++ }
+            }
         }
     }
-    Write-Host "CRAP violations >8: $violations"
+    Write-Host "Real CRAP violations >8: $violations"
+    Write-Host "COVERAGE GAPs (algorithmic): $gaps"
     Write-Host 'Survey complete.'
 }
 finally {
