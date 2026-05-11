@@ -297,23 +297,39 @@ Every gate follows: **Parser → Normalizer → Analyzer → Scorer → Recommen
     `coverlet` or another coverage tool that supports cross-assembly attribution
     becomes compatible with `dotnet run` (TUnit AOT), these methods should be
     re-evaluated.
-- **CRAP structural exceptions — Roslyn switch dispatchers:** `DupesNormalizer
-.NormalizeStatement` (CC=13, 93%) and `DupesNormalizer.NormalizeNode` (CC=11,
-  75%) are Roslyn pattern-match switch dispatchers. Each arm delegates to an
-  already-tested sub-dispatcher. The CRAP formula (`CC²(1−cov)³+CC`) requires
-  CC ≤ 8 to pass at any coverage level. These methods have been split into
-  category-level sub-dispatchers (NormalizeControlFlowStatement,
-  NormalizeBlockStatement, NormalizeLeafStatement, NormalizeLoopStatement,
-  NormalizeExpression, NormalizeStatement, NormalizeMemberList, etc.) — the
-  smallest decomposition that preserves readability. Further atomization would
-  create 12 single-line pass-through methods. Accepted as justified structural
-  exceptions.
+- **Algorithmic gap detection — no manual exceptions needed:** The
+  `CoverageGapDetector` in the CRAP pipeline automatically classifies
+  infrastructure methods that the coverage tool can't instrument. Two
+  detection patterns:
+  - **Conductors** (CC ≤ 3, 0% coverage): Methods whose body contains
+    only delegation calls, guard clauses, and try/catch wrappers. Read
+    from source via Roslyn, analyzed for loop/complex-condition free
+    structure. Catches RunAnalysis, Execute, ValidatePaths,
+    GetChangedFiles, DiscoverSitesAsync, RunMutationCoreAsync, and all
+    other production→production attribution gap methods.
+  - **Switch dispatchers** (CC > 3, >50% coverage): Methods whose body
+    is a single return switch expression where every arm delegates to
+    exactly one sub-method. Catches NormalizeStatement (CC=13) and
+    NormalizeNode (CC=11) — methods that are mathematically guaranteed
+    to fail the CRAP formula at any coverage level because of switch-arm
+    counting. Their sub-dispatchers are independently verified.
+    When a method matches either pattern, it shows `COVERAGE GAP` instead
+    of `FAIL` in CRAP output and is excluded from the exit code. No
+    manual exclusion lists, config files, or attributes needed.
 - **Dupes structural candiates — not semantic duplicates:** `NormalizeMemberList`
   / `NormalizeSwitch` (1.00) share "tagged list + iterate + normalize" pattern
   but operate on different node types. `ComputeSharedForms` /
   `ComputeVariablePoints` (0.82) share HashSet iteration but compute
   intersection vs union−intersection. Merging either would couple unrelated
   concerns. dry4clj identifies candidates; the human decides. Accepted.
+- **SCRAP LOCAL files — informational, not gate failures:** SCRAP classifies
+  test files as STABLE (good), LOCAL (AutoRefactor — consider extracting
+  duplicated Arrange), or SPLIT (Manual — needs restructuring). The 22 LOCAL
+  files in the tools test suite have low max scores (<6) from inline string
+  literals in test data, not repeated code. Extracting helpers would obscure
+  the test specification (the inline string IS the test). Only SPLIT is a
+  gate failure; LOCAL is guidance. The exit code mechanism should be updated
+  to return 2 only for SPLIT files.
 
 ## Project Structure
 

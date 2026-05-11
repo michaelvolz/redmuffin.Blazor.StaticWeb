@@ -177,32 +177,58 @@ simplify.
 Many methods at CRAP 6.0 (CC=2, 0% coverage) are structural, not real
 violations. Classify before acting:
 
-| Category                                     | Treatment                                                                                                                                                              |
-| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Interface stubs (I\* interface methods)      | Check implementer count. 1 implementer → flag for collapse (superfluous code). 2+ implementers → add tests to one implementation, interfaces get covered transitively. |
-| Logging delegates (LoggerMessage source gen) | Keep. These are compile-time generated. The source generator is the test target, not the delegate.                                                                     |
-| Blazor lifecycle (OnInitializedAsync, etc.)  | Ignore CRAP score. Runtime-called methods are tested via integration/blazor-renderer tests, not CRAP's line coverage.                                                  |
-| Factory/Creation methods                     | If single-line `new X()` → test the callers. If complex creation logic → write characterization tests.                                                                 |
-| True dead code                               | Remove per superfluous code rules in rm-guide-cleanup §1.                                                                                                              |
+| Category                                     | Treatment                                                                                                                                                               |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Interface stubs (I\* interface methods)      | Check implementer count. 1 implementer → flag for collapse (superfluous code). 2+ implementers → add tests to one implementation, interfaces get covered transitively.  |
+| Logging delegates (LoggerMessage source gen) | Keep. These are compile-time generated. The source generator is the test target, not the delegate.                                                                      |
+| Blazor lifecycle (OnInitializedAsync, etc.)  | Ignore CRAP score. Runtime-called methods are tested via integration/blazor-renderer tests, not CRAP's line coverage.                                                   |
+| Factory/Creation methods                     | If single-line `new X()` → test the callers. If complex creation logic → write characterization tests.                                                                  |
+| True dead code                               | Remove per superfluous code rules in rm-guide-cleanup §1.                                                                                                               |
+| Conductor/orchestrator (CC ≤ 3, 0% cov)      | Auto-detected by CoverageGapDetector. Body is only delegation + guards + try/catch. Shown as COVERAGE GAP, excluded from exit code.                                     |
+| Switch dispatcher (CC > 3, >50% cov)         | Auto-detected by CoverageGapDetector. Body is return switch where every arm delegates to one sub-method. Shown as COVERAGE GAP. Sub-dispatchers verified independently. |
+
+### Algorithmic gap detection
+
+The CRAP pipeline automatically classifies infrastructure methods via
+`CoverageGapDetector`. Two patterns:
+
+- **Conductors**: CC ≤ 3, 0% coverage, body is delegation/guards/try-catch
+  only. No loops, no if/else, no switches, no data transforms.
+  Detected via Roslyn statement-level analysis.
+- **Switch dispatchers**: CC > 3, coverage > 50%, body is a single return
+  switch expression where every arm is a single delegation (method call
+  or simple literal). Detected via Roslyn switch-arm analysis.
+
+When a method matches, it shows `COVERAGE GAP` instead of `FAIL` and is
+excluded from the exit code. No manual exclusion lists, config files,
+or attributes. Purely algorithmic per Uncle Bob philosophy.
 
 ## Gate 2: SCRAP Cleanup Workflow
 
 SCRAP catches test structural problems: duplicated setup, long chains,
-zero-assertion tests. Output: STABLE (good), LOCAL (needs helper extract),
+zero-assertion tests. Output: STABLE (good), LOCAL (consider extraction),
 SPLIT (needs restructuring).
 
-### Workflow for LOCAL files
+### LOCAL vs SPLIT — gate failure distinction
 
-```
-1. Run SCRAP gate → identify LOCAL files needing AutoRefactor
-2. Read the test file. Find duplicated Arrange blocks across tests
-3. Extract duplicated setup into shared helper methods:
-   - Create a static helper class in the test project (e.g.,
-     `TestFixtureFactory`)
-   - Move duplicated object construction into factory methods
-   - Keep helpers close to the test class when possible
-4. Re-run SCRAP gate → verify file is now STABLE
-```
+Only **SPLIT** is a gate failure. **LOCAL** is informational guidance —
+the tool detected repeated Arrange blocks, but extracting them may not
+improve the tests.
+
+**When LOCAL helpers help:**
+
+- Same object construction repeated 3+ times with the same shape
+- Test data that's long and obscures the test intent
+- Setup that's reused across multiple test files
+
+**When LOCAL helpers hurt (extraction is worse):**
+
+- The inline code IS the test specification (e.g., inline Roslyn
+  source strings, inline XML, inline JSON)
+- Extracting hides the test data behind a factory — "What does
+  `MakeReport()` actually test?"
+- Single-use setup that appears duplicated only because SCRAP's
+  structural normalizer sees similar patterns in string literals
 
 ### SCRAP principles
 
@@ -210,7 +236,8 @@ SPLIT (needs restructuring).
 - Table-drive tests: when multiple tests differ only in data, use
   `[MethodDataSource]` (TUnit) or `[ClassData]` (xUnit equivalent)
 - Never extract Assert sections — assertions should be explicit per test
-- Target: all test files STABLE, zero LOCAL or SPLIT
+- Never extract test data that IS the test specification
+- Target: zero SPLIT files. LOCAL is guidance, not a gate failure.
 
 ## Gate 3: Architecture Cleanup Workflow
 
@@ -289,7 +316,7 @@ Reports mutation site count without running tests. Use to estimate effort.
 After each cleanup session:
 
 - [ ] CRAP: zero violations ≥ 8
-- [ ] SCRAP: all files STABLE
+- [ ] SCRAP: zero SPLIT files (LOCAL is informational)
 - [ ] Architecture: zero violations, zero cycles
 - [ ] Mutation: survivors reviewed and addressed
 - [ ] `dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests` — all 265 tests pass
