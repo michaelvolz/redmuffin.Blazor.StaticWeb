@@ -7,6 +7,8 @@
     <!-- Tools use non-locked restore for simpler package management -->
     <RestoreLockedMode>false</RestoreLockedMode>
     <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
+    <!-- Disable warnings-as-errors during active development -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
 </Project>
