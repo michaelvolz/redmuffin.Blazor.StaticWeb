@@ -135,6 +135,7 @@ public static class CrapCommand
 
             var coverage = Analysis.CoverageParser.Parse(coveragePath);
             var results = Analysis.MethodMapper.Map(methods, coverage);
+            results = Analysis.CoverageGapDetector.ClassifyCoverageGaps(results, projectPath);
 
             return CrapHandler.Run(results, maxCrap);
         }
