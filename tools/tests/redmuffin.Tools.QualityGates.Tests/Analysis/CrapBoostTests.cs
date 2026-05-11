@@ -96,4 +96,149 @@ public sealed class CrapBoostTests
         await Assert.That(lines[6]).Contains("yes");
         await Assert.That(lines[7]).Contains("yes");
     }
+
+    [Test]
+    public async Task AllLowComplexity_empty_returns_true()
+    {
+        var actual = redmuffin.Tools.QualityGates.Analysis.ScrapDuplication.AllLowComplexity([]);
+        await Assert.That(actual).IsTrue();
+    }
+
+    [Test]
+    public async Task AllLowComplexity_high_lines_returns_false()
+    {
+        var m = new redmuffin.Tools.QualityGates.Analysis.ScrapDuplication.SimpleMethodMetrics(
+            LineCount: 20, AssertionCount: 0, BranchCount: 0, SetupDepth: 0);
+        var actual = redmuffin.Tools.QualityGates.Analysis.ScrapDuplication.AllLowComplexity([m]);
+        await Assert.That(actual).IsFalse();
+    }
+
+    [Test]
+    public async Task AllLowComplexity_valid_returns_true()
+    {
+        var m = new redmuffin.Tools.QualityGates.Analysis.ScrapDuplication.SimpleMethodMetrics(
+            LineCount: 5, AssertionCount: 1, BranchCount: 0, SetupDepth: 1);
+        var actual = redmuffin.Tools.QualityGates.Analysis.ScrapDuplication.AllLowComplexity([m]);
+        await Assert.That(actual).IsTrue();
+    }
+
+    [Test]
+    public async Task IsFailingReport_with_data_returns_true()
+    {
+        var code = "class X { void M() { int a = 1; } }";
+        var tree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(code);
+        var root = tree.GetCompilationUnitRoot();
+        var method = root.DescendantNodes().OfType<Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax>().First();
+        var testMethod = new redmuffin.Tools.QualityGates.Analysis.TestMethod("M", "/x.cs", 1, 2, method, "X");
+
+        var report = redmuffin.Tools.QualityGates.Analysis.ScrapScorer.ScoreFile(
+            methods: [testMethod],
+            duplicationResults: new([], [], [], 0),
+            extractionPressure: new(0, [], 0, 0));
+        var actual = redmuffin.Tools.QualityGates.Commands.ScrapHandler.IsFailingReport(report);
+        await Assert.That(actual).IsTrue();
+    }
+
+    [Test]
+    public async Task Format_json_returns_non_empty_string()
+    {
+        var result = redmuffin.Tools.QualityGates.Analysis.DupesOutputFormatter.Format([], "json");
+        await Assert.That(string.IsNullOrWhiteSpace(result)).IsFalse();
+    }
+
+    [Test]
+    public async Task Format_text_returns_non_empty_string()
+    {
+        var result = redmuffin.Tools.QualityGates.Analysis.DupesOutputFormatter.Format([], "text");
+        await Assert.That(string.IsNullOrWhiteSpace(result)).IsFalse();
+    }
+
+    [Test]
+    public async Task MissingCoverageError_returns_null()
+    {
+        var result = redmuffin.Tools.QualityGates.Commands.CrapCommand.MissingCoverageError();
+        await Assert.That(result).IsNull();
+    }
+
+    [Test]
+    public async Task ResolveCoverage_null_without_auto_returns_null()
+    {
+        var result = redmuffin.Tools.QualityGates.Commands.CrapCommand.ResolveCoverage(
+            coveragePath: null, testProjectPath: null, autoCoverage: false);
+        await Assert.That(result).IsNull();
+    }
+
+    [Test]
+    public async Task ResolveCoverage_with_path_returns_path()
+    {
+        var result = redmuffin.Tools.QualityGates.Commands.CrapCommand.ResolveCoverage(
+            coveragePath: "/tmp/cov.xml", testProjectPath: null, autoCoverage: false);
+        await Assert.That(result).IsEqualTo("/tmp/cov.xml");
+    }
+
+    [Test]
+    public async Task BuildSummaryLine_all_pass_returns_summary()
+    {
+        var line = redmuffin.Tools.QualityGates.Commands.AllCommand.BuildSummaryLine(
+            overallExit: 0, crapExit: 0, scrapExit: 0,
+            archConfig: "/cfg.yml", archExit: 0,
+            mutateSource: "/src.cs", mutateExit: 0,
+            runDupes: true, dupesExit: 0);
+        await Assert.That(line).Contains("PASS");
+        await Assert.That(line).Contains("Overall: PASS");
+    }
+
+    [Test]
+    public async Task HasAnyFailure_empty_list_returns_false()
+    {
+        var actual = redmuffin.Tools.QualityGates.Commands.ScrapHandler.HasAnyFailure([]);
+        await Assert.That(actual).IsFalse();
+    }
+
+    [Test]
+    public async Task ClassifyChannel_harmful_with_many_shared_forms()
+    {
+        var result = redmuffin.Tools.QualityGates.Analysis.ScrapDuplication.ClassifyChannel(
+            methods: [],
+            sharedForms: 3,
+            variablePoints: 1,
+            metrics: []);
+        await Assert.That(result).IsEqualTo(
+            redmuffin.Tools.QualityGates.Analysis.ChannelType.Harmful);
+    }
+
+    [Test]
+    public async Task ClassifyChannel_case_matrix_with_low_complexity()
+    {
+        var m = new redmuffin.Tools.QualityGates.Analysis.ScrapDuplication.SimpleMethodMetrics(
+            LineCount: 5, AssertionCount: 1, BranchCount: 0, SetupDepth: 1);
+        var result = redmuffin.Tools.QualityGates.Analysis.ScrapDuplication.ClassifyChannel(
+            methods: [],
+            sharedForms: 1,
+            variablePoints: 10,
+            metrics: [m]);
+        await Assert.That(result).IsEqualTo(
+            redmuffin.Tools.QualityGates.Analysis.ChannelType.CaseMatrix);
+    }
+
+    [Test]
+    public async Task NormalizeCreation_with_arguments()
+    {
+        var code = "new Foo(1, 2)";
+        var tree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(code);
+        var root = tree.GetCompilationUnitRoot();
+        var creation = root.DescendantNodes()
+            .OfType<Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax>().First();
+        var result = redmuffin.Tools.QualityGates.Analysis.DupesNormalizer.Normalize(creation);
+        await Assert.That(result.Count).IsGreaterThan(0);
+    }
+
+    [Test]
+    public async Task ResolveCoverage_with_auto_coverage()
+    {
+        var result = redmuffin.Tools.QualityGates.Commands.CrapCommand.ResolveCoverage(
+            coveragePath: null, testProjectPath: "/tmp/proj", autoCoverage: true);
+        // Returns null because test project doesn't exist
+        await Assert.That(result).IsNull();
+    }
 }
