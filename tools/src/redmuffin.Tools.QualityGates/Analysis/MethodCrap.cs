@@ -6,4 +6,5 @@ public sealed record MethodCrap(
     int StartLine,
     int Complexity,
     double Coverage,
-    double CrapScore);
+    double CrapScore,
+    bool IsCoverageGap = false);
