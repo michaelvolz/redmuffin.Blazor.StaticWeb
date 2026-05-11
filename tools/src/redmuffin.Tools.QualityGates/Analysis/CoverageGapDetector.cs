@@ -93,7 +93,6 @@ public static class CoverageGapDetector
 
     private static bool IsSimpleArmExpression(ExpressionSyntax expr) =>
         expr is InvocationExpressionSyntax
-            or LiteralExpressionSyntax
             or CollectionExpressionSyntax
             or ImplicitArrayCreationExpressionSyntax;
 

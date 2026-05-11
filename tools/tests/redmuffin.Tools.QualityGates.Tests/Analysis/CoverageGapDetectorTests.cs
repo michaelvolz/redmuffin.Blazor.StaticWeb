@@ -54,18 +54,22 @@ public sealed class CoverageGapDetectorTests
     }
 
     [Test]
-    public async Task should_return_false_when_cc_exceeds_three()
+    public async Task should_return_false_when_body_contains_loop()
     {
         var source = """
             public static class C
             {
                 public static int DoTheThing(string input)
                 {
-                    return SomeHandler.Process(input);
+                    for (int i = 0; i < 5; i++)
+                    {
+                        SomeHandler.Process(input);
+                    }
+                    return 0;
                 }
             }
             """;
-        var result = CoverageGapDetector.IsCoverageGap(source, "DoTheThing", cyclomaticComplexity: 4);
+        var result = CoverageGapDetector.IsCoverageGap(source, "DoTheThing", cyclomaticComplexity: 2);
         await Assert.That(result).IsFalse();
     }
 
@@ -202,7 +206,7 @@ public sealed class CoverageGapDetectorTests
                 {
                     return x switch
                     {
-                        > 0 => HandlePositive(x),
+                        _ when x > 0 => HandlePositive(x),
                         _ => HandleDefault(x),
                     };
                 }
