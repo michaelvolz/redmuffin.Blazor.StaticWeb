@@ -200,4 +200,52 @@ public sealed class ScrapDuplicationTests
             ))
             .ToList();
     }
+
+    [Test]
+    public async Task RouteToChannel_harmful_adds_to_harmful_list()
+    {
+        var harmful = new List<DuplicationChannel>();
+        var caseMatrix = new List<DuplicationChannel>();
+        var subject = new List<DuplicationChannel>();
+        var channel = new DuplicationChannel(1, [], 3, 2, 2, ChannelType.Harmful);
+
+        ScrapDuplication.RouteToChannel(
+            ChannelType.Harmful, channel, harmful, caseMatrix, subject);
+
+        await Assert.That(harmful.Count).IsEqualTo(1);
+        await Assert.That(caseMatrix.Count).IsEqualTo(0);
+        await Assert.That(subject.Count).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task RouteToChannel_case_matrix_adds_to_case_matrix_list()
+    {
+        var harmful = new List<DuplicationChannel>();
+        var caseMatrix = new List<DuplicationChannel>();
+        var subject = new List<DuplicationChannel>();
+        var channel = new DuplicationChannel(2, [], 1, 5, 3, ChannelType.CaseMatrix);
+
+        ScrapDuplication.RouteToChannel(
+            ChannelType.CaseMatrix, channel, harmful, caseMatrix, subject);
+
+        await Assert.That(harmful.Count).IsEqualTo(0);
+        await Assert.That(caseMatrix.Count).IsEqualTo(1);
+        await Assert.That(subject.Count).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task RouteToChannel_subject_adds_to_subject_list()
+    {
+        var harmful = new List<DuplicationChannel>();
+        var caseMatrix = new List<DuplicationChannel>();
+        var subject = new List<DuplicationChannel>();
+        var channel = new DuplicationChannel(3, [], 0, 0, 2, ChannelType.Subject);
+
+        ScrapDuplication.RouteToChannel(
+            ChannelType.Subject, channel, harmful, caseMatrix, subject);
+
+        await Assert.That(harmful.Count).IsEqualTo(0);
+        await Assert.That(caseMatrix.Count).IsEqualTo(0);
+        await Assert.That(subject.Count).IsEqualTo(1);
+    }
 }

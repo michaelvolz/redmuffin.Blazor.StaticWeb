@@ -1,4 +1,6 @@
 using TUnit.Core;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using redmuffin.Tools.QualityGates.Analysis;
 
 namespace redmuffin.Tools.QualityGates.Tests.Analysis;
@@ -71,5 +73,33 @@ public sealed class MutationManifestTests
 
         await Assert.That(changed.Count).IsEqualTo(1);
         await Assert.That(changed.Contains(1)).IsTrue(); // Multiply is index 1
+    }
+
+    [Test]
+    public async Task Build_handles_struct_declaration()
+    {
+        var code = "struct Point { public int Calc() => 1; }";
+        var manifest = MutationManifest.Build(code, DateTime.UtcNow);
+        await Assert.That(manifest.Forms.Count).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task Build_handles_interface_declaration()
+    {
+        var code = "interface IService { int GetValue(); }";
+        var manifest = MutationManifest.Build(code, DateTime.UtcNow);
+        await Assert.That(manifest.Forms.Count).IsEqualTo(1);
+        await Assert.That(manifest.Forms[0].Id).IsEqualTo("GetValue");
+    }
+
+    [Test]
+    public async Task GetMemberId_constructor_uses_default_fallback()
+    {
+        var tree = CSharpSyntaxTree.ParseText("class C { public C() { } }");
+        var root = tree.GetCompilationUnitRoot();
+        var ctor = root.DescendantNodes()
+            .OfType<ConstructorDeclarationSyntax>().First();
+        var id = MutationManifest.GetMemberId(ctor);
+        await Assert.That(id).IsEqualTo("member");
     }
 }
