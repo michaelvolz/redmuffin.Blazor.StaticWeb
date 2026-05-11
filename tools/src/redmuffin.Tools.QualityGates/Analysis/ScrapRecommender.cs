@@ -29,8 +29,17 @@ public static class ScrapRecommender
     public static Recommendation Decide(FileScrapReport report)
     {
         var mode = ClassifyStability(report);
+        var actionability = ActionabilityForMode(mode, report);
 
-        var actionability = mode switch
+        // Case-matrix override
+        actionability = ApplyCaseMatrixOverride(report, mode, actionability);
+
+        var message = MessageForActionability(actionability);
+        return new Recommendation(mode, actionability, message);
+    }
+
+    private static AiActionability ActionabilityForMode(StabilityMode mode, FileScrapReport report) =>
+        mode switch
         {
             StabilityMode.Stable => AiActionability.LeaveAlone,
             StabilityMode.Split => AiActionability.ManualSplit,
@@ -38,21 +47,29 @@ public static class ScrapRecommender
             _ => AiActionability.ReviewFirst,
         };
 
-        // Case-matrix override: if there are case-matrix clusters, prefer AUTO_TABLE_DRIVE
-        if (report.DuplicationResults.CaseMatrixRepetition.Count > 0
-            && actionability != AiActionability.ManualSplit)
+    private static AiActionability ApplyCaseMatrixOverride(
+        FileScrapReport report, StabilityMode mode, AiActionability actionability)
+    {
+        if (report.DuplicationResults.CaseMatrixRepetition.Count == 0
+            || actionability == AiActionability.ManualSplit)
         {
-            var caseMatrixCount = report.DuplicationResults.CaseMatrixRepetition.Count;
-            var harmfulCount = report.DuplicationResults.HarmfulDuplication.Count;
-            if (caseMatrixCount >= Math.Max(2, harmfulCount / 3)
-                && report.MaxScrap <= GeneralMaxScrapStable
-                && mode != StabilityMode.Split)
-            {
-                actionability = AiActionability.AutoTableDrive;
-            }
+            return actionability;
         }
 
-        var message = actionability switch
+        var caseMatrixCount = report.DuplicationResults.CaseMatrixRepetition.Count;
+        var harmfulCount = report.DuplicationResults.HarmfulDuplication.Count;
+        if (caseMatrixCount >= Math.Max(2, harmfulCount / 3)
+            && report.MaxScrap <= GeneralMaxScrapStable
+            && mode != StabilityMode.Split)
+        {
+            return AiActionability.AutoTableDrive;
+        }
+
+        return actionability;
+    }
+
+    private static string MessageForActionability(AiActionability actionability) =>
+        actionability switch
         {
             AiActionability.LeaveAlone => "File is stable. No action needed.",
             AiActionability.AutoTableDrive => "Case-matrix pattern detected. Consider table-driven test refactoring.",
@@ -62,34 +79,35 @@ public static class ScrapRecommender
             _ => "Unknown recommendation.",
         };
 
-        return new Recommendation(mode, actionability, message);
-    }
-
     private static StabilityMode ClassifyStability(FileScrapReport report)
     {
-        if (report.ExampleCount <= SmallFileMaxExamples)
-        {
-            // Small-file stability: tighter bounds
-            if (report.MaxScrap <= SmallFileMaxScrapStable
-                && report.DuplicationResults.EffectiveDuplicationScore <= SmallFileDupStable
-                && report.SmellCounts.ZeroAssertionCount == 0)
-            {
-                return StabilityMode.Stable;
-            }
-        }
-        else
-        {
-            // General stability
-            if (report.MaxScrap <= GeneralMaxScrapStable
-                && report.DuplicationResults.EffectiveDuplicationScore <= GeneralDupStable
-                && report.SmellCounts.ZeroAssertionRatio == 0.0
-                && report.SmellCounts.LowAssertionRatio <= GeneralLowAssertRatioStable)
-            {
-                return StabilityMode.Stable;
-            }
-        }
+        if (IsSmallFileStable(report)) return StabilityMode.Stable;
+        if (IsGeneralFileStable(report)) return StabilityMode.Stable;
 
-        // SPLIT check
+        if (ShouldSplit(report)) return StabilityMode.Split;
+
+        return StabilityMode.Local;
+    }
+
+    private static bool IsSmallFileStable(FileScrapReport report)
+    {
+        return report.ExampleCount <= SmallFileMaxExamples
+            && report.MaxScrap <= SmallFileMaxScrapStable
+            && report.DuplicationResults.EffectiveDuplicationScore <= SmallFileDupStable
+            && report.SmellCounts.ZeroAssertionCount == 0;
+    }
+
+    private static bool IsGeneralFileStable(FileScrapReport report)
+    {
+        return report.ExampleCount > SmallFileMaxExamples
+            && report.MaxScrap <= GeneralMaxScrapStable
+            && report.DuplicationResults.EffectiveDuplicationScore <= GeneralDupStable
+            && report.SmellCounts.ZeroAssertionRatio == 0.0
+            && report.SmellCounts.LowAssertionRatio <= GeneralLowAssertRatioStable;
+    }
+
+    private static bool ShouldSplit(FileScrapReport report)
+    {
         var subjectCount = report.DuplicationResults.SubjectRepetition.Count;
         var subjectRepetitionScore = report.DuplicationResults.SubjectRepetition.Sum(s => s.InstanceCount);
         var highPressureBlocks = report.ExtractionPressure.ClusterPressures.Count(p => p >= 18.0);
@@ -99,14 +117,9 @@ public static class ScrapRecommender
             || subjectRepetitionScore >= SplitSubjectRepetition
             || subjectCount > 0;
 
-        if (splitTrigger
+        return splitTrigger
             && report.ExampleCount >= SplitMinExamples
-            && (highPressureBlocks >= SplitMinHighPressureBlocks || report.MaxScrap >= SplitMaxScrap))
-        {
-            return StabilityMode.Split;
-        }
-
-        return StabilityMode.Local;
+            && (highPressureBlocks >= SplitMinHighPressureBlocks || report.MaxScrap >= SplitMaxScrap);
     }
 
     private static AiActionability ClassifyLocalActionability(FileScrapReport report)

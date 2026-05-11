@@ -46,13 +46,12 @@ public static class DupesDetector
         }
     }
 
-    private static int CandidateComparer(DupesCandidate a, DupesCandidate b)
+    public static int CandidateComparer(DupesCandidate a, DupesCandidate b)
     {
         var scoreCmp = b.Score.CompareTo(a.Score);
         if (scoreCmp != 0) return scoreCmp;
         var fileCmp = string.CompareOrdinal(a.LeftFile, b.LeftFile);
-        if (fileCmp != 0) return fileCmp;
-        return a.LeftStartLine.CompareTo(b.LeftStartLine);
+        return fileCmp != 0 ? fileCmp : a.LeftStartLine.CompareTo(b.LeftStartLine);
     }
 
     private static List<DupesEntry> ScanFiles(IReadOnlyList<string> paths, int minLines, int minNodes)
@@ -98,26 +97,36 @@ public static class DupesDetector
 
         foreach (var method in methods)
         {
-            if (!MethodQualifies(method, minLines, minNodes)) continue;
+            TryAddMethodEntry(filePath, entries, method, minLines, minNodes);
+        }
+    }
 
-            try
-            {
-                var normalized = DupesNormalizer.Normalize(method);
-                var fingerprints = DupesNormalizer.ComputeFingerprints(normalized);
+    private static void TryAddMethodEntry(
+        string filePath, List<DupesEntry> entries,
+        Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax method,
+        int minLines, int minNodes)
+    {
+        if (method.Body == null) return;
 
-                if (fingerprints.Count >= minNodes)
-                {
-                    var startLine = method.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
-                    var endLine = method.GetLocation().GetLineSpan().EndLinePosition.Line + 1;
-                    entries.Add(new DupesEntry(
-                        File: filePath, StartLine: startLine, EndLine: endLine,
-                        Nodes: fingerprints.Count, Fingerprints: fingerprints));
-                }
-            }
-            catch
+        var startLine = method.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
+        var endLine = method.GetLocation().GetLineSpan().EndLinePosition.Line + 1;
+        if (endLine - startLine + 1 < minLines) return;
+
+        try
+        {
+            var normalized = DupesNormalizer.Normalize(method);
+            var fingerprints = DupesNormalizer.ComputeFingerprints(normalized);
+
+            if (fingerprints.Count >= minNodes)
             {
-                // Skip methods that fail normalization
+                entries.Add(new DupesEntry(
+                    File: filePath, StartLine: startLine, EndLine: endLine,
+                    Nodes: fingerprints.Count, Fingerprints: fingerprints));
             }
+        }
+        catch
+        {
+            // Skip methods that fail normalization
         }
     }
 

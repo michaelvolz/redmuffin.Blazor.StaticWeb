@@ -156,38 +156,55 @@ public static class ScrapDuplication
         foreach (var kvp in clusters)
         {
             var indices = kvp.Value;
-            if (indices.Count < 2)
-            {
-                continue;
-            }
-
-            foreach (var idx in indices)
-                clusteredIndices.Add(idx);
-
-            var clusterMethods = indices.ConvertAll(i => fileMethods[i]);
-            var sharedForms = ComputeSharedForms(indices, normalized);
-            var variablePoints = ComputeVariablePoints(indices, normalized);
-            var methodMetrics = clusterMethods.ConvertAll(ComputeSimpleMetrics);
-
-            var channel = ClassifyChannel(clusterMethods, sharedForms, variablePoints, methodMetrics);
-            clusterId++;
-            var dupChannel = new DuplicationChannel(
-                ClusterId: clusterId,
-                Methods: clusterMethods,
-                SharedForms: sharedForms,
-                VariablePoints: variablePoints,
-                InstanceCount: clusterMethods.Count,
-                ChannelType: channel);
-
-            switch (channel)
-            {
-                case ChannelType.Harmful: allHarmful.Add(dupChannel); break;
-                case ChannelType.CaseMatrix: allCaseMatrix.Add(dupChannel); break;
-                case ChannelType.Subject: allSubject.Add(dupChannel); break;
-            }
+            if (indices.Count < 2) continue;
+            clusterId = ProcessCluster(
+                indices, clusterId, fileMethods, normalized,
+                clusteredIndices, allHarmful, allCaseMatrix, allSubject);
         }
 
         return clusterId;
+    }
+
+    private static int ProcessCluster(
+        List<int> indices, int clusterId,
+        List<TestMethod> fileMethods,
+        IReadOnlyList<IReadOnlyList<string>> normalized,
+        HashSet<int> clusteredIndices,
+        List<DuplicationChannel> allHarmful,
+        List<DuplicationChannel> allCaseMatrix,
+        List<DuplicationChannel> allSubject)
+    {
+        foreach (var idx in indices)
+            clusteredIndices.Add(idx);
+
+        var clusterMethods = indices.ConvertAll(i => fileMethods[i]);
+        var sharedForms = ComputeSharedForms(indices, normalized);
+        var variablePoints = ComputeVariablePoints(indices, normalized);
+        var methodMetrics = clusterMethods.ConvertAll(ComputeSimpleMetrics);
+
+        var channel = ClassifyChannel(clusterMethods, sharedForms, variablePoints, methodMetrics);
+        clusterId++;
+        var dupChannel = new DuplicationChannel(
+            ClusterId: clusterId, Methods: clusterMethods,
+            SharedForms: sharedForms, VariablePoints: variablePoints,
+            InstanceCount: clusterMethods.Count, ChannelType: channel);
+
+        RouteToChannel(channel, dupChannel, allHarmful, allCaseMatrix, allSubject);
+        return clusterId;
+    }
+
+    public static void RouteToChannel(
+        ChannelType channel, DuplicationChannel dupChannel,
+        List<DuplicationChannel> allHarmful,
+        List<DuplicationChannel> allCaseMatrix,
+        List<DuplicationChannel> allSubject)
+    {
+        switch (channel)
+        {
+            case ChannelType.Harmful: allHarmful.Add(dupChannel); break;
+            case ChannelType.CaseMatrix: allCaseMatrix.Add(dupChannel); break;
+            case ChannelType.Subject: allSubject.Add(dupChannel); break;
+        }
     }
 
     private static void CollectSubjectRepetition(
@@ -293,14 +310,18 @@ public static class ScrapDuplication
     }
 
     /// <summary>Simple per-method metrics extractable from raw syntax.</summary>
-    private static SimpleMethodMetrics ComputeSimpleMetrics(TestMethod method)
+    public static SimpleMethodMetrics ComputeSimpleMetrics(TestMethod method)
     {
-        var body = method.BodySyntax;
-
         var lineCount = method.EndLine - method.StartLine + 1;
+        return new SimpleMethodMetrics(
+            lineCount,
+            CountAssertions(method.BodySyntax),
+            CountBranches(method.BodySyntax),
+            ComputeSetupDepth(method));
+    }
 
-        // Count assertions: Assert.That(...) invocations
-        var assertionCount = body.DescendantNodes()
+    public static int CountAssertions(SyntaxNode body) =>
+        body.DescendantNodes()
             .OfType<InvocationExpressionSyntax>()
             .Count(i =>
             {
@@ -314,17 +335,18 @@ public static class ScrapDuplication
                 return false;
             });
 
-        // Count branches: if/else/switch/while/for/foreach/conditional
-        var branchCount = body.DescendantNodes().Count(n =>
+    public static int CountBranches(SyntaxNode body) =>
+        body.DescendantNodes().Count(n =>
             n is IfStatementSyntax
             or SwitchStatementSyntax
             or WhileStatementSyntax
             or ForStatementSyntax
             or ForEachStatementSyntax);
 
-        // Setup depth: statements before first assertion
+    public static int ComputeSetupDepth(TestMethod method)
+    {
         var setupDepth = 0;
-        if (body is BlockSyntax block)
+        if (method.BodySyntax is BlockSyntax block)
         {
             foreach (var stmt in block.Statements)
             {
@@ -349,52 +371,49 @@ public static class ScrapDuplication
             }
         }
 
-        return new SimpleMethodMetrics(lineCount, assertionCount, branchCount, setupDepth);
+        return setupDepth;
     }
 
     /// <summary>
     /// Classifies a cluster into Harmful, CaseMatrix, or Subject channel
     /// based on shared forms, variable points, and per-method metrics.
     /// </summary>
-    private static ChannelType ClassifyChannel(
-        List<TestMethod> methods,
+    public static ChannelType ClassifyChannel(
+        IReadOnlyList<TestMethod> methods,
         int sharedForms,
         int variablePoints,
         IReadOnlyList<SimpleMethodMetrics> metrics)
     {
-        // Subject repetition: all methods share the same ContainerClassName
-        // but have different structures (not enough shared forms for harmful)
-        var sameClass = methods.TrueForAll(m => string.Equals(m.ContainerClassName, methods[0].ContainerClassName, StringComparison.Ordinal));
-
-        // Harmful: ≥3 shared forms AND ≤4 variable points
         if (sharedForms >= 3 && variablePoints <= 4)
         {
             return ChannelType.Harmful;
         }
 
-        // Case-matrix: all methods are low-complexity examples
-        var allLowComplexity = metrics.All(m =>
-            m.LineCount <= 12
-            && m.AssertionCount <= 1
-            && m.BranchCount <= 0
-            && m.SetupDepth <= 2
-            && (1.0 + (0.18 * m.BranchCount)) <= 18); // simplified scrap ≤ 18
-
-        if (allLowComplexity)
+        if (AllLowComplexity(metrics))
         {
             return ChannelType.CaseMatrix;
-        }
-
-        // Subject repetition: same class, but neither harmful nor case-matrix
-        if (sameClass)
-        {
-            return ChannelType.Subject;
         }
 
         return ChannelType.Subject;
     }
 
-    private sealed record SimpleMethodMetrics(
+    public static bool AllLowComplexity(IReadOnlyList<SimpleMethodMetrics> metrics)
+    {
+        return metrics.All(m =>
+            m.LineCount <= 12
+            && m.AssertionCount <= 1
+            && m.BranchCount <= 0
+            && m.SetupDepth <= 2
+            && (1.0 + (0.18 * m.BranchCount)) <= 18);
+    }
+
+    private static bool SameClass(List<TestMethod> methods)
+    {
+        var first = methods[0].ContainerClassName;
+        return methods.TrueForAll(m => string.Equals(m.ContainerClassName, first, StringComparison.Ordinal));
+    }
+
+    public sealed record SimpleMethodMetrics(
         int LineCount,
         int AssertionCount,
         int BranchCount,

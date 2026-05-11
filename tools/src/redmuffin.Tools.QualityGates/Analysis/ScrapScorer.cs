@@ -27,42 +27,8 @@ public static class ScrapScorer
         var structuralComplexity = branchCount + 1;
         var complexityScore = Math.Min(ComplexityCap, ComplexityFloor + (ComplexityRiseRate * structuralComplexity));
 
-        var smells = new List<SmellLabel>();
-        if (assertionCount == 0)
-        {
-            smells.Add(SmellLabel.ZeroAssertion);
-        }
-        else if (assertionCount == 1)
-        {
-            smells.Add(SmellLabel.LowAssertion);
-        }
-
-        if (branchCount > 0)
-        {
-            smells.Add(SmellLabel.Branching);
-        }
-
-        if (setupDepth > 2)
-        {
-            smells.Add(SmellLabel.HighSetupDepth);
-        }
-
-        var scrapScore = complexityScore;
-        if (assertionCount == 0)
-        {
-            scrapScore += ZeroAssertionPenalty;
-        }
-        else if (assertionCount == 1)
-        {
-            scrapScore += LowAssertionPenalty;
-        }
-
-        scrapScore += branchCount * BranchingPenaltyPerBranch;
-        if (setupDepth > 2)
-        {
-            scrapScore += (setupDepth - 2) * HighSetupPenaltyPerLevel;
-        }
-
+        var smells = CollectSmells(assertionCount, branchCount, setupDepth);
+        var scrapScore = ComputeScore(complexityScore, smells, lineCount, assertionCount, branchCount, setupDepth);
         return new TestMethodMetrics(
             Method: method,
             LineCount: lineCount,
@@ -115,6 +81,54 @@ public static class ScrapScorer
             ExtractionPressure: extractionPressure,
             SmellCounts: smellCounts,
             WorstExamples: worstExamples);
+    }
+
+    private static List<SmellLabel> CollectSmells(int assertionCount, int branchCount, int setupDepth)
+    {
+        var smells = new List<SmellLabel>();
+        if (assertionCount == 0)
+        {
+            smells.Add(SmellLabel.ZeroAssertion);
+        }
+        else if (assertionCount == 1)
+        {
+            smells.Add(SmellLabel.LowAssertion);
+        }
+
+        if (branchCount > 0)
+        {
+            smells.Add(SmellLabel.Branching);
+        }
+
+        if (setupDepth > 2)
+        {
+            smells.Add(SmellLabel.HighSetupDepth);
+        }
+
+        return smells;
+    }
+
+    private static double ComputeScore(
+        double complexityScore, List<SmellLabel> smiles,
+        int lineCount, int assertionCount, int branchCount, int setupDepth)
+    {
+        var scrapScore = complexityScore;
+        if (assertionCount == 0)
+        {
+            scrapScore += ZeroAssertionPenalty;
+        }
+        else if (assertionCount == 1)
+        {
+            scrapScore += LowAssertionPenalty;
+        }
+
+        scrapScore += branchCount * BranchingPenaltyPerBranch;
+        if (setupDepth > 2)
+        {
+            scrapScore += (setupDepth - 2) * HighSetupPenaltyPerLevel;
+        }
+
+        return scrapScore;
     }
 
     private static int CountAssertions(SyntaxNode body)

@@ -131,16 +131,27 @@ public static class MutationManifest
         return changed;
     }
 
-    private static string GetMemberId(MemberDeclarationSyntax member) => member switch
+    public static string GetMemberId(MemberDeclarationSyntax member) => member switch
+    {
+        FieldDeclarationSyntax f => GetFieldId(f),
+        PropertyDeclarationSyntax p => p.Identifier.Text,
+        _ => NamedTypeMemberId(member),
+    };
+
+    private static string NamedTypeMemberId(MemberDeclarationSyntax member) => member switch
     {
         MethodDeclarationSyntax m => m.Identifier.Text,
         ClassDeclarationSyntax c => c.Identifier.Text,
         StructDeclarationSyntax s => s.Identifier.Text,
         InterfaceDeclarationSyntax i => i.Identifier.Text,
-        PropertyDeclarationSyntax p => p.Identifier.Text,
-        FieldDeclarationSyntax f => f.Declaration.Variables.FirstOrDefault()?.Identifier.Text ?? "field",
         _ => "member",
     };
+
+    private static string GetFieldId(FieldDeclarationSyntax f)
+    {
+        var variable = f.Declaration.Variables.FirstOrDefault();
+        return variable is null ? "field" : variable.Identifier.Text;
+    }
 
     private static string ComputeHash(string input)
     {

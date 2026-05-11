@@ -25,7 +25,12 @@ public static class TestNormalizer
 
         public override void VisitLiteralExpression(LiteralExpressionSyntax node)
         {
-            var token = node.Kind() switch
+            Features.Add(LiteralFeature(node.Kind()));
+        }
+
+        public static string LiteralFeature(SyntaxKind kind)
+        {
+            return kind switch
             {
                 SyntaxKind.StringLiteralExpression => "$str",
                 SyntaxKind.NumericLiteralExpression => "$num",
@@ -34,7 +39,6 @@ public static class TestNormalizer
                 SyntaxKind.DefaultLiteralExpression => "$default",
                 _ => "$lit",
             };
-            Features.Add(token);
         }
 
         public override void VisitInvocationExpression(InvocationExpressionSyntax node)

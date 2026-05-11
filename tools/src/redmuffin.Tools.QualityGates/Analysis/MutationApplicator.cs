@@ -38,39 +38,21 @@ public static class MutationApplicator
 
         public override SyntaxNode? Visit(SyntaxNode? node)
         {
-            if (node is not null && node.Span == _targetNode.Span)
-            {
-                return Mutate(node);
-            }
-
-            return base.Visit(node);
+            return IsTargetNode(node) ? ApplyMutation(node!) : base.Visit(node);
         }
 
-        private SyntaxNode Mutate(SyntaxNode node)
-        {
-            return _site.Category switch
+        private bool IsTargetNode(SyntaxNode? node) =>
+            node is not null && node.Span == _targetNode.Span;
+
+        private SyntaxNode ApplyMutation(SyntaxNode node) =>
+            _site.Category switch
             {
-                MutationCategory.Arithmetic => MutateArithmetic(node),
-                MutationCategory.Comparison => MutateComparison(node),
-                MutationCategory.Equality => MutateComparison(node),
+                MutationCategory.Arithmetic or MutationCategory.Comparison or MutationCategory.Equality
+                    => MutateComparison(node),
                 MutationCategory.Boolean => MutateBoolean(node),
                 MutationCategory.Conditional => MutateConditional(node),
-                MutationCategory.Constant => MutateConstant(node),
-                _ => node,
+                _ => MutateConstant(node),
             };
-        }
-
-        private SyntaxNode MutateArithmetic(SyntaxNode node)
-        {
-            if (node is BinaryExpressionSyntax binary)
-            {
-                var newKind = _site.MutantKind;
-                return SyntaxFactory.BinaryExpression(newKind, binary.Left, binary.Right)
-                    .WithTriviaFrom(binary);
-            }
-
-            return node;
-        }
 
         private SyntaxNode MutateComparison(SyntaxNode node)
         {

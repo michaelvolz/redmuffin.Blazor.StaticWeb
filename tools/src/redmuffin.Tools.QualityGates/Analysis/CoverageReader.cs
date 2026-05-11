@@ -14,14 +14,7 @@ public static class CoverageReader
         {
             foreach (var lineElement in classElement.Elements("lines").Elements("line"))
             {
-                var numberStr = lineElement.Attribute("number")?.Value;
-                var hitsStr = lineElement.Attribute("hits")?.Value;
-
-                if (numberStr is not null &&
-                    int.TryParse(numberStr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var lineNumber) &&
-                    hitsStr is not null &&
-                    int.TryParse(hitsStr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var hits) &&
-                    hits > 0)
+                if (TryParseLine(lineElement, out var lineNumber))
                 {
                     covered.Add(lineNumber);
                 }
@@ -29,6 +22,26 @@ public static class CoverageReader
         }
 
         return covered;
+    }
+
+    private static bool TryParseLine(XElement lineElement, out int lineNumber)
+    {
+        if (!TryParseAttributes(lineElement, out var numberStr, out var hitsStr))
+        {
+            lineNumber = 0;
+            return false;
+        }
+
+        return int.TryParse(numberStr, NumberStyles.Integer, CultureInfo.InvariantCulture, out lineNumber)
+            && int.TryParse(hitsStr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var hits)
+            && hits > 0;
+    }
+
+    private static bool TryParseAttributes(XElement lineElement, out string? numberStr, out string? hitsStr)
+    {
+        numberStr = lineElement.Attribute("number")?.Value;
+        hitsStr = lineElement.Attribute("hits")?.Value;
+        return numberStr is not null && hitsStr is not null;
     }
 
     public static (IReadOnlyList<MutationSite> Covered, IReadOnlyList<MutationSite> Uncovered)

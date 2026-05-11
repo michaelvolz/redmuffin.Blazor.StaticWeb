@@ -25,6 +25,11 @@ public static class DupesOutputFormatter
         if (candidates.Count == 0)
             return "No duplicate candidates found.";
 
+        return FormatCandidateList(candidates);
+    }
+
+    private static string FormatCandidateList(IReadOnlyList<DupesCandidate> candidates)
+    {
         var lines = new List<string>();
         foreach (var c in candidates)
         {
