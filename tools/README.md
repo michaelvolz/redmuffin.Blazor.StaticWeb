@@ -274,29 +274,10 @@ Every gate follows: **Parser → Normalizer → Analyzer → Scorer → Recommen
 - **CRAP false positives — production→production call chains:** The
   `Microsoft.Testing.Extensions.CodeCoverage` instrumenter cannot attribute
   coverage for calls from one production method to another. Only direct
-  test→production calls are recorded. The following methods are called and
-  tested by integration tests (`CommandIntegrationTests`), verified by passing
-  test runs, but always report 0% coverage with CRAP 12.0 (CC=3). They have
-  no extractable seams — each is a thin pipeline wrapper around already-tested
-  components:
-  - `CrapCommand.RunAnalysis` — calls CyclomaticComplexity.Analyze →
-    CoverageParser.Parse → MethodMapper.Map → CrapHandler.Run
-  - `GitFileFilter.GetChangedFiles` — spawns `git diff`, infrastructure method
-  - `MutateHandler.RunMutationCoreAsync` — pipeline orchestration
-  - `MutateHandler.DiscoverSitesAsync` — delegates to MutationDiscoverer +
-    CoverageReader
-  - `ArchHandler.Run` — try/catch wrapper around RunConfigPipeline. Both
-    branches (missing config, DirectoryNotFoundException) tested by
-    direct tests that pass, but instrumenter reports 0% for the catch
-    blocks.
-  - `CrapCommand.Execute`, `CrapCommand.ValidatePaths`,
-    `ScrapCommand.Execute`, `DupesHandler.Run` — pipeline orchestrators
-    in the Commands layer. Each delegates to tested Handlers. Same
-    production→production attribution gap.
-    These are accepted as justified exceptions per rm-guide-cleanup §3. If
-    `coverlet` or another coverage tool that supports cross-assembly attribution
-    becomes compatible with `dotnet run` (TUnit AOT), these methods should be
-    re-evaluated.
+  test→production calls are recorded. These are handled automatically by
+  the `CoverageGapDetector` algorithm (see next entry). If coverlet
+  becomes compatible with `dotnet run` (TUnit AOT), the detector may
+  become unnecessary.
 - **Algorithmic gap detection — no manual exceptions needed:** The
   `CoverageGapDetector` in the CRAP pipeline automatically classifies
   infrastructure methods that the coverage tool can't instrument. Two
