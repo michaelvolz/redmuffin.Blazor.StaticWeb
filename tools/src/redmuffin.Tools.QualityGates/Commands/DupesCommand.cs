@@ -39,6 +39,23 @@ public static class DupesCommand
         Description = "Same as --format json",
     };
 
+    private static readonly Action<ParseResult> DupesAction = parseResult =>
+    {
+        var paths = parseResult.GetValue(PathsArg) ?? [];
+        var format = ResolveFormat(parseResult.GetValue(JsonOption), parseResult.GetValue(FormatOption));
+
+        var options = new DupesOptions(
+            Threshold: ApplyDefault(parseResult.GetValue(ThresholdOption), 0.82),
+            MinLines: ApplyDefault(parseResult.GetValue(MinLinesOption), 4),
+            MinNodes: ApplyDefault(parseResult.GetValue(MinNodesOption), 20),
+            Format: format,
+            Paths: [.. paths]);
+
+        var (exitCode, candidates) = DupesHandler.Run(options);
+        Console.WriteLine(DupesOutputFormatter.Format(candidates, format));
+        Environment.ExitCode = exitCode;
+    };
+
     public static Command Create()
     {
         var command = new Command("dupes", "Find structural duplicate code candidates")
@@ -46,30 +63,12 @@ public static class DupesCommand
             PathsArg, ThresholdOption, MinLinesOption, MinNodesOption, FormatOption, JsonOption,
         };
 
-        command.SetAction(parseResult =>
-        {
-            var paths = parseResult.GetValue(PathsArg) ?? [];
-            var format = parseResult.GetValue(FormatOption) ?? "text";
-
-            if (parseResult.GetValue(JsonOption))
-            {
-                format = "json";
-            }
-
-            var options = new DupesOptions(
-                Threshold: ApplyDefault(parseResult.GetValue(ThresholdOption), 0.82),
-                MinLines: ApplyDefault(parseResult.GetValue(MinLinesOption), 4),
-                MinNodes: ApplyDefault(parseResult.GetValue(MinNodesOption), 20),
-                Format: format,
-                Paths: [.. paths]);
-
-            var (exitCode, candidates) = DupesHandler.Run(options);
-            Console.WriteLine(DupesOutputFormatter.Format(candidates, format));
-            Environment.ExitCode = exitCode;
-        });
-
+        command.SetAction(DupesAction);
         return command;
     }
+
+    public static string ResolveFormat(bool json, string? formatOption) =>
+        json ? "json" : formatOption ?? "text";
 
     private static double ApplyDefault(double value, double defaultValue) => value > 0 ? value : defaultValue;
 

@@ -57,6 +57,25 @@ public static class AllCommand
         Description = "Auto-generate coverage from --test-project before CRAP analysis",
     };
 
+    private static readonly Func<ParseResult, Task<int>> AllAction = async parseResult =>
+    {
+        var projectPath = parseResult.GetValue(ProjectOption)!.FullName;
+        var testProjectPath = parseResult.GetValue(TestProjectOption)!.FullName;
+        var coverageFile = parseResult.GetValue(CoverageOption);
+        var archConfig = parseResult.GetValue(ArchConfigOption);
+        var changedOnly = parseResult.GetValue(ChangedOption);
+        var verbose = parseResult.GetValue(VerboseOption);
+        var mutateSource = parseResult.GetValue(MutateSourceOption);
+        var mutateScan = parseResult.GetValue(MutateScanOption);
+        var runDupes = parseResult.GetValue(DupesOption);
+        var autoCoverage = parseResult.GetValue(AutoCoverageOption);
+
+        return await ExecuteAsync(
+            projectPath, testProjectPath, coverageFile?.FullName,
+            archConfig, changedOnly, verbose, mutateSource, mutateScan, runDupes,
+            autoCoverage).ConfigureAwait(false);
+    };
+
     public static Command Create()
     {
         var command = new Command("all", "Run all quality gates")
@@ -66,74 +85,24 @@ public static class AllCommand
             AutoCoverageOption,
         };
 
-        command.SetAction(async parseResult =>
-        {
-            var projectPath = parseResult.GetValue(ProjectOption)!.FullName;
-            var testProjectPath = parseResult.GetValue(TestProjectOption)!.FullName;
-            var coverageFile = parseResult.GetValue(CoverageOption);
-            var archConfig = parseResult.GetValue(ArchConfigOption);
-            var changedOnly = parseResult.GetValue(ChangedOption);
-            var verbose = parseResult.GetValue(VerboseOption);
-            var mutateSource = parseResult.GetValue(MutateSourceOption);
-            var mutateScan = parseResult.GetValue(MutateScanOption);
-            var runDupes = parseResult.GetValue(DupesOption);
-            var autoCoverage = parseResult.GetValue(AutoCoverageOption);
-
-            return await ExecuteAsync(
-                projectPath, testProjectPath, coverageFile?.FullName,
-                archConfig, changedOnly, verbose, mutateSource, mutateScan, runDupes,
-                autoCoverage).ConfigureAwait(false);
-        });
-
+        command.SetAction(AllAction);
         return command;
     }
 
     internal static async Task<int> ExecuteAsync(
-        string projectPath,
-        string testProjectPath,
-        string? coveragePath,
-        string? archConfig,
-        bool changedOnly,
-        bool verbose,
-        string? mutateSource,
-        bool mutateScan,
-        bool runDupes = false,
+        string projectPath, string testProjectPath, string? coveragePath,
+        string? archConfig, bool changedOnly, bool verbose,
+        string? mutateSource, bool mutateScan, bool runDupes = false,
         bool autoCoverage = false)
     {
         var o = Console.Out;
 
-        await o.WriteLineAsync("=== CRAP (Complexity Risk Analysis) ===").ConfigureAwait(false);
-        var crapExit = CrapCommand.Execute(
-            projectPath, coveragePath, maxCrap: 8, changedOnly,
-            autoCoverage, testProjectPath);
-
-        await o.WriteLineAsync().ConfigureAwait(false);
-        await o.WriteLineAsync("=== SCRAP (Structural Analyzer) ===").ConfigureAwait(false);
-        var scrapExit = ScrapCommand.Execute(
-            testProjectPath, verbose: verbose, json: false,
-            changedOnly: changedOnly, writeBaseline: false, comparePath: null);
-
-        var archExit = await WriteGateHeaderAsync(o, archConfig,
-                "Architecture (Dependency Checker)", "--arch-config").ConfigureAwait(false)
-            ? ArchCommand.Execute(projectPath, archConfig!, json: false)
-            : 0;
-
-        var mutateExit = await WriteGateHeaderAsync(o, mutateSource,
-                "Mutation Testing", "--mutate-source").ConfigureAwait(false)
-            ? await MutateHandler.RunAsync(
-                mutateSource!, testProjectPath, new MutateOptions(Scan: mutateScan)).ConfigureAwait(false)
-            : 0;
-
-        var dupesExit = 0;
-        if (runDupes)
-        {
-            await o.WriteLineAsync().ConfigureAwait(false);
-            await o.WriteLineAsync("=== Dupes (Duplicate Code Detection) ===").ConfigureAwait(false);
-            var dupesOptions = new DupesOptions(Paths: [projectPath]);
-            var (exitCode, candidates) = DupesHandler.Run(dupesOptions);
-            await o.WriteLineAsync(DupesOutputFormatter.Format(candidates, "text")).ConfigureAwait(false);
-            dupesExit = exitCode;
-        }
+        var crapExit = await RunCrapAsync(o, projectPath, coveragePath, changedOnly,
+            autoCoverage, testProjectPath).ConfigureAwait(false);
+        var scrapExit = await RunScrapAsync(o, testProjectPath, verbose, changedOnly).ConfigureAwait(false);
+        var archExit = await RunArchAsync(o, projectPath, archConfig).ConfigureAwait(false);
+        var mutateExit = await RunMutateAsync(o, mutateSource, testProjectPath, mutateScan).ConfigureAwait(false);
+        var dupesExit = await RunDupesAsync(o, projectPath, runDupes).ConfigureAwait(false);
 
         var overallExit = CombineExitCodes(crapExit, scrapExit, archExit, mutateExit, dupesExit);
         await WriteSummaryAsync(o, overallExit, crapExit, scrapExit,
@@ -141,7 +110,52 @@ public static class AllCommand
         return overallExit;
     }
 
-    private static async Task<bool> WriteGateHeaderAsync(TextWriter o, string? config, string gateName, string missingFlag)
+    private static async Task<int> RunCrapAsync(TextWriter o, string projectPath, string? coveragePath,
+        bool changedOnly, bool autoCoverage, string? testProjectPath)
+    {
+        await o.WriteLineAsync("=== CRAP (Complexity Risk Analysis) ===").ConfigureAwait(false);
+        return CrapCommand.Execute(projectPath, coveragePath, 8, changedOnly, autoCoverage, testProjectPath);
+    }
+
+    private static async Task<int> RunScrapAsync(TextWriter o, string testProjectPath, bool verbose, bool changedOnly)
+    {
+        await o.WriteLineAsync().ConfigureAwait(false);
+        await o.WriteLineAsync("=== SCRAP (Structural Analyzer) ===").ConfigureAwait(false);
+        return ScrapCommand.Execute(
+            testProjectPath, verbose, json: false, changedOnly, writeBaseline: false, comparePath: null);
+    }
+
+    public static async Task<int> RunArchAsync(TextWriter o, string projectPath, string? archConfig)
+    {
+        return await WriteGateHeaderAsync(o, archConfig,
+                "Architecture (Dependency Checker)", "--arch-config").ConfigureAwait(false)
+            ? ArchCommand.Execute(projectPath, archConfig!, json: false)
+            : 0;
+    }
+
+    public static async Task<int> RunMutateAsync(TextWriter o, string? mutateSource,
+        string testProjectPath, bool mutateScan)
+    {
+        return await WriteGateHeaderAsync(o, mutateSource,
+                "Mutation Testing", "--mutate-source").ConfigureAwait(false)
+            ? await MutateHandler.RunAsync(
+                mutateSource!, testProjectPath, new MutateOptions(Scan: mutateScan)).ConfigureAwait(false)
+            : 0;
+    }
+
+    private static async Task<int> RunDupesAsync(TextWriter o, string projectPath, bool runDupes)
+    {
+        if (!runDupes) return 0;
+
+        await o.WriteLineAsync().ConfigureAwait(false);
+        await o.WriteLineAsync("=== Dupes (Duplicate Code Detection) ===").ConfigureAwait(false);
+        var dupesOptions = new DupesOptions(Paths: [projectPath]);
+        var (exitCode, candidates) = DupesHandler.Run(dupesOptions);
+        await o.WriteLineAsync(DupesOutputFormatter.Format(candidates, "text")).ConfigureAwait(false);
+        return exitCode;
+    }
+
+    public static async Task<bool> WriteGateHeaderAsync(TextWriter o, string? config, string gateName, string missingFlag)
     {
         await o.WriteLineAsync().ConfigureAwait(false);
         if (config is not null)
@@ -159,33 +173,31 @@ public static class AllCommand
         string? archConfig, int archExit, string? mutateSource, int mutateExit,
         bool runDupes, int dupesExit)
     {
-        var overallStatus = overallExit == 0 ? "PASS" : "FAIL";
         await o.WriteLineAsync().ConfigureAwait(false);
+        var line = BuildSummaryLine(overallExit, crapExit, scrapExit,
+            archConfig, archExit, mutateSource, mutateExit, runDupes, dupesExit);
+        await o.WriteLineAsync(line).ConfigureAwait(false);
+    }
+
+    public static string BuildSummaryLine(int overallExit, int crapExit, int scrapExit,
+        string? archConfig, int archExit, string? mutateSource, int mutateExit,
+        bool runDupes, int dupesExit)
+    {
+        var overallStatus = overallExit == 0 ? "PASS" : "FAIL";
         var crapStatus = StatusText(crapExit);
         var scrapStatus = StatusText(scrapExit);
-        var archStatus = archConfig is null ? "N/A" : StatusText(archExit);
-        var mutateStatus = mutateSource is null ? "N/A" : StatusText(mutateExit);
+        var archStatus = GateStatus(archConfig, archExit);
+        var mutateStatus = GateStatus(mutateSource, mutateExit);
         var dupesStatus = runDupes ? StatusText(dupesExit) : "N/A";
-        await o.WriteLineAsync(
-            $"CRAP: {crapStatus} | SCRAP: {scrapStatus} | ARCH: {archStatus} | MUTATE: {mutateStatus} | DUPES: {dupesStatus} | Overall: {overallStatus}")
-            .ConfigureAwait(false);
+        return $"CRAP: {crapStatus} | SCRAP: {scrapStatus} | ARCH: {archStatus} | MUTATE: {mutateStatus} | DUPES: {dupesStatus} | Overall: {overallStatus}";
     }
+
+    private static string GateStatus(string? config, int exitCode) =>
+        config is null ? "N/A" : StatusText(exitCode);
 
     private static string StatusText(int exitCode) =>
         exitCode == 0 ? "PASS" : (exitCode == 1 ? "ERROR" : "FAIL");
 
-    public static int CombineExitCodes(int crapExit, int scrapExit, int archExit, int mutateExit = 0, int dupesExit = 0)
-    {
-        if (crapExit == 2 || scrapExit == 2 || archExit == 2 || mutateExit == 2 || dupesExit == 2)
-        {
-            return 2;
-        }
-
-        if (crapExit == 1 || scrapExit == 1 || archExit == 1 || mutateExit == 1 || dupesExit == 1)
-        {
-            return 1;
-        }
-
-        return 0;
-    }
+    public static int CombineExitCodes(int crapExit, int scrapExit, int archExit, int mutateExit = 0, int dupesExit = 0) =>
+        Math.Max(crapExit, Math.Max(scrapExit, Math.Max(archExit, Math.Max(mutateExit, dupesExit))));
 }

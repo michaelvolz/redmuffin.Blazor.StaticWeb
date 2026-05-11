@@ -14,21 +14,7 @@ public static class ArchHandler
             }
 
             var yaml = File.ReadAllText(configPath);
-            var config = ArchConfig.Parse(yaml);
-            var projectGraph = ProjectGraph.From(projectPath);
-            var componentGraph = ComponentGraph.From(projectGraph, config);
-            var violations = FindViolations(componentGraph, config);
-            var cycles = FindCycles(componentGraph);
-
-            var result = new ArchResult(
-                0,
-                violations,
-                cycles,
-                projectGraph.Dependencies.Count,
-                config.ComponentMap.Count);
-
-            var exitCode = DecideExitCode(violations, cycles, config);
-            return (exitCode, result with { ExitCode = exitCode });
+            return (0, RunConfigPipeline(yaml, projectPath));
         }
         catch (DirectoryNotFoundException)
         {
@@ -38,6 +24,25 @@ public static class ArchHandler
         {
             return (1, new ArchResult(1, [], [], 0, 0));
         }
+    }
+
+    public static ArchResult RunConfigPipeline(string yaml, string projectPath)
+    {
+        var config = ArchConfig.Parse(yaml);
+        var projectGraph = ProjectGraph.From(projectPath);
+        var componentGraph = ComponentGraph.From(projectGraph, config);
+        var violations = FindViolations(componentGraph, config);
+        var cycles = FindCycles(componentGraph);
+
+        var result = new ArchResult(
+            0,
+            violations,
+            cycles,
+            projectGraph.Dependencies.Count,
+            config.ComponentMap.Count);
+
+        var exitCode = DecideExitCode(violations, cycles, config);
+        return result with { ExitCode = exitCode };
     }
 
     public static int DecideExitCode(

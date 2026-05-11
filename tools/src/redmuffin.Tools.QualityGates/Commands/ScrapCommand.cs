@@ -63,17 +63,7 @@ public static class ScrapCommand
         string projectPath, bool verbose, bool json,
         bool changedOnly, bool writeBaseline, string? comparePath)
     {
-        if (!Directory.Exists(projectPath))
-        {
-            Console.Error.WriteLine($"Test project directory not found: {projectPath}");
-            return 1;
-        }
-
-        if (comparePath is not null && !File.Exists(comparePath))
-        {
-            Console.Error.WriteLine($"Baseline file not found: {comparePath}. Run with --write-baseline first.");
-            return 1;
-        }
+        if (ValidateScrapInputs(projectPath, comparePath)) return 1;
 
         var testMethods = DiscoverTestMethods(projectPath, changedOnly);
         if (testMethods.Count == 0)
@@ -83,6 +73,34 @@ public static class ScrapCommand
         }
 
         return RunScrapAnalysis(testMethods, verbose, json, writeBaseline, comparePath);
+    }
+
+    private static bool ValidateScrapInputs(string projectPath, string? comparePath)
+    {
+        return CheckDirectoryMissing(projectPath) || CheckBaselineMissing(comparePath);
+    }
+
+    private static bool CheckDirectoryMissing(string projectPath)
+    {
+        if (!Directory.Exists(projectPath))
+        {
+            Console.Error.WriteLine($"Test project directory not found: {projectPath}");
+            return true;
+        }
+
+        return false;
+    }
+
+    public static bool CheckBaselineMissing(string? comparePath)
+    {
+        if (comparePath is null) return false;
+        if (!File.Exists(comparePath))
+        {
+            Console.Error.WriteLine($"Baseline file not found: {comparePath}. Run with --write-baseline first.");
+            return true;
+        }
+
+        return false;
     }
 
     public static IReadOnlyList<TestMethod> DiscoverTestMethods(string projectPath, bool changedOnly)

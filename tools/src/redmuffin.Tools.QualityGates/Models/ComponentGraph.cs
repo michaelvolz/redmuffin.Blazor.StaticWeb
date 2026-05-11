@@ -12,46 +12,50 @@ public sealed record ComponentGraph(
 
         foreach (var (project, refs) in projects.Dependencies)
         {
-            var component = config.ComponentMap.GetValueOrDefault(project, "Default");
-
-            if (ignored.Contains(component))
-            {
-                continue;
-            }
-
-            if (string.Equals(component, "Default", StringComparison.Ordinal))
-            {
-                unmapped.Add(project);
-            }
-
-            foreach (var targetRef in refs)
-            {
-                var targetComponent = config.ComponentMap.GetValueOrDefault(targetRef, "Default");
-                if (ignored.Contains(targetComponent))
-                {
-                    continue;
-                }
-
-                if (string.Equals(targetComponent, component, StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                if (!deps.TryGetValue(component, out var value))
-                {
-                    value = new HashSet<string>(StringComparer.Ordinal);
-                    deps[component] = value;
-                }
-
-                if (!deps.ContainsKey(targetComponent))
-                {
-                    deps[targetComponent] = new HashSet<string>(StringComparer.Ordinal);
-                }
-
-                value.Add(targetComponent);
-            }
+            AddProjectDependencies(project, refs, config, ignored, deps, unmapped);
         }
 
         return new ComponentGraph(deps, unmapped);
+    }
+
+    private static void AddProjectDependencies(
+        string project, IReadOnlyList<string> refs,
+        ArchConfig config, HashSet<string> ignored,
+        Dictionary<string, ISet<string>> deps, HashSet<string> unmapped)
+    {
+        var component = config.ComponentMap.GetValueOrDefault(project, "Default");
+        if (ignored.Contains(component)) return;
+
+        if (string.Equals(component, "Default", StringComparison.Ordinal))
+        {
+            unmapped.Add(project);
+        }
+
+        foreach (var targetRef in refs)
+        {
+            AddTargetDependency(component, targetRef, config, ignored, deps);
+        }
+    }
+
+    private static void AddTargetDependency(
+        string component, string targetRef,
+        ArchConfig config, HashSet<string> ignored,
+        Dictionary<string, ISet<string>> deps)
+    {
+        var targetComponent = config.ComponentMap.GetValueOrDefault(targetRef, "Default");
+        if (ignored.Contains(targetComponent)) return;
+        if (string.Equals(targetComponent, component, StringComparison.Ordinal)) return;
+
+        EnsureComponentEntry(deps, component);
+        EnsureComponentEntry(deps, targetComponent);
+        deps[component].Add(targetComponent);
+    }
+
+    private static void EnsureComponentEntry(Dictionary<string, ISet<string>> deps, string key)
+    {
+        if (!deps.ContainsKey(key))
+        {
+            deps[key] = new HashSet<string>(StringComparer.Ordinal);
+        }
     }
 }

@@ -38,6 +38,24 @@ public static class CrapCommand
         Description = "Path to the test project (required with --auto-coverage)",
     };
 
+    private static readonly Func<ParseResult, int> CrapAction = parseResult =>
+    {
+        var projectPath = parseResult.GetValue(ProjectOption)!.FullName;
+        var coverageFile = parseResult.GetValue(CoverageOption);
+        var maxCrap = parseResult.GetValue(MaxCrapOption);
+        var changedOnly = parseResult.GetValue(ChangedOption);
+        var autoCoverage = parseResult.GetValue(AutoCoverageOption);
+        var testProject = parseResult.GetValue(TestProjectOption);
+
+        return Execute(
+            projectPath,
+            coverageFile?.FullName,
+            maxCrap,
+            changedOnly,
+            autoCoverage,
+            testProject?.FullName);
+    };
+
     public static Command Create()
     {
         var command = new Command("crap", "Analyze CRAP score per method")
@@ -46,24 +64,7 @@ public static class CrapCommand
             AutoCoverageOption, TestProjectOption,
         };
 
-        command.SetAction(parseResult =>
-        {
-            var projectPath = parseResult.GetValue(ProjectOption)!.FullName;
-            var coverageFile = parseResult.GetValue(CoverageOption);
-            var maxCrap = parseResult.GetValue(MaxCrapOption);
-            var changedOnly = parseResult.GetValue(ChangedOption);
-            var autoCoverage = parseResult.GetValue(AutoCoverageOption);
-            var testProject = parseResult.GetValue(TestProjectOption);
-
-            return Execute(
-                projectPath,
-                coverageFile?.FullName,
-                maxCrap,
-                changedOnly,
-                autoCoverage,
-                testProject?.FullName);
-        });
-
+        command.SetAction(CrapAction);
         return command;
     }
 
@@ -76,18 +77,10 @@ public static class CrapCommand
         string? testProjectPath = null)
     {
         var resolvedPath = ResolveCoverage(coveragePath, testProjectPath, autoCoverage);
-        if (resolvedPath is null)
-        {
-            return 1;
-        }
+        if (resolvedPath is null) return 1;
 
         var error = ValidatePaths(projectPath, resolvedPath);
-        if (error is not null)
-        {
-            return error.Value;
-        }
-
-        return RunAnalysis(projectPath, resolvedPath, maxCrap, changedOnly);
+        return error ?? RunAnalysis(projectPath, resolvedPath, maxCrap, changedOnly);
     }
 
     public static int? ValidatePaths(string projectPath, string coveragePath)
@@ -116,12 +109,17 @@ public static class CrapCommand
 
         if (string.IsNullOrEmpty(coveragePath))
         {
-            Console.Error.WriteLine(
-                "Coverage file is required. Provide --coverage-file or use --auto-coverage.");
-            return null;
+            return MissingCoverageError();
         }
 
         return coveragePath;
+    }
+
+    public static string? MissingCoverageError()
+    {
+        Console.Error.WriteLine(
+            "Coverage file is required. Provide --coverage-file or use --auto-coverage.");
+        return null;
     }
 
     public static int RunAnalysis(string projectPath, string coveragePath, int maxCrap, bool changedOnly)
@@ -180,18 +178,21 @@ public static class CrapCommand
 
         if (process.ExitCode != 0 || !File.Exists(newPath))
         {
-            var exitString = process.ExitCode.ToString(CultureInfo.InvariantCulture);
-            Console.Error.WriteLine(
-                $"Failed to generate coverage. dotnet run exit code: {exitString}");
-            var stderr = process.StandardError.ReadToEnd();
-            if (!string.IsNullOrWhiteSpace(stderr))
-            {
-                Console.Error.WriteLine(stderr);
-            }
-
+            ReportCoverageError(process);
             return null;
         }
 
         return newPath;
+    }
+
+    private static void ReportCoverageError(Process process)
+    {
+        var exitString = process.ExitCode.ToString(CultureInfo.InvariantCulture);
+        Console.Error.WriteLine($"Failed to generate coverage. dotnet run exit code: {exitString}");
+        var stderr = process.StandardError.ReadToEnd();
+        if (!string.IsNullOrWhiteSpace(stderr))
+        {
+            Console.Error.WriteLine(stderr);
+        }
     }
 }

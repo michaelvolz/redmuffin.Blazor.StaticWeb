@@ -28,6 +28,12 @@ public static class ScrapHandler
             return 0;
         }
 
+        return ProcessReports(reports, options, output);
+    }
+
+    private static int ProcessReports(
+        IReadOnlyList<FileScrapReport> reports, ScrapOptions options, TextWriter output)
+    {
         var sorted = reports.OrderBy(r => r.FilePath, StringComparer.Ordinal).ToList();
         var worstExit = 0;
 
@@ -43,15 +49,7 @@ public static class ScrapHandler
                 worstExit = 2;
             }
 
-            // Default output: one line per file
-            var worstExample = report.WorstExamples.Count > 0
-                ? report.WorstExamples[0].ScrapScore.ToString("F1", CultureInfo.InvariantCulture)
-                : "-";
-
-            var line = string.Create(
-                CultureInfo.InvariantCulture,
-                $"{report.FilePath,-60} {recommendation.Mode,-8} {recommendation.AiActionability,-14} {status,-5} avg:{report.AvgScrap:F1} max:{report.MaxScrap:F1} worst:{worstExample}");
-            output.WriteLine(line);
+            output.WriteLine(FormatReportLine(report, recommendation));
 
             if (options.Verbose)
             {
@@ -60,6 +58,20 @@ public static class ScrapHandler
         }
 
         return worstExit;
+    }
+
+    public static string FormatReportLine(FileScrapReport report, Recommendation recommendation)
+    {
+        var status = recommendation.Mode is StabilityMode.Stable
+            && recommendation.AiActionability is AiActionability.LeaveAlone
+            ? "PASS" : "FAIL";
+        var worstExample = report.WorstExamples.Count > 0
+            ? report.WorstExamples[0].ScrapScore.ToString("F1", CultureInfo.InvariantCulture)
+            : "-";
+
+        return string.Create(
+            CultureInfo.InvariantCulture,
+            $"{report.FilePath,-60} {recommendation.Mode,-8} {recommendation.AiActionability,-14} {status,-5} avg:{report.AvgScrap:F1} max:{report.MaxScrap:F1} worst:{worstExample}");
     }
 
     private static void WritePerExampleTable(FileScrapReport report, TextWriter output)
@@ -84,18 +96,23 @@ public static class ScrapHandler
         return HasAnyFailure(reports) ? 2 : 0;
     }
 
-    private static bool HasAnyFailure(IReadOnlyList<FileScrapReport> reports)
+    public static bool HasAnyFailure(IReadOnlyList<FileScrapReport> reports)
     {
         foreach (var report in reports)
         {
-            var recommendation = ScrapRecommender.Decide(report);
-            if (recommendation.Mode is not StabilityMode.Stable
-                || recommendation.AiActionability is not AiActionability.LeaveAlone)
+            if (IsFailingReport(report))
             {
                 return true;
             }
         }
 
         return false;
+    }
+
+    public static bool IsFailingReport(FileScrapReport report)
+    {
+        var recommendation = ScrapRecommender.Decide(report);
+        return recommendation.Mode is not StabilityMode.Stable
+            || recommendation.AiActionability is not AiActionability.LeaveAlone;
     }
 }

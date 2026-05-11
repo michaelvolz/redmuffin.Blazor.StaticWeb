@@ -11,29 +11,36 @@ public static class MutateHandler
     {
         output ??= Console.Out;
 
-        if (!File.Exists(sourcePath))
-        {
-            await output.WriteLineAsync($"Error: Source file not found: {sourcePath}").ConfigureAwait(false);
-            return 1;
-        }
+        if (await CheckSourceFileMissingAsync(sourcePath, output).ConfigureAwait(false)) return 1;
 
+        return await RunMutationCoreAsync(sourcePath, testProjectPath, options, output).ConfigureAwait(false);
+    }
+
+    public static async Task<int> RunMutationCoreAsync(
+        string sourcePath, string testProjectPath, MutateOptions options, TextWriter output)
+    {
         var (sites, allSites, covered, uncovered, changedCount, existingManifest, strippedSource) =
             await DiscoverSitesAsync(sourcePath, testProjectPath, options, output).ConfigureAwait(false);
-        if (sites is null)
-        {
-            return 1;
-        }
+        if (sites is null) return 1;
 
         await PrintHeaderAsync(sourcePath, allSites, covered, uncovered,
             changedCount, existingManifest, output).ConfigureAwait(false);
 
-        if (options.Scan)
-        {
-            return 0;
-        }
+        if (options.Scan) return 0;
 
         return await ExecuteMutationsAsync(sourcePath, testProjectPath, options,
             sites, uncovered, strippedSource, existingManifest, output).ConfigureAwait(false);
+    }
+
+    private static async Task<bool> CheckSourceFileMissingAsync(string sourcePath, TextWriter output)
+    {
+        if (!File.Exists(sourcePath))
+        {
+            await output.WriteLineAsync($"Error: Source file not found: {sourcePath}").ConfigureAwait(false);
+            return true;
+        }
+
+        return false;
     }
 
     public static async
@@ -95,14 +102,22 @@ public static class MutateHandler
     private static HashSet<int>? LoadCoverage(
         string testProjectPath, MutateOptions options, TextWriter output)
     {
-        var coveragePath = Path.Combine(
-            Path.GetDirectoryName(testProjectPath) ?? ".", "coverage.cobertura.xml");
+        return LoadCoverageFromPath(CoverageFilePath(testProjectPath), options, output);
+    }
 
+    private static HashSet<int>? LoadCoverageFromPath(
+        string coveragePath, MutateOptions options, TextWriter output)
+    {
         if (File.Exists(coveragePath))
         {
             return [.. CoverageReader.LoadCoverage(coveragePath)];
         }
 
+        return CoverageFileMissing(options, output);
+    }
+
+    private static HashSet<int>? CoverageFileMissing(MutateOptions options, TextWriter output)
+    {
         if (options.ReuseCoverage)
         {
             output.Write("Error: --reuse-coverage specified but no coverage file found.");
@@ -121,6 +136,12 @@ public static class MutateHandler
             return sites.Count;
         }
 
+        return FilterSitesByManifest(sites, strippedSource, existingManifest);
+    }
+
+    private static int FilterSitesByManifest(
+        IList<MutationSite> sites, string strippedSource, Manifest existingManifest)
+    {
         var currentManifest = MutationManifest.Build(strippedSource, DateTime.UtcNow);
         var changedIndices = MutationManifest.ChangedFormIndices(existingManifest, currentManifest);
         if (changedIndices.Count == 0)
@@ -144,18 +165,20 @@ public static class MutateHandler
     {
         var lines = new HashSet<int>();
         foreach (var idx in changedIndices)
-        {
-            if (idx < currentManifest.Forms.Count)
-            {
-                var form = currentManifest.Forms[idx];
-                for (var l = form.Line; l <= form.EndLine; l++)
-                {
-                    lines.Add(l);
-                }
-            }
-        }
-
+            CollectFormLines(idx, currentManifest, lines);
         return lines;
+    }
+
+    private static void CollectFormLines(int idx, Manifest manifest, HashSet<int> lines)
+    {
+        if (idx < manifest.Forms.Count)
+            AddFormLines(manifest.Forms[idx], lines);
+    }
+
+    private static void AddFormLines(FormEntry form, HashSet<int> lines)
+    {
+        for (var l = form.Line; l <= form.EndLine; l++)
+            lines.Add(l);
     }
 
     private static async Task PrintHeaderAsync(
@@ -185,8 +208,8 @@ public static class MutateHandler
             $"Covered mutation sites: {coveredSites.ToString(ci)}",
             $"Uncovered mutation sites: {uncoveredSites.ToString(ci)}",
             $"Changed mutation sites: {changedCount.ToString(ci)}",
-            $"Manifest exists: {(existingManifest is not null ? "yes" : "no")}",
-            $"Module hash changed: {(existingManifest is not null && changedCount > 0 ? "yes" : "n/a")}",
+            $"Manifest exists: {HasManifest(existingManifest)}",
+            $"Module hash changed: {HashChanged(existingManifest, changedCount)}",
             $"Differential surface area: {changedCount.ToString(ci)} mutations in changed forms",
         ];
     }
@@ -195,23 +218,43 @@ public static class MutateHandler
         IReadOnlyList<MutantResult> results, IReadOnlyList<MutationSite> uncovered,
         TextWriter output)
     {
+        foreach (var line in BuildSummaryLines(results, uncovered))
+            output.WriteLine(line);
+    }
+
+    public static IReadOnlyList<string> BuildSummaryLines(
+        IReadOnlyList<MutantResult> results, IReadOnlyList<MutationSite> uncovered)
+    {
         var ci = CultureInfo.InvariantCulture;
         var killed = results.Count(r => r.Result == MutantResultType.Killed);
         var survived = results.Where(r => r.Result == MutantResultType.Survived).ToList();
         var totalTested = killed + survived.Count;
 
-        output.WriteLine("=== Summary ===");
-        output.WriteLine(
-            $"{killed.ToString(ci)}/{totalTested.ToString(ci)} mutants killed ({(100.0 * killed / totalTested).ToString("F1", ci)}%)");
-        output.WriteLine($"{uncovered.Count.ToString(ci)} uncovered mutations skipped");
+        var lines = new List<string>
+        {
+            "=== Summary ===",
+            $"{killed.ToString(ci)}/{totalTested.ToString(ci)} mutants killed ({(100.0 * killed / totalTested).ToString("F1", ci)}%)",
+            $"{uncovered.Count.ToString(ci)} uncovered mutations skipped",
+        };
 
         if (survived.Count > 0)
         {
-            output.WriteLine("Survivors:");
+            lines.Add("Survivors:");
             foreach (var s in survived)
             {
-                output.WriteLine($"  #{s.SiteIndex.ToString(ci)}  L{s.Line.ToString(ci)}   {s.Description}");
+                lines.Add($"  #{s.SiteIndex.ToString(ci)}  L{s.Line.ToString(ci)}   {s.Description}");
             }
         }
+
+        return lines;
     }
+
+    private static string HasManifest(Manifest? existingManifest) =>
+        existingManifest is not null ? "yes" : "no";
+
+    private static string HashChanged(Manifest? existingManifest, int changedCount) =>
+        existingManifest is not null && changedCount > 0 ? "yes" : "n/a";
+
+    private static string CoverageFilePath(string testProjectPath) =>
+        Path.Combine(Path.GetDirectoryName(testProjectPath) ?? ".", "coverage.cobertura.xml");
 }

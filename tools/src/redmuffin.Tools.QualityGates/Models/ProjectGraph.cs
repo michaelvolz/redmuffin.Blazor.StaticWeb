@@ -8,8 +8,7 @@ public sealed record ProjectGraph(IReadOnlyDictionary<string, IReadOnlyList<stri
     {
         var csprojFiles = Directory.EnumerateFiles(
             projectPath, "*.csproj", SearchOption.AllDirectories)
-            .Where(f => !f.Contains("/bin/", StringComparison.Ordinal) && !f.Contains("/obj/", StringComparison.Ordinal)
-                && !f.Contains("\\bin\\", StringComparison.Ordinal) && !f.Contains("\\obj\\", StringComparison.Ordinal));
+            .Where(IsSourceProject);
 
         var dependencies = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
 
@@ -33,5 +32,13 @@ public sealed record ProjectGraph(IReadOnlyDictionary<string, IReadOnlyList<stri
         }
 
         return new ProjectGraph(dependencies);
+    }
+
+    private static bool IsSourceProject(string path)
+    {
+        return !path.Contains("/bin/", StringComparison.Ordinal)
+            && !path.Contains("/obj/", StringComparison.Ordinal)
+            && !path.Contains("\\bin\\", StringComparison.Ordinal)
+            && !path.Contains("\\obj\\", StringComparison.Ordinal);
     }
 }
