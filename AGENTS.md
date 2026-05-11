@@ -41,6 +41,12 @@ To enable me to perform my role effectively, two coordination rules are critical
 - Place all workflows and Dependabot configuration in `.github/`.
 - Follow Trunk-Based Development (main branch is the source of truth); create feature branches only for high-risk changes.
 - Use `es.exe` for fast file search when available; fall back to `grep` only if `es.exe` is unavailable.
+- **Update the todo sidebar for every multi-step task.** The user relies on the
+  OpenCode todo tool sidebar to track progress. For any task requiring 3+
+  distinct steps, create todos BEFORE starting work and mark them complete
+  IMMEDIATELY after finishing each one. An empty or stale todo list means
+  the user cannot follow the work. This is as critical as reading code
+  before answering — the sidebar IS the user's visibility into the plan.
 
 **NEVER**:
 
@@ -51,6 +57,8 @@ To enable me to perform my role effectively, two coordination rules are critical
 - Discuss or act on any sidenote ("sidenote:" or "/sidenote") during an active task (sidenotes belong in backlog only).
 - Remove or consolidate SKILL COMMANDS tables (duplication is mandatory for model adherence).
 - Bypass the NPM 7-day release age filter (`min-release-age=7` in `.npmrc`).
+- Clear the todo list prematurely or let it go stale. The sidebar is the
+  user's only visibility into multi-step task progress.
 
 **ASK FIRST**:
 
@@ -99,6 +107,8 @@ To enable me to perform my role effectively, two coordination rules are critical
 - **Undo Last Commit**: Revert the commit while leaving all changes as unstaged edits in the working directory.
 - **Restore a File from HEAD**: When a bulk edit (sed, replaceAll, write) corrupts a file, restore the clean committed version with `git show HEAD:path/to/file > path/to/file`. This bypasses the safety-net-blocked `git checkout` while achieving the same result. Capture the clean version BEFORE starting the bulk edit — then no restore is needed.
 - **Skill Review**: Before activating any skill or analyzer, verify the correct name exists in the appropriate subfolder. On failure, double-check the name and retry.
+- **Todo Sidebar**: For any task with 3+ distinct steps, use the `todowrite` tool BEFORE starting. Create one todo per logical unit. Mark each complete IMMEDIATELY after finishing — never batch completions. Clear the list only when all work is done. The sidebar is the user's primary progress indicator; an empty or stale list means they have no visibility into your work.
+- **Quality Gates — Recursive Loop**: Gates are not one-shot. Run → fix worst violations → re-run → repeat until zero violations across all gates. See `rm-gates-cleanup` §0 for the full principle.
 - **Quality Gates — Recursive Loop**: Gates are not one-shot. Run → fix worst violations → re-run → repeat until zero violations across all gates. See `rm-gates-cleanup` §0 for the full principle.
 
 ## PATTERNS
