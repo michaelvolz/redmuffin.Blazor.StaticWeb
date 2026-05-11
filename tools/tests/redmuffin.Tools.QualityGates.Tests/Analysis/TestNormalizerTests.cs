@@ -90,4 +90,16 @@ public sealed class TestNormalizerTests
         var features = TestNormalizer.Normalize(method);
         await Assert.That(features).IsNotEmpty();
     }
+
+    [Test]
+    public async Task should_fall_back_to_lit_for_unknown_kinds()
+    {
+        var source = "class C { void M() { _ = 'c'; } }";
+        var tree = CSharpSyntaxTree.ParseText(source);
+        var root = tree.GetCompilationUnitRoot();
+        var method = root.DescendantNodes()
+            .OfType<MethodDeclarationSyntax>().First();
+        var features = TestNormalizer.Normalize(method);
+        await Assert.That(features).Contains("$lit");
+    }
 }

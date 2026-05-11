@@ -35,8 +35,7 @@ public static class TestNormalizer
                 SyntaxKind.StringLiteralExpression => "$str",
                 SyntaxKind.NumericLiteralExpression => "$num",
                 SyntaxKind.TrueLiteralExpression or SyntaxKind.FalseLiteralExpression => "$bool",
-                SyntaxKind.NullLiteralExpression => "$null",
-                SyntaxKind.DefaultLiteralExpression => "$default",
+                SyntaxKind.NullLiteralExpression or SyntaxKind.DefaultLiteralExpression => "$defnull",
                 _ => "$lit",
             };
         }
