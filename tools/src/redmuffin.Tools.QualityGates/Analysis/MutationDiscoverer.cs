@@ -46,7 +46,7 @@ public static class MutationDiscoverer
 
         private static bool MatchesRule(SyntaxNode node, MutationRule rule)
         {
-            if (node.Kind() != rule.OriginalKind)
+            if (!node.IsKind(rule.OriginalKind))
             {
                 return false;
             }

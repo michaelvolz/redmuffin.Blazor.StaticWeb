@@ -181,7 +181,8 @@ public static class AllCommand
         if (archConfig is not null) return archConfig;
 
         // Try the project directory first.
-        var projectConfig = Path.Combine(projectPath,
+        var projectConfig = Path.Combine(
+            projectPath,
             "quality-gates", "architecture-rules.yml");
         if (File.Exists(projectConfig)) return projectConfig;
 
@@ -189,7 +190,8 @@ public static class AllCommand
         var current = projectPath;
         while (current is not null)
         {
-            var candidate = Path.Combine(current,
+            var candidate = Path.Combine(
+                current,
                 "quality-gates", "architecture-rules.yml");
             if (File.Exists(candidate)) return candidate;
             current = Path.GetDirectoryName(current);

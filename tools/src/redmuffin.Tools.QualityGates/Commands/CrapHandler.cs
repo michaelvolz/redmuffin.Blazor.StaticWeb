@@ -34,7 +34,8 @@ public static class CrapHandler
             var coverage = r.Coverage.ToString("P0", CultureInfo.InvariantCulture);
             var status = r.IsCoverageGap ? "COVERAGE GAP" : (r.CrapScore > 8 ? "FAIL" : "PASS");
             var location = string.Create(CultureInfo.InvariantCulture, $"{r.FilePath}:{r.StartLine}");
-            output.WriteLine(string.Create(CultureInfo.InvariantCulture,
+            output.WriteLine(string.Create(
+                CultureInfo.InvariantCulture,
                 $"{r.CrapScore,8:F1} {r.Complexity,-4} {coverage,-10} {status,-14} {r.MethodName,-30} {location}"));
         }
     }

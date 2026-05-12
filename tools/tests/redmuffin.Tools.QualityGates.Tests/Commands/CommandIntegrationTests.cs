@@ -241,7 +241,7 @@ public sealed partial class CommandIntegrationTests
     [Test]
     public async Task RunBaselineOrEmpty_bad_project_returns_false()
     {
-        var (canProceed, _) = await MutationRunner.RunBaselineOrEmpty(
+        var (canProceed, _) = await MutationRunner.RunBaselineOrEmptyAsync(
             "/nonexistent/project", timeoutFactor: 10)
             .ConfigureAwait(false);
         await Assert.That(canProceed).IsFalse();

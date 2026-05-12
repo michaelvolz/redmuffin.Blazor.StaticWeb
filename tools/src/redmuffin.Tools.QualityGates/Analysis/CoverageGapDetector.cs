@@ -55,7 +55,7 @@ public static class CoverageGapDetector
         var root = tree.GetCompilationUnitRoot();
         var method = root.DescendantNodes()
             .OfType<MethodDeclarationSyntax>()
-            .FirstOrDefault(m => m.Identifier.Text == methodName);
+            .FirstOrDefault(m => string.Equals(m.Identifier.Text, methodName, StringComparison.Ordinal));
 
         if (method?.Body is null) return false;
 
@@ -68,7 +68,7 @@ public static class CoverageGapDetector
         var root = tree.GetCompilationUnitRoot();
         var method = root.DescendantNodes()
             .OfType<MethodDeclarationSyntax>()
-            .FirstOrDefault(m => m.Identifier.Text == methodName);
+            .FirstOrDefault(m => string.Equals(m.Identifier.Text, methodName, StringComparison.Ordinal));
 
         if (method?.Body is null || method.Body.Statements.Count != 1) return false;
 
@@ -102,6 +102,7 @@ public static class CoverageGapDetector
         {
             if (IsLoopOrComplex(statement)) return false;
         }
+
         return true;
     }
 

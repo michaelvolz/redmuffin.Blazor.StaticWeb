@@ -10,7 +10,7 @@ public static class MutationRunner
         string testProjectPath,
         int timeoutFactor = 10)
     {
-        var (canProceed, timeout) = await RunBaselineOrEmpty(testProjectPath, timeoutFactor)
+        var (canProceed, timeout) = await RunBaselineOrEmptyAsync(testProjectPath, timeoutFactor)
             .ConfigureAwait(false);
         if (!canProceed) return [];
 
@@ -49,7 +49,7 @@ public static class MutationRunner
         }
     }
 
-    public static async Task<(bool CanProceed, long Timeout)> RunBaselineOrEmpty(
+    public static async Task<(bool CanProceed, long Timeout)> RunBaselineOrEmptyAsync(
         string testProjectPath, int timeoutFactor)
     {
         var baselineResult = await RunTestsAsync(testProjectPath, timeout: null)
