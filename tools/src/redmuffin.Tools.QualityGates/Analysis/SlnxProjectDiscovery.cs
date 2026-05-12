@@ -95,9 +95,3 @@ public static class SlnxProjectDiscovery
                    StringComparison.OrdinalIgnoreCase);
     }
 }
-
-public sealed record SlnxDiscoveredProjects(
-    IReadOnlyList<string> SourceProjects,
-    IReadOnlyList<string> TestProjects,
-    string SlnxPath
-);

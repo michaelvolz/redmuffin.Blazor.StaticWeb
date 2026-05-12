@@ -1,3 +1,5 @@
+#pragma warning disable CA1859 // Conflicts with MA0016: collection abstractions preferred over concrete types (see rm-guide-warnings §Known Conflicts)
+
 namespace redmuffin.Tools.QualityGates.Analysis;
 
 using Microsoft.CodeAnalysis;
@@ -148,9 +150,9 @@ public static class ScrapDuplication
         List<TestMethod> fileMethods,
         IReadOnlyList<IReadOnlyList<string>> normalized,
         HashSet<int> clusteredIndices,
-        List<DuplicationChannel> allHarmful,
-        List<DuplicationChannel> allCaseMatrix,
-        List<DuplicationChannel> allSubject,
+        ICollection<DuplicationChannel> allHarmful,
+        ICollection<DuplicationChannel> allCaseMatrix,
+        ICollection<DuplicationChannel> allSubject,
         int clusterId)
     {
         foreach (var kvp in clusters)
@@ -170,9 +172,9 @@ public static class ScrapDuplication
         List<TestMethod> fileMethods,
         IReadOnlyList<IReadOnlyList<string>> normalized,
         HashSet<int> clusteredIndices,
-        List<DuplicationChannel> allHarmful,
-        List<DuplicationChannel> allCaseMatrix,
-        List<DuplicationChannel> allSubject)
+        ICollection<DuplicationChannel> allHarmful,
+        ICollection<DuplicationChannel> allCaseMatrix,
+        ICollection<DuplicationChannel> allSubject)
     {
         foreach (var idx in indices)
             clusteredIndices.Add(idx);
@@ -195,9 +197,9 @@ public static class ScrapDuplication
 
     public static void RouteToChannel(
         ChannelType channel, DuplicationChannel dupChannel,
-        List<DuplicationChannel> allHarmful,
-        List<DuplicationChannel> allCaseMatrix,
-        List<DuplicationChannel> allSubject)
+        ICollection<DuplicationChannel> allHarmful,
+        ICollection<DuplicationChannel> allCaseMatrix,
+        ICollection<DuplicationChannel> allSubject)
     {
         switch (channel)
         {
@@ -209,9 +211,9 @@ public static class ScrapDuplication
 
     private static void CollectSubjectRepetition(
         IReadOnlyList<TestMethod> fileMethods,
-        List<IReadOnlyList<string>> normalized,
+        IReadOnlyList<IReadOnlyList<string>> normalized,
         HashSet<int> clusteredIndices,
-        List<DuplicationChannel> allSubject,
+        ICollection<DuplicationChannel> allSubject,
         ref int clusterId)
     {
         var nonClustered = fileMethods
@@ -310,6 +312,7 @@ public static class ScrapDuplication
     }
 
     /// <summary>Simple per-method metrics extractable from raw syntax.</summary>
+    /// <returns></returns>
     public static SimpleMethodMetrics ComputeSimpleMetrics(TestMethod method)
     {
         var lineCount = method.EndLine - method.StartLine + 1;
@@ -378,6 +381,7 @@ public static class ScrapDuplication
     /// Classifies a cluster into Harmful, CaseMatrix, or Subject channel
     /// based on shared forms, variable points, and per-method metrics.
     /// </summary>
+    /// <returns></returns>
     public static ChannelType ClassifyChannel(
         IReadOnlyList<TestMethod> methods,
         int sharedForms,
