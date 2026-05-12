@@ -235,7 +235,6 @@ jobs:
               dotnet publish ${{ env.APP_LOCATION }} \
                 -c Release \
                 -o ${{ env.APP_LOCATION }}/bin/Release/publish \
-                --no-restore \
                 -p:PublishTrimmed=true \
                 -p:TrimMode=full \
                 --verbosity quiet \
