@@ -78,7 +78,7 @@ To enable me to perform my role effectively, two coordination rules are critical
 | `dotnet build -c Debug-Sass`                                                                             | Verify UI layer (SCSS/JS)                          | Immediately after any SCSS/JS edit          |
 | `scripts/Update-PackageVersions.ps1`                                                                     | Update NuGet packages (Central Package Management) | After any package change                    |
 | `dotnet run --project tests/redmuffin.Tools.QualityGates.Tests`                                          | Run quality gates tool tests (+ build)             | After any tools/ code change                |
-| `dotnet format src/<project> --severity info`                                                            | Auto-fix ~75% of StyleCop/Roslyn violations        | Before manually fixing analyzer warnings    |
+| `dotnet format [<solution-path>]`                                                                        | Auto-fix ~75% of StyleCop/Roslyn violations        | Before manually fixing analyzer warnings    |
 | `dotnet clean && dotnet build && dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests -c Release` | Full verification cycle                            | After NuGet updates or repeated failures    |
 | `es.exe`                                                                                                 | Ultra-fast file search                             | Large solutions or searches outside project |
 | `pwsh -NoProfile`                                                                                        | Cross-platform PowerShell execution                | Any PowerShell task                         |
