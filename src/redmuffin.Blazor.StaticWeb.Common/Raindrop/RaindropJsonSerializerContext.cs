@@ -9,6 +9,7 @@ namespace redmuffin.Blazor.StaticWeb.Common.Raindrop;
 [JsonSerializable(typeof(List<RaindropItem>), TypeInfoPropertyName = "RaindropItemList")]
 [JsonSerializable(typeof(RaindropItem))]
 [JsonSerializable(typeof(UserReference))]
+[JsonSerializable(typeof(CreatorReference))]
 [JsonSerializable(typeof(MediaItem))]
 [JsonSerializable(typeof(Reminder))]
 [JsonSerializable(typeof(CollectionReference))]

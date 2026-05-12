@@ -10,7 +10,7 @@ public class CreatorReferenceConverter : JsonConverter<CreatorReference?>
         return reader.TokenType switch
         {
             JsonTokenType.Number => new CreatorReference { Id = reader.GetInt64() },
-            JsonTokenType.StartObject => JsonSerializer.Deserialize<CreatorReference>(ref reader, options),
+            JsonTokenType.StartObject => JsonSerializer.Deserialize(ref reader, RaindropJsonSerializerContext.Default.CreatorReference),
             _ => null
         };
     }
@@ -20,7 +20,7 @@ public class CreatorReferenceConverter : JsonConverter<CreatorReference?>
         ArgumentNullException.ThrowIfNull(writer);
 
         if (value != null)
-            JsonSerializer.Serialize(writer, value, options);
+            JsonSerializer.Serialize(writer, value, RaindropJsonSerializerContext.Default.CreatorReference);
         else
             writer.WriteNullValue();
     }
