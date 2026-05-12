@@ -253,7 +253,6 @@ jobs:
                 -c Release \
                 -o ${{ env.APP_LOCATION }}/bin/Release/publish \
                 -p:PublishTrimmed=true \
-                -p:TrimMode=full \
                 --nologo
 
              echo ""
