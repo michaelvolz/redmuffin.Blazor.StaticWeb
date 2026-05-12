@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Extensions;
@@ -184,10 +185,8 @@ public class RaindropItemTests
         await Assert.That(result[0].Link).IsNull();
         await Assert.That(result[0].Title).IsEqualTo("Title1");
         await Assert.That(result[1].Id).IsEqualTo(2);
-        await Assert.That(result[1].Link).IsEqualTo("link1");
-        await Assert.That(result[1].Title).IsEqualTo("Title1");
         await Assert.That(result[1].Link).IsEqualTo("link2");
-        await Assert.That(result[1].Title).IsEqualTo("Title2");
+        await Assert.That(result[1].Title).IsNull();
     }
 
     // Characterization tests for IsValid() — all decision paths
@@ -282,6 +281,67 @@ public class RaindropItemTests
         {
             var item = new PrunedRaindropItem { Id = 1, Excerpt = new string('x', 2000) };
             await Assert.That(item.IsValid()).IsTrue();
+        }
+    }
+
+    public sealed class ValidateOrThrowTests
+    {
+        [Test]
+        public async Task DoesNotThrow_When_AllFieldsValid()
+        {
+            var item = new PrunedRaindropItem
+            {
+                Id = 1,
+                Link = "https://example.com",
+                Title = "Valid",
+                Excerpt = "Valid"
+            };
+            await Assert.That(() => item.ValidateOrThrow()).ThrowsNothing();
+        }
+
+        [Test]
+        public async Task Throws_When_IdIsZero()
+        {
+            var item = new PrunedRaindropItem { Id = 0 };
+            await Assert.That(() => item.ValidateOrThrow())
+                .Throws<ValidationException>()
+                .WithMessage("ID must be a positive value.");
+        }
+
+        [Test]
+        public async Task Throws_When_LinkIsInvalid()
+        {
+            var item = new PrunedRaindropItem { Id = 1, Link = "not-a-uri" };
+            await Assert.That(() => item.ValidateOrThrow())
+                .Throws<ValidationException>()
+                .WithMessage("Link must be a valid absolute URI.");
+        }
+
+        [Test]
+        public async Task Throws_When_CoverIsInvalid()
+        {
+            var item = new PrunedRaindropItem { Id = 1, Cover = "not-a-uri" };
+            await Assert.That(() => item.ValidateOrThrow())
+                .Throws<ValidationException>()
+                .WithMessage("Cover must be a valid absolute URI.");
+        }
+
+        [Test]
+        public async Task Throws_When_TitleExceeds500Chars()
+        {
+            var item = new PrunedRaindropItem { Id = 1, Title = new string('x', 501) };
+            await Assert.That(() => item.ValidateOrThrow())
+                .Throws<ValidationException>()
+                .WithMessage("Title cannot exceed 500 characters.");
+        }
+
+        [Test]
+        public async Task Throws_When_ExcerptExceeds2000Chars()
+        {
+            var item = new PrunedRaindropItem { Id = 1, Excerpt = new string('x', 2001) };
+            await Assert.That(() => item.ValidateOrThrow())
+                .Throws<ValidationException>()
+                .WithMessage("Excerpt cannot exceed 2000 characters.");
         }
     }
 }
