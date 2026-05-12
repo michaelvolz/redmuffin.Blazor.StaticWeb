@@ -5,17 +5,12 @@
     <Version Condition="$(Version) == ''">0.1.0.0</Version>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <!-- Force locked-mode restore for supply-chain safety. -->
-    <RestoreLockedMode>true</RestoreLockedMode>
-  </PropertyGroup>
-
   <!-- Global Coverage Exclusions -->
   <PropertyGroup>
     <ExcludeFromCodeCoverage>**/Migrations/**;**/obj/**;**/bin/**;**/wwwroot/**;**/node_modules/**</ExcludeFromCodeCoverage>
   </PropertyGroup>
 
-  <!-- NuGet Package Lock Files for better CI/CD caching -->
+  <!-- NuGet Package Lock Files for dependency reproducibility -->
   <PropertyGroup>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <NuGetLockFilePath>$(MSBuildProjectDirectory)\packages.lock.json</NuGetLockFilePath>
