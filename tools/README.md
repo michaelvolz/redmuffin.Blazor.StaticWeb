@@ -71,7 +71,7 @@ reference extraction) → `ComponentGraph.Resolve` (project-to-component mapping
 → `ArchHandler.Run` (violation + cycle detection) → `ArchOutputFormatter`
 (text or JSON).
 
-Flags: `--arch-config <path>`, `--json`.
+Flags: `--architecture-config <path>`, `--json`.
 
 Cross-platform note: `.csproj` files use Windows `\` path separators.
 `ProjectGraph.From` normalizes them via `.Replace('\\', Path.DirectorySeparatorChar)`.
@@ -127,7 +127,7 @@ All decisions documented in [ADR-0002][adr]. Key points:
   testability (no `InternalsVisibleTo`).
 - **Run-all policy** — `AllCommand` executes every gate regardless of
   intermediate failures, returns the worst exit code. Architecture gate skips
-  when `--arch-config` not provided.
+  when `--architecture-config` not provided.
 - **TOP REQUIREMENT** (§1.1 of Uncle Bob skill): Algorithm, CLI flags, exit
   codes, and scope must replicate original tools exactly. Research-before-
   implementing is mandatory.
