@@ -142,6 +142,40 @@ NOT tell you whether trimming is configured correctly. Both `partial` and
 inside each assembly. `full` strips types the Blazor runtime needs via
 reflection.
 
+### 3. IL2026: Trim warnings unmasked when trimming actually works
+
+**Date discovered**: 2026-05-12
+
+**The duality**: When trimming is broken (--no-restore), the linker never
+runs and IL2026 warnings never fire. Fixing trimming unmasked pre-existing
+trim-unsafe JSON API usage in `CreatorReferenceConverter.cs`.
+
+**Detection**: IL2026 errors during `dotnet publish -p:PublishTrimmed=true`.
+
+**Root cause**: `JsonSerializer.Deserialize<TValue>()` and
+`JsonSerializer.Serialize<TValue>()` (generic overloads) carry
+`[RequiresUnreferencedCode]`. These are the _only_ overloads flagged by
+the trim analyzer — even the non-generic `Type`-based overloads are marked
+trim-unsafe in .NET 9.
+
+**Fix**: Source-generated `JsonSerializerContext` with `JsonTypeInfo<T>`.
+Add the affected type to the context's `[JsonSerializable]` attributes,
+then call the `JsonTypeInfo`-based overloads:
+
+```csharp
+// BEFORE (IL2026):
+JsonSerializer.Deserialize<CreatorReference>(ref reader, options);
+JsonSerializer.Serialize(writer, value, options);
+
+// AFTER (trim-safe, source-generated):
+JsonSerializer.Deserialize(ref reader, RaindropJsonSerializerContext.Default.CreatorReference);
+JsonSerializer.Serialize(writer, value, RaindropJsonSerializerContext.Default.CreatorReference);
+```
+
+**Verification**: `dotnet publish -p:PublishTrimmed=true` must produce
+zero IL2026/IL2067/IL2070 warnings. `TreatWarningsAsErrors=true` makes
+this enforcement automatic.
+
 ## References
 
 - Microsoft docs: [Trimming options](https://learn.microsoft.com/en-us/dotnet/core/deploying/trimming/trimming-options)
