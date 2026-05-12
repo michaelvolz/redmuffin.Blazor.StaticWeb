@@ -200,11 +200,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-swa-cli-
 
-      # Supply chain protection: reject packages published less than 7 days ago
+      # Supply chain hardening — mirrors .npmrc in repo root
       - name: Configure npm supply chain protection
         run: |
-          echo "min-release-age=1" >> ~/.npmrc
-          echo "Supply chain protection: minimum release age set to 1 day"
+          cat >> ~/.npmrc <<'NPMRC'
+          min-release-age=1
+          ignore-scripts=true
+          save-exact=true
+          strict-peer-deps=true
+          engine-strict=true
+          NPMRC
+          echo "Supply chain hardening applied: min-release-age=1, ignore-scripts, save-exact, strict-peer-deps, engine-strict"
 
       # Install Azure Static Web Apps CLI (uses cache when available)
       - name: Install Azure Static Web Apps CLI
