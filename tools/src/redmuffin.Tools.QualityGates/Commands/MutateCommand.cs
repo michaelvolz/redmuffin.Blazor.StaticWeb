@@ -61,7 +61,7 @@ public static class MutateCommand
 
     public static Command Create()
     {
-        var command = new Command("mutate", "Run mutation testing on a source file")
+        var command = new Command("mutation", "Run mutation testing on a source file")
         {
             SourceOption, TestProjectOption, ScanOption, MaxWorkersOption,
             SinceLastRunOption, MutateAllOption, LinesOption,

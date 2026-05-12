@@ -7,7 +7,7 @@ public static class AllCommand
 {
     private const string DefaultProject = "src/redmuffin.Tools.QualityGates";
     private const string DefaultTestProject = "tests/redmuffin.Tools.QualityGates.Tests";
-    private const string DefaultCoverageFile = "/tmp/quality-gates-coverage.xml";
+    private const string DefaultCoverageFile = "/tmp/coverage-data.xml";
 
     private static readonly Option<DirectoryInfo?> ProjectOption = new("--project")
     {
@@ -24,9 +24,9 @@ public static class AllCommand
         Description = $"Path to the Cobertura XML coverage file for CRAP. Defaults to '{DefaultCoverageFile}'.",
     };
 
-    private static readonly Option<string?> ArchConfigOption = new("--arch-config")
+    private static readonly Option<string?> ArchConfigOption = new("--architecture-config")
     {
-        Description = "Path to the YAML architecture config file. Defaults to '<project>/arch-rules.yml'.",
+        Description = "Path to the YAML architecture config file. Defaults to '<project>/quality-gates/architecture-rules.yml'.",
     };
 
     private static readonly Option<bool> ChangedOption = new("--changed")
@@ -39,19 +39,19 @@ public static class AllCommand
         Description = "Show detailed per-gate output.",
     };
 
-    private static readonly Option<string?> MutateSourceOption = new("--mutate-source")
+    private static readonly Option<string?> MutateSourceOption = new("--mutation-source")
     {
         Description = "Path to source file for mutation testing (requires explicit path).",
     };
 
-    private static readonly Option<bool> MutateScanOption = new("--mutate-scan")
+    private static readonly Option<bool> MutateScanOption = new("--mutation-scan")
     {
         Description = "Run mutation in scan-only mode (no test execution).",
     };
 
-    private static readonly Option<bool?> DupesOption = new("--dupes")
+    private static readonly Option<bool?> DupesOption = new("--duplicates")
     {
-        Description = "Run the duplicate code detection gate. Enabled by default. Use --no-dupes to disable.",
+        Description = "Run the duplicate code detection gate. Enabled by default. Use --no-duplicates to disable.",
     };
 
     private static readonly Option<bool?> AutoCoverageOption = new("--auto-coverage")
@@ -76,7 +76,7 @@ public static class AllCommand
         var projectPath = ResolveProjectPath(project);
         var testProjectPath = ResolveTestProjectPath(testProject);
         var coveragePath = coverageFile?.FullName ?? DefaultCoverageFile;
-        var resolvedArchConfig = archConfig ?? Path.Combine(projectPath, "arch-rules.yml");
+        var resolvedArchConfig = archConfig ?? Path.Combine(projectPath, "quality-gates", "architecture-rules.yml");
 
         return await ExecuteAsync(
             projectPath, testProjectPath, coveragePath,
@@ -166,7 +166,7 @@ public static class AllCommand
     public static async Task<int> RunArchAsync(TextWriter o, string projectPath, string? archConfig)
     {
         return await WriteGateHeaderAsync(o, archConfig,
-                "Architecture (Dependency Checker)", "--arch-config").ConfigureAwait(false)
+                "Architecture (Dependency Checker)", "--architecture-config").ConfigureAwait(false)
             ? ArchCommand.Execute(projectPath, archConfig!, json: false)
             : 0;
     }
@@ -175,7 +175,7 @@ public static class AllCommand
         string testProjectPath, bool mutateScan)
     {
         return await WriteGateHeaderAsync(o, mutateSource,
-                "Mutation Testing", "--mutate-source").ConfigureAwait(false)
+                "Mutation Testing", "--mutation-source").ConfigureAwait(false)
             ? await MutateHandler.RunAsync(
                 mutateSource!, testProjectPath, new MutateOptions(Scan: mutateScan)).ConfigureAwait(false)
             : 0;
@@ -186,7 +186,7 @@ public static class AllCommand
         if (!runDupes) return 0;
 
         await o.WriteLineAsync().ConfigureAwait(false);
-        await o.WriteLineAsync("=== Dupes (Duplicate Code Detection) ===").ConfigureAwait(false);
+        await o.WriteLineAsync("=== Duplicates (Duplicate Code Detection) ===").ConfigureAwait(false);
         var dupesOptions = new DupesOptions(Paths: [projectPath]);
         var (exitCode, candidates) = DupesHandler.Run(dupesOptions);
         await o.WriteLineAsync(DupesOutputFormatter.Format(candidates, "text")).ConfigureAwait(false);
@@ -227,7 +227,7 @@ public static class AllCommand
         var archStatus = GateStatus(archConfig, archExit);
         var mutateStatus = GateStatus(mutateSource, mutateExit);
         var dupesStatus = runDupes ? StatusText(dupesExit) : "N/A";
-        return $"CRAP: {crapStatus} | SCRAP: {scrapStatus} | ARCH: {archStatus} | MUTATE: {mutateStatus} | DUPES: {dupesStatus} | Overall: {overallStatus}";
+        return $"CRAP: {crapStatus} | SCRAP: {scrapStatus} | Architecture: {archStatus} | Mutation: {mutateStatus} | Duplicates: {dupesStatus} | Overall: {overallStatus}";
     }
 
     private static string GateStatus(string? config, int exitCode) =>

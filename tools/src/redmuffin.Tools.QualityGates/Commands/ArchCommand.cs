@@ -13,7 +13,7 @@ public static class ArchCommand
             Required = true,
         };
 
-        var configOption = new Option<string>("--arch-config")
+        var configOption = new Option<string>("--architecture-config")
         {
             Description = "Path to the YAML architecture config file",
             Required = true,
@@ -25,7 +25,7 @@ public static class ArchCommand
         };
 
         var command = new Command(
-            "arch",
+            "architecture",
             "Check project dependency architecture against component rules")
         {
             projectOption,

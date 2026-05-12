@@ -58,7 +58,7 @@ public static class DupesCommand
 
     public static Command Create()
     {
-        var command = new Command("dupes", "Find structural duplicate code candidates")
+        var command = new Command("duplicates", "Find structural duplicate code candidates")
         {
             PathsArg, ThresholdOption, MinLinesOption, MinNodesOption, FormatOption, JsonOption,
         };
