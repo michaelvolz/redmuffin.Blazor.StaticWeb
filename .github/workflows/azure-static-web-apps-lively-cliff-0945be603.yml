@@ -151,6 +151,12 @@ jobs:
           dotnet-version: "10.x"
           workloads: wasm-tools
 
+      # SDK 10 wasm-tools installs the net10 variant. Our projects
+      # target net9.0 and need wasm-tools-net9. --from-previous-sdk
+      # pulls in net9 workload manifests alongside net10.
+      - name: Install required workloads
+        run: dotnet workload restore --from-previous-sdk
+
       # OPTIMIZATION: Cache NuGet packages for faster subsequent builds
       - name: Cache NuGet packages
         uses: actions/cache@v5
