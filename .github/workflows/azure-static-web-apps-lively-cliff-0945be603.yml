@@ -152,10 +152,10 @@ jobs:
           workloads: wasm-tools
 
       # SDK 10 wasm-tools installs the net10 variant. Our projects
-      # target net9.0 and need wasm-tools-net9. --from-previous-sdk
-      # pulls in net9 workload manifests alongside net10.
+      # target net9.0 and need the net9 workload packs (Emscripten,
+      # AOT, Mono). wasm-tools-net9 bridges SDK 10 to net9.0 WASM.
       - name: Install required workloads
-        run: dotnet workload restore --from-previous-sdk
+        run: dotnet workload install wasm-tools-net9
 
       # OPTIMIZATION: Cache NuGet packages for faster subsequent builds
       - name: Cache NuGet packages
