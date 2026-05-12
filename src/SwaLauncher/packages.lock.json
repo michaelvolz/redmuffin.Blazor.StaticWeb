@@ -20,6 +20,12 @@
         "resolved": "9.0.14",
         "contentHash": "2yrkT+Akish37Bm4ECSCPg8lrjCkqszzqahAI0elI1wZlAbsXaoW6W5eEp3k5lUua5ZgQBTy9N3+RQGoOWQFWw=="
       },
+      "Microsoft.NET.ILLink.Tasks": {
+        "type": "Direct",
+        "requested": "[9.0.14, )",
+        "resolved": "9.0.14",
+        "contentHash": "+MeWjj5sGq6Oj/l0E9RPMgXDyCIPxczzCbGuvuVTZFEGiy2S/atsfoAoKUnkEin/GeGpN+HenCzRmiQKSc99eQ=="
+      },
       "Microsoft.VisualStudio.Threading.Analyzers": {
         "type": "Direct",
         "requested": "[17.14.15, )",
