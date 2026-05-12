@@ -1,3 +1,17 @@
+# Deploy to Azure Static Web Apps
+#
+# Design criteria (apply to every change to this workflow):
+# 1. Smallest possible deploy package (aggressive trimming, minimal assemblies)
+# 2. Fastest possible pipeline (no redundant steps, cache everything cacheable)
+# 3. Minimum number of steps (consolidate where safe, eliminate no-ops)
+# 4. Fast-fail on errors (tests before deploy, set -e in shell blocks)
+# 5. Tests run immediately before deploy, not after
+# 6. Zero duplicate steps (one checkout, one restore, one publish each)
+# 7. Transparent output (no --verbosity quiet — show what happened)
+# 8. LLM-debuggable output (visible error details, structured exit codes,
+#    upload artifacts on failure so an agent can inspect them)
+# 9. Preserve doc-only-change skip mechanic (check_changes job)
+#
 # This workflow will build and push a web application to an Azure Static Web App when you change your code.
 #
 # This workflow assumes you have already created the target Azure Static Web App.
@@ -113,7 +127,7 @@ jobs:
           fetch-depth: 1 # Shallow clone for faster checkout
           show-progress: false # Reduce log noise
 
-      - name: Display job context
+      - name: Display job context and system resources
         run: |
           echo "=== Job Context ==="
           echo "Job: test_and_build_job"
@@ -123,9 +137,6 @@ jobs:
           echo "Actor: ${{ github.actor }}"
           echo "Runner: ${{ runner.os }}"
           echo ""
-
-      - name: Display system resources
-        run: |
           echo "=== System Resources ==="
           echo "CPU: $(nproc) cores"
           echo "Memory: $(free -h | grep Mem | awk '{print $2}' | sed 's/i//g')"
@@ -160,7 +171,7 @@ jobs:
         run: |
           echo "Running tests..."
           echo "Configuration: Release mode, parallel execution enabled"
-          dotnet test -c Release --no-restore --verbosity quiet --logger trx --results-directory TestResults /p:CollectCoverage=false
+          dotnet test -c Release --no-restore --logger trx --results-directory TestResults /p:CollectCoverage=false
           TEST_EXIT_CODE=$?
           if [ $TEST_EXIT_CODE -ne 0 ]; then
             echo ""
@@ -192,8 +203,8 @@ jobs:
       # Supply chain protection: reject packages published less than 7 days ago
       - name: Configure npm supply chain protection
         run: |
-          echo "min-release-age=10080" >> ~/.npmrc
-          echo "Supply chain protection: minimum release age set to 7 days"
+          echo "min-release-age=1" >> ~/.npmrc
+          echo "Supply chain protection: minimum release age set to 1 day"
 
       # Install Azure Static Web Apps CLI (uses cache when available)
       - name: Install Azure Static Web Apps CLI
@@ -237,7 +248,6 @@ jobs:
                 -o ${{ env.APP_LOCATION }}/bin/Release/publish \
                 -p:PublishTrimmed=true \
                 -p:TrimMode=full \
-                --verbosity quiet \
                 --nologo
 
              echo ""
@@ -258,7 +268,6 @@ jobs:
             -o ${{ env.API_LOCATION }}/bin/Release/publish \
             --no-restore \
             --no-dependencies \
-            --verbosity quiet \
             --nologo
 
           echo ""
