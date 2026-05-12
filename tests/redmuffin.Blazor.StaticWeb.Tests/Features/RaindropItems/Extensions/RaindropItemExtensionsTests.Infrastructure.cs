@@ -68,7 +68,7 @@ public sealed partial class RaindropItemExtensionsTests
         var prunedItems = raindropItems.ToPruned().ToList();
 
         // Assert
-            await Assert.That(prunedItems).Count().IsEqualTo(3);
+        await Assert.That(prunedItems).Count().IsEqualTo(3);
 
         for (var i = 0; i < raindropItems.Count; i++)
         {

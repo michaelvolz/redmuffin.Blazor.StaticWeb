@@ -13,7 +13,7 @@ public sealed partial class RaindropAPIFactory : IRaindropAPIFactory
     private readonly ILogger<RaindropAPIFactory> _logger;
 
     /// <summary>
-    ///     Initializes a new instance of the RaindropAPIFactory class.
+    /// Initializes a new instance of the <see cref="RaindropAPIFactory"/> class.
     /// </summary>
     /// <param name="navigationManager">Navigation manager for environment detection.</param>
     /// <param name="serviceProvider">Service provider for dependency resolution.</param>

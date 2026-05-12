@@ -6,37 +6,37 @@ namespace redmuffin.Blazor.StaticWeb.Services;
 public class CacheNamespaceStats
 {
     /// <summary>
-    ///     Cache namespace name.
+    ///     Gets or sets cache namespace name.
     /// </summary>
     public string Namespace { get; set; } = string.Empty;
 
     /// <summary>
-    ///     Total number of items in the namespace.
+    ///     Gets or sets total number of items in the namespace.
     /// </summary>
     public int TotalItems { get; set; }
 
     /// <summary>
-    ///     Estimated total size in bytes.
+    ///     Gets or sets estimated total size in bytes.
     /// </summary>
     public long TotalSizeBytes { get; set; }
 
     /// <summary>
-    ///     Number of expired items.
+    ///     Gets or sets number of expired items.
     /// </summary>
     public int ExpiredItemsCount { get; set; }
 
     /// <summary>
-    ///     Oldest item timestamp.
+    ///     Gets or sets oldest item timestamp.
     /// </summary>
     public DateTime? OldestItemTimestamp { get; set; }
 
     /// <summary>
-    ///     Newest item timestamp.
+    ///     Gets or sets newest item timestamp.
     /// </summary>
     public DateTime? NewestItemTimestamp { get; set; }
 
     /// <summary>
-    ///     Average access count for items in the namespace.
+    ///     Gets or sets average access count for items in the namespace.
     /// </summary>
     public double AverageAccessCount { get; set; }
 }

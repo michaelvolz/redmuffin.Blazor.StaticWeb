@@ -6,32 +6,32 @@ namespace redmuffin.Blazor.StaticWeb.Services;
 public class CacheRecommendations
 {
     /// <summary>
-    ///     Recommended cache size adjustments.
+    ///     Gets or sets recommended cache size adjustments.
     /// </summary>
     public IList<string> SizeRecommendations { get; set; } = new List<string>();
 
     /// <summary>
-    ///     Recommended expiration policy changes.
+    ///     Gets or sets recommended expiration policy changes.
     /// </summary>
     public IList<string> ExpirationRecommendations { get; set; } = new List<string>();
 
     /// <summary>
-    ///     Recommended performance optimizations.
+    ///     Gets or sets recommended performance optimizations.
     /// </summary>
     public IList<string> PerformanceRecommendations { get; set; } = new List<string>();
 
     /// <summary>
-    ///     Recommended maintenance actions.
+    ///     Gets or sets recommended maintenance actions.
     /// </summary>
     public IList<string> MaintenanceRecommendations { get; set; } = new List<string>();
 
     /// <summary>
-    ///     Overall cache health score (0-100).
+    ///     Gets or sets overall cache health score (0-100).
     /// </summary>
     public int HealthScore { get; set; }
 
     /// <summary>
-    ///     Recommendations generated timestamp.
+    ///     Gets or sets recommendations generated timestamp.
     /// </summary>
     public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
 }

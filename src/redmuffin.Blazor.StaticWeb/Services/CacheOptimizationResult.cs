@@ -6,47 +6,47 @@ namespace redmuffin.Blazor.StaticWeb.Services;
 public class CacheOptimizationResult
 {
     /// <summary>
-    ///     Whether optimization was successful.
+    ///     Gets or sets a value indicating whether whether optimization was successful.
     /// </summary>
     public bool IsSuccessful { get; set; }
 
     /// <summary>
-    ///     Number of expired items removed.
+    ///     Gets or sets number of expired items removed.
     /// </summary>
     public int ExpiredItemsRemoved { get; set; }
 
     /// <summary>
-    ///     Number of items evicted for optimization.
+    ///     Gets or sets number of items evicted for optimization.
     /// </summary>
     public int ItemsEvicted { get; set; }
 
     /// <summary>
-    ///     Storage space freed in bytes.
+    ///     Gets or sets storage space freed in bytes.
     /// </summary>
     public long StorageFreedBytes { get; set; }
 
     /// <summary>
-    ///     Time taken for optimization in milliseconds.
+    ///     Gets or sets time taken for optimization in milliseconds.
     /// </summary>
     public long OptimizationTimeMs { get; set; }
 
     /// <summary>
-    ///     Storage utilization before optimization.
+    ///     Gets or sets storage utilization before optimization.
     /// </summary>
     public double StorageUtilizationBefore { get; set; }
 
     /// <summary>
-    ///     Storage utilization after optimization.
+    ///     Gets or sets storage utilization after optimization.
     /// </summary>
     public double StorageUtilizationAfter { get; set; }
 
     /// <summary>
-    ///     Optimization actions performed.
+    ///     Gets or sets optimization actions performed.
     /// </summary>
     public IList<string> ActionsPerformed { get; set; } = new List<string>();
 
     /// <summary>
-    ///     Optimization timestamp.
+    ///     Gets or sets optimization timestamp.
     /// </summary>
     public DateTime OptimizedAt { get; set; } = DateTime.UtcNow;
 }

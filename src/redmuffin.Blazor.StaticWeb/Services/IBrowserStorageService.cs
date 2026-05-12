@@ -12,6 +12,7 @@ public interface IBrowserStorageService
     /// <param name="key">Storage key</param>
     /// <param name="value">Value to store</param>
     /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task SetItemAsync<T>(string key, T value, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -28,6 +29,7 @@ public interface IBrowserStorageService
     /// </summary>
     /// <param name="key">Storage key</param>
     /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task RemoveItemAsync(string key, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -49,6 +51,7 @@ public interface IBrowserStorageService
     ///     Clears all items from storage.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task ClearAsync(CancellationToken cancellationToken = default);
 
     /// <summary>

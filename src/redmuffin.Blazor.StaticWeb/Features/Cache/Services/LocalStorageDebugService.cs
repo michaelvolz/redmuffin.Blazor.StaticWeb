@@ -28,6 +28,7 @@ public partial class LocalStorageDebugService
     /// <summary>
     ///     Performs comprehensive localStorage diagnostics.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task<LocalStorageDiagnostics> DiagnoseLocalStorageAsync(CancellationToken cancellationToken = default)
     {
         var diagnostics = new LocalStorageDiagnostics();

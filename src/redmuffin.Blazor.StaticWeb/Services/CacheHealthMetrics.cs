@@ -6,37 +6,37 @@ namespace redmuffin.Blazor.StaticWeb.Services;
 public class CacheHealthMetrics
 {
     /// <summary>
-    ///     Overall cache health status.
+    ///     Gets or sets overall cache health status.
     /// </summary>
     public CacheHealthStatus HealthStatus { get; set; }
 
     /// <summary>
-    ///     Storage utilization percentage.
+    ///     Gets or sets storage utilization percentage.
     /// </summary>
     public double StorageUtilizationPercent { get; set; }
 
     /// <summary>
-    ///     Number of expired items that need cleanup.
+    ///     Gets or sets number of expired items that need cleanup.
     /// </summary>
     public int ExpiredItemsCount { get; set; }
 
     /// <summary>
-    ///     Memory pressure indicator.
+    ///     Gets or sets a value indicating whether memory pressure indicator.
     /// </summary>
     public bool IsMemoryPressureHigh { get; set; }
 
     /// <summary>
-    ///     Cache fragmentation percentage.
+    ///     Gets or sets cache fragmentation percentage.
     /// </summary>
     public double FragmentationPercent { get; set; }
 
     /// <summary>
-    ///     Performance issues detected.
+    ///     Gets or sets performance issues detected.
     /// </summary>
     public IReadOnlyList<string> PerformanceIssues { get; set; } = new List<string>();
 
     /// <summary>
-    ///     Health check timestamp.
+    ///     Gets or sets health check timestamp.
     /// </summary>
     public DateTime CheckedAt { get; set; } = DateTime.UtcNow;
 }

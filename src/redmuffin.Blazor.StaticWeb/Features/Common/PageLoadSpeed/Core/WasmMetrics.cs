@@ -19,6 +19,7 @@ public readonly record struct WasmMetrics(
     /// <summary>
     ///     Creates a WasmMetrics instance with default/N/A values for unavailable metrics
     /// </summary>
+    /// <returns></returns>
     public static WasmMetrics CreateDefault()
     {
         return new WasmMetrics(

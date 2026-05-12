@@ -6,42 +6,42 @@ namespace redmuffin.Blazor.StaticWeb.Services;
 public class StorageStats
 {
     /// <summary>
-    ///     Total number of items stored.
+    ///     Gets or sets total number of items stored.
     /// </summary>
     public int TotalItems { get; set; }
 
     /// <summary>
-    ///     Estimated total size in bytes.
+    ///     Gets or sets estimated total size in bytes.
     /// </summary>
     public long TotalSizeBytes { get; set; }
 
     /// <summary>
-    ///     Current quota limit in bytes.
+    ///     Gets or sets current quota limit in bytes.
     /// </summary>
     public long QuotaLimitBytes { get; set; }
 
     /// <summary>
-    ///     Percentage of quota used.
+    ///     Gets or sets percentage of quota used.
     /// </summary>
     public double QuotaUsagePercent { get; set; }
 
     /// <summary>
-    ///     Number of items accessed recently.
+    ///     Gets or sets number of items accessed recently.
     /// </summary>
     public int RecentlyAccessedCount { get; set; }
 
     /// <summary>
-    ///     Number of expired items.
+    ///     Gets or sets number of expired items.
     /// </summary>
     public int ExpiredItemsCount { get; set; }
 
     /// <summary>
-    ///     Oldest item timestamp.
+    ///     Gets or sets oldest item timestamp.
     /// </summary>
     public DateTime? OldestItemTimestamp { get; set; }
 
     /// <summary>
-    ///     Newest item timestamp.
+    ///     Gets or sets newest item timestamp.
     /// </summary>
     public DateTime? NewestItemTimestamp { get; set; }
 }
