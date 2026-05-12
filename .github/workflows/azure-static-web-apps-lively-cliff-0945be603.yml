@@ -143,11 +143,12 @@ jobs:
           echo "Disk available: $(df -h / | tail -1 | awk '{print $4}')"
           echo ""
 
-      # OPTIMIZATION: Single .NET setup with WASM workload for Blazor builds
+      # OPTIMIZATION: Single .NET setup with WASM workload
+      # .NET 10 SDK builds net9.0 targets for Azure SWA compatibility
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.x"
+          dotnet-version: "10.x"
           workloads: wasm-tools
 
       # OPTIMIZATION: Cache NuGet packages for faster subsequent builds
@@ -159,19 +160,20 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      # OPTIMIZATION: Single dependency restoration
+      # OPTIMIZATION: Single dependency restoration (includes trimming packages for Blazor publish)
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore -p:PublishTrimmed=true
 
       # TESTING PHASE: Fast fail if tests don't pass with parallel execution
+      # TUnit runs via dotnet run (native, no VSTest dependency in SDK 10)
       # Note: Tests automatically use environment variables set in the job environment
       # No local.settings.json file needed as TestBase class uses AddEnvironmentVariables()
       # OPTIMIZATION: Run tests in Release mode to avoid double compilation
       - name: Run tests
         run: |
           echo "Running tests..."
-          echo "Configuration: Release mode, parallel execution enabled"
-          dotnet test -c Release --no-restore --logger trx --results-directory TestResults /p:CollectCoverage=false
+          echo "Configuration: Release mode, parallel execution enabled (TUnit via dotnet run)"
+          dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests -c Release --no-restore /p:CollectCoverage=false
           TEST_EXIT_CODE=$?
           if [ $TEST_EXIT_CODE -ne 0 ]; then
             echo ""
@@ -253,6 +255,7 @@ jobs:
                 -c Release \
                 -o ${{ env.APP_LOCATION }}/bin/Release/publish \
                 -p:PublishTrimmed=true \
+                --no-restore \
                 --nologo
 
              echo ""
@@ -294,7 +297,7 @@ jobs:
           echo ""
           echo "✅ All checks passed"
 
-  # JOB: Verify both frontend and API are healthy after deployment
+  # JOB: Verify WASM integrity and API health after deployment
   health_check:
     needs: test_and_build_job
     runs-on: ubuntu-latest
@@ -302,46 +305,54 @@ jobs:
     steps:
       - name: Verify deployment health
         run: |
-          set -e  # Exit on any error
+          set -e
 
           echo "=== Health Check ==="
-          echo "Checking both frontend and API endpoints..."
 
-          # Wait for deployment to settle
-          sleep 5
+          check_wasm() {
+            echo "Checking WASM: https://redmuffin.net/_framework/blazor.boot.json"
+            BOOT=$(curl -f -s --max-time 5 --retry 1 --retry-delay 2 \
+              "https://redmuffin.net/_framework/blazor.boot.json")
 
-          # Run both checks in parallel
-          check_site() {
-            echo "Checking frontend: https://redmuffin.net"
-            curl -f -s --max-time 10 --retry 2 --retry-delay 5 "https://redmuffin.net" > /dev/null
-            echo "✅ Frontend is accessible"
+            LINKER=$(echo "$BOOT" | jq -r '.linkerEnabled // "false"')
+            echo "  linkerEnabled: $LINKER"
+            if [ "$LINKER" != "true" ]; then
+              echo "❌ WASM trimming NOT active"
+              return 1
+            fi
+
+            ASSEMBLIES=$(echo "$BOOT" | jq '[.resources.fingerprinting | keys[] | select(endswith(".wasm"))] | length')
+            echo "  WASM assemblies: $ASSEMBLIES"
+            if [ "$ASSEMBLIES" -gt 60 ]; then
+              echo "❌ Assembly count ($ASSEMBLIES) indicates trimming failure"
+              return 1
+            fi
+            echo "✅ WASM trimming verified ($ASSEMBLIES assemblies)"
           }
 
           check_api() {
             echo "Checking API: https://redmuffin.net/api/HelloWorld"
-            RESPONSE=$(curl -f -s --max-time 10 --retry 2 --retry-delay 5 "https://redmuffin.net/api/HelloWorld")
+            RESPONSE=$(curl -f -s --max-time 5 --retry 1 --retry-delay 2 \
+              "https://redmuffin.net/api/HelloWorld")
             if echo "$RESPONSE" | grep -q "Welcome to Azure Functions!"; then
-              echo "✅ API is accessible and returning expected response"
+              echo "✅ API healthy"
             else
               echo "❌ API response unexpected: $RESPONSE"
               return 1
             fi
           }
 
-          # Execute both checks in parallel
-          check_site &
-          SITE_PID=$!
+          check_wasm &
+          W_PID=$!
           check_api &
-          API_PID=$!
+          A_PID=$!
 
-          # Wait for both to complete
-          wait $SITE_PID || { echo "❌ Frontend check failed"; kill $API_PID 2>/dev/null; exit 1; }
-          wait $API_PID || { echo "❌ API check failed"; exit 1; }
+          wait $W_PID || { echo "❌ WASM check failed"; kill $A_PID 2>/dev/null; exit 1; }
+          wait $A_PID || { echo "❌ API check failed"; exit 1; }
 
           echo ""
           echo "=== Health Check Complete ==="
-          echo "✅ All endpoints verified successfully"
-          echo "Total time: ~20-25 seconds"
+          echo "✅ All endpoints verified"
 
   # JOB: Handle documentation-only changes (skipped deployment)
   docs_only_changed_job:
