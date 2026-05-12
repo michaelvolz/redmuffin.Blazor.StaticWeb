@@ -8,6 +8,15 @@ namespace redmuffin.Blazor.StaticWeb.Features.RaindropItems.Models;
 /// </summary>
 public sealed class PrunedRaindropItem
 {
+    private static readonly Func<PrunedRaindropItem, bool>[] Validators =
+    [
+        item => item.Id > 0,
+        item => item.Link == null || Uri.TryCreate(item.Link, UriKind.Absolute, out _),
+        item => item.Cover == null || Uri.TryCreate(item.Cover, UriKind.Absolute, out _),
+        item => item.Title == null || item.Title.Length <= 500,
+        item => item.Excerpt == null || item.Excerpt.Length <= 2000,
+    ];
+
     /// <summary>
     ///     Gets or sets the unique identifier for the raindrop item.
     /// </summary>
@@ -46,30 +55,7 @@ public sealed class PrunedRaindropItem
     ///     Validates the integrity of the pruned raindrop item data.
     /// </summary>
     /// <returns>True if the item data is valid; otherwise, false.</returns>
-    public bool IsValid()
-    {
-        // ID must be positive
-        if (Id <= 0)
-            return false;
-
-        // Link must be a valid URI if not null
-        if (Link is not null && !Uri.TryCreate(Link, UriKind.Absolute, out _))
-            return false;
-
-        // Cover must be a valid URI if not null
-        if (Cover is not null && !Uri.TryCreate(Cover, UriKind.Absolute, out _))
-            return false;
-
-        // Title should not be excessively long (reasonable limit)
-        if (Title?.Length > 500)
-            return false;
-
-        // Excerpt should not be excessively long (reasonable limit)
-        if (Excerpt?.Length > 2000)
-            return false;
-
-        return true;
-    }
+    public bool IsValid() => Array.TrueForAll(Validators, v => v(this));
 
     /// <summary>
     ///     Validates the integrity of the pruned raindrop item data and throws an exception if invalid.

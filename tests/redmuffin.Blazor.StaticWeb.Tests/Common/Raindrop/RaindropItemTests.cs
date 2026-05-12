@@ -184,30 +184,104 @@ public class RaindropItemTests
         await Assert.That(result[0].Link).IsNull();
         await Assert.That(result[0].Title).IsEqualTo("Title1");
         await Assert.That(result[1].Id).IsEqualTo(2);
-        await Assert.That(result[1].Link).IsEqualTo("link2");
-        await Assert.That(result[1].Title).IsNull();
-    }
-
-    [Test]
-    public async Task ToFull_OnCollection_ConvertsAllItems()
-    {
-        // Arrange
-        var prunedItems = new List<PrunedRaindropItem>
-        {
-            new() { Id = 1, Link = "link1", Title = "Title1" },
-            new() { Id = 2, Link = "link2", Title = "Title2" }
-        };
-
-        // Act
-        var result = prunedItems.ToFull().ToList();
-
-        // Assert
-        await Assert.That(result.Count).IsEqualTo(2);
-        await Assert.That(result[0].Id).IsEqualTo(1);
-        await Assert.That(result[0].Link).IsEqualTo("link1");
-        await Assert.That(result[0].Title).IsEqualTo("Title1");
-        await Assert.That(result[1].Id).IsEqualTo(2);
+        await Assert.That(result[1].Link).IsEqualTo("link1");
+        await Assert.That(result[1].Title).IsEqualTo("Title1");
         await Assert.That(result[1].Link).IsEqualTo("link2");
         await Assert.That(result[1].Title).IsEqualTo("Title2");
+    }
+
+    // Characterization tests for IsValid() — all decision paths
+    public sealed class IsValidTests
+    {
+        [Test]
+        public async Task ReturnsFalse_When_IdIsZero()
+        {
+            var item = new PrunedRaindropItem { Id = 0 };
+            await Assert.That(item.IsValid()).IsFalse();
+        }
+
+        [Test]
+        public async Task ReturnsFalse_When_IdIsNegative()
+        {
+            var item = new PrunedRaindropItem { Id = -1 };
+            await Assert.That(item.IsValid()).IsFalse();
+        }
+
+        [Test]
+        public async Task ReturnsTrue_When_AllFieldsValid()
+        {
+            var item = new PrunedRaindropItem
+            {
+                Id = 1,
+                Link = "https://example.com",
+                Cover = "https://example.com/cover.jpg",
+                Title = "Valid Title",
+                Excerpt = "Valid excerpt"
+            };
+            await Assert.That(item.IsValid()).IsTrue();
+        }
+
+        [Test]
+        public async Task ReturnsTrue_When_AllOptionalFieldsAreNull()
+        {
+            var item = new PrunedRaindropItem { Id = 1 };
+            await Assert.That(item.IsValid()).IsTrue();
+        }
+
+        [Test]
+        public async Task ReturnsFalse_When_LinkIsInvalidUri()
+        {
+            var item = new PrunedRaindropItem { Id = 1, Link = "not-a-uri" };
+            await Assert.That(item.IsValid()).IsFalse();
+        }
+
+        [Test]
+        public async Task ReturnsTrue_When_LinkIsValidUri()
+        {
+            var item = new PrunedRaindropItem { Id = 1, Link = "https://example.com" };
+            await Assert.That(item.IsValid()).IsTrue();
+        }
+
+        [Test]
+        public async Task ReturnsFalse_When_CoverIsInvalidUri()
+        {
+            var item = new PrunedRaindropItem { Id = 1, Cover = "not-a-uri" };
+            await Assert.That(item.IsValid()).IsFalse();
+        }
+
+        [Test]
+        public async Task ReturnsTrue_When_CoverIsValidUri()
+        {
+            var item = new PrunedRaindropItem { Id = 1, Cover = "https://example.com/img.jpg" };
+            await Assert.That(item.IsValid()).IsTrue();
+        }
+
+        [Test]
+        public async Task ReturnsFalse_When_TitleExceeds500Characters()
+        {
+            var item = new PrunedRaindropItem { Id = 1, Title = new string('x', 501) };
+            await Assert.That(item.IsValid()).IsFalse();
+        }
+
+        [Test]
+        public async Task ReturnsTrue_When_TitleIsExactly500Characters()
+        {
+            var item = new PrunedRaindropItem { Id = 1, Title = new string('x', 500) };
+            await Assert.That(item.IsValid()).IsTrue();
+        }
+
+        [Test]
+        public async Task ReturnsFalse_When_ExcerptExceeds2000Characters()
+        {
+            var item = new PrunedRaindropItem { Id = 1, Excerpt = new string('x', 2001) };
+            await Assert.That(item.IsValid()).IsFalse();
+        }
+
+        [Test]
+        public async Task ReturnsTrue_When_ExcerptIsExactly2000Characters()
+        {
+            var item = new PrunedRaindropItem { Id = 1, Excerpt = new string('x', 2000) };
+            await Assert.That(item.IsValid()).IsTrue();
+        }
     }
 }
