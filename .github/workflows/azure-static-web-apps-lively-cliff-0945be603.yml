@@ -251,26 +251,26 @@ jobs:
           echo ""
           echo "Building Blazor WebAssembly Application..."
           # Build with optimizations for production deployment
-              dotnet publish ${{ env.APP_LOCATION }} \
-                -c Release \
-                -o ${{ env.APP_LOCATION }}/bin/Release/publish \
-                -p:PublishTrimmed=true \
-                --no-restore \
-                --nologo
+          dotnet publish ${{ env.APP_LOCATION }} \
+            -c Release \
+            -o ${{ env.APP_LOCATION }}/bin/Release/publish \
+            -p:PublishTrimmed=true \
+            --no-restore \
+            --nologo
 
-             echo ""
-             echo "Verifying trimming effectiveness..."
-             ASSEMBLY_COUNT=$(jq '.resources.fingerprinting | keys | map(select(endswith(".wasm"))) | length' "${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot/_framework/blazor.boot.json")
-             echo "Number of WASM assemblies: $ASSEMBLY_COUNT"
-             if [ "$ASSEMBLY_COUNT" -gt 60 ]; then
-               echo "❌ ERROR: High assembly count ($ASSEMBLY_COUNT) — trimming is NOT working. Max allowed: 60."
-               exit 1
-             else
-               echo "✅ Assembly count ($ASSEMBLY_COUNT) looks good for trimmed build"
-             fi
+          echo ""
+          echo "Verifying trimming effectiveness..."
+          ASSEMBLY_COUNT=$(jq '.resources.fingerprinting | keys | map(select(endswith(".wasm"))) | length' "${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot/_framework/blazor.boot.json")
+          echo "Number of WASM assemblies: $ASSEMBLY_COUNT"
+          if [ "$ASSEMBLY_COUNT" -gt 60 ]; then
+            echo "❌ ERROR: High assembly count ($ASSEMBLY_COUNT) — trimming is NOT working. Max allowed: 60."
+            exit 1
+          else
+            echo "✅ Assembly count ($ASSEMBLY_COUNT) looks good for trimmed build"
+          fi
 
-           echo ""
-           echo "Building Azure Functions API..."
+          echo ""
+          echo "Building Azure Functions API..."
           dotnet publish ${{ env.API_LOCATION }} \
             -c Release \
             -o ${{ env.API_LOCATION }}/bin/Release/publish \
