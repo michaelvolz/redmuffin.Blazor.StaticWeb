@@ -5,18 +5,21 @@ using redmuffin.Tools.QualityGates.Analysis;
 
 public static class AllCommand
 {
-    private const string DefaultProject = "src/redmuffin.Tools.QualityGates";
-    private const string DefaultTestProject = "tests/redmuffin.Tools.QualityGates.Tests";
     private const string DefaultCoverageFile = "/tmp/coverage-data.xml";
 
     private static readonly Option<DirectoryInfo?> ProjectOption = new("--project")
     {
-        Description = $"Path to the source project directory for CRAP analysis. Defaults to '{DefaultProject}'.",
+        Description = "Path to the source project to analyze. Auto-discovered from the nearest .slnx when omitted.",
     };
 
     private static readonly Option<DirectoryInfo?> TestProjectOption = new("--test-project")
     {
-        Description = $"Path to the test project directory (used by SCRAP, coverage, and mutation). Defaults to '{DefaultTestProject}'.",
+        Description = "Path to the test project (used by SCRAP, coverage, and mutation). Auto-discovered from the nearest .slnx when omitted.",
+    };
+
+    private static readonly Option<FileInfo?> SolutionOption = new("--solution")
+    {
+        Description = "Path to a .slnx solution file to discover projects from. Overrides auto-discovery.",
     };
 
     private static readonly Option<FileInfo?> CoverageOption = new("--coverage-file")
@@ -63,6 +66,7 @@ public static class AllCommand
     {
         var project = parseResult.GetValue(ProjectOption);
         var testProject = parseResult.GetValue(TestProjectOption);
+        var solution = parseResult.GetValue(SolutionOption);
         var coverageFile = parseResult.GetValue(CoverageOption);
         var archConfig = parseResult.GetValue(ArchConfigOption);
         var changedOnly = parseResult.GetValue(ChangedOption);
@@ -73,10 +77,10 @@ public static class AllCommand
         var autoCoverage = parseResult.GetValue(AutoCoverageOption) ?? true;
 
         // Resolve defaults
-        var projectPath = ResolveProjectPath(project);
-        var testProjectPath = ResolveTestProjectPath(testProject);
+        var projectPath = ResolveProjectPath(project, solution);
+        var testProjectPath = ResolveTestProjectPath(testProject, solution);
         var coveragePath = coverageFile?.FullName ?? DefaultCoverageFile;
-        var resolvedArchConfig = archConfig ?? Path.Combine(projectPath, "quality-gates", "architecture-rules.yml");
+        var resolvedArchConfig = ResolveArchConfig(archConfig, projectPath);
 
         return await ExecuteAsync(
             projectPath, testProjectPath, coveragePath,
@@ -88,7 +92,7 @@ public static class AllCommand
     {
         var command = new Command("all", "Run all quality gates with smart defaults. Use --help to see all options.")
         {
-            ProjectOption, TestProjectOption, CoverageOption, ArchConfigOption,
+            ProjectOption, TestProjectOption, SolutionOption, CoverageOption, ArchConfigOption,
             ChangedOption, VerboseOption, MutateSourceOption, MutateScanOption, DupesOption,
             AutoCoverageOption,
         };
@@ -118,34 +122,80 @@ public static class AllCommand
         return overallExit;
     }
 
-    private static string ResolveProjectPath(DirectoryInfo? project)
+    private static string ResolveProjectPath(DirectoryInfo? project, FileInfo? solution)
     {
         if (project is not null)
         {
-            if (!project.Exists) throw new DirectoryNotFoundException($"Project path not found: {project.FullName}");
+            if (!project.Exists)
+                throw new DirectoryNotFoundException(
+                    $"Project path not found: {project.FullName}");
             return project.FullName;
         }
 
-        var defaultPath = Path.GetFullPath(DefaultProject);
-        if (!Directory.Exists(defaultPath))
-            throw new DirectoryNotFoundException(
-                $"Default project path not found: '{defaultPath}'. Specify --project to override.");
-        return defaultPath;
+        return ProjectDir(DiscoverFromSourceOrSolution(solution).SourceProjects[0]);
     }
 
-    private static string ResolveTestProjectPath(DirectoryInfo? testProject)
+    private static string ResolveTestProjectPath(DirectoryInfo? testProject, FileInfo? solution)
     {
         if (testProject is not null)
         {
-            if (!testProject.Exists) throw new DirectoryNotFoundException($"Test project path not found: {testProject.FullName}");
+            if (!testProject.Exists)
+                throw new DirectoryNotFoundException(
+                    $"Test project path not found: {testProject.FullName}");
             return testProject.FullName;
         }
 
-        var defaultPath = Path.GetFullPath(DefaultTestProject);
-        if (!Directory.Exists(defaultPath))
-            throw new DirectoryNotFoundException(
-                $"Default test project path not found: '{defaultPath}'. Specify --test-project to override.");
-        return defaultPath;
+        var discovered = DiscoverFromSourceOrSolution(solution);
+        if (discovered.TestProjects.Count == 0)
+            throw new InvalidOperationException(
+                "No test projects found. Specify --test-project to override.");
+
+        return ProjectDir(discovered.TestProjects[0]);
+    }
+
+    private static string ProjectDir(string csprojOrDirPath) =>
+        csprojOrDirPath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)
+            ? Path.GetDirectoryName(csprojOrDirPath)!
+            : csprojOrDirPath;
+
+    private static SlnxDiscoveredProjects DiscoverFromSourceOrSolution(FileInfo? solution)
+    {
+        if (solution is not null)
+        {
+            if (!solution.Exists)
+                throw new FileNotFoundException(
+                    $"Solution file not found: {solution.FullName}");
+            return SlnxProjectDiscovery.DiscoverFromSlnx(solution.FullName);
+        }
+
+        var discovered = SlnxProjectDiscovery.Discover(null);
+        if (discovered.SourceProjects.Count == 0)
+            throw new InvalidOperationException(
+                "No source projects found. Specify --project to override.");
+
+        return discovered;
+    }
+
+    private static string? ResolveArchConfig(string? archConfig, string projectPath)
+    {
+        if (archConfig is not null) return archConfig;
+
+        // Try the project directory first.
+        var projectConfig = Path.Combine(projectPath,
+            "quality-gates", "architecture-rules.yml");
+        if (File.Exists(projectConfig)) return projectConfig;
+
+        // Walk up from the project to find a quality-gates/ directory.
+        var current = projectPath;
+        while (current is not null)
+        {
+            var candidate = Path.Combine(current,
+                "quality-gates", "architecture-rules.yml");
+            if (File.Exists(candidate)) return candidate;
+            current = Path.GetDirectoryName(current);
+        }
+
+        return null;
     }
 
     private static async Task<int> RunCrapAsync(TextWriter o, string projectPath, string? coveragePath,
