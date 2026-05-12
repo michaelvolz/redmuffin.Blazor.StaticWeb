@@ -24,10 +24,10 @@ public sealed class GateHelperTests
     [Test]
     public async Task Run_with_valid_yaml_returns_success()
     {
-        var srcProject = Path.GetFullPath(
-            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..",
-                "src", "redmuffin.Tools.QualityGates"));
-        var configPath = Path.Combine(srcProject, "arch-rules.yml");
+        var toolsDir = Path.GetFullPath(
+            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".."));
+        var srcProject = Path.Combine(toolsDir, "src", "redmuffin.Tools.QualityGates");
+        var configPath = Path.Combine(toolsDir, "quality-gates", "architecture-rules.yml");
 
         if (!File.Exists(configPath)) return;
 

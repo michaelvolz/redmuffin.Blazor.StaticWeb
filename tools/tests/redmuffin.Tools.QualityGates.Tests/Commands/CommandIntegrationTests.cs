@@ -18,6 +18,10 @@ public sealed partial class CommandIntegrationTests
         Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..",
             "tests", "redmuffin.Tools.QualityGates.Tests"));
 
+    private static readonly string ArchitectureConfig = Path.GetFullPath(
+        Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..",
+            "quality-gates", "architecture-rules.yml"));
+
     /// <summary>
     ///     Pre-generate this file once before running:
     ///     dotnet run --project tests/... --coverage \
@@ -45,7 +49,7 @@ public sealed partial class CommandIntegrationTests
             writeBaseline: false, comparePath: null);
         AssertCrapExit(scrapExit);
 
-        var configPath = Path.Combine(SrcProject, "arch-rules.yml");
+        var configPath = ArchitectureConfig;
         if (File.Exists(configPath))
         {
             var archExit = ArchCommand.Execute(SrcProject, configPath, json: false);
@@ -102,7 +106,7 @@ public sealed partial class CommandIntegrationTests
     [Test]
     public async Task RunArchitectureCheck_with_existing_config_returns_result()
     {
-        var configPath = Path.Combine(SrcProject, "arch-rules.yml");
+        var configPath = ArchitectureConfig;
         if (!File.Exists(configPath)) return;
 
         var (exitCode, result) = redmuffin.Tools.QualityGates.Commands.ArchHandler.Run(
@@ -227,7 +231,7 @@ public sealed partial class CommandIntegrationTests
     [Test]
     public async Task ArchHandler_Run_bad_project_path_returns_error()
     {
-        var configPath = Path.Combine(SrcProject, "arch-rules.yml");
+        var configPath = ArchitectureConfig;
         if (!File.Exists(configPath)) return;
 
         var (exitCode, _) = ArchHandler.Run(configPath, "/nonexistent/project");

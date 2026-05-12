@@ -11,7 +11,7 @@ public sealed class CommandFactoryTests
         var cmd = ArchCommand.Create();
         await Assert.That(cmd).IsNotNull();
         await Assert.That(cmd.Options.Count).IsGreaterThan(0);
-        await Assert.That(cmd.Name).IsEqualTo("arch");
+        await Assert.That(cmd.Name).IsEqualTo("architecture");
     }
 
     [Test]
@@ -20,7 +20,7 @@ public sealed class CommandFactoryTests
         var cmd = MutateCommand.Create();
         await Assert.That(cmd).IsNotNull();
         await Assert.That(cmd.Options.Count).IsGreaterThan(0);
-        await Assert.That(cmd.Name).IsEqualTo("mutate");
+        await Assert.That(cmd.Name).IsEqualTo("mutation");
     }
 
     [Test]
@@ -44,7 +44,7 @@ public sealed class CommandFactoryTests
     {
         var cmd = DupesCommand.Create();
         await Assert.That(cmd).IsNotNull();
-        await Assert.That(cmd.Name).IsEqualTo("dupes");
+        await Assert.That(cmd.Name).IsEqualTo("duplicates");
     }
 
     [Test]

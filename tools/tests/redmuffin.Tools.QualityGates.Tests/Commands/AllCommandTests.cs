@@ -53,9 +53,9 @@ public sealed class AllCommandTests
             mutateSource: null, mutateExit: 0,
             runDupes: false, dupesExit: 0);
 
-        await Assert.That(line).Contains("ARCH: N/A");
-        await Assert.That(line).Contains("MUTATE: N/A");
-        await Assert.That(line).Contains("DUPES: N/A");
+        await Assert.That(line).Contains("Architecture: N/A");
+        await Assert.That(line).Contains("Mutation: N/A");
+        await Assert.That(line).Contains("Duplicates: N/A");
     }
 
     [Test]
