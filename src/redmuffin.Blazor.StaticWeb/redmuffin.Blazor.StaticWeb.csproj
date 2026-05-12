@@ -45,12 +45,12 @@
     <WasmEnableSIMD>false</WasmEnableSIMD>
     <!-- Enable aggressive trimming to reduce bundle size -->
     <PublishTrimmed>true</PublishTrimmed>
-    <!-- Use full trimming mode for maximum size reduction -->
-    <TrimMode>full</TrimMode>
-    <!-- Specify trimmer descriptor to preserve essential types -->
-    <TrimmerRootDescriptor>$(MSBuildProjectDirectory)/TrimmerRoots.xml</TrimmerRootDescriptor>
-    <!-- Enable lazy loading for non-critical assemblies -->
-    <BlazorWebAssemblyLazyLoad>true</BlazorWebAssemblyLazyLoad>
+      <!-- Use full trimming mode for maximum size reduction -->
+      <TrimMode>full</TrimMode>
+      <!-- Specify trimmer descriptor to preserve essential types -->
+      <TrimmerRootDescriptor>$(MSBuildProjectDirectory)/TrimmerRoots.xml</TrimmerRootDescriptor>
+      <!-- Enable lazy loading for non-critical assemblies -->
+      <BlazorWebAssemblyLazyLoad>true</BlazorWebAssemblyLazyLoad>
   </PropertyGroup>
 
   <ItemGroup>
