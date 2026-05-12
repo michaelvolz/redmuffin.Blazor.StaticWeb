@@ -56,7 +56,7 @@ To enable me to perform my role effectively, two coordination rules are critical
 - Restore from git without asking first.
 - Discuss or act on any sidenote ("sidenote:" or "/sidenote") during an active task (sidenotes belong in backlog only).
 - Remove or consolidate SKILL COMMANDS tables (duplication is mandatory for model adherence).
-- Bypass the NPM 7-day release age filter (`min-release-age=7` in `.npmrc`).
+- Bypass the NPM 1-day release age filter (`min-release-age=1` in `.npmrc`).
 - Clear the todo list prematurely or let it go stale. The sidebar is the
   user's only visibility into multi-step task progress.
 
@@ -126,13 +126,13 @@ To enable me to perform my role effectively, two coordination rules are critical
 
 **NPM Global Packages (Supply Chain Security)**:
 
-- All global packages are protected by a mandatory 7-day release age filter (`min-release-age=7` in `.npmrc`). **NEVER bypass this filter** — it prevents typosquatting and malicious package releases.
+- All global packages are protected by a mandatory 1-day release age filter (`min-release-age=1` in `.npmrc`). **NEVER bypass this filter** — it prevents typosquatting and malicious package releases.
 - Update procedure:
   1. Query release dates: `npm view <package> time --json`
-  2. Identify the latest version published more than 7 days ago.
+  2. Identify the latest version published more than 1 day ago.
   3. Install only qualifying versions.
   4. Verify installation: `npm list -g --depth=0`
-- Example (prettier): Run `npm view prettier time --json`, locate the newest version older than 7 days, then install it.
+- Example (prettier): Run `npm view prettier time --json`, locate the newest version older than 1 day, then install it.
 
 ## STACK & STRUCTURE
 
