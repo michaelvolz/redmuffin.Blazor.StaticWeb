@@ -96,6 +96,12 @@
           "Microsoft.Extensions.Options": "9.0.14"
         }
       },
+      "Microsoft.NET.ILLink.Tasks": {
+        "type": "Direct",
+        "requested": "[9.0.15, )",
+        "resolved": "9.0.15",
+        "contentHash": "EejcbfCMR77Dthy77qxRbEShmzLApHZUPqXMBVQK+A0pNrRThkaHoGGMGvbq/gTkC/waKcDEgjBkbaejB58Wtw=="
+      },
       "Microsoft.NET.Sdk.WebAssembly.Pack": {
         "type": "Direct",
         "requested": "[9.0.15, )",
