@@ -1277,7 +1277,7 @@
         "dependencies": {
           "Blazored.LocalStorage": "[4.5.0, )",
           "LZStringCSharp": "[1.4.0, )",
-          "Markdig": "[1.1.2, )",
+          "Markdig": "[1.2.0, )",
           "Microsoft.AspNetCore.Components.Authorization": "[9.0.14, )",
           "Microsoft.AspNetCore.Components.WebAssembly": "[9.0.14, )",
           "Microsoft.AspNetCore.WebUtilities": "[9.0.14, )",
@@ -1317,9 +1317,9 @@
       },
       "Markdig": {
         "type": "CentralTransitive",
-        "requested": "[1.1.2, )",
-        "resolved": "1.1.2",
-        "contentHash": "mXh6Ah5p/jtryn7o96B2knDDJVgZ775HnFLObcVxuyWcfeHlsI95WUjiJH0m7ZOYGdCLvwRTwMhv023jUZoEAA=="
+        "requested": "[1.2.0, )",
+        "resolved": "1.2.0",
+        "contentHash": "LoBVOgeDWfHthWTPzQJkjDkxImqBXRA5XpuTyjdM4SAURyWQGG1CbEEbfPbmvAavggnAZPaTYpbhIPUurWvIXA=="
       },
       "Microsoft.AspNetCore.Components.Authorization": {
         "type": "CentralTransitive",
