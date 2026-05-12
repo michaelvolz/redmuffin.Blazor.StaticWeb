@@ -81,7 +81,59 @@ Never extract first and characterize later. Every extraction starts with:
 "Do I know what this method currently does? Prove it with one golden-master
 test."
 
-**What is a real seam (Feathers definition):**
+**Extraction Decision Tree (Ousterhout + Feathers + Metz):**
+
+Before extracting a method, answer these questions. Stop at the first NO:
+
+**Q1: Is the extracted block ≥5 lines of actual logic?** (not counting braces,
+`return`, or `throw` pedantry)
+→ If NO: Inline. Small extractions are shallow modules (Ousterhout).
+Their interface cost exceeds their abstraction benefit.
+
+**Q2: Does the inline code read clearly as-is?**
+Example: `Title?.Length > 500` translates instantly. Extracting to
+`!IsValidLength(Title, 500)` forces a jump-to-definition to understand
+null handling and the inverted boolean.
+→ If YES: Leave inline. Fowler's Inline Function refactoring exists
+for this exact case — when the body is clearer than the name.
+
+**Q3: Does the extraction invert boolean logic?**
+Example: `x is not null && Valid(x)` → `!IsValidX(x)` where IsValidX
+returns `x is null || Valid(x)`. The inversion creates cognitive
+indirection. Every reader must mentally negate the function.
+→ If YES: Do not extract. Boolean inversion is a cognitive cost.
+
+**Q4: Is the pattern duplicated ≥3 times?** (Sandi Metz's Rule of Three)
+→ If NO (< 3): Duplication is cheaper than the wrong abstraction.
+Two occurrences of a URI check are coincidence, not a pattern.
+
+**Q5: Does the extraction hide meaningful complexity?** (Ousterhout's deep module)
+A deep module has a simple interface hiding complex implementation.
+A shallow module has a complex interface wrapping trivial implementation.
+Examples:
+
+- Deep: `GC.Collect()` — zero parameters, hides generational collection
+- Shallow: `IsValidUri(string?)` — reader must know null→true, hides nothing
+  → If the extracted method is a thin wrapper: do not extract.
+
+**Concrete example — bad extraction (2026-05-12):**
+
+```csharp
+// BEFORE — clear, self-contained guard clauses
+if (Title?.Length > 500)
+    return false;
+
+// AFTER — DO NOT DO THIS
+if (!IsValidLength(Title, 500))
+    return false;
+
+// IsValidLength is a shallow module:
+// Interface: reader must know null→true, max length param
+// Implementation: value is null || value.Length <= maxLength
+// Cost of indirection > benefit of abstraction
+```
+
+Only extract when ALL of Q1-Q5 pass. When in doubt, inline.
 
 A seam is a place where behavior can be replaced WITHOUT editing in that
 place. In C#, the primary seams are:
