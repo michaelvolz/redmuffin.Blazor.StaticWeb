@@ -119,7 +119,7 @@
   <PropertyGroup>
     <NoWarn>1701;1702;CA1014;AD0001</NoWarn>
     <WarningsAsErrors>Nullable</WarningsAsErrors>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
 

@@ -8,7 +8,7 @@
     <RestoreLockedMode>false</RestoreLockedMode>
     <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
     <!-- Disable warnings-as-errors during active development -->
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
 </Project>
