@@ -153,7 +153,10 @@ The devcontainer will automatically use HTTPS authentication for Git operations.
 Use only if you cannot run Docker. Note: Manual secret management required.
 
 - **Visual Studio 2026 (Community)**
-- **.NET 9 SDK** - For all projects
+- **.NET 10 SDK** — Builds net9.0 projects for Azure SWA compatibility
+  - Download: [dotnet.microsoft.com](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
+  - Installs `wasm-tools` workload for Blazor WebAssembly
+  - See [.NET SDK Guide](#net-sdk-guide) below for details
 - **Node.js** (Latest LTS)
 - **Python 3.10+** - Required for code-review-graph MCP server
 - **PowerShell** - Required for running project scripts (install on Linux: `yay -S powershell`)
@@ -345,6 +348,75 @@ Use only if you cannot run Docker. Note: Manual secret management required.
 - **Docker Desktop**
   - Required for optional MCP server integration (enhances AI assistant capabilities)
   - [Download from Docker website](https://www.docker.com/products/docker-desktop)
+
+### .NET SDK Guide
+
+This project uses **.NET 10 SDK** (10.0.104+) to build and test **.NET 9** projects.
+All `.csproj` files target `net9.0` for compatibility with Azure Static Web Apps
+(which does not yet support .NET 10 managed Functions). The SDK version and
+target framework are separate concerns — the SDK is just the build tool.
+
+#### Why SDK 10?
+
+| Benefit               | Detail                                                                           |
+| --------------------- | -------------------------------------------------------------------------------- |
+| Faster builds         | SDK 10 includes MSBuild and Roslyn performance improvements                      |
+| Latest C# 13 features | Available in the QualityGates tools project (targets net10.0)                    |
+| Single SDK            | One `global.json` for the entire repository — no per-directory version switching |
+| Future-proof          | Ready when Azure SWA adds .NET 10 support                                        |
+
+#### Installation
+
+```bash
+# Install .NET 10 SDK (Arch Linux)
+sudo pacman -S dotnet-sdk-10.0
+
+# Install Blazor WebAssembly build tools
+sudo dotnet workload install wasm-tools
+```
+
+#### Quick Verification
+
+```bash
+dotnet --version    # Should show 10.0.xxx
+dotnet build        # 11 projects, 0 errors
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests  # 293 tests pass
+```
+
+#### Key Commands
+
+```bash
+# Build everything (from repo root)
+dotnet build
+
+# Run main solution tests
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests -c Release
+
+# Run quality gates on tools solution
+cd tools && dotnet run -- all
+
+# Run quality gates on main solution
+cd tools && dotnet run -- all --solution ../redmuffin.Blazor.StaticWeb.slnx
+
+# Publish Blazor WASM for production
+dotnet publish src/redmuffin.Blazor.StaticWeb -c Release \
+  -p:PublishTrimmed=true -o publish/blazor
+
+# Publish API for production
+dotnet publish src/redmuffin.Blazor.StaticWeb.Api -c Release \
+  -o publish/api
+```
+
+#### Why target net9.0?
+
+Azure Static Web Apps managed Functions currently support up to .NET 9
+(`apiRuntime: dotnet-isolated:9.0` in `staticwebapp.config.json`).
+The .NET 10 Functions runtime is not yet available on SWA. When it becomes
+available, updating is a single-line change in each `.csproj`.
+
+The Blazor WebAssembly app also targets `net9.0` for consistency, even
+though it runs entirely in the browser and has no server-side runtime
+constraint.
 
 ---
 
@@ -1086,7 +1158,7 @@ The project uses Docker-based development environments for security and consiste
 
 The devcontainer provides a complete development environment:
 
-- **Isolated Environment**: .NET 9 SDK, Node.js, Azure Functions tools
+- **Isolated Environment**: .NET 10 SDK, Node.js, Azure Functions tools
 - **Security Boundary**: Secrets and MCP servers run inside container only
 - **Consistency**: Same environment for all developers
 - **Pre-installed Tools**: SWA CLI, Prettier, commitlint, opencode

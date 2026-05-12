@@ -15,15 +15,49 @@ This toolchain automates all four gates as a single, unified command.
 
 ## Gates
 
-| Gate             | Subcommand | Description                                                                                                              | Exit Codes                    |
-| ---------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------- |
-| **CRAP**         | `crap`     | Cyclomatic complexity × coverage risk. `CC² × (1 − cov)³ + CC`. Threshold: ≤ 8. Uses Roslyn + Cobertura XML.             | 0=pass, 1=error, 2=breach     |
-| **SCRAP**        | `scrap`    | Test structural analyzer. Jaccard similarity on Roslyn-normalized test bodies. Outputs STABLE/LOCAL/SPLIT.               | 0=pass, 1=error, 2=violations |
-| **Architecture** | `arch`     | Dependency graph + cycle detection. YAML config with allowed-dependencies, component-map, fail-on-cycles.                | 0=pass, 1=error, 2=violations |
-| **Mutation**     | `mutate`   | Mutation testing with 6 categories (19 rules). In-place source mutation via Roslyn. Differential mode via JSON manifest. | 0=pass, 1=error               |
-| **All**          | `all`      | Runs all gates in sequence. All gates execute regardless of failures (run-all policy). Returns worst exit code.          | worst of all gates            |
+| Gate             | Subcommand     | Description                                                                                                              | Exit Codes                    |
+| ---------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------- |
+| **CRAP**         | `crap`         | Cyclomatic complexity × coverage risk. `CC² × (1 − cov)³ + CC`. Threshold: ≤ 8. Uses Roslyn + Cobertura XML.             | 0=pass, 1=error, 2=breach     |
+| **SCRAP**        | `scrap`        | Test structural analyzer. Jaccard similarity on Roslyn-normalized test bodies. Outputs STABLE/LOCAL/SPLIT.               | 0=pass, 1=error, 2=violations |
+| **Architecture** | `architecture` | Dependency graph + cycle detection. YAML config with allowed-dependencies, component-map, fail-on-cycles.                | 0=pass, 1=error, 2=violations |
+| **Mutation**     | `mutation`     | Mutation testing with 6 categories (19 rules). In-place source mutation via Roslyn. Differential mode via JSON manifest. | 0=pass, 1=error               |
+| **All**          | `all`          | Runs all gates in sequence. All gates execute regardless of failures (run-all policy). Returns worst exit code.          | worst of all gates            |
 
-### CRAP (Complexity Risk Analysis)
+## Usage
+
+### Project Auto-Discovery
+
+The `all` command auto-discovers source and test projects from the nearest
+`.slnx` file by walking up from the current working directory. No flags
+are required for the happy path:
+
+```bash
+# From tools/ — discovers tools solution
+cd tools
+dotnet run -- all
+
+# From repo root — discovers main solution
+dotnet run --project tools/src/redmuffin.Tools.QualityGates -- all
+```
+
+You can override discovery with explicit paths or specify a different
+solution with the `--solution` flag:
+
+```bash
+# Analyze the main solution from tools/
+dotnet run -- all --solution ../redmuffin.Blazor.StaticWeb.slnx
+```
+
+Project classification uses `<IsTestProject>true</IsTestProject>` in
+`.csproj` files. All source projects are analyzed together for CRAP,
+Architecture, and Duplicates. All test projects are analyzed for SCRAP.
+
+**SDK versioning**: The tools project targets .NET 10 (latest C# features,
+single-file app publishing). The main solution targets .NET 9 (Azure SWA
+constraint — no .NET 10 Oryx support). Use the `--solution` flag to
+analyze the main solution from the tools directory.
+
+### Gates Overview
 
 Replicates Uncle Bob's `crap4clj` / `crap4java`.
 

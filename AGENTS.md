@@ -26,10 +26,9 @@ To enable me to perform my role effectively, two coordination rules are critical
 **ALWAYS**:
 
 - Use `rm-commit` for all commits (never manual `git commit` or `git add`).
-- Run `dotnet test` before every commit.
-- Batch commits by concern (config, agents, skills, docs) even when "all changes" requested.
+- Run `dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests -c Release` before every commit.
 - Run `dotnet build --verbosity quiet` (C#) or `dotnet build -c Debug-Sass` (SCSS/JS) after every edit.
-- If `dotnet test` or `dotnet build` fails repeatedly → run `dotnet clean` first.
+- If `dotnet run` or `dotnet build` fails repeatedly → run `dotnet clean` first.
 - Read relevant code before answering any question.
 - Use `pwsh -NoProfile` for all PowerShell execution.
 - Wrap commit messages at 80 characters.
@@ -72,17 +71,17 @@ To enable me to perform my role effectively, two coordination rules are critical
 
 ## COMMANDS
 
-| Command                                                         | Purpose                                            | When                                        |
-| --------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------- |
-| `dotnet test`                                                   | Verify logic & prevent regressions                 | Pre-commit (mandatory)                      |
-| `dotnet build --verbosity quiet`                                | Verify C# compilation                              | Immediately after any C# edit               |
-| `dotnet build -c Debug-Sass`                                    | Verify UI layer (SCSS/JS)                          | Immediately after any SCSS/JS edit          |
-| `scripts/Update-PackageVersions.ps1`                            | Update NuGet packages (Central Package Management) | After any package change                    |
-| `dotnet run --project tests/redmuffin.Tools.QualityGates.Tests` | Run quality gates tool tests (+ build)             | After any tools/ code change                |
-| `dotnet format src/<project> --severity info`                   | Auto-fix ~75% of StyleCop/Roslyn violations        | Before manually fixing analyzer warnings    |
-| `dotnet clean && dotnet build && dotnet test`                   | Full verification cycle                            | After NuGet updates or repeated failures    |
-| `es.exe`                                                        | Ultra-fast file search                             | Large solutions or searches outside project |
-| `pwsh -NoProfile`                                               | Cross-platform PowerShell execution                | Any PowerShell task                         |
+| Command                                                                                                  | Purpose                                            | When                                        |
+| -------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------- |
+| `dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests -c Release`                                 | Verify logic & prevent regressions                 | Pre-commit (mandatory)                      |
+| `dotnet build --verbosity quiet`                                                                         | Verify C# compilation                              | Immediately after any C# edit               |
+| `dotnet build -c Debug-Sass`                                                                             | Verify UI layer (SCSS/JS)                          | Immediately after any SCSS/JS edit          |
+| `scripts/Update-PackageVersions.ps1`                                                                     | Update NuGet packages (Central Package Management) | After any package change                    |
+| `dotnet run --project tests/redmuffin.Tools.QualityGates.Tests`                                          | Run quality gates tool tests (+ build)             | After any tools/ code change                |
+| `dotnet format src/<project> --severity info`                                                            | Auto-fix ~75% of StyleCop/Roslyn violations        | Before manually fixing analyzer warnings    |
+| `dotnet clean && dotnet build && dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests -c Release` | Full verification cycle                            | After NuGet updates or repeated failures    |
+| `es.exe`                                                                                                 | Ultra-fast file search                             | Large solutions or searches outside project |
+| `pwsh -NoProfile`                                                                                        | Cross-platform PowerShell execution                | Any PowerShell task                         |
 
 **Git CLI Optimizations** (stable porcelain output for agents & scripts):
 
@@ -136,7 +135,8 @@ To enable me to perform my role effectively, two coordination rules are critical
 
 ## STACK & STRUCTURE
 
-- **Technology Stack**: .NET 9, Blazor WebAssembly, Azure Functions (isolated worker, .NET 9), TUnit testing framework, SCSS.
+- **Technology Stack**: .NET 10 SDK (builds net9.0 projects for Azure SWA), Blazor WebAssembly (.NET 9), Azure Functions (isolated worker, .NET 9), TUnit testing framework, SCSS.
+- **SDK vs Target**: All projects target `net9.0` for Azure SWA compatibility. The .NET 10 SDK provides build tooling, Roslyn, and MSBuild — it does not require changing target frameworks. When SWA adds .NET 10 Functions support, updating targets is a one-line change per `.csproj`.
 - **Knowledge Base**: `docs/solutions/` — searchable archive of past solutions, bugs, best practices, and workflow patterns. All entries use YAML frontmatter with `module`, `tags`, and `problem_type` fields.
 - **Key Paths**:
   - `src/redmuffin.Blazor.StaticWeb/` — Frontend application
