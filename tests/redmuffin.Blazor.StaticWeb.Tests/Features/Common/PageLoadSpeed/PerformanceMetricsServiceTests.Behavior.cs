@@ -1,5 +1,4 @@
 using Microsoft.JSInterop;
-using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed;
 using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Core;
 using redmuffin.Blazor.StaticWeb.Services;
 
@@ -107,7 +106,7 @@ public sealed partial class PerformanceMetricsServiceTests
 
             if (identifier == "getPageLoadMetrics")
             {
-                return ValueTask.FromResult((TValue)(object)new LoadSpeed.PageLoadMetrics
+                return ValueTask.FromResult((TValue)(object)new PageLoadMetrics
                 {
                     TimeToFirstByte = 12,
                     DomContentLoaded = 34,
