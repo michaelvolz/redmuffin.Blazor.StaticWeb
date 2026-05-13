@@ -78,12 +78,12 @@ public static class AllCommand
 
         // Resolve defaults
         var projectPath = ResolveProjectPath(project, solution);
-        var testProjectPath = ResolveTestProjectPath(testProject, solution);
-        var coveragePath = coverageFile?.FullName ?? DefaultCoverageFile;
+        var testProjectPaths = ResolveTestProjectPaths(testProject, solution);
+        var coveragePath = coverageFile?.FullName ?? (autoCoverage ? null : DefaultCoverageFile);
         var resolvedArchConfig = ResolveArchConfig(archConfig, projectPath);
 
         return await ExecuteAsync(
-            projectPath, testProjectPath, coveragePath,
+            projectPath, testProjectPaths, coveragePath,
             resolvedArchConfig, changedOnly, verbose, mutateSource, mutateScan, runDupes,
             autoCoverage).ConfigureAwait(false);
     };
@@ -102,7 +102,7 @@ public static class AllCommand
     }
 
     internal static async Task<int> ExecuteAsync(
-        string projectPath, string testProjectPath, string? coveragePath,
+        string projectPath, IReadOnlyList<string> testProjectPaths, string? coveragePath,
         string? archConfig, bool changedOnly, bool verbose,
         string? mutateSource, bool mutateScan, bool runDupes,
         bool autoCoverage)
@@ -110,10 +110,11 @@ public static class AllCommand
         var o = Console.Out;
 
         var crapExit = await RunCrapAsync(o, projectPath, coveragePath, changedOnly,
-            autoCoverage, testProjectPath).ConfigureAwait(false);
-        var scrapExit = await RunScrapAsync(o, testProjectPath, verbose, changedOnly).ConfigureAwait(false);
+            autoCoverage, testProjectPaths).ConfigureAwait(false);
+        var primaryTestProject = testProjectPaths.Count > 0 ? testProjectPaths[0] : projectPath;
+        var scrapExit = await RunScrapAsync(o, primaryTestProject, verbose, changedOnly).ConfigureAwait(false);
         var archExit = await RunArchAsync(o, projectPath, archConfig).ConfigureAwait(false);
-        var mutateExit = await RunMutateAsync(o, mutateSource, testProjectPath, mutateScan).ConfigureAwait(false);
+        var mutateExit = await RunMutateAsync(o, mutateSource, primaryTestProject, mutateScan).ConfigureAwait(false);
         var dupesExit = await RunDupesAsync(o, projectPath, runDupes).ConfigureAwait(false);
 
         var overallExit = CombineExitCodes(crapExit, scrapExit, archExit, mutateExit, dupesExit);
@@ -135,14 +136,14 @@ public static class AllCommand
         return ProjectDir(DiscoverFromSourceOrSolution(solution).SourceProjects[0]);
     }
 
-    private static string ResolveTestProjectPath(DirectoryInfo? testProject, FileInfo? solution)
+    private static List<string> ResolveTestProjectPaths(DirectoryInfo? testProject, FileInfo? solution)
     {
         if (testProject is not null)
         {
             if (!testProject.Exists)
                 throw new DirectoryNotFoundException(
                     $"Test project path not found: {testProject.FullName}");
-            return testProject.FullName;
+            return [testProject.FullName];
         }
 
         var discovered = DiscoverFromSourceOrSolution(solution);
@@ -150,7 +151,7 @@ public static class AllCommand
             throw new InvalidOperationException(
                 "No test projects found. Specify --test-project to override.");
 
-        return ProjectDir(discovered.TestProjects[0]);
+        return discovered.TestProjects.Select(ProjectDir).ToList();
     }
 
     private static string ProjectDir(string csprojOrDirPath) =>
@@ -201,10 +202,10 @@ public static class AllCommand
     }
 
     private static async Task<int> RunCrapAsync(TextWriter o, string projectPath, string? coveragePath,
-        bool changedOnly, bool autoCoverage, string? testProjectPath)
+        bool changedOnly, bool autoCoverage, IReadOnlyList<string> testProjectPaths)
     {
         await o.WriteLineAsync("=== CRAP (Complexity Risk Analysis) ===").ConfigureAwait(false);
-        return CrapCommand.Execute(projectPath, coveragePath, 8, changedOnly, autoCoverage, testProjectPath);
+        return CrapCommand.Execute(projectPath, coveragePath, 8, changedOnly, autoCoverage, testProjectPaths);
     }
 
     private static async Task<int> RunScrapAsync(TextWriter o, string testProjectPath, bool verbose, bool changedOnly)

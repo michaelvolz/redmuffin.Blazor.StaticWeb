@@ -164,7 +164,7 @@ public sealed class CrapBoostTests
     public async Task ResolveCoverage_null_without_auto_returns_null()
     {
         var result = redmuffin.Tools.QualityGates.Commands.CrapCommand.ResolveCoverage(
-            coveragePath: null, testProjectPath: null, autoCoverage: false);
+            coveragePath: null, testProjectPaths: null, autoCoverage: false);
         await Assert.That(result).IsNull();
     }
 
@@ -172,7 +172,7 @@ public sealed class CrapBoostTests
     public async Task ResolveCoverage_with_path_returns_path()
     {
         var result = redmuffin.Tools.QualityGates.Commands.CrapCommand.ResolveCoverage(
-            coveragePath: "/tmp/cov.xml", testProjectPath: null, autoCoverage: false);
+            coveragePath: "/tmp/cov.xml", testProjectPaths: null, autoCoverage: false);
         await Assert.That(result).IsEqualTo("/tmp/cov.xml");
     }
 
@@ -237,7 +237,7 @@ public sealed class CrapBoostTests
     public async Task ResolveCoverage_with_auto_coverage()
     {
         var result = redmuffin.Tools.QualityGates.Commands.CrapCommand.ResolveCoverage(
-            coveragePath: null, testProjectPath: "/tmp/proj", autoCoverage: true);
+            coveragePath: null, testProjectPaths: ["/tmp/proj"], autoCoverage: true);
         // Returns null because test project doesn't exist
         await Assert.That(result).IsNull();
     }

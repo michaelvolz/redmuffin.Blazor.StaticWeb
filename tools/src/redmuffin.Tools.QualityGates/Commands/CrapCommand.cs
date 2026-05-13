@@ -47,13 +47,17 @@ public static class CrapCommand
         var autoCoverage = parseResult.GetValue(AutoCoverageOption);
         var testProject = parseResult.GetValue(TestProjectOption);
 
+        var testProjectPaths = testProject is not null
+            ? new[] { testProject.FullName }
+            : null;
+
         return Execute(
             projectPath,
             coverageFile?.FullName,
             maxCrap,
             changedOnly,
             autoCoverage,
-            testProject?.FullName);
+            testProjectPaths);
     };
 
     public static Command Create()
@@ -74,9 +78,9 @@ public static class CrapCommand
         int maxCrap,
         bool changedOnly,
         bool autoCoverage = false,
-        string? testProjectPath = null)
+        IReadOnlyList<string>? testProjectPaths = null)
     {
-        var resolvedPath = ResolveCoverage(coveragePath, testProjectPath, autoCoverage);
+        var resolvedPath = ResolveCoverage(coveragePath, testProjectPaths, autoCoverage);
         if (resolvedPath is null) return 1;
 
         var error = ValidatePaths(projectPath, resolvedPath);
@@ -100,11 +104,12 @@ public static class CrapCommand
         return null;
     }
 
-    public static string? ResolveCoverage(string? coveragePath, string? testProjectPath, bool autoCoverage)
+    public static string? ResolveCoverage(
+        string? coveragePath, IReadOnlyList<string>? testProjectPaths, bool autoCoverage)
     {
         if (autoCoverage && string.IsNullOrEmpty(coveragePath))
         {
-            return ResolveAutoCoverage(testProjectPath!);
+            return ResolveAutoCoverage(testProjectPaths);
         }
 
         if (string.IsNullOrEmpty(coveragePath))
@@ -146,15 +151,63 @@ public static class CrapCommand
         }
     }
 
-    private static string? ResolveAutoCoverage(string testProjectPath)
+    private static string? ResolveAutoCoverage(IReadOnlyList<string>? testProjectPaths)
     {
-        if (string.IsNullOrEmpty(testProjectPath))
+        if (testProjectPaths is null || testProjectPaths.Count == 0)
         {
             Console.Error.WriteLine("--test-project is required with --auto-coverage");
             return null;
         }
 
-        return GenerateCoverage(testProjectPath);
+        return GenerateCoverageForAllProjects(testProjectPaths);
+    }
+
+    private static string? GenerateCoverageForAllProjects(IReadOnlyList<string> testProjectPaths)
+    {
+        var tempFiles = new List<string>();
+        try
+        {
+            foreach (var projectPath in testProjectPaths)
+            {
+                var path = GenerateCoverage(projectPath);
+                if (path is null)
+                {
+                    CleanupTempFiles(tempFiles);
+                    return null;
+                }
+
+                tempFiles.Add(path);
+            }
+
+            if (tempFiles.Count == 1) return tempFiles[0];
+
+            var mergedPath = Path.Combine(
+                Path.GetTempPath(),
+                Path.GetRandomFileName() + ".merged.cobertura.xml");
+            Analysis.CoberturaMerger.Merge(tempFiles, mergedPath);
+            CleanupTempFiles(tempFiles);
+            return mergedPath;
+        }
+        catch
+        {
+            CleanupTempFiles(tempFiles);
+            throw;
+        }
+    }
+
+    private static void CleanupTempFiles(IReadOnlyList<string> files)
+    {
+        foreach (var path in files)
+        {
+            try
+            {
+                File.Delete(path);
+            }
+            catch
+            {
+                // Best effort cleanup
+            }
+        }
     }
 
     private static string? GenerateCoverage(string testProjectPath)

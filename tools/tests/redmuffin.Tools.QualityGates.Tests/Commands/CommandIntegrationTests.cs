@@ -41,7 +41,7 @@ public sealed partial class CommandIntegrationTests
 
         var crapExit = CrapCommand.Execute(
             SrcProject, CoverageFile, maxCrap: 999, changedOnly: false,
-            autoCoverage: false, testProjectPath: null);
+            autoCoverage: false, testProjectPaths: null);
         AssertCrapExit(crapExit);
 
         var scrapExit = ScrapCommand.Execute(
