@@ -1,782 +1,781 @@
 {
-    "$schema": "https://opencode.ai/config.json",
-    "autoupdate": false,
-    "default_agent": "rm-karpathy-universal-primary-agent",
-    "watcher": {
-        "ignore": [
-            ".git/**",
-            "**/bin/**",
-            "**/obj/**",
-            ".vs/**",
-            "**/packages/**",
-            "**/TestResults/**",
-            "**/artifacts/**",
-            "**/publish/**",
-        ],
+  "$schema": "https://opencode.ai/config.json",
+  "autoupdate": false,
+  "default_agent": "rm-karpathy-universal-primary-agent",
+  "watcher": {
+    "ignore": [
+      ".git/**",
+      "**/bin/**",
+      "**/obj/**",
+      ".vs/**",
+      "**/packages/**",
+      "**/TestResults/**",
+      "**/artifacts/**",
+      "**/publish/**"
+    ]
+  },
+  "plugin": [
+    "opencode-snippets",
+    "cc-safety-net",
+    "@cortexkit/opencode-magic-context@latest",
+    "opencode-bytheway"
+  ],
+  "compaction": {
+    "auto": false,
+    "prune": false
+  },
+  "permission": {
+    // IMPORTANT: The following long deny list is INTENTIONALLY duplicated
+    // in read, edit, glob, grep, and bash for maximum defense-in-depth.
+    // Glob and grep can leak secrets, so they must have the full list.
+    // Do NOT remove or shorten any entry.
+    "skill": {
+      "git-commit": "deny",
+      "git-commit-push-pr": "deny"
     },
-    "plugin": [
-        "opencode-snippets",
-        "cc-safety-net",
-        "@cortexkit/opencode-magic-context",
-        "opencode-bytheway",
-    ],
-    "compaction": {
-        "auto": false,
-        "prune": false
+    "read": {
+      "*": "allow",
+      "**/.env*": "deny",
+      "**/secrets*": "deny",
+      "**/*.env.example": "allow",
+      "~/.ssh/**": "deny",
+      "~/.gnupg/**": "deny",
+      "~/.config/gnupg/**": "deny",
+      "~/.aws/**": "deny",
+      "~/.azure/**": "deny",
+      "~/.config/gcloud/**": "deny",
+      "~/.config/azure/**": "deny",
+      "~/.kube/**": "deny",
+      "~/.docker/**": "deny",
+      "~/.config/docker/**": "deny",
+      "~/.config/1Password/**": "deny",
+      "~/.config/Bitwarden/**": "deny",
+      "~/.local/share/keyrings/**": "deny",
+      "~/AppData/Local/Google/Chrome/User Data/**": "deny",
+      "~/AppData/Local/Microsoft/Edge/User Data/**": "deny",
+      "~/.mozilla/**": "deny",
+      "~/.bash_history": "deny",
+      "~/.zsh_history": "deny",
+      "~/.config/fish/fish_history": "deny",
+      "~/.local/share/fish/fish_history": "deny",
+      "~/Documents/**": "deny",
+      "~/OneDrive/Documents/**": "deny",
+      "~/Desktop/**": "deny",
+      "~/OneDrive/Desktop/**": "deny",
+      "~/Pictures/**": "deny",
+      "~/OneDrive/Pictures/**": "deny",
+      "~/Videos/**": "deny",
+      "~/OneDrive/Videos/**": "deny",
+      "~/Music/**": "deny",
+      "~/OneDrive/Music/**": "deny",
+      "~/Downloads/**": "deny",
+      "~/Favorites/**": "deny",
+      "~/Public/**": "deny",
+      "~/.config/autostart/**": "deny",
+      "~/.config/systemd/user/**": "deny",
+      "~/.gitconfig": "deny",
+      "~/.config/git/**": "deny",
+      "~/.config/Code/User/**": "deny",
+      "~/AppData/Roaming/Code/User/**": "deny",
+      "**/.vscode/tasks.json": "deny",
+      "**/.vscode/settings.json": "deny",
+      "**/.vscode/launch.json": "deny",
+      "~/AppData/Local/Microsoft/VisualStudio/**": "deny",
+      "~/AppData/Roaming/Microsoft/VisualStudio/**": "deny",
+      "**/.git/hooks/**": "deny",
+      "**/.git/config": "deny",
+      "~/.local/share/applications/**": "deny"
     },
-    "permission": {
-        // IMPORTANT: The following long deny list is INTENTIONALLY duplicated
-        // in read, edit, glob, grep, and bash for maximum defense-in-depth.
-        // Glob and grep can leak secrets, so they must have the full list.
-        // Do NOT remove or shorten any entry.
-        "skill": {
-            "git-commit": "deny",
-            "git-commit-push-pr": "deny",
-        },
-        "read": {
-            "*": "allow",
-            "**/.env*": "deny",
-            "**/secrets*": "deny",
-            "**/*.env.example": "allow",
-            "~/.ssh/**": "deny",
-            "~/.gnupg/**": "deny",
-            "~/.config/gnupg/**": "deny",
-            "~/.aws/**": "deny",
-            "~/.azure/**": "deny",
-            "~/.config/gcloud/**": "deny",
-            "~/.config/azure/**": "deny",
-            "~/.kube/**": "deny",
-            "~/.docker/**": "deny",
-            "~/.config/docker/**": "deny",
-            "~/.config/1Password/**": "deny",
-            "~/.config/Bitwarden/**": "deny",
-            "~/.local/share/keyrings/**": "deny",
-            "~/AppData/Local/Google/Chrome/User Data/**": "deny",
-            "~/AppData/Local/Microsoft/Edge/User Data/**": "deny",
-            "~/.mozilla/**": "deny",
-            "~/.bash_history": "deny",
-            "~/.zsh_history": "deny",
-            "~/.config/fish/fish_history": "deny",
-            "~/.local/share/fish/fish_history": "deny",
-            "~/Documents/**": "deny",
-            "~/OneDrive/Documents/**": "deny",
-            "~/Desktop/**": "deny",
-            "~/OneDrive/Desktop/**": "deny",
-            "~/Pictures/**": "deny",
-            "~/OneDrive/Pictures/**": "deny",
-            "~/Videos/**": "deny",
-            "~/OneDrive/Videos/**": "deny",
-            "~/Music/**": "deny",
-            "~/OneDrive/Music/**": "deny",
-            "~/Downloads/**": "deny",
-            "~/Favorites/**": "deny",
-            "~/Public/**": "deny",
-            "~/.config/autostart/**": "deny",
-            "~/.config/systemd/user/**": "deny",
-            "~/.gitconfig": "deny",
-            "~/.config/git/**": "deny",
-            "~/.config/Code/User/**": "deny",
-            "~/AppData/Roaming/Code/User/**": "deny",
-            "**/.vscode/tasks.json": "deny",
-            "**/.vscode/settings.json": "deny",
-            "**/.vscode/launch.json": "deny",
-            "~/AppData/Local/Microsoft/VisualStudio/**": "deny",
-            "~/AppData/Roaming/Microsoft/VisualStudio/**": "deny",
-            "**/.git/hooks/**": "deny",
-            "**/.git/config": "deny",
-            "~/.local/share/applications/**": "deny",
-        },
-        "edit": {
-            "*": "ask",
-            "**/.env*": "deny",
-            "**/secrets*": "deny",
-            "~/.ssh/**": "deny",
-            "~/.gnupg/**": "deny",
-            "~/.config/gnupg/**": "deny",
-            "~/.aws/**": "deny",
-            "~/.azure/**": "deny",
-            "~/.config/gcloud/**": "deny",
-            "~/.config/azure/**": "deny",
-            "~/.kube/**": "deny",
-            "~/.docker/**": "deny",
-            "~/.config/docker/**": "deny",
-            "~/.config/1Password/**": "deny",
-            "~/.config/Bitwarden/**": "deny",
-            "~/.local/share/keyrings/**": "deny",
-            "~/AppData/Local/Google/Chrome/User Data/**": "deny",
-            "~/AppData/Local/Microsoft/Edge/User Data/**": "deny",
-            "~/.mozilla/**": "deny",
-            "~/.bash_history": "deny",
-            "~/.zsh_history": "deny",
-            "~/.config/fish/fish_history": "deny",
-            "~/.local/share/fish/fish_history": "deny",
-            "~/Documents/**": "deny",
-            "~/OneDrive/Documents/**": "deny",
-            "~/Desktop/**": "deny",
-            "~/OneDrive/Desktop/**": "deny",
-            "~/Pictures/**": "deny",
-            "~/OneDrive/Pictures/**": "deny",
-            "~/Videos/**": "deny",
-            "~/OneDrive/Videos/**": "deny",
-            "~/Music/**": "deny",
-            "~/OneDrive/Music/**": "deny",
-            "~/Downloads/**": "deny",
-            "~/Favorites/**": "deny",
-            "~/Public/**": "deny",
-            "~/.config/autostart/**": "deny",
-            "~/.config/systemd/user/**": "deny",
-            "~/.gitconfig": "deny",
-            "~/.config/git/**": "deny",
-            "~/.config/Code/User/**": "deny",
-            "~/AppData/Roaming/Code/User/**": "deny",
-            "**/.vscode/tasks.json": "deny",
-            "**/.vscode/settings.json": "deny",
-            "**/.vscode/launch.json": "deny",
-            "~/AppData/Local/Microsoft/VisualStudio/**": "deny",
-            "~/AppData/Roaming/Microsoft/VisualStudio/**": "deny",
-            "**/.git/hooks/**": "deny",
-            "**/.git/config": "deny",
-            "~/.local/share/applications/**": "deny",
-            "~/Documents/PowerShell/**": "ask",
-            "~/Documents/WindowsPowerShell/**": "ask",
-            "~/AppData/Roaming/npm/**": "ask",
-            "~/.local/share/pnpm/global/**": "ask",
-            "/usr/local/lib/node_modules/**": "ask",
-            "~/.config/yarn/global/**": "ask",
-            "/etc/**": "ask",
-            "~/AppData/Local/Microsoft/WinGet/**": "ask",
-        },
-        "glob": {
-            "~/.ssh/**": "deny",
-            "~/.gnupg/**": "deny",
-            "~/.config/gnupg/**": "deny",
-            "~/.aws/**": "deny",
-            "~/.azure/**": "deny",
-            "~/.config/gcloud/**": "deny",
-            "~/.config/azure/**": "deny",
-            "~/.kube/**": "deny",
-            "~/.docker/**": "deny",
-            "~/.config/docker/**": "deny",
-            "~/.config/1Password/**": "deny",
-            "~/.config/Bitwarden/**": "deny",
-            "~/.local/share/keyrings/**": "deny",
-            "~/AppData/Local/Google/Chrome/User Data/**": "deny",
-            "~/AppData/Local/Microsoft/Edge/User Data/**": "deny",
-            "~/.mozilla/**": "deny",
-            "~/.bash_history": "deny",
-            "~/.zsh_history": "deny",
-            "~/.config/fish/fish_history": "deny",
-            "~/.local/share/fish/fish_history": "deny",
-            "~/Documents/**": "deny",
-            "~/OneDrive/Documents/**": "deny",
-            "~/Desktop/**": "deny",
-            "~/OneDrive/Desktop/**": "deny",
-            "~/Pictures/**": "deny",
-            "~/OneDrive/Pictures/**": "deny",
-            "~/Videos/**": "deny",
-            "~/OneDrive/Videos/**": "deny",
-            "~/Music/**": "deny",
-            "~/OneDrive/Music/**": "deny",
-            "~/Downloads/**": "deny",
-            "~/Favorites/**": "deny",
-            "~/Public/**": "deny",
-            "~/.config/autostart/**": "deny",
-            "~/.config/systemd/user/**": "deny",
-            "~/.gitconfig": "deny",
-            "~/.config/git/**": "deny",
-            "~/.config/Code/User/**": "deny",
-            "~/AppData/Roaming/Code/User/**": "deny",
-            "**/.vscode/tasks.json": "deny",
-            "**/.vscode/settings.json": "deny",
-            "**/.vscode/launch.json": "deny",
-            "~/AppData/Local/Microsoft/VisualStudio/**": "deny",
-            "~/AppData/Roaming/Microsoft/VisualStudio/**": "deny",
-            "**/.git/hooks/**": "deny",
-            "**/.git/config": "deny",
-            "~/.local/share/applications/**": "deny",
-        },
-        "grep": {
-            "~/.ssh/**": "deny",
-            "~/.gnupg/**": "deny",
-            "~/.config/gnupg/**": "deny",
-            "~/.aws/**": "deny",
-            "~/.azure/**": "deny",
-            "~/.config/gcloud/**": "deny",
-            "~/.config/azure/**": "deny",
-            "~/.kube/**": "deny",
-            "~/.docker/**": "deny",
-            "~/.config/docker/**": "deny",
-            "~/.config/1Password/**": "deny",
-            "~/.config/Bitwarden/**": "deny",
-            "~/.local/share/keyrings/**": "deny",
-            "~/AppData/Local/Google/Chrome/User Data/**": "deny",
-            "~/AppData/Local/Microsoft/Edge/User Data/**": "deny",
-            "~/.mozilla/**": "deny",
-            "~/.bash_history": "deny",
-            "~/.zsh_history": "deny",
-            "~/.config/fish/fish_history": "deny",
-            "~/.local/share/fish/fish_history": "deny",
-            "~/Documents/**": "deny",
-            "~/OneDrive/Documents/**": "deny",
-            "~/Desktop/**": "deny",
-            "~/OneDrive/Desktop/**": "deny",
-            "~/Pictures/**": "deny",
-            "~/OneDrive/Pictures/**": "deny",
-            "~/Videos/**": "deny",
-            "~/OneDrive/Videos/**": "deny",
-            "~/Music/**": "deny",
-            "~/OneDrive/Music/**": "deny",
-            "~/Downloads/**": "deny",
-            "~/Favorites/**": "deny",
-            "~/Public/**": "deny",
-            "~/.config/autostart/**": "deny",
-            "~/.config/systemd/user/**": "deny",
-            "~/.gitconfig": "deny",
-            "~/.config/git/**": "deny",
-            "~/.config/Code/User/**": "deny",
-            "~/AppData/Roaming/Code/User/**": "deny",
-            "**/.vscode/tasks.json": "deny",
-            "**/.vscode/settings.json": "deny",
-            "**/.vscode/launch.json": "deny",
-            "~/AppData/Local/Microsoft/VisualStudio/**": "deny",
-            "~/AppData/Roaming/Microsoft/VisualStudio/**": "deny",
-            "**/.git/hooks/**": "deny",
-            "**/.git/config": "deny",
-            "~/.local/share/applications/**": "deny",
-        },
-        "lsp": "allow",
-        "question": "allow",
-        "bash": {
-            "*": "ask",
-            "dotnet *": "allow",
-            "pwsh *": "allow",
-            "powershell *": "allow",
-            "git *": "allow",
-            "npm *": "allow",
-            "npx *": "allow",
-            "node *": "allow",
-            "dir *": "allow",
-            "ls *": "allow",
-            "grep *": "allow",
-            "rtk *": "allow",
-            "head *": "allow",
-            "echo *": "allow",
-            "sort *": "allow",
-            "tail *": "allow",
-            "read *": "allow",
-            "wc *": "allow",
-            "**/.env*": "deny",
-            "**/secrets*": "deny",
-            "~/.ssh/**": "deny",
-            "~/.gnupg/**": "deny",
-            "~/.config/gnupg/**": "deny",
-            "~/.aws/**": "deny",
-            "~/.azure/**": "deny",
-            "~/.config/gcloud/**": "deny",
-            "~/.config/azure/**": "deny",
-            "~/.kube/**": "deny",
-            "~/.docker/**": "deny",
-            "~/.config/docker/**": "deny",
-            "~/.config/1Password/**": "deny",
-            "~/.config/Bitwarden/**": "deny",
-            "~/.local/share/keyrings/**": "deny",
-            "~/AppData/Local/Google/Chrome/User Data/**": "deny",
-            "~/AppData/Local/Microsoft/Edge/User Data/**": "deny",
-            "~/.mozilla/**": "deny",
-            "~/.bash_history": "deny",
-            "~/.zsh_history": "deny",
-            "~/.config/fish/fish_history": "deny",
-            "~/.local/share/fish/fish_history": "deny",
-            "~/Documents/**": "deny",
-            "~/OneDrive/Documents/**": "deny",
-            "~/Desktop/**": "deny",
-            "~/OneDrive/Desktop/**": "deny",
-            "~/Pictures/**": "deny",
-            "~/OneDrive/Pictures/**": "deny",
-            "~/Videos/**": "deny",
-            "~/OneDrive/Videos/**": "deny",
-            "~/Music/**": "deny",
-            "~/OneDrive/Music/**": "deny",
-            "~/Downloads/**": "deny",
-            "~/Favorites/**": "deny",
-            "~/Public/**": "deny",
-            "~/.config/autostart/**": "deny",
-            "~/.config/systemd/user/**": "deny",
-            "~/.gitconfig": "deny",
-            "~/.config/git/**": "deny",
-            "~/.config/Code/User/**": "deny",
-            "~/AppData/Roaming/Code/User/**": "deny",
-            "**/.vscode/tasks.json": "deny",
-            "**/.vscode/settings.json": "deny",
-            "**/.vscode/launch.json": "deny",
-            "~/AppData/Local/Microsoft/VisualStudio/**": "deny",
-            "~/AppData/Roaming/Microsoft/VisualStudio/**": "deny",
-            "**/.git/hooks/**": "deny",
-            "**/.git/config": "deny",
-            "~/.local/share/applications/**": "deny",
-        },
-        "external_directory": "ask",
+    "edit": {
+      "*": "ask",
+      "**/.env*": "deny",
+      "**/secrets*": "deny",
+      "~/.ssh/**": "deny",
+      "~/.gnupg/**": "deny",
+      "~/.config/gnupg/**": "deny",
+      "~/.aws/**": "deny",
+      "~/.azure/**": "deny",
+      "~/.config/gcloud/**": "deny",
+      "~/.config/azure/**": "deny",
+      "~/.kube/**": "deny",
+      "~/.docker/**": "deny",
+      "~/.config/docker/**": "deny",
+      "~/.config/1Password/**": "deny",
+      "~/.config/Bitwarden/**": "deny",
+      "~/.local/share/keyrings/**": "deny",
+      "~/AppData/Local/Google/Chrome/User Data/**": "deny",
+      "~/AppData/Local/Microsoft/Edge/User Data/**": "deny",
+      "~/.mozilla/**": "deny",
+      "~/.bash_history": "deny",
+      "~/.zsh_history": "deny",
+      "~/.config/fish/fish_history": "deny",
+      "~/.local/share/fish/fish_history": "deny",
+      "~/Documents/**": "deny",
+      "~/OneDrive/Documents/**": "deny",
+      "~/Desktop/**": "deny",
+      "~/OneDrive/Desktop/**": "deny",
+      "~/Pictures/**": "deny",
+      "~/OneDrive/Pictures/**": "deny",
+      "~/Videos/**": "deny",
+      "~/OneDrive/Videos/**": "deny",
+      "~/Music/**": "deny",
+      "~/OneDrive/Music/**": "deny",
+      "~/Downloads/**": "deny",
+      "~/Favorites/**": "deny",
+      "~/Public/**": "deny",
+      "~/.config/autostart/**": "deny",
+      "~/.config/systemd/user/**": "deny",
+      "~/.gitconfig": "deny",
+      "~/.config/git/**": "deny",
+      "~/.config/Code/User/**": "deny",
+      "~/AppData/Roaming/Code/User/**": "deny",
+      "**/.vscode/tasks.json": "deny",
+      "**/.vscode/settings.json": "deny",
+      "**/.vscode/launch.json": "deny",
+      "~/AppData/Local/Microsoft/VisualStudio/**": "deny",
+      "~/AppData/Roaming/Microsoft/VisualStudio/**": "deny",
+      "**/.git/hooks/**": "deny",
+      "**/.git/config": "deny",
+      "~/.local/share/applications/**": "deny",
+      "~/Documents/PowerShell/**": "ask",
+      "~/Documents/WindowsPowerShell/**": "ask",
+      "~/AppData/Roaming/npm/**": "ask",
+      "~/.local/share/pnpm/global/**": "ask",
+      "/usr/local/lib/node_modules/**": "ask",
+      "~/.config/yarn/global/**": "ask",
+      "/etc/**": "ask",
+      "~/AppData/Local/Microsoft/WinGet/**": "ask"
     },
-    "formatter": {
-        "dotnet-format": {
-            "command": [
-                "dotnet",
-                "format",
-                "--include",
-                "$FILE"
-            ],
-            "extensions": [
-                ".cs",
-                ".razor"
-            ],
-        },
-        "prettier": {
-            "command": [
-                "prettier",
-                "--write",
-                "$FILE"
-            ],
-            "extensions": [
-                ".scss",
-                ".css",
-                ".json",
-                ".md",
-                ".yml",
-                ".yaml"
-            ],
-        },
+    "glob": {
+      "~/.ssh/**": "deny",
+      "~/.gnupg/**": "deny",
+      "~/.config/gnupg/**": "deny",
+      "~/.aws/**": "deny",
+      "~/.azure/**": "deny",
+      "~/.config/gcloud/**": "deny",
+      "~/.config/azure/**": "deny",
+      "~/.kube/**": "deny",
+      "~/.docker/**": "deny",
+      "~/.config/docker/**": "deny",
+      "~/.config/1Password/**": "deny",
+      "~/.config/Bitwarden/**": "deny",
+      "~/.local/share/keyrings/**": "deny",
+      "~/AppData/Local/Google/Chrome/User Data/**": "deny",
+      "~/AppData/Local/Microsoft/Edge/User Data/**": "deny",
+      "~/.mozilla/**": "deny",
+      "~/.bash_history": "deny",
+      "~/.zsh_history": "deny",
+      "~/.config/fish/fish_history": "deny",
+      "~/.local/share/fish/fish_history": "deny",
+      "~/Documents/**": "deny",
+      "~/OneDrive/Documents/**": "deny",
+      "~/Desktop/**": "deny",
+      "~/OneDrive/Desktop/**": "deny",
+      "~/Pictures/**": "deny",
+      "~/OneDrive/Pictures/**": "deny",
+      "~/Videos/**": "deny",
+      "~/OneDrive/Videos/**": "deny",
+      "~/Music/**": "deny",
+      "~/OneDrive/Music/**": "deny",
+      "~/Downloads/**": "deny",
+      "~/Favorites/**": "deny",
+      "~/Public/**": "deny",
+      "~/.config/autostart/**": "deny",
+      "~/.config/systemd/user/**": "deny",
+      "~/.gitconfig": "deny",
+      "~/.config/git/**": "deny",
+      "~/.config/Code/User/**": "deny",
+      "~/AppData/Roaming/Code/User/**": "deny",
+      "**/.vscode/tasks.json": "deny",
+      "**/.vscode/settings.json": "deny",
+      "**/.vscode/launch.json": "deny",
+      "~/AppData/Local/Microsoft/VisualStudio/**": "deny",
+      "~/AppData/Roaming/Microsoft/VisualStudio/**": "deny",
+      "**/.git/hooks/**": "deny",
+      "**/.git/config": "deny",
+      "~/.local/share/applications/**": "deny"
     },
-    "mcp": {
-        "brave-search": {
-            "type": "local",
-            "command": [
-                "docker",
-                "run",
-                "-i",
-                "--rm",
-                "-e",
-                "BRAVE_API_KEY",
-                "mcp/brave-search",
-            ],
-            "enabled": true,
-        },
-        "context7": {
-            "type": "remote",
-            "url": "https://mcp.context7.com/mcp",
-            "headers": {
-                "CONTEXT7_API_KEY": "{env:CONTEXT7_API_KEY}",
-            },
-            "enabled": true,
-        },
-        "sequential-thinking": {
-            "type": "local",
-            "command": [
-                "docker",
-                "run",
-                "-i",
-                "--rm",
-                "-e",
-                "DISABLE_THOUGHT_LOGGING=true",
-                "mcp/sequentialthinking",
-            ],
-            "enabled": true,
-        },
-        "chrome-devtools": {
-            "type": "local",
-            "command": [
-                "node",
-                "-e",
-                "require(require('path').join(require('os').homedir(),'.config','opencode','scripts','browser-launcher.js'))",
-            ],
-            "enabled": false,
-        },
-        "context-mode": {
-            "type": "local",
-            "command": [
-                "context-mode"
-            ],
-            "enabled": false,
-        },
+    "grep": {
+      "~/.ssh/**": "deny",
+      "~/.gnupg/**": "deny",
+      "~/.config/gnupg/**": "deny",
+      "~/.aws/**": "deny",
+      "~/.azure/**": "deny",
+      "~/.config/gcloud/**": "deny",
+      "~/.config/azure/**": "deny",
+      "~/.kube/**": "deny",
+      "~/.docker/**": "deny",
+      "~/.config/docker/**": "deny",
+      "~/.config/1Password/**": "deny",
+      "~/.config/Bitwarden/**": "deny",
+      "~/.local/share/keyrings/**": "deny",
+      "~/AppData/Local/Google/Chrome/User Data/**": "deny",
+      "~/AppData/Local/Microsoft/Edge/User Data/**": "deny",
+      "~/.mozilla/**": "deny",
+      "~/.bash_history": "deny",
+      "~/.zsh_history": "deny",
+      "~/.config/fish/fish_history": "deny",
+      "~/.local/share/fish/fish_history": "deny",
+      "~/Documents/**": "deny",
+      "~/OneDrive/Documents/**": "deny",
+      "~/Desktop/**": "deny",
+      "~/OneDrive/Desktop/**": "deny",
+      "~/Pictures/**": "deny",
+      "~/OneDrive/Pictures/**": "deny",
+      "~/Videos/**": "deny",
+      "~/OneDrive/Videos/**": "deny",
+      "~/Music/**": "deny",
+      "~/OneDrive/Music/**": "deny",
+      "~/Downloads/**": "deny",
+      "~/Favorites/**": "deny",
+      "~/Public/**": "deny",
+      "~/.config/autostart/**": "deny",
+      "~/.config/systemd/user/**": "deny",
+      "~/.gitconfig": "deny",
+      "~/.config/git/**": "deny",
+      "~/.config/Code/User/**": "deny",
+      "~/AppData/Roaming/Code/User/**": "deny",
+      "**/.vscode/tasks.json": "deny",
+      "**/.vscode/settings.json": "deny",
+      "**/.vscode/launch.json": "deny",
+      "~/AppData/Local/Microsoft/VisualStudio/**": "deny",
+      "~/AppData/Roaming/Microsoft/VisualStudio/**": "deny",
+      "**/.git/hooks/**": "deny",
+      "**/.git/config": "deny",
+      "~/.local/share/applications/**": "deny"
     },
-    "tools": {
-        "brave-search_brave_*": false,
-        "brave-search_brave_web_search": true,
+    "lsp": "allow",
+    "question": "allow",
+    "bash": {
+      "*": "ask",
+      "dotnet *": "allow",
+      "pwsh *": "allow",
+      "powershell *": "allow",
+      "git *": "allow",
+      "npm *": "allow",
+      "npx *": "allow",
+      "node *": "allow",
+      "dir *": "allow",
+      "ls *": "allow",
+      "grep *": "allow",
+      "rtk *": "allow",
+      "head *": "allow",
+      "echo *": "allow",
+      "sort *": "allow",
+      "tail *": "allow",
+      "read *": "allow",
+      "wc *": "allow",
+      "**/.env*": "deny",
+      "**/secrets*": "deny",
+      "~/.ssh/**": "deny",
+      "~/.gnupg/**": "deny",
+      "~/.config/gnupg/**": "deny",
+      "~/.aws/**": "deny",
+      "~/.azure/**": "deny",
+      "~/.config/gcloud/**": "deny",
+      "~/.config/azure/**": "deny",
+      "~/.kube/**": "deny",
+      "~/.docker/**": "deny",
+      "~/.config/docker/**": "deny",
+      "~/.config/1Password/**": "deny",
+      "~/.config/Bitwarden/**": "deny",
+      "~/.local/share/keyrings/**": "deny",
+      "~/AppData/Local/Google/Chrome/User Data/**": "deny",
+      "~/AppData/Local/Microsoft/Edge/User Data/**": "deny",
+      "~/.mozilla/**": "deny",
+      "~/.bash_history": "deny",
+      "~/.zsh_history": "deny",
+      "~/.config/fish/fish_history": "deny",
+      "~/.local/share/fish/fish_history": "deny",
+      "~/Documents/**": "deny",
+      "~/OneDrive/Documents/**": "deny",
+      "~/Desktop/**": "deny",
+      "~/OneDrive/Desktop/**": "deny",
+      "~/Pictures/**": "deny",
+      "~/OneDrive/Pictures/**": "deny",
+      "~/Videos/**": "deny",
+      "~/OneDrive/Videos/**": "deny",
+      "~/Music/**": "deny",
+      "~/OneDrive/Music/**": "deny",
+      "~/Downloads/**": "deny",
+      "~/Favorites/**": "deny",
+      "~/Public/**": "deny",
+      "~/.config/autostart/**": "deny",
+      "~/.config/systemd/user/**": "deny",
+      "~/.gitconfig": "deny",
+      "~/.config/git/**": "deny",
+      "~/.config/Code/User/**": "deny",
+      "~/AppData/Roaming/Code/User/**": "deny",
+      "**/.vscode/tasks.json": "deny",
+      "**/.vscode/settings.json": "deny",
+      "**/.vscode/launch.json": "deny",
+      "~/AppData/Local/Microsoft/VisualStudio/**": "deny",
+      "~/AppData/Roaming/Microsoft/VisualStudio/**": "deny",
+      "**/.git/hooks/**": "deny",
+      "**/.git/config": "deny",
+      "~/.local/share/applications/**": "deny"
     },
-    "agent": {
-        "rm-uncle-bob-csharp-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "rm-dotnet-csharp-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "rm-blazor-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "rm-html-css-blazor-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "rm-powershell-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "adversarial-document-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "adversarial-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "agent-native-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "api-contract-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "architecture-strategist": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "cli-agent-readiness-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "cli-readiness-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "code-simplicity-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "coherence-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "correctness-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "data-migrations-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "design-implementation-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "design-lens-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "dhh-rails-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "feasibility-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "julik-frontend-races-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "kieran-python-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "kieran-rails-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "kieran-typescript-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "maintainability-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "performance-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "previous-comments-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "product-lens-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "project-standards-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "reliability-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "scope-guardian-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "security-lens-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "security-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "testing-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-adversarial-document-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-adversarial-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-agent-native-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-ankane-readme-writer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-api-contract-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-architecture-strategist": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-best-practices-researcher": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-cli-agent-readiness-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-cli-readiness-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-code-simplicity-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-coherence-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-correctness-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-data-integrity-guardian": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-data-migration-expert": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-data-migrations-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-deployment-verification-agent": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-design-implementation-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-design-iterator": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-design-lens-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-dhh-rails-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-feasibility-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-figma-design-sync": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-framework-docs-researcher": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-git-history-analyzer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-issue-intelligence-analyst": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-julik-frontend-races-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-kieran-python-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-kieran-rails-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-kieran-typescript-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-learnings-researcher": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-maintainability-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-pattern-recognition-specialist": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-performance-oracle": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-performance-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-pr-comment-resolver": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-previous-comments-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-product-lens-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-project-standards-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-reliability-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-repo-research-analyst": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-schema-drift-detector": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-scope-guardian-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-security-lens-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-security-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-security-sentinel": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-session-historian": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-slack-researcher": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-spec-flow-analyzer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-swift-ios-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-testing-reviewer": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
-        "ce-web-researcher": {
-            "model": "{env:OPENCODE_ANALYST_MODEL}",
-            "mode": "subagent",
-        },
+    "external_directory": "ask"
+  },
+  "formatter": {
+    "dotnet-format": {
+      "command": [
+        "dotnet",
+        "format",
+        "--include",
+        "$FILE"
+      ],
+      "extensions": [
+        ".cs",
+        ".razor"
+      ]
     },
-    "provider": {
-        "deepseek": {
-            "options": {
-                "baseURL": "http://127.0.0.1:9000/v1"
-            },
-            "models": {
-                "deepseek-v4-pro": {
-                    "limit": {
-                        "context": 700000,
-                        "output": 128000
-                    },
-                    "options": {
-                        "max_tokens": 128000,
-                        "temperature": 0.75,
-                        "top_p": 0.95
-                    }
-                }
-            }
-        },
-        "opencode-go": {
-            "models": {
-                "deepseek-v4-pro": {
-                    "limit": {
-                        "context": 700000,
-                        "output": 128000
-                    },
-                    "options": {
-                        "max_tokens": 128000,
-                        "temperature": 0.75,
-                        "top_p": 0.95
-                    }
-                }
-            }
-        }
+    "prettier": {
+      "command": [
+        "prettier",
+        "--write",
+        "$FILE"
+      ],
+      "extensions": [
+        ".scss",
+        ".css",
+        ".json",
+        ".md",
+        ".yml",
+        ".yaml"
+      ]
     }
+  },
+  "mcp": {
+    "brave-search": {
+      "type": "local",
+      "command": [
+        "docker",
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "BRAVE_API_KEY",
+        "mcp/brave-search"
+      ],
+      "enabled": true
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "CONTEXT7_API_KEY": "{env:CONTEXT7_API_KEY}"
+      },
+      "enabled": true
+    },
+    "sequential-thinking": {
+      "type": "local",
+      "command": [
+        "docker",
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "DISABLE_THOUGHT_LOGGING=true",
+        "mcp/sequentialthinking"
+      ],
+      "enabled": true
+    },
+    "chrome-devtools": {
+      "type": "local",
+      "command": [
+        "node",
+        "-e",
+        "require(require('path').join(require('os').homedir(),'.config','opencode','scripts','browser-launcher.js'))"
+      ],
+      "enabled": false
+    },
+    "context-mode": {
+      "type": "local",
+      "command": [
+        "context-mode"
+      ],
+      "enabled": false
+    }
+  },
+  "tools": {
+    "brave-search_brave_*": false,
+    "brave-search_brave_web_search": true
+  },
+  "agent": {
+    "rm-uncle-bob-csharp-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "rm-dotnet-csharp-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "rm-blazor-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "rm-html-css-blazor-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "rm-powershell-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "adversarial-document-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "adversarial-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "agent-native-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "api-contract-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "architecture-strategist": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "cli-agent-readiness-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "cli-readiness-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "code-simplicity-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "coherence-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "correctness-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "data-migrations-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "design-implementation-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "design-lens-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "dhh-rails-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "feasibility-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "julik-frontend-races-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "kieran-python-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "kieran-rails-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "kieran-typescript-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "maintainability-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "performance-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "previous-comments-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "product-lens-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "project-standards-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "reliability-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "scope-guardian-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "security-lens-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "security-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "testing-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-adversarial-document-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-adversarial-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-agent-native-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-ankane-readme-writer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-api-contract-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-architecture-strategist": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-best-practices-researcher": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-cli-agent-readiness-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-cli-readiness-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-code-simplicity-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-coherence-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-correctness-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-data-integrity-guardian": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-data-migration-expert": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-data-migrations-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-deployment-verification-agent": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-design-implementation-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-design-iterator": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-design-lens-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-dhh-rails-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-feasibility-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-figma-design-sync": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-framework-docs-researcher": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-git-history-analyzer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-issue-intelligence-analyst": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-julik-frontend-races-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-kieran-python-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-kieran-rails-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-kieran-typescript-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-learnings-researcher": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-maintainability-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-pattern-recognition-specialist": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-performance-oracle": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-performance-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-pr-comment-resolver": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-previous-comments-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-product-lens-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-project-standards-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-reliability-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-repo-research-analyst": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-schema-drift-detector": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-scope-guardian-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-security-lens-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-security-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-security-sentinel": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-session-historian": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-slack-researcher": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-spec-flow-analyzer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-swift-ios-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-testing-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "ce-web-researcher": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    }
+  },
+  "provider": {
+    "deepseek": {
+      "options": {
+      },
+      "models": {
+        "deepseek-v4-pro": {
+          "limit": {
+            "context": 180000,
+            "output": 128000
+          },
+          "options": {
+            "max_tokens": 128000,
+            "temperature": 0.30,
+            "top_p": 0.95
+          }
+        }
+      }
+    },
+    "opencode-go": {
+      "models": {
+        "deepseek-v4-pro": {
+          "limit": {
+            "context": 180000,
+            "output": 128000
+          },
+          "options": {
+            "max_tokens": 128000,
+            "temperature": 0.30,
+            "top_p": 0.95
+          }
+        }
+      }
+    }
+  }
 }
