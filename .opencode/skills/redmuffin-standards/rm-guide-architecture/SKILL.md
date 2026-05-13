@@ -1,6 +1,6 @@
 ---
 name: rm-guide-architecture
-description: "Shortcut: rm:guide-architecture. Use when designing services, boundaries, patterns, or cross-layer C# changes."
+description: "Use when designing services, boundaries, patterns, or cross-layer C# changes."
 ---
 
 # rm-guide-architecture

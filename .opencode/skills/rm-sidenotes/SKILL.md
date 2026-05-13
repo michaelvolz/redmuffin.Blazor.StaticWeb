@@ -1,6 +1,6 @@
 ---
 name: rm-sidenotes
-description: "Shortcut: rm:sn. Use for sidenote capture (sidenote:, /sidenote, /sidenotes) and management commands (sidenotes list, sidenotes show, sidenote list, sidenote show, sidenote convert SN-NNNN, sidenote tackle SN-NNNN, sidenote dismiss SN-NNNN, sidenotes dismiss SN-NNNN). Handles capture, storage, retrieval, conversion, and dismissal of sidenotes during active work sessions."
+description: "Use for sidenote capture (sidenote:, /sidenote, /sidenotes) and management commands (sidenotes list, sidenotes show, sidenote list, sidenote show, sidenote convert SN-NNNN, sidenote tackle SN-NNNN, sidenote dismiss SN-NNNN, sidenotes dismiss SN-NNNN). Handles capture, storage, retrieval, conversion, and dismissal of sidenotes during active work sessions."
 ---
 
 # rm-sidenotes

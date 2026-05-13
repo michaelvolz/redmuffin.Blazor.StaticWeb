@@ -1,6 +1,6 @@
 ---
 name: rm-guide-csharp-features
-description: "Shortcut: rm:guide-csharp-features. Use when adopting modern C# 12/13 features or deciding whether a new language feature fits the repo."
+description: "Use when adopting modern C# 12/13 features or deciding whether a new language feature fits the repo."
 ---
 
 # rm-guide-csharp-features

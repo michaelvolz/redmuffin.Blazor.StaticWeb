@@ -1,6 +1,6 @@
 ---
 name: rm-nuget-manager
-description: "Shortcut: rm:nuget. NuGet package management via dotnet CLI. Use when adding, removing, or updating NuGet package versions in .NET projects."
+description: "NuGet package management via dotnet CLI. Use when adding, removing, or updating NuGet package versions in .NET projects."
 ---
 
 # NuGet Manager

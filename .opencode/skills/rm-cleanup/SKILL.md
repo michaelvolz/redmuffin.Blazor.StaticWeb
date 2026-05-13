@@ -1,6 +1,6 @@
 ---
 name: rm-cleanup
-description: "Shortcut: rm:cleanup. Fast, low-noise dev environment cleanup — closes the agent-owned Brave browser, stops non-VS dotnet processes, and removes stray artifacts. Use when you want speed, minimal chatter, and warnings/errors only."
+description: "Fast, low-noise dev environment cleanup — closes the agent-owned Brave browser, stops non-VS dotnet processes, and removes stray artifacts. Use when you want speed, minimal chatter, and warnings/errors only."
 ---
 
 # Dev Environment Cleanup (Parallel)

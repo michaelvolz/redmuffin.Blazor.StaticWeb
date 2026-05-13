@@ -1,6 +1,6 @@
 ---
 name: rm-guide-async
-description: "Shortcut: rm:guide-async. Use when writing async methods, cancellation flows, or Task-based APIs."
+description: "Use when writing async methods, cancellation flows, or Task-based APIs."
 ---
 
 # rm-guide-async

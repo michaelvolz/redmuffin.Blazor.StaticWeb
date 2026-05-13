@@ -1,6 +1,6 @@
 ---
 name: rm-guide-warnings
-description: "Shortcut: rm:guide-warnings. Use when fixing analyzer warnings, pragma directives, or zero-warning build issues."
+description: "Use when fixing analyzer warnings, pragma directives, or zero-warning build issues."
 ---
 
 # rm-guide-warnings

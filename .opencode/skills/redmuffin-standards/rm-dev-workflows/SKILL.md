@@ -1,6 +1,6 @@
 ---
 name: rm-dev-workflows
-description: "Shortcut: rm:dev. Canonical reference for Windows dev sessions, site startup, process management, port workflow, browser tab hygiene, and tool selection. Use when managing dev environment processes, checking ports, or deciding which tools to use."
+description: "Canonical reference for Windows dev sessions, site startup, process management, port workflow, browser tab hygiene, and tool selection. Use when managing dev environment processes, checking ports, or deciding which tools to use."
 ---
 
 # rm-dev-workflows

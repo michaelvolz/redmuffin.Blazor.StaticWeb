@@ -1,6 +1,6 @@
 ---
 name: rm-commit
-description: "Shortcut: rm:commit. Use when the user says commit or wants help making a commit. Generates repo-specific conventional commit payloads."
+description: "Use when the user says commit or wants help making a commit. Generates repo-specific conventional commit payloads."
 ---
 
 # rm-commit

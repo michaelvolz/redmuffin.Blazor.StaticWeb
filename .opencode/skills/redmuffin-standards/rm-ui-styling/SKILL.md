@@ -1,6 +1,6 @@
 ---
 name: rm-ui-styling
-description: "Shortcut: rm:ui. Foundation CSS framework, SCSS compilation, Blazor styling, and WCAG 2.1 AA accessibility. Use when writing SCSS, using Foundation CSS classes, styling Blazor components, or implementing accessibility."
+description: "Foundation CSS framework, SCSS compilation, Blazor styling, and WCAG 2.1 AA accessibility. Use when writing SCSS, using Foundation CSS classes, styling Blazor components, or implementing accessibility."
 ---
 
 # UI/Styling

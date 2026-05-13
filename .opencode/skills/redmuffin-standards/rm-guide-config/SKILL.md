@@ -1,6 +1,6 @@
 ---
 name: rm-guide-config
-description: "Shortcut: rm:guide-config. Use when touching build commands, dev modes, package management, or repository configuration."
+description: "Use when touching build commands, dev modes, package management, or repository configuration."
 ---
 
 # rm-guide-config

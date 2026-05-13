@@ -1,6 +1,6 @@
 ---
 name: rm-guide-namespaces
-description: "Shortcut: rm:guide-namespaces. Use when creating new C# files or organizing namespaces."
+description: "Use when creating new C# files or organizing namespaces."
 ---
 
 # rm-guide-namespaces

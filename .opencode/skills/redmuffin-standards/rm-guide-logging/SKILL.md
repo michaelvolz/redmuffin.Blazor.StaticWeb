@@ -1,6 +1,6 @@
 ---
 name: rm-guide-logging
-description: "Shortcut: rm:guide-logging. Use when adding structured logging or LoggerMessage delegates."
+description: "Use when adding structured logging or LoggerMessage delegates."
 ---
 
 # rm-guide-logging

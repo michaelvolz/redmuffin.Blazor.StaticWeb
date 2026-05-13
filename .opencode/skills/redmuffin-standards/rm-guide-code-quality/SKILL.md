@@ -1,6 +1,6 @@
 ---
 name: rm-guide-code-quality
-description: "Shortcut: rm:guide-code-quality. Use when reviewing style, readability, null handling, records, or general C# code quality."
+description: "Use when reviewing style, readability, null handling, records, or general C# code quality."
 ---
 
 # rm-guide-code-quality

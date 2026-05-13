@@ -1,6 +1,6 @@
 ---
 name: rm-guide-azure-functions
-description: "Shortcut: rm:guide-azure-functions. Use when creating or reviewing Azure Functions isolated worker code."
+description: "Use when creating or reviewing Azure Functions isolated worker code."
 ---
 
 # rm-guide-azure-functions

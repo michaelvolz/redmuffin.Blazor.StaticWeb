@@ -1,6 +1,6 @@
 ---
 name: rm-guide-di
-description: "Shortcut: rm:guide-di. Use when injecting dependencies, registering services, or shaping component/service constructors."
+description: "Use when injecting dependencies, registering services, or shaping component/service constructors."
 ---
 
 # rm-guide-di

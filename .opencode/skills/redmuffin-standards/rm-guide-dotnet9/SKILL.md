@@ -1,6 +1,6 @@
 ---
 name: rm-guide-dotnet9
-description: "Shortcut: rm:guide-dotnet9. Use when deciding whether to use .NET 9 APIs or current runtime best practices."
+description: "Use when deciding whether to use .NET 9 APIs or current runtime best practices."
 ---
 
 # rm-guide-dotnet9
