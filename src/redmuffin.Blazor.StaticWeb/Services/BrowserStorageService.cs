@@ -52,9 +52,19 @@ public class BrowserStorageService(ILocalStorageService localStorage, ILogger<Br
         return Convert.ToBase64String(bytes);
     }
 
-    private static bool IsExpired(DateTime createdAt, TimeSpan expirationTime)
+    /// <summary>
+    ///     Determines whether a stored item is expired based on its metadata.
+    /// </summary>
+    /// <param name="metadata">The stored item metadata.</param>
+    /// <param name="defaultExpiration">The default expiration time span for items without an explicit expiry.</param>
+    /// <param name="utcNow">The current UTC time (injectable for testing).</param>
+    /// <returns><c>true</c> if the item is expired; otherwise <c>false</c>.</returns>
+    public static bool IsExpired(StoredItemMetadata metadata, TimeSpan defaultExpiration, DateTime? utcNow = null)
     {
-        return DateTime.UtcNow - createdAt > expirationTime;
+        var now = utcNow ?? DateTime.UtcNow;
+        return metadata.ExpiresAt.HasValue
+            ? now > metadata.ExpiresAt.Value
+            : now - metadata.CreatedAt > defaultExpiration;
     }
 
     public void SetQuotaLimit(long quotaBytes)
@@ -81,23 +91,12 @@ public class BrowserStorageService(ILocalStorageService localStorage, ILogger<Br
 
         // Check if item is expired before retrieving
         var index = await GetIndexAsync(cancellationToken).ConfigureAwait(false);
-        if (index.TryGetValue(hashedKey, out var metadata))
+        if (index.TryGetValue(hashedKey, out var metadata) && IsExpired(metadata, DefaultExpirationTime))
         {
-            if (metadata.ExpiresAt.HasValue && DateTime.UtcNow > metadata.ExpiresAt.Value)
-            {
-                // Item is expired, remove it
-                await localStorage.RemoveItemAsync(hashedKey, cancellationToken).ConfigureAwait(false);
-                await RemoveFromIndexAsync(hashedKey, cancellationToken).ConfigureAwait(false);
-                return default;
-            }
-
-            if (!metadata.ExpiresAt.HasValue && IsExpired(metadata.CreatedAt, DefaultExpirationTime))
-            {
-                // Legacy item is expired, remove it
-                await localStorage.RemoveItemAsync(hashedKey, cancellationToken).ConfigureAwait(false);
-                await RemoveFromIndexAsync(hashedKey, cancellationToken).ConfigureAwait(false);
-                return default;
-            }
+            // Item is expired, remove it
+            await localStorage.RemoveItemAsync(hashedKey, cancellationToken).ConfigureAwait(false);
+            await RemoveFromIndexAsync(hashedKey, cancellationToken).ConfigureAwait(false);
+            return default;
         }
 
         var value = await localStorage.GetItemAsync<T?>(hashedKey, cancellationToken).ConfigureAwait(false);
@@ -130,40 +129,46 @@ public class BrowserStorageService(ILocalStorageService localStorage, ILogger<Br
         await localStorage.RemoveItemAsync(IndexKey, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>
+    ///     Updates the stats accumulator with a single storage entry.
+    /// </summary>
+    /// <param name="acc">The accumulator to update.</param>
+    /// <param name="key">The storage key.</param>
+    /// <param name="size">The size of the item in bytes.</param>
+    /// <param name="index">The storage index for metadata lookups.</param>
+    public static void UpdateAccumulator(StatsAccumulator acc, string key, long size, IReadOnlyDictionary<string, StoredItemMetadata> index)
+    {
+        acc.TotalSize += size;
+        if (!index.TryGetValue(key, out var item)) return;
+
+        if (IsExpired(item, DefaultExpirationTime)) acc.ExpiredCount++;
+        if (acc.Oldest is null || item.CreatedAt < acc.Oldest) acc.Oldest = item.CreatedAt;
+        if (acc.Newest is null || item.CreatedAt > acc.Newest) acc.Newest = item.CreatedAt;
+    }
+
     public async Task<StorageStats> GetStorageStatsAsync(CancellationToken cancellationToken = default)
     {
         var keys = await GetKeysAsync(cancellationToken).ConfigureAwait(false);
-        long totalSize = 0;
-        var expiredCount = 0;
-        DateTime? oldest = null;
-        DateTime? newest = null;
-
         var index = await GetIndexAsync(cancellationToken).ConfigureAwait(false);
-        foreach (var key in keys)
-        {
-            var size = await GetItemSizeAsync(key, cancellationToken).ConfigureAwait(false);
-            totalSize += size;
+        var sizes = await Task.WhenAll(keys.Select(k => GetItemSizeAsync(k, cancellationToken))).ConfigureAwait(false);
 
-            if (!index.TryGetValue(key, out var item)) continue;
-
-            if ((item.ExpiresAt.HasValue && DateTime.UtcNow > item.ExpiresAt.Value) ||
-                (!item.ExpiresAt.HasValue && IsExpired(item.CreatedAt, DefaultExpirationTime)))
-                expiredCount++;
-
-            if (oldest == null || item.CreatedAt < oldest) oldest = item.CreatedAt;
-            if (newest == null || item.CreatedAt > newest) newest = item.CreatedAt;
-        }
+        var acc = keys.Zip(sizes, (k, s) => (Key: k, Size: s))
+            .Aggregate(new StatsAccumulator(), (acc, entry) =>
+            {
+                UpdateAccumulator(acc, entry.Key, entry.Size, index);
+                return acc;
+            });
 
         return new StorageStats
         {
             TotalItems = await localStorage.LengthAsync(cancellationToken).ConfigureAwait(false),
-            TotalSizeBytes = totalSize,
+            TotalSizeBytes = acc.TotalSize,
             QuotaLimitBytes = _quotaLimit,
-            QuotaUsagePercent = (double)totalSize / _quotaLimit * 100,
-            RecentlyAccessedCount = (await GetIndexAsync(cancellationToken).ConfigureAwait(false)).Count,
-            ExpiredItemsCount = expiredCount,
-            OldestItemTimestamp = oldest,
-            NewestItemTimestamp = newest
+            QuotaUsagePercent = (double)acc.TotalSize / _quotaLimit * 100,
+            RecentlyAccessedCount = index.Count,
+            ExpiredItemsCount = acc.ExpiredCount,
+            OldestItemTimestamp = acc.Oldest,
+            NewestItemTimestamp = acc.Newest
         };
     }
 
@@ -220,10 +225,7 @@ public class BrowserStorageService(ILocalStorageService localStorage, ILogger<Br
         var expiredKeys = new List<string>();
 
         foreach (var (key, metadata) in index)
-            if (metadata.ExpiresAt.HasValue && DateTime.UtcNow > metadata.ExpiresAt.Value)
-                expiredKeys.Add(key);
-            else if (!metadata.ExpiresAt.HasValue && IsExpired(metadata.CreatedAt, DefaultExpirationTime))
-                // Handle legacy items without ExpiresAt
+            if (IsExpired(metadata, DefaultExpirationTime))
                 expiredKeys.Add(key);
 
         foreach (var key in expiredKeys)
@@ -318,6 +320,17 @@ public class BrowserStorageService(ILocalStorageService localStorage, ILogger<Br
     private async Task<Dictionary<string, StoredItemMetadata>> GetIndexAsync(CancellationToken cancellationToken = default)
     {
         return await localStorage.GetItemAsync<Dictionary<string, StoredItemMetadata>>(IndexKey, cancellationToken).ConfigureAwait(false) ??
-               new Dictionary<string, StoredItemMetadata>(StringComparer.OrdinalIgnoreCase);
+                new Dictionary<string, StoredItemMetadata>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    ///     Mutable accumulator for computing storage statistics via <see cref="Enumerable.Aggregate{TSource,TAccumulate}" />.
+    /// </summary>
+    public sealed class StatsAccumulator
+    {
+        public long TotalSize { get; set; }
+        public int ExpiredCount { get; set; }
+        public DateTime? Oldest { get; set; }
+        public DateTime? Newest { get; set; }
     }
 }
