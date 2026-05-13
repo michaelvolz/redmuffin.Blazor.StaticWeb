@@ -14,7 +14,7 @@
         </div>
         @if (w.WasmDownloadTime > 0)
         {
-            <MetricProgressBar Value="w.WasmDownloadTime" MaxValue="1000" Color="@PageLoadColors.DiagnosticMuted" />
+            <MetricProgressBar Value="w.WasmDownloadTime" MaxValue="2000" Color="@PageLoadColors.ForWasmDownload(w.WasmDownloadTime)" />
         }
 
         <div class="metric-item">
@@ -23,7 +23,7 @@
         </div>
         @if (w.AssemblyCount > 0)
         {
-            <MetricProgressBar Value="w.AssemblyCount" MaxValue="100" Color="@PageLoadColors.DiagnosticMuted" />
+            <MetricProgressBar Value="w.AssemblyCount" MaxValue="150" Color="@PageLoadColors.ForAssemblyCount(w.AssemblyCount)" />
         }
 
         <div class="metric-item">
@@ -32,7 +32,7 @@
         </div>
         @if (w.MemoryUsed > 0)
         {
-            <MetricProgressBar Value="w.MemoryUsed" MaxValue="200" Color="@PageLoadColors.DiagnosticMuted" />
+            <MetricProgressBar Value="w.MemoryUsed" MaxValue="100" Color="@PageLoadColors.ForWasmMemory(w.MemoryUsed)" />
         }
 
         <div class="metric-item">
@@ -41,7 +41,7 @@
         </div>
         @if (w.RuntimeStartupTime > 0)
         {
-            <MetricProgressBar Value="w.RuntimeStartupTime" MaxValue="1200" Color="@PageLoadColors.DiagnosticMuted" />
+            <MetricProgressBar Value="w.RuntimeStartupTime" MaxValue="2000" Color="@PageLoadColors.ForRuntimeStartup(w.RuntimeStartupTime)" />
         }
 
         <div class="metric-item">
@@ -50,7 +50,7 @@
         </div>
         @if (w.BlazorInitTime > 0)
         {
-            <MetricProgressBar Value="w.BlazorInitTime" MaxValue="5000" Color="@PageLoadColors.DiagnosticMuted" />
+            <MetricProgressBar Value="w.BlazorInitTime" MaxValue="5000" Color="@PageLoadColors.ForBlazorInit(w.BlazorInitTime)" />
         }
     }
 </div>
