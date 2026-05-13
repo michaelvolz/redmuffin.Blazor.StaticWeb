@@ -1,6 +1,6 @@
 ---
 name: rm-guide-naming
-description: "Shortcut: rm:guide-naming. Use when creating, renaming, or reviewing C# names for types, members, namespaces, and test doubles."
+description: "Use when creating, renaming, or reviewing C# names for types, members, namespaces, test doubles, or Blazor components."
 ---
 
 # rm-guide-naming
@@ -16,7 +16,8 @@ description: "Shortcut: rm:guide-naming. Use when creating, renaming, or reviewi
 ## WHEN TO LOAD
 
 - Creating or renaming C# files, classes, records, enums, interfaces, methods.
-- Reviewing names in new tests or test doubles.
+- Creating or renaming Blazor components (`.razor` / `.razor.cs`).
+- Reviewing names in new tests, test doubles, or components.
 
 ## GUIDANCE
 
@@ -29,6 +30,46 @@ description: "Shortcut: rm:guide-naming. Use when creating, renaming, or reviewi
 - Do not invent new naming schemes inside a feature.
 - Do not use Hungarian notation.
 - Do not abbreviate CLI flag names, subcommands, or configuration file names.
+- Do not use generic UI furniture names for Blazor components (e.g.,
+  `Panel`, `Widget`, `Control`, `Viewer`). Name WHAT the component
+  displays, not HOW it's displayed.
+
+## Blazor Component Naming
+
+Names are the hardest part. They must answer "what IS this component?"
+instantly — like Lego bricks that show their connection points.
+
+### Naming pattern
+
+```
+[Scope][Subject][RenderPurpose]
+```
+
+| Element       | Meaning               | Example                               |
+| ------------- | --------------------- | ------------------------------------- |
+| Scope         | Which part of the app | `PageLoad`, `AppStart`, `UserProfile` |
+| Subject       | What entity or metric | `Metrics`, `Timing`, `Breakdown`      |
+| RenderPurpose | How it renders        | `View`, `Card`, `Bar`, `Chart`        |
+
+**Examples:** `PageLoadMetricsView`, `TimingBreakdownCard`,
+`WasmBootstrapCard`, `MetricProgressBar`
+
+### Anti-patterns
+
+| Anti-pattern                     | Problem                                   | Fix                                                             |
+| -------------------------------- | ----------------------------------------- | --------------------------------------------------------------- |
+| `PageLoadSpeed` / `LoadSpeed`    | Overlapping, no distinction               | Add scope prefix: `PageLoadMetricsView` / `AppStartMetricsView` |
+| `Panel` / `Widget` / `Control`   | UI furniture — says nothing about content | Describe the content: `TimingBreakdownCard`                     |
+| Acronyms or abbreviations        | Opaque to readers                         | Spell it out: `WasmBootstrapCard` not `WBootCard`               |
+| `Helper` / `Utility` / `Manager` | Vague catch-all                           | Name the specific action                                        |
+
+### Copy-paste detection
+
+If two component files have similar names and lack clear scoping
+prefixes (e.g., `PageLoadSpeed` and `LoadSpeed`), they are almost
+certainly a copy-paste anti-pattern. The fix is NEVER a shared base
+class. The fix is decomposition into smaller single-responsibility
+components with different compositions.
 
 ## QualityGates Asset Naming
 

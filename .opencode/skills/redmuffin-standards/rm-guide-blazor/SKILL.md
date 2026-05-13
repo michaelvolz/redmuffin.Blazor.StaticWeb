@@ -1,6 +1,6 @@
 ---
 name: rm-guide-blazor
-description: "Shortcut: rm:guide-blazor. Use when building or reviewing Blazor components, render behavior, lifecycle code, or component DI."
+description: "Use when building or reviewing Blazor components, render behavior, lifecycle code, component DI, granularity decisions, or component architecture."
 ---
 
 # rm-guide-blazor
@@ -13,11 +13,19 @@ lifecycle rules, §4 for ConfigureAwait in Blazor WASM.
 - Prefer component composition over inheritance.
 - Use `required` injected properties in component code-behind.
 - Keep UI state small and renders intentional.
+- **Smart/dumb pattern (MANDATORY):** Smart components orchestrate data;
+  dumb components take `[Parameter]` props and render. Never mix data
+  fetching and rendering in the same component.
+- **Single responsibility:** A component does ONE thing. If the name
+  contains "and", split it.
+- **No copy-paste components:** Two 95%-identical files is the #1
+  anti-pattern. Decompose into shared Lego bricks; never duplicate.
 
 ## WHEN TO LOAD
 
 - Creating or refactoring `.razor` components.
 - Adjusting lifecycle, state, event, or render behavior.
+- Deciding component boundaries and granularity.
 
 ## GUIDANCE
 
