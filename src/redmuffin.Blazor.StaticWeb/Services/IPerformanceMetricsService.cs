@@ -1,19 +1,13 @@
-using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed;
 using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Core;
 
 namespace redmuffin.Blazor.StaticWeb.Services;
 
 /// <summary>
-///     Service for collecting and processing web performance metrics
+///     Interface for performance metrics service
 /// </summary>
 public interface IPerformanceMetricsService
 {
-    /// <summary>
-    ///     Retrieves comprehensive performance metrics from the browser
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token for the operation</param>
-    /// <returns>Performance metrics or null if unavailable</returns>
-    Task<LoadSpeed.PageLoadMetrics?> GetMetricsAsync(CancellationToken cancellationToken = default);
+    Task<PageLoadMetrics?> GetMetricsAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Retrieves WebAssembly-specific performance metrics
@@ -39,5 +33,5 @@ public interface IPerformanceMetricsService
     ///     Gets fallback timing estimates when APIs are unavailable
     /// </summary>
     /// <returns>Estimated timing metrics</returns>
-    Task<LoadSpeed.PageLoadMetrics> GetFallbackTimingAsync();
+    Task<PageLoadMetrics> GetFallbackTimingAsync();
 }

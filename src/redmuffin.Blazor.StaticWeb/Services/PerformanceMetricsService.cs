@@ -1,6 +1,5 @@
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Configuration;
-using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed;
 using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Core;
 
 namespace redmuffin.Blazor.StaticWeb.Services;
@@ -26,7 +25,7 @@ public class PerformanceMetricsService(IJSRuntime jsRuntime) : IPerformanceMetri
     }
 
     /// <inheritdoc />
-    public async Task<LoadSpeed.PageLoadMetrics?> GetMetricsAsync(CancellationToken cancellationToken = default)
+    public async Task<PageLoadMetrics?> GetMetricsAsync(CancellationToken cancellationToken = default)
     {
         if (_disposed) return null;
 
@@ -50,7 +49,7 @@ public class PerformanceMetricsService(IJSRuntime jsRuntime) : IPerformanceMetri
                         _wasmInitFinalized = true;
                     }
 
-                    var metrics = await jsRuntime.InvokeAsync<LoadSpeed.PageLoadMetrics>("getPageLoadMetrics", cts.Token).ConfigureAwait(false);
+                    var metrics = await jsRuntime.InvokeAsync<PageLoadMetrics>("getPageLoadMetrics", cts.Token).ConfigureAwait(false);
 
                     // Fetch WASM metrics directly (semaphore already held by GetMetricsAsync)
                     var wasmMetrics = await jsRuntime.InvokeAsync<WasmMetrics>("getWasmMetrics", cts.Token).ConfigureAwait(false);
@@ -187,12 +186,12 @@ public class PerformanceMetricsService(IJSRuntime jsRuntime) : IPerformanceMetri
     }
 
     /// <inheritdoc />
-    public async Task<LoadSpeed.PageLoadMetrics> GetFallbackTimingAsync()
+    public async Task<PageLoadMetrics> GetFallbackTimingAsync()
     {
         try
         {
             var now = await jsRuntime.InvokeAsync<double>("performance.now").ConfigureAwait(false);
-            return new LoadSpeed.PageLoadMetrics
+            return new PageLoadMetrics
             {
                 TimeToFirstByte = Math.Round(now * 0.3, 1),
                 DomContentLoaded = Math.Round(now * 0.8, 1),
@@ -213,7 +212,7 @@ public class PerformanceMetricsService(IJSRuntime jsRuntime) : IPerformanceMetri
         catch (Exception)
         {
             var estimatedTime = DateTime.Now.Millisecond + 100;
-            return new LoadSpeed.PageLoadMetrics
+            return new PageLoadMetrics
             {
                 TimeToFirstByte = estimatedTime * 0.3,
                 DomContentLoaded = estimatedTime * 0.8,
