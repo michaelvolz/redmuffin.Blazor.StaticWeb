@@ -222,6 +222,59 @@ public async Task ShouldDisplayComponent_ReturnsFalse_WhenDisabled()
 6. **Capture pattern**: Properties like `LastEvictionTargetSize` for
    verifying arguments
 
+### HttpClient Fake Pattern
+
+When testing Azure Functions or any code that uses `IHttpClientFactory`,
+use a `ControlledHttpHandler_Fake` that injects deterministic HTTP
+responses with zero real HTTP calls:
+
+```csharp
+public sealed class ControlledHttpHandler_Fake : HttpMessageHandler
+{
+    private readonly Func<HttpRequestMessage, Task<HttpResponseMessage>> _handler;
+
+    public ControlledHttpHandler_Fake(
+        Func<HttpRequestMessage, Task<HttpResponseMessage>> handler)
+    {
+        _handler = handler;
+    }
+
+    protected override Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        return _handler(request);
+    }
+}
+
+// Wire through IHttpClientFactory:
+private sealed class HttpClientFactory_Fake(HttpMessageHandler handler)
+    : IHttpClientFactory
+{
+    public HttpClient CreateClient(string name)
+        => new(handler, disposeHandler: false);
+}
+```
+
+**Key properties:**
+
+- Inject any HTTP response (200, 401, 500) with arbitrary JSON body
+- Inject exceptions (`HttpRequestException`, `OperationCanceledException`)
+  directly via the handler lambda — no need for exception properties
+- Zero external dependencies: no real HTTP, no mock frameworks
+- Tests run deterministically even when Raindrop API is unavailable
+
+### Azure Functions Test Project Requirements
+
+API test projects (e.g., `redmuffin.Blazor.StaticWeb.Api.Tests`) **must NOT**
+reference `Microsoft.Azure.Functions.Worker.Sdk`. The SDK's
+`_FunctionsComputeRunArguments` MSBuild target replaces `dotnet run` with
+`func start`, blocking TUnit test execution entirely.
+
+Azure Functions Core Tools (`yay -S azure-functions-core-tools-bin`) must be
+installed separately on the development machine for integration tests that
+require a real Functions host. Unit tests use `ControlledHttpHandler_Fake` and
+do not require Core Tools.
+
 ## When to Use LightMock.Generator
 
 Use LightMock when:
@@ -311,6 +364,11 @@ Before any test is complete, verify:
 - Do NOT use FluentAssertions (use TUnit built-in assertions)
 - Do NOT use `InternalsVisibleTo` to test private methods
   (extract to public static instead)
+- Do NOT reference `Microsoft.Azure.Functions.Worker.Sdk` in API test projects
+  (it hijacks `dotnet run` and blocks test execution)
+- Do NOT assume single-test-project coverage — when the solution has both
+  frontend and API test projects, coverage must be generated per-project and
+  merged via `CoberturaMerger` before CRAP analysis
 
 ## References
 

@@ -133,6 +133,53 @@ if (!IsValidLength(Title, 500))
 // Cost of indirection > benefit of abstraction
 ```
 
+**Concrete example — good extraction (2026-05-13):**
+
+Two Azure Functions (`RaindropListArticles`, `RaindropListVideos`) had 65
+near-identical lines each. The shared logic (HTTP fetch, JSON parse, error
+handling) was a real seam — ≥5 lines, 5 distinct branches, testable
+independently of the Functions host:
+
+```csharp
+// BEFORE: 65 lines duplicated in each Function file
+public sealed partial class RaindropListArticles(...)
+{
+    [Function("RaindropListArticles")]
+    public async Task<HttpResponseData> RunAsync(...)
+    {
+        // 60 lines of HTTP+JSON+error handling
+    }
+}
+
+// AFTER: 5-line wrappers + shared static handler
+public static class RaindropListFetcher
+{
+    public static async Task<HttpResponseData> FetchAsync(
+        HttpRequestData request, string collectionId, string bearerToken,
+        IHttpClientFactory httpClientFactory, ILogger logger,
+        Action<ILogger, string> logFetch, Action<ILogger, Exception> logError,
+        CancellationToken cancellationToken)
+    {
+        // All 5 branches: success, fallback, error, cancel, exception
+    }
+}
+
+[Function("RaindropListArticles")]
+public Task<HttpResponseData> RunAsync(HttpRequestData request)
+{
+    Log_FunctionProcessed(logger);
+    return RaindropListFetcher.FetchAsync(
+        request, TargetCollectionId, _settings.RainDropTestToken ?? string.Empty,
+        _httpClientFactory, logger, Log_FetchArticles, Log_ErrorFetchingArticles,
+        request.FunctionContext.CancellationToken);
+}
+```
+
+**Why this passes Q1-Q5:** ≥5 lines (Q1 ✓), body is opaque HTTP boilerplate
+(Q2 ✓), no boolean inversion (Q3 ✓), 2 occurrences but both are clearly
+the same abstraction (Q4 ✓ — Metz's rule is about uncertainty, not
+definition), hides HTTP complexity behind a simple interface (Q5 ✓).
+
 Only extract when ALL of Q1-Q5 pass. When in doubt, inline.
 
 A seam is a place where behavior can be replaced WITHOUT editing in that

@@ -75,6 +75,40 @@ certainly a copy-paste anti-pattern. The fix is NEVER a shared base
 class. The fix is decomposition into smaller single-responsibility
 components with different compositions.
 
+- No abbreviations: `architecture` not `arch`, `duplicates` not `dupes`.
+
+## Role-Based Naming (Purpose over Value)
+
+When naming constants — especially colors, thresholds, or configuration
+values — name them by their **role** (what they represent), NOT by their
+**literal value** (what they are):
+
+| ❌ Literal-Value Name | ✅ Role-Based Name              |
+| --------------------- | ------------------------------- |
+| `Green = "#0cce6b"`   | `LighthouseGood = "#0cce6b"`    |
+| `Orange = "#ffc107"`  | `LighthouseWarning = "#ffc107"` |
+| `Red = "#fa5252"`     | `LighthousePoor = "#fa5252"`    |
+| `Blue = "#4a8fd4"`    | `DiagnosticMuted = "#4a8fd4"`   |
+
+**Why:** LighthouseGood can change from `#0cce6b` to `#18a957` in one
+place and every component referencing it updates. The name communicates
+"this is the color for a good Google Lighthouse score," which survives
+any color palette redesign.
+
+**Pattern used in:** `PageLoadColors.cs` — 8 role-based constants for
+the performance diagnostics page. Components reference `PageLoadColors.LighthouseGood`,
+never a hex value directly.
+
+**Also applies to thresholds and magic numbers:**
+
+```csharp
+// ❌ Literal-value names
+private const int MaxAssemblyCount = 70;
+
+// ✅ Role-based names
+private const int AssemblyCountGreenThreshold = 70;
+```
+
 ## QualityGates Asset Naming
 
 All QualityGates configuration files and generated artifacts follow a strict

@@ -102,34 +102,35 @@ Mutation. Each gate validates a different quality dimension.
 
 ```bash
 cd tools
-dotnet run --project src/redmuffin.Tools.QualityGates -- <gate> [options]
+dotnet run -- all --solution ../redmuffin.Blazor.StaticWeb.slnx
 ```
 
-### Full: run all gates
+Zero flags. Auto-coverage generates and merges coverage from all test projects
+discovered in the `.slnx`. All 5 gates run in one pass. Coverage merges via
+`CoberturaMerger` — no manual per-project commands needed.
+
+For per-gate runs or custom options:
 
 ```bash
 cd tools
-dotnet run --project src/redmuffin.Tools.QualityGates -- all \
-  --project ../src/redmuffin.Blazor.StaticWeb \
-  --test-project ../tests/redmuffin.Blazor.StaticWeb.Tests \
-  --coverage-file <path-to-cobertura.xml> \
-  --arch-config ../arch-rules.yml
+dotnet run --project src/redmuffin.Tools.QualityGates -- <gate> [options]
 ```
 
-### Prerequisite: generate coverage
+### Prerequisite: none (auto-coverage)
 
-Generate Cobertura XML before running CRAP, Mutation, or `all`:
+Coverage is generated automatically by `--auto-coverage` (default ON). When
+the solution has multiple test projects (e.g., Blazor WASM + API Functions),
+each generates Cobertura XML independently, then `CoberturaMerger` merges
+them into a single file before CRAP analysis. No manual coverage commands
+needed.
+
+To generate coverage manually (for debugging):
 
 ```bash
-# From repo root (NOT tools/ directory)
 dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests \
-  --coverage \
-  --coverage-output-format cobertura \
-  --coverage-output coverage/blazor-cobertura.xml
+  --coverage --coverage-output-format cobertura \
+  --coverage-output /tmp/manual-coverage.xml
 ```
-
-Coverage file lands at:
-`tests/redmuffin.Blazor.StaticWeb.Tests/bin/Debug/net9.0/TestResults/coverage/blazor-cobertura.xml`
 
 ## Gate 1: CRAP Cleanup Workflow
 
