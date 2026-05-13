@@ -1,0 +1,56 @@
+@using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Core
+@namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Components
+
+<div class="metric-group">
+    <div class="metric-group-title">
+        <span>⏱️</span>
+        <span>Timing (ms)</span>
+    </div>
+    @if (Timing is { } t)
+    {
+        <div class="metric-item">
+            <span class="metric-label">TTFB:</span>
+            <span class="metric-value timing">@Math.Round(t.TimeToFirstByte, 1)</span>
+        </div>
+        @if (t.TimeToFirstByte > 0)
+        {
+            <MetricProgressBar Value="t.TimeToFirstByte" MaxValue="500" Color="@TTFBColor(t.TimeToFirstByte)" />
+        }
+
+        <div class="metric-item">
+            <span class="metric-label">FCP:</span>
+            <span class="metric-value timing">@Math.Round(t.FirstContentfulPaint, 1)</span>
+        </div>
+        @if (t.FirstContentfulPaint > 0)
+        {
+            <MetricProgressBar Value="t.FirstContentfulPaint" MaxValue="1800" Color="@FCPColor(t.FirstContentfulPaint)" />
+        }
+
+        <div class="metric-item">
+            <span class="metric-label">DOM:</span>
+            <span class="metric-value timing">@Math.Round(t.DomContentLoaded, 1)</span>
+        </div>
+        @if (t.DomContentLoaded > 0)
+        {
+            <MetricProgressBar Value="t.DomContentLoaded" MaxValue="2000" Color="@FCPColor(t.FirstContentfulPaint)" />
+        }
+
+        <div class="metric-item">
+            <span class="metric-label">LCP:</span>
+            <span class="metric-value timing">@Math.Round(t.LargestContentfulPaint, 1)</span>
+        </div>
+        @if (t.LargestContentfulPaint > 0)
+        {
+            <MetricProgressBar Value="t.LargestContentfulPaint" MaxValue="2500" Color="@LCPColor(t.LargestContentfulPaint)" />
+        }
+
+        <div class="metric-item">
+            <span class="metric-label">Load:</span>
+            <span class="metric-value timing">@Math.Round(t.LoadComplete, 1)</span>
+        </div>
+        @if (t.LoadComplete > 0)
+        {
+            <MetricProgressBar Value="t.LoadComplete" MaxValue="3000" Color="@LoadColor(t.LoadComplete)" />
+        }
+    }
+</div>

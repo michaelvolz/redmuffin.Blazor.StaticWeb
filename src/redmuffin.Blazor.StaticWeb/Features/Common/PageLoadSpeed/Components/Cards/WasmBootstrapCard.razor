@@ -1,0 +1,56 @@
+@using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Core
+@namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Components
+
+<div class="metric-group">
+    <div class="metric-group-title">
+        <span>🎯</span>
+        <span>WebAssembly</span>
+    </div>
+    @if (Wasm is { } w)
+    {
+        <div class="metric-item">
+            <span class="metric-label">WASM↓:</span>
+            <span class="metric-value wasm">@(w.WasmDownloadTime)ms / @(w.WasmDownloadSizeFormatted)</span>
+        </div>
+        @if (w.WasmDownloadTime > 0)
+        {
+            <MetricProgressBar Value="w.WasmDownloadTime" MaxValue="1000" Color="@PageLoadColors.DiagnosticMuted" />
+        }
+
+        <div class="metric-item">
+            <span class="metric-label">Assemblies:</span>
+            <span class="metric-value wasm">@(w.AssemblyCount) / @(w.AssemblyTotalSizeFormatted)</span>
+        </div>
+        @if (w.AssemblyCount > 0)
+        {
+            <MetricProgressBar Value="w.AssemblyCount" MaxValue="100" Color="@PageLoadColors.DiagnosticMuted" />
+        }
+
+        <div class="metric-item">
+            <span class="metric-label">Memory:</span>
+            <span class="metric-value wasm">@(w.MemoryFormatted)</span>
+        </div>
+        @if (w.MemoryUsed > 0)
+        {
+            <MetricProgressBar Value="w.MemoryUsed" MaxValue="200" Color="@PageLoadColors.DiagnosticMuted" />
+        }
+
+        <div class="metric-item">
+            <span class="metric-label">Runtime:</span>
+            <span class="metric-value wasm">@(w.RuntimeStartupTime)ms</span>
+        </div>
+        @if (w.RuntimeStartupTime > 0)
+        {
+            <MetricProgressBar Value="w.RuntimeStartupTime" MaxValue="1200" Color="@PageLoadColors.DiagnosticMuted" />
+        }
+
+        <div class="metric-item">
+            <span class="metric-label">Blazor Init:</span>
+            <span class="metric-value wasm">@(w.BlazorInitTime)ms</span>
+        </div>
+        @if (w.BlazorInitTime > 0)
+        {
+            <MetricProgressBar Value="w.BlazorInitTime" MaxValue="5000" Color="@PageLoadColors.DiagnosticMuted" />
+        }
+    }
+</div>

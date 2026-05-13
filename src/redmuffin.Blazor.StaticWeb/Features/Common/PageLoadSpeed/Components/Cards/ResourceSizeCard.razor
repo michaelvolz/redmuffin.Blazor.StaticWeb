@@ -1,0 +1,49 @@
+@using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Core
+@namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Components
+
+<div class="metric-group">
+    <div class="metric-group-title">
+        <span>📊</span>
+        <span>Data Transfer</span>
+    </div>
+    @if (Size is { } s)
+    {
+        <div class="metric-item">
+            <span class="metric-label">Transfer:</span>
+            <span class="metric-value size">@(s.TransferSizeFormatted)</span>
+        </div>
+        @if (s.TransferSize > 0)
+        {
+            <MetricProgressBar Value="@DataSizeProgress(s.TransferSize)" Color="@PageLoadColors.SectionDataTransfer" />
+        }
+
+        <div class="metric-item">
+            <span class="metric-label">Encoded:</span>
+            <span class="metric-value size">@(s.EncodedSizeFormatted)</span>
+        </div>
+        @if (s.EncodedSize > 0)
+        {
+            <MetricProgressBar Value="@DataSizeProgress(s.EncodedSize)" Color="@PageLoadColors.SectionDataTransfer" />
+        }
+
+        <div class="metric-item">
+            <span class="metric-label">Decoded:</span>
+            <span class="metric-value size">@(s.DecodedSizeFormatted)</span>
+        </div>
+        @if (s.DecodedSize > 0)
+        {
+            <MetricProgressBar Value="@DataSizeProgress(s.DecodedSize)" Color="@PageLoadColors.SectionDataTransfer" />
+        }
+
+        @if (s.CompressionRatio > 0)
+        {
+            <div class="metric-item">
+                <span class="metric-label">Compression:</span>
+                <span class="metric-value ratio">@(s.CompressionRatio)%</span>
+            </div>
+            <div class="metric-progress">
+                <div class="metric-progress-bar" style="width: @(s.CompressionRatio)%; background: @PageLoadColors.SectionCompression;"></div>
+            </div>
+        }
+    }
+</div>

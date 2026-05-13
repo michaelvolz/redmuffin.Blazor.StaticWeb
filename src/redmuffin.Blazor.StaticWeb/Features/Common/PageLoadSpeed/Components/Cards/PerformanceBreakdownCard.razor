@@ -1,0 +1,38 @@
+@using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Core
+@namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Components
+
+<div class="performance-breakdown">
+    <div class="metric-group-title">
+        <span>🔬</span>
+        <span>Performance Breakdown</span>
+    </div>
+    <div class="breakdown-grid">
+        @if (Calculated is { } c)
+        {
+            @if (c.ServerResponseTime > 0)
+            {
+                <div class="breakdown-item">
+                    <div class="metric-label">Server Response</div>
+                    <div class="metric-value breakdown">@Math.Round(c.ServerResponseTime, 1)ms</div>
+                    <MetricProgressBar Value="c.ServerResponseTime" MaxValue="1000" Color="@PageLoadColors.SectionBreakdown" />
+                </div>
+            }
+            @if (c.DomProcessingTime > 0)
+            {
+                <div class="breakdown-item">
+                    <div class="metric-label">DOM Processing</div>
+                    <div class="metric-value breakdown">@Math.Round(c.DomProcessingTime, 1)ms</div>
+                    <MetricProgressBar Value="c.DomProcessingTime" MaxValue="1000" Color="@PageLoadColors.SectionBreakdown" />
+                </div>
+            }
+            @if (c.ResourceLoadTime > 0)
+            {
+                <div class="breakdown-item">
+                    <div class="metric-label">Resource Load</div>
+                    <div class="metric-value breakdown">@Math.Round(c.ResourceLoadTime, 1)ms</div>
+                    <MetricProgressBar Value="c.ResourceLoadTime" MaxValue="1000" Color="@PageLoadColors.SectionBreakdown" />
+                </div>
+            }
+        }
+    </div>
+</div>

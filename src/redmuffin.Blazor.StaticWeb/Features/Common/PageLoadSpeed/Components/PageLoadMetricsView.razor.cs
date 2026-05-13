@@ -8,10 +8,10 @@ using redmuffin.Blazor.StaticWeb.Services;
 namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Components;
 
 /// <summary>
-///     Code-behind for PageLoadSpeed component that displays performance metrics and analytics.
-///     Implements sophisticated performance monitoring with comprehensive timing and size metrics.
+///     Displays page-load performance metrics using Navigation Timing API data.
+///     Shows timing, data transfer, calculated breakdowns, and performance rating.
 /// </summary>
-public partial class PageLoadSpeed : ComponentBase, IAsyncDisposable
+public partial class PageLoadMetricsView : ComponentBase, IAsyncDisposable
 {
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
@@ -21,7 +21,6 @@ public partial class PageLoadSpeed : ComponentBase, IAsyncDisposable
     private ElementReference _speedElement;
     private PerformanceMetrics? _currentMetrics;
 
-    // Cached performance data
     private PerformanceCache _performanceCache = PerformanceCache.Create(0);
 
     [Inject] private IPerformanceMetricsService PerformanceService { get; set; } = default!;
@@ -34,16 +33,16 @@ public partial class PageLoadSpeed : ComponentBase, IAsyncDisposable
             if (_currentMetrics.HasValue)
             {
                 var newCache = _currentMetrics.Value.GetPerformanceCache();
-                if (Math.Abs(newCache.PrimaryMetric - _performanceCache.PrimaryMetric) > 0.1) _performanceCache = newCache;
+                if (Math.Abs(newCache.PrimaryMetric - _performanceCache.PrimaryMetric) > 0.1)
+                    _performanceCache = newCache;
             }
 
             return _performanceCache;
         }
     }
 
-    private static LoadSpeed.PageLoadMetrics CreateLegacyMetrics(double[] legacyTimings)
-    {
-        return new LoadSpeed.PageLoadMetrics
+    private static PageLoadMetrics CreateLegacyMetrics(double[] legacyTimings) =>
+        new()
         {
             TimeToFirstByte = Math.Round(legacyTimings[1] * 0.3, 1),
             DomContentLoaded = Math.Round(legacyTimings[1], 1),
@@ -60,31 +59,6 @@ public partial class PageLoadSpeed : ComponentBase, IAsyncDisposable
             DomProcessingTime = 0,
             ResourceLoadTime = 0
         };
-    }
-
-    private static double GetProgressWidth(double value, double maxValue)
-    {
-        if (value <= 0 || maxValue <= 0) return 0;
-        return Math.Min(100, value / maxValue * 100);
-    }
-
-    private static double GetDataSizeProgress(double sizeBytes)
-    {
-        // Progress based on typical web page size (1MB = 100%)
-        const double maxSize = 1024 * 1024; // 1MB
-        return Math.Min(100, sizeBytes / maxSize * 100);
-    }
-
-    private static string GetTimingColor(double timing)
-    {
-        return timing switch
-        {
-            <= 1000 => "#00ff41",
-            <= 2500 => "#ffd700",
-            <= 4000 => "#ff8c42",
-            _ => "#ff4757"
-        };
-    }
 
     public async ValueTask DisposeAsync()
     {
@@ -97,37 +71,34 @@ public partial class PageLoadSpeed : ComponentBase, IAsyncDisposable
     {
         var shouldDisplay = PageLoadSpeedConfig.ShouldDisplayComponent(Navigation.BaseUri);
 
-        if (firstRender && shouldDisplay)
-            try
-            {
-                await InitializeWithEmptyMetricsAsync().ConfigureAwait(false);
-                await Task.Delay(PageLoadSpeedConfig.AutoLoadDelayMs, _cancellationTokenSource.Token).ConfigureAwait(false);
-                await UpdateMetricsAsync().ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected during disposal
-            }
-            catch (Exception ex)
-            {
-                // If initialization fails, component will still show UI with manual refresh option
-                Debug.WriteLine($"PageLoadSpeed initialization failed: {ex.Message}");
-            }
+        if (!firstRender || !shouldDisplay) return;
+
+        try
+        {
+            await InitializeWithEmptyMetricsAsync().ConfigureAwait(false);
+            await UpdateMetricsAsync().ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected during disposal
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"PageLoadMetricsView initialization failed: {ex.Message}");
+        }
     }
 
     private async Task InitializeWithEmptyMetricsAsync()
     {
-        // Initialize with empty metrics first to ensure UI shows something
-        if (!_currentMetrics.HasValue)
-        {
-            _currentMetrics = new PerformanceMetrics(
-                new TimingMetrics(0, 0, 0, 0, 0),
-                WasmMetrics.CreateDefault(),
-                new SizeMetrics(0, 0, 0, "Loading...", "Loading...", "Loading..."),
-                new CalculatedMetrics(0, 0, 0),
-                DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
-            await InvokeAsync(StateHasChanged).ConfigureAwait(false);
-        }
+        if (_currentMetrics.HasValue) return;
+
+        _currentMetrics = new PerformanceMetrics(
+            new TimingMetrics(0, 0, 0, 0, 0),
+            WasmMetrics.CreateDefault(),
+            new SizeMetrics(0, 0, 0, "Loading...", "Loading...", "Loading..."),
+            new CalculatedMetrics(0, 0, 0),
+            DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
+        await InvokeAsync(StateHasChanged).ConfigureAwait(false);
     }
 
     private async Task UpdateMetricsAsync()
@@ -148,11 +119,11 @@ public partial class PageLoadSpeed : ComponentBase, IAsyncDisposable
     {
         try
         {
-            // Try to get comprehensive metrics first
             var metrics = await PerformanceService.GetMetricsAsync(_cancellationTokenSource.Token).ConfigureAwait(false);
             if (metrics != null)
             {
-                _currentMetrics = PerformanceMetrics.FromPageLoadMetrics(metrics, DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
+                _currentMetrics = PerformanceMetrics.FromPageLoadMetrics(
+                    metrics, DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
                 return;
             }
 
@@ -170,18 +141,18 @@ public partial class PageLoadSpeed : ComponentBase, IAsyncDisposable
 
     private async Task TryGetLegacyMetricsAsync()
     {
-        // Try legacy timing
         var legacyTimings = await PerformanceService.GetLegacyTimingAsync(_cancellationTokenSource.Token).ConfigureAwait(false);
-        if (legacyTimings != null && legacyTimings.Length >= 2)
+        if (legacyTimings is { Length: >= 2 })
         {
             var legacyMetrics = CreateLegacyMetrics(legacyTimings);
-            _currentMetrics = PerformanceMetrics.FromPageLoadMetrics(legacyMetrics, DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
+            _currentMetrics = PerformanceMetrics.FromPageLoadMetrics(
+                legacyMetrics, DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
             return;
         }
 
-        // Use fallback timing
         var fallbackMetrics = await PerformanceService.GetFallbackTimingAsync().ConfigureAwait(false);
-        _currentMetrics = PerformanceMetrics.FromPageLoadMetrics(fallbackMetrics, DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
+        _currentMetrics = PerformanceMetrics.FromPageLoadMetrics(
+            fallbackMetrics, DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
     }
 
     private async Task SetFallbackMetricsAsync()
@@ -189,11 +160,11 @@ public partial class PageLoadSpeed : ComponentBase, IAsyncDisposable
         try
         {
             var fallbackMetrics = await PerformanceService.GetFallbackTimingAsync().ConfigureAwait(false);
-            _currentMetrics = PerformanceMetrics.FromPageLoadMetrics(fallbackMetrics, DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
+            _currentMetrics = PerformanceMetrics.FromPageLoadMetrics(
+                fallbackMetrics, DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
         }
         catch (Exception)
         {
-            // Final fallback - create empty metrics
             _currentMetrics = new PerformanceMetrics(
                 new TimingMetrics(0, 0, 0, 0, 0),
                 WasmMetrics.CreateDefault(),
@@ -205,17 +176,16 @@ public partial class PageLoadSpeed : ComponentBase, IAsyncDisposable
 
     private async Task EnsureUIUpdatesAsync()
     {
-        // Ensure UI updates after any metrics update
-        if (!_cancellationTokenSource.IsCancellationRequested)
-            try
-            {
-                await InvokeAsync(StateHasChanged).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                // If InvokeAsync fails, component might be disposed
-                Debug.WriteLine($"PageLoadSpeed UI update failed: {ex.Message}");
-            }
+        if (_cancellationTokenSource.IsCancellationRequested) return;
+
+        try
+        {
+            await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"PageLoadMetricsView UI update failed: {ex.Message}");
+        }
     }
 
     private void ToggleVisibility()
@@ -242,14 +212,6 @@ public partial class PageLoadSpeed : ComponentBase, IAsyncDisposable
         finally
         {
             _isRefreshing = false;
-            // UpdateMetricsAsync already calls StateHasChanged in finally block
         }
-    }
-
-    private bool HasBreakdownMetrics()
-    {
-        return (_currentMetrics?.Calculated.ServerResponseTime ?? 0) > 0 ||
-               (_currentMetrics?.Calculated.DomProcessingTime ?? 0) > 0 ||
-               (_currentMetrics?.Calculated.ResourceLoadTime ?? 0) > 0;
     }
 }
