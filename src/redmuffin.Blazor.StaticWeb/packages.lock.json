@@ -34,9 +34,9 @@
       },
       "Meziantou.Analyzer": {
         "type": "Direct",
-        "requested": "[3.0.48, )",
-        "resolved": "3.0.48",
-        "contentHash": "z+XqbAzJPBqTjn9NsLLcVgiArxmu+B2vx4GmSVCilnfrWQEtP9h4GiyiJy5Qg8/MbmJS6hSsMYSVY8k5wz9iEw=="
+        "requested": "[3.0.84, )",
+        "resolved": "3.0.84",
+        "contentHash": "KMe2CatTUixfMYWhKbQQlH68ZX0bhjH4iRGhU2H/MV+oExAB1q9/uJp+lZJVe0wLudLUbLvsfH4+iJ1ADKw9Hw=="
       },
       "Microsoft.AspNetCore.Components.Analyzers": {
         "type": "Direct",
@@ -96,17 +96,11 @@
           "Microsoft.Extensions.Options": "9.0.14"
         }
       },
-      "Microsoft.NET.ILLink.Tasks": {
-        "type": "Direct",
-        "requested": "[9.0.14, )",
-        "resolved": "9.0.14",
-        "contentHash": "+MeWjj5sGq6Oj/l0E9RPMgXDyCIPxczzCbGuvuVTZFEGiy2S/atsfoAoKUnkEin/GeGpN+HenCzRmiQKSc99eQ=="
-      },
       "Microsoft.NET.Sdk.WebAssembly.Pack": {
         "type": "Direct",
-        "requested": "[10.0.7, )",
-        "resolved": "10.0.7",
-        "contentHash": "FXBvIwh/CAORqmO75qTy+mnTUuIYidOdNHYhMky0yLcsK6DNFBIP+eeiglhMggtatUSCnAzrCqb1EdwvZq+KAg=="
+        "requested": "[10.0.3, )",
+        "resolved": "10.0.3",
+        "contentHash": "Wv9ugg75HxuYeBxJSoK2UPN6lpqsASkyZwd90bdRyVKOtaXZFaKg7R+dYqbZSHJXAIxC1HOcYR0imuIcKpI1yw=="
       },
       "Microsoft.VisualStudio.Threading.Analyzers": {
         "type": "Direct",
