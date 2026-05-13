@@ -38,9 +38,9 @@
       },
       "Microsoft.AspNetCore.Components.Analyzers": {
         "type": "Direct",
-        "requested": "[9.0.14, )",
-        "resolved": "9.0.14",
-        "contentHash": "2yrkT+Akish37Bm4ECSCPg8lrjCkqszzqahAI0elI1wZlAbsXaoW6W5eEp3k5lUua5ZgQBTy9N3+RQGoOWQFWw=="
+        "requested": "[9.0.16, )",
+        "resolved": "9.0.16",
+        "contentHash": "qGwdgswNcTW0KcDYWFD3cJJTcl0elHHWpnMc3pNCYfZ2pdIHphRlJge5tfgWySIiU+tLlZBWHU9tqUx/JmFHaQ=="
       },
       "Microsoft.Azure.Functions.Worker": {
         "type": "Direct",
@@ -869,7 +869,7 @@
       "redmuffin.blazor.staticweb.common": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.Extensions.Logging": "[9.0.14, )"
+          "Microsoft.Extensions.Logging": "[9.0.16, )"
         }
       },
       "Microsoft.Azure.Functions.Worker.Core": {
@@ -890,7 +890,7 @@
       },
       "Microsoft.Extensions.Http": {
         "type": "CentralTransitive",
-        "requested": "[9.0.14, )",
+        "requested": "[9.0.16, )",
         "resolved": "6.0.0",
         "contentHash": "15+pa2G0bAMHbHewaQIdr/y6ag2H3yh4rd9hTXavtWDzQBkvpe2RMqFg8BxDpcQWssmjmBApGPcw93QRz6YcMg==",
         "dependencies": {
@@ -902,7 +902,7 @@
       },
       "Microsoft.Extensions.Logging": {
         "type": "CentralTransitive",
-        "requested": "[9.0.14, )",
+        "requested": "[9.0.16, )",
         "resolved": "10.0.0",
         "contentHash": "BStFkd5CcnEtarlcgYDBcFzGYCuuNMzPs02wN3WBsOFoYIEmYoUdAiU+au6opzoqfTYJsMTW00AeqDdnXH2CvA==",
         "dependencies": {
