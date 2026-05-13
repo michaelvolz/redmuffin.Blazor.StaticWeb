@@ -12,6 +12,10 @@ description: "Use when creating, renaming, or reviewing C# names for types, memb
 - Use `_camelCase` for private fields.
 - Prefix interfaces with `I`.
 - Name test doubles as `[Class]_[Type]` (`Mock`, `Stub`, `Spy`, `Fake`, `Dummy`).
+- **Names are not set in stone.** A name is a snapshot of current understanding.
+  When working with the code reveals what the name REALLY should be, change it.
+  A better name makes every future reader instantly understand. It is worth
+  every reference update, file rename, and test fix required.
 
 ## WHEN TO LOAD
 

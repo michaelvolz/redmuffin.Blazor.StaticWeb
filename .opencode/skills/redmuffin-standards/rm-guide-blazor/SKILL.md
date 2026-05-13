@@ -20,6 +20,11 @@ lifecycle rules, §4 for ConfigureAwait in Blazor WASM.
   contains "and", split it.
 - **No copy-paste components:** Two 95%-identical files is the #1
   anti-pattern. Decompose into shared Lego bricks; never duplicate.
+- **Progressive rendering (MANDATORY):** Render data the moment it
+  arrives. Never wait for all data before showing ANY data. Show "—"
+  for pending values. Never use arbitrary `Task.Delay()` between
+  data-fetching phases — use event-driven or availability-checked
+  patterns instead.
 
 ## WHEN TO LOAD
 
@@ -55,6 +60,28 @@ use `ConfigureAwait(false)` in component code-behind — it is unnecessary.
 
 Use `InvokeAsync(() => ...)` and call `StateHasChanged()` after async
 operations that modify state outside lifecycle events.
+
+### Progressive data rendering
+
+When a component fetches data from multiple sources or in phases:
+
+1. **Render immediately** with placeholder values ("—") for all fields.
+   Never show a blank or "Loading..." component when you can show the
+   skeleton with pending slots.
+2. **Fetch fastest data first.** Call `StateHasChanged()` after each
+   phase completes. Each card flips from "—" to real values individually.
+3. **No arbitrary delays.** Never use `Task.Delay()` between fetch
+   phases. If data readiness depends on JS interop availability, check
+   for it explicitly. If data takes time, it takes time — the user
+   sees the partial results, not an empty wait.
+4. **Last phase sets "complete" state.** When all data is loaded,
+   the component stops showing pending indicators.
+
+**Example:** Page load metrics. Navigation Timing API values (TTFB,
+FCP, LCP) are available immediately after JS interop is ready. Fetch
+them first. WASM metrics (download time, memory) depend on
+`window.pageLoadSpeed.wasmMetrics` being populated — check for
+that explicitly rather than waiting an arbitrary delay.
 
 ## NEVER
 
