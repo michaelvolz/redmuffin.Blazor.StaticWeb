@@ -52,22 +52,8 @@ public partial class Videos
                 : video.Excerpt;
     }
 
-    private static bool HasDataChanged(List<RaindropItem> currentData, List<RaindropItem> newData)
-    {
-        if (currentData.Count != newData.Count) return true;
-
-        // Simple comparison - check if any items have different titles or links
-        for (var i = 0; i < currentData.Count; i++)
-            if (!string.Equals(currentData[i].Link, newData[i].Link, StringComparison.Ordinal) ||
-                !string.Equals(currentData[i].Title, newData[i].Title, StringComparison.Ordinal))
-                return true;
-
-        return false;
-    }
-
     protected override async Task OnInitializedAsync()
     {
-        // Validate injected dependencies
 #pragma warning disable MA0015 // Not method parameters — validating Blazor [Inject] properties
         ArgumentNullException.ThrowIfNull(Logger);
         ArgumentNullException.ThrowIfNull(Js);
@@ -78,30 +64,10 @@ public partial class Videos
         ArgumentNullException.ThrowIfNull(RaindropItemsCache);
 #pragma warning restore MA0015
 
-        // Load cached data first for immediate display
         await LoadCachedDataAsync().ConfigureAwait(false);
         StateHasChanged();
 
-        // Fetch fresh data in background
         _ = Task.Run(async () => await RefreshDataInBackgroundAsync().ConfigureAwait(false));
-    }
-
-    // Update RainDropClientId based on environment
-    private string GetRainDropClientId()
-    {
-        var baseUri = Navigation.BaseUri.TrimEnd('/');
-        return baseUri.Contains("localhost") ? "684ea82bb3333b01de5487c1" : "684c73df642469e7c1969f8e";
-    }
-
-    private async Task LoginWithRaindropAsync()
-    {
-        var redirectPath = "/redirect";
-        var baseUri = Navigation.BaseUri.TrimEnd('/');
-        var redirectUri = $"{baseUri}{redirectPath}";
-        var authUrl =
-            $"https://raindrop.io/oauth/authorize?client_id={GetRainDropClientId()}&redirect_uri={Uri.EscapeDataString(redirectUri)}&response_type=code";
-
-        await Js.InvokeVoidAsync("open", authUrl, "_self").ConfigureAwait(false);
     }
 
     private async Task LoadCachedDataAsync()
@@ -114,28 +80,18 @@ public partial class Videos
             {
                 _videoItems = cacheResult.Data.ToList();
 
-                // Populate image cache for cached videos
                 if (_videoItems.Count > 0)
                     try
                     {
-                        await ImageValidationCacheService.PopulateImageUrlCacheAsync(
-                            _videoItems,
-                            _imageUrlCache,
-                            () => InvokeAsync(StateHasChanged),
-                            CancellationToken.None).ConfigureAwait(false);
+                        await PopulateImageCacheAsync().ConfigureAwait(false);
                     }
                     catch (Exception imageEx)
                     {
-                        LogImageCacheWarningCached(Logger, imageEx);
-                        // Continue without image cache - videos will still display
+                        LogImageCacheError(Logger, imageEx);
                     }
-
-                LogVideosLoadedFromCache(Logger, _videoItems.Count);
             }
             else
             {
-                // No cache available, fetch fresh data immediately
-                LogNoCachedData(Logger);
                 await FetchVideosAsync().ConfigureAwait(false);
             }
         }
@@ -150,7 +106,6 @@ public partial class Videos
             {
                 LogFetchError(Logger, fetchEx);
                 _errorMessage = "Unable to load videos. Please check your internet connection and try refreshing the page.";
-                StateHasChanged();
             }
         }
     }
@@ -159,59 +114,45 @@ public partial class Videos
     {
         try
         {
-            var freshVideos = await RaindropAPI.GetVideosAsync(CancellationToken.None).ConfigureAwait(false);
-            var freshVideosList = freshVideos.ToList();
+            var freshItems = await RaindropBackgroundRefreshHelper.TryFetchFreshDataAsync(
+                () => RaindropAPI.GetVideosAsync(CancellationToken.None),
+                _videoItems,
+                (data, ct) => RaindropItemsCache.SetAsync(CacheKey, (List<RaindropItem>)data, ct),
+                CancellationToken.None).ConfigureAwait(false);
 
-            // Check if we have newer data
-            if (_videoItems == null || HasDataChanged(_videoItems, freshVideosList))
+            if (freshItems == null) return;
+
+            if (_videoItems is { Count: > 0 })
             {
+                _refreshBadgeState = RefreshBadgeState.Visible;
+                await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+            }
+            else
+            {
+                _videoItems = freshItems.ToList();
                 try
                 {
-                    // Cache the fresh data
-                    await RaindropItemsCache.SetAsync(CacheKey, freshVideosList, CancellationToken.None).ConfigureAwait(false);
+                    await PopulateImageCacheAsync().ConfigureAwait(false);
                 }
-                catch (Exception cacheEx)
+                catch (Exception imageEx)
                 {
-                    LogCacheStoreError(Logger, cacheEx);
+                    LogImageCacheError(Logger, imageEx);
                 }
 
-                // Show refresh badge if we already have data displayed
-                if (_videoItems != null && _videoItems.Count > 0)
-                {
-                    _refreshBadgeState = RefreshBadgeState.Visible;
-                    await InvokeAsync(StateHasChanged).ConfigureAwait(false);
-                }
-                else
-                {
-                    // No existing data, update immediately
-                    _videoItems = freshVideosList;
-                    try
-                    {
-                        await PopulateImageCacheAsync().ConfigureAwait(false);
-                    }
-                    catch (Exception imageEx)
-                    {
-                        LogImageCacheError(Logger, imageEx);
-                    }
-
-                    await InvokeAsync(StateHasChanged).ConfigureAwait(false);
-                }
+                await InvokeAsync(StateHasChanged).ConfigureAwait(false);
             }
         }
         catch (HttpRequestException httpEx)
         {
             LogNetworkErrorBackground(Logger, httpEx);
-            // Don't show error to user for background operations
         }
         catch (TaskCanceledException timeoutEx)
         {
             LogTimeoutBackground(Logger, timeoutEx);
-            // Don't show error to user for background operations
         }
         catch (Exception ex)
         {
             LogUnexpectedErrorBackground(Logger, ex);
-            // Don't show error to user for background operations
         }
     }
 

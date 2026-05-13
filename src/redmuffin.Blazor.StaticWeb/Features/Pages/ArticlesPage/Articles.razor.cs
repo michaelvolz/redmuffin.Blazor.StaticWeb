@@ -29,9 +29,6 @@ public partial class Articles
     private static readonly Action<ILogger, Exception?> LogFetchError =
         LoggerMessage.Define(LogLevel.Error, new EventId(5, "FetchError"), "Failed to fetch fresh articles after cache failure");
 
-    private static readonly Action<ILogger, Exception?> LogCacheStoreError =
-        LoggerMessage.Define(LogLevel.Warning, new EventId(6, "CacheStoreError"), "Failed to cache fresh article data, continuing without caching");
-
     private static readonly Action<ILogger, Exception?> LogImageCacheError =
         LoggerMessage.Define(LogLevel.Warning, new EventId(7, "ImageCacheError"), "Failed to populate image cache, continuing with basic display");
 
@@ -102,19 +99,6 @@ public partial class Articles
             : article.Excerpt.Length > 250
                 ? string.Concat(article.Excerpt.AsSpan(0, 250), "...")
                 : article.Excerpt;
-    }
-
-    private static bool HasDataChanged(List<RaindropItem> currentData, List<RaindropItem> newData)
-    {
-        if (currentData.Count != newData.Count) return true;
-
-        // Simple comparison - check if any items have different titles or links
-        for (var i = 0; i < currentData.Count; i++)
-            if (!string.Equals(currentData[i].Link, newData[i].Link, StringComparison.Ordinal) ||
-                !string.Equals(currentData[i].Title, newData[i].Title, StringComparison.Ordinal))
-                return true;
-
-        return false;
     }
 
     protected override async Task OnInitializedAsync()
@@ -194,59 +178,45 @@ public partial class Articles
     {
         try
         {
-            var freshArticles = await RaindropAPI.GetArticlesAsync(CancellationToken.None).ConfigureAwait(false);
-            var freshArticlesList = freshArticles.ToList();
+            var freshItems = await RaindropBackgroundRefreshHelper.TryFetchFreshDataAsync(
+                () => RaindropAPI.GetArticlesAsync(CancellationToken.None),
+                _articleItems,
+                (data, ct) => RaindropItemsCache.SetAsync(CacheKey, (List<RaindropItem>)data, ct),
+                CancellationToken.None).ConfigureAwait(false);
 
-            // Check if we have newer data
-            if (_articleItems == null || HasDataChanged(_articleItems, freshArticlesList))
+            if (freshItems == null) return;
+
+            if (_articleItems is { Count: > 0 })
             {
+                _refreshBadgeState = RefreshBadgeState.Visible;
+                await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+            }
+            else
+            {
+                _articleItems = freshItems.ToList();
                 try
                 {
-                    // Cache the fresh data
-                    await RaindropItemsCache.SetAsync(CacheKey, freshArticlesList, CancellationToken.None).ConfigureAwait(false);
+                    await PopulateImageUrlCacheAsync().ConfigureAwait(false);
                 }
-                catch (Exception cacheEx)
+                catch (Exception imageEx)
                 {
-                    LogCacheStoreError(Logger, cacheEx);
+                    LogImageCacheError(Logger, imageEx);
                 }
 
-                // Show refresh badge if we already have data displayed
-                if (_articleItems != null && _articleItems.Count > 0)
-                {
-                    _refreshBadgeState = RefreshBadgeState.Visible;
-                    await InvokeAsync(StateHasChanged).ConfigureAwait(false);
-                }
-                else
-                {
-                    // No existing data, update immediately
-                    _articleItems = freshArticlesList;
-                    try
-                    {
-                        await PopulateImageUrlCacheAsync().ConfigureAwait(false);
-                    }
-                    catch (Exception imageEx)
-                    {
-                        LogImageCacheError(Logger, imageEx);
-                    }
-
-                    await InvokeAsync(StateHasChanged).ConfigureAwait(false);
-                }
+                await InvokeAsync(StateHasChanged).ConfigureAwait(false);
             }
         }
         catch (HttpRequestException httpEx)
         {
             LogNetworkErrorBackground(Logger, httpEx);
-            // Don't show error to user for background operations
         }
         catch (TaskCanceledException timeoutEx)
         {
             LogTimeoutBackground(Logger, timeoutEx);
-            // Don't show error to user for background operations
         }
         catch (Exception ex)
         {
             LogUnexpectedErrorBackground(Logger, ex);
-            // Don't show error to user for background operations
         }
     }
 
