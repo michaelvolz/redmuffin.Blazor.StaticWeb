@@ -1,6 +1,5 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "autoupdate": false,
   "default_agent": "rm-karpathy-universal-primary-agent",
   "watcher": {
     "ignore": [
@@ -742,40 +741,6 @@
     "ce-web-researcher": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
       "mode": "subagent"
-    }
-  },
-  "provider": {
-    "deepseek": {
-      "options": {
-      },
-      "models": {
-        "deepseek-v4-pro": {
-          "limit": {
-            "context": 180000,
-            "output": 128000
-          },
-          "options": {
-            "max_tokens": 128000,
-            "temperature": 0.30,
-            "top_p": 0.95
-          }
-        }
-      }
-    },
-    "opencode-go": {
-      "models": {
-        "deepseek-v4-pro": {
-          "limit": {
-            "context": 180000,
-            "output": 128000
-          },
-          "options": {
-            "max_tokens": 128000,
-            "temperature": 0.30,
-            "top_p": 0.95
-          }
-        }
-      }
     }
   }
 }
