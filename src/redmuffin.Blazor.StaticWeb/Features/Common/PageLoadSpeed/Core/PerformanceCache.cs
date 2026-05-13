@@ -13,9 +13,11 @@ public readonly record struct PerformanceCache(
 {
     public static PerformanceCache Create(double primaryMetric)
     {
+        // Thresholds based on Google LCP standard: Good <2.5s, Poor >4.0s.
+        // PrimaryMetric is LCP when available, LoadComplete otherwise.
         return primaryMetric switch
         {
-            <= 1000 => new PerformanceCache(PerformanceRating.Excellent, "EXCELLENT", "excellent", "🚀", 95, primaryMetric),
+            <= 1500 => new PerformanceCache(PerformanceRating.Excellent, "EXCELLENT", "excellent", "🚀", 95, primaryMetric),
             <= 2500 => new PerformanceCache(PerformanceRating.Good, "GOOD", "good", "✅", 75, primaryMetric),
             <= 4000 => new PerformanceCache(PerformanceRating.Fair, "FAIR", "fair", "⚠️", 50, primaryMetric),
             _ => new PerformanceCache(PerformanceRating.Poor, "POOR", "poor", "🐌", 25, primaryMetric)

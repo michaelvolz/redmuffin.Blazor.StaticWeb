@@ -16,7 +16,7 @@ public readonly record struct PerformanceMetrics(
     }
 
     public static PerformanceMetrics FromPageLoadMetrics(
-        LoadSpeed.PageLoadMetrics metrics,
+        PageLoadMetrics metrics,
         string timestamp)
     {
         var timing = new TimingMetrics(
