@@ -182,10 +182,6 @@ jobs:
           echo "✅ All tests passed"
 
       # BUILD AND DEPLOY PHASE: Only runs if tests pass
-      # Runner image provides Node.js 20 (pre-installed) — SWA CLI needs ≥ 18
-      - name: Verify Node.js version
-        run: echo "Node.js $(node --version)"
-
       # OPTIMIZATION: Cache npm global packages for SWA CLI
       # Using static key since we install a specific global package version
       - name: Cache npm and SWA CLI
@@ -246,14 +242,27 @@ jobs:
           echo "Output Location: ${{ env.APP_ARTIFACT_LOCATION }}"
 
           echo ""
-          echo "Building Blazor WebAssembly Application..."
-          # Build with optimizations for production deployment
+          echo "Building Blazor WebAssembly and Azure Functions API in parallel..."
+          # Both publish commands are independent — different projects,
+          # different output dirs, different obj/ folders. No conflict.
           dotnet publish ${{ env.APP_LOCATION }} \
             -c Release \
             -o ${{ env.APP_LOCATION }}/bin/Release/publish \
             -p:PublishTrimmed=true \
             --no-restore \
-            --nologo
+            --nologo &
+          PID_B=$!
+
+          dotnet publish ${{ env.API_LOCATION }} \
+            -c Release \
+            -o ${{ env.API_LOCATION }}/bin/Release/publish \
+            --no-restore \
+            --no-dependencies \
+            --nologo &
+          PID_A=$!
+
+          # Wait for Blazor (needed for assembly count check below)
+          wait $PID_B || { echo "❌ Blazor publish failed"; kill $PID_A 2>/dev/null; exit 1; }
 
           echo ""
           echo "Verifying trimming effectiveness..."
@@ -266,14 +275,8 @@ jobs:
             echo "✅ Assembly count ($ASSEMBLY_COUNT) looks good for trimmed build"
           fi
 
-          echo ""
-          echo "Building Azure Functions API..."
-          dotnet publish ${{ env.API_LOCATION }} \
-            -c Release \
-            -o ${{ env.API_LOCATION }}/bin/Release/publish \
-            --no-restore \
-            --no-dependencies \
-            --nologo
+          # Wait for API (may have finished already while Blazor was publishing)
+          wait $PID_A || { echo "❌ API publish failed"; exit 1; }
 
           echo ""
           echo "Deploying to Azure Static Web Apps..."
