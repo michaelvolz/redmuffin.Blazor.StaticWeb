@@ -5,6 +5,7 @@ using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Features.Cache.Enums;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
 using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Services;
+using static redmuffin.Blazor.StaticWeb.Features.RaindropItems.Services.RaindropItemPresentationHelper;
 
 namespace redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage;
 
@@ -86,20 +87,6 @@ public partial class Articles
 
     [Inject]
     private IRaindropItemsCache RaindropItemsCache { get; set; } = null!;
-
-    private static string DisplayTitle(RaindropItem article)
-    {
-        return string.IsNullOrEmpty(article.Title) ? "No Title Available" : article.Title;
-    }
-
-    private static string DisplayExcerpt(RaindropItem article)
-    {
-        return string.IsNullOrEmpty(article.Excerpt)
-            ? "No Excerpt Available"
-            : article.Excerpt.Length > 250
-                ? string.Concat(article.Excerpt.AsSpan(0, 250), "...")
-                : article.Excerpt;
-    }
 
     protected override async Task OnInitializedAsync()
     {

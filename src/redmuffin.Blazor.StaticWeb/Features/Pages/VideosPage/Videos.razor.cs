@@ -5,6 +5,7 @@ using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Features.Cache.Enums;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
 using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Services;
+using static redmuffin.Blazor.StaticWeb.Features.RaindropItems.Services.RaindropItemPresentationHelper;
 
 namespace redmuffin.Blazor.StaticWeb.Features.Pages.VideosPage;
 
@@ -37,20 +38,6 @@ public partial class Videos
 
     [Inject]
     private IRaindropItemsCache RaindropItemsCache { get; set; } = null!;
-
-    private static string DisplayTitle(RaindropItem video)
-    {
-        return string.IsNullOrEmpty(video.Title) ? "No Title Available" : video.Title;
-    }
-
-    private static string DisplayExcerpt(RaindropItem video)
-    {
-        return string.IsNullOrEmpty(video.Excerpt)
-            ? "No Excerpt Available"
-            : video.Excerpt.Length > 250
-                ? string.Concat(video.Excerpt.AsSpan(0, 250), "...")
-                : video.Excerpt;
-    }
 
     protected override async Task OnInitializedAsync()
     {
