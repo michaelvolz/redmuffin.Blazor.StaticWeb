@@ -68,6 +68,7 @@
     "exclude": [
       "/api/*",
       "/robots.txt",
+      "/llms.txt",
       "/fonts/*",
       "/sample-data/*",
       "/css/*",
