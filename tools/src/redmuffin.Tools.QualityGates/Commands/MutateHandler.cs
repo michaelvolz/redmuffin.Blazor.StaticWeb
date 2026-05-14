@@ -1,5 +1,6 @@
 namespace redmuffin.Tools.QualityGates.Commands;
 
+using System.Diagnostics;
 using System.Globalization;
 using redmuffin.Tools.QualityGates.Analysis;
 
@@ -60,9 +61,22 @@ public static class MutateHandler
             return (null, allSites, [], [], 0, existingManifest, strippedSource);
         }
 
+        coveredLines = await ResolveCoverageLinesAsync(
+                testProjectPath, options, coveredLines, output)
+            .ConfigureAwait(false);
+
         var (covered, uncovered) = CoverageReader.PartitionByCoverage(allSites, coveredLines);
         var sites = new List<MutationSite>(covered);
         var changedCount = ApplyDifferentialFilter(sites, strippedSource, existingManifest, options);
+
+        // When coverage is absent and auto-coverage failed, mutate all sites
+        if (sites.Count == 0 && uncovered.Count == allSites.Count)
+        {
+            sites = new List<MutationSite>(allSites);
+            changedCount = sites.Count;
+            covered = allSites;
+            uncovered = [];
+        }
 
         if (options.Lines is { Count: > 0 })
         {
@@ -257,4 +271,54 @@ public static class MutateHandler
 
     private static string CoverageFilePath(string testProjectPath) =>
         Path.Combine(Path.GetDirectoryName(testProjectPath) ?? ".", "coverage.cobertura.xml");
+
+    private static async Task<HashSet<int>> ResolveCoverageLinesAsync(
+        string testProjectPath, MutateOptions options, HashSet<int> currentCoverage, TextWriter output)
+    {
+        if (currentCoverage.Count > 0 || !options.AutoCoverage)
+            return currentCoverage;
+
+        await output.WriteLineAsync("Generating coverage data...").ConfigureAwait(false);
+        var generatedPath = await GenerateCoverageAsync(testProjectPath).ConfigureAwait(false);
+
+        if (generatedPath is null)
+        {
+            await output.WriteLineAsync("Warning: Coverage generation failed.")
+                .ConfigureAwait(false);
+            return currentCoverage;
+        }
+
+        var destPath = CoverageFilePath(testProjectPath);
+        Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+        File.Copy(generatedPath, destPath, overwrite: true);
+
+        return CoverageReader.LoadCoverage(destPath).ToHashSet();
+    }
+
+    private static async Task<string?> GenerateCoverageAsync(string testProjectPath)
+    {
+        var newPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".cobertura.xml");
+
+        using var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "dotnet",
+                Arguments = $"run --project \"{testProjectPath}\" --coverage " +
+                    $"--coverage-output-format cobertura --coverage-output \"{newPath}\"",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            },
+        };
+
+        process.Start();
+        await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
+
+        if (process.ExitCode != 0 || !File.Exists(newPath))
+            return null;
+
+        return newPath;
+    }
 }

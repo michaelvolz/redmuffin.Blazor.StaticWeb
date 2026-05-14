@@ -8,4 +8,5 @@ public sealed record MutateOptions(
     int MutationWarning = 50,
     int TimeoutFactor = 10,
     bool ReuseCoverage = false,
+    bool AutoCoverage = false,
     IReadOnlySet<int>? Lines = null);

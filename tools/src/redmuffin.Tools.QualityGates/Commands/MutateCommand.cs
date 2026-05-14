@@ -59,6 +59,11 @@ public static class MutateCommand
         Description = "Reuse existing coverage data",
     };
 
+    private static readonly Option<bool> AutoCoverageOption = new("--auto-coverage")
+    {
+        Description = "Auto-generate Cobertura XML coverage before mutation",
+    };
+
     public static Command Create()
     {
         var command = new Command("mutation", "Run mutation testing on a source file")
@@ -66,6 +71,7 @@ public static class MutateCommand
             SourceOption, TestProjectOption, ScanOption, MaxWorkersOption,
             SinceLastRunOption, MutateAllOption, LinesOption,
             MutationWarningOption, TimeoutFactorOption, ReuseCoverageOption,
+            AutoCoverageOption,
         };
 
         command.SetAction(async parseResult =>
@@ -80,6 +86,7 @@ public static class MutateCommand
                 MutationWarning: parseResult.GetValue(MutationWarningOption),
                 TimeoutFactor: parseResult.GetValue(TimeoutFactorOption),
                 ReuseCoverage: parseResult.GetValue(ReuseCoverageOption),
+                AutoCoverage: parseResult.GetValue(AutoCoverageOption),
                 Lines: parseResult.GetValue(LinesOption));
 
             return await MutateHandler.RunAsync(source, testProject, options).ConfigureAwait(false);

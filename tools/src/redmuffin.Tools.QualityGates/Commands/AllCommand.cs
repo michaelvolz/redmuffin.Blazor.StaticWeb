@@ -230,7 +230,8 @@ public static class AllCommand
         return await WriteGateHeaderAsync(o, mutateSource,
                 "Mutation Testing", "--mutation-source").ConfigureAwait(false)
             ? await MutateHandler.RunAsync(
-                mutateSource!, testProjectPath, new MutateOptions(Scan: mutateScan)).ConfigureAwait(false)
+                mutateSource!, testProjectPath,
+                new MutateOptions(Scan: mutateScan, AutoCoverage: true)).ConfigureAwait(false)
             : 0;
     }
 
