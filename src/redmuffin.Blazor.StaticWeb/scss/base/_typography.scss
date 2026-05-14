@@ -27,8 +27,7 @@ html {
 // Define custom font families that extend Foundation's font system
 // Note: These should complement, not override Foundation's font settings
 
-// Google Fonts imports - consolidated from various locations
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap");
+// Outfit font self-hosted in base/_fonts.scss — no external @import needed
 
 // =============================================================================
 // FONT FAMILY VARIABLES (Foundation Integration)

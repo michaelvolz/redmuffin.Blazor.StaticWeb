@@ -8,8 +8,7 @@
 @use "../../../lib/foundation-sites/scss/foundation" as foundation;
 @use "../../abstracts/variables" as vars;
 
-// Google Fonts import (should be consolidated in base/typography later)
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@500;700&display=swap");
+// Outfit font self-hosted in base/_fonts.scss — no external @import needed
 
 .logo-container {
   display: flex;
