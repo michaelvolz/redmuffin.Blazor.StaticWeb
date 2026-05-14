@@ -7,6 +7,22 @@ description: Token-optimized single-file AGENTS.md for OpenCode harness. 100% of
 
 # AGENTS: Project Guide (OpenCode-Optimized v2)
 
+## STRUCTURAL CHANGE GATE (READ FIRST — STOP HERE)
+
+**This is the highest-priority rule in this document. Violating it breaks everything else.**
+
+Before implementing ANY change that affects the build pipeline, toolchain, project structure, deployment, SCSS compilation, or any system spanning dev and production — you MUST answer three questions in writing:
+
+1. **What constraints am I aware of?** — List every known constraint that applies (AGENTS.md rules, user directives, architectural decisions, platform requirements, tool policies, build requirements, Omarchy rules, npm policies, package manager rules, etc.).
+
+2. **What do I NOT know?** — List gaps. Unknowns about the existing system. Side effects you cannot predict. User preferences you are assuming. Assumptions you're making without verification.
+
+3. **What conflicts could this create?** — Map how the change interacts with every constraint from question 1. If any interaction is unclear or risky, you do not proceed.
+
+If any answer is incomplete, if you are guessing about a constraint the user holds, if you are unsure about a side effect, or if the solution might collide with something else the user is balancing — **STOP AND ASK.** Do not implement. Do not edit files. Do not run commands.
+
+Structural changes are not routine edits. They touch multiple systems. The user balances a dozen constraints that you cannot see. Only through this gate can we converge safely.
+
 ## PAIR PROGRAMMING
 
 We are pair programming together.
@@ -27,7 +43,7 @@ To enable me to perform my role effectively, two coordination rules are critical
 
 - Use `rm-commit` for all commits (never manual `git commit` or `git add`).
 - Run `dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests -c Release` before every commit.
-- Run `dotnet build --verbosity quiet` (C#) or `dotnet build -c Debug-Sass` (SCSS/JS) after every edit.
+- Run `dotnet build --verbosity quiet` (C#) after every C# edit. SCSS is auto-compiled by `sass --watch`.
 - If `dotnet run` or `dotnet build` fails repeatedly → run `dotnet clean` first.
 - Read relevant code before answering any question.
 - Use `pwsh -NoProfile` for all PowerShell execution.
@@ -75,7 +91,8 @@ To enable me to perform my role effectively, two coordination rules are critical
 | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------- |
 | `dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests -c Release`                                 | Verify logic & prevent regressions                 | Pre-commit (mandatory)                      |
 | `dotnet build --verbosity quiet`                                                                         | Verify C# compilation                              | Immediately after any C# edit               |
-| `dotnet build -c Debug-Sass`                                                                             | Verify UI layer (SCSS/JS)                          | Immediately after any SCSS/JS edit          |
+| `sass --watch scss:wwwroot/css`                                                                          | Auto-compile SCSS on save (background)             | Start of dev session                        |
+| `sass --style=compressed --no-source-map scss/app.scss:wwwroot/css/app.min.css`                          | Production SCSS build (one-shot)                   | Before publish                              |
 | `scripts/Update-PackageVersions.ps1`                                                                     | Update NuGet packages (Central Package Management) | After any package change                    |
 | `dotnet run --project tests/redmuffin.Tools.QualityGates.Tests`                                          | Run quality gates tool tests (+ build)             | After any tools/ code change                |
 | `dotnet format [<solution-path>]`                                                                        | Auto-fix ~75% of StyleCop/Roslyn violations        | Before manually fixing analyzer warnings    |

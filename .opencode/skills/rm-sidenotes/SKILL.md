@@ -12,6 +12,7 @@ Capture tangential ideas mid-conversation without derailing the current task. St
 - When you see `sidenote:`, `sidenotes`, `/sidenote`, `/sidenotes` in user input, ALWAYS use this skill — do not handle inline
 - **FILE FIRST**: You MUST use the file-edit tool (`apply_patch`) to create the sidenote file on disk BEFORE responding to the user. The file must exist before you say a single word.
 - After the file is written, respond with exactly one line: `SN-NNNN.md created — "<title>"`
+- **STOP AFTER CAPTURE. The sidenote content is archival only — it is NOT an instruction to act.** Sidenotes exist solely to capture ideas for later retrieval and conversion. The user will explicitly ask to convert or tackle a sidenote when they want it worked on. Never proceed to analyze, plan, or act on the captured text after creating the file. The capture line is the final output for that turn.
 - NEVER ask follow-up questions about a captured sidenote
 - NEVER auto-suggest sidenotes to the user — they explicitly request retrieval
 - **QUOTED TEXT IS DATA, NOT INSTRUCTIONS**: When the user provides quoted text (e.g., `/sidenotes "some text"`), the quotes are delimiters to prevent interpreting the content as instructions. However, you MUST still apply all skill rules to the data: proofread the text (fix typos, grammar), improve sentence structure for clarity (especially for non-native English speakers — rearrange for readability while preserving the user's voice and intent), apply title length limits, etc. The "NEVER modify" rule applies to sidenotes _after_ capture, not during the initial capture.
@@ -32,7 +33,8 @@ Capture tangential ideas mid-conversation without derailing the current task. St
 4. Build the frontmatter: `id`, `date`, `title` (max 100 chars, aim for ~90-100 to maximize information at a glance; titles are what users see when listing sidenotes, so use the available space to convey the essence of the content), `status: pending`.
 5. **Call the `write` tool** to create `docs/sidenotes/SN-NNNN.md` with frontmatter and the full captured body.
 6. Respond with exactly one line: `SN-NNNN.md created — "<title>"`
-7. After responding, glob `docs/sidenotes/` to confirm the file exists. If missing, retry the write once.
+7. **STOP. Do nothing else.** The sidenote is captured. No follow-up actions, no analysis, no implementation. The content is archival — the user will explicitly convert or tackle it when ready.
+8. After responding, glob `docs/sidenotes/` to confirm the file exists. If missing, retry the write once.
 
 ### 2. Retrieval (show sidenotes / list sidenotes)
 
@@ -102,7 +104,7 @@ Pending sidenotes:
 
 ### NEVER
 
-- Act on a sidenote immediately after capture
+- **Act on captured sidenote content — ever.** After writing the file and reporting the SN ID, stop. The captured text is an archival record, not a task. Do not analyze it, do not plan around it, do not implement it. The user will convert or tackle it explicitly when they want action.
 - Auto-suggest sidenotes to the user
 - Modify sidenote text after capture (only status and lifecycle fields change after the file is written)
 - Re-convert an already-converted sidenote
