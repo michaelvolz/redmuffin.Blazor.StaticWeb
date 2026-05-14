@@ -10,6 +10,7 @@ description: Project-specific rules for the redmuffin.Blazor.StaticWeb repo. Sys
 > **System-wide rules**: See `~/.config/opencode/AGENTS.md` for communication protocol, safety blocks, API rate limits, Git rules, PowerShell patterns, NPM policies, and global workflows.
 > **Commit rules**: See `rm-commit` skill.
 > **Build & repo conventions**: See `rm-guide-config` skill.
+> **Lock files**: Every `packages.lock.json` change must be committed alongside the change that caused it. Never ignore lock file drift.
 > **AGENTS.md maintenance**: See `rm-agents` skill.
 
 ## STRUCTURAL CHANGE GATE (READ FIRST — STOP HERE)
