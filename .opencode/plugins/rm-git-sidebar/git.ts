@@ -1,4 +1,4 @@
-import { resolve as pathResolve } from "node:path";
+import { resolve as pathResolve, sep } from "node:path";
 
 // --- Theme token type ---
 
@@ -83,7 +83,19 @@ export function computeSessionCounts(
     }
 
     const absPath = pathResolve(dir, relPath);
-    if (sessionFiles.has(absPath)) {
+    // Match exactly, or for directory entries (trailing / from git status)
+    // check if any session file is inside that directory
+    let matched = sessionFiles.has(absPath);
+    if (!matched && relPath.endsWith(sep)) {
+      const prefix = absPath + sep;
+      for (const f of sessionFiles) {
+        if (f.startsWith(prefix)) {
+          matched = true;
+          break;
+        }
+      }
+    }
+    if (matched) {
       const key = LABEL_TO_KEY[label];
       if (key) counts[key]++;
     }

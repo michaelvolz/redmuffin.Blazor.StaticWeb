@@ -198,6 +198,37 @@ describe("computeSessionCounts", () => {
     const result = computeSessionCounts(output, dir, sessionFiles);
     expect(result.modified).toBe(1);
   });
+
+  test("untracked directory matches session file inside it", () => {
+    const output = "?? newdir/";
+    const sessionFiles = new Set(["/home/user/project/newdir/file.ts"]);
+    const result = computeSessionCounts(output, dir, sessionFiles);
+    expect(result.untracked).toBe(1);
+  });
+
+  test("untracked directory with no matching session file returns 0", () => {
+    const output = "?? newdir/";
+    const sessionFiles = new Set(["/home/user/project/otherdir/file.ts"]);
+    const result = computeSessionCounts(output, dir, sessionFiles);
+    expect(result.untracked).toBe(0);
+  });
+
+  test("untracked directory only counts once even with multiple session files", () => {
+    const output = "?? newdir/";
+    const sessionFiles = new Set([
+      "/home/user/project/newdir/a.ts",
+      "/home/user/project/newdir/b.ts",
+    ]);
+    const result = computeSessionCounts(output, dir, sessionFiles);
+    expect(result.untracked).toBe(1);
+  });
+
+  test("untracked file (not directory) still uses exact match", () => {
+    const output = "?? newfile.ts";
+    const sessionFiles = new Set(["/home/user/project/newfile.ts"]);
+    const result = computeSessionCounts(output, dir, sessionFiles);
+    expect(result.untracked).toBe(1);
+  });
 });
 
 describe("constants", () => {

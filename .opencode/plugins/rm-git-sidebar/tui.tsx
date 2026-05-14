@@ -31,6 +31,10 @@ interface GitState {
 
 const DB_PATH = pathResolve(homedir(), ".local/share/opencode/opencode.db");
 
+// --- Status Dot constants ---
+const SERVICE_NAME = "redmuffin.Blazor.StaticWeb-sass-dotnet-watch.service";
+const SERVICE_POLL_MS = 5000;
+
 // --- Session file tracking ---
 
 // sessionId format validated against known OpenCode prefix
@@ -98,6 +102,52 @@ function seedSessionFiles(sessionId: string) {
 
 // --- Module-level state ---
 
+// --- Module-level state ---
+
+// --- Status Dot state ---
+type DotColor = "green" | "yellow" | "red" | "grey";
+const [serviceDot, setServiceDot] = createSignal<DotColor>("grey");
+let serviceInterval: ReturnType<typeof setInterval> | null = null;
+
+function pollServiceStatus() {
+  try {
+    // || true suppresses non-zero exit so we read string output for all states
+    const active = execSync(`systemctl --user is-active ${SERVICE_NAME} || true`, {
+      encoding: "utf8",
+      timeout: 3000,
+    }).trim();
+
+    if (active === "inactive" || active === "unknown") {
+      setServiceDot("grey");
+      return;
+    }
+    if (active === "failed") {
+      setServiceDot("red");
+      return;
+    }
+    // active — single journalctl call covering both error + warning
+    const since = `-${Math.ceil(SERVICE_POLL_MS / 1000)}s`;
+    const entries = execFileSync("journalctl", [
+      "--user", "-u", SERVICE_NAME, "-p", "warning",
+      "--since", since, "--no-pager", "-o", "json",
+    ], { encoding: "utf8", timeout: 3000 }).trim();
+    if (entries) {
+      let hasError = false;
+      for (const line of entries.split("\n")) {
+        try {
+          const pri = JSON.parse(line).PRIORITY;
+          if (typeof pri === "number" && pri <= 3) { hasError = true; break; }
+        } catch { /* skip malformed lines */ }
+      }
+      setServiceDot(hasError ? "red" : "yellow");
+    } else {
+      setServiceDot("green");
+    }
+  } catch {
+    setServiceDot("grey");
+  }
+}
+
 const [gitState, setGitState] = createSignal<GitState>({
   dir: null,
   error: false,
@@ -156,6 +206,8 @@ const tui: TuiPlugin = async (api) => {
   storedApi = api;
   pollGitStatus();
   interval = setInterval(pollGitStatus, 10000);
+  pollServiceStatus();
+  serviceInterval = setInterval(pollServiceStatus, SERVICE_POLL_MS);
 
   // Event-driven refresh: fires when agent changes files
   api.event.on("session.diff", (event: SessionDiffEvent) => {
@@ -171,10 +223,94 @@ const tui: TuiPlugin = async (api) => {
     }
   });
 
+  // --- Shared badge renderer ---
+  interface Segment {
+    label: string;
+    fg: RGBA;
+  }
+
+  function renderBadge(s: GitState, theme: { success: RGBA; warning: RGBA; error: RGBA; textMuted: RGBA }) {
+    if (s.error) {
+      return <text fg={theme.error}>git ?</text>;
+    }
+
+    const ab = s.aheadBehind;
+    const hasAheadBehind = ab !== null && (ab.ahead > 0 || ab.behind > 0);
+
+    // --- Clean working tree ---
+
+    // Truly clean: no dirty files, in sync with remote
+    if (s.total === 0 && !hasAheadBehind) {
+      return <text fg={theme.success}>git ✓</text>;
+    }
+
+    // Clean working tree but ahead/behind
+    if (s.total === 0 && hasAheadBehind) {
+      const arrowFg = ab!.ahead > 0 && ab!.behind > 0 ? theme.error
+        : ab!.ahead > 0 ? theme.success : theme.warning;
+      return (
+        <box paddingLeft={0} flexDirection="row">
+          <text fg={theme.success}>git ✓</text>
+          {ab!.ahead > 0 && <text fg={arrowFg}> ↑{ab!.ahead}</text>}
+          {ab!.behind > 0 && <text fg={arrowFg}> ↓{ab!.behind}</text>}
+        </box>
+      );
+    }
+
+    // --- Dirty working tree — full badge ---
+
+    const allSegments: Array<Segment> = [];
+    const sessionSegments: Array<Segment> = [];
+
+    // Prefix
+    allSegments.push({ label: "git", fg: theme.textMuted });
+
+    // Dirty file counts
+    for (const cat of CATEGORIES) {
+      const n = s.counts[cat.key];
+      if (n > 0) allSegments.push({ label: `${cat.label}${n}`, fg: resolveToken(cat.token, theme) });
+    }
+
+    // Ahead/behind — appended after dirty counts
+    if (hasAheadBehind) {
+      const arrowFg = ab!.ahead > 0 && ab!.behind > 0 ? theme.error
+        : ab!.ahead > 0 ? theme.success : theme.warning;
+      if (ab!.ahead > 0) allSegments.push({ label: `↑${ab!.ahead}`, fg: arrowFg });
+      if (ab!.behind > 0) allSegments.push({ label: `↓${ab!.behind}`, fg: arrowFg });
+    }
+
+    // Session-specific counts
+    if (categorySome(s.sessionCounts)) {
+      for (const cat of CATEGORIES) {
+        const n = s.sessionCounts[cat.key];
+        if (n > 0) sessionSegments.push({ label: `${cat.label}${n}`, fg: resolveToken(cat.token, theme) });
+      }
+    }
+
+    return (
+      <box paddingLeft={0} flexDirection="row">
+        {allSegments.map((p, i) => (
+          <text fg={p.fg}>{i > 0 ? " " : ""}{p.label}</text>
+        ))}
+        {sessionSegments.length > 0 && (
+          <>
+            <text fg={theme.textMuted}> (</text>
+            {sessionSegments.map((p, i) => (
+              <text fg={p.fg}>{i > 0 ? " " : ""}{p.label}</text>
+            ))}
+            <text fg={theme.textMuted}>)</text>
+          </>
+        )}
+      </box>
+    );
+  }
+
+  // --- Slot registrations ---
+
   api.slots.register({
-    order: 350,
+    order: 10,
     slots: {
-      sidebar_content(_ctx: unknown, _value: { session_id: string }) {
+      session_prompt_right(_ctx: unknown, _value: { session_id: string }) {
         // Session tracking init
         if (_value.session_id !== storedSessionId) {
           storedSessionId = _value.session_id;
@@ -186,84 +322,16 @@ const tui: TuiPlugin = async (api) => {
           setTimeout(() => seedSessionFiles(sid), 0);
         }
 
-        const s = gitState();
-        const theme = api.theme.current;
-
-        if (s.error) {
-          return <text fg={theme.error}>git ?</text>;
-        }
-
-        const ab = s.aheadBehind;
-        const hasAheadBehind = ab !== null && (ab.ahead > 0 || ab.behind > 0);
-
-        // --- Clean working tree ---
-
-        // Truly clean: no dirty files, in sync with remote
-        if (s.total === 0 && !hasAheadBehind) {
-          return <text fg={theme.success}>git ✓</text>;
-        }
-
-        // Clean working tree but ahead/behind
-        if (s.total === 0 && hasAheadBehind) {
-          const arrowFg = ab!.ahead > 0 && ab!.behind > 0 ? theme.error
-            : ab!.ahead > 0 ? theme.success : theme.warning;
-          return (
-            <box paddingLeft={0} flexDirection="row">
-              <text fg={theme.success}>git ✓</text>
-              {ab!.ahead > 0 && <text fg={arrowFg}> ↑{ab!.ahead}</text>}
-              {ab!.behind > 0 && <text fg={arrowFg}> ↓{ab!.behind}</text>}
-            </box>
-          );
-        }
-
-        // --- Dirty working tree — full badge ---
-
-        interface Segment {
-          label: string;
-          fg: RGBA;
-        }
-        const allSegments: Array<Segment> = [];
-        const sessionSegments: Array<Segment> = [];
-
-        // Prefix
-        allSegments.push({ label: "git", fg: theme.textMuted });
-
-        // Dirty file counts
-        for (const cat of CATEGORIES) {
-          const n = s.counts[cat.key];
-          if (n > 0) allSegments.push({ label: `${cat.label}${n}`, fg: resolveToken(cat.token, theme) });
-        }
-
-        // Ahead/behind — appended after dirty counts
-        if (hasAheadBehind) {
-          const arrowFg = ab!.ahead > 0 && ab!.behind > 0 ? theme.error
-            : ab!.ahead > 0 ? theme.success : theme.warning;
-          if (ab!.ahead > 0) allSegments.push({ label: `↑${ab!.ahead}`, fg: arrowFg });
-          if (ab!.behind > 0) allSegments.push({ label: `↓${ab!.behind}`, fg: arrowFg });
-        }
-
-        // Session-specific counts
-        if (categorySome(s.sessionCounts)) {
-          for (const cat of CATEGORIES) {
-            const n = s.sessionCounts[cat.key];
-            if (n > 0) sessionSegments.push({ label: `${cat.label}${n}`, fg: resolveToken(cat.token, theme) });
-          }
-        }
-
+        const dot = serviceDot();
+        const dotFg: RGBA =
+          dot === "green" ? api.theme.current.success
+          : dot === "yellow" ? api.theme.current.warning
+          : dot === "red" ? api.theme.current.error
+          : api.theme.current.textMuted;
         return (
           <box paddingLeft={0} flexDirection="row">
-            {allSegments.map((p, i) => (
-              <text fg={p.fg}>{i > 0 ? " " : ""}{p.label}</text>
-            ))}
-            {sessionSegments.length > 0 && (
-              <>
-                <text fg={theme.textMuted}> (</text>
-                {sessionSegments.map((p, i) => (
-                  <text fg={p.fg}>{i > 0 ? " " : ""}{p.label}</text>
-                ))}
-                <text fg={theme.textMuted}>)</text>
-              </>
-            )}
+            {renderBadge(gitState(), api.theme.current)}
+            <text fg={dotFg}> ●</text>
           </box>
         );
       },
@@ -274,6 +342,10 @@ const tui: TuiPlugin = async (api) => {
     if (interval !== null) {
       clearInterval(interval);
       interval = null;
+    }
+    if (serviceInterval !== null) {
+      clearInterval(serviceInterval);
+      serviceInterval = null;
     }
   });
 };

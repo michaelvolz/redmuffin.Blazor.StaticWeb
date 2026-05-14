@@ -13,7 +13,7 @@ import { homedir } from "os";
 import { isAbsolute, resolve as pathResolve2 } from "path";
 
 // git.ts
-import { resolve as pathResolve } from "path";
+import { resolve as pathResolve, sep } from "path";
 var CATEGORIES = [
   { key: "modified", statuses: ["M ", " M", "MM"], label: "M", token: "warning" },
   { key: "added", statuses: ["A ", "AM"], label: "A", token: "success" },
@@ -75,7 +75,17 @@ function computeSessionCounts(output, dir, sessionFiles) {
       relPath = relPath.split(" -> ")[1];
     }
     const absPath = pathResolve(dir, relPath);
-    if (sessionFiles.has(absPath)) {
+    let matched = sessionFiles.has(absPath);
+    if (!matched && relPath.endsWith(sep)) {
+      const prefix = absPath + sep;
+      for (const f of sessionFiles) {
+        if (f.startsWith(prefix)) {
+          matched = true;
+          break;
+        }
+      }
+    }
+    if (matched) {
       const key = LABEL_TO_KEY[label];
       if (key)
         counts[key]++;
@@ -104,6 +114,8 @@ function parseAheadBehind(output) {
 // tui.tsx
 var id = "rm-git-sidebar";
 var DB_PATH = pathResolve2(homedir(), ".local/share/opencode/opencode.db");
+var SERVICE_NAME = "redmuffin.Blazor.StaticWeb-sass-dotnet-watch.service";
+var SERVICE_POLL_MS = 5000;
 var SESSION_ID_RE = /^ses_[a-zA-Z0-9]{16,}$/;
 var sessionFiles = new Set;
 var storedSessionId = null;
@@ -158,6 +170,47 @@ function seedSessionFiles(sessionId) {
         }
       }
     });
+  }
+}
+var [serviceDot, setServiceDot] = createSignal("grey");
+var serviceInterval = null;
+function pollServiceStatus() {
+  try {
+    const active = execSync(`systemctl --user is-active ${SERVICE_NAME} || true`, {
+      encoding: "utf8",
+      timeout: 3000
+    }).trim();
+    if (active === "inactive" || active === "unknown") {
+      setServiceDot("grey");
+      return;
+    }
+    if (active === "failed") {
+      setServiceDot("red");
+      return;
+    }
+    const since = `-${Math.ceil(SERVICE_POLL_MS / 1000)}s`;
+    const entries = execFileSync("journalctl", ["--user", "-u", SERVICE_NAME, "-p", "warning", "--since", since, "--no-pager", "-o", "json"], {
+      encoding: "utf8",
+      timeout: 3000
+    }).trim();
+    if (entries) {
+      let hasError = false;
+      for (const line of entries.split(`
+`)) {
+        try {
+          const pri = JSON.parse(line).PRIORITY;
+          if (typeof pri === "number" && pri <= 3) {
+            hasError = true;
+            break;
+          }
+        } catch {}
+      }
+      setServiceDot(hasError ? "red" : "yellow");
+    } else {
+      setServiceDot("green");
+    }
+  } catch {
+    setServiceDot("grey");
   }
 }
 var [gitState, setGitState] = createSignal({
@@ -233,6 +286,8 @@ var tui = async (api) => {
   storedApi = api;
   pollGitStatus();
   interval = setInterval(pollGitStatus, 1e4);
+  pollServiceStatus();
+  serviceInterval = setInterval(pollServiceStatus, SERVICE_POLL_MS);
   api.event.on("session.diff", (event) => {
     if (event?.properties?.sessionID === storedSessionId) {
       if (event?.properties?.diff) {
@@ -245,10 +300,132 @@ var tui = async (api) => {
         pollGitStatus();
     }
   });
+  function renderBadge(s, theme) {
+    if (s.error) {
+      return (() => {
+        var _el$ = _$createElement("text");
+        _$insertNode(_el$, _$createTextNode(`git ?`));
+        _$effect((_$p) => _$setProp(_el$, "fg", theme.error, _$p));
+        return _el$;
+      })();
+    }
+    const ab = s.aheadBehind;
+    const hasAheadBehind = ab !== null && (ab.ahead > 0 || ab.behind > 0);
+    if (s.total === 0 && !hasAheadBehind) {
+      return (() => {
+        var _el$3 = _$createElement("text");
+        _$insertNode(_el$3, _$createTextNode(`git \u2713`));
+        _$effect((_$p) => _$setProp(_el$3, "fg", theme.success, _$p));
+        return _el$3;
+      })();
+    }
+    if (s.total === 0 && hasAheadBehind) {
+      const arrowFg = ab.ahead > 0 && ab.behind > 0 ? theme.error : ab.ahead > 0 ? theme.success : theme.warning;
+      return (() => {
+        var _el$5 = _$createElement("box"), _el$6 = _$createElement("text");
+        _$insertNode(_el$5, _el$6);
+        _$setProp(_el$5, "paddingLeft", 0);
+        _$setProp(_el$5, "flexDirection", "row");
+        _$insertNode(_el$6, _$createTextNode(`git \u2713`));
+        _$insert(_el$5, (() => {
+          var _c$ = _$memo(() => ab.ahead > 0);
+          return () => _c$() && (() => {
+            var _el$8 = _$createElement("text"), _el$9 = _$createTextNode(` \u2191`);
+            _$insertNode(_el$8, _el$9);
+            _$setProp(_el$8, "fg", arrowFg);
+            _$insert(_el$8, () => ab.ahead, null);
+            return _el$8;
+          })();
+        })(), null);
+        _$insert(_el$5, (() => {
+          var _c$2 = _$memo(() => ab.behind > 0);
+          return () => _c$2() && (() => {
+            var _el$0 = _$createElement("text"), _el$1 = _$createTextNode(` \u2193`);
+            _$insertNode(_el$0, _el$1);
+            _$setProp(_el$0, "fg", arrowFg);
+            _$insert(_el$0, () => ab.behind, null);
+            return _el$0;
+          })();
+        })(), null);
+        _$effect((_$p) => _$setProp(_el$6, "fg", theme.success, _$p));
+        return _el$5;
+      })();
+    }
+    const allSegments = [];
+    const sessionSegments = [];
+    allSegments.push({
+      label: "git",
+      fg: theme.textMuted
+    });
+    for (const cat of CATEGORIES) {
+      const n = s.counts[cat.key];
+      if (n > 0)
+        allSegments.push({
+          label: `${cat.label}${n}`,
+          fg: resolveToken(cat.token, theme)
+        });
+    }
+    if (hasAheadBehind) {
+      const arrowFg = ab.ahead > 0 && ab.behind > 0 ? theme.error : ab.ahead > 0 ? theme.success : theme.warning;
+      if (ab.ahead > 0)
+        allSegments.push({
+          label: `\u2191${ab.ahead}`,
+          fg: arrowFg
+        });
+      if (ab.behind > 0)
+        allSegments.push({
+          label: `\u2193${ab.behind}`,
+          fg: arrowFg
+        });
+    }
+    if (categorySome(s.sessionCounts)) {
+      for (const cat of CATEGORIES) {
+        const n = s.sessionCounts[cat.key];
+        if (n > 0)
+          sessionSegments.push({
+            label: `${cat.label}${n}`,
+            fg: resolveToken(cat.token, theme)
+          });
+      }
+    }
+    return (() => {
+      var _el$10 = _$createElement("box");
+      _$setProp(_el$10, "paddingLeft", 0);
+      _$setProp(_el$10, "flexDirection", "row");
+      _$insert(_el$10, () => allSegments.map((p, i) => (() => {
+        var _el$11 = _$createElement("text");
+        _$insert(_el$11, i > 0 ? " " : "", null);
+        _$insert(_el$11, () => p.label, null);
+        _$effect((_$p) => _$setProp(_el$11, "fg", p.fg, _$p));
+        return _el$11;
+      })()), null);
+      _$insert(_el$10, (() => {
+        var _c$3 = _$memo(() => sessionSegments.length > 0);
+        return () => _c$3() && [(() => {
+          var _el$12 = _$createElement("text");
+          _$insertNode(_el$12, _$createTextNode(` (`));
+          _$effect((_$p) => _$setProp(_el$12, "fg", theme.textMuted, _$p));
+          return _el$12;
+        })(), _$memo(() => sessionSegments.map((p, i) => (() => {
+          var _el$16 = _$createElement("text");
+          _$insert(_el$16, i > 0 ? " " : "", null);
+          _$insert(_el$16, () => p.label, null);
+          _$effect((_$p) => _$setProp(_el$16, "fg", p.fg, _$p));
+          return _el$16;
+        })())), (() => {
+          var _el$14 = _$createElement("text");
+          _$insertNode(_el$14, _$createTextNode(`)`));
+          _$effect((_$p) => _$setProp(_el$14, "fg", theme.textMuted, _$p));
+          return _el$14;
+        })()];
+      })(), null);
+      return _el$10;
+    })();
+  }
   api.slots.register({
-    order: 350,
+    order: 10,
     slots: {
-      sidebar_content(_ctx, _value) {
+      session_prompt_right(_ctx, _value) {
         if (_value.session_id !== storedSessionId) {
           storedSessionId = _value.session_id;
           sessionFiles = new Set;
@@ -258,127 +435,17 @@ var tui = async (api) => {
           const sid = storedSessionId;
           setTimeout(() => seedSessionFiles(sid), 0);
         }
-        const s = gitState();
-        const theme = api.theme.current;
-        if (s.error) {
-          return (() => {
-            var _el$ = _$createElement("text");
-            _$insertNode(_el$, _$createTextNode(`git ?`));
-            _$effect((_$p) => _$setProp(_el$, "fg", theme.error, _$p));
-            return _el$;
-          })();
-        }
-        const ab = s.aheadBehind;
-        const hasAheadBehind = ab !== null && (ab.ahead > 0 || ab.behind > 0);
-        if (s.total === 0 && !hasAheadBehind) {
-          return (() => {
-            var _el$3 = _$createElement("text");
-            _$insertNode(_el$3, _$createTextNode(`git \u2713`));
-            _$effect((_$p) => _$setProp(_el$3, "fg", theme.success, _$p));
-            return _el$3;
-          })();
-        }
-        if (s.total === 0 && hasAheadBehind) {
-          const arrowFg = ab.ahead > 0 && ab.behind > 0 ? theme.error : ab.ahead > 0 ? theme.success : theme.warning;
-          return (() => {
-            var _el$5 = _$createElement("box"), _el$6 = _$createElement("text");
-            _$insertNode(_el$5, _el$6);
-            _$setProp(_el$5, "paddingLeft", 0);
-            _$setProp(_el$5, "flexDirection", "row");
-            _$insertNode(_el$6, _$createTextNode(`git \u2713`));
-            _$insert(_el$5, (() => {
-              var _c$ = _$memo(() => ab.ahead > 0);
-              return () => _c$() && (() => {
-                var _el$8 = _$createElement("text"), _el$9 = _$createTextNode(` \u2191`);
-                _$insertNode(_el$8, _el$9);
-                _$setProp(_el$8, "fg", arrowFg);
-                _$insert(_el$8, () => ab.ahead, null);
-                return _el$8;
-              })();
-            })(), null);
-            _$insert(_el$5, (() => {
-              var _c$2 = _$memo(() => ab.behind > 0);
-              return () => _c$2() && (() => {
-                var _el$0 = _$createElement("text"), _el$1 = _$createTextNode(` \u2193`);
-                _$insertNode(_el$0, _el$1);
-                _$setProp(_el$0, "fg", arrowFg);
-                _$insert(_el$0, () => ab.behind, null);
-                return _el$0;
-              })();
-            })(), null);
-            _$effect((_$p) => _$setProp(_el$6, "fg", theme.success, _$p));
-            return _el$5;
-          })();
-        }
-        const allSegments = [];
-        const sessionSegments = [];
-        allSegments.push({
-          label: "git",
-          fg: theme.textMuted
-        });
-        for (const cat of CATEGORIES) {
-          const n = s.counts[cat.key];
-          if (n > 0)
-            allSegments.push({
-              label: `${cat.label}${n}`,
-              fg: resolveToken(cat.token, theme)
-            });
-        }
-        if (hasAheadBehind) {
-          const arrowFg = ab.ahead > 0 && ab.behind > 0 ? theme.error : ab.ahead > 0 ? theme.success : theme.warning;
-          if (ab.ahead > 0)
-            allSegments.push({
-              label: `\u2191${ab.ahead}`,
-              fg: arrowFg
-            });
-          if (ab.behind > 0)
-            allSegments.push({
-              label: `\u2193${ab.behind}`,
-              fg: arrowFg
-            });
-        }
-        if (categorySome(s.sessionCounts)) {
-          for (const cat of CATEGORIES) {
-            const n = s.sessionCounts[cat.key];
-            if (n > 0)
-              sessionSegments.push({
-                label: `${cat.label}${n}`,
-                fg: resolveToken(cat.token, theme)
-              });
-          }
-        }
+        const dot = serviceDot();
+        const dotFg = dot === "green" ? api.theme.current.success : dot === "yellow" ? api.theme.current.warning : dot === "red" ? api.theme.current.error : api.theme.current.textMuted;
         return (() => {
-          var _el$10 = _$createElement("box");
-          _$setProp(_el$10, "paddingLeft", 0);
-          _$setProp(_el$10, "flexDirection", "row");
-          _$insert(_el$10, () => allSegments.map((p, i) => (() => {
-            var _el$11 = _$createElement("text");
-            _$insert(_el$11, i > 0 ? " " : "", null);
-            _$insert(_el$11, () => p.label, null);
-            _$effect((_$p) => _$setProp(_el$11, "fg", p.fg, _$p));
-            return _el$11;
-          })()), null);
-          _$insert(_el$10, (() => {
-            var _c$3 = _$memo(() => sessionSegments.length > 0);
-            return () => _c$3() && [(() => {
-              var _el$12 = _$createElement("text");
-              _$insertNode(_el$12, _$createTextNode(` (`));
-              _$effect((_$p) => _$setProp(_el$12, "fg", theme.textMuted, _$p));
-              return _el$12;
-            })(), _$memo(() => sessionSegments.map((p, i) => (() => {
-              var _el$16 = _$createElement("text");
-              _$insert(_el$16, i > 0 ? " " : "", null);
-              _$insert(_el$16, () => p.label, null);
-              _$effect((_$p) => _$setProp(_el$16, "fg", p.fg, _$p));
-              return _el$16;
-            })())), (() => {
-              var _el$14 = _$createElement("text");
-              _$insertNode(_el$14, _$createTextNode(`)`));
-              _$effect((_$p) => _$setProp(_el$14, "fg", theme.textMuted, _$p));
-              return _el$14;
-            })()];
-          })(), null);
-          return _el$10;
+          var _el$17 = _$createElement("box"), _el$18 = _$createElement("text");
+          _$insertNode(_el$17, _el$18);
+          _$setProp(_el$17, "paddingLeft", 0);
+          _$setProp(_el$17, "flexDirection", "row");
+          _$insert(_el$17, () => renderBadge(gitState(), api.theme.current), _el$18);
+          _$insertNode(_el$18, _$createTextNode(` \u25CF`));
+          _$setProp(_el$18, "fg", dotFg);
+          return _el$17;
         })();
       }
     }
@@ -387,6 +454,10 @@ var tui = async (api) => {
     if (interval !== null) {
       clearInterval(interval);
       interval = null;
+    }
+    if (serviceInterval !== null) {
+      clearInterval(serviceInterval);
+      serviceInterval = null;
     }
   });
 };
