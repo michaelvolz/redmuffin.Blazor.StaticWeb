@@ -94,31 +94,19 @@ prompt: |
 
 ## Linux Cleanup
 
-When running on Linux, adapt the cleanup workflow:
+When running on Linux, the dev server runs as a systemd user unit.
+Two commands cover all cleanup:
 
-1. **Stop dev server**: Use proper systemd stop.
+1. **Stop dev server**: Kills dotnet watch and sass watchers via cgroup.
    ```bash
-   systemctl --user stop redmuffin.Blazor.StaticWeb-sass-dotnet-watch.service 2>/dev/null    # ~2s (TimeoutStopSec=1)
+   systemctl --user stop redmuffin.Blazor.StaticWeb-sass-dotnet-watch.service 2>/dev/null
    ```
-2. **Reset unit state**: Clear failed state so the unit can be reused.
-   ```bash
-   systemctl --user reset-failed redmuffin.Blazor.StaticWeb-sass-dotnet-watch.service 2>/dev/null
-   ```
-3. **Stop sass watchers**: Kill any orphaned background SCSS watchers.
+2. **Kill orphaned sass watchers**: Catches rare cgroup escapees from
+   crashed sessions that systemd could not track.
    ```bash
    pkill -f "sass --watch" 2>/dev/null
    ```
-4. **Stop dotnet processes**: Kill any remaining dotnet processes owned by the current user (stale processes from crashed sessions).
-   ```bash
-   pkill -u $USER dotnet 2>/dev/null
-   ```
-5. **Stop browser processes**: Kill Brave/Chromium processes launched by MCP tools.
-   ```bash
-   pkill -f "chrome-devtools-mcp" 2>/dev/null
-   ```
-6. **Stray file**: Remove any `nul` file in the workspace root.
-   ```bash
-   rm -f nul
-   ```
 
+Never run `pkill -u $USER dotnet` — it will kill the agent process.
+Never kill MCP server processes — they are permanent infrastructure.
 No IDE-ownership protection needed on Linux (no Visual Studio).
