@@ -58,6 +58,7 @@ window.pageLoadSpeed = {
                     const entries = list.getEntries();
                     const lastEntry = entries[entries.length - 1];
                     self.lcpValue = lastEntry.startTime;
+                    observer.disconnect();
                 });
                 observer.observe({ entryTypes: ['largest-contentful-paint'] });
             } catch (e) {
