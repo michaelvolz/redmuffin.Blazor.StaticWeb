@@ -118,6 +118,7 @@ To enable me to perform my role effectively, two coordination rules are critical
 
 ## WORKFLOWS
 
+- **Chrome DevTools MCP**: Available but disabled by default in `opencode.jsonc`. When the agent needs Lighthouse audits, performance tracing, screenshots, or browser-based testing, it will ask for them to be enabled. Enable on demand.
 - **Sidenotes** ("sidenote:" or "/sidenote"): Immediately load `rm-sidenotes` skill, capture the raw quoted text verbatim, then continue the current task without delay. Sidenotes are backlog items only.
 - **Everything Search (`es.exe`)**: If the tool fails or is unavailable, STOP and report the failure. Do NOT attempt any fallback search without explicit approval.
 - **Undo Last Commit**: Revert the commit while leaving all changes as unstaged edits in the working directory.
