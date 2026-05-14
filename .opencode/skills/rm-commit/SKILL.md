@@ -5,7 +5,7 @@ description: "Use when the user says commit or wants help making a commit. Gener
 
 # rm-commit
 
-Create clean, reviewable git commits in batches from the working tree. 
+Create clean, reviewable git commits in batches from the working tree.
 Enforces commitlint rules (body required, blank lines, 100-char line limit)
 via Conventional Commits.
 
@@ -265,6 +265,23 @@ EOF
 | `git diff --cached`                  | Review staged changes                                                                            | After staging            |
 | `git reset --soft HEAD~1`            | Undo last commit                                                                                 | Commit rejected or wrong |
 | `git --no-optional-locks status`     | Status without lock contention                                                                   | Background check         |
+
+## Git Porcelain Commands (Stable Output for Agents)
+
+| Command                                                                  | Purpose                                              | When                                  |
+| ------------------------------------------------------------------------ | ---------------------------------------------------- | ------------------------------------- |
+| `git status --porcelain=v2 --branch`                                     | Machine-readable status (stable across Git versions) | Scripted workflows & parallel agents  |
+| `git diff --numstat`                                                     | Tab-separated line counts                            | Code review & diff analysis           |
+| `git diff --name-status`                                                 | File status (M/A/D/R)                                | Change categorization                 |
+| `git for-each-ref --format='%(refname:short)' --merged HEAD refs/heads/` | Safe list of merged branches                         | Cleanup & branch hygiene scripts      |
+| `git --no-optional-locks status`                                         | Status without index lock                            | Background or parallel agent sessions |
+| `git log --format='%H\|%an\|%s'`                                         | Custom log format for parsing                        | Release notes & automated analysis    |
+| `git remote get-url origin 2>/dev/null`                                  | Retrieve remote URL safely                           | Automation & CI scripts               |
+| `gh pr list --json number,title`                                         | Structured GitHub PR list                            | PR workflow automation                |
+
+**Rationale for Git porcelain commands**: Output is stable across Git versions
+and user configurations. `--no-optional-locks` prevents index locking when
+multiple agents run in parallel.
 
 ## Error Recovery
 
