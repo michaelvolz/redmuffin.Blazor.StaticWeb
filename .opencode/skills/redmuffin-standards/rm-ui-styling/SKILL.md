@@ -1,24 +1,27 @@
 ---
 name: rm-ui-styling
-description: "Foundation CSS framework, SCSS compilation, Blazor styling, and WCAG 2.1 AA accessibility. Use when writing SCSS, using Foundation CSS classes, styling Blazor components, or implementing accessibility."
+description: "Foundation CSS framework, SCSS compilation, Blazor styling, and WCAG 2.1 AA accessibility. Use when writing SCSS, using Foundation CSS classes, styling Blazor components, or implementing accessibility. For tooling and build commands, see rm-dev-tools. For SCSS conventions, see rm-scss."
 ---
 
 # UI/Styling
 
 ## Framework
 
-- Zurb Foundation (CDN)
-- FontAwesome (CDN)
+- Zurb Foundation 6 (self-hosted SCSS, transitioning to extracted owned components — see `rm-scss` §Foundation Migration Strategy)
+- Font Awesome 6.7.0 (self-hosted, woff2)
 
 ## Styling Rules
 
-- Use SCSS in `wwwroot/scss/`, NEVER modify CSS or use `.razor.css`
-- Partials start with `_`, included in `app.scss`
+- Use SCSS in `scss/`, NEVER modify compiled CSS.
+- Partials start with `_`, included in `app.scss`.
+- For SCSS conventions, architecture, and naming: see `rm-scss`.
 
 ## SCSS Build
 
-- Use `Debug-Sass` configuration: `dotnet build --configuration Debug-Sass`
-- Requires BuildWebCompiler2022 package (Windows only)
+- **Dev**: `sass --watch scss:wwwroot/css` (auto-compiles on save, integrates with `dotnet watch`)
+- **Prod**: `sass --style=compressed --no-source-map scss/app.scss:wwwroot/css/app.min.css`
+- Requires `dart-sass` installed (`sudo pacman -S dart-sass` on Arch, `winget install Sass.DartSass` on Windows)
+- Full toolchain reference: `rm-dev-tools`
 
 ## Foundation CSS Patterns
 

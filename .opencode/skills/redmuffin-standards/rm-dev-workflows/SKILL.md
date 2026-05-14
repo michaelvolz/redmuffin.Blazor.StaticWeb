@@ -1,6 +1,6 @@
 ---
 name: rm-dev-workflows
-description: "Canonical reference for Windows dev sessions, site startup, process management, port workflow, browser tab hygiene, and tool selection. Use when managing dev environment processes, checking ports, or deciding which tools to use."
+description: "Canonical reference for dev sessions, site startup, process management, port workflow, browser tab hygiene, and tool selection. Use when managing dev environment processes, checking ports, or deciding which tools to use."
 ---
 
 # rm-dev-workflows
@@ -21,6 +21,8 @@ This skill does NOT cover:
 - Commit workflow → use `rm-commit`
 - NuGet management → use `rm-nuget-manager`
 - Coding standards → use `strict-coding-standards`
+- Tool installation and SCSS compilation → use `rm-dev-tools`
+- SCSS conventions → use `rm-scss`
 
 ## BROWSER TAB HYGIENE
 
@@ -119,13 +121,8 @@ Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue | Where-Obje
 - **Disable hot reload**: Set `"hotReloadEnabled": false` in `launchSettings.json` profile
 - **Env var alternative**: `DOTNET_WATCH_RESTART_ON_RUDE_EDIT=1` achieves the same as `--non-interactive`
 
-**SCSS/Sass note**: Hot reload does NOT process SCSS changes. After editing `.scss` files, run:
-
-```powershell
-dotnet build -c Debug-Sass
-```
-
-The compiled CSS is written to disk. If `dotnet watch` is running, it detects the file change automatically. If not, use `chrome-devtools_press_key` with `Control+R` to force a real reload.
+**SCSS/Sass note**: Hot reload does NOT process SCSS changes directly. The `sass --watch` background process handles SCSS compilation automatically. After editing `.scss` files, the compiled CSS lands in `wwwroot/css/` and `dotnet watch` detects it instantly. No manual build step required.
+See `rm-dev-tools` for tool installation and `rm-scss` for SCSS conventions.
 
 ### Build Verification
 
@@ -204,6 +201,14 @@ Get-NetTCPConnection -LocalPort 5000 -ErrorAction SilentlyContinue
 | Performance tracing | `chrome-devtools_performance_start_trace`             |
 | List pages          | `chrome-devtools_list_pages`                          |
 | Session isolation   | `agent-browser` (separate daemon, not MCP)            |
+
+### Dev Tools
+
+| Task                      | Skill          |
+| ------------------------- | -------------- |
+| Tool install & versions   | `rm-dev-tools` |
+| SCSS compilation workflow | `rm-dev-tools` |
+| SCSS conventions          | `rm-scss`      |
 
 ### Rules
 

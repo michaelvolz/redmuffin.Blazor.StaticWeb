@@ -33,6 +33,8 @@ All paths use `~/` as the home directory. Forward slashes work on all platforms.
 | Skills                 | `~/.config/opencode/skills/`           |
 | Agents                 | `~/.config/opencode/agents/`           |
 | Plugins                | `~/.config/opencode/plugins/`          |
+| Plugin package cache   | `~/.cache/opencode/packages/`          |
+| npm debug logs         | `~/.npm/_logs/`                        |
 | Docs & specs           | `~/.config/opencode/docs/`             |
 | Context-mode config    | `~/.config/opencode/context-mode/`     |
 | Server logs            | `~/.local/share/opencode/log/`         |
@@ -74,6 +76,37 @@ Schema URLs:
 }
 ```
 
+**Provider naming conventions:**
+
+- Free tier provider ID is `opencode` (not `zen`, not `go`)
+- Paid Go provider ID is `opencode-go`
+- Model format for free tier: `opencode/<model-id>` (e.g., `opencode/minimax-m2.5-free`)
+- Model format for paid direct: `<provider>/<model-id>` (e.g., `deepseek/deepseek-v4-pro`)
+
+**Model-level configuration:**
+
+Most models work with provider defaults auto-detected from models.dev —
+no manual config required. Only add explicit `limit` or `options` when
+you have a specific reason.
+
+```jsonc
+"<provider>": {
+  "models": {
+    "<model-id>": {
+      // "limit" and "options" are optional — defaults from models.dev
+      // are correct for standard providers (DeepSeek, OpenAI, Anthropic).
+    }
+  }
+}
+```
+
+> **DeepSeek V4 Pro specifics:** Do not set `temperature` or `top_p` —
+> thinking mode (enabled by default) ignores these parameters. Context
+> management should use magic-context's `execute_threshold_tokens`, not
+> API-level `limit.context` caps. See `docs/solutions/tooling-decisions/
+deepseek-v4-pro-context-precision-tuning-2026-05-13.md` for the full
+> rationale.
+
 ### Agent (in opencode.jsonc)
 
 ```jsonc
@@ -111,6 +144,24 @@ Custom safety plugin. Blocks dangerous git operations:
 - `git update-ref` — restricted to the repository owner
 
 Any new command protections or safety rules go in this file.
+
+### npm plugin package cache
+
+When `opencode.jsonc` loads a plugin from npm (`@scope/name@version` or
+`@latest`), OpenCode installs it to `~/.cache/opencode/packages/<name>@<version>/`
+— NOT into the local `node_modules/` tree. Each package gets an isolated
+npm install with its own `.npmrc` derived from the user's `~/.npmrc`.
+
+**`min-release-age` trap:** The global `~/.npmrc` `min-release-age` setting
+applies to plugin auto-updates. If a plugin publishes a new version within
+the age window, `npm install` silently fails with `notarget No matching version
+found`. Debug logs go to `~/.npm/_logs/` (timestamped `*-debug-0.log` files).
+
+**This is intentional supply chain protection — do NOT bypass it.** The
+age filter exists to block malicious packages injected into new releases.
+It applies to OpenCode itself as well: if a new OpenCode release falls inside
+the window, the update will be delayed until the age threshold passes. This
+is the safe default. The correct response to a blocked update is to wait.
 
 ---
 
@@ -224,6 +275,9 @@ or none are deleted). Reports each deleted session title + ID verbosely.
 ## Key Docs
 
 - Conversion spec: `~/docs/specs/2026-05-01-compound-engineering-opencode-conversion-spec.md`
+- Model tuning: `docs/solutions/tooling-decisions/deepseek-v4-pro-context-precision-tuning-2026-05-13.md`
+- Proxy removal: `docs/solutions/tooling-decisions/deepseek-cursor-proxy-removal-opencode-1-14-41-2026-05-13.md`
+- Session recovery: `docs/solutions/workflow-issues/magic-context-historian-stuck-compartment-flag-2026-05-11.md`
 
 ---
 
@@ -409,3 +463,35 @@ FROM session ORDER BY time_created DESC LIMIT 20;
 SELECT directory, COUNT(*) as n
 FROM session GROUP BY directory ORDER BY n DESC LIMIT 10;
 ```
+
+---
+
+## Troubleshooting
+
+### Historian stuck — all runs fail with "JSON Parse error: Unexpected EOF"
+
+**Symptom:** Every historian run fails identically in <1ms across all models with
+`JSON Parse error: Unexpected EOF`. The first pass completes but validation rejects
+the output; retry infrastructure is dead on arrival.
+
+**Root cause:** `compartment_in_progress = 1` stuck in the `session_meta` table of
+magic-context's database. A previous run using a broken model config (e.g.,
+non-existent model ID like `deepseek/deepseek-v4-flash`) caused the first pass to
+silently fail, permanently locking the flag. Non-zero `compartment_in_progress`
+blocks all new historian runs.
+
+**Recovery:**
+
+```bash
+sqlite3 ~/.local/share/cortexkit/magic-context/context.db "
+UPDATE session_meta
+SET compartment_in_progress = 0,
+    historian_last_error = NULL,
+    historian_last_failure_at = NULL,
+    historian_failure_count = 0
+WHERE session_id LIKE '%<session_id>%';
+"
+```
+
+Also check `pending_ops` for stuck entries. Full procedure and root cause
+analysis: `docs/solutions/workflow-issues/magic-context-historian-stuck-compartment-flag-2026-05-11.md`.
