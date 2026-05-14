@@ -166,23 +166,20 @@ jobs:
       # TUnit runs via dotnet run (native, no VSTest dependency)
       # Note: Tests automatically use environment variables set in the job environment
       # No local.settings.json file needed as TestBase class uses AddEnvironmentVariables()
-      - name: Run Blazor tests
-        run: |
-          echo "Running Blazor WASM tests..."
-          dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests -c Release
-          if [ $? -ne 0 ]; then
-            echo "❌ Blazor tests failed"
-            exit 1
-          fi
+      # Build once, run both test projects in parallel (--no-build avoids duplicate compilation)
+      - name: Build solution
+        run: dotnet build -c Release
 
-      - name: Run API tests
+      - name: Run tests
         run: |
-          echo "Running API tests..."
-          dotnet run --project tests/redmuffin.Blazor.StaticWeb.Api.Tests -c Release
-          if [ $? -ne 0 ]; then
-            echo "❌ API tests failed"
-            exit 1
-          fi
+          echo "Running tests in parallel..."
+          dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests -c Release --no-build &
+          PID1=$!
+          dotnet run --project tests/redmuffin.Blazor.StaticWeb.Api.Tests -c Release --no-build &
+          PID2=$!
+          wait $PID1 || { echo "❌ Blazor tests failed"; kill $PID2 2>/dev/null; exit 1; }
+          wait $PID2 || { echo "❌ API tests failed"; exit 1; }
+          echo "✅ All tests passed"
 
       # BUILD AND DEPLOY PHASE: Only runs if tests pass
       # Runner image provides Node.js 20 (pre-installed) — SWA CLI needs ≥ 18
