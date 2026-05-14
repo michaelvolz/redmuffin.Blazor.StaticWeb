@@ -18,7 +18,6 @@
     <MicrosoftTestingPlatformVersion>2.1.0</MicrosoftTestingPlatformVersion>
     <AngleSharpVersion>1.4.0</AngleSharpVersion>
     <BlazoredLocalStorageVersion>4.5.0</BlazoredLocalStorageVersion>
-    <BuildWebCompiler2022Version>1.14.15</BuildWebCompiler2022Version>
     <LZStringCSharpVersion>1.4.0</LZStringCSharpVersion>
     <MarkdigVersion>1.1.2</MarkdigVersion>
     <NewtonsoftJsonVersion>13.0.4</NewtonsoftJsonVersion>
