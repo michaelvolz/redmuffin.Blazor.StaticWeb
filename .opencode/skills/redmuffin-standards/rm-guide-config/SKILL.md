@@ -23,4 +23,24 @@ description: "Use when touching build commands, dev modes, package management, o
 
 ## NEVER
 
-- Do not scatter version literals across projects.
+- Do not scatter version literals across projects. Define versions as properties in `Directory.Packages.props`; reference properties in item groups.
+
+## Build & Test
+
+- **Before every commit**: Run `dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests` (All 325+ tests must pass).
+- **After every C# edit**: Run `dotnet build --verbosity quiet`. SCSS is compiled by the dev server systemd unit (`sass --watch`).
+- **Repeated failures**: Run `dotnet clean` first, then rebuild.
+- **Zero warnings on build**: All analyzer warnings are improvement signals. Fix root causes, never suppress.
+
+## Repository Conventions
+
+- All workflows and Dependabot configuration go in `.github/`.
+- Trunk-Based Development: `main` is the source of truth. Feature branches only for high-risk changes.
+- New files in `docs/` must have `date: YYYY-MM-DD` frontmatter.
+- Fast file search: Use `es.exe` when available; fall back to `grep` only if `es.exe` is unavailable.
+
+## Pragma Warnings
+
+- **Ask first** before changing any `#pragma warning disable` directive.
+- All pragma warnings are deliberate. Goal: zero warnings on build.
+- Reviewers must target the correct subfolder or "Local" only.
