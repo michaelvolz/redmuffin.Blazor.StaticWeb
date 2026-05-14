@@ -195,7 +195,7 @@ interactive:
   active task (sidenotes belong in backlog only).
 - Remove or consolidate SKILL COMMANDS tables (duplication is mandatory
   for model adherence).
-- Bypass the NPM 1-day release age filter (`min-release-age=1` in `.npmrc`).
+- Bypass the NPM 7-day release age filter (`min-release-age=7` in `.npmrc`).
 
 ### ASK FIRST
 
