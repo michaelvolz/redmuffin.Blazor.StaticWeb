@@ -11,7 +11,13 @@ public sealed class MutationRunnerTests
         "Fixtures",
         "MutationTarget");
 
+    private static string SurvivorFixtureDir => Path.Combine(
+        AppContext.BaseDirectory,
+        "Fixtures",
+        "SurvivorTarget");
+
     private static string SourcePath => Path.Combine(FixtureDir, "Calculator.cs");
+    private static string SurvivorSourcePath => Path.Combine(SurvivorFixtureDir, "Survivor.cs");
 
     [Test]
     public async Task Should_kill_arithmetic_mutation_when_test_catches_it()
@@ -36,22 +42,16 @@ public sealed class MutationRunnerTests
     [Test]
     public async Task Should_report_survived_for_mutation_not_covered_by_tests()
     {
-        var source = await File.ReadAllTextAsync(SourcePath).ConfigureAwait(false);
-        await Assert.That(source).Contains("a + b"); // file should be restored from previous test
-        await Assert.That(source).Contains("a * b");
+        var source = await File.ReadAllTextAsync(SurvivorSourcePath).ConfigureAwait(false);
         var allSites = MutationDiscoverer.FindSites(source);
 
-        // Multiply is not tested in CalculatorTests, so *→/ should survive
-        var multiplySite = allSites.FirstOrDefault(s => s.Category == MutationCategory.Arithmetic && s.Description.Contains("multiplication"));
-        if (multiplySite is null)
-        {
-            throw new InvalidOperationException(
-                $"No multiply site found. Found {allSites.Count} sites: " +
-                string.Join(", ", allSites.Where(s => s.Category == MutationCategory.Arithmetic).Select(s => s.Description)));
-        }
+        // Multiply is not tested in SurvivorTests, so *→/ should survive
+        var multiplySite = allSites.First(s =>
+            s.Category == MutationCategory.Arithmetic && s.Description.Contains("multiplication"));
         var sites = new List<MutationSite> { multiplySite };
 
-        var results = await MutationRunner.RunAsync(SourcePath, sites, FixtureDir).ConfigureAwait(false);
+        var results = await MutationRunner.RunAsync(SurvivorSourcePath, sites, SurvivorFixtureDir)
+            .ConfigureAwait(false);
 
         await Assert.That(results.Count).IsEqualTo(1);
         await Assert.That(results[0].Result).IsEqualTo(MutantResultType.Survived);

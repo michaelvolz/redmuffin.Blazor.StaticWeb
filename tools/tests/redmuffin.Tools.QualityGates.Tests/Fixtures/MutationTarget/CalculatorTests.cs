@@ -11,13 +11,39 @@ public sealed class CalculatorTests
         await Assert.That(result).IsEqualTo(5);
     }
 
-    // Intentionally NOT testing Multiply — so *→/ mutation survives
+    [Test]
+    public async Task Multiply_should_return_product()
+    {
+        var result = Calculator.Multiply(3, 4);
+        await Assert.That(result).IsEqualTo(12);
+    }
 
     [Test]
     public async Task IsPositive_should_return_true_for_positive()
     {
         var result = Calculator.IsPositive(5);
         await Assert.That(result).IsTrue();
+    }
+
+    [Test]
+    public async Task IsPositive_should_return_true_for_one()
+    {
+        var result = Calculator.IsPositive(1);
+        await Assert.That(result).IsTrue();
+    }
+
+    [Test]
+    public async Task IsPositive_should_return_false_for_zero()
+    {
+        var result = Calculator.IsPositive(0);
+        await Assert.That(result).IsFalse();
+    }
+
+    [Test]
+    public async Task IsPositive_should_return_false_for_negative()
+    {
+        var result = Calculator.IsPositive(-5);
+        await Assert.That(result).IsFalse();
     }
 
     [Test]
