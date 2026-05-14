@@ -61,21 +61,6 @@
     <PackageReference Include="Microsoft.Extensions.Http" />
   </ItemGroup>
 
-  <!--
-    STATIC ASSET FINGERPRINTING (.NET 10 SDK)
-    Adds content hashes to CSS/JS filenames during publish so CDN caches
-    are automatically busted on every content change. The #[.{fingerprint}]
-    placeholders in index.html are replaced at publish time.
-  -->
-  <PropertyGroup>
-    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <StaticWebAssetFingerprintPattern Include="JS" Pattern="*.js"
-      Expression="#[.{fingerprint}]!" />
-  </ItemGroup>
-
   <!-- SCSS compiled by dart-sass CLI. No NuGet package needed. -->
 
   <ItemGroup>
