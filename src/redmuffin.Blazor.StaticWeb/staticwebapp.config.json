@@ -3,7 +3,7 @@
     "apiRuntime": "dotnet-isolated:9.0"
   },
   "globalHeaders": {
-    "Content-Security-Policy": "default-src 'self'; connect-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src * data:; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com;",
+    "Content-Security-Policy": "default-src 'self'; connect-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src * data:; font-src 'self';",
     "Cross-Origin-Resource-Policy": "cross-origin",
     "Permissions-Policy": "",
     "Accept-Encoding": "gzip, deflate, br",
@@ -39,7 +39,7 @@
       }
     },
     {
-      "route": "/lib/fontAwesome-free/webfonts/*",
+      "route": "/fonts/*",
       "headers": {
         "Cache-Control": "must-revalidate, max-age=604800"
       }
@@ -67,6 +67,8 @@
     "rewrite": "/index.html",
     "exclude": [
       "/api/*",
+      "/robots.txt",
+      "/fonts/*",
       "/sample-data/*",
       "/css/*",
       "/lib/fontAwesome-free/webfonts/*"
