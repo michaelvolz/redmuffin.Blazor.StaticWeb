@@ -59,3 +59,8 @@ For the full executable reference (all profiles, hot reload behavior, troublesho
 2. DevTools can navigate and interact briefly
 3. Suddenly `ERR_CONNECTION_REFUSED` on all requests
 4. No error in agent output — the bash tool just reports "terminated after exceeding timeout"
+
+## Related
+
+- [SCSS Toolchain Migration + Systemd Dev Server](/docs/solutions/tooling-decisions/dart-sass-migration-systemd-dev-server-2026-05-14.md) — Linux alternative using `systemd-run --user` transient services with multiple watchers
+- [Dev Server Lifecycle for Blazor WASM](/docs/solutions/developer-experience/agent-optimized-site-startup-for-blazor-wasm-2026-04-04.md) — Windows `Start-Process` approach

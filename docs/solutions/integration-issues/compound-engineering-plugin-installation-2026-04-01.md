@@ -12,6 +12,7 @@ tags:
   - opencode
   - skills
 date: 2026-04-01
+last_updated: 2026-05-14
 track: knowledge
 applies_when:
   - Installing AI agent plugins via npm/bun
@@ -42,11 +43,26 @@ We wanted to install the Compound Engineering plugin from EveryInc (https://gith
 
 **When to reconsider:** If the project becomes JS/TS-heavy with daily installs.
 
-### 2. Supply Chain Protection via min-release-age
+### 2. Supply Chain Protection via .npmrc Hardening
 
-**Problem:** npm/bun packages can be compromised shortly after publication (supply chain attacks).
+**Problem:** npm/bun packages can be compromised shortly after publication
+(supply chain attacks, typosquatting).
 
-**Solution:** Set `min-release-age=10080` (7 days in minutes) in `.npmrc`.
+**Solution:** Five hardening settings in `.npmrc`:
+
+```ini
+min-release-age=1       # block packages published <1 day ago (typosquatting)
+ignore-scripts=true     # never auto-execute postinstall scripts (RCE prevention)
+save-exact=true         # pin exact versions, no ^ or ~ ranges (deterministic)
+strict-peer-deps=true   # reject installs with unmet peer dependencies
+engine-strict=true      # enforce Node.js version compatibility
+```
+
+> **Updated 2026-05-14:** `min-release-age` reduced from 7 days to 1 day.
+> npm uses **days** as the unit for `min-release-age`. The prior value of
+> `10080` (seconds/minutes) was incorrect for npm's configuration format.
+> A 1-day filter provides effective typosquatting defense without
+> unreasonably delaying dependency updates.
 
 **Implementation (three layers):**
 
@@ -59,9 +75,12 @@ We wanted to install the Compound Engineering plugin from EveryInc (https://gith
 **Project `.npmrc`:**
 
 ```
-# Supply chain protection: reject packages published less than 7 days ago
-# 10080 minutes = 7 days (npm format)
-min-release-age=10080
+# Supply chain protection (all five settings tested with @azure/static-web-apps-cli)
+min-release-age=1
+ignore-scripts=true
+save-exact=true
+strict-peer-deps=true
+engine-strict=true
 ```
 
 **GitHub Actions step:**
@@ -69,11 +88,16 @@ min-release-age=10080
 ```yaml
 - name: Configure npm supply chain protection
   run: |
-    echo "min-release-age=10080" >> ~/.npmrc
-    echo "Supply chain protection: minimum release age set to 7 days"
+    npm config set min-release-age 1
+    npm config set ignore-scripts true
+    npm config set save-exact true
+    npm config set strict-peer-deps true
+    npm config set engine-strict true
 ```
 
-**Important:** Both npm and bun read `.npmrc`, so this protects both tools with one config.
+**Important:** Both npm and bun read `.npmrc`, so this protects both tools
+with one config. `ignore-scripts=true` is safe for `@azure/static-web-apps-cli`
+(it ships pre-compiled `dist/`, no postinstall hooks).
 
 ### 3. Compound Engineering Plugin Installation
 

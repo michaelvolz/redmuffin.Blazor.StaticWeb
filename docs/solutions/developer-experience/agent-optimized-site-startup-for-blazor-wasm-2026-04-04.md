@@ -79,3 +79,4 @@ Pick the right profile (launch via `Start-Process powershell.exe`, never via `ba
 - `.opencode/skills/rm-dev-workflows/SKILL.md` — full executable reference (commands, hot reload matrix, troubleshooting)
 - `.opencode/skills/rm-cleanup/SKILL.md` — process cleanup patterns (IDE-owned process protection)
 - `AGENTS.md` — mandatory build/test rules referenced by the skill
+- [SCSS Toolchain Migration + Systemd Dev Server](/docs/solutions/tooling-decisions/dart-sass-migration-systemd-dev-server-2026-05-14.md) — Linux alternative using `systemd-run --user` with dual SCSS watchers and proper stop timeout
