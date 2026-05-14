@@ -314,7 +314,10 @@
       "**/.git/config": "deny",
       "~/.local/share/applications/**": "deny"
     },
-    "external_directory": "ask"
+    "external_directory": {
+      "*": "ask",
+      "/tmp/magic-context-historian/**": "allow"
+    }
   },
   "formatter": {
     "dotnet-format": {
