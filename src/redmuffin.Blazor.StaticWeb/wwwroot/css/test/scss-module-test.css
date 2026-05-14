@@ -1,0 +1,17 @@
+/* Error: There is no module with the namespace "meta".
+ *     ,
+ * 137 |     content: " - Build Date: " + inspect(meta.inspect(vars.$brand-burgundy));
+ *     |                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ *     '
+ *   scss/test/scss-module-test.scss 137:42  root stylesheet */
+
+body::before {
+  font-family: "Source Code Pro", "SF Mono", Monaco, Inconsolata, "Fira Mono",
+      "Droid Sans Mono", monospace, monospace;
+  white-space: pre;
+  display: block;
+  padding: 1em;
+  margin-bottom: 1em;
+  border-bottom: 2px solid black;
+  content: 'Error: There is no module with the namespace "meta".\a     \2577 \a 137 \2502      content: " - Build Date: " + inspect(meta.inspect(vars.$brand-burgundy));\a     \2502                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\a     \2575 \a   scss/test/scss-module-test.scss 137:42  root stylesheet';
+}
