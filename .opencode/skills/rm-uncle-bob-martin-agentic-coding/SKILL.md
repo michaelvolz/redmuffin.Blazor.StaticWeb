@@ -60,8 +60,7 @@ quality gate:
 - **Decision authority**: When in doubt, the original source code is the
   answer. User preference, convenience, or "best practice" are irrelevant
   unless the original tool explicitly supports them.
-- **Research before implementing**: Before building any gate, read the
-  original repo's README, AGENTS.md, and source code. Confirm existence,
+- **Research before implementing**: Never implement a tool or gate without first reading the original repo's README, AGENTS.md, and source code. Confirm existence,
   scope, thresholds, and CLI interface. Never build from a third-party
   summary or memory.
 
@@ -71,7 +70,7 @@ quality gate:
 
 1. Write Gherkin-style acceptance tests in plain-text .txt or .feature files using Given-When-Then format tailored to the domain.
 2. Build or use a custom parser that converts Gherkin to language-specific test skeletons (e.g., Speclj for Clojure, xUnit/NUnit for C#, Jest for TS). Separate parser from generator with an intermediate JSON/EDN representation to prevent cheating.
-3. Implement production code strictly via TDD: red-green-refactor loop driven by the agent.
+3. Implement production code strictly via TDD: red-green-refactor loop driven by you.
 4. Never execute the application until all acceptance and unit tests pass.
 5. Upon completion, run full metric suite (coverage, CRAP, mutation, duplication, dependencies).
 6. Refactor any violations; repeat until all gates pass.
@@ -90,7 +89,7 @@ This workflow produced zero-bug first-run systems in Uncle Bob’s public experi
 - Dependency check: Enforce acyclic, layered architecture (use custom arch-view tool).
 - Test quality (SCRAP equivalent): No long test chains, duplicated setup, hidden helpers, or zero-assertion examples.
 
-If any gate fails, direct the agent to fix and re-run. Exit code conventions: 0 = pass, 2 = CRAP threshold breach.
+Never proceed past a failing quality gate without fixing the violation and re-running the suite. Exit code conventions: 0 = pass, 2 = CRAP threshold breach.
 
 ### 2.3 Multi-Agent Coordination (Swarm Pattern)
 
@@ -182,13 +181,13 @@ Prompt template for agent:
 Every OpenCode session begins with these immutable rules:
 
 - You will never suggest or produce code without accompanying tests.
-- You will enforce CRAP ≤8, 100% mutation kill, high coverage, and zero harmful duplication.
-- On any change, you will automatically run the full metric suite and report violations with exact fix commands.
-- You will use Gherkin acceptance tests converted via JSON intermediary.
-- You will refactor aggressively on high CRAP, duplication scores, or large modules.
-- You will answer structural questions only after metrics pass.
+- Never accept code that violates CRAP ≤8, drops below 100% mutation kill, or contains harmful duplication.
+- Never complete a change to source files without running the full metric suite.
+- Never write acceptance tests without converting them through the Gherkin→JSON→test-skeleton pipeline.
+- Never leave a module with high CRAP, elevated duplication, or excessive size unrefactored.
+- Never answer a structural question about the codebase while any metric gate is failing.
 - You will never rely on human code review; metrics and targeted probes suffice.
-- Clean Code, SOLID, and dependency inversion are non-negotiable; cite violations immediately.
+- Never pass over a Clean Code, SOLID, or dependency-inversion violation without citing it.
 
 ## 6. Tips, Tricks, and Hard-Earned Insights
 

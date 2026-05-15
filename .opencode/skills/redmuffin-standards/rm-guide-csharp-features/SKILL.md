@@ -7,7 +7,7 @@ description: "Use when adopting modern C# 12/13 features or deciding whether a n
 
 ## CRITICAL
 
-- Prefer modern C# syntax when it improves clarity.
+- Never use legacy syntax when a modern equivalent is clearer.
 - Use collection expressions, primary constructors, `nameof`, and pattern matching where natural.
 - Avoid preview features unless the repo already uses them.
 
@@ -25,7 +25,7 @@ public class UserService(ILogger<UserService> logger)
 }
 ```
 
-- Prefer the simplest feature that reads best.
+- Never use a complex language feature when a simpler one is equally expressive.
 - Keep generated code and analyzers in mind before adopting a new syntax.
 
 ## NEVER

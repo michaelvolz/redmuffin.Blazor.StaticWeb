@@ -4,14 +4,20 @@ description: >
   LOAD FIRST for ANY system-level change on this machine — installing,
   updating, or removing packages, adding language runtimes, modifying
   system services, changing PATH, or running system administration
-  commands.   Contains the Omarchy package management philosophy: pacman
+  commands. Contains the Omarchy package management philosophy: pacman
   first for system packages, mise for development runtimes, language
   runtime rules, update workflow, and the distinction between system
-  packages and user-level tools.
+  packages and user-level tools. Also covers supply chain security
+  (Socket Firewall Free, sfw wrappers, shell functions), runtime guards
+  (dotnet guard, DevSolution mappings, guard infrastructure), command
+  discovery, safety rules for ~/.local/share/omarchy/, and the decision
+  framework for package source selection.
   USE FOR: pacman, yay, AUR, omarchy-pkg-*, omarchy-update, npm
   install -g, pip install, cargo install, gem install, adding a
   package, removing a package, updating the system, troubleshooting
-  package conflicts, installing language runtimes, system maintenance.
+  package conflicts, installing language runtimes, system maintenance,
+  supply chain security, sfw, socket firewall, runtime guard, dotnet
+  guard, DevSolution, command discovery.
   DO NOT USE FOR: desktop customization (themes, Hyprland, Waybar,
   keybindings), or general coding tasks.
 ---
@@ -24,10 +30,10 @@ system-level administration under its philosophy.
 ## User's Omarchy Stance
 
 **This user strictly adheres to Omarchy philosophy, guidelines, and DHH's
-design decisions.** When making system changes, always follow Omarchy's
+design decisions.** When making system changes, you must follow Omarchy's
 opinionated defaults — never override them unless the user explicitly
-asks for an exception. System packages first. Mise for runtimes. Omarchy
-defaults are the defaults for a reason.
+asks for an exception. System packages first. Mise for runtimes.
+Omarchy defaults are the defaults for a reason.
 
 ---
 
@@ -72,8 +78,8 @@ used directly.
 
 For project dependencies, use the language's own tooling (`npm install`,
 `pip install` in a venv, `cargo build`, `bundle install`) — but never
-install those tools globally. Global installs via language package managers
-are explicitly discouraged.
+install those tools globally. Never install globally via language
+package managers.
 
 ## npm / JavaScript
 
@@ -94,8 +100,8 @@ omarchy-refresh-pacman    # Switch pacman between stable/edge channels
 ```
 
 The `omarchy-pkg-*` commands use `fzf` for interactive selection with
-previews. They should be preferred over raw `pacman` or `yay` for
-interactive use. Use raw commands for scripting.
+previews. Never use raw `pacman` or `yay` for interactive package
+management. Use raw commands for scripting only.
 
 ## Raw Package Commands
 
@@ -127,7 +133,7 @@ pip in venvs, cargo builds) stay in user space. Never mix the two: a
 language package manager installing system-wide is a violation of this
 boundary.
 
-**If it needs sudo, it should be a pacman package.** Installing something
+**If it needs sudo, it must be a pacman package.** Installing something
 globally with pip/npm/cargo that requires root access is the wrong
 approach. Find the pacman equivalent or use it per-project.
 
@@ -189,10 +195,10 @@ omarchy-update
 
 **NEVER modify anything in `~/.local/share/omarchy/`.** This directory
 contains Omarchy's source files managed by git. Changes will be lost on
-the next `omarchy-update`. Reading is safe and encouraged — use it to
-understand how commands work or see default configs.
+the next `omarchy-update`. Read it to understand how commands work or
+see default configs.
 
-**Always use these safe locations instead:**
+**Never modify configs outside these safe locations:**
 
 - `~/.config/` — user configuration
 - `~/.config/omarchy/themes/<name>/` — custom themes
@@ -200,8 +206,8 @@ understand how commands work or see default configs.
 
 ## Supply Chain Security (Socket Firewall)
 
-All `npm`, `npx`, and `pip` package installs on this machine MUST route
-through Socket Firewall Free (`sfw`) — a zero-config binary that checks
+You must route all `npm`, `npx`, and `pip` package installs through
+Socket Firewall Free (`sfw`) — a zero-config binary that checks
 packages against Socket's threat intelligence before allowing install.
 Supply chain attacks through npm/pip have risen ~700% year-over-year.
 
@@ -231,8 +237,9 @@ and it routes through sfw automatically.
 shadowed version of `omarchy-npx-install` at `~/.local/bin/` injects
 `sfw` into the template automatically.
 
-**Agent:** The OpenCode agent's bash tool runs non-interactive shells.
-Always use explicit `sfw` prefix in agent commands.
+**OpenCode bash tool:** Non-interactive shells bypass shell functions.
+Never issue bare `npm install`, `npx`, or `pip install` commands in
+non-interactive shells; always prefix with `sfw` (e.g., `sfw npm install`).
 
 **Bun:** Not supported by sfw. Mitigate with `npx @socketsecurity/cli scan .`
 after `bun install`.
@@ -247,7 +254,7 @@ shell function when needed (e.g., sfw is down).
 Full reference: `docs/solutions/security-issues/socket-firewall-omarchy-integration-2026-05-12.md`
 
 **sfw binary updates:** Re-run the curl command periodically.
-Consider adding to `topgrade` (aliased as `update-all`).
+Add it to `topgrade` (aliased as `update-all`).
 
 ## Runtime Guards
 

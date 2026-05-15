@@ -18,12 +18,8 @@ description: "Use when touching build commands, dev modes, package management, o
 
 ## GUIDANCE
 
-- Prefer existing scripts over one-off commands.
+- Never write a one-off command when an existing script covers the task.
 - Keep config changes narrow and reversible.
-
-## NEVER
-
-- Do not scatter version literals across projects. Define versions as properties in `Directory.Packages.props`; reference properties in item groups.
 
 ## Build & Test
 
@@ -44,3 +40,7 @@ description: "Use when touching build commands, dev modes, package management, o
 - **Ask first** before changing any `#pragma warning disable` directive.
 - All pragma warnings are deliberate. Goal: zero warnings on build.
 - Reviewers must target the correct subfolder or "Local" only.
+
+## NEVER
+
+- Do not scatter version literals across projects.

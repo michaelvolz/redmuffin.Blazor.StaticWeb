@@ -10,7 +10,7 @@ flag, `arch-rules.yml`), `rm-guide-cleanup` §1 for SLAP and method quality.
 
 ## CRITICAL
 
-- Prefer composition over inheritance.
+- Never use inheritance where composition suffices.
 - Keep dependencies flowing inward.
 - Give each type one reason to change.
 

@@ -1,7 +1,15 @@
 ---
 name: rm-code-philosophy
 description: Apply John Ousterhout's Philosophy of Software Design principles whenever doing architecture, system design, module/API design, refactoring, or code reviews. Primary goal is always to minimize long-term complexity.
-tags: ["architecture", "design", "refactoring", "code-review", "maintainability", "ousterhout"]
+tags:
+  [
+    "architecture",
+    "design",
+    "refactoring",
+    "code-review",
+    "maintainability",
+    "ousterhout",
+  ]
 ---
 
 # rm-code-philosophy
@@ -22,11 +30,11 @@ The #1 goal in **all** architecture, design, code generation, review, and refact
 
 ### 1. Strategic vs Tactical Programming
 
-Always think and program **strategically**. Invest time in good design now so the system remains easy to change and understand in the future. Avoid quick tactical fixes that create technical debt.
+Never think or program tactically. Invest time in good design now so the system remains easy to change and understand in the future. Avoid quick tactical fixes that create technical debt.
 
 ### 2. Deep Modules / Classes
 
-Create modules and classes that are **deep**: simple, clean interfaces that hide powerful, complex implementations. Prefer depth over breadth. Shallow classes are a major red flag.
+Create modules and classes that are **deep**: simple, clean interfaces that hide powerful, complex implementations. Never create shallow modules. Shallow classes are a major red flag.
 
 ### 3. General-Purpose Modules
 
@@ -53,7 +61,7 @@ Write comments that describe things that are **not obvious** from the code itsel
 When designing or evaluating any architecture, module, or API:
 
 - Ask: "Does this increase or decrease long-term complexity?"
-- Prefer fewer dependencies and clearer abstractions.
+- Never add dependencies when existing abstractions suffice.
 - Choose the option that makes future changes easiest.
 - Look for opportunities to deepen modules and reduce obscurity.
 - Reject shallow wrappers, excessive parameters, high coupling, and proliferation of special cases.

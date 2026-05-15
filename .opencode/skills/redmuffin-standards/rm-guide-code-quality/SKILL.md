@@ -12,7 +12,7 @@ the code review checklist. This guide covers style conventions only.
 
 ## CRITICAL
 
-- Prefer clear, self-documenting code.
+- Never write code that requires a comment to explain what it does.
 - Use records for immutable DTOs and value shapes.
 - Use `is null` / `is not null` instead of `== null` / `!= null`.
 - Keep methods small and focused.
@@ -26,7 +26,7 @@ the code review checklist. This guide covers style conventions only.
 
 - Use expression-bodied members for trivial computed members only.
 - Add XML docs to public APIs when they improve discoverability.
-- Favor immutable defaults unless mutation is clearly required.
+- Never expose mutable state without justification.
 
 ## NEVER
 

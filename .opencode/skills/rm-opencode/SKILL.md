@@ -102,7 +102,7 @@ you have a specific reason.
 
 > **DeepSeek V4 Pro specifics:** Do not set `temperature` or `top_p` —
 > thinking mode (enabled by default) ignores these parameters. Context
-> management should use magic-context's `execute_threshold_tokens`, not
+> management uses magic-context's `execute_threshold_tokens`, not
 > API-level `limit.context` caps. See `docs/solutions/tooling-decisions/
 deepseek-v4-pro-context-precision-tuning-2026-05-13.md` for the full
 > rationale.
@@ -143,7 +143,7 @@ Custom safety plugin. Blocks dangerous git operations:
 - `git revert` — restricted to the repository owner
 - `git update-ref` — restricted to the repository owner
 
-Any new command protections or safety rules go in this file.
+Never add command protections or safety rules outside of block-push.js.
 
 ### npm plugin package cache
 
@@ -157,11 +157,10 @@ applies to plugin auto-updates. If a plugin publishes a new version within
 the age window, `npm install` silently fails with `notarget No matching version
 found`. Debug logs go to `~/.npm/_logs/` (timestamped `*-debug-0.log` files).
 
-**This is intentional supply chain protection — do NOT bypass it.** The
-age filter exists to block malicious packages injected into new releases.
-It applies to OpenCode itself as well: if a new OpenCode release falls inside
-the window, the update will be delayed until the age threshold passes. This
-is the safe default. The correct response to a blocked update is to wait.
+Never bypass the age filter — it is intentional supply chain protection (see
+global AGENTS.md §Secrets & Supply Chain for the full policy). If a new
+OpenCode release falls inside the window, the update is delayed until the age
+threshold passes. Wait for blocked updates.
 
 ---
 
@@ -204,8 +203,7 @@ skill({ name: "skill-name" })     ← Invokes a skill
 ## Common Operations
 
 **Add a skill:** create `~/.config/opencode/skills/<name>/SKILL.md` with
-`name:` + `description:` frontmatter. The `name:` field must match the
-directory name.
+`name:` + `description:` frontmatter (see §Naming above).
 
 **Add an agent:** create `~/.config/opencode/agents/<name>.md`.
 

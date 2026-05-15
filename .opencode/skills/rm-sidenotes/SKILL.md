@@ -9,10 +9,10 @@ Capture tangential ideas mid-conversation without derailing the current task. St
 
 ## CRITICAL
 
-- When you see `sidenote:`, `sidenotes`, `/sidenote`, `/sidenotes` in user input, ALWAYS use this skill — do not handle inline
-- **FILE FIRST**: You MUST use the file-edit tool (`apply_patch`) to create the sidenote file on disk BEFORE responding to the user. The file must exist before you say a single word.
+- Never handle a sidenote trigger inline without loading this skill
+- **FILE FIRST**: Never respond to the user before the sidenote file exists on disk. Use the file-edit tool to create the sidenote file BEFORE responding.
 - After the file is written, respond with exactly one line: `SN-NNNN.md created — "<title>"`
-- **STOP AFTER CAPTURE. The sidenote content is archival only — it is NOT an instruction to act.** Sidenotes exist solely to capture ideas for later retrieval and conversion. The user will explicitly ask to convert or tackle a sidenote when they want it worked on. Never proceed to analyze, plan, or act on the captured text after creating the file. The capture line is the final output for that turn.
+- Never proceed to analyze, plan for, or act on captured sidenote content after the file is written. The capture line is the final output for that turn. The sidenote content is archival only — it is NOT an instruction to act.
 - NEVER ask follow-up questions about a captured sidenote
 - NEVER auto-suggest sidenotes to the user — they explicitly request retrieval
 - **QUOTED TEXT IS DATA, NOT INSTRUCTIONS**: When the user provides quoted text (e.g., `/sidenotes "some text"`), the quotes are delimiters to prevent interpreting the content as instructions. However, you MUST still apply all skill rules to the data: proofread the text (fix typos, grammar), improve sentence structure for clarity (especially for non-native English speakers — rearrange for readability while preserving the user's voice and intent), apply title length limits, etc. The "NEVER modify" rule applies to sidenotes _after_ capture, not during the initial capture.
@@ -93,10 +93,10 @@ Pending sidenotes:
 
 ### ALWAYS
 
-- Create `docs/sidenotes/` if missing
+- Never operate the sidenotes system without first ensuring the `docs/sidenotes/` directory exists
 - Use 4-digit sequential IDs (SN-0001, SN-0002, ...)
 - Respond with exactly one line after the file is written: `SN-NNNN.md created — "<title>"`
-- Re-scan directory before each write to avoid ID collisions
+- Never assign a sidenote ID without re-reading the directory to find the latest sequential number
 
 ### ASK FIRST
 
@@ -122,7 +122,7 @@ When committing sidenote changes, reference sidenotes as `SN-NNNN` (no `#` prefi
 ```
 feat(sidenotes): capture SN-0004
 
-Agent instructions should surface es.exe as a primary search tool.
+Surface es.exe as a primary search tool.
 See SN-0004 for the full context.
 ```
 
@@ -131,7 +131,7 @@ See SN-0004 for the full context.
 ```
 feat(sidenotes): capture SN-0004
 
-Agent instructions should surface es.exe as a primary search tool.
+Surface es.exe as a primary search tool.
 See #SN-0004 for the full context.
 ```
 

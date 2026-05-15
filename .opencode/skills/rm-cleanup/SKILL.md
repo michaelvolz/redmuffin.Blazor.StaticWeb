@@ -1,6 +1,6 @@
 ---
 name: rm-cleanup
-description: "Fast, low-noise dev environment cleanup — closes the agent-owned Brave browser, stops non-VS dotnet processes, and removes stray artifacts. Use when you want speed, minimal chatter, and warnings/errors only."
+description: "Fast, low-noise dev environment cleanup — closes your Brave browser, stops non-VS dotnet processes, and removes stray artifacts. Use when you want speed, minimal chatter, and warnings/errors only."
 ---
 
 # Dev Environment Cleanup (Parallel)
@@ -11,12 +11,8 @@ Fast, parallel cleanup of the development environment. Spawn 3 cleanup teammates
 
 ## Critical Execution Rule
 
-Use a temporary team and spawn all 4 teammates in a single response message.
-
-- Do not issue the cleanup work one agent at a time.
-- Do not use plain one-off Task calls for this workflow.
-- Do not put `run_in_background` on non-teammate tasks.
-- Use the swarm pattern: create one team, then spawn 4 teammates together so the runtime can schedule them concurrently.
+Never spawn cleanup teammates one at a time or outside a single team dispatch.
+Use the swarm pattern: create one team, then spawn 4 teammates together so the runtime can schedule them concurrently.
 
 ## Phase 1: Parallel Dispatch
 
@@ -87,10 +83,9 @@ prompt: |
 
 ## Global Cleanup Rules
 
-- Never probe browser pages during cleanup.
-- Use process identification only.
+- Never probe browser pages, screenshots, or any identification method other than process inspection.
 - Never kill Visual Studio-owned dotnet processes.
-- If a target process is already gone, report it as already closed and continue.
+- Never halt or error when a target process is already gone.
 
 ## Linux Cleanup
 
@@ -107,6 +102,6 @@ Two commands cover all cleanup:
    pkill -f "sass --watch" 2>/dev/null
    ```
 
-Never run `pkill -u $USER dotnet` — it will kill the agent process.
+Never run `pkill -u $USER dotnet` — it will kill your own process.
 Never kill MCP server processes — they are permanent infrastructure.
 No IDE-ownership protection needed on Linux (no Visual Studio).

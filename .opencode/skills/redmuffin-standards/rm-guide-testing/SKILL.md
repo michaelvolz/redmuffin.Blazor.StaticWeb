@@ -290,7 +290,7 @@ mock.Arrange(f => f.GetItemAsync<T>("namespace", The<string>.IsAnyValue, Cancell
     .Returns(Task.FromResult<T?>(default));
 ```
 
-**Prefer hand-rolled over LightMock** whenever practical. The hand-rolled
+Never use LightMock when a hand-rolled fake would be debuggable and ≤3 methods. The hand-rolled
 fake is debuggable, explicit, and documents the interface contract.
 LightMock is a fallback for large interfaces.
 

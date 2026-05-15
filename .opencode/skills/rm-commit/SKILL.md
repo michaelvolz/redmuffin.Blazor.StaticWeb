@@ -1,6 +1,6 @@
 ---
 name: rm-commit
-description: "Use when the user says commit or wants help making a commit. Generates repo-specific conventional commit payloads."
+description: "Use when the user says commit or wants help making a commit. Generates repo-specific conventional commit payloads with commitlint enforcement. Covers commit shape (grouping by concern, ordering by import chains), message format (conventional commits, body rules, scope conventions), error recovery, and tooling (PowerShell here-string, Bash heredoc). USE FOR: commit, create a commit, conventional commits, commitlint, commit message format, commit batch ordering."
 ---
 
 # rm-commit
@@ -11,14 +11,14 @@ via Conventional Commits.
 
 ## What Belongs in This File
 
-- **Viewpoint**: Information as reference, not recipes. The model
-  already knows how to use git.
+- **Viewpoint**: Information as reference, not recipes. You already
+  know how to use git.
 - **What belongs**: constraints (commitlint rules), conventions (type
   checklist, scope patterns), gotchas (`#` parser behavior, body
   template), the heredoc/here-string syntax.
 - **What does NOT belong**: ordered workflow steps, diagnostic command
   recipes, staging instructions, anti-redundancy rules, hard numeric
-  thresholds, anything the model already knows how to do.
+  thresholds, anything you already know how to do.
 
 ## Commitlint Rules (ENFORCED — non-negotiable)
 
@@ -88,8 +88,7 @@ there is nothing to commit — stop and report to the user.
 
 ## Commit Shape
 
-ALWAYS Group by concern — split when changes serve different purposes and
-can be reviewed/reverted independently:
+Never mix unrelated changes in a single commit:
 
 - Cleanup (deletions) separate from construction (additions)
 - Features separate from infrastructure
@@ -146,7 +145,7 @@ further items.
 
 #### Scope
 
-Scope is optional but encouraged. Use the directory, module, or
+Scope is required unless the change crosses components. Use the directory, module, or
 component name affected (e.g., `feat(skills):`, `fix(core):`,
 `chore(config):`). Match the repo's convention if one exists.
 
@@ -254,19 +253,18 @@ EOF
 
 ## COMMANDS
 
-| Command                              | Purpose                                                                                          | When                     |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------ | ------------------------ |
-| `git status --porcelain=v2 --branch` | Machine-readable status                                                                          | Gather context           |
-| `git diff --stat`                    | Change summary per file                                                                          | After status             |
-| `git diff HEAD`                      | Show all changes                                                                                 | After status             |
-| `git branch --show-current`          | Get current branch                                                                               | After diff               |
-| `git log --oneline -n 10`            | Show recent history                                                                              | After branch             |
-| `git add -p`                         | Stage partial hunks (interactive; fall back to `git add <file>` if the shell is non-interactive) | File has mixed changes   |
-| `git diff --cached`                  | Review staged changes                                                                            | After staging            |
-| `git reset --soft HEAD~1`            | Undo last commit                                                                                 | Commit rejected or wrong |
-| `git --no-optional-locks status`     | Status without lock contention                                                                   | Background check         |
+| Command                          | Purpose                                                                                          | When                               |
+| -------------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------- |
+| `git diff --stat`                | Change summary per file                                                                          | After status                       |
+| `git diff HEAD`                  | Show all changes                                                                                 | After status                       |
+| `git branch --show-current`      | Get current branch                                                                               | After diff                         |
+| `git log --oneline -n 10`        | Show recent history                                                                              | After branch                       |
+| `git add -p`                     | Stage partial hunks (interactive; fall back to `git add <file>` if the shell is non-interactive) | File has mixed changes             |
+| `git diff --cached`              | Review staged changes                                                                            | After staging                      |
+| `git reset --soft HEAD~1`        | Undo last commit                                                                                 | Commit rejected or wrong           |
+| `git --no-optional-locks status` | Status without lock contention                                                                   | Background check (see table below) |
 
-## Git Porcelain Commands (Stable Output for Agents)
+## Git & GitHub CLI Commands (Stable Output for Agents)
 
 | Command                                                                  | Purpose                                              | When                                  |
 | ------------------------------------------------------------------------ | ---------------------------------------------------- | ------------------------------------- |
@@ -279,9 +277,8 @@ EOF
 | `git remote get-url origin 2>/dev/null`                                  | Retrieve remote URL safely                           | Automation & CI scripts               |
 | `gh pr list --json number,title`                                         | Structured GitHub PR list                            | PR workflow automation                |
 
-**Rationale for Git porcelain commands**: Output is stable across Git versions
-and user configurations. `--no-optional-locks` prevents index locking when
-multiple agents run in parallel.
+**Rationale**: Output is stable across Git versions and user configurations.
+`--no-optional-locks` prevents index locking when multiple agents run in parallel.
 
 ## Error Recovery
 

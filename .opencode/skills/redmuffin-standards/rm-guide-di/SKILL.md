@@ -29,7 +29,7 @@ public partial class Home : ComponentBase
 }
 ```
 
-- Prefer small, focused services.
+- Never create services with more than one responsibility.
 - Use keyed services only when multiple implementations are genuinely needed.
 
 ## NEVER

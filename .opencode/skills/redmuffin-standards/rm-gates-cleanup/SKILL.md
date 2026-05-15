@@ -276,16 +276,57 @@ file to verify test quality.
 
 ```
 1. Fix CRAP violation for a file (add tests + simplify)
-2. Run mutation on the fixed file:
-   dotnet run --project tools/src/redmuffin.Tools.QualityGates -- mutate \
-     --project <source-file> \
-     --test-project tests/redmuffin.Blazor.StaticWeb.Tests
-3. Review survivors:
-   - Each survivor means a mutant passed tests — the tests missed it
-   - Survivor at line X means the test at line X doesn't catch the change
-4. For each survivor, strengthen existing tests or add new tests
-5. Re-run mutation → verify all mutants killed
+2. Run mutation on the fixed file (auto-coverage generates if no coverage file)
+3. For each survivor, apply the DECISION TREE (see below)
+4. Re-run mutation → verify the mutant is now killed
+5. Repeat until zero survivors (excluding documented equivalent mutants)
 ```
+
+### Survivor Decision Tree (Uncle Bob + PIT)
+
+Every surviving mutant MUST be investigated. These steps are ordered —
+start at step 1 for each survivor.
+
+**Step 1 — Equivalent mutant check**
+
+Ask: "Does the mutated code produce the EXACT SAME output as the original
+for ALL possible inputs?"
+
+Examples of equivalent mutants:
+
+- `a + 0` → `a - 0` (always identical)
+- `x > 1` → `x >= 2` for integer x (always identical)
+- `!!flag` → `flag` (double negation)
+- `return value;` → `return value ?? 0;` when value is never null
+
+→ If YES: **Accept.** Document as equivalent. This is the ONLY acceptable
+survivor category. Do NOT change code or tests.
+→ If NO: continue to Step 2.
+
+**Step 2 — Missing test (no coverage)**
+
+→ If NO test exercises the mutated line: **Write a test.** Follow TDD:
+red first, verify it kills the mutant, verify output matches unmutated code.
+→ If YES a test covers the line but still survived: continue to Step 3.
+
+**Step 3 — Weak test (covered but survived)**
+
+A test covers the line but has no meaningful assertion for the mutated
+behavior. Example: test calls `Divide(10, 2)` but doesn't assert the result.
+Coverage shows 100% but `* → /` mutation survives.
+
+→ **Fix the test.** Add concrete assertions that would fail under the mutation.
+Do NOT change the production code — the code is correct, the test is insufficient.
+
+**The unbreakable rule: NEVER change production code to fix a survivor.**
+The code is correct. The mutation exposes a test deficiency. Fixing the code
+to make a mutant pass is destroying production behavior to appease a metric.
+
+**Separate fixtures rule:** When writing tests for the mutation runner itself,
+survivor tests and kill-rate tests MUST use separate fixtures. Never remove
+tests from a kill-rate fixture to create survivors for assertion tests.
+
+Reference: `docs/research/mutation-testing-decision-tree-2026-05-14.md`
 
 ### Mutation behavior
 

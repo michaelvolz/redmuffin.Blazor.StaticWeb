@@ -10,8 +10,7 @@ See also: `rm-guide-cleanup` §7 for `[LoggerMessage]` source generator pattern.
 ## CRITICAL
 
 - Use structured `ILogger<T>` logging.
-- Prefer `[LoggerMessage]` source generators (compile-time, zero allocations)
-  over the legacy `LoggerMessage.Define` delegate pattern.
+- Never use the legacy `LoggerMessage.Define` delegate pattern.
 - Put logging declarations in `*.Logging.cs` partial class files only.
 
 ## WHEN TO LOAD

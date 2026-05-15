@@ -26,8 +26,8 @@ This skill does NOT cover:
 
 ## BROWSER TAB HYGIENE
 
-- **ALWAYS** pass `url` to browser tools. Reuse existing pages. Never leave blank tabs open.
-- **ALWAYS** use `chrome-devtools_navigate_page` to navigate existing tabs to target URLs.
+- Never omit the `url` parameter from browser tool calls. Reuse existing pages. Never leave blank tabs open.
+- Never navigate to a URL by creating a new tab when an existing tab can be reused.
 - **NEVER** use `chrome-devtools_close_page` for cleanup. Use process-level identification only (see `rm-cleanup` skill).
 - **NEVER** create new blank tabs when an existing tab can be reused.
 - If only one tab remains open in the MCP browser after cleanup, leave it. Do not attempt to close the last tab or treat it as a stale page to reopen.
@@ -173,8 +173,8 @@ Get-NetTCPConnection -LocalPort 5000 -ErrorAction SilentlyContinue
 
 ### Rules
 
-- Prefer `Get-CimInstance` over `wmic` (deprecated)
-- Prefer `Get-NetTCPConnection` over `netstat | findstr`
+- Never use `wmic`.
+- Never use `netstat | findstr` for port checking.
 - Always check ParentProcessId before killing processes — protect IDE-owned processes
 - Use `Stop-Process -Force` only when graceful shutdown is not applicable
 
@@ -212,7 +212,7 @@ Get-NetTCPConnection -LocalPort 5000 -ErrorAction SilentlyContinue
 
 ### Rules
 
-- Favor OpenCode builtin tools (`glob`, `grep`, `read`, `list`) over external tools
+- Never use external tools when a builtin equivalent can express the same query.
 - Use `es.exe` only when builtin tools cannot express the query
 - Use `chrome-devtools_*` MCP tools for browser interaction — not `agent-browser` unless session isolation is needed
 - Never mix `agent-browser` and `chrome-devtools_*` for the same browser session

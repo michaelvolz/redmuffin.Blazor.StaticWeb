@@ -77,4 +77,4 @@ No. Use `dotnet add package` and `dotnet remove package` for adding or removing 
 
 **When is direct file editing allowed?**
 
-Direct edits are allowed only to change the version string of an existing PackageReference or PackageVersion entry. After editing, immediately run `dotnet restore` to verify compatibility.
+Direct edits change only the version string. Never modify anything else. After editing, immediately run `dotnet restore` to verify compatibility.

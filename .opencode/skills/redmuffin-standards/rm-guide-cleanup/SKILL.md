@@ -180,6 +180,51 @@ public Task<HttpResponseData> RunAsync(HttpRequestData request)
 the same abstraction (Q4 ✓ — Metz's rule is about uncertainty, not
 definition), hides HTTP complexity behind a simple interface (Q5 ✓).
 
+**Concrete example — pure static extraction (2026-05-14):**
+
+`Videos.razor.cs` and `Articles.razor.cs` had near-identical `DisplayTitle`
+and `DisplayExcerpt` methods — pure static functions with null-guard handling.
+Both extracted to a shared `RaindropItemPresentationHelper` static class:
+
+```csharp
+// BEFORE: duplicated in both Videos.razor.cs and Articles.razor.cs
+private static string DisplayTitle(PrunedRaindropItem? item)
+{
+    if (item?.Title is not { } title) return "(no title)";
+    return title.Length <= 80 ? title : string.Concat(title.AsSpan(0, 80), "…");
+}
+
+// AFTER: shared static helper with 9 characterization tests
+public static class RaindropItemPresentationHelper
+{
+    public static string DisplayTitle(PrunedRaindropItem? item) { ... }
+    public static string DisplayExcerpt(PrunedRaindropItem? item) { ... }
+}
+```
+
+Components import via `@using static` in both `.razor` and `.razor.cs` files.
+
+**Why this passes Q1-Q5:** ≥5 lines (Q1 ✓), body is pure data transformation
+(Q2 ✓), no boolean inversion (Q3 ✓), ≥2 occurrences with identical logic —
+both operate on `PrunedRaindropItem?` with identical truncation rules
+(Q4 ✓ — same abstraction), simple interface wrapping null-guard complexity
+(Q5 ✓).
+
+**What was correctly REJECTED for extraction:**
+
+The larger orchestration methods in these same files (`LoadCachedDataAsync`,
+`FetchItemsAsync`, `HandleRefreshClickAsync`) were evaluated and left inline:
+
+- Only 2 occurrences — Metz Rule of Three not met (Q4 ✗)
+- Differ in state management: `_isLoading` in Articles only, image cache
+  clearing in Articles only
+- Differ in error messages and log delegates
+- Forcing a shared service would require 6+ parameters → shallow module (Q5 ✗)
+
+The extraction gates correctly identified that the structure was orchestration,
+not a seam. The Dupes gate finding on these files is a false positive —
+structural fingerprint collision, not genuine duplication worth merging.
+
 Only extract when ALL of Q1-Q5 pass. When in doubt, inline.
 
 A seam is a place where behavior can be replaced WITHOUT editing in that
@@ -271,12 +316,12 @@ When reducing CRAP violations across multiple files:
 
 ### Single Responsibility
 
-- A method should do ONE thing. If the name needs "and" or "or", split it.
-- A method should operate at a SINGLE level of abstraction.
+- A method does ONE thing. If the name needs "and" or "or", split it.
+- A method operates at a SINGLE level of abstraction.
 
 ### Guard clauses (Fowler's _Replace Nested Conditional with Guard Clauses_)
 
-Prefer early returns over nested if-else. Every early return reduces CC by 1.
+Never nest if-else when early return is possible. Every early return reduces CC by 1.
 
 ## 4. Async Patterns
 
@@ -391,7 +436,7 @@ Before any change is complete, verify:
 - [ ] No new `#pragma warning disable`
 - [ ] Logging uses `LoggerMessageAttribute` source generators
 - [ ] No speculative code (YAGNI)
-- [ ] No comment explaining what code does — code should be self-documenting
+- [ ] No comment explaining what code does — code is self-documenting
 - [ ] Tests pass (`dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests`)
 
 ## Related

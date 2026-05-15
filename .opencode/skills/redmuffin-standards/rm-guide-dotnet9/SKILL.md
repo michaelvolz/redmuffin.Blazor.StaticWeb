@@ -7,7 +7,7 @@ description: "Use when deciding whether to use .NET 9 APIs or current runtime be
 
 ## CRITICAL
 
-- Prefer current .NET 9 APIs when they simplify code or improve performance.
+- Never use deprecated APIs when a .NET 9 equivalent exists.
 - Use modern collections, spans, and JSON caching where appropriate.
 
 ## WHEN TO LOAD
@@ -19,7 +19,7 @@ description: "Use when deciding whether to use .NET 9 APIs or current runtime be
 
 - Consider `CountBy`, `AggregateBy`, and other current LINQ additions when they fit.
 - Cache reusable `JsonSerializerOptions`.
-- Prefer span-based APIs over string slicing in hot paths.
+- Never use string slicing in hot paths where span-based APIs are available.
 
 ## NEVER
 

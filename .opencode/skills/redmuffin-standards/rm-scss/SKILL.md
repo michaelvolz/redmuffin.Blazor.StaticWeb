@@ -20,7 +20,7 @@ Classes describe **what something IS**, not what it looks like.
 | `.metrics-card`    | `.left-column-widget`   |
 | `.cell`            | `.column`               |
 
-A developer reading the HTML should understand the **role** of each element without seeing the rendered output.
+A developer reading the HTML understands the **role** of each element without seeing the rendered output.
 
 ### Modifier Pattern
 
@@ -172,9 +172,9 @@ Order matters. Every `@use` imports once, deduplicates automatically.
 
 ## SCSS Rules
 
-- **Always write SCSS**, never edit compiled CSS directly.
+- Never edit compiled CSS directly.
 - **Do not use `.razor.css`** for global styles. Use Blazor CSS isolation only for component-scoped, single-use styles (not reusable design system pieces).
-- **Use `@use` and `@forward`**, not the deprecated `@import`. Dart Sass `@import` deprecation is live — migrate Foundation sources during extraction (see Foundation Migration Strategy).
+- **Use `@use` and `@forward`**, not the deprecated `@import`. Dart Sass `@import` deprecation is live — migrate Foundation sources during extraction (see Foundation Selective Inclusion).
 - **CSS custom properties over SCSS variables** for anything that changes at runtime (theming, dark mode). SCSS variables for build-time constants.
 - **Third-party CSS inlining**: Use `@import "path/to/file"` (no `.css` extension) in `vendor/` to inline third-party CSS into the compiled single output file. This eliminates extra HTTP requests.
 
@@ -235,7 +235,50 @@ A style lives in **one** place. If a button variant lives in `_button.scss`, do 
 
 ---
 
-## Foundation Migration Strategy
+## Foundation Selective Inclusion (Incremental Extraction)
+
+Instead of calling `foundation-everything(true, true)` which compiles all
+~38 Foundation modules, selectively include only the modules we use.
+
+### Pattern
+
+```scss
+// app.scss — NOT foundation-everything()
+@use "../lib/foundation-sites/scss/foundation" as foundation;
+
+$global-flexbox: true !global;
+$prototype: true !global;
+
+// Only the modules we actually use (8 of ~38)
+@include foundation.foundation-global-styles;
+@include foundation.foundation-xy-grid-classes;
+@include foundation.foundation-flex-classes;
+@include foundation.foundation-typography;
+@include foundation.foundation-button;
+@include foundation.foundation-button-group;
+@include foundation.foundation-callout;
+@include foundation.foundation-card;
+@include foundation.foundation-prototype-classes;
+```
+
+### Gotchas
+
+1. **Mixin names differ from wrapper comments.** Read
+   `lib/foundation-sites/scss/foundation.scss` directly to get the real
+   `@include foundation-<name>` calls inside `foundation-everything()`.
+   Never trust comments in wrapper files.
+
+2. **`@use` rules must precede all other SCSS statements.** Variables
+   and `@include` calls must come after ALL `@use` directives.
+
+3. **`$global-flexbox: true !global` must be set explicitly** when
+   bypassing `foundation-everything()`. Without it, xy-grid falls back
+   to legacy float grid classes.
+
+### Result
+
+Compiled CSS: 152 KB → 100 KB (34% reduction). No library files modified.
+Reference: `docs/research/foundation-module-audit-2026-05-14.md`
 
 Foundation 6 is in maintenance mode (volunteer-run, last release Sept 2024). We are extracting the pieces we actually use:
 

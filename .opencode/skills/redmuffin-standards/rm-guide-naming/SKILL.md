@@ -1,6 +1,6 @@
 ---
 name: rm-guide-naming
-description: "Use when creating, renaming, or reviewing C# names for types, members, namespaces, test doubles, or Blazor components."
+description: "Use when creating, renaming, or reviewing C# names for types, members, namespaces, test doubles, or Blazor components. Also covers CLI subcommand naming, CLI flag naming, config file naming, and directory naming. USE FOR: CLI naming, config naming, directory naming."
 ---
 
 # rm-guide-naming
@@ -13,7 +13,7 @@ description: "Use when creating, renaming, or reviewing C# names for types, memb
 - Prefix interfaces with `I`.
 - Name test doubles as `[Class]_[Type]` (`Mock`, `Stub`, `Spy`, `Fake`, `Dummy`).
 - **Names are not set in stone.** A name is a snapshot of current understanding.
-  When working with the code reveals what the name REALLY should be, change it.
+  When working with the code reveals what the name MUST be, change it.
   A better name makes every future reader instantly understand. It is worth
   every reference update, file rename, and test fix required.
 
@@ -25,7 +25,7 @@ description: "Use when creating, renaming, or reviewing C# names for types, memb
 
 ## GUIDANCE
 
-- Prefer explicit, intention-revealing names.
+- Never use names that obscure the type's purpose.
 - Avoid abbreviations unless the domain already uses them.
 - Match existing repo names exactly when extending a pattern.
 

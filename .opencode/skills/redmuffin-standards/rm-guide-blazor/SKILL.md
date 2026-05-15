@@ -10,7 +10,7 @@ lifecycle rules, §4 for ConfigureAwait in Blazor WASM.
 
 ## CRITICAL
 
-- Prefer component composition over inheritance.
+- Never use component inheritance where composition suffices.
 - Use `required` injected properties in component code-behind.
 - Keep UI state small and renders intentional.
 - **Smart/dumb pattern (MANDATORY):** Smart components orchestrate data;
@@ -35,7 +35,7 @@ lifecycle rules, §4 for ConfigureAwait in Blazor WASM.
 ## GUIDANCE
 
 - Use `OnInitializedAsync` / `OnParametersSetAsync` for lifecycle work.
-- Prefer `EventCallback` over custom delegate plumbing.
+- Never use custom delegates where `EventCallback` suffices.
 - Use `ShouldRender()` only when you can justify the optimization.
 
 ### Blazor lifecycle methods (not dead code)

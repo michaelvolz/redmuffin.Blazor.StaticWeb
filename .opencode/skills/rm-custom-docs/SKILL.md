@@ -13,7 +13,7 @@ description: >
 # Custom Docs — Knowledge Base Authoring
 
 Create long-living, manually authored documentation in `docs/`. Every
-doc must be findable by future-you (or an agent) via frontmatter
+doc must be findable by future-you (or you) via frontmatter
 metadata, consistent naming, and cross-references.
 
 ---
@@ -46,10 +46,12 @@ not the directories themselves.** Read-only.
 1. **Do not touch the folders above.** No creating, editing, renaming,
    deleting, or moving. Not the files, not the directories.
    Read-only. Period.
-2. **Read them, reference them.** You may read docs in those folders
-   for context and link to them in `## Related` sections.
-3. **If a topic belongs in one of those folders** — use the skill that
-   manages it. Do NOT manually write into them.
+2. **Never write a new doc without first reading and referencing
+   related docs in the managed folders.** You may read docs in those
+   folders for context and link to them in `## Related` sections.
+3. **Never manually write into a managed folder; always route through
+   the skill that owns it.** If a topic belongs in one of those folders,
+   use the skill that manages it.
 4. **If you accidentally touch a restricted folder** — revert
    immediately.
 
@@ -64,15 +66,15 @@ edits (by any agent or human) must respect these constraints.
 **When creating a new doc:** include Design Constraints. Never create a
 doc without them.
 
-**When editing an existing doc that has Design Constraints:** read them
-first. If your edit would add something listed under "What does NOT
-belong", reject it. If a new category of content is needed, update the
+**Never edit a doc that has Design Constraints without reading those
+constraints first.** If your edit would add something listed under
+"What does NOT belong", reject it. If a new category of content is needed, update the
 constraints to reflect the new scope.
 
-**When editing an existing doc that lacks Design Constraints:** ask the
-user to define them before making any content edits. Show the template
-below and request the viewpoint, what-belongs, and what-does-not-belong
-fields. Do not proceed without them.
+**Never edit a doc lacking Design Constraints without first asking the
+user to define them.** Show the template below and request the viewpoint,
+what-belongs, and what-does-not-belong fields. Do not proceed without
+them.
 
 Template:
 
@@ -198,7 +200,7 @@ guides — "find the networking guide" then pick version by date).
 - Timestamps are full `YYYY-MM-DD` (ISO 8601 date), never abbreviated
 - Specs: date prefix, kebab-case body, end with `-spec.md`
 - Guides: kebab-case body, `-guide-YYYY-MM-DD.md` suffix
-- Names should be descriptive but concise: 4-8 words before the
+- Names must be descriptive but concise: 4-8 words before the
   timestamp
 - No special characters except hyphens
 
@@ -263,7 +265,7 @@ the knowledge base. Use relative paths from repo root:
 **Rules:**
 
 - Link at most 3 related docs (avoid link sprawl)
-- Back-link from old docs to new ones when adding
+- Never add a new doc without back-linking from any related older doc
 - Use full relative paths, not just filenames
 
 ---
@@ -409,9 +411,9 @@ last_updated: YYYY-MM-DD
 
 ---
 
-## 10 — Agent Usage
+## 10 — Usage
 
-When an agent or skill needs to search the knowledge base, it queries
+When you need to search the knowledge base, it queries
 by frontmatter fields:
 
 ```
