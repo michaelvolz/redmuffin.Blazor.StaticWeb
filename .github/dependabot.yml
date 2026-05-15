@@ -43,22 +43,6 @@ updates:
         patterns:
           - "*"
 
-  # Docker dependencies
-  - package-ecosystem: docker
-    directory: "/.devcontainer"
-    schedule:
-      interval: monthly
-      time: "04:00"
-    open-pull-requests-limit: 5
-    # Docker doesn't support SemVer cooldown; use default
-    cooldown:
-      default-days: 7
-    labels:
-      - "dependencies"
-      - "docker"
-    commit-message:
-      prefix: "deps(docker)"
-
   # GitHub Actions
   - package-ecosystem: github-actions
     directory: "/"
