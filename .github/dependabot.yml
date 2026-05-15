@@ -27,13 +27,21 @@ updates:
       prefix: "deps"
       include: "scope"
     groups:
-      # Group non-major updates to reduce PR noise
+      # Group non-major version updates to reduce PR noise
+      # Cooldown still applies per the settings above
       dotnet-dependencies:
+        applies-to: version-updates
         patterns:
           - "*"
         update-types:
           - "minor"
           - "patch"
+      # Security updates bypass cooldown and are proposed immediately (CVE fixes)
+      # Separate group makes critical patches visually distinct in the PR list
+      dotnet-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
 
   # Docker dependencies
   - package-ecosystem: docker
@@ -69,5 +77,6 @@ updates:
     groups:
       # Group all GitHub Actions updates
       github-actions:
+        applies-to: version-updates
         patterns:
           - "*"
