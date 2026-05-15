@@ -46,14 +46,9 @@ Suitable for experimentation, learning, and development environments.
 - [Overview](#overview)
 - [Features](#features)
 - [Prerequisites](#prerequisites)
-  - [For DevContainer Development (Recommended)](#for-devcontainer-development-recommended)
-  - [For Local Development](#for-local-development)
 - [Development Environment](#development-environment)
-  - [Option 1: DevContainer (Recommended)](#option-1-devcontainer-recommended)
-  - [Option 2: Local Development](#option-2-local-development)
   - [PowerShell Helper Scripts](#powershell-helper-scripts)
 - [Getting Started](#getting-started)
-  - [DevContainer Workflow (Recommended)](#devcontainer-workflow-recommended)
   - [Local Development Workflow](#local-development-workflow)
 - [Development Workflow](#development-workflow)
   - [Trunk-Based Development](#trunk-based-development)
@@ -70,7 +65,6 @@ Suitable for experimentation, learning, and development environments.
   - [MCP Server Integration](#mcp-server-integration)
 - [Security Policy](#security-policy)
   - [Secret Management](#secret-management)
-  - [DevContainer Secrets](#devcontainer-secrets)
 - [Build and Deployment](#build-and-deployment)
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
@@ -103,54 +97,13 @@ Suitable for experimentation, learning, and development environments.
 
 - **EditorConfig** - Consistent code style and formatting
 - **Directory.Build.props** - Centralized project configuration
-- **DevContainer** - Secure development environment with VS Code Secrets
-- **Docker Integration** - Configures MCP servers for AI assistance (Fetch, Time, Brave Search, Sequential Thinking servers)
 - **Azure Static Web Apps** - Deployment and hosting platform
 
 ---
 
 ## Prerequisites
 
-### For DevContainer Development (Recommended)
-
-- **Docker Desktop** with WSL2 backend
-  - [Download Docker Desktop](https://www.docker.com/products/docker-desktop)
-  - Enable WSL2 integration in Docker Desktop settings
-- **Node.js** (Latest LTS) - Required for DevContainer CLI
-- **DevContainer CLI**: `npm install -g @devcontainers/cli`
-- **PowerShell** 5.1+ or PowerShell Core
-- **GitHub CLI** for GitHub authentication (see below)
-
-#### GitHub Authentication (Required)
-
-You need GitHub CLI authentication configured for Git operations inside the devcontainer:
-
-1. **Install GitHub CLI if not present:**
-
-   ```bash
-   # On Arch Linux
-   yay -S github-cli
-   ```
-
-2. **Authenticate with GitHub:**
-
-   ```bash
-   gh auth login
-   ```
-
-   Follow the prompts to authenticate (choose HTTPS, not SSH).
-
-3. **Verify authentication:**
-
-   ```bash
-   gh auth status
-   ```
-
-The devcontainer will automatically use HTTPS authentication for Git operations. No manual key management required.
-
 ### For Local Development
-
-Use only if you cannot run Docker. Note: Manual secret management required.
 
 - **Visual Studio 2026 (Community)**
 - **.NET 10 SDK** — Builds net9.0 projects for Azure SWA compatibility
@@ -184,13 +137,6 @@ Use only if you cannot run Docker. Note: Manual secret management required.
   > **Note**: On Windows, OpenCode's MCP stdio layer has known issues (#16449). The tool works via shell execution but may not appear in OpenCode's MCP list. This is a known OpenCode bug, not a config issue.
 
 #### Node.js Tools (npm)
-
-- **DevContainer CLI** (Required for DevContainer development)
-  Enables running opencode inside the devcontainer with full security boundary:
-
-  ```powershell
-  npm install -g @devcontainers/cli
-  ```
 
 - **Azure Static Web Apps CLI**
   Required for local development and testing of Azure Static Web Apps:
@@ -248,16 +194,6 @@ Use only if you cannot run Docker. Note: Manual secret management required.
   | `git branch -D *`              | Force-deletes without merge check            |
   | `rm -rf /` or `rm -rf ~`       | Targeting root or home directory             |
   | `rm -rf .` or `rm -rf ../path` | Outside current working directory            |
-
-  **Paranoid Mode (devcontainer.json):**
-  Four environment variables enforce maximum protection:
-
-  | Variable                             | Effect                                                |
-  | ------------------------------------ | ----------------------------------------------------- |
-  | `SAFETY_NET_STRICT=1`                | Fail-closed on unparseable commands                   |
-  | `SAFETY_NET_PARANOID=1`              | Enable all paranoid checks (master switch)            |
-  | `SAFETY_NET_PARANOID_RM=1`           | Block ALL `rm -rf` (even within cwd)                  |
-  | `SAFETY_NET_PARANOID_INTERPRETERS=1` | Block interpreter one-liners (`node -e`, `python -c`) |
 
   > **Note**: This plugin is registered in `opencode.json` and intercepts all bash commands via the `tool.execute.before` hook. It provides semantic command analysis (not simple pattern matching), shell wrapper detection, and interpreter one-liner detection. Default mode blocks only truly destructive operations while allowing safe git workflows. See [Supply Chain Attack Protection](#supply-chain-attack-protection) for npm security settings.
 
@@ -422,54 +358,6 @@ constraint.
 
 ## Development Environment
 
-We support two development workflows. **DevContainer is strongly recommended** for security and consistency.
-
-### Option 1: DevContainer (Recommended - Secure)
-
-**Why DevContainer?**
-
-- Complete security boundary (secrets, MCP servers, tools isolated)
-- Consistent environment across all developers
-- Zero secrets in repository or host filesystem
-- Works identically on Windows, macOS, Linux
-
-**Prerequisites:**
-
-- Docker Desktop with WSL2 backend
-- DevContainer CLI: `npm install -g @devcontainers/cli`
-
-**Quick Start (PowerShell):**
-
-```powershell
-# One-time setup
-npm install -g @devcontainers/cli
-
-# Clone and enter directory
-git clone https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb.git
-cd redmuffin.Blazor.StaticWeb
-
-# Start devcontainer
-devcontainer up --workspace-folder .
-
-# Run opencode (secrets will be injected automatically)
-.\scripts\opencode-secure.ps1
-
-# When finished, stop the container
-.\scripts\devcontainer-down.ps1
-```
-
-**First Run Secret Setup:**
-On first run, VS Code will prompt for required secrets (stored in Windows Credential Manager):
-
-- `BRAVE_API_KEY` - Brave Search API Key
-- `CONTEXT7_API_KEY` - Context7 API Key (optional)
-- `RAINDROP_CLIENT_ID` - Raindrop.io Client ID
-- `RAINDROP_CLIENT_SECRET` - Raindrop.io Client Secret
-
-### Option 2: Local Development
-
-Use only if you cannot run Docker. **Note: Reduced security - secrets must be managed manually.**
-
 **Quick Start:**
 
 ```powershell
@@ -494,14 +382,12 @@ dotnet run --project src/redmuffin.Blazor.StaticWeb/redmuffin.Blazor.StaticWeb.c
 
 Located in `scripts/`:
 
-| Script                        | Purpose                                      |
-| ----------------------------- | -------------------------------------------- |
-| `Update-PackageVersions.ps1`  | Updates CPM-managed NuGet package versions   |
-| `opencode-secure.ps1`         | Starts devcontainer and runs opencode inside |
-| `devcontainer-down.ps1`       | Stops the devcontainer                       |
-| `Generate-CoverageReport.ps1` | Generates code coverage                      |
-| `View-CoverageReport.ps1`     | Views coverage report                        |
-| `Setup-GitHooks.ps1`          | Configures git hooks for commit validation   |
+| Script                        | Purpose                                    |
+| ----------------------------- | ------------------------------------------ |
+| `Update-PackageVersions.ps1`  | Updates CPM-managed NuGet package versions |
+| `Generate-CoverageReport.ps1` | Generates code coverage                    |
+| `View-CoverageReport.ps1`     | Views coverage report                      |
+| `Setup-GitHooks.ps1`          | Configures git hooks for commit validation |
 
 For package updates, run `scripts/Update-PackageVersions.ps1` and finish with
 `dotnet clean && dotnet build --verbosity quiet && dotnet test`.
@@ -516,93 +402,6 @@ Set-Alias -Name opencode -Value "C:\path\to\scripts\opencode-secure.ps1"
 ---
 
 ## Getting Started
-
-### DevContainer Workflow (Recommended)
-
-The devcontainer provides a secure, isolated development environment with all tools pre-installed.
-
-#### Prerequisites Checklist
-
-Before starting, ensure you have:
-
-- [ ] **Docker Desktop** with WSL2 backend installed
-- [ ] **DevContainer CLI**: `npm install -g @devcontainers/cli`
-- [ ] **GitHub CLI**: `yay -S github-cli` (for authentication)
-- [ ] **GitHub account** authenticated with `gh auth login`
-
-#### Step-by-Step Setup
-
-1. **Clone and enter directory:**
-
-   ```powershell
-   git clone https://github.com/michaelvolz/redmuffin.Blazor.StaticWeb.git
-   cd redmuffin.Blazor.StaticWeb
-   ```
-
-2. **Authenticate with GitHub:**
-
-   ```bash
-   gh auth login
-   ```
-
-   Choose HTTPS authentication when prompted.
-
-3. **Start the devcontainer:**
-
-   ```powershell
-   .\scripts\opencode-secure.ps1
-   ```
-
-   This script will:
-   - Build and start the devcontainer
-   - Use HTTPS authentication for Git operations
-   - Install all development tools automatically
-   - Launch opencode inside the container
-
-   **First run only**: You'll be prompted for secrets (stored in Windows Credential Manager):
-   - `BRAVE_API_KEY` - For Brave Search MCP server
-   - `CONTEXT7_API_KEY` - For Context7 documentation (optional)
-   - `RAINDROP_CLIENT_ID` - For Raindrop.io integration
-   - `RAINDROP_CLIENT_SECRET` - For Raindrop.io integration
-
-4. **Verify GitHub authentication in container:**
-
-   Once opencode starts, verify GitHub CLI authentication:
-
-   ```bash
-   # Inside the container
-   gh auth status
-   ```
-
-5. **When finished:**
-   ```powershell
-   # Exit opencode, then stop the container
-   .\scripts\devcontainer-down.ps1
-   ```
-
-#### What's Included in the DevContainer
-
-The devcontainer automatically provides:
-
-- **.NET 9 SDK** - Latest stable version
-- **Node.js & npm** - Latest LTS
-- **Azure Functions Core Tools** - For local API development
-- **Azure Static Web Apps CLI** - For local testing
-- **opencode** - AI coding assistant
-- **Prettier, commitlint** - Code formatting and commit validation
-- **Docker-in-Docker** - For running MCP servers
-- **GitHub CLI** - Configured for HTTPS authentication
-
-#### HTTPS Authentication
-
-The devcontainer uses HTTPS with GitHub CLI for secure Git authentication:
-
-- **Authentication**: Handled by `gh auth login` with token-based access
-- **Security**: Personal access tokens are stored securely by GitHub CLI
-- **No manual key management**: GitHub CLI manages authentication automatically
-- **Cross-platform**: Works identically on Windows, macOS, and Linux
-
-See [GitHub CLI documentation](https://cli.github.com/manual/gh_auth_login) for authentication options.
 
 ### Local Development Workflow
 
@@ -1152,36 +951,14 @@ must improve the code per their principles. See `rm-guide-cleanup` and
 
 ### Container Infrastructure
 
-The project uses Docker-based development environments for security and consistency.
-
-#### DevContainer
-
-The devcontainer provides a complete development environment:
-
-- **Isolated Environment**: .NET 10 SDK, Node.js, Azure Functions tools
-- **Security Boundary**: Secrets and MCP servers run inside container only
-- **Consistency**: Same environment for all developers
-- **Pre-installed Tools**: SWA CLI, Prettier, commitlint, opencode
-
-Configuration: `.devcontainer/devcontainer.json`
-
-**Windows Setup:**
-
-1. Install Docker Desktop
-2. Enable WSL2 backend (recommended)
-3. Ensure WSL2 integration is enabled in Docker Desktop settings
-4. Share your project drive in Docker Desktop → Settings → Resources → File Sharing
-
 #### Docker for MCP Servers
 
-MCP servers run as Docker containers inside the devcontainer:
+MCP servers run as Docker containers for isolation:
 
-- **Brave Search** - Web search with Brave API
-- **Fetch** - Web content fetching
-- **Time** - Date/time utilities
-- **Sequential Thinking** - AI reasoning assistance
-
-Docker Desktop handles the containerization layer.
+- **Brave Search** — Web search with Brave API
+- **Fetch** — Web content fetching
+- **Time** — Date/time utilities
+- **Sequential Thinking** — AI reasoning assistance
 
 **Note:** Context7 uses HTTP endpoint, not Docker.
 
@@ -1413,7 +1190,7 @@ Once configured, you can ask your AI assistant to:
 
 ## Security Policy
 
-> **CRITICAL**: This project follows a **zero-tolerance policy for secrets in files**. The repository MUST NEVER contain a single secret. See [`.devcontainer/SECURITY.md`](.devcontainer/SECURITY.md) for full details.
+> **CRITICAL**: This project follows a **zero-tolerance policy for secrets in files**. The repository MUST NEVER contain a single secret.
 
 ### Zero Secrets Policy
 
@@ -1430,13 +1207,12 @@ The repository MUST NEVER contain any secrets, including:
 
 ### Allowed Secret Management Methods
 
-| Method                        | Use Case                 | Syntax                                         |
-| ----------------------------- | ------------------------ | ---------------------------------------------- |
-| **Environment Variables**     | MCP configs, scripts     | `{env:VAR_NAME}` or `${env:VAR}`               |
-| **VS Code Secrets**           | Devcontainer development | Defined in `devcontainer.json` `secrets` block |
-| **GitHub Repository Secrets** | CI/CD pipelines          | `${{ secrets.SECRET_NAME }}`                   |
-| **Azure Key Vault**           | Production deployments   | `az keyvault secret show`                      |
-| **User Secrets**              | Local .NET development   | `dotnet user-secrets`                          |
+| Method                        | Use Case               | Syntax                           |
+| ----------------------------- | ---------------------- | -------------------------------- |
+| **Environment Variables**     | MCP configs, scripts   | `{env:VAR_NAME}` or `${env:VAR}` |
+| **GitHub Repository Secrets** | CI/CD pipelines        | `${{ secrets.SECRET_NAME }}`     |
+| **Azure Key Vault**           | Production deployments | `az keyvault secret show`        |
+| **User Secrets**              | Local .NET development | `dotnet user-secrets`            |
 
 ### MCP Configuration Rules
 
@@ -1448,28 +1224,6 @@ All MCP configurations must read secrets from environment variables:
 
 // WRONG - hardcoded value (NEVER DO THIS)
 "env": { "API_KEY": "actual_secret_here" }
-```
-
-### DevContainer Secrets
-
-The devcontainer uses VS Code Secrets for secure secret management:
-
-1. **First Start**: VS Code prompts for each secret
-2. **Storage**: Secrets stored in OS credential manager (Keychain, Credential Manager, libsecret)
-3. **Access**: Injected as environment variables inside container only
-4. **Security**: Never written to disk, never in shell history
-
-Required secrets are defined in `.devcontainer/devcontainer.json`:
-
-```json
-{
-  "secrets": {
-    "BRAVE_API_KEY": { "description": "Brave Search API Key" },
-    "CONTEXT7_API_KEY": { "description": "Context7 API Key (optional)" },
-    "RAINDROP_CLIENT_ID": { "description": "Raindrop.io Client ID" },
-    "RAINDROP_CLIENT_SECRET": { "description": "Raindrop.io Client Secret" }
-  }
-}
 ```
 
 ### GitHub Actions Secrets
