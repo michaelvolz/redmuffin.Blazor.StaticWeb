@@ -243,8 +243,10 @@ jobs:
 
           echo ""
           echo "Building Blazor WebAssembly and Azure Functions API in parallel..."
-          # Both publish commands are independent — different projects,
-          # different output dirs, different obj/ folders. No conflict.
+          # Blazor publish CANNOT use --no-build (known bug in .NET 9 SDK:
+          # dotnet/aspnetcore issue 58321 — content files get named wrong).
+          # API publish CAN use --no-build since it's a regular .NET project
+          # and the build step above already compiled everything.
           dotnet publish ${{ env.APP_LOCATION }} \
             -c Release \
             -o ${{ env.APP_LOCATION }}/bin/Release/publish \
