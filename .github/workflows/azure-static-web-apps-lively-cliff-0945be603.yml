@@ -257,7 +257,8 @@ jobs:
             -c Release \
             -o ${{ env.API_LOCATION }}/bin/Release/publish \
             --no-restore \
-            --no-dependencies \
+             --no-build \
+             --no-dependencies \
             --nologo &
           PID_A=$!
 
