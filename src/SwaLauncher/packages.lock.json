@@ -10,15 +10,15 @@
       },
       "Meziantou.Analyzer": {
         "type": "Direct",
-        "requested": "[3.0.79, )",
-        "resolved": "3.0.79",
-        "contentHash": "x9I5cxEwTFvueIH2FY5cIukbv3zNj09oPRyKU7jqkLw3yBZn2qwKb3vn8QNGeMkCQrlSTn9hIgB/etJy5mgQHQ=="
+        "requested": "[3.0.80, )",
+        "resolved": "3.0.80",
+        "contentHash": "QIZ6OvagJUoiDyBEzoIuJzPb9lcgDCb3dlD9GaivDUCkBCrB/rUYOUbhxOvUb/G+0PKTu4ldb8RC4s3s6a+6ow=="
       },
       "Microsoft.AspNetCore.Components.Analyzers": {
         "type": "Direct",
-        "requested": "[9.0.14, )",
-        "resolved": "9.0.14",
-        "contentHash": "2yrkT+Akish37Bm4ECSCPg8lrjCkqszzqahAI0elI1wZlAbsXaoW6W5eEp3k5lUua5ZgQBTy9N3+RQGoOWQFWw=="
+        "requested": "[9.0.15, )",
+        "resolved": "9.0.15",
+        "contentHash": "QfP4jaJVRoQ3YUo1UKWMu8odLZKaOQVXiXC/q8hxiYYEPAoV7sYyjXfn4D+qcM9XEgEeQ0BBsS6fjbraaCQEVA=="
       },
       "Microsoft.VisualStudio.Threading.Analyzers": {
         "type": "Direct",
