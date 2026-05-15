@@ -13,7 +13,6 @@ updates:
       day: monday
       time: "04:00"
     open-pull-requests-limit: 10
-    versioning-strategy: auto
     # Cooldown: Wait for community vetting before adopting new versions
     # 7+ days recommended to avoid supply chain attacks (malicious packages typically detected within 24-72 hours)
     cooldown:
