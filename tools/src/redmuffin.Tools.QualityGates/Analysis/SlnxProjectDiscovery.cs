@@ -80,7 +80,7 @@ public static class SlnxProjectDiscovery
             "No .slnx file found walking up from " + startDirectory);
     }
 
-    private static bool IsTestProject(string csprojPath)
+    public static bool IsTestProject(string csprojPath)
     {
         var doc = XDocument.Load(csprojPath);
         var propertyGroup = doc.Descendants("PropertyGroup").FirstOrDefault();
