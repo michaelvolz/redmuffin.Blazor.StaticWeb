@@ -411,6 +411,12 @@ If a fix is truly impossible and the warning is a known false positive
 for our context (e.g., MA0015 on `[Inject]` properties), document it
 here as an explicit exception rather than suppressing per-file.
 
+**Test attributes are the same class of problem.** Never add `[Skip]`,
+`[Ignore]`, `[ExcludeFromCodeCoverage]`, or similar suppression
+attributes without rigorous discussion. Skipping a test hides a gap
+just as surely as a `#pragma` hides a warning. If a test is slow,
+discuss whether the cost is acceptable before skipping it.
+
 ## 9. When to Refactor (Decision Flow)
 
 ```
