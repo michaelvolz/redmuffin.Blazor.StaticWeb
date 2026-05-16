@@ -114,4 +114,270 @@ public sealed class CrapCommandTests
 
         await Assert.That(exitCode).IsEqualTo(0);
     }
+
+    [Test]
+    public async Task ValidatePaths_should_return_1_when_project_directory_does_not_exist()
+    {
+        using var tempFile = new TempFile();
+        var nonExistentDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+        var error = CrapCommand.ValidatePaths(nonExistentDir, tempFile.Path);
+
+        await Assert.That(error).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task ValidatePaths_should_return_1_when_coverage_file_does_not_exist()
+    {
+        var existingDir = Path.GetTempPath();
+        var nonExistentFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+        var error = CrapCommand.ValidatePaths(existingDir, nonExistentFile);
+
+        await Assert.That(error).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task ValidatePaths_should_return_null_when_both_exist()
+    {
+        using var tempFile = new TempFile();
+        var existingDir = Path.GetDirectoryName(tempFile.Path)!;
+
+        var error = CrapCommand.ValidatePaths(existingDir, tempFile.Path);
+
+        await Assert.That(error).IsNull();
+    }
+
+    private static string ResolveTestProjectPath()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "redmuffin.Tools.QualityGates.Tests.csproj")))
+        {
+            dir = dir.Parent;
+        }
+
+        return dir?.FullName
+            ?? throw new InvalidOperationException("Could not find test project root");
+    }
+
+    private sealed class TempFile : IDisposable
+    {
+        public string Path { get; }
+
+        public TempFile()
+        {
+            Path = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(),
+                System.IO.Path.GetRandomFileName());
+            File.WriteAllText(Path, string.Empty);
+        }
+
+        public void Dispose() => File.Delete(Path);
+    }
+
+    [Test]
+    public async Task Execute_should_return_1_when_no_coverage_file_and_no_auto_coverage()
+    {
+        var exitCode = CrapCommand.Execute(
+            projectPath: Path.GetTempPath(),
+            coveragePath: null,
+            maxCrap: 8,
+            changedOnly: false);
+
+        await Assert.That(exitCode).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task RunAnalysis_should_return_zero_with_valid_inputs_and_no_branch()
+    {
+        var fixtureDir = Path.Combine(AppContext.BaseDirectory, "Fixtures", "MutationTarget");
+        var coveragePath = await CreateMinimalCoverageXml("Calculator.cs", 5, 1).ConfigureAwait(false);
+
+        try
+        {
+            var exitCode = CrapCommand.RunAnalysis(fixtureDir, coveragePath, maxCrap: 8, changedOnly: false);
+            await Assert.That(exitCode).IsEqualTo(0);
+        }
+        finally
+        {
+            File.Delete(coveragePath);
+        }
+    }
+
+    [Test]
+    public async Task RunAnalysis_should_return_zero_with_changed_only()
+    {
+        var fixtureDir = Path.Combine(AppContext.BaseDirectory, "Fixtures", "MutationTarget");
+        var coveragePath = await CreateMinimalCoverageXml("Calculator.cs", 5, 1).ConfigureAwait(false);
+
+        try
+        {
+            var exitCode = CrapCommand.RunAnalysis(fixtureDir, coveragePath, maxCrap: 8, changedOnly: true);
+            await Assert.That(exitCode).IsEqualTo(0);
+        }
+        finally
+        {
+            File.Delete(coveragePath);
+        }
+    }
+
+    [Test]
+    public async Task RunAnalysis_should_return_violations_when_not_changed_only()
+    {
+        var testProjectDir = ResolveTestProjectPath();
+        var coveragePath = await CreateMinimalCoverageXml("CrapCommandTests.cs", 1, 1).ConfigureAwait(false);
+
+        try
+        {
+            var exitCode = CrapCommand.RunAnalysis(testProjectDir, coveragePath, maxCrap: 8, changedOnly: false);
+            await Assert.That(exitCode).IsEqualTo(2);
+        }
+        finally
+        {
+            File.Delete(coveragePath);
+        }
+    }
+
+    [Test]
+    public async Task RunAnalysis_should_return_1_on_invalid_coverage_xml()
+    {
+        var fixtureDir = Path.Combine(AppContext.BaseDirectory, "Fixtures", "MutationTarget");
+        var coveragePath = Path.GetTempFileName();
+        await File.WriteAllTextAsync(coveragePath, "not valid xml <<<").ConfigureAwait(false);
+
+        try
+        {
+            var exitCode = CrapCommand.RunAnalysis(fixtureDir, coveragePath, maxCrap: 8, changedOnly: false);
+            await Assert.That(exitCode).IsEqualTo(1);
+        }
+        finally
+        {
+            File.Delete(coveragePath);
+        }
+    }
+
+    private static async Task<string> CreateMinimalCoverageXml(string filename, int lineNumber, int hits)
+    {
+        var path = Path.GetTempFileName();
+        await File.WriteAllTextAsync(path,
+            $"""
+            <?xml version="1.0" encoding="utf-8"?>
+            <coverage>
+              <packages>
+                <package>
+                  <classes>
+                    <class filename="{filename}">
+                      <lines>
+                        <line number="{lineNumber}" hits="{hits}"/>
+                      </lines>
+                    </class>
+                  </classes>
+                </package>
+              </packages>
+            </coverage>
+            """).ConfigureAwait(false);
+        return path;
+    }
+
+    [Test]
+    [Skip("Requires real coverage generation — slow in CI")]
+    public async Task ResolveCoverage_should_return_auto_coverage_when_auto_is_true_and_path_is_null()
+    {
+        var testProject = ResolveTestProjectPath();
+        var result = CrapCommand.ResolveCoverage(
+            coveragePath: null,
+            testProjectPaths: [testProject],
+            autoCoverage: true);
+
+        await Assert.That(result).IsNotNull();
+    }
+
+    [Test]
+    public async Task ResolveCoverage_should_return_error_when_path_is_null_and_auto_is_false()
+    {
+        var result = CrapCommand.ResolveCoverage(
+            coveragePath: null,
+            testProjectPaths: null,
+            autoCoverage: false);
+
+        await Assert.That(result).IsNull();
+    }
+
+    [Test]
+    public async Task ResolveCoverage_should_return_provided_path_when_not_null()
+    {
+        using var tempFile = new TempFile();
+        var result = CrapCommand.ResolveCoverage(
+            coveragePath: tempFile.Path,
+            testProjectPaths: null,
+            autoCoverage: false);
+
+        await Assert.That(result).IsEqualTo(tempFile.Path);
+    }
+
+    [Test]
+    public async Task BuildCoverageProcessStartInfo_should_set_expected_properties()
+    {
+        var startInfo = CrapCommand.BuildCoverageProcessStartInfo(
+            testProjectPath: "/test/project",
+            outputPath: "/tmp/output.xml");
+
+        await Assert.That(startInfo.FileName).IsEqualTo("dotnet");
+        await Assert.That(startInfo.RedirectStandardOutput).IsTrue();
+        await Assert.That(startInfo.RedirectStandardError).IsTrue();
+        await Assert.That(startInfo.UseShellExecute).IsFalse();
+        await Assert.That(startInfo.CreateNoWindow).IsTrue();
+    }
+
+    [Test]
+    public async Task BuildCoverageProcessStartInfo_should_include_paths_in_arguments()
+    {
+        var startInfo = CrapCommand.BuildCoverageProcessStartInfo(
+            testProjectPath: "/test/project",
+            outputPath: "/tmp/output.xml");
+
+        await Assert.That(startInfo.Arguments).Contains("/test/project");
+        await Assert.That(startInfo.Arguments).Contains("/tmp/output.xml");
+    }
+
+    [Test]
+    [MethodDataSource(nameof(IsCoverageRunSuccessful_Data))]
+    public async Task IsCoverageRunSuccessful_should_return_expected(int exitCode, bool fileExists, bool expected)
+    {
+        using var tempFile = fileExists ? new TempFile() : null;
+        var filePath = tempFile?.Path ?? "/nonexistent/path.xml";
+
+        var result = CrapCommand.IsCoverageRunSuccessful(exitCode, filePath);
+
+        await Assert.That(result).IsEqualTo(expected);
+    }
+
+    public static IEnumerable<(int ExitCode, bool FileExists, bool Expected)> IsCoverageRunSuccessful_Data()
+    {
+        yield return (0, true, true);
+        yield return (0, false, false);
+        yield return (1, true, false);
+        yield return (1, false, false);
+    }
+
+    [Test]
+    public async Task ValidateTestProjectList_should_return_error_when_null()
+    {
+        var result = CrapCommand.ValidateTestProjectList(null);
+        await Assert.That(result).IsNotNull();
+    }
+
+    [Test]
+    public async Task ValidateTestProjectList_should_return_error_when_empty()
+    {
+        var result = CrapCommand.ValidateTestProjectList([]);
+        await Assert.That(result).IsNotNull();
+    }
+
+    [Test]
+    public async Task ValidateTestProjectList_should_return_null_when_populated()
+    {
+        var result = CrapCommand.ValidateTestProjectList(["/some/path"]);
+        await Assert.That(result).IsNull();
+    }
 }

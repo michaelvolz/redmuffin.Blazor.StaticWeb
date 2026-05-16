@@ -247,4 +247,399 @@ public sealed class CoverageGapDetectorTests
         }
         finally { Directory.Delete(dir, recursive: true); }
     }
+
+    // ── IsCoverageGap: string.Equals boundary ──
+    [Test]
+    public async Task IsCoverageGap_should_return_false_when_method_name_not_found()
+    {
+        var source = """
+            public static class C
+            {
+                public static int RealMethod(string input) => 1;
+            }
+            """;
+        var result = CoverageGapDetector.IsCoverageGap(source, "NonExistent", cyclomaticComplexity: 2);
+        await Assert.That(result).IsFalse();
+    }
+
+    // ── IsSwitchDispatcher: body/statements boundaries ──
+    [Test]
+    public async Task IsSwitchDispatcher_should_return_false_when_body_is_null()
+    {
+        var source = """
+            public abstract class C
+            {
+                public abstract int Dispatch(int x);
+            }
+            """;
+        var result = CoverageGapDetector.IsSwitchDispatcher(source, "Dispatch");
+        await Assert.That(result).IsFalse();
+    }
+
+    [Test]
+    public async Task IsSwitchDispatcher_should_return_false_when_zero_statements()
+    {
+        var source = """
+            public static class C
+            {
+                public static int Dispatch(int x) { }
+            }
+            """;
+        var result = CoverageGapDetector.IsSwitchDispatcher(source, "Dispatch");
+        await Assert.That(result).IsFalse();
+    }
+
+    [Test]
+    public async Task IsSwitchDispatcher_should_return_false_when_two_statements()
+    {
+        var source = """
+            public static class C
+            {
+                public static int Dispatch(int x)
+                {
+                    var y = x + 1;
+                    return y switch
+                    {
+                        1 => HandleOne(x),
+                        _ => HandleDefault(x),
+                    };
+                }
+            }
+            """;
+        var result = CoverageGapDetector.IsSwitchDispatcher(source, "Dispatch");
+        await Assert.That(result).IsFalse();
+    }
+
+    // ── ClassifyCoverageGaps: conductor boundaries (private TryClassifyAsConductor) ──
+    [Test]
+    public async Task ClassifyCoverageGaps_should_mark_cc4_delegation_as_gap()
+    {
+        var methods = new List<MethodCrap>
+        {
+            new("DoTheThing", "Conductor.cs", 1, Complexity: 4, Coverage: 0.0, CrapScore: 12.0),
+        };
+        var dir = Path.Combine(Path.GetTempPath(), "cg-bnd-" + Guid.NewGuid());
+        Directory.CreateDirectory(dir);
+        try
+        {
+            var source = """
+                public static class C
+                {
+                    public static int DoTheThing(string input)
+                    {
+                        return SomeHandler.Process(input);
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(Path.Combine(dir, "Conductor.cs"), source).ConfigureAwait(false);
+            var classified = CoverageGapDetector.ClassifyCoverageGaps(methods, dir);
+            await Assert.That(classified[0].IsCoverageGap).IsTrue();
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    [Test]
+    public async Task ClassifyCoverageGaps_should_not_mark_covered_cc3_as_gap()
+    {
+        var methods = new List<MethodCrap>
+        {
+            new("DoTheThing", "Conductor.cs", 1, Complexity: 3, Coverage: 0.01, CrapScore: 12.0),
+        };
+        var dir = Path.Combine(Path.GetTempPath(), "cg-bnd2-" + Guid.NewGuid());
+        Directory.CreateDirectory(dir);
+        try
+        {
+            var source = """
+                public static class C
+                {
+                    public static int DoTheThing(string input)
+                    {
+                        return SomeHandler.Process(input);
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(Path.Combine(dir, "Conductor.cs"), source).ConfigureAwait(false);
+            var classified = CoverageGapDetector.ClassifyCoverageGaps(methods, dir);
+            await Assert.That(classified[0].IsCoverageGap).IsFalse();
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    [Test]
+    public async Task ClassifyCoverageGaps_should_not_mark_missing_file_as_gap()
+    {
+        var methods = new List<MethodCrap>
+        {
+            new("AnyMethod", "NonExistent.cs", 1, Complexity: 2, Coverage: 0.0, CrapScore: 4.0),
+        };
+        var dir = Path.Combine(Path.GetTempPath(), "cg-nofile-" + Guid.NewGuid());
+        Directory.CreateDirectory(dir);
+        try
+        {
+            var classified = CoverageGapDetector.ClassifyCoverageGaps(methods, dir);
+            await Assert.That(classified[0].IsCoverageGap).IsFalse();
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    [Test]
+    public async Task ClassifyCoverageGaps_should_not_mark_cc5_as_conductor()
+    {
+        var methods = new List<MethodCrap>
+        {
+            new("DoTheThing", "Conductor.cs", 1, Complexity: 5, Coverage: 0.0, CrapScore: 25.0),
+        };
+        var dir = Path.Combine(Path.GetTempPath(), "cg-cc5-" + Guid.NewGuid());
+        Directory.CreateDirectory(dir);
+        try
+        {
+            var source = """
+                public static class C
+                {
+                    public static int DoTheThing(string input)
+                    {
+                        return SomeHandler.Process(input);
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(Path.Combine(dir, "Conductor.cs"), source).ConfigureAwait(false);
+            var classified = CoverageGapDetector.ClassifyCoverageGaps(methods, dir);
+            await Assert.That(classified[0].IsCoverageGap).IsFalse();
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    // ── ClassifyCoverageGaps: switch-dispatcher boundaries (private TryClassifyAsSwitchDispatcher) ──
+    [Test]
+    public async Task ClassifyCoverageGaps_should_not_mark_high_cc_low_crap_as_switch_dispatcher()
+    {
+        var methods = new List<MethodCrap>
+        {
+            new("Dispatch", "Dispatcher.cs", 1, Complexity: 5, Coverage: 0.80, CrapScore: 7.0),
+        };
+        var dir = Path.Combine(Path.GetTempPath(), "sd-bnd-" + Guid.NewGuid());
+        Directory.CreateDirectory(dir);
+        try
+        {
+            var source = """
+                public static class C
+                {
+                    public static string Dispatch(int x)
+                    {
+                        return x switch
+                        {
+                            1 => HandleOne(x),
+                            _ => HandleDefault(x),
+                        };
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(Path.Combine(dir, "Dispatcher.cs"), source).ConfigureAwait(false);
+            var classified = CoverageGapDetector.ClassifyCoverageGaps(methods, dir);
+            await Assert.That(classified[0].IsCoverageGap).IsFalse();
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    [Test]
+    public async Task ClassifyCoverageGaps_should_not_mark_high_cc_low_coverage_as_switch_dispatcher()
+    {
+        var methods = new List<MethodCrap>
+        {
+            new("Dispatch", "Dispatcher.cs", 1, Complexity: 5, Coverage: 0.5, CrapScore: 20.0),
+        };
+        var dir = Path.Combine(Path.GetTempPath(), "sd-cov-" + Guid.NewGuid());
+        Directory.CreateDirectory(dir);
+        try
+        {
+            var source = """
+                public static class C
+                {
+                    public static string Dispatch(int x)
+                    {
+                        return x switch
+                        {
+                            1 => HandleOne(x),
+                            _ => HandleDefault(x),
+                        };
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(Path.Combine(dir, "Dispatcher.cs"), source).ConfigureAwait(false);
+            var classified = CoverageGapDetector.ClassifyCoverageGaps(methods, dir);
+            await Assert.That(classified[0].IsCoverageGap).IsFalse();
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    [Test]
+    public async Task ClassifyCoverageGaps_should_not_mark_high_cc_low_cc3_as_switch_dispatcher()
+    {
+        // Complexity=3 is below the CC>4 conductor threshold, so the conductor
+        // classifier runs too. Use a body with inline logic so conductor doesn't catch.
+        var methods = new List<MethodCrap>
+        {
+            new("Dispatch", "Dispatcher.cs", 1, Complexity: 3, Coverage: 0.80, CrapScore: 20.0),
+        };
+        var dir = Path.Combine(Path.GetTempPath(), "sd-cc3-" + Guid.NewGuid());
+        Directory.CreateDirectory(dir);
+        try
+        {
+            var source = """
+                public static class C
+                {
+                    public static string Dispatch(int x)
+                    {
+                        var y = x + 1;
+                        return y switch
+                        {
+                            1 => HandleOne(x),
+                            _ => HandleDefault(x),
+                        };
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(Path.Combine(dir, "Dispatcher.cs"), source).ConfigureAwait(false);
+            var classified = CoverageGapDetector.ClassifyCoverageGaps(methods, dir);
+            await Assert.That(classified[0].IsCoverageGap).IsFalse();
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    [Test]
+    public async Task ClassifyCoverageGaps_should_not_mark_switch_dispatcher_with_missing_file()
+    {
+        var methods = new List<MethodCrap>
+        {
+            new("Dispatch", "MissingDispatcher.cs", 1, Complexity: 5, Coverage: 0.80, CrapScore: 15.0),
+        };
+        var dir = Path.Combine(Path.GetTempPath(), "sd-nofile-" + Guid.NewGuid());
+        Directory.CreateDirectory(dir);
+        try
+        {
+            var classified = CoverageGapDetector.ClassifyCoverageGaps(methods, dir);
+            await Assert.That(classified[0].IsCoverageGap).IsFalse();
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    // ── IsSwitchDispatcher: non-matching switch arms (kills #24, #25) ──
+    [Test]
+    public async Task IsSwitchDispatcher_should_return_false_when_default_arm_matches()
+    {
+        var source = """
+            public static class C
+            {
+                public static string Dispatch(int x)
+                {
+                    return x switch
+                    {
+                        99 => "unknown",
+                    };
+                }
+            }
+            """;
+        var result = CoverageGapDetector.IsSwitchDispatcher(source, "Dispatch");
+        await Assert.That(result).IsFalse();
+    }
+
+    [Test]
+    public async Task IsSwitchDispatcher_should_return_true_for_valid_dispatcher_one_statement()
+    {
+        var source = """
+            public static class C
+            {
+                public static string Dispatch(int x)
+                {
+                    return x switch
+                    {
+                        1 => HandleOne(x),
+                        _ => HandleDefault(x),
+                    };
+                }
+            }
+            """;
+        var result = CoverageGapDetector.IsSwitchDispatcher(source, "Dispatch");
+        await Assert.That(result).IsTrue();
+    }
+
+    [Test]
+    public async Task IsSwitchDispatcher_should_return_false_when_statement_is_not_return_switch()
+    {
+        var source = """
+            public static class C
+            {
+                public static string Dispatch(int x)
+                {
+                    return x.ToString();
+                }
+            }
+            """;
+        var result = CoverageGapDetector.IsSwitchDispatcher(source, "Dispatch");
+        await Assert.That(result).IsFalse();
+    }
+
+    // ── Boundary: CC=3 switch-dispatcher guard (kills #12) ──
+    [Test]
+    public async Task ClassifyCoverageGaps_should_not_mark_cc3_switch_dispatcher()
+    {
+        var methods = new List<MethodCrap>
+        {
+            new("Dispatch", "Dispatcher.cs", 1, Complexity: 3, Coverage: 0.80, CrapScore: 15.0),
+        };
+        var dir = Path.Combine(Path.GetTempPath(), "sd-bnd3-" + Guid.NewGuid());
+        Directory.CreateDirectory(dir);
+        try
+        {
+            var source = """
+                public static class C
+                {
+                    public static string Dispatch(int x)
+                    {
+                        return x switch
+                        {
+                            1 => HandleOne(x),
+                            _ => HandleDefault(x),
+                        };
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(Path.Combine(dir, "Dispatcher.cs"), source).ConfigureAwait(false);
+            var classified = CoverageGapDetector.ClassifyCoverageGaps(methods, dir);
+            await Assert.That(classified[0].IsCoverageGap).IsFalse();
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    // ── Boundary: CRAP=8.0 switch-dispatcher guard (kills #14) ──
+    [Test]
+    public async Task ClassifyCoverageGaps_should_not_mark_crap8_switch_dispatcher()
+    {
+        var methods = new List<MethodCrap>
+        {
+            new("Dispatch", "Dispatcher.cs", 1, Complexity: 5, Coverage: 0.80, CrapScore: 8.0),
+        };
+        var dir = Path.Combine(Path.GetTempPath(), "sd-bnd4-" + Guid.NewGuid());
+        Directory.CreateDirectory(dir);
+        try
+        {
+            var source = """
+                public static class C
+                {
+                    public static string Dispatch(int x)
+                    {
+                        return x switch
+                        {
+                            1 => HandleOne(x),
+                            _ => HandleDefault(x),
+                        };
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(Path.Combine(dir, "Dispatcher.cs"), source).ConfigureAwait(false);
+            var classified = CoverageGapDetector.ClassifyCoverageGaps(methods, dir);
+            await Assert.That(classified[0].IsCoverageGap).IsFalse();
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
 }

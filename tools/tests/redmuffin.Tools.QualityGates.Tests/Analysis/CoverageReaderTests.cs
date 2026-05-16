@@ -1,6 +1,7 @@
 using TUnit.Core;
 using redmuffin.Tools.QualityGates.Analysis;
 using Microsoft.CodeAnalysis.CSharp;
+using System.Xml.Linq;
 
 namespace redmuffin.Tools.QualityGates.Tests.Analysis;
 
@@ -71,5 +72,14 @@ public sealed class CoverageReaderTests
 
         await Assert.That(covered.Count).IsEqualTo(0);
         await Assert.That(uncovered.Count).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task TryParseLine_should_return_false_for_element_without_attributes()
+    {
+        var xml = XElement.Parse("<line />");
+        var ok = CoverageReader.TryParseLine(xml, out var lineNumber);
+        await Assert.That(ok).IsFalse();
+        await Assert.That(lineNumber).IsEqualTo(0);
     }
 }

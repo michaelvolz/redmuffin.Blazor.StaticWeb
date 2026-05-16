@@ -114,4 +114,22 @@ public sealed class TestMethodParserTests
         await File.WriteAllTextAsync(Path.Combine(dir, "Test.cs"), source).ConfigureAwait(false);
         return TestMethodParser.FindTests(dir);
     }
+
+    [Test]
+    public async Task should_report_start_line_greater_than_zero()
+    {
+        var source = "public sealed class C{[Test]public void M(){}}";
+        var tests = await FindTestsAsync(source).ConfigureAwait(false);
+        await Assert.That(tests.Count).IsEqualTo(1);
+        await Assert.That(tests[0].StartLine).IsGreaterThan(0);
+    }
+
+    [Test]
+    public async Task should_report_end_line_greater_than_zero()
+    {
+        var source = "public sealed class C{[Test]public void M(){}}";
+        var tests = await FindTestsAsync(source).ConfigureAwait(false);
+        await Assert.That(tests.Count).IsEqualTo(1);
+        await Assert.That(tests[0].EndLine).IsGreaterThan(0);
+    }
 }

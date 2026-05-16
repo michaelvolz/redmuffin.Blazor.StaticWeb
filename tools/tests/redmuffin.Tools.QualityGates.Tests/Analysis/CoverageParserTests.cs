@@ -183,4 +183,12 @@ public sealed class CoverageParserTests
         File.WriteAllText(file, xml);
         return CoverageParser.Parse(file);
     }
+
+    [Test]
+    public async Task TryParseLineNumber_should_return_zero_when_input_is_null()
+    {
+        var ok = CoverageParser.TryParseLineNumber(null, out var number);
+        await Assert.That(ok).IsFalse();
+        await Assert.That(number).IsEqualTo(0);
+    }
 }

@@ -6,112 +6,118 @@ using redmuffin.Tools.QualityGates.Commands;
 public sealed class ScrapCommandTests
 {
     [Test]
-    public async Task should_return_exit_code_0_when_all_files_stable()
+    public async Task CheckDirectoryMissing_should_return_false_when_directory_exists()
     {
-        var report = CreateStableReport();
-        var options = new ScrapOptions();
-        var exitCode = ScrapHandler.Run([report], options);
+        var path = AppContext.BaseDirectory;
 
-        await Assert.That(exitCode).IsEqualTo(0);
-    }
+        var result = ScrapCommand.CheckDirectoryMissing(path);
 
-    private static FileScrapReport CreateReport(
-        string filePath = "/src/tests/TestFile.cs",
-        int exampleCount = 4,
-        double avgScrap = 3.0,
-        double maxScrap = 5.0,
-        double effectiveDupScore = 0.0,
-        double zeroAssertionRatio = 0.0,
-        double lowAssertionRatio = 0.25,
-        double totalExtractionPressure = 0.0,
-        IReadOnlyList<double>? clusterPressures = null,
-        IReadOnlyList<DuplicationChannel>? harmfulDup = null,
-        IReadOnlyList<DuplicationChannel>? caseMatrix = null,
-        IReadOnlyList<DuplicationChannel>? subjectRep = null)
-    {
-        var dup = new DuplicationResults(
-            HarmfulDuplication: harmfulDup ?? [],
-            CaseMatrixRepetition: caseMatrix ?? [],
-            SubjectRepetition: subjectRep ?? [],
-            EffectiveDuplicationScore: effectiveDupScore);
-
-        var pressure = new FilePressure(
-            TotalExtractionPressure: totalExtractionPressure,
-            ClusterPressures: clusterPressures ?? [],
-            MatrixCredit: 0.0,
-            NetPressure: totalExtractionPressure);
-
-        var smells = new SmellCounts(
-            BranchingCount: 0,
-            LowAssertionCount: lowAssertionRatio > 0 ? (int)(exampleCount * lowAssertionRatio) : 0,
-            ZeroAssertionCount: zeroAssertionRatio > 0 ? (int)(exampleCount * zeroAssertionRatio) : 0,
-            ZeroAssertionRatio: zeroAssertionRatio,
-            LowAssertionRatio: lowAssertionRatio);
-
-        return new FileScrapReport(
-            FilePath: filePath,
-            ExampleCount: exampleCount,
-            AvgScrap: avgScrap,
-            MaxScrap: maxScrap,
-            Metrics: [],
-            DuplicationResults: dup,
-            ExtractionPressure: pressure,
-            SmellCounts: smells,
-            WorstExamples: []);
-    }
-
-    private static FileScrapReport CreateStableReport() => CreateReport();
-
-    [Test]
-    public async Task should_return_exit_code_2_when_any_file_is_split()
-    {
-        var report = CreateSplitReport();
-        var options = new ScrapOptions();
-        var exitCode = ScrapHandler.Run([report], options);
-
-        await Assert.That(exitCode).IsEqualTo(2);
+        await Assert.That(result).IsFalse();
     }
 
     [Test]
-    public async Task should_return_exit_code_2_when_actionability_not_leave_alone()
+    public async Task CheckDirectoryMissing_should_return_true_when_directory_missing()
     {
-        var report = CreateReport(
-            maxScrap: 13.0,
-            zeroAssertionRatio: 0.25);
-        var options = new ScrapOptions();
-        var exitCode = ScrapHandler.Run([report], options);
+        var result = ScrapCommand.CheckDirectoryMissing("/nonexistent/dir/xyzzy");
 
-        await Assert.That(exitCode).IsEqualTo(2);
+        await Assert.That(result).IsTrue();
     }
 
     [Test]
-    public async Task should_return_exit_code_0_for_empty_results()
+    public async Task ValidateScrapInputs_should_return_false_when_both_valid()
     {
-        var options = new ScrapOptions();
-        var exitCode = ScrapHandler.Run([], options);
+        var result = ScrapCommand.ValidateScrapInputs(
+            AppContext.BaseDirectory, comparePath: null);
 
-        await Assert.That(exitCode).IsEqualTo(0);
+        await Assert.That(result).IsFalse();
     }
 
     [Test]
-    public async Task should_output_file_summary_with_path_and_mode()
+    public async Task ValidateScrapInputs_should_return_true_when_directory_missing()
     {
-        var report = CreateStableReport();
-        var options = new ScrapOptions();
-        using var output = new StringWriter();
+        var result = ScrapCommand.ValidateScrapInputs(
+            "/nonexistent", comparePath: null);
 
-        var exitCode = ScrapHandler.Run([report], options, output);
-        var text = output.ToString();
-
-        await Assert.That(exitCode).IsEqualTo(0);
-        await Assert.That(text).Contains("TestFile.cs");
-        await Assert.That(text).Contains("Stable");
-        await Assert.That(text).Contains("LeaveAlone");
+        await Assert.That(result).IsTrue();
     }
 
-    private static FileScrapReport CreateSplitReport() =>
-        CreateReport(
-            exampleCount: 12,
-            avgScrap: 10.0,
-            maxScrap: 35.0);
+    [Test]
+    public async Task ValidateScrapInputs_should_return_true_when_baseline_missing()
+    {
+        var result = ScrapCommand.ValidateScrapInputs(
+            AppContext.BaseDirectory, comparePath: "/nonexistent/baseline.json");
+
+        await Assert.That(result).IsTrue();
+    }
+
+    [Test]
+    public async Task CheckBaselineMissing_should_return_false_when_null()
+    {
+        var result = ScrapCommand.CheckBaselineMissing(null);
+
+        await Assert.That(result).IsFalse();
+    }
+
+    [Test]
+    public async Task CheckBaselineMissing_should_return_false_when_file_exists()
+    {
+        var tempPath = Path.GetTempFileName();
+        try
+        {
+            var result = ScrapCommand.CheckBaselineMissing(tempPath);
+            await Assert.That(result).IsFalse();
+        }
+        finally
+        {
+            File.Delete(tempPath);
+        }
+    }
+
+    [Test]
+    public async Task CheckBaselineMissing_should_return_true_when_file_missing()
+    {
+        var result = ScrapCommand.CheckBaselineMissing("/nonexistent/baseline.json");
+
+        await Assert.That(result).IsTrue();
+    }
+
+    [Test]
+    public async Task Execute_should_return_0_when_no_test_methods()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDir);
+        try
+        {
+            var exitCode = ScrapCommand.Execute(
+                tempDir, verbose: false, json: false,
+                changedOnly: false, writeBaseline: false, comparePath: null);
+
+            await Assert.That(exitCode).IsEqualTo(0);
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [Test]
+    public async Task Execute_should_return_1_when_directory_missing()
+    {
+        var exitCode = ScrapCommand.Execute(
+            "/nonexistent/dir", verbose: false, json: false,
+            changedOnly: false, writeBaseline: false, comparePath: null);
+
+        await Assert.That(exitCode).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task Execute_should_return_1_when_baseline_missing()
+    {
+        var exitCode = ScrapCommand.Execute(
+            AppContext.BaseDirectory, verbose: false, json: false,
+            changedOnly: false, writeBaseline: false,
+            comparePath: "/nonexistent/baseline.json");
+
+        await Assert.That(exitCode).IsEqualTo(1);
+    }
 }

@@ -172,11 +172,50 @@ public sealed class CoberturaMergerTests
     [Test]
     public async Task Should_Throw_When_Input_Is_Empty()
     {
-        await Assert.ThrowsAsync<ArgumentException>(
-            () =>
-            {
-                CoberturaMerger.Merge([], "output.xml");
-                return Task.CompletedTask;
-            });
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+        {
+            CoberturaMerger.Merge([], "/tmp/out.xml");
+            return Task.CompletedTask;
+        });
+    }
+
+    [Test]
+    public async Task Merge_should_produce_indented_output()
+    {
+        var inputPath = Path.GetTempFileName();
+        var outputPath = Path.GetTempFileName();
+        try
+        {
+            var xml = """
+                <?xml version="1.0" encoding="utf-8"?>
+                <coverage line-rate="1" branch-rate="1" version="1.9">
+                  <packages>
+                    <package>
+                      <classes>
+                        <class name="Foo" filename="A.cs">
+                          <lines>
+                            <line number="1" hits="3" branch="false"/>
+                          </lines>
+                        </class>
+                      </classes>
+                    </package>
+                  </packages>
+                </coverage>
+                """;
+            await File.WriteAllTextAsync(inputPath, xml).ConfigureAwait(false);
+            var secondInput = Path.GetTempFileName();
+            await File.WriteAllTextAsync(secondInput, xml).ConfigureAwait(false);
+
+            CoberturaMerger.Merge([inputPath, secondInput], outputPath);
+            var merged = await File.ReadAllTextAsync(outputPath).ConfigureAwait(false);
+            await Assert.That(merged).Contains("\n  ");
+
+            File.Delete(secondInput);
+        }
+        finally
+        {
+            File.Delete(inputPath);
+            File.Delete(outputPath);
+        }
     }
 }
