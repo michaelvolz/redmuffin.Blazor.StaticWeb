@@ -192,5 +192,7 @@ dotnet run --project src/redmuffin.Tools.QualityGates -- scrap --test-project ..
 - [ADR-0003: SCRAP Test Structural Analyzer](../../docs/adr/0003-scrap-test-structural-analyzer.md)
 - [SCRAP Implementation Plan](../../docs/plans/2026-05-09-002-feat-scrap-test-structural-analyzer-plan.md)
 - [Uncle Bob's scrap source](https://github.com/unclebob/scrap) — `policy.clj` thresholds
+- [CRAP Formula Measurement Gaps](/docs/solutions/developer-experience/crap-formula-cobertura-coverage-divergence-2026-05-16.md) — metric semantics vs. Cobertura coverage
+- [Design Changes Are the Point](/docs/solutions/conventions/design-changes-are-the-point-cleanup-philosophy-2026-05-16.md) — cleanup philosophy: design changes over mechanical extraction
 
 [scrap-policy]: https://github.com/unclebob/scrap/blob/master/src/scrap/policy.clj

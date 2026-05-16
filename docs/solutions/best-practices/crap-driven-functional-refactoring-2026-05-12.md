@@ -147,3 +147,9 @@ Each violation is an opportunity to discover and standardize a pattern.
 Code converges toward optimal, idiomatic C# that any developer recognizes
 instantly. CRAP is a byproduct — standardized code naturally has low
 complexity.
+
+## Related
+
+- [I/O Injection Pattern](/docs/solutions/design-patterns/io-injection-optional-func-parameter-2026-05-16.md) — injectable Func\<\> seam for process-spawning methods
+- [FrozenDictionary Switch Replacement](/docs/solutions/design-patterns/frozendictionary-switch-expression-replacement-2026-05-16.md) — switch → FrozenDictionary for CC reduction. Note: the investigation table above says "Switch expression → Rejected" for the specific IsValid case; for single-discriminant switches with many constant-value arms, FrozenDictionary is often the optimal answer.
+- [Design Changes Are the Point](/docs/solutions/conventions/design-changes-are-the-point-cleanup-philosophy-2026-05-16.md) — the philosophy document codifying design changes over mechanical extraction

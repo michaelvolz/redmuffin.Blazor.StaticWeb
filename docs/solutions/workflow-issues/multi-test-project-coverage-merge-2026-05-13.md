@@ -145,3 +145,4 @@ disjoint classes, overlapping lines, empty input). 287 tools tests pass.
 - `tools/src/.../CrapCommand.cs` — `GenerateCoverageForAllProjects`
 - `tools/src/.../AllCommand.cs` — `ResolveTestProjectPaths`
 - `docs/solutions/tooling-decisions/crap-quality-gates-pipeline-2026-05-09.md` — CRAP pipeline design
+- [CRAP Formula Measurement Gaps](/docs/solutions/developer-experience/crap-formula-cobertura-coverage-divergence-2026-05-16.md) — the other major class of CRAP accuracy issues (metric semantics vs. incomplete data)
