@@ -380,4 +380,70 @@ public sealed class CrapCommandTests
         var result = CrapCommand.ValidateTestProjectList(["/some/path"]);
         await Assert.That(result).IsNull();
     }
+
+    // ── MergeTempCoverageFiles ──
+
+    [Test]
+    public async Task MergeTempCoverageFiles_should_return_single_path()
+    {
+        using var temp = new TempFile();
+        var result = CrapCommand.MergeTempCoverageFiles([temp.Path]);
+        await Assert.That(result).IsEqualTo(temp.Path);
+    }
+
+    [Test]
+    public async Task MergeTempCoverageFiles_should_merge_multiple()
+    {
+        var files = new List<string>();
+        try
+        {
+            files.Add(await CreateMinimalCoverageXml("A.cs", 1, 5).ConfigureAwait(false));
+            files.Add(await CreateMinimalCoverageXml("A.cs", 1, 3).ConfigureAwait(false));
+
+            var merged = CrapCommand.MergeTempCoverageFiles(files);
+        await Assert.That(merged).IsNotNull();
+        await Assert.That(merged).IsNotEqualTo(files[0]);
+        await Assert.That(File.Exists(merged)).IsTrue();
+
+        File.Delete(merged);
+    }
+    finally
+    {
+        foreach (var f in files) File.Delete(f);
+    }
+}
+
+[Test]
+public async Task GenerateCoverageForAllProjects_should_return_null_on_failure()
+{
+    var result = CrapCommand.GenerateCoverageForAllProjects(
+        ["/fake1", "/fake2"],
+        generateCoverage: _ => null);
+
+    await Assert.That(result).IsNull();
+}
+
+[Test]
+public async Task GenerateCoverageForAllProjects_should_merge_two()
+{
+    var t1 = await CreateMinimalCoverageXml("A.cs", 1, 2).ConfigureAwait(false);
+    var t2 = await CreateMinimalCoverageXml("A.cs", 1, 3).ConfigureAwait(false);
+    string? merged = null;
+
+    try
+    {
+        merged = CrapCommand.GenerateCoverageForAllProjects(
+            ["/p1", "/p2"],
+            generateCoverage: i => i == "/p1" ? t1 : t2);
+
+        await Assert.That(merged).IsNotNull();
+        await Assert.That(File.Exists(merged)).IsTrue();
+    }
+    finally
+    {
+        File.Delete(t1);
+        File.Delete(t2);
+        if (merged is not null) File.Delete(merged);
+    }
+}
 }

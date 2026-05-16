@@ -55,4 +55,162 @@ public sealed class MutateHandlerHelperTests
         var lines = MutateHandler.BuildSummaryLines([], sites);
         await Assert.That(lines[2]).Contains("2 uncovered");
     }
+
+    // ── ClassifyAndFilterSites ──
+
+    private static MutationSite MakeSite(int index, int line)
+    {
+        var dummyNode = CSharpSyntaxTree.ParseText("class C{}").GetRoot();
+        return new MutationSite(
+            index, MutationCategory.Arithmetic, line, 1, "test",
+            SyntaxKind.AddExpression, SyntaxKind.SubtractExpression, dummyNode);
+    }
+
+    [Test]
+    public async Task should_partition_sites_by_coverage()
+    {
+        var sites = new List<MutationSite> { MakeSite(0, 10), MakeSite(1, 20) };
+        var coveredLines = new HashSet<int> { 11 };
+
+        var result = MutateHandler.ClassifyAndFilterSites(
+            sites, coveredLines, "source", null, new MutateOptions());
+
+        await Assert.That(result.Sites.Count).IsEqualTo(1);
+        await Assert.That(result.Covered.Count).IsEqualTo(1);
+        await Assert.That(result.Uncovered.Count).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task should_fallback_to_all_sites_when_none_covered()
+    {
+        var sites = new List<MutationSite> { MakeSite(0, 10) };
+        var coveredLines = new HashSet<int>();
+
+        var result = MutateHandler.ClassifyAndFilterSites(
+            sites, coveredLines, "source", null, new MutateOptions());
+
+        await Assert.That(result.Sites.Count).IsEqualTo(1);
+        await Assert.That(result.Covered.Count).IsEqualTo(1);
+        await Assert.That(result.Uncovered.Count).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task should_filter_by_lines_option()
+    {
+        var sites = new List<MutationSite> { MakeSite(0, 10), MakeSite(1, 20), MakeSite(2, 30) };
+        var coveredLines = new HashSet<int> { 11, 21, 31 };
+        var options = new MutateOptions { Lines = new HashSet<int> { 10, 30 } };
+
+        var result = MutateHandler.ClassifyAndFilterSites(
+            sites, coveredLines, "source", null, options);
+
+        await Assert.That(result.Sites.Count).IsEqualTo(2);
+        await Assert.That(result.Sites[0].Line).IsEqualTo(10);
+        await Assert.That(result.Sites[1].Line).IsEqualTo(30);
+    }
+
+    // ── ResolveCoverageLines helpers ──
+
+    [Test]
+    public async Task ShouldSkipCoverageGeneration_returns_true_when_coverage_exists()
+    {
+        var result = MutateHandler.ShouldSkipCoverageGeneration(
+            new HashSet<int> { 10 }, new MutateOptions { AutoCoverage = true });
+        await Assert.That(result).IsTrue();
+    }
+
+    [Test]
+    public async Task ShouldSkipCoverageGeneration_returns_true_when_auto_disabled()
+    {
+        var result = MutateHandler.ShouldSkipCoverageGeneration(
+            new HashSet<int>(), new MutateOptions { AutoCoverage = false });
+        await Assert.That(result).IsTrue();
+    }
+
+    [Test]
+    public async Task ShouldSkipCoverageGeneration_returns_false_when_empty_and_auto()
+    {
+        var result = MutateHandler.ShouldSkipCoverageGeneration(
+            new HashSet<int>(), new MutateOptions { AutoCoverage = true });
+        await Assert.That(result).IsFalse();
+    }
+
+    [Test]
+    public async Task WasCoverageGenerated_returns_true_for_path()
+    {
+        await Assert.That(MutateHandler.WasCoverageGenerated("/tmp/cov.xml")).IsTrue();
+    }
+
+    [Test]
+    public async Task WasCoverageGenerated_returns_false_for_null()
+    {
+        await Assert.That(MutateHandler.WasCoverageGenerated(null)).IsFalse();
+    }
+
+    [Test]
+    public async Task ResolveCoverageLinesAsync_returns_early_when_coverage_exists()
+    {
+        using var writer = new StringWriter();
+        var result = await MutateHandler.ResolveCoverageLinesAsync(
+                "/fake/project", new MutateOptions(), new HashSet<int> { 10 }, writer)
+            .ConfigureAwait(false);
+        await Assert.That(result.Count).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task ResolveCoverageLinesAsync_handles_null_from_generator()
+    {
+        using var writer = new StringWriter();
+        var result = await MutateHandler.ResolveCoverageLinesAsync(
+                "/fake/project",
+                new MutateOptions { AutoCoverage = true },
+                new HashSet<int>(),
+                writer,
+                generateCoverage: _ => Task.FromResult<string?>(null))
+            .ConfigureAwait(false);
+
+        await Assert.That(result.Count).IsEqualTo(0);
+        await Assert.That(writer.ToString()).Contains("Warning");
+    }
+
+    [Test]
+    public async Task ResolveCoverageLinesAsync_loads_coverage_on_success()
+    {
+        var src = Path.GetTempFileName();
+        var destRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        Directory.CreateDirectory(destRoot);
+
+        try
+        {
+            await File.WriteAllTextAsync(src, """
+                <?xml version="1.0" encoding="utf-8"?>
+                <coverage line-rate="1" branch-rate="1" version="1.9">
+                  <packages><package>
+                    <classes>
+                      <class name="Foo" filename="Foo.cs">
+                        <lines><line number="10" hits="3" branch="false"/></lines>
+                      </class>
+                    </classes>
+                  </package>                    </packages>
+                </coverage>
+                """).ConfigureAwait(false);
+
+            using var writer = new StringWriter();
+            var result = await MutateHandler.ResolveCoverageLinesAsync(
+                    destRoot,
+                    new MutateOptions { AutoCoverage = true },
+                    new HashSet<int>(),
+                    writer,
+                    generateCoverage: _ => Task.FromResult<string?>(src))
+                .ConfigureAwait(false);
+
+            await Assert.That(result.Contains(10)).IsTrue();
+        }
+        finally
+        {
+            File.Delete(src);
+            if (Directory.Exists(destRoot))
+                Directory.Delete(destRoot, recursive: true);
+        }
+    }
 }

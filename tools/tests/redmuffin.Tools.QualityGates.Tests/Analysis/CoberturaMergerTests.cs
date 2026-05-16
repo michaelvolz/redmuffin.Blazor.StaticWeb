@@ -459,6 +459,33 @@ public sealed class CoberturaMergerTests
         }
     }
 
+    [Test]
+    public async Task LoadAllClassLines_should_handle_class_with_no_lines()
+    {
+        var path = WriteTempXml("""
+            <?xml version="1.0" encoding="utf-8"?>
+            <coverage>
+              <packages><package>
+                <classes>
+                  <class name="Empty" filename="Empty.cs">
+                    <lines/>
+                  </class>
+                </classes>
+              </package></packages>
+            </coverage>
+            """);
+
+        try
+        {
+            var result = CoberturaMerger.LoadAllClassLines([path]);
+            await Assert.That(result["Empty.cs"].Count).IsEqualTo(0);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
     private static string WriteTempXml(string content)
     {
         var path = Path.GetTempFileName();
