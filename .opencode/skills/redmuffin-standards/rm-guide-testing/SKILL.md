@@ -263,6 +263,17 @@ private sealed class HttpClientFactory_Fake(HttpMessageHandler handler)
 - Zero external dependencies: no real HTTP, no mock frameworks
 - Tests run deterministically even when Raindrop API is unavailable
 
+### General I/O Injection (Process, File, etc.)
+
+The same `Func<>` injection pattern used for HTTP works for any I/O
+boundary. Methods that call `Process.Start`, `File.ReadAllText`, or
+other I/O can accept an optional `Func<string, Task<string?>>` parameter
+that defaults to the real implementation but accepts a fake in tests.
+
+See `rm-guide-cleanup` §2.1 (I/O boundary injection example) and
+`docs/solutions/design-patterns/io-injection-optional-func-parameter-2026-05-16.md`
+for the full pattern with Process.Start example.
+
 ### Azure Functions Test Project Requirements
 
 API test projects (e.g., `redmuffin.Blazor.StaticWeb.Api.Tests`) **must NOT**

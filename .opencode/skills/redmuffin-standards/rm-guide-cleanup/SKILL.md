@@ -133,6 +133,63 @@ if (!IsValidLength(Title, 500))
 // Cost of indirection > benefit of abstraction
 ```
 
+**Concrete example — I/O boundary injection (2026-05-16):**
+
+Methods that spawn processes (`Process.Start`) or touch the filesystem
+are untestable without the real process/file. Extract pure logic, then
+inject the I/O dependency via an optional `Func<>` parameter:
+
+```csharp
+// BEFORE: Process.Start embedded in method — CRAP 30.0, untestable
+private static async Task<HashSet<int>> ResolveCoverageLinesAsync(
+    string testProjectPath, MutateOptions options,
+    HashSet<int> currentCoverage, TextWriter output)
+{
+    if (currentCoverage.Count > 0 || !options.AutoCoverage)
+        return currentCoverage;
+    var process = Process.Start(new ProcessStartInfo("dotnet", ...));
+    // ... parse, load, return ...
+}
+
+// AFTER: optional Func<> parameter + pure helpers — CRAP 7.7 PASS
+public static async Task<IReadOnlySet<int>> ResolveCoverageLinesAsync(
+    string testProjectPath, MutateOptions options,
+    IReadOnlySet<int> currentCoverage, TextWriter output,
+    Func<string, Task<string?>>? generateCoverage = null)
+{
+    if (ShouldSkipCoverageGeneration(currentCoverage, options))
+        return currentCoverage;  // pure guard, CC=1
+
+    generateCoverage ??= GenerateCoverageAsync;  // fallback to real
+    var generatedPath = await generateCoverage(testProjectPath)
+        .ConfigureAwait(false);
+    if (!WasCoverageGenerated(generatedPath))
+        return currentCoverage;
+    // ... copy, load coverage, return ...
+}
+
+// Pure helpers — each CC=1, trivially testable
+public static bool ShouldSkipCoverageGeneration(
+    IReadOnlySet<int> currentCoverage, MutateOptions options)
+    => currentCoverage.Count > 0 || !options.AutoCoverage;
+
+public static bool WasCoverageGenerated(string? generatedPath)
+    => generatedPath is not null;
+```
+
+Test with fake generator — no process spawned:
+
+```csharp
+var result = await MutateHandler.ResolveCoverageLinesAsync(
+    "/fake/project", options, new HashSet<int>(), writer,
+    generateCoverage: _ => Task.FromResult<string?>(null))
+    .ConfigureAwait(false);
+```
+
+**When to use:** Any method with a single I/O dependency (Process.Start,
+File.ReadAllText, HttpClient). Do NOT use when the method has 5+
+dependencies — at that point, proper DI with interfaces is clearer.
+
 **Concrete example — good extraction (2026-05-13):**
 
 Two Azure Functions (`RaindropListArticles`, `RaindropListVideos`) had 65
