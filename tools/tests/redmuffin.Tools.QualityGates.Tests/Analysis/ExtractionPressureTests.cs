@@ -40,6 +40,25 @@ public sealed class ExtractionPressureTests
     }
 
     [Test]
+    public async Task should_return_zero_when_v_is_greater_than_four()
+    {
+        // V=5 is strictly greater than 4 — guard triggers.
+        var pressure = ExtractionPressure.ComputeDefore(5, 2, 5);
+
+        await Assert.That(pressure).IsEqualTo(0.0);
+    }
+
+    [Test]
+    public async Task should_compute_when_v_equals_four()
+    {
+        // V=4 is NOT greater than 4 — guard does not trigger.
+        // (5-3) * (2-1)^1.5 / (4+1) = 2 * 1 / 5 = 0.4
+        var pressure = ExtractionPressure.ComputeDefore(5, 2, 4);
+
+        await Assert.That(pressure).IsEqualTo(0.4);
+    }
+
+    [Test]
     public async Task should_compute_large_cluster_pressure()
     {
         // F=20, I=10, V=3 → D_before = (17 * 9^1.5) / 4 = (17 * 27) / 4 = 114.75
@@ -72,6 +91,18 @@ public sealed class ExtractionPressureTests
         var pressure = ExtractionPressure.ComputeExtractionPressure(20, 10, 3);
 
         await Assert.That(pressure).IsEqualTo(103.85);
+    }
+
+    [Test]
+    public async Task should_subtract_helper_cost_not_add_when_positive()
+    {
+        // F=10, I=5, V=2 — dBefore exceeds helper cost.
+        // dBefore = (7 * 4^1.5) / 3 = (7 * 8) / 3 = 18.667
+        // H = 10*0.5 + 2*0.3 = 5.6
+        // Pressure = max(0, 18.667 - 5.6) = 13.067
+        var pressure = ExtractionPressure.ComputeExtractionPressure(10, 5, 2);
+
+        await Assert.That(pressure).IsGreaterThan(10.0);
     }
 
     // --- ComputeFilePressure ---
