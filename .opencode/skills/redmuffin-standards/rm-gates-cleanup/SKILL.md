@@ -282,6 +282,41 @@ file to verify test quality.
 5. Repeat until zero survivors (excluding documented equivalent mutants)
 ```
 
+### Execution Protocol (May 2026)
+
+This protocol applies when hardening tests with mutation testing.
+
+**Target priority** — Public API surface first. Target methods that are
+`public static` and called by external consumers. Within a solution,
+start with the public entry points (CLI classes, handler public methods).
+
+**Per-survivor workflow** — One survivor at a time:
+
+1. Identify the survivor (mutated line + mutation category)
+2. Apply the Survivor Decision Tree (below) — determine: equivalent /
+   no coverage / weak test
+3. Fix with TDD: write a failing test (red), verify it kills the mutant
+4. Re-run mutation on that file — confirm the mutant is now KILLED
+5. Move to the next survivor
+
+**Safety gate** — NEVER change production code to fix a survivor.
+Enforce with commit separation: production and test changes go in
+separate commits. Before declaring a mutation fix session done, run
+`git diff --name-only` to confirm only test files were modified.
+
+**Definition of done** — 100% kill rate per file. Zero survivors
+excluding documented equivalent mutants. Re-run mutation after all
+fixes to confirm zero survivors.
+
+**Scaling trigger** — Achieve 100% kill rate on all targeted tools
+solution files before touching the main solution. The tools solution
+is the proving ground — validate the process is smooth and optimal
+before scaling.
+
+**Separate fixtures rule** — Survivor verification tests and 100%
+kill rate targets MUST use separate fixture projects. Never remove
+tests from a kill-rate fixture to create survivors.
+
 ### Survivor Decision Tree (Uncle Bob + PIT)
 
 Every surviving mutant MUST be investigated. These steps are ordered —

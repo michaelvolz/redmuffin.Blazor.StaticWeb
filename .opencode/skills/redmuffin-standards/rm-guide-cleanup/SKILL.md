@@ -443,4 +443,4 @@ Before any change is complete, verify:
 
 - `rm-guide-testing` — comprehensive test patterns, test doubles, and file structure
 - `rm-guide-naming` — naming conventions for types, members, and test doubles
-- `rm-gates-cleanup` — CRAP, SCRAP, Architecture, Mutation gate remediation
+- `rm-gates-cleanup` — CRAP, SCRAP, Architecture remediation workflows; §4 for mutation testing execution protocol and survivor decision tree

@@ -113,3 +113,10 @@ Produce the highest-quality, professional-grade tests that strictly follow veter
 
 **Execution Mandate:**  
 Follow every rule and workflow step above rigorously and without exception. Generate complete, self-contained test suites that cover the entire public surface of the module, class, or function. Verify coverage, readability, and refactor safety before finalizing any output. Align every test precisely to confirmed specifications or observed behavior. The resulting tests must be production-ready artifacts that veteran TDD practitioners would accept unchanged.
+
+## Test Quality Verification
+
+After writing tests, verify they actually catch logic errors.
+See `rm-gates-cleanup` §4 for mutation testing workflow — the
+per-survivor decision tree (equivalent / no coverage / weak test),
+one-at-a-time TDD fix loop, and 100% kill rate standard.
