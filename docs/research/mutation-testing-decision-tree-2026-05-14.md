@@ -13,7 +13,10 @@ problem_type: best_practice
 
 ## Sources
 
-- **Uncle Bob**: "Mutation Testing" (June 2016, blog.cleancoder.com)
+- **Uncle Bob**: "Mutation Testing" (June 2016, blog.cleancoder.com):
+  _"There is no justifiable goal other than 100%. Every single line, and every
+  single branch, should be tested by your unit tests. I realize that this goal
+  is not practicably achievable."_
 - **PIT (pitest)**: Official documentation (pitest.org), the tool Uncle Bob endorsed
 
 ## The Only Acceptable Survivor

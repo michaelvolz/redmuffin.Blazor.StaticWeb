@@ -304,9 +304,30 @@ Enforce with commit separation: production and test changes go in
 separate commits. Before declaring a mutation fix session done, run
 `git diff --name-only` to confirm only test files were modified.
 
-**Definition of done** — 100% kill rate per file. Zero survivors
-excluding documented equivalent mutants. Re-run mutation after all
-fixes to confirm zero survivors.
+**Definition of done — 100% kill rate per file. Zero survivors.**
+
+Uncle Bob (June 2016, blog.cleancoder.com): _"There is no justifiable goal
+other than 100%. Every single line, and every single branch, should be
+tested by your unit tests."_
+
+This is an asymptotic goal — not every file will reach 100% on first pass.
+But every survivor must be addressed:
+
+- **Equivalent mutants**: The ONLY acceptable survivor category. Document
+  and move on.
+- **Missing coverage**: Write integration tests through the public API.
+  Never extract a shallow wrapper just to make a constant testable.
+- **Weak assertions**: Strengthen the test. If the test doesn't distinguish
+  the mutation from the original, the test isn't doing its job.
+- **I/O-bound / CLI-harness**: Document as infrastructure gaps. They
+  represent real test deficiencies, not acceptable survivors. Plan to
+  address them when mocking infrastructure exists.
+
+Zero survivors means zero unaddressed survivors. Every survivor has a
+classification and a plan. Ignoring survivors is not acceptable.
+
+Re-run mutation after all fixes to confirm the kill rate. Re-run after
+any production code change — a refactor can expose new survivors.
 
 **Scaling trigger** — Achieve 100% kill rate on all targeted tools
 solution files before touching the main solution. The tools solution
@@ -357,11 +378,39 @@ Do NOT change the production code — the code is correct, the test is insuffici
 The code is correct. The mutation exposes a test deficiency. Fixing the code
 to make a mutant pass is destroying production behavior to appease a metric.
 
-**Separate fixtures rule:** When writing tests for the mutation runner itself,
-survivor tests and kill-rate tests MUST use separate fixtures. Never remove
-tests from a kill-rate fixture to create survivors for assertion tests.
+### Pause-and-Reflect Checkpoint (After Every 3-5 Survivors)
 
-Reference: `docs/research/mutation-testing-decision-tree-2026-05-14.md`
+After fixing 3-5 survivors, pause and ask two questions:
+
+1. **Is the code better?** — Did you extract a method just to make it
+   testable? Does the new method pass the Extraction Decision Tree in
+   `rm-guide-cleanup` §2.1 (Q1: ≥5 lines, Q2: reads clearly inline)?
+   If the extraction created a shallow module, **revert it.** Code
+   quality comes first. Mutation kill rate is a measure of test quality,
+   not a license to damage production code.
+
+2. **Are the tests better?** — Do the new tests exercise observable
+   behavior through the public API, or do they test extracted wrapper
+   methods that exist only to be testable? Tests coupled to
+   implementation details (shallow wrappers) are worse than no tests
+   at all — they entrench bad structure and prevent future refactoring.
+
+If either answer is NO: step back. Ask: "What would Feathers, Ousterhout,
+and Uncle Bob recommend here?"
+
+The answer is never "extract a shallow wrapper to kill a mutant." It is
+never "ignore the survivor and move on." It is always one of:
+
+- Write a proper integration test through the public API (Feathers:
+  characterize behavior, then test)
+- Strengthen existing test assertions so the mutation is caught
+  (Uncle Bob: the test wasn't good enough)
+- Classify as infrastructure gap (I/O-bound, CLI-harness) and document
+  the plan to address it when tooling exists
+- Classify as equivalent and document the proof
+
+**Code first. Tests second. Kill rate is the byproduct of both.
+The goal is zero survivors, achieved through quality.**
 
 ### Mutation behavior
 
