@@ -61,10 +61,25 @@ public static class MutateHandler
             return (null, allSites, [], [], 0, existingManifest, strippedSource);
         }
 
-        coveredLines = await ResolveCoverageLinesAsync(
-                testProjectPath, options, coveredLines, output)
+        var resolvedLines = await ResolveCoverageLinesAsync(
+                testProjectPath, options, coveredLines!, output)
             .ConfigureAwait(false);
 
+        var (sites, covered, uncovered, changedCount) = ClassifyAndFilterSites(
+            allSites, resolvedLines, strippedSource, existingManifest, options);
+
+        return (sites, allSites, covered, uncovered, changedCount, existingManifest, strippedSource);
+    }
+
+    public static (IReadOnlyList<MutationSite> Sites, IReadOnlyList<MutationSite> Covered,
+        IReadOnlyList<MutationSite> Uncovered, int ChangedCount)
+        ClassifyAndFilterSites(
+            IReadOnlyList<MutationSite> allSites,
+            IReadOnlySet<int> coveredLines,
+            string strippedSource,
+            Manifest? existingManifest,
+            MutateOptions options)
+    {
         var (covered, uncovered) = CoverageReader.PartitionByCoverage(allSites, coveredLines);
         var sites = new List<MutationSite>(covered);
         var changedCount = ApplyDifferentialFilter(sites, strippedSource, existingManifest, options);
@@ -83,7 +98,7 @@ public static class MutateHandler
             sites = [.. sites.Where(s => options.Lines.Contains(s.Line))];
         }
 
-        return (sites, allSites, covered, uncovered, changedCount, existingManifest, strippedSource);
+        return (sites, covered, uncovered, changedCount);
     }
 
     private static async Task<int> ExecuteMutationsAsync(
@@ -284,16 +299,19 @@ public static class MutateHandler
     private static string CoverageFilePath(string testProjectPath) =>
         Path.Combine(Path.GetDirectoryName(testProjectPath) ?? ".", "coverage.cobertura.xml");
 
-    private static async Task<HashSet<int>> ResolveCoverageLinesAsync(
-        string testProjectPath, MutateOptions options, HashSet<int> currentCoverage, TextWriter output)
+    public static async Task<IReadOnlySet<int>> ResolveCoverageLinesAsync(
+        string testProjectPath, MutateOptions options, IReadOnlySet<int> currentCoverage, TextWriter output,
+        Func<string, Task<string?>>? generateCoverage = null)
     {
-        if (currentCoverage.Count > 0 || !options.AutoCoverage)
+        if (ShouldSkipCoverageGeneration(currentCoverage, options))
             return currentCoverage;
 
-        await output.WriteLineAsync("Generating coverage data...").ConfigureAwait(false);
-        var generatedPath = await GenerateCoverageAsync(testProjectPath).ConfigureAwait(false);
+        generateCoverage ??= GenerateCoverageAsync;
 
-        if (generatedPath is null)
+        await output.WriteLineAsync("Generating coverage data...").ConfigureAwait(false);
+        var generatedPath = await generateCoverage(testProjectPath).ConfigureAwait(false);
+
+        if (!WasCoverageGenerated(generatedPath))
         {
             await output.WriteLineAsync("Warning: Coverage generation failed.")
                 .ConfigureAwait(false);
@@ -302,10 +320,16 @@ public static class MutateHandler
 
         var destPath = CoverageFilePath(testProjectPath);
         Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-        File.Copy(generatedPath, destPath, overwrite: true);
+        File.Copy(generatedPath!, destPath, overwrite: true);
 
         return CoverageReader.LoadCoverage(destPath).ToHashSet();
     }
+
+    public static bool ShouldSkipCoverageGeneration(IReadOnlySet<int> currentCoverage, MutateOptions options)
+        => currentCoverage.Count > 0 || !options.AutoCoverage;
+
+    public static bool WasCoverageGenerated(string? generatedPath)
+        => generatedPath is not null;
 
     private static async Task<string?> GenerateCoverageAsync(string testProjectPath)
     {
