@@ -1,22 +1,25 @@
 namespace redmuffin.Tools.QualityGates.Analysis;
 
+using System.Collections.Frozen;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 public static class TestNormalizer
 {
-    public static string LiteralFeature(SyntaxKind kind)
-    {
-        return kind switch
+    private static readonly FrozenDictionary<SyntaxKind, string> LiteralMap =
+        new Dictionary<SyntaxKind, string>
         {
-            SyntaxKind.StringLiteralExpression => "$str",
-            SyntaxKind.NumericLiteralExpression => "$num",
-            SyntaxKind.TrueLiteralExpression or SyntaxKind.FalseLiteralExpression => "$bool",
-            SyntaxKind.NullLiteralExpression or SyntaxKind.DefaultLiteralExpression => "$defnull",
-            _ => "$lit",
-        };
-    }
+            [SyntaxKind.StringLiteralExpression] = "$str",
+            [SyntaxKind.NumericLiteralExpression] = "$num",
+            [SyntaxKind.TrueLiteralExpression] = "$bool",
+            [SyntaxKind.FalseLiteralExpression] = "$bool",
+            [SyntaxKind.NullLiteralExpression] = "$defnull",
+            [SyntaxKind.DefaultLiteralExpression] = "$defnull",
+        }.ToFrozenDictionary();
+
+    public static string LiteralFeature(SyntaxKind kind)
+        => LiteralMap.GetValueOrDefault(kind, "$lit");
 
     public static IReadOnlyList<string> Normalize(MethodDeclarationSyntax method)
     {
