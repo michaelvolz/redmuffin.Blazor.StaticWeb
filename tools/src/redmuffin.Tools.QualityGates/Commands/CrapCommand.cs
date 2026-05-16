@@ -173,14 +173,18 @@ public static class CrapCommand
         return GenerateCoverageForAllProjects(testProjectPaths!);
     }
 
-    private static string? GenerateCoverageForAllProjects(IReadOnlyList<string> testProjectPaths)
+    public static string? GenerateCoverageForAllProjects(
+        IReadOnlyList<string> testProjectPaths,
+        Func<string, string?>? generateCoverage = null)
     {
+        generateCoverage ??= GenerateCoverage;
+
         var tempFiles = new List<string>();
         try
         {
             foreach (var projectPath in testProjectPaths)
             {
-                var path = GenerateCoverage(projectPath);
+                var path = generateCoverage(projectPath);
                 if (path is null)
                 {
                     CleanupTempFiles(tempFiles);
@@ -190,20 +194,25 @@ public static class CrapCommand
                 tempFiles.Add(path);
             }
 
-            if (tempFiles.Count == 1) return tempFiles[0];
-
-            var mergedPath = Path.Combine(
-                Path.GetTempPath(),
-                Path.GetRandomFileName() + ".merged.cobertura.xml");
-            Analysis.CoberturaMerger.Merge(tempFiles, mergedPath);
-            CleanupTempFiles(tempFiles);
-            return mergedPath;
+            return MergeTempCoverageFiles(tempFiles);
         }
         catch
         {
             CleanupTempFiles(tempFiles);
             throw;
         }
+    }
+
+    public static string? MergeTempCoverageFiles(IReadOnlyList<string> tempFiles)
+    {
+        if (tempFiles.Count == 1) return tempFiles[0];
+
+        var mergedPath = Path.Combine(
+            Path.GetTempPath(),
+            Path.GetRandomFileName() + ".merged.cobertura.xml");
+        Analysis.CoberturaMerger.Merge(tempFiles, mergedPath);
+        CleanupTempFiles(tempFiles);
+        return mergedPath;
     }
 
     private static void CleanupTempFiles(IReadOnlyList<string> files)
