@@ -39,6 +39,8 @@ public sealed class TestNormalizerTests
     {
         await Assert.That(TestNormalizer.LiteralFeature(SyntaxKind.TrueLiteralExpression))
             .IsEqualTo("$bool");
+        await Assert.That(TestNormalizer.LiteralFeature(SyntaxKind.FalseLiteralExpression))
+            .IsEqualTo("$bool");
     }
 
     [Test]
