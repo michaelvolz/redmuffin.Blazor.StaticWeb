@@ -150,4 +150,3 @@ public static class ScrapCommand
         return reports;
     }
 }
-

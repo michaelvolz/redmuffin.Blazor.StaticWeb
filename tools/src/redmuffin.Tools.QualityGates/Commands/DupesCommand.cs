@@ -74,4 +74,3 @@ public static class DupesCommand
 
     public static int ApplyDefault(int value, int defaultValue) => value > 0 ? value : defaultValue;
 }
-

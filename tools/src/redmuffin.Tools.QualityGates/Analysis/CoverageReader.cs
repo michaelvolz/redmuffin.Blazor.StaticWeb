@@ -68,4 +68,3 @@ public static class CoverageReader
         return (covered.AsReadOnly(), uncovered.AsReadOnly());
     }
 }
-

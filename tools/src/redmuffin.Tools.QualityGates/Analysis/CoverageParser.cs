@@ -64,4 +64,3 @@ public static class CoverageParser
         return 0;
     }
 }
-
