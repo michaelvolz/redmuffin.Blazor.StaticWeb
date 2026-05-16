@@ -419,12 +419,17 @@ discuss whether the cost is acceptable before skipping it.
 
 ## 9. When to Refactor (Decision Flow)
 
+Refactoring is not limited to extraction and testing. Design changes,
+architectural improvements, and pattern applications are all valid
+cleanup targets. See `rm-gates-cleanup` §0.0 for the full philosophy.
+
 ```
 Is the code correct?  → No → Fix with TDD (red-green-refactor)
          ↓ Yes
 Is there a gate violation?  → Yes → Fix with characterization tests first
          ↓ No
-Is the code simple and clear?  → No → Simplify (extract method, rename)
+Is the code simple and clear?  → No → Simplify (extract method, rename,
+                                   inject dependency, apply pattern, etc.)
          ↓ Yes
 Leave it alone.
 ```

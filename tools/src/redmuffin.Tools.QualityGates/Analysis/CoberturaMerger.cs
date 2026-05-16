@@ -21,7 +21,7 @@ public static class CoberturaMerger
         WriteMergedDocument(classLines, outputPath);
     }
 
-    private static Dictionary<string, Dictionary<int, int>> LoadAllClassLines(
+    public static IReadOnlyDictionary<string, Dictionary<int, int>> LoadAllClassLines(
         IReadOnlyList<string> inputPaths)
     {
         var classMap = new Dictionary<string, Dictionary<int, int>>(StringComparer.Ordinal);
@@ -31,37 +31,49 @@ public static class CoberturaMerger
             var doc = XDocument.Load(path);
             foreach (var classElement in doc.Descendants("class"))
             {
-                var filename = classElement.Attribute("filename")?.Value ?? string.Empty;
-                var className = classElement.Attribute("name")?.Value ?? string.Empty;
-                var key = filename.Length > 0 ? filename : className;
-
-                if (!classMap.TryGetValue(key, out var lineMap))
-                {
-                    lineMap = new Dictionary<int, int>();
-                    classMap[key] = lineMap;
-                }
-
-                foreach (var lineElement in classElement.Descendants("line"))
-                {
-                    var lineNumberStr = lineElement.Attribute("number")?.Value;
-                    var hitsStr = lineElement.Attribute("hits")?.Value;
-
-                    if (lineNumberStr is not null
-                        && int.TryParse(lineNumberStr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var lineNumber))
-                    {
-                        var hits = int.TryParse(hitsStr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var h) ? h : 0;
-                        lineMap.TryGetValue(lineNumber, out var existing);
-                        lineMap[lineNumber] = existing + hits;
-                    }
-                }
+                AddClassLines(classElement, classMap);
             }
         }
 
         return classMap;
     }
 
+    private static void AddClassLines(
+        XElement classElement,
+        Dictionary<string, Dictionary<int, int>> classMap)
+    {
+        var filename = classElement.Attribute("filename")?.Value ?? string.Empty;
+        var className = classElement.Attribute("name")?.Value ?? string.Empty;
+        var key = filename.Length > 0 ? filename : className;
+
+        if (!classMap.TryGetValue(key, out var lineMap))
+        {
+            lineMap = new Dictionary<int, int>();
+            classMap[key] = lineMap;
+        }
+
+        foreach (var lineElement in classElement.Descendants("line"))
+        {
+            AggregateLineHit(lineElement, lineMap);
+        }
+    }
+
+    private static void AggregateLineHit(XElement lineElement, Dictionary<int, int> lineMap)
+    {
+        var lineNumberStr = lineElement.Attribute("number")?.Value;
+        var hitsStr = lineElement.Attribute("hits")?.Value;
+
+        if (lineNumberStr is not null
+            && int.TryParse(lineNumberStr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var lineNumber))
+        {
+            var hits = int.TryParse(hitsStr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var h) ? h : 0;
+            lineMap.TryGetValue(lineNumber, out var existing);
+            lineMap[lineNumber] = existing + hits;
+        }
+    }
+
     private static void WriteMergedDocument(
-        Dictionary<string, Dictionary<int, int>> classMap, string outputPath)
+        IReadOnlyDictionary<string, Dictionary<int, int>> classMap, string outputPath)
     {
         var settings = new XmlWriterSettings
         {

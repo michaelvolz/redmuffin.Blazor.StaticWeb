@@ -8,6 +8,47 @@ prerequisite-skills:
 
 # rm-gates-cleanup
 
+## §0.0 Cleanup Philosophy — All Improvements Welcome
+
+Quality gates reveal problems. Cleanup fixes them — through ANY means that
+make the code better. Extraction, seam testing, and mutation hardening are
+tools in the arsenal. They are not exclusive methods. They are not the only
+path.
+
+When a CRAP violation or mutation survivor appears, ask the authors:
+
+- **Feathers**: Is there a seam here? Can I characterize the behavior and
+  test through the public API?
+- **Ousterhout**: Is this module deep or shallow? Would extracting make it
+  deeper, or am I creating interface overhead without benefit?
+- **Uncle Bob**: Is the code clean? Does it read like well-written prose?
+  Is there a SOLID violation?
+- **Fowler**: Is there a refactoring that eliminates duplication without
+  creating the wrong abstraction? (Rule of Three)
+- **Metz**: Is the duplication cheaper than the wrong abstraction?
+
+Cleanup is a search for ALL improvements. Every category is fair game:
+
+| Category                | Example                                                  | When                                   |
+| ----------------------- | -------------------------------------------------------- | -------------------------------------- |
+| **Extraction**          | Pull pure logic out of I/O methods                       | Method is ≥5 lines, pure, calls no I/O |
+| **Design change**       | Inject dependency instead of hard-coding `new Process()` | Coupling prevents testing              |
+| **Architecture**        | Interface segregation, dependency inversion              | Module boundaries are wrong            |
+| **Pure function**       | Convert side-effecting method to return-value            | Side effects prevent characterization  |
+| **Pattern application** | Replace switch with polymorphism, introduce Null Object  | Pattern reduces complexity             |
+| **Dead code removal**   | Delete unused methods, collapse 1-implementer interfaces | Code serves no purpose                 |
+
+**The only constraint on structural changes**: Before implementing a design
+change that touches multiple systems, load the STRUCTURAL CHANGE GATE in
+AGENTS.md. Answer the three questions. Get approval. Then proceed.
+
+**Recommend design changes aggressively.** When you see a hard-coded
+dependency, a missing abstraction, or a SOLID violation — say so. Propose
+the fix. Ask for permission. The guidelines that follow (§2.1 extraction
+gates, §4 mutation decision tree) are ENABLERS that prevent bad extractions
+and metric gaming. They are NOT a ceiling on what kind of improvement is
+allowed.
+
 ## §0 Recursive Quality Loop (Governing Principle)
 
 Quality gates are not one-shot. The process is inherently recursive:
