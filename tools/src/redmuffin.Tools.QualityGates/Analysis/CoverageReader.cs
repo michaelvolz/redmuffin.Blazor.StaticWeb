@@ -24,7 +24,7 @@ public static class CoverageReader
         return covered;
     }
 
-    private static bool TryParseLine(XElement lineElement, out int lineNumber)
+    public static bool TryParseLine(XElement lineElement, out int lineNumber)
     {
         if (!TryParseAttributes(lineElement, out var numberStr, out var hitsStr))
         {
@@ -37,7 +37,7 @@ public static class CoverageReader
             && hits > 0;
     }
 
-    private static bool TryParseAttributes(XElement lineElement, out string? numberStr, out string? hitsStr)
+    public static bool TryParseAttributes(XElement lineElement, out string? numberStr, out string? hitsStr)
     {
         numberStr = lineElement.Attribute("number")?.Value;
         hitsStr = lineElement.Attribute("hits")?.Value;
@@ -68,3 +68,4 @@ public static class CoverageReader
         return (covered.AsReadOnly(), uncovered.AsReadOnly());
     }
 }
+

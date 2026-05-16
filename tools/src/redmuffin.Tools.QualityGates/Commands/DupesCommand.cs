@@ -70,7 +70,8 @@ public static class DupesCommand
     public static string ResolveFormat(bool json, string? formatOption) =>
         json ? "json" : formatOption ?? "text";
 
-    private static double ApplyDefault(double value, double defaultValue) => value > 0 ? value : defaultValue;
+    public static double ApplyDefault(double value, double defaultValue) => value > 0 ? value : defaultValue;
 
-    private static int ApplyDefault(int value, int defaultValue) => value > 0 ? value : defaultValue;
+    public static int ApplyDefault(int value, int defaultValue) => value > 0 ? value : defaultValue;
 }
+

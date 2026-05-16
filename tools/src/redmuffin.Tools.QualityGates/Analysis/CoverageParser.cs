@@ -46,7 +46,7 @@ public static class CoverageParser
         }
     }
 
-    private static bool TryParseLineNumber(string? str, out int number)
+    public static bool TryParseLineNumber(string? str, out int number)
     {
         number = 0;
         return str is not null
@@ -64,3 +64,4 @@ public static class CoverageParser
         return 0;
     }
 }
+

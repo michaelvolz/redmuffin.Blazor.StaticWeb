@@ -75,12 +75,12 @@ public static class ScrapCommand
         return RunScrapAnalysis(testMethods, verbose, json, writeBaseline, comparePath);
     }
 
-    private static bool ValidateScrapInputs(string projectPath, string? comparePath)
+    public static bool ValidateScrapInputs(string projectPath, string? comparePath)
     {
         return CheckDirectoryMissing(projectPath) || CheckBaselineMissing(comparePath);
     }
 
-    private static bool CheckDirectoryMissing(string projectPath)
+    public static bool CheckDirectoryMissing(string projectPath)
     {
         if (!Directory.Exists(projectPath))
         {
@@ -150,3 +150,4 @@ public static class ScrapCommand
         return reports;
     }
 }
+
