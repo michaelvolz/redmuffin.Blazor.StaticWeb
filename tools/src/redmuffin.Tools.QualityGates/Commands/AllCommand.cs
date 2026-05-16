@@ -136,7 +136,7 @@ public static class AllCommand
         return ProjectDir(DiscoverFromSourceOrSolution(solution).SourceProjects[0]);
     }
 
-    private static List<string> ResolveTestProjectPaths(DirectoryInfo? testProject, FileInfo? solution)
+    public static IReadOnlyList<string> ResolveTestProjectPaths(DirectoryInfo? testProject, FileInfo? solution)
     {
         if (testProject is not null)
         {
@@ -151,15 +151,15 @@ public static class AllCommand
             throw new InvalidOperationException(
                 "No test projects found. Specify --test-project to override.");
 
-        return discovered.TestProjects.Select(ProjectDir).ToList();
+        return discovered.TestProjects.Select(ProjectDir).ToArray();
     }
 
-    private static string ProjectDir(string csprojOrDirPath) =>
+    public static string ProjectDir(string csprojOrDirPath) =>
         csprojOrDirPath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)
             ? Path.GetDirectoryName(csprojOrDirPath)!
             : csprojOrDirPath;
 
-    private static SlnxDiscoveredProjects DiscoverFromSourceOrSolution(FileInfo? solution)
+    public static SlnxDiscoveredProjects DiscoverFromSourceOrSolution(FileInfo? solution)
     {
         if (solution is not null)
         {
@@ -177,7 +177,7 @@ public static class AllCommand
         return discovered;
     }
 
-    private static string? ResolveArchConfig(string? archConfig, string projectPath)
+    public static string? ResolveArchConfig(string? archConfig, string projectPath)
     {
         if (archConfig is not null) return archConfig;
 

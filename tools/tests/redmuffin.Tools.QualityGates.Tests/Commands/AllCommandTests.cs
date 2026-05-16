@@ -81,4 +81,175 @@ public sealed class AllCommandTests
             crapExit: 0, scrapExit: 0, archExit: 0, mutateExit: 0, dupesExit: 0);
         await Assert.That(result).IsEqualTo(0);
     }
+
+    // ── ResolveArchConfig ──
+
+    [Test]
+    public async Task should_return_provided_config_immediately()
+    {
+        var result = AllCommand.ResolveArchConfig("/custom/config.yml", "/any/project");
+
+        await Assert.That(result).IsEqualTo("/custom/config.yml");
+    }
+
+    [Test]
+    public async Task should_find_config_in_project_directory()
+    {
+        using var temp = new TempDirectory();
+        temp.CreateDir("quality-gates");
+        temp.CreateFile("quality-gates/architecture-rules.yml");
+
+        var result = AllCommand.ResolveArchConfig(null, temp.Root);
+
+        await Assert.That(result).IsEqualTo(
+            Path.Combine(temp.Root, "quality-gates", "architecture-rules.yml"));
+    }
+
+    [Test]
+    public async Task should_walk_up_to_find_config_in_parent()
+    {
+        using var temp = new TempDirectory();
+        temp.CreateDir("quality-gates");
+        temp.CreateFile("quality-gates/architecture-rules.yml");
+        var projectDir = temp.CreateDir("src", "MyProject");
+
+        var result = AllCommand.ResolveArchConfig(null, projectDir);
+
+        await Assert.That(result).IsEqualTo(
+            Path.Combine(temp.Root, "quality-gates", "architecture-rules.yml"));
+    }
+
+    [Test]
+    public async Task should_return_null_when_no_config_found()
+    {
+        using var temp = new TempDirectory();
+        var projectDir = temp.CreateDir("src", "MyProject");
+
+        var result = AllCommand.ResolveArchConfig(null, projectDir);
+
+        await Assert.That(result).IsNull();
+    }
+
+    [Test]
+    public async Task should_find_config_two_levels_up()
+    {
+        using var temp = new TempDirectory();
+        temp.CreateDir("quality-gates");
+        temp.CreateFile("quality-gates/architecture-rules.yml");
+        var projectDir = temp.CreateDir("src", "SubDir", "MyProject");
+
+        var result = AllCommand.ResolveArchConfig(null, projectDir);
+
+        await Assert.That(result).IsEqualTo(
+            Path.Combine(temp.Root, "quality-gates", "architecture-rules.yml"));
+    }
+
+    // ── Helpers ──
+
+    // ── ProjectDir ──
+
+    [Test]
+    public async Task ProjectDir_should_strip_csproj_extension()
+    {
+        var result = AllCommand.ProjectDir("/some/path/project.csproj");
+
+        await Assert.That(result).IsEqualTo("/some/path");
+    }
+
+    [Test]
+    public async Task ProjectDir_should_return_directory_unchanged()
+    {
+        var result = AllCommand.ProjectDir("/some/path");
+
+        await Assert.That(result).IsEqualTo("/some/path");
+    }
+
+    // ── DiscoverFromSourceOrSolution ──
+
+    [Test]
+    public async Task DiscoverFromSourceOrSolution_should_throw_when_solution_not_found()
+    {
+        var nonExistent = new FileInfo(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
+
+        await Assert.ThrowsAsync<FileNotFoundException>(() =>
+        {
+            AllCommand.DiscoverFromSourceOrSolution(nonExistent);
+            return Task.CompletedTask;
+        });
+    }
+
+    [Test]
+    public async Task DiscoverFromSourceOrSolution_should_discover_from_null()
+    {
+        // Walks up from cwd to find .slnx — expect discovery or InvalidOperationException
+        var result = AllCommand.DiscoverFromSourceOrSolution(null);
+
+        await Assert.That(result.SourceProjects.Count).IsGreaterThan(0);
+    }
+
+    // ── ResolveTestProjectPaths ──
+
+    [Test]
+    public async Task ResolveTestProjectPaths_should_throw_when_testProject_not_found()
+    {
+        var nonExistent = new DirectoryInfo(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
+
+        await Assert.ThrowsAsync<DirectoryNotFoundException>(() =>
+        {
+            AllCommand.ResolveTestProjectPaths(nonExistent, null);
+            return Task.CompletedTask;
+        });
+    }
+
+    [Test]
+    public async Task ResolveTestProjectPaths_should_return_testProject_when_provided()
+    {
+        using var temp = new TempDirectory();
+
+        var result = AllCommand.ResolveTestProjectPaths(
+            new DirectoryInfo(temp.Root), null);
+
+        await Assert.That(result.Count).IsEqualTo(1);
+        await Assert.That(result[0]).IsEqualTo(temp.Root);
+    }
+
+    [Test]
+    public async Task ResolveTestProjectPaths_should_discover_when_testProject_is_null()
+    {
+        var result = AllCommand.ResolveTestProjectPaths(null, null);
+
+        await Assert.That(result.Count).IsGreaterThan(0);
+    }
+
+    private sealed class TempDirectory : IDisposable
+    {
+        public string Root { get; }
+
+        public TempDirectory()
+        {
+            Root = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(Root);
+        }
+
+        public string CreateDir(params string[] segments)
+        {
+            var path = Path.Combine(segments.Prepend(Root).ToArray());
+            Directory.CreateDirectory(path);
+            return path;
+        }
+
+        public void CreateFile(string relativePath)
+        {
+            var path = Path.Combine(Root, relativePath);
+            var dir = Path.GetDirectoryName(path)!;
+            Directory.CreateDirectory(dir);
+            File.WriteAllText(path, string.Empty);
+        }
+
+        public void Dispose()
+        {
+            if (Directory.Exists(Root))
+                Directory.Delete(Root, recursive: true);
+        }
+    }
 }
