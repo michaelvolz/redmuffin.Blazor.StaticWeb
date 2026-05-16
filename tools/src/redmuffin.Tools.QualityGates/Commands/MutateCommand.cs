@@ -64,6 +64,11 @@ public static class MutateCommand
         Description = "Auto-generate Cobertura XML coverage before mutation",
     };
 
+    private static readonly Option<bool> NoTestFilterOption = new("--no-test-filter")
+    {
+        Description = "Disable auto-discovery of test class filter — run full test suite",
+    };
+
     public static Command Create()
     {
         var command = new Command("mutation", "Run mutation testing on a source file")
@@ -71,7 +76,7 @@ public static class MutateCommand
             SourceOption, TestProjectOption, ScanOption, MaxWorkersOption,
             SinceLastRunOption, MutateAllOption, LinesOption,
             MutationWarningOption, TimeoutFactorOption, ReuseCoverageOption,
-            AutoCoverageOption,
+            AutoCoverageOption, NoTestFilterOption,
         };
 
         command.SetAction(async parseResult =>
@@ -87,7 +92,8 @@ public static class MutateCommand
                 TimeoutFactor: parseResult.GetValue(TimeoutFactorOption),
                 ReuseCoverage: parseResult.GetValue(ReuseCoverageOption),
                 AutoCoverage: parseResult.GetValue(AutoCoverageOption),
-                Lines: parseResult.GetValue(LinesOption));
+                Lines: parseResult.GetValue(LinesOption),
+                NoTestFilter: parseResult.GetValue(NoTestFilterOption));
 
             return await MutateHandler.RunAsync(source, testProject, options).ConfigureAwait(false);
         });

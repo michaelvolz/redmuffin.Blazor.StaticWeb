@@ -91,8 +91,11 @@ public static class MutateHandler
         IReadOnlyList<MutationSite> sites, IReadOnlyList<MutationSite> uncovered,
         string strippedSource, Manifest? existingManifest, TextWriter output)
     {
+        var testFilter = ResolveTestFilter(sourcePath, testProjectPath, options);
+
         var results = await MutationRunner.RunAsync(
-            sourcePath, sites, testProjectPath, options.TimeoutFactor).ConfigureAwait(false);
+            sourcePath, sites, testProjectPath, options.TimeoutFactor, testFilter)
+            .ConfigureAwait(false);
 
         if (results.Count == 0)
         {
@@ -111,6 +114,15 @@ public static class MutateHandler
         var newManifest = MutationManifest.Build(strippedSource, DateTime.UtcNow);
         var newSource = MutationManifest.Embed(strippedSource, newManifest);
         File.WriteAllText(sourcePath, newSource);
+    }
+
+    private static string? ResolveTestFilter(
+        string sourcePath, string testProjectPath, MutateOptions options)
+    {
+        if (options.NoTestFilter)
+            return null;
+
+        return TestClassDiscovery.Discover(sourcePath, testProjectPath);
     }
 
     private static HashSet<int>? LoadCoverage(

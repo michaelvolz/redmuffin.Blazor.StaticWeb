@@ -9,4 +9,5 @@ public sealed record MutateOptions(
     int TimeoutFactor = 10,
     bool ReuseCoverage = false,
     bool AutoCoverage = false,
-    IReadOnlySet<int>? Lines = null);
+    IReadOnlySet<int>? Lines = null,
+    bool NoTestFilter = false);

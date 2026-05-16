@@ -8,7 +8,8 @@ public static class MutationRunner
         string sourcePath,
         IReadOnlyList<MutationSite> sites,
         string testProjectPath,
-        int timeoutFactor = 10)
+        int timeoutFactor = 10,
+        string? testFilter = null)
     {
         var (canProceed, timeout) = await RunBaselineOrEmptyAsync(testProjectPath, timeoutFactor)
             .ConfigureAwait(false);
@@ -29,7 +30,7 @@ public static class MutationRunner
                 var mutated = MutationApplicator.Apply(currentSource, site.Index, site);
                 await File.WriteAllTextAsync(sourcePath, mutated).ConfigureAwait(false);
 
-                var testResult = await RunTestsAsync(testProjectPath, timeout).ConfigureAwait(false);
+                var testResult = await RunTestsAsync(testProjectPath, timeout, testFilter).ConfigureAwait(false);
                 results.Add(new MutantResult(
                     site.Index, site.Category, site.Line, site.Description,
                     testResult.Passed ? MutantResultType.Survived : MutantResultType.Killed,
@@ -62,12 +63,18 @@ public static class MutationRunner
         return (true, baselineResult.DurationMs * timeoutFactor);
     }
 
-    private static async Task<TestRunResult> RunTestsAsync(string projectPath, long? timeout)
+    private static async Task<TestRunResult> RunTestsAsync(string projectPath, long? timeout, string? testFilter = null)
     {
+        var arguments = $"run --project \"{projectPath}\" -p:TreatWarningsAsErrors=false";
+        if (testFilter is not null)
+        {
+            arguments += $" -- --treenode-filter \"/*/*/{testFilter}/*\"";
+        }
+
         var startInfo = new ProcessStartInfo
         {
             FileName = "dotnet",
-            Arguments = $"run --project \"{projectPath}\" -p:TreatWarningsAsErrors=false",
+            Arguments = arguments,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
