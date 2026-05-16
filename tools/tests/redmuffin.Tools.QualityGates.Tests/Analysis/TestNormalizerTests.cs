@@ -18,6 +18,45 @@ public sealed class TestNormalizerTests
         await Assert.That(features1.SequenceEqual(features2)).IsTrue();
     }
 
+    // ── LiteralFeature ──
+
+    [Test]
+    public async Task LiteralFeature_should_classify_string()
+    {
+        await Assert.That(TestNormalizer.LiteralFeature(SyntaxKind.StringLiteralExpression))
+            .IsEqualTo("$str");
+    }
+
+    [Test]
+    public async Task LiteralFeature_should_classify_numeric()
+    {
+        await Assert.That(TestNormalizer.LiteralFeature(SyntaxKind.NumericLiteralExpression))
+            .IsEqualTo("$num");
+    }
+
+    [Test]
+    public async Task LiteralFeature_should_classify_bool()
+    {
+        await Assert.That(TestNormalizer.LiteralFeature(SyntaxKind.TrueLiteralExpression))
+            .IsEqualTo("$bool");
+    }
+
+    [Test]
+    public async Task LiteralFeature_should_classify_null_or_default()
+    {
+        await Assert.That(TestNormalizer.LiteralFeature(SyntaxKind.NullLiteralExpression))
+            .IsEqualTo("$defnull");
+        await Assert.That(TestNormalizer.LiteralFeature(SyntaxKind.DefaultLiteralExpression))
+            .IsEqualTo("$defnull");
+    }
+
+    [Test]
+    public async Task LiteralFeature_should_classify_unknown_as_lit()
+    {
+        await Assert.That(TestNormalizer.LiteralFeature(SyntaxKind.IdentifierToken))
+            .IsEqualTo("$lit");
+    }
+
     [Test]
     public async Task should_normalize_different_assertion_shapes_differently()
     {

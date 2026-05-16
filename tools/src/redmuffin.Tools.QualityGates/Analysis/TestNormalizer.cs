@@ -6,6 +6,18 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 public static class TestNormalizer
 {
+    public static string LiteralFeature(SyntaxKind kind)
+    {
+        return kind switch
+        {
+            SyntaxKind.StringLiteralExpression => "$str",
+            SyntaxKind.NumericLiteralExpression => "$num",
+            SyntaxKind.TrueLiteralExpression or SyntaxKind.FalseLiteralExpression => "$bool",
+            SyntaxKind.NullLiteralExpression or SyntaxKind.DefaultLiteralExpression => "$defnull",
+            _ => "$lit",
+        };
+    }
+
     public static IReadOnlyList<string> Normalize(MethodDeclarationSyntax method)
     {
         var walker = new NormalizerWalker();
@@ -25,19 +37,7 @@ public static class TestNormalizer
 
         public override void VisitLiteralExpression(LiteralExpressionSyntax node)
         {
-            Features.Add(LiteralFeature(node.Kind()));
-        }
-
-        public static string LiteralFeature(SyntaxKind kind)
-        {
-            return kind switch
-            {
-                SyntaxKind.StringLiteralExpression => "$str",
-                SyntaxKind.NumericLiteralExpression => "$num",
-                SyntaxKind.TrueLiteralExpression or SyntaxKind.FalseLiteralExpression => "$bool",
-                SyntaxKind.NullLiteralExpression or SyntaxKind.DefaultLiteralExpression => "$defnull",
-                _ => "$lit",
-            };
+            Features.Add(TestNormalizer.LiteralFeature(node.Kind()));
         }
 
         public override void VisitInvocationExpression(InvocationExpressionSyntax node)
