@@ -74,9 +74,11 @@ public static class ScrapDuplication
             var clusters = GroupByRoot(parent, fileMethods.Count);
             var clusteredIndices = new HashSet<int>();
 
-            clusterId = ClassifyAndCollectClusters(
-                clusters, fileMethods, normalized, clusteredIndices,
-                allHarmful, allCaseMatrix, allSubject, clusterId);
+            var ctx = new DuplicationContext(
+                fileMethods, normalized, clusteredIndices,
+                allHarmful, allCaseMatrix, allSubject);
+
+            clusterId = ClassifyAndCollectClusters(clusters, ctx, clusterId);
 
             CollectSubjectRepetition(fileMethods, normalized, clusteredIndices, allSubject, ref clusterId);
         }
@@ -147,21 +149,14 @@ public static class ScrapDuplication
 
     private static int ClassifyAndCollectClusters(
         Dictionary<int, List<int>> clusters,
-        List<TestMethod> fileMethods,
-        IReadOnlyList<IReadOnlyList<string>> normalized,
-        HashSet<int> clusteredIndices,
-        ICollection<DuplicationChannel> allHarmful,
-        ICollection<DuplicationChannel> allCaseMatrix,
-        ICollection<DuplicationChannel> allSubject,
+        DuplicationContext ctx,
         int clusterId)
     {
         foreach (var kvp in clusters)
         {
             var indices = kvp.Value;
             if (indices.Count < 2) continue;
-            clusterId = ProcessCluster(
-                indices, clusterId, fileMethods, normalized,
-                clusteredIndices, allHarmful, allCaseMatrix, allSubject);
+            clusterId = ProcessCluster(indices, clusterId, ctx);
         }
 
         return clusterId;
@@ -169,19 +164,14 @@ public static class ScrapDuplication
 
     private static int ProcessCluster(
         List<int> indices, int clusterId,
-        List<TestMethod> fileMethods,
-        IReadOnlyList<IReadOnlyList<string>> normalized,
-        HashSet<int> clusteredIndices,
-        ICollection<DuplicationChannel> allHarmful,
-        ICollection<DuplicationChannel> allCaseMatrix,
-        ICollection<DuplicationChannel> allSubject)
+        DuplicationContext ctx)
     {
         foreach (var idx in indices)
-            clusteredIndices.Add(idx);
+            ctx.ClusteredIndices.Add(idx);
 
-        var clusterMethods = indices.ConvertAll(i => fileMethods[i]);
-        var sharedForms = ComputeSharedForms(indices, normalized);
-        var variablePoints = ComputeVariablePoints(indices, normalized);
+        var clusterMethods = indices.ConvertAll(i => ctx.FileMethods[i]);
+        var sharedForms = ComputeSharedForms(indices, ctx.Normalized);
+        var variablePoints = ComputeVariablePoints(indices, ctx.Normalized);
         var methodMetrics = clusterMethods.ConvertAll(ComputeSimpleMetrics);
 
         var channel = ClassifyChannel(clusterMethods, sharedForms, variablePoints, methodMetrics);
@@ -191,7 +181,7 @@ public static class ScrapDuplication
             SharedForms: sharedForms, VariablePoints: variablePoints,
             InstanceCount: clusterMethods.Count, ChannelType: channel);
 
-        RouteToChannel(channel, dupChannel, allHarmful, allCaseMatrix, allSubject);
+        RouteToChannel(channel, dupChannel, ctx.AllHarmful, ctx.AllCaseMatrix, ctx.AllSubject);
         return clusterId;
     }
 
@@ -422,4 +412,12 @@ public static class ScrapDuplication
         int AssertionCount,
         int BranchCount,
         int SetupDepth);
+
+    private sealed record DuplicationContext(
+        List<TestMethod> FileMethods,
+        IReadOnlyList<IReadOnlyList<string>> Normalized,
+        HashSet<int> ClusteredIndices,
+        ICollection<DuplicationChannel> AllHarmful,
+        ICollection<DuplicationChannel> AllCaseMatrix,
+        ICollection<DuplicationChannel> AllSubject);
 }
