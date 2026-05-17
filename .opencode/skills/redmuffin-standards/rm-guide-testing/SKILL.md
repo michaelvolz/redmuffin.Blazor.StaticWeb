@@ -1,28 +1,12 @@
 ---
-date: 2026-05-10
-last_updated: 2026-05-10
+name: rm-guide-testing
+description: "Comprehensive testing reference for .NET 9 Blazor WASM and Azure Functions. Covers test double taxonomy and naming (_Fake/_Stub/_Mock/_Spy), file structure conventions (Helpers.cs/EdgeCases.cs/Infrastructure.cs/Behavior.cs), test scope patterns (Direct, Simple TestScope, DI TestScope, Exclusive Scope), hand-rolled fake conventions, HttpClient fake pattern (ControlledHttpHandler_Fake), I/O injection via optional Func parameter, Azure Functions test requirements, JS interop stubs, logger spies, when to use LightMock.Generator vs hand-rolled fakes. Single source of truth for project test patterns. USE FOR: testing, tests, writing tests, test doubles, fakes, stubs, mocks, spies, TestScope, HttpClient testing, IHttpClientFactory fake, JS interop testing, IJSRuntime stub, Functions testing, Azure Functions tests, characterization tests, test file structure, test naming, test conventions, Logger_Spy, LightMock, bUnit, handrolled fakes."
 ---
 
 # rm-guide-testing
 
-Comprehensive testing standard for this .NET 9 Blazor WASM project.
-Single source of truth for test patterns, test doubles, and test
-project conventions.
-
-## What Belongs in This File
-
-- **Viewpoint**: Developer writing tests for any part of the codebase.
-  You know C# and TUnit but need the project's specific conventions.
-- **What belongs**: Test double taxonomy and naming. File structure
-  conventions. Test scope patterns. Pure function testing. Fake
-  implementation patterns. Static state handling. When to use LightMock.
-  Author-aligned testing philosophy.
-- **What does NOT belong**: General TDD workflow (use `rm-tdd`).
-  CRAP/SCRAP/Architecture cleanup workflows (use `rm-gates-cleanup`).
-  Code quality principles (use `rm-guide-cleanup`). Naming conventions
-  (use `rm-guide-naming`).
-
----
+Single source of truth for test patterns, test doubles, and test project
+conventions in this .NET 9 Blazor WASM project.
 
 ## Philosophy
 
@@ -307,8 +291,8 @@ LightMock is a fallback for large interfaces.
 
 ## JS Interop Testing
 
-Blazor `IJSRuntime` cannot be called in a headless test runner. Always
-stub it:
+Blazor `IJSRuntime` cannot be called in a headless test runner — the
+browser is not available. Never test against a real `IJSRuntime`:
 
 ```csharp
 public class JSRuntime_Stub : IJSRuntime
