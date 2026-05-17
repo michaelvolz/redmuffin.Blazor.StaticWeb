@@ -313,6 +313,8 @@ cross-component references.
 Depth catches structural quality issues grounded in Ousterhout's
 deep-module philosophy: shallow methods, parameter bloat, wrong
 abstractions (Metz conditional proliferation), and entanglement.
+Shallow(3) = FLAG for evaluation, not a mandatory inline. Good shallow
+methods exist — the decision tree distinguishes them.
 
 ### Classification
 
@@ -351,11 +353,59 @@ Depth says "that would be shallow" — the agent must exercise judgment:
    Uncle Bob's pipeline. But if the extraction is clearly shallow,
    Depth's signal overrides.
 
+### Cleanup Decision Tree (Shallow Methods)
+
+For each shallow(3) FAIL, apply this decision tree BEFORE making any
+code changes. The default response is NOT to inline. Evaluate first.
+
+1. **Name adds semantic value?** — Does the method name communicate intent
+   the raw body doesn't? `isApplicationInProduction(headers)` wrapping
+   `headers["env"] == "prod"` conveys domain meaning. `IsPositive(x)`
+   wrapping `x > 0` just restates the code. → If YES: **KEEP**
+
+2. **Called from ≥ 3 distinct places?** — Phase 2 caller-count filtering
+   automatically suppresses shallow(3) for multi-caller methods. For
+   manual evaluation: if the method is called from multiple locations,
+   DRY wins. → If YES: **KEEP**
+
+3. **Extension method on a framework/scalar type?** —
+   `string.IsNullOrEmpty()`, `IEnumerable<T>.NotEmpty()` are API surface
+   design for discoverability. They follow a different convention from
+   internal helpers. → If YES: **KEEP**
+
+4. **Part of a structural pattern?** — Roslyn visitor overrides
+   (`VisitIfStatement`), interface implementations, abstract method
+   overrides. These ARE the pattern. Depth flagging them is a
+   visitor-pattern false positive. → If YES: **KEEP**
+
+5. **All four NO?** — The method body is as self-descriptive as the name,
+   called from one place, not an extension method or pattern override.
+   → **INLINE** into the caller (Fowler's Inline Function refactoring).
+
+**Phase 2 caller-count filtering:** When the gate runs, it automatically
+suppresses shallow(3) for methods called from ≥ 3 distinct locations.
+This makes the cleanup decision tree primarily for Phase 1 survey runs
+where single-caller data isn't yet available.
+
+### Shallow Methods vs Wrong Abstractions
+
+| Signal               | Problem                                     | Fix                                                                     |
+| -------------------- | ------------------------------------------- | ----------------------------------------------------------------------- |
+| Shallow(3)           | Name doesn't earn its keep over inline body | Inline (decision tree above)                                            |
+| Wrong-abstraction(2) | Method branches on formal parameter (Metz)  | Inline + re-extract at cleaner boundaries, or accept as defensive guard |
+| Params(1)            | > 4 formal parameters                       | Introduce parameter object, or accept for CLI/framework methods         |
+| Entangled(2)         | Side effects + ≥ 3 params                   | Extract pure logic from I/O, inject Func<> boundary                     |
+
 ### Documented false positives
 
 - Public API methods are excluded from shallow detection (private-only).
+- Roslyn visitor overrides (`NormalizeReturn`, `VisitIfStatement`, etc.)
+  are pattern-structural — the visitor pattern REQUIRES per-node methods.
+  Accept as pattern cost, document as known issue.
+- Extension methods on framework types should be excluded in a future
+  refinement (not yet implemented — currently flagged as shallow).
 - Shared private utility methods with multiple callers at LOC ≤ 4 are
-  flagged. Phase 2 single-caller analysis will resolve. Accept the noise.
+  auto-suppressed by Phase 2 caller-count filtering.
 
 ## Gate 5: Mutation Cleanup Workflow
 
