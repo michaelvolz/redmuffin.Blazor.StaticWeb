@@ -15,7 +15,7 @@ public sealed class SlnxProjectDiscoveryTests
         await Assert.That(result).IsNotNull();
         await Assert.That(Path.GetFileName(result.SlnxPath))
             .IsEqualTo("redmuffin.Tools.slnx");
-        await Assert.That(result.SourceProjects.Count).IsEqualTo(1);
+        await Assert.That(result.SourceProjects.Count).IsEqualTo(2);
         await Assert.That(result.TestProjects.Count).IsEqualTo(1);
         await Assert.That(result.SourceProjects[0])
             .EndsWith("redmuffin.Tools.QualityGates.csproj");
@@ -121,7 +121,7 @@ public sealed class SlnxProjectDiscoveryTests
         var result = SlnxProjectDiscovery.DiscoverFromSlnx(slnxPath);
 
         await Assert.That(result).IsNotNull();
-        await Assert.That(result.SourceProjects.Count).IsEqualTo(1);
+        await Assert.That(result.SourceProjects.Count).IsEqualTo(2);
         await Assert.That(result.TestProjects.Count).IsEqualTo(1);
         await Assert.That(result.SourceProjects[0])
             .EndsWith("redmuffin.Tools.QualityGates.csproj");

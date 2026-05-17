@@ -28,7 +28,7 @@ public static class ScrapScorer
         var complexityScore = Math.Min(ComplexityCap, ComplexityFloor + (ComplexityRiseRate * structuralComplexity));
 
         var smells = CollectSmells(assertionCount, branchCount, setupDepth);
-        var scrapScore = ComputeScore(complexityScore, smells, lineCount, assertionCount, branchCount, setupDepth);
+        var scrapScore = ComputeScore(complexityScore, assertionCount, branchCount, setupDepth);
         return new TestMethodMetrics(
             Method: method,
             LineCount: lineCount,
@@ -109,8 +109,7 @@ public static class ScrapScorer
     }
 
     private static double ComputeScore(
-        double complexityScore, List<SmellLabel> smiles,
-        int lineCount, int assertionCount, int branchCount, int setupDepth)
+        double complexityScore, int assertionCount, int branchCount, int setupDepth)
     {
         var scrapScore = complexityScore;
         if (assertionCount == 0)

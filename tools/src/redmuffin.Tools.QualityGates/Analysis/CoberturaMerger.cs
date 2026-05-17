@@ -42,9 +42,7 @@ public static class CoberturaMerger
         XElement classElement,
         Dictionary<string, Dictionary<int, int>> classMap)
     {
-        var filename = classElement.Attribute("filename")?.Value ?? string.Empty;
-        var className = classElement.Attribute("name")?.Value ?? string.Empty;
-        var key = filename.Length > 0 ? filename : className;
+        var key = GetClassKey(classElement);
 
         if (!classMap.TryGetValue(key, out var lineMap))
         {
@@ -56,6 +54,15 @@ public static class CoberturaMerger
         {
             AggregateLineHit(lineElement, lineMap);
         }
+    }
+
+    private static string GetClassKey(XElement classElement)
+    {
+        var filename = classElement.Attribute("filename")?.Value;
+        var className = classElement.Attribute("name")?.Value;
+        return filename is { Length: > 0 } ? filename
+            : className is { Length: > 0 } ? className
+            : string.Empty;
     }
 
     private static void AggregateLineHit(XElement lineElement, Dictionary<int, int> lineMap)

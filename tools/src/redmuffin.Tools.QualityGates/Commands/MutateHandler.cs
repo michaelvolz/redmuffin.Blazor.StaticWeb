@@ -249,7 +249,7 @@ public static class MutateHandler
             $"Covered mutation sites: {coveredSites.ToString(ci)}",
             $"Uncovered mutation sites: {uncoveredSites.ToString(ci)}",
             $"Changed mutation sites: {changedCount.ToString(ci)}",
-            $"Manifest exists: {HasManifest(existingManifest)}",
+            $"Manifest exists: {(existingManifest is not null ? "yes" : "no")}",
             $"Module hash changed: {HashChanged(existingManifest, changedCount)}",
             $"Differential surface area: {changedCount.ToString(ci)} mutations in changed forms",
         ];
@@ -289,9 +289,6 @@ public static class MutateHandler
 
         return lines;
     }
-
-    private static string HasManifest(Manifest? existingManifest) =>
-        existingManifest is not null ? "yes" : "no";
 
     private static string HashChanged(Manifest? existingManifest, int changedCount) =>
         existingManifest is not null && changedCount > 0 ? "yes" : "n/a";

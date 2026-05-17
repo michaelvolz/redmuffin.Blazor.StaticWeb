@@ -1,5 +1,6 @@
 namespace redmuffin.Tools.QualityGates.Analysis;
 
+using System.Collections.Frozen;
 using System.Collections.ObjectModel;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -9,53 +10,19 @@ public static class DepthDetector
 {
     public static IReadOnlyList<DepthResult> Analyze(string projectPath)
     {
-        var results = new List<DepthResult>();
-
         if (!Directory.Exists(projectPath))
         {
-            return results.AsReadOnly();
+            return Array.Empty<DepthResult>();
         }
 
         var csFiles = Directory.GetFiles(projectPath, "*.cs", SearchOption.AllDirectories);
+        var results = new List<DepthResult>();
         var allMethods = new List<(MethodDeclarationSyntax Method, string FilePath)>();
 
         // Pass 1: collect all methods and flag structural quality issues.
         foreach (var file in csFiles)
         {
-            string source;
-            try
-            {
-                source = File.ReadAllText(file);
-            }
-            catch (IOException)
-            {
-                continue;
-            }
-
-            CompilationUnitSyntax root;
-            try
-            {
-                var syntaxTree = CSharpSyntaxTree.ParseText(source);
-                root = syntaxTree.GetCompilationUnitRoot();
-            }
-            catch (Exception)
-            {
-                // Catastrophic parse failure — skip file
-                continue;
-            }
-
-            var methods = root.DescendantNodes().OfType<MethodDeclarationSyntax>();
-
-            foreach (var method in methods)
-            {
-                allMethods.Add((method, file));
-
-                var result = AnalyzeMethod(method, file);
-                if (result.CompositeScore > 0)
-                {
-                    results.Add(result);
-                }
-            }
+            CollectMethodsFromFile(file, results, allMethods);
         }
 
         // Pass 2 (Phase 2): suppress shallow(3) for multi-caller methods.
@@ -66,6 +33,47 @@ public static class DepthDetector
             .OrderByDescending(r => r.CompositeScore)
             .ToList()
             .AsReadOnly();
+    }
+
+    public static void CollectMethodsFromFile(
+        string file,
+        ICollection<DepthResult> results,
+        ICollection<(MethodDeclarationSyntax Method, string FilePath)> allMethods)
+    {
+        string source;
+        try
+        {
+            source = File.ReadAllText(file);
+        }
+        catch (IOException)
+        {
+            return;
+        }
+
+        var syntaxTree = CSharpSyntaxTree.ParseText(source);
+        CompilationUnitSyntax root;
+        try
+        {
+            root = syntaxTree.GetCompilationUnitRoot();
+        }
+        catch (Exception)
+        {
+            // Catastrophic parse failure — skip file
+            return;
+        }
+
+        var methods = root.DescendantNodes().OfType<MethodDeclarationSyntax>();
+
+        foreach (var method in methods)
+        {
+            allMethods.Add((method, file));
+
+            var result = AnalyzeMethod(method, file);
+            if (result.CompositeScore > 0)
+            {
+                results.Add(result);
+            }
+        }
     }
 
     private static void ApplyCallerCountFilters(
@@ -127,12 +135,7 @@ public static class DepthDetector
 
             foreach (var invocation in invocations)
             {
-                var invokedName = invocation.Expression switch
-                {
-                    IdentifierNameSyntax id => id.Identifier.Text,
-                    MemberAccessExpressionSyntax m => m.Name.Identifier.Text,
-                    _ => null,
-                };
+                var invokedName = GetInvokedMethodName(invocation.Expression);
 
                 if (invokedName != null &&
                     string.Equals(invokedName, methodName, StringComparison.Ordinal))
@@ -146,41 +149,46 @@ public static class DepthDetector
         return callers.Count;
     }
 
-    private static DepthResult AnalyzeMethod(MethodDeclarationSyntax method, string filePath)
+    public static string? GetInvokedMethodName(ExpressionSyntax expression)
+    {
+        return expression switch
+        {
+            IdentifierNameSyntax id => id.Identifier.Text,
+            MemberAccessExpressionSyntax m => m.Name.Identifier.Text,
+            _ => null,
+        };
+    }
+
+    public static DepthResult AnalyzeMethod(MethodDeclarationSyntax method, string filePath)
     {
         var isPrivate = method.Modifiers.Any(m => m.IsKind(SyntaxKind.PrivateKeyword));
+        var paramCount = method.ParameterList.Parameters.Count;
         var loc = ComputeLinesOfCode(method);
         var hasBranching = HasBranching(method);
-        var paramCount = method.ParameterList.Parameters.Count;
 
         var isShallow = isPrivate && loc <= 4 && !hasBranching;
+        var isWrongAbstract = isPrivate && IsWrongAbstraction(method);
         var paramBloat = paramCount > 4;
-        var isWrongAbstraction = isPrivate && IsWrongAbstraction(method);
         var isEntangled = isPrivate && paramCount >= 3 && HasSideEffects(method);
 
-        var composite = (isShallow ? 3 : 0) +
-                        (isWrongAbstraction ? 2 : 0) +
-                        (paramBloat ? 1 : 0) +
-                        (isEntangled ? 2 : 0);
+        (bool Active, int Weight, string Label)[] signalData =
+        [
+            (isShallow, 3, "shallow(3)"),
+            (isWrongAbstract, 2, "wrong-abstraction(2)"),
+            (paramBloat, 1, "params(1)"),
+            (isEntangled, 2, "entangled(2)"),
+        ];
 
-        var signals = new List<string>();
-        if (isShallow) signals.Add($"shallow(3)");
-        if (isWrongAbstraction) signals.Add($"wrong-abstraction(2)");
-        if (paramBloat) signals.Add($"params(1)");
-        if (isEntangled) signals.Add($"entangled(2)");
+        var active = Array.FindAll(signalData, s => s.Active);
+        var composite = active.Sum(s => s.Weight);
+        var signals = Array.ConvertAll(active, s => s.Label);
 
         var lineSpan = method.GetLocation().GetLineSpan();
-
         return new DepthResult(
-            method.Identifier.Text,
-            Path.GetFullPath(filePath),
+            method.Identifier.Text, Path.GetFullPath(filePath),
             lineSpan.StartLinePosition.Line + 1,
-            isShallow,
-            paramCount,
-            isWrongAbstraction,
-            isEntangled,
-            composite,
-            signals.AsReadOnly());
+            isShallow, paramCount, isWrongAbstract, isEntangled,
+            composite, signals);
     }
 
     private static int ComputeLinesOfCode(MethodDeclarationSyntax method)
@@ -196,7 +204,7 @@ public static class DepthDetector
         return walker.HasBranching;
     }
 
-    private static bool IsWrongAbstraction(MethodDeclarationSyntax method)
+    public static bool IsWrongAbstraction(MethodDeclarationSyntax method)
     {
         if (method.Body is null)
         {
@@ -212,32 +220,16 @@ public static class DepthDetector
             return false;
         }
 
-        var conditionals = method.Body.DescendantNodes()
-            .OfType<IfStatementSyntax>()
-            .SelectMany(i => i.Condition.DescendantNodesAndSelf())
-            .OfType<IdentifierNameSyntax>();
-
-        foreach (var identifier in conditionals)
-        {
-            if (paramNames.Contains(identifier.Identifier.Text))
-            {
-                return true;
-            }
-        }
-
-        var switchStatements = method.Body.DescendantNodes()
-            .OfType<SwitchStatementSyntax>();
-
-        foreach (var switchStmt in switchStatements)
-        {
-            if (switchStmt.Expression is IdentifierNameSyntax identifier &&
-                paramNames.Contains(identifier.Identifier.Text))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return method.Body.DescendantNodes()
+                .OfType<IfStatementSyntax>()
+                .SelectMany(i => i.Condition.DescendantNodesAndSelf())
+                .OfType<IdentifierNameSyntax>()
+                .Any(id => paramNames.Contains(id.Identifier.Text))
+            || method.Body.DescendantNodes()
+                .OfType<SwitchStatementSyntax>()
+                .Select(s => s.Expression)
+                .Any(expr => expr is IdentifierNameSyntax identifier
+                    && paramNames.Contains(identifier.Identifier.Text));
     }
 
     private static bool HasSideEffects(MethodDeclarationSyntax method)
@@ -273,6 +265,18 @@ public static class DepthDetector
 
     private sealed class SideEffectWalker : CSharpSyntaxWalker
     {
+        private static readonly FrozenDictionary<string, bool> KnownPureMethods =
+            new Dictionary<string, bool>(StringComparer.Ordinal)
+            {
+                { "ToString", true }, { "ToUpper", true }, { "ToLower", true },
+                { "Length", true }, { "Count", true }, { "Equals", true },
+                { "StartsWith", true }, { "EndsWith", true }, { "Contains", true },
+                { "IndexOf", true }, { "Substring", true }, { "Trim", true },
+                { "TrimStart", true }, { "TrimEnd", true }, { "Replace", true },
+                { "Split", true }, { "Join", true }, { "Math", true },
+                { "Abs", true }, { "Max", true }, { "Min", true },
+            }.ToFrozenDictionary(StringComparer.Ordinal);
+
         public bool HasSideEffect { get; private set; }
 
         public override void VisitAssignmentExpression(AssignmentExpressionSyntax node)
@@ -282,12 +286,7 @@ public static class DepthDetector
 
         public override void VisitInvocationExpression(InvocationExpressionSyntax node)
         {
-            var simpleName = node.Expression switch
-            {
-                MemberAccessExpressionSyntax m => m.Name.Identifier.Text,
-                IdentifierNameSyntax i => i.Identifier.Text,
-                _ => null,
-            };
+            var simpleName = GetInvokedMethodName(node.Expression);
 
             if (simpleName is not null && !IsKnownPure(simpleName))
             {
@@ -303,12 +302,7 @@ public static class DepthDetector
             }
         }
 
-        private static bool IsKnownPure(string name)
-        {
-            return name is "ToString" or "ToUpper" or "ToLower" or "Length" or "Count" or "Equals"
-                or "StartsWith" or "EndsWith" or "Contains" or "IndexOf" or "Substring"
-                or "Trim" or "TrimStart" or "TrimEnd" or "Replace" or "Split" or "Join"
-                or "Math" or "Abs" or "Max" or "Min";
-        }
+        public static bool IsKnownPure(string name) =>
+            KnownPureMethods.ContainsKey(name);
     }
 }

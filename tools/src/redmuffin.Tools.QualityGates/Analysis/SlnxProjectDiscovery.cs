@@ -28,27 +28,17 @@ public static class SlnxProjectDiscovery
 
         var slnxDirectory = Path.GetDirectoryName(slnxPath)!;
 
-        var sourceProjects = new List<string>();
-        var testProjects = new List<string>();
-
         var doc = XDocument.Load(slnxPath);
-        var projectElements = doc.Descendants("Project");
 
-        foreach (var projectElement in projectElements)
-        {
-            var relativePath = projectElement.Attribute("Path")?.Value;
-            if (string.IsNullOrWhiteSpace(relativePath)) continue;
+        var validPaths = doc.Descendants("Project")
+            .Select(e => e.Attribute("Path")?.Value)
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .Select(p => Path.GetFullPath(Path.Combine(slnxDirectory, p!)))
+            .Where(File.Exists)
+            .ToList();
 
-            var absolutePath = Path.GetFullPath(
-                Path.Combine(slnxDirectory, relativePath));
-
-            if (!File.Exists(absolutePath)) continue;
-
-            if (IsTestProject(absolutePath))
-                testProjects.Add(absolutePath);
-            else
-                sourceProjects.Add(absolutePath);
-        }
+        var testProjects = validPaths.Where(IsTestProject).ToList();
+        var sourceProjects = validPaths.Where(p => !IsTestProject(p)).ToList();
 
         return new SlnxDiscoveredProjects(
             sourceProjects,

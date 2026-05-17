@@ -130,20 +130,6 @@ public static class DupesDetector
         }
     }
 
-    private static bool MethodQualifies(
-        Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax method,
-        int minLines,
-        int minNodes)
-    {
-        if (method.Body == null) return false;
-
-        var startLine = method.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
-        var endLine = method.GetLocation().GetLineSpan().EndLinePosition.Line + 1;
-        var lineCount = endLine - startLine + 1;
-
-        return lineCount >= minLines;
-    }
-
     private static double JaccardSimilarity(ISet<string> a, ISet<string> b)
     {
         var intersection = Enumerable.Intersect(a, b, StringComparer.Ordinal).Count();
