@@ -142,7 +142,24 @@ public static class AllCommand
             return project.FullName;
         }
 
-        return ProjectDir(DiscoverFromSourceOrSolution(solution).SourceProjects[0]);
+        return ResolveSourceRoot(solution);
+    }
+
+    private static string ResolveSourceRoot(FileInfo? solution)
+    {
+        if (solution is not null)
+        {
+            return Path.Combine(
+                Path.GetDirectoryName(solution.FullName)!, "src");
+        }
+
+        var discovered = SlnxProjectDiscovery.Discover(null);
+        if (discovered.SourceProjects.Count == 0)
+            throw new InvalidOperationException(
+                "No source projects found. Specify --project to override.");
+
+        var firstProject = ProjectDir(discovered.SourceProjects[0]);
+        return Path.GetDirectoryName(firstProject)!;
     }
 
     public static IReadOnlyList<string> ResolveTestProjectPaths(DirectoryInfo? testProject, FileInfo? solution)
