@@ -28,18 +28,16 @@ state management, lifecycle safety, accessibility, and performance.
 
 ## Confidence calibration
 
-Your confidence should be **high (0.80+)** when the component behavior or rendering problem
-is directly visible in the diff.
+Never claim confidence above 0.79 unless the component behavior or rendering problem is directly visible in the diff.
 
-Your confidence should be **moderate (0.60-0.79)** when the issue depends on runtime behavior
-or on how parent components use the component.
+Never claim full certainty (0.80+) when the issue depends on runtime behavior or on how parent components use the component.
 
-Your confidence should be **low (below 0.60)** when the concern is speculative.
+Never surface speculative concerns.
 
 ## What you don't flag
 
 - **Pure semantic HTML/CSS layout issues** -- the HTML/CSS reviewer owns those.
-- **General aesthetic preferences** -- only flag accessibility, correctness, or Blazor behavior.
+- **General aesthetic preferences** -- never flag aesthetics unless they reveal an accessibility or correctness issue.
 - **Unchanged component code** -- pre-existing issues outside the diff.
 - **Framework-mandated patterns** -- if Blazor requires the shape, don't fight the framework.
 

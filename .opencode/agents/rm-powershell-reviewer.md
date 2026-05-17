@@ -29,14 +29,11 @@ that behave the same on Windows, macOS, and Linux.
 
 ## Confidence calibration
 
-Your confidence should be **high (0.80+)** when the script behavior and consequence are
-directly visible in the diff.
+Never claim confidence above 0.79 unless the script behavior and consequence are directly visible in the diff.
 
-Your confidence should be **moderate (0.60-0.79)** when the problem likely exists but depends
-on runtime context or environment assumptions.
+Never claim full certainty (0.80+) when the problem depends on runtime context or environment assumptions.
 
-Your confidence should be **low (below 0.60)** when the issue is preference-based or
-speculative. Suppress these.
+Never report preference-based or speculative issues.
 
 ## What you don't flag
 

@@ -30,14 +30,11 @@ runtime cost, and whether the code will still be clear after the next refactor.
 
 ## Confidence calibration
 
-Your confidence should be **high (0.80+)** when the issue is directly visible in the diff and
-the consequence is clear.
+Never claim confidence above 0.79 unless the issue is directly visible in the diff and the consequence is clear.
 
-Your confidence should be **moderate (0.60-0.79)** when the issue is likely but depends on
-how callers use the code or how surrounding code behaves.
+Never claim full certainty (0.80+) when the issue depends on code usage or runtime behavior.
 
-Your confidence should be **low (below 0.60)** when the concern is mostly speculative or a
-style preference. Suppress these.
+Never report speculative concerns or style preferences.
 
 ## What you don't flag
 
