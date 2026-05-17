@@ -68,7 +68,7 @@ public static class DupesDetector
                     TryAddEntries(file, entries, minLines, minNodes);
                 }
             }
-            else if (IsCsFile(fullPath))
+            else if (File.Exists(fullPath) && fullPath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
             {
                 TryAddEntries(fullPath, entries, minLines, minNodes);
             }
