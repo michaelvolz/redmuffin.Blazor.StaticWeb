@@ -208,7 +208,7 @@ await InvokeAsync(StateHasChanged).ConfigureAwait(false);
 
 **Rule:** Apply `ConfigureAwait(false)` to ALL async calls except at the end of assert statements in tests.
 
-**Codebase verification:** 257 occurrences of ConfigureAwait(false) in production code.
+**Codebase verification:** 257 occurrences of `ConfigureAwait(false)` in production code (manual count as of 2026-04-06). Enforcement is now automated via the [ConfigureAwait MSBuild fixer](../developer-experience/automated-configureawait-fixer-2026-05-16.md) — a Roslyn-based tool that runs `BeforeTargets="CoreCompile"` and adds `.ConfigureAwait(false)` to all Task/ValueTask awaits before the compiler inspects the code. The LLM never sees a CA2007 error.
 
 ---
 
