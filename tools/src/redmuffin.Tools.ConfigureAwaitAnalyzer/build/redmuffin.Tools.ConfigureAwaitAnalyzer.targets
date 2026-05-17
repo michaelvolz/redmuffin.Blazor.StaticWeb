@@ -1,0 +1,16 @@
+<Project>
+    <PropertyGroup>
+        <CoreCompileDependsOn>$(CoreCompileDependsOn);ConfigureAwaitFix</CoreCompileDependsOn>
+    </PropertyGroup>
+
+    <Target Name="ConfigureAwaitFix" BeforeTargets="CoreCompile">
+        <Message Importance="high" Text="=== ConfigureAwaitFix FIRED ===" />
+        <PropertyGroup>
+            <_ConfigureAwaitFixerDir>$(MSBuildThisFileDirectory)../tools/net10.0/any/</_ConfigureAwaitFixerDir>
+            <_ConfigureAwaitFixerPath>$(_ConfigureAwaitFixerDir)ConfigureAwaitFixer.dll</_ConfigureAwaitFixerPath>
+        </PropertyGroup>
+        <Exec Command="dotnet &quot;$(_ConfigureAwaitFixerPath)&quot; &quot;$(MSBuildProjectDirectory)&quot;"
+              StandardErrorImportance="low"
+              ContinueOnError="true" />
+    </Target>
+</Project>

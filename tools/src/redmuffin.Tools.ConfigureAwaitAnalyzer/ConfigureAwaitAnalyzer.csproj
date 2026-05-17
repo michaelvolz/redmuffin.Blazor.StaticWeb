@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>ConfigureAwaitFixer</AssemblyName>
+    <RootNamespace>redmuffin.Tools.ConfigureAwaitAnalyzer</RootNamespace>
+    <IsPackable>true</IsPackable>
+    <PackageId>redmuffin.Tools.ConfigureAwaitAnalyzer</PackageId>
+    <Version>1.0.0</Version>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <NoWarn>$(NoWarn);RS1038;RS1041</NoWarn>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+  </ItemGroup>
+
+  <!-- Pre-built publish output, committed to repo -->
+  <ItemGroup>
+    <None Include="publish/*"
+          Pack="true"
+          PackagePath="tools/net10.0/any"
+          Visible="false" />
+  </ItemGroup>
+
+  <!-- Targets file -->
+  <ItemGroup>
+    <None Include="build\redmuffin.Tools.ConfigureAwaitAnalyzer.targets"
+          Pack="true"
+          PackagePath="build"
+          Visible="false" />
+  </ItemGroup>
+
+</Project>
