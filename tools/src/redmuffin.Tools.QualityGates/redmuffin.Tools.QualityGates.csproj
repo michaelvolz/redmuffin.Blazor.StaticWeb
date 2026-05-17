@@ -20,4 +20,8 @@
     <PackageReference Include="YamlDotNet" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="redmuffin.Tools.ConfigureAwaitAnalyzer" />
+  </ItemGroup>
+
 </Project>

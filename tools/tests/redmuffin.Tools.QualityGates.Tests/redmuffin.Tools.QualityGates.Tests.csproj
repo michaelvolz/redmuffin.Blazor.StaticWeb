@@ -21,11 +21,13 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="TUnit" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
     <PackageReference Include="Microsoft.Testing.Platform" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\redmuffin.Tools.QualityGates\redmuffin.Tools.QualityGates.csproj" />
+    <PackageReference Include="redmuffin.Tools.ConfigureAwaitAnalyzer" />
   </ItemGroup>
 
   <ItemGroup>
