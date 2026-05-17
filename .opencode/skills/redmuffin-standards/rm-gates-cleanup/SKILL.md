@@ -403,8 +403,10 @@ code changes. The default response is NOT to inline. Evaluate first.
 
 4. **Part of a structural pattern?** — Roslyn visitor overrides
    (`VisitIfStatement`), interface implementations, abstract method
-   overrides. These ARE the pattern. Depth flagging them is a
-   visitor-pattern false positive. → If YES: **KEEP**
+   overrides, `[LoggerMessage]` source-generated partial methods.
+   These ARE the pattern — the partial declaration is a compile-time
+   contract, not a logic seam. Depth flagging them is a structural
+   false positive. → If YES: **KEEP**
 
 5. **All four NO?** — The method body is as self-descriptive as the name,
    called from one place, not an extension method or pattern override.
@@ -430,6 +432,11 @@ where single-caller data isn't yet available.
 - Roslyn visitor overrides (`NormalizeReturn`, `VisitIfStatement`, etc.)
   are pattern-structural — the visitor pattern REQUIRES per-node methods.
   Accept as pattern cost, document as known issue.
+- `[LoggerMessage]` source-generated partial methods — the partial declaration
+  is a compile-time contract. The body is generated IL. The source generator is
+  the test target, not the method. Always **KEEP** — apply Q4 (structural
+  pattern) from the decision tree. Applies to both `LoggerMessageAttribute` and
+  `LoggerMessage.Define` delegate patterns.
 - Extension methods on framework types should be excluded in a future
   refinement (not yet implemented — currently flagged as shallow).
 - Shared private utility methods with multiple callers at LOC ≤ 4 are
