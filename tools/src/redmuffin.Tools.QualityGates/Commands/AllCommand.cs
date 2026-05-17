@@ -117,18 +117,18 @@ public static class AllCommand
 
         // Order: Architecture → Depth → CRAP → SCRAP → Mutation → Duplicates
         var archExit = await RunArchAsync(o, projectPath, archConfig).ConfigureAwait(false);
-        var depthExit = RunDepth(o, projectPath, runDepth);
+        var depthExit = runDepth ? RunDepth(o, projectPath) : 0;
         var crapExit = await RunCrapAsync(o, projectPath, coveragePath, changedOnly,
             autoCoverage, testProjectPaths).ConfigureAwait(false);
         var primaryTestProject = testProjectPaths.Count > 0 ? testProjectPaths[0] : projectPath;
         var scrapExit = await RunScrapAsync(o, primaryTestProject, verbose, changedOnly).ConfigureAwait(false);
         var mutateExit = await RunMutateAsync(o, mutateSource, primaryTestProject, mutateScan).ConfigureAwait(false);
-        var dupesExit = await RunDupesAsync(o, projectPath, runDupes).ConfigureAwait(false);
+        var dupesExit = runDupes ? await RunDupesAsync(o, projectPath).ConfigureAwait(false) : 0;
 
         var overallExit = CombineExitCodes(crapExit, scrapExit, archExit, mutateExit, dupesExit, depthExit);
-        await WriteSummaryAsync(o, overallExit, crapExit, scrapExit,
-            archConfig, archExit, mutateSource, mutateExit, runDupes, dupesExit,
-            runDepth, depthExit).ConfigureAwait(false);
+        var results = new GateRunResults(overallExit, crapExit, scrapExit,
+            archConfig, archExit, mutateSource, mutateExit, runDupes, dupesExit, runDepth, depthExit);
+        await WriteSummaryAsync(o, results).ConfigureAwait(false);
         return overallExit;
     }
 
@@ -210,10 +210,8 @@ public static class AllCommand
         return null;
     }
 
-    private static int RunDepth(TextWriter o, string projectPath, bool runDepth)
+    private static int RunDepth(TextWriter o, string projectPath)
     {
-        if (!runDepth) return 0;
-
         o.WriteLine();
         o.WriteLine("=== Depth (Structural Quality) ===");
         return DepthCommand.Execute(projectPath);
@@ -253,10 +251,8 @@ public static class AllCommand
             : 0;
     }
 
-    private static async Task<int> RunDupesAsync(TextWriter o, string projectPath, bool runDupes)
+    private static async Task<int> RunDupesAsync(TextWriter o, string projectPath)
     {
-        if (!runDupes) return 0;
-
         await o.WriteLineAsync().ConfigureAwait(false);
         await o.WriteLineAsync("=== Duplicates (Duplicate Code Detection) ===").ConfigureAwait(false);
         var dupesOptions = new DupesOptions(Paths: [projectPath]);
@@ -278,29 +274,22 @@ public static class AllCommand
         return false;
     }
 
-    private static async Task WriteSummaryAsync(
-        TextWriter o, int overallExit, int crapExit, int scrapExit,
-        string? archConfig, int archExit, string? mutateSource, int mutateExit,
-        bool runDupes, int dupesExit, bool runDepth, int depthExit)
+    private static async Task WriteSummaryAsync(TextWriter o, GateRunResults r)
     {
         await o.WriteLineAsync().ConfigureAwait(false);
-        var line = BuildSummaryLine(overallExit, crapExit, scrapExit,
-            archConfig, archExit, mutateSource, mutateExit, runDupes, dupesExit,
-            runDepth, depthExit);
+        var line = BuildSummaryLine(r);
         await o.WriteLineAsync(line).ConfigureAwait(false);
     }
 
-    public static string BuildSummaryLine(int overallExit, int crapExit, int scrapExit,
-        string? archConfig, int archExit, string? mutateSource, int mutateExit,
-        bool runDupes, int dupesExit, bool runDepth, int depthExit)
+    public static string BuildSummaryLine(GateRunResults r)
     {
-        var overallStatus = overallExit == 0 ? "PASS" : "FAIL";
-        var archStatus = GateStatus(archConfig, archExit);
-        var depthStatus = runDepth ? StatusText(depthExit) : "N/A";
-        var crapStatus = StatusText(crapExit);
-        var scrapStatus = StatusText(scrapExit);
-        var mutateStatus = GateStatus(mutateSource, mutateExit);
-        var dupesStatus = runDupes ? StatusText(dupesExit) : "N/A";
+        var overallStatus = r.OverallExit == 0 ? "PASS" : "FAIL";
+        var archStatus = GateStatus(r.ArchConfig, r.ArchExit);
+        var depthStatus = r.RunDepth ? StatusText(r.DepthExit) : "N/A";
+        var crapStatus = StatusText(r.CrapExit);
+        var scrapStatus = StatusText(r.ScrapExit);
+        var mutateStatus = GateStatus(r.MutateSource, r.MutateExit);
+        var dupesStatus = r.RunDupes ? StatusText(r.DupesExit) : "N/A";
         return $"Architecture: {archStatus} | Depth: {depthStatus} | CRAP: {crapStatus} | SCRAP: {scrapStatus} | Mutation: {mutateStatus} | Duplicates: {dupesStatus} | Overall: {overallStatus}";
     }
 

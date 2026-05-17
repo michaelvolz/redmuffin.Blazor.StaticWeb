@@ -35,12 +35,12 @@ public sealed class AllCommandTests
     [Test]
     public async Task BuildSummaryLine_with_failures_reports_fail()
     {
-        var line = AllCommand.BuildSummaryLine(
-            overallExit: 2, crapExit: 0, scrapExit: 0,
-            archConfig: "/cfg.yml", archExit: 0,
-            mutateSource: "/src.cs", mutateExit: 0,
-            runDupes: false, dupesExit: 0,
-            runDepth: true, depthExit: 0);
+        var line = AllCommand.BuildSummaryLine(new GateRunResults(
+            OverallExit: 2, CrapExit: 0, ScrapExit: 0,
+            ArchConfig: "/cfg.yml", ArchExit: 0,
+            MutateSource: "/src.cs", MutateExit: 0,
+            RunDupes: false, DupesExit: 0,
+            RunDepth: true, DepthExit: 0));
 
         await Assert.That(line).Contains("Overall: FAIL");
     }
@@ -48,12 +48,12 @@ public sealed class AllCommandTests
     [Test]
     public async Task BuildSummaryLine_with_na_gates_uses_na()
     {
-        var line = AllCommand.BuildSummaryLine(
-            overallExit: 0, crapExit: 0, scrapExit: 0,
-            archConfig: null, archExit: 0,
-            mutateSource: null, mutateExit: 0,
-            runDupes: false, dupesExit: 0,
-            runDepth: false, depthExit: 0);
+        var line = AllCommand.BuildSummaryLine(new GateRunResults(
+            OverallExit: 0, CrapExit: 0, ScrapExit: 0,
+            ArchConfig: null, ArchExit: 0,
+            MutateSource: null, MutateExit: 0,
+            RunDupes: false, DupesExit: 0,
+            RunDepth: false, DepthExit: 0));
 
         await Assert.That(line).Contains("Architecture: N/A");
         await Assert.That(line).Contains("Depth: N/A");

@@ -2,6 +2,7 @@ namespace redmuffin.Tools.QualityGates.Tests.Analysis;
 
 using Microsoft.CodeAnalysis.CSharp;
 using redmuffin.Tools.QualityGates.Analysis;
+using redmuffin.Tools.QualityGates.Commands;
 
 /// <summary>
 ///     Additional test cases for methods hovering just above CRAP threshold.
@@ -179,12 +180,12 @@ public sealed class CrapBoostTests
     [Test]
     public async Task BuildSummaryLine_all_pass_returns_summary()
     {
-        var line = redmuffin.Tools.QualityGates.Commands.AllCommand.BuildSummaryLine(
-            overallExit: 0, crapExit: 0, scrapExit: 0,
-            archConfig: "/cfg.yml", archExit: 0,
-            mutateSource: "/src.cs", mutateExit: 0,
-            runDupes: true, dupesExit: 0,
-            runDepth: true, depthExit: 0);
+        var line = redmuffin.Tools.QualityGates.Commands.AllCommand.BuildSummaryLine(new GateRunResults(
+            OverallExit: 0, CrapExit: 0, ScrapExit: 0,
+            ArchConfig: "/cfg.yml", ArchExit: 0,
+            MutateSource: "/src.cs", MutateExit: 0,
+            RunDupes: true, DupesExit: 0,
+            RunDepth: true, DepthExit: 0));
         await Assert.That(line).Contains("PASS");
         await Assert.That(line).Contains("Overall: PASS");
     }
