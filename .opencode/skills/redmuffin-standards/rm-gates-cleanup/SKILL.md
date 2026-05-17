@@ -214,6 +214,11 @@ simplify.
 | Introduce Null Object                 | Removes null checks (-1 per check removed)     | Repeated `if (x != null)` patterns                                                                                                                                                               |
 | Table-driven method                   | Replaces branching with lookup. CC drops to 1. | Switch expression with ≥4 arms mapping to constant values. Use `FrozenDictionary<K,V>` + `GetValueOrDefault` for allocation-free lookup. Split `or` patterns into individual dictionary entries. |
 
+For the full functional C# pattern catalog that directly reduces CC
+(LINQ `.Any()`/`.All()` chains, signal arrays with `.Where()`/`.Sum()`,
+pattern-matching dispatchers), see `rm-guide-csharp-features`. Every
+technique in that catalog is a CRAP reduction tool.
+
 ### 0%-coverage method classification
 
 Many methods at CRAP 6.0 (CC=2, 0% coverage) are structural, not real
@@ -595,4 +600,6 @@ After each cleanup session:
 
 - `rm-guide-testing` — test patterns for CRAP fixes (pure functions, fakes, scopes)
 - `rm-guide-cleanup` — universal code quality principles
+- `rm-guide-csharp-features` — functional C# patterns (LINQ pipelines, FrozenDictionary,
+  pattern matching) that eliminate branching and reduce CC during CRAP cleanup
 - `docs/pure-function-extraction-testing-guide-2026-05-10.md` — pure function pattern

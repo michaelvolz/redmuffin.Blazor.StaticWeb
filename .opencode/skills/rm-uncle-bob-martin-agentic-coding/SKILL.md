@@ -160,6 +160,10 @@ For C#:
 - coverlet + xUnit for coverage.
 - Stryker.NET or custom mutant generator for mutation testing (preserve differential manifest).
 - Output as dotnet global tool.
+- Functional C# patterns (immutable records, LINQ pipelines, pure static methods,
+  FrozenDictionary lookups, pattern-matching switch expressions) implement
+  Uncle Bob's Clean Code principles — small functions, low complexity, zero
+  side effects. Full catalog at `rm-guide-csharp-features`.
 
 For PowerShell:
 
