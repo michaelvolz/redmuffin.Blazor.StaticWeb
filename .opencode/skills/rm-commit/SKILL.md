@@ -82,9 +82,16 @@ Safe alternatives: `git stash` before destructive operations,
   never `See #SN-0003`.
 - Use `git --no-optional-locks` for background status/diff to avoid
   index lock contention.
+- NEVER leave `packages.lock.json` drift uncommitted. Every lock
+  file change must be committed alongside the build or package change
+  that caused it, in the same batch. If the lock file is modified
+  and you do not know what caused it, ask the user — never silently
+  ignore it and never mark the working tree as clean with drift
+  remaining.
 
-If the working tree is clean (no modified or untracked files),
-there is nothing to commit — stop and report to the user.
+If the working tree is clean (no modified files including
+`packages.lock.json`, no untracked files), there is nothing to
+commit — stop and report to the user.
 
 ## Commit Shape
 
@@ -101,7 +108,12 @@ elaboration when there is nothing to find:
    config schema) that file B imports or depends on?
    → File A commits first. Resolve all import chains before committing
    the files that depend on them.
-2. No dependencies between groups?
+2. Does `packages.lock.json` appear in `git diff --stat` or
+   `git status --porcelain`?
+   → It must be committed alongside the build or package change
+   that caused the drift. Never leave it as the last dirty file.
+   If you don't know the cause, ask the user.
+3. No dependencies between groups?
    → Static fallback: cleanup → scaffold → behavior → tests → docs
    → format.
 
