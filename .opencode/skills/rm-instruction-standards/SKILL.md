@@ -335,6 +335,13 @@ too vague to be actionable (rewrite it).
 - **Writing hortative rules.** "You should consider X" is not a rule.
   Use "You must X" or "Never X."
 
+- **Qualifying a negative constraint with a judgment call.**
+  "Never issue any potentially destructive command" lets the LLM decide
+  what counts as destructive. `source` is a shell injection vector but
+  the LLM judged it non-destructive because it was re-sourcing a config
+  file. Drop the qualifier: "Never issue any command listed below." The
+  table is the source of truth; do not let the LLM judge exceptions.
+
 - **Adding rules that only apply to specific tasks.** Task-specific
   rules belong in skills, not in the always-loaded AGENTS.md.
 

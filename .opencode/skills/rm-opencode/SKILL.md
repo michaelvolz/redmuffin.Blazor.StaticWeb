@@ -101,9 +101,15 @@ you have a specific reason.
 ```
 
 > **DeepSeek V4 Pro specifics:** Do not set `temperature` or `top_p` —
-> thinking mode (enabled by default) ignores these parameters. Context
-> management uses magic-context's `execute_threshold_tokens`, not
-> API-level `limit.context` caps. See `docs/solutions/tooling-decisions/
+> thinking mode (enabled by default) silently drops these parameters
+> (confirmed by official DeepSeek API docs). Use `limit.context: 1048576`
+> (full 1M native window — CSA architecture makes this viable without
+> memory pressure) and `limit.output: 262144` (256K, community-tested).
+> Magic-context compaction uses `execute_threshold_percentage: 40`
+> (400K trigger) — not per-model `execute_threshold_tokens` which caused
+> excessive KV cache busting at 200K. `reasoning_effort: "max"` is
+> explicit; the API auto-detects OpenCode and sets max anyway. See
+> `docs/solutions/tooling-decisions/
 deepseek-v4-pro-context-precision-tuning-2026-05-13.md` for the full
 > rationale.
 
@@ -465,6 +471,60 @@ FROM session GROUP BY directory ORDER BY n DESC LIMIT 10;
 ---
 
 ## Troubleshooting
+
+### TUI Plugin debugging — no badge, no slot rendering
+
+**Symptom:** A registered TUI plugin's slot content (sidebar, badge) is
+completely absent after restart, BUT the plugin was working before a
+`tui.json` edit. All plugins may be silently absent — not just the one
+you were working on.
+
+**Critical diagnostic — unrecognized keybind cascade:** Adding a keybind
+identifier that the installed OpenCode version does not recognize causes
+the entire `tui.json` to fail to parse. This silently blocks **all**
+plugins from loading. The commands may exist (work from Menu), but the
+keybind identifier itself is not supported in your version.
+
+Check this FIRST when a plugin that was working suddenly vanishes after
+a `tui.json` edit: revert the edit and restart. If plugins return, the
+unrecognized keybind was the cause.
+
+**Known version-dependent keybinds (OpenCode 1.14.41):**
+
+| Command       | Description                                | Works via Menu | Bindable in 1.14.41 |
+| ------------- | ------------------------------------------ | -------------- | ------------------- |
+| `app_console` | Toggle JS/DevTools console (plugin errors) | Yes            | No                  |
+| `app_debug`   | Toggle performance overlay (FPS/memory)    | Yes            | No                  |
+
+The `tui.json` schema at `https://opencode.ai/tui.json` reflects the
+**latest** version — newer entries may not exist in the installed binary.
+To access these commands in 1.14.41: `ctrl+p` (command palette) → type
+"console" or "debug". `ctrl+shift+i` (Chromium universal DevTools shortcut)
+may also work directly in the TUI window.
+
+**Debugging gap:** OpenCode has no log file for plugin runtime errors.
+Plugin crashes go to the terminal stderr where OpenCode was launched
+(not accessible to the agent). The session database records no plugin
+loading errors. Compiled output passes `bun build` successfully even
+when runtime rendering logic will crash.
+
+**Procedure:** Ask the user to open the OpenCode developer console
+(Ctrl+Shift+I or `ctrl+p` → "console") and copy all red error messages
+or stack traces. The console is the only window into `@opentui/solid`
+rendering errors, slot registration failures, and JS exceptions.
+
+**Common TUI rendering bugs:**
+
+- `_$insert` receiving `""` (empty string) instead of `null`/`false` —
+  the `@opentui/solid` compiler can produce `"" && <jsx>` patterns that
+  evaluate to `""`, not `false`. Initialize stash/conditional text to
+  `null`, never `""`.
+- Missing `@opentui/solid/bun-plugin` in build — JSX compiles to raw
+  `React.createElement` instead of `_$insert`/`_$memo`. Always use
+  `scripts/build.ts`, never raw `bun build`.
+- Silent build failure — `Bun.build` with `packages: "external"` can
+  succeed even when imports are unresolvable. Check `result.logs` in
+  the build script for warnings.
 
 ### Historian stuck — all runs fail with "JSON Parse error: Unexpected EOF"
 
