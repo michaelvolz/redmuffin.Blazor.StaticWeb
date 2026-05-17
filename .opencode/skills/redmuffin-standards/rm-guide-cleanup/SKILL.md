@@ -267,6 +267,50 @@ both operate on `PrunedRaindropItem?` with identical truncation rules
 (Q4 ✓ — same abstraction), simple interface wrapping null-guard complexity
 (Q5 ✓).
 
+**Concrete example — state-threading consolidation via builder record (2026-05-17):**
+
+Methods that thread shared state through 6+ parameters can be simplified by
+extracting a record that bundles the shared collections. This eliminates
+parameter-bloat Depth signals and reduces CC at every call site:
+
+```csharp
+// BEFORE: 6 params shared across 3 methods
+var clusterId = ClassifyAndCollectClusters(
+    clusters, fileMethods, normalized, clusteredIndices,
+    allHarmful, allCaseMatrix, allSubject, clusterId);
+
+// AFTER: builder record eliminates params(1) signal
+var ctx = new DuplicationContext(
+    fileMethods, normalized, clusteredIndices,
+    allHarmful, allCaseMatrix, allSubject);
+var clusterId = ClassifyAndCollectClusters(clusters, ctx, clusterId);
+
+// Record definition
+private sealed record DuplicationContext(
+    List<TestMethod> FileMethods,
+    IReadOnlyList<IReadOnlyList<string>> Normalized,
+    HashSet<int> ClusteredIndices,
+    ICollection<DuplicationChannel> AllHarmful,
+    ICollection<DuplicationChannel> AllCaseMatrix,
+    ICollection<DuplicationChannel> AllSubject);
+```
+
+**When to use:** 3+ methods passing the same 4+ shared collections. The
+builder record is a lightweight alternative to a full Builder class pattern.
+Each method receives the record and destructures only the fields it needs.
+If a method doesn't use a field, the record doesn't force it — it's
+descriptive, not restrictive.
+
+**When NOT to use:** When only 2 methods share state, or when the shared
+state changes type across callers. The builder record pattern needs at
+least 3 consumers to justify the indirection.
+
+**Existing codebase examples:**
+
+- `ComponentGraph.cs` — `GraphBuilder` record (4 shared collections, 2 consumers + factory)
+- `ScrapDuplication.cs` — `DuplicationContext` record (6 shared collections, 3 consumers)
+- `AllCommand.cs` — `GateRunResults` record (10 exit-code/flag fields, 2 consumers)
+
 **What was correctly REJECTED for extraction:**
 
 The larger orchestration methods in these same files (`LoadCachedDataAsync`,

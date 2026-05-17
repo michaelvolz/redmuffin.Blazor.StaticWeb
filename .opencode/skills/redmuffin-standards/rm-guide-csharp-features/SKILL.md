@@ -81,6 +81,46 @@ var updated = result with { IsCoverageGap = true };
 **Constraint:** Never add `set` to a record property. Use `{ get; init; }` if the
 primary constructor shorthand is insufficient.
 
+**Builder records for parameter consolidation:**
+
+When 3+ methods pass the same 4+ shared collections as parameters,
+extract a record to bundle them. This is a lightweight alternative to
+the full Builder class pattern — the record is a descriptive bag of
+shared state, not an active builder:
+
+```csharp
+// BEFORE: parameter bloat at every call site
+private static void AddProjectDependencies(
+    string project, IReadOnlyList<string> refs,
+    ArchConfig config, HashSet<string> ignored,
+    Dictionary<string, ISet<string>> deps, HashSet<string> unmapped)
+{
+    var component = config.ComponentMap.GetValueOrDefault(project, "Default");
+    if (ignored.Contains(component)) return;
+    // ...
+}
+
+// AFTER: record bundles shared state
+private sealed record GraphBuilder(
+    ArchConfig Config,
+    HashSet<string> Ignored,
+    Dictionary<string, ISet<string>> Deps,
+    HashSet<string> Unmapped);
+
+private static void AddProjectDependencies(
+    string project, IReadOnlyList<string> refs, GraphBuilder b)
+{
+    var component = b.Config.ComponentMap.GetValueOrDefault(project, "Default");
+    if (b.Ignored.Contains(component)) return;
+    // ...
+}
+```
+
+**Trigger:** Depth gate `params(1)` signal — method has >4 formal parameters,
+and 3+ of those parameters are shared across multiple sibling methods.
+**Benefit:** Eliminates params(1) Depth signal. CC unchanged but call-site
+readability improves — 2 meaningful params instead of 6 opaque ones.
+
 ## §2 Pattern Matching — Replace if-else Chains
 
 **What it replaces:** Nested `if-else`, `switch` statements, `is` chains,
