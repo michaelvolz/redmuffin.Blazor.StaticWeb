@@ -50,4 +50,42 @@ public sealed class DepthCommandTests
         // Fixture contains FAIL (composite=3 shallow + composite=4 combined) → exit 2
         await Assert.That(exitCode).IsEqualTo(2);
     }
+
+    [Test]
+    [Category("Feature:Depth")]
+    public async Task Execute_verbose_mode_produces_per_file_summary()
+    {
+        using var stringWriter = new StringWriter();
+        var exitCode = DepthCommand.Execute(DepthFixturesDir, verbose: true, output: stringWriter);
+
+        await Assert.That(exitCode).IsEqualTo(2);
+
+        var output = stringWriter.ToString();
+        await Assert.That(output).Contains("Analyzing structural depth in:");
+        await Assert.That(output).Contains("method(s) with issues");
+    }
+
+    [Test]
+    [Category("Feature:Depth")]
+    public async Task Execute_returns_exit_code_zero_for_public_only_methods()
+    {
+        var emptyProject = Path.Combine(Path.GetTempPath(), $"depth-empty-{Guid.NewGuid()}");
+        Directory.CreateDirectory(emptyProject);
+
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(emptyProject, "Empty.cs"),
+                "public class X { public void M() { } }").ConfigureAwait(false);
+
+            using var stringWriter = new StringWriter();
+            var exitCode = DepthCommand.Execute(emptyProject, output: stringWriter);
+
+            await Assert.That(exitCode).IsEqualTo(0);
+            await Assert.That(stringWriter.ToString()).Contains("No methods with structural depth issues found.");
+        }
+        finally
+        {
+            Directory.Delete(emptyProject, recursive: true);
+        }
+    }
 }

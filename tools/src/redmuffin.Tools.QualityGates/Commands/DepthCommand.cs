@@ -1,6 +1,7 @@
 namespace redmuffin.Tools.QualityGates.Commands;
 
 using System.CommandLine;
+using System.IO;
 using redmuffin.Tools.QualityGates.Analysis;
 
 public static class DepthCommand
@@ -38,17 +39,19 @@ public static class DepthCommand
         return command;
     }
 
-    public static int Execute(string projectPath, bool verbose = false)
+    public static int Execute(string projectPath, bool verbose = false, TextWriter? output = null)
     {
+        output ??= Console.Out;
+
         if (!Directory.Exists(projectPath))
         {
-            Console.Error.WriteLine($"Project directory not found: {projectPath}");
+            output.WriteLine($"Project directory not found: {projectPath}");
             return 1;
         }
 
         if (verbose)
         {
-            Console.Out.WriteLine($"Analyzing structural depth in: {projectPath}");
+            output.WriteLine($"Analyzing structural depth in: {projectPath}");
         }
 
         var results = DepthDetector.Analyze(projectPath);
@@ -62,10 +65,10 @@ public static class DepthCommand
             foreach (var fileGroup in byFile)
             {
                 var fileName = Path.GetFileName(fileGroup.Key);
-                Console.Out.WriteLine($"  {fileName}: {fileGroup.Count()} method(s) with issues");
+                output.WriteLine($"  {fileName}: {fileGroup.Count()} method(s) with issues");
             }
         }
 
-        return DepthHandler.Run(results);
+        return DepthHandler.Run(results, output: output);
     }
 }
