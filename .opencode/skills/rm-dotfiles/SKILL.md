@@ -27,18 +27,6 @@ harmful, auto-include what's portable, and ask when uncertain.
 
 ---
 
-## What Belongs in This File
-
-- **Viewpoint**: Reference information — constraints, categories, and
-  protocols for portability classification. Not ordered workflow steps.
-- **What belongs**: portability category definitions with concrete
-  classification criteria, file evaluation protocol, change analysis
-  rules, .gitignore discipline, handoff templates for uncertainty.
-- **What does NOT belong**: implementation code, diagnostic command
-  recipes, anything you already know how to do.
-
----
-
 ## Core Philosophy
 
 ### Default-YES
@@ -285,10 +273,27 @@ or when the user asks to track a specific directory.
      and Chromium in the existing `.gitignore`. If already whitelisted:
      no `.gitignore` change needed
    - **Uncertain** → ask the user. Normal conversation.
-3. **Manual directory**: when user asks to track a directory, evaluate
+3. **Config Directory Discovery**: After classifying files, infer the
+   tool name from any newly found launchers, wrappers, or symlinks in
+   `.local/bin/` or `.local/share/applications/`. For each tool found:
+   - Scan common locations: `~/.<toolname>/`, `~/.config/<toolname>/`,
+     `~/.local/share/<toolname>/`.
+   - If a config directory is found and not yet whitelisted, classify
+     its contents against portability categories. Propose whitelist
+     additions with machine-specific carve-outs — same pattern as
+     Typora and Chromium: whitelist the directory, then add `# SKILL:`
+     exclusions for secrets, state, caches, and binaries.
+   - If no config directory is found in the common locations, search
+     online for `"{toolname} config directory linux"` to find the
+     tool's documented config path, then check that path.
+   - Never skip this step when new launchers or wrappers are found.
+     Even when the tool name seems obvious, verify the directory exists
+     on disk before proposing changes. Never modify `.gitignore` without
+     user approval.
+4. **Manual directory**: when user asks to track a directory, evaluate
    portability, add whitelist patterns, identify machine-specific
    carve-outs (like `hypr/input.conf`), add exclusions for them.
-4. **Happy path**: everything certain → report summary and stop.
+5. **Happy path**: everything certain → report summary and stop.
    **Uncertainty path**: normal conversation until resolved.
 
 ### Mode C — Tracked File Audit (auto-dirty detection)

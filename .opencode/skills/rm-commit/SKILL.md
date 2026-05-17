@@ -9,17 +9,6 @@ Create clean, reviewable git commits in batches from the working tree.
 Enforces commitlint rules (body required, blank lines, 100-char line limit)
 via Conventional Commits.
 
-## What Belongs in This File
-
-- **Viewpoint**: Information as reference, not recipes. You already
-  know how to use git.
-- **What belongs**: constraints (commitlint rules), conventions (type
-  checklist, scope patterns), gotchas (`#` parser behavior, body
-  template), the heredoc/here-string syntax.
-- **What does NOT belong**: ordered workflow steps, diagnostic command
-  recipes, staging instructions, anti-redundancy rules, hard numeric
-  thresholds, anything you already know how to do.
-
 ## Commitlint Rules (ENFORCED — non-negotiable)
 
 All commits must pass these rules from the repo's commitlint config:
