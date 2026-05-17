@@ -113,4 +113,29 @@ public sealed class DepthDetectorTests
         var shallow = results.First(r => r.MethodName == "ShallowHelper");
         await Assert.That(shallow.LineNumber).IsEqualTo(9);
     }
+
+    [Test]
+    [Category("Feature:Depth")]
+    public async Task Should_suppress_shallow_signal_for_methods_called_from_three_or_more_places()
+    {
+        // SharedHelper is private, LOC=1, no branching → Phase 1 says shallow(3)
+        // but it's called from FirstCaller, SecondCaller, ThirdCaller → Phase 2 suppresses
+        var results = DepthDetector.Analyze(DepthFixturesDir);
+
+        var shared = results.FirstOrDefault(r => r.MethodName == "SharedHelper");
+        await Assert.That(shared).IsNull(); // composite would be 0 after suppression → excluded
+    }
+
+    [Test]
+    [Category("Feature:Depth")]
+    public async Task Should_not_suppress_shallow_signal_for_single_caller_methods()
+    {
+        // ShallowHelper is called from one method (Caller) → still flagged
+        var results = DepthDetector.Analyze(DepthFixturesDir);
+
+        var shallow = results.FirstOrDefault(r => r.MethodName == "ShallowHelper");
+        await Assert.That(shallow).IsNotNull();
+        await Assert.That(shallow!.IsShallow).IsTrue();
+        await Assert.That(shallow.CompositeScore).IsEqualTo(3);
+    }
 }
