@@ -17,7 +17,9 @@ public static class DepthDetector
         }
 
         var csFiles = Directory.GetFiles(projectPath, "*.cs", SearchOption.AllDirectories);
+        var allMethods = new List<(MethodDeclarationSyntax Method, string FilePath)>();
 
+        // Pass 1: collect all methods and flag structural quality issues.
         foreach (var file in csFiles)
         {
             string source;
@@ -46,6 +48,8 @@ public static class DepthDetector
 
             foreach (var method in methods)
             {
+                allMethods.Add((method, file));
+
                 var result = AnalyzeMethod(method, file);
                 if (result.CompositeScore > 0)
                 {
@@ -54,7 +58,92 @@ public static class DepthDetector
             }
         }
 
-        return results.OrderByDescending(r => r.CompositeScore).ToList().AsReadOnly();
+        // Pass 2 (Phase 2): suppress shallow(3) for multi-caller methods.
+        ApplyCallerCountFilters(results, allMethods);
+
+        return results
+            .Where(r => r.CompositeScore > 0)
+            .OrderByDescending(r => r.CompositeScore)
+            .ToList()
+            .AsReadOnly();
+    }
+
+    private static void ApplyCallerCountFilters(
+        List<DepthResult> results,
+        List<(MethodDeclarationSyntax Method, string FilePath)> allMethods)
+    {
+        for (var i = 0; i < results.Count; i++)
+        {
+            var result = results[i];
+            if (!result.IsShallow)
+            {
+                continue;
+            }
+
+            var callers = CountDistinctCallers(result.MethodName, allMethods);
+            if (callers >= 3)
+            {
+                results[i] = RecalculateWithoutShallow(result);
+            }
+        }
+    }
+
+    private static DepthResult RecalculateWithoutShallow(DepthResult original)
+    {
+        if (!original.IsShallow)
+        {
+            return original;
+        }
+
+        var newSignals = original.Signals
+            .Where(s => !string.Equals(s, "shallow(3)", StringComparison.Ordinal))
+            .ToArray();
+
+        var newComposite = original.CompositeScore - 3;
+
+        return original with
+        {
+            IsShallow = false,
+            CompositeScore = newComposite,
+            Signals = newSignals.AsReadOnly(),
+        };
+    }
+
+    private static int CountDistinctCallers(
+        string methodName,
+        List<(MethodDeclarationSyntax Method, string FilePath)> allMethods)
+    {
+        var callers = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var (method, filePath) in allMethods)
+        {
+            if (method.Body is null)
+            {
+                continue;
+            }
+
+            var invocations = method.Body.DescendantNodes()
+                .OfType<InvocationExpressionSyntax>();
+
+            foreach (var invocation in invocations)
+            {
+                var invokedName = invocation.Expression switch
+                {
+                    IdentifierNameSyntax id => id.Identifier.Text,
+                    MemberAccessExpressionSyntax m => m.Name.Identifier.Text,
+                    _ => null,
+                };
+
+                if (invokedName != null &&
+                    string.Equals(invokedName, methodName, StringComparison.Ordinal))
+                {
+                    callers.Add(method.Identifier.Text + ":" + filePath);
+                    break; // one match per caller method is enough
+                }
+            }
+        }
+
+        return callers.Count;
     }
 
     private static DepthResult AnalyzeMethod(MethodDeclarationSyntax method, string filePath)
