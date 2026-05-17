@@ -12,7 +12,7 @@ insufficient — it must be paired with cyclomatic complexity (CRAP score),
 mutation kill rate, structural test analysis (SCRAP), and dependency
 architecture checks.
 
-This toolchain automates all five gates as a single, unified command:
+This toolchain automates all six gates as a single, unified command:
 `dotnet run -- all`.
 
 ## Gates
@@ -22,6 +22,7 @@ This toolchain automates all five gates as a single, unified command:
 | **CRAP**         | `crap`         | Cyclomatic complexity × coverage risk. `CC² × (1 − cov)³ + CC`. Threshold: ≤ 8. Uses Roslyn + Cobertura XML.    | 0=pass, 1=error, 2=breach |
 | **SCRAP**        | `scrap`        | Test structural analyzer. Jaccard similarity on Roslyn-normalized test bodies. Outputs STABLE/LOCAL/SPLIT.      | 0=pass, 1=error, 2=breach |
 | **Architecture** | `architecture` | Dependency graph + cycle detection. YAML config with allowed-dependencies, component-map, fail-on-cycles.       | 0=pass, 1=error, 2=breach |
+| **Depth**        | `depth`        | Structural quality — detects shallow methods, parameter bloat, wrong abstractions, and entanglement             | 0=pass, 2=fail, 1=error   |
 | **Mutation**     | `mutation`     | 6 mutation categories (19 rules). In-place source mutation via Roslyn. Differential mode via JSON manifest.     | 0=pass, 1=error           |
 | **Duplicates**   | `duplicates`   | Structural duplicate detection. Roslyn tree normalization, pairwise Jaccard similarity (threshold 0.82).        | 0=pass, 1=error, 2=breach |
 | **All**          | `all`          | Runs all gates in sequence. All gates execute regardless of failures (run-all policy). Returns worst exit code. | worst of all gates        |

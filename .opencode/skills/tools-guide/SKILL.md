@@ -1,6 +1,6 @@
 ---
 name: tools-guide
-description: Quality gates toolchain conventions, operational rules, gotchas, and development patterns for the tools/ solution. Use when working in the tools/ directory, editing tools/src/ or tools/tests/, or touching CRAP, SCRAP, Architecture, Mutation, or Duplicates gates.
+description: Quality gates toolchain conventions, operational rules, gotchas, and development patterns for the tools/ solution. Use when working in the tools/ directory, editing tools/src/ or tools/tests/, or touching CRAP, SCRAP, Architecture, Depth, Mutation, or Duplicates gates.
 ---
 
 # tools-guide
@@ -64,7 +64,7 @@ dotnet run -- all   # auto-discovers projects from tools/redmuffin.Tools.slnx
 ```
 
 Zero flags needed. The `all` command auto-generates coverage to
-`/tmp/quality-gates-coverage.xml` and runs all five gates.
+`/tmp/quality-gates-coverage.xml` and runs all six gates.
 
 Specify a different solution:
 

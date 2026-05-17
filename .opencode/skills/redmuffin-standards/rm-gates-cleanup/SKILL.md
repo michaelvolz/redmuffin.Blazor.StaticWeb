@@ -57,7 +57,7 @@ solution is clean across every dimension. Never stop at "good enough."
 
 **The loop:**
 
-1. **Run all gates** — CRAP → SCRAP → Architecture → Mutation → Dupes.
+1. **Run all gates** — Depth → Architecture → CRAP → SCRAP → Mutation → Dupes.
    Every gate must execute. A build failure on one gate does not excuse
    skipping the rest.
 2. **Fix the worst violations first** — sort by severity: CRAP score
@@ -136,8 +136,8 @@ coding principles applied during cleanup.
 
 ## Gate Execution Order
 
-Always run gates in Uncle Bob's order: CRAP → SCRAP → Architecture →
-Mutation. Each gate validates a different quality dimension.
+Always run gates in order: Architecture → Depth → CRAP → SCRAP →
+Mutation → Dupes. Each gate validates a different quality dimension.
 
 ### Quick: run a single gate
 
@@ -308,7 +308,56 @@ Frontend → Shared ← Backend
 If adding new components: update `arch-rules.yml` BEFORE adding
 cross-component references.
 
-## Gate 4: Mutation Cleanup Workflow
+## Gate 4: Depth Cleanup Workflow
+
+Depth catches structural quality issues grounded in Ousterhout's
+deep-module philosophy: shallow methods, parameter bloat, wrong
+abstractions (Metz conditional proliferation), and entanglement.
+
+### Classification
+
+Each method receives a composite score from four signals:
+
+| Signal            | Weight | Check                                                                         |
+| ----------------- | ------ | ----------------------------------------------------------------------------- |
+| Shallow           | 3      | Private, LOC ≤ 4, no branching                                                |
+| Wrong abstraction | 2      | Private, if/switch on formal parameter (Metz signal)                          |
+| Parameter bloat   | 1      | More than 4 formal parameters                                                 |
+| Entangled         | 2      | Private, ≥ 3 parameters with side effects (member assignment, external calls) |
+
+Composite score = sum of triggered signals. Thresholds:
+
+| Score | Output               |
+| ----- | -------------------- |
+| ≥ 3   | FAIL — exit code 2   |
+| 2     | WARN — informational |
+| 1     | INFO — informational |
+| 0     | Not shown in output  |
+
+Exit code 2 only when FAIL present. WARN and INFO are advisory — they
+do not affect the exit code unless a FAIL co-exists.
+
+### Conflict resolution: Depth vs CRAP
+
+Depth and CRAP are equal peers. When CRAP says "extract this" and
+Depth says "that would be shallow" — the agent must exercise judgment:
+
+1. If extraction would create a method ≤ 4 lines with no branching →
+   Depth will flag it. Don't extract. Find another CRAP reduction
+   technique (guard clause, table-driven replacement).
+2. If extraction creates a method with real logic (≥ 5 lines or has
+   branching) → Depth won't flag it. Extraction is valid.
+3. When in doubt, CRAP reduction wins — CRAP is battle-tested in
+   Uncle Bob's pipeline. But if the extraction is clearly shallow,
+   Depth's signal overrides.
+
+### Documented false positives
+
+- Public API methods are excluded from shallow detection (private-only).
+- Shared private utility methods with multiple callers at LOC ≤ 4 are
+  flagged. Phase 2 single-caller analysis will resolve. Accept the noise.
+
+## Gate 5: Mutation Cleanup Workflow
 
 Mutation testing verifies that tests actually catch logic errors.
 After fixing a CRAP violation with new tests, run mutation on that
@@ -486,6 +535,7 @@ After each cleanup session:
 - [ ] CRAP: zero violations ≥ 8
 - [ ] SCRAP: zero SPLIT files (LOCAL is informational)
 - [ ] Architecture: zero violations, zero cycles
+- [ ] Depth: zero FAIL methods (WARN/INFO advisory)
 - [ ] Mutation: survivors reviewed and addressed
 - [ ] `dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests` — all 265 tests pass
 - [ ] Build: `dotnet build src/redmuffin.Blazor.StaticWeb --verbosity quiet`
