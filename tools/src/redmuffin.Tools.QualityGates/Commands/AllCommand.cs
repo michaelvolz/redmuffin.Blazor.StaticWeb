@@ -57,6 +57,11 @@ public static class AllCommand
         Description = "Run the duplicate code detection gate. Enabled by default. Use --no-duplicates to disable.",
     };
 
+    private static readonly Option<bool?> DepthOption = new("--depth")
+    {
+        Description = "Run the structural depth analysis gate. Enabled by default. Use --no-depth to disable.",
+    };
+
     private static readonly Option<bool?> AutoCoverageOption = new("--auto-coverage")
     {
         Description = "Auto-generate coverage before CRAP analysis. Enabled by default. Use --no-auto-coverage to disable.",
@@ -74,6 +79,7 @@ public static class AllCommand
         var mutateSource = parseResult.GetValue(MutateSourceOption);
         var mutateScan = parseResult.GetValue(MutateScanOption);
         var runDupes = parseResult.GetValue(DupesOption) ?? true;
+        var runDepth = parseResult.GetValue(DepthOption) ?? true;
         var autoCoverage = parseResult.GetValue(AutoCoverageOption) ?? true;
 
         // Resolve defaults
@@ -85,7 +91,7 @@ public static class AllCommand
         return await ExecuteAsync(
             projectPath, testProjectPaths, coveragePath,
             resolvedArchConfig, changedOnly, verbose, mutateSource, mutateScan, runDupes,
-            autoCoverage).ConfigureAwait(false);
+            runDepth, autoCoverage).ConfigureAwait(false);
     };
 
     public static Command Create()
@@ -94,7 +100,7 @@ public static class AllCommand
         {
             ProjectOption, TestProjectOption, SolutionOption, CoverageOption, ArchConfigOption,
             ChangedOption, VerboseOption, MutateSourceOption, MutateScanOption, DupesOption,
-            AutoCoverageOption,
+            DepthOption, AutoCoverageOption,
         };
 
         command.SetAction(AllAction);
@@ -105,21 +111,24 @@ public static class AllCommand
         string projectPath, IReadOnlyList<string> testProjectPaths, string? coveragePath,
         string? archConfig, bool changedOnly, bool verbose,
         string? mutateSource, bool mutateScan, bool runDupes,
-        bool autoCoverage)
+        bool runDepth, bool autoCoverage)
     {
         var o = Console.Out;
 
+        // Order: Architecture → Depth → CRAP → SCRAP → Mutation → Duplicates
+        var archExit = await RunArchAsync(o, projectPath, archConfig).ConfigureAwait(false);
+        var depthExit = RunDepth(o, projectPath, runDepth);
         var crapExit = await RunCrapAsync(o, projectPath, coveragePath, changedOnly,
             autoCoverage, testProjectPaths).ConfigureAwait(false);
         var primaryTestProject = testProjectPaths.Count > 0 ? testProjectPaths[0] : projectPath;
         var scrapExit = await RunScrapAsync(o, primaryTestProject, verbose, changedOnly).ConfigureAwait(false);
-        var archExit = await RunArchAsync(o, projectPath, archConfig).ConfigureAwait(false);
         var mutateExit = await RunMutateAsync(o, mutateSource, primaryTestProject, mutateScan).ConfigureAwait(false);
         var dupesExit = await RunDupesAsync(o, projectPath, runDupes).ConfigureAwait(false);
 
-        var overallExit = CombineExitCodes(crapExit, scrapExit, archExit, mutateExit, dupesExit);
+        var overallExit = CombineExitCodes(crapExit, scrapExit, archExit, mutateExit, dupesExit, depthExit);
         await WriteSummaryAsync(o, overallExit, crapExit, scrapExit,
-            archConfig, archExit, mutateSource, mutateExit, runDupes, dupesExit).ConfigureAwait(false);
+            archConfig, archExit, mutateSource, mutateExit, runDupes, dupesExit,
+            runDepth, depthExit).ConfigureAwait(false);
         return overallExit;
     }
 
@@ -201,6 +210,15 @@ public static class AllCommand
         return null;
     }
 
+    private static int RunDepth(TextWriter o, string projectPath, bool runDepth)
+    {
+        if (!runDepth) return 0;
+
+        o.WriteLine();
+        o.WriteLine("=== Depth (Structural Quality) ===");
+        return DepthCommand.Execute(projectPath);
+    }
+
     private static async Task<int> RunCrapAsync(TextWriter o, string projectPath, string? coveragePath,
         bool changedOnly, bool autoCoverage, IReadOnlyList<string> testProjectPaths)
     {
@@ -263,25 +281,27 @@ public static class AllCommand
     private static async Task WriteSummaryAsync(
         TextWriter o, int overallExit, int crapExit, int scrapExit,
         string? archConfig, int archExit, string? mutateSource, int mutateExit,
-        bool runDupes, int dupesExit)
+        bool runDupes, int dupesExit, bool runDepth, int depthExit)
     {
         await o.WriteLineAsync().ConfigureAwait(false);
         var line = BuildSummaryLine(overallExit, crapExit, scrapExit,
-            archConfig, archExit, mutateSource, mutateExit, runDupes, dupesExit);
+            archConfig, archExit, mutateSource, mutateExit, runDupes, dupesExit,
+            runDepth, depthExit);
         await o.WriteLineAsync(line).ConfigureAwait(false);
     }
 
     public static string BuildSummaryLine(int overallExit, int crapExit, int scrapExit,
         string? archConfig, int archExit, string? mutateSource, int mutateExit,
-        bool runDupes, int dupesExit)
+        bool runDupes, int dupesExit, bool runDepth, int depthExit)
     {
         var overallStatus = overallExit == 0 ? "PASS" : "FAIL";
+        var archStatus = GateStatus(archConfig, archExit);
+        var depthStatus = runDepth ? StatusText(depthExit) : "N/A";
         var crapStatus = StatusText(crapExit);
         var scrapStatus = StatusText(scrapExit);
-        var archStatus = GateStatus(archConfig, archExit);
         var mutateStatus = GateStatus(mutateSource, mutateExit);
         var dupesStatus = runDupes ? StatusText(dupesExit) : "N/A";
-        return $"CRAP: {crapStatus} | SCRAP: {scrapStatus} | Architecture: {archStatus} | Mutation: {mutateStatus} | Duplicates: {dupesStatus} | Overall: {overallStatus}";
+        return $"Architecture: {archStatus} | Depth: {depthStatus} | CRAP: {crapStatus} | SCRAP: {scrapStatus} | Mutation: {mutateStatus} | Duplicates: {dupesStatus} | Overall: {overallStatus}";
     }
 
     private static string GateStatus(string? config, int exitCode) =>
@@ -290,6 +310,6 @@ public static class AllCommand
     private static string StatusText(int exitCode) =>
         exitCode == 0 ? "PASS" : (exitCode == 1 ? "ERROR" : "FAIL");
 
-    public static int CombineExitCodes(int crapExit, int scrapExit, int archExit, int mutateExit = 0, int dupesExit = 0) =>
-        Math.Max(crapExit, Math.Max(scrapExit, Math.Max(archExit, Math.Max(mutateExit, dupesExit))));
+    public static int CombineExitCodes(int crapExit, int scrapExit, int archExit, int mutateExit = 0, int dupesExit = 0, int depthExit = 0) =>
+        Math.Max(crapExit, Math.Max(scrapExit, Math.Max(archExit, Math.Max(mutateExit, Math.Max(dupesExit, depthExit)))));
 }

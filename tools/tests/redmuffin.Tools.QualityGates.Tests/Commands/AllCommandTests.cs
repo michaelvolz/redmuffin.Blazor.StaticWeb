@@ -39,7 +39,8 @@ public sealed class AllCommandTests
             overallExit: 2, crapExit: 0, scrapExit: 0,
             archConfig: "/cfg.yml", archExit: 0,
             mutateSource: "/src.cs", mutateExit: 0,
-            runDupes: false, dupesExit: 0);
+            runDupes: false, dupesExit: 0,
+            runDepth: true, depthExit: 0);
 
         await Assert.That(line).Contains("Overall: FAIL");
     }
@@ -51,9 +52,11 @@ public sealed class AllCommandTests
             overallExit: 0, crapExit: 0, scrapExit: 0,
             archConfig: null, archExit: 0,
             mutateSource: null, mutateExit: 0,
-            runDupes: false, dupesExit: 0);
+            runDupes: false, dupesExit: 0,
+            runDepth: false, depthExit: 0);
 
         await Assert.That(line).Contains("Architecture: N/A");
+        await Assert.That(line).Contains("Depth: N/A");
         await Assert.That(line).Contains("Mutation: N/A");
         await Assert.That(line).Contains("Duplicates: N/A");
     }
@@ -62,7 +65,7 @@ public sealed class AllCommandTests
     public async Task CombineExitCodes_returns_two_when_any_fail()
     {
         var result = AllCommand.CombineExitCodes(
-            crapExit: 0, scrapExit: 2, archExit: 0, mutateExit: 0, dupesExit: 0);
+            crapExit: 0, scrapExit: 2, archExit: 0, mutateExit: 0, dupesExit: 0, depthExit: 0);
         await Assert.That(result).IsEqualTo(2);
     }
 
@@ -70,7 +73,7 @@ public sealed class AllCommandTests
     public async Task CombineExitCodes_returns_one_when_any_error_no_fails()
     {
         var result = AllCommand.CombineExitCodes(
-            crapExit: 1, scrapExit: 0, archExit: 0, mutateExit: 0, dupesExit: 0);
+            crapExit: 1, scrapExit: 0, archExit: 0, mutateExit: 0, dupesExit: 0, depthExit: 0);
         await Assert.That(result).IsEqualTo(1);
     }
 
@@ -78,7 +81,7 @@ public sealed class AllCommandTests
     public async Task CombineExitCodes_returns_zero_when_all_pass()
     {
         var result = AllCommand.CombineExitCodes(
-            crapExit: 0, scrapExit: 0, archExit: 0, mutateExit: 0, dupesExit: 0);
+            crapExit: 0, scrapExit: 0, archExit: 0, mutateExit: 0, dupesExit: 0, depthExit: 0);
         await Assert.That(result).IsEqualTo(0);
     }
 

@@ -183,7 +183,8 @@ public sealed class CrapBoostTests
             overallExit: 0, crapExit: 0, scrapExit: 0,
             archConfig: "/cfg.yml", archExit: 0,
             mutateSource: "/src.cs", mutateExit: 0,
-            runDupes: true, dupesExit: 0);
+            runDupes: true, dupesExit: 0,
+            runDepth: true, depthExit: 0);
         await Assert.That(line).Contains("PASS");
         await Assert.That(line).Contains("Overall: PASS");
     }

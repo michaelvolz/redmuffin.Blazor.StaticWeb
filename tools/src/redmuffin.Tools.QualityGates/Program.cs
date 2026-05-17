@@ -5,6 +5,7 @@ var rootCommand = new RootCommand("redmuffin Quality Gates — code quality anal
 rootCommand.Subcommands.Add(CrapCommand.Create());
 rootCommand.Subcommands.Add(ScrapCommand.Create());
 rootCommand.Subcommands.Add(ArchCommand.Create());
+rootCommand.Subcommands.Add(DepthCommand.Create());
 rootCommand.Subcommands.Add(MutateCommand.Create());
 rootCommand.Subcommands.Add(DupesCommand.Create());
 rootCommand.Subcommands.Add(AllCommand.Create());
