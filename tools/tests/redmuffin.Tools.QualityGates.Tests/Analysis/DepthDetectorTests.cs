@@ -138,4 +138,178 @@ public sealed class DepthDetectorTests
         await Assert.That(shallow!.IsShallow).IsTrue();
         await Assert.That(shallow.CompositeScore).IsEqualTo(3);
     }
+
+    [Test]
+    [Category("Feature:Depth")]
+    public async Task IsWrongAbstraction_should_return_true_when_method_branches_on_formal_parameter()
+    {
+        var code = """
+            class X {
+                private string F(string input, string mode) {
+                    if (mode == "upper") return input.ToUpper();
+                    return input;
+                }
+            }
+            """;
+        var tree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(code);
+        var root = (Microsoft.CodeAnalysis.CSharp.Syntax.CompilationUnitSyntax)await tree.GetRootAsync(CancellationToken.None).ConfigureAwait(false);;
+        var method = root.DescendantNodes()
+            .OfType<Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax>()
+            .First(m => m.Identifier.Text == "F");
+
+        await Assert.That(DepthDetector.IsWrongAbstraction(method)).IsTrue();
+    }
+
+    [Test]
+    [Category("Feature:Depth")]
+    public async Task IsWrongAbstraction_should_return_false_when_no_branching_on_params()
+    {
+        var code = """
+            class X {
+                private string F(string input, string unused) {
+                    return input.ToUpper();
+                }
+            }
+            """;
+        var tree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(code);
+        var root = (Microsoft.CodeAnalysis.CSharp.Syntax.CompilationUnitSyntax)await tree.GetRootAsync(CancellationToken.None).ConfigureAwait(false);;
+        var method = root.DescendantNodes()
+            .OfType<Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax>()
+            .First(m => m.Identifier.Text == "F");
+
+        await Assert.That(DepthDetector.IsWrongAbstraction(method)).IsFalse();
+    }
+
+    [Test]
+    [Category("Feature:Depth")]
+    public async Task GetInvokedMethodName_returns_identifier_for_simple_call()
+    {
+        var code = """
+            class X { void M() { Helper(); } }
+            """;
+        var tree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(code);
+        var root = (Microsoft.CodeAnalysis.CSharp.Syntax.CompilationUnitSyntax)await tree.GetRootAsync(CancellationToken.None).ConfigureAwait(false);;
+        var invoc = root
+            .DescendantNodes()
+            .OfType<Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax>()
+            .First();
+
+        await Assert.That(DepthDetector.GetInvokedMethodName(invoc.Expression)).IsEqualTo("Helper");
+    }
+
+    [Test]
+    [Category("Feature:Depth")]
+    public async Task GetInvokedMethodName_returns_member_name_for_qualified_call()
+    {
+        var code = """
+            class X { void M() { obj.DoSomething(); } }
+            """;
+        var tree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(code);
+        var root = (Microsoft.CodeAnalysis.CSharp.Syntax.CompilationUnitSyntax)await tree.GetRootAsync(CancellationToken.None).ConfigureAwait(false);;
+        var invoc = root
+            .DescendantNodes()
+            .OfType<Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax>()
+            .First();
+
+        await Assert.That(DepthDetector.GetInvokedMethodName(invoc.Expression)).IsEqualTo("DoSomething");
+    }
+
+    [Test]
+    [Category("Feature:Depth")]
+    public async Task GetInvokedMethodName_returns_null_for_anonymous_delegate_invocation()
+    {
+        var code = """
+            class X { void M() { ((System.Action)(delegate {}))(); } }
+            """;
+        var tree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(code);
+        var root = (Microsoft.CodeAnalysis.CSharp.Syntax.CompilationUnitSyntax)await tree.GetRootAsync(CancellationToken.None).ConfigureAwait(false);
+        var invoc = root
+            .DescendantNodes()
+            .OfType<Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax>()
+            .First();
+
+        // Cast + delegate invocation — not IdentifierName or MemberAccess → returns null
+        await Assert.That(DepthDetector.GetInvokedMethodName(invoc.Expression)).IsNull();
+    }
+
+    [Test]
+    [Category("Feature:Depth")]
+    public async Task Analyze_returns_empty_for_nonexistent_directory()
+    {
+        var nonExistent = Path.Combine(Path.GetTempPath(), $"depth-nope-{Guid.NewGuid()}");
+
+        var results = DepthDetector.Analyze(nonExistent);
+
+        await Assert.That(results).IsEmpty();
+    }
+
+    [Test]
+    [Category("Feature:Depth")]
+    public async Task Analyze_returns_empty_for_directory_with_no_csharp_files()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"depth-nocs-{Guid.NewGuid()}");
+        Directory.CreateDirectory(tempDir);
+
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "readme.txt"),
+                "not a csharp file").ConfigureAwait(false);
+
+            var results = DepthDetector.Analyze(tempDir);
+
+            await Assert.That(results).IsEmpty();
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [Test]
+    [Category("Feature:Depth")]
+    public async Task CollectMethodsFromFile_adds_methods_with_issues_to_results()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"depth-cmff-{Guid.NewGuid()}");
+        Directory.CreateDirectory(tempDir);
+
+        try
+        {
+            var tempFile = Path.Combine(tempDir, "Test.cs");
+            await File.WriteAllTextAsync(tempFile, """
+                public class X {
+                    private int Helper(int x) { return x + 1; }
+                    public void Public() { }
+                }
+                """).ConfigureAwait(false);
+
+            var results = new List<DepthResult>();
+            var allMethods = new List<(Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax, string)>();
+
+            DepthDetector.CollectMethodsFromFile(tempFile, results, allMethods);
+
+            // Helper is private, 2 lines, no branching → shallow(3)
+            await Assert.That(results).IsNotEmpty();
+            await Assert.That(results[0].MethodName).IsEqualTo("Helper");
+            await Assert.That(results[0].IsShallow).IsTrue();
+            await Assert.That(allMethods.Count).IsEqualTo(2); // both methods collected
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [Test]
+    [Category("Feature:Depth")]
+    public async Task CollectMethodsFromFile_skips_nonexistent_file()
+    {
+        var nonExistent = Path.Combine(Path.GetTempPath(), $"depth-nofile-{Guid.NewGuid()}", "ghost.cs");
+        var results = new List<DepthResult>();
+        var allMethods = new List<(Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax, string)>();
+
+        DepthDetector.CollectMethodsFromFile(nonExistent, results, allMethods);
+
+        await Assert.That(results).IsEmpty();
+        await Assert.That(allMethods).IsEmpty();
+    }
 }
