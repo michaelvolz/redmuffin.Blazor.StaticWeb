@@ -13,6 +13,36 @@
       "**/publish/**"
     ]
   },
+  "provider": {
+    "deepseek": {
+      "models": {
+        "deepseek-v4-pro": {
+          "limit": {
+            "context": 393216,
+            "output": 262144
+          },
+          "options": {
+            "thinking": { "type": "enabled" },
+            "reasoning_effort": "max"
+          }
+        }
+      }
+    },
+    "opencode-go": {
+      "models": {
+        "deepseek-v4-pro": {
+          "limit": {
+            "context": 393216,
+            "output": 262144
+          },
+          "options": {
+            "thinking": { "type": "enabled" },
+            "reasoning_effort": "max"
+          }
+        }
+      }
+    }
+  },
   "plugin": [
     "opencode-snippets",
     "cc-safety-net",
@@ -389,13 +419,6 @@
         "node",
         "-e",
         "require(require('path').join(require('os').homedir(),'.config','opencode','scripts','browser-launcher.js'))"
-      ],
-      "enabled": false
-    },
-    "context-mode": {
-      "type": "local",
-      "command": [
-        "context-mode"
       ],
       "enabled": false
     }
