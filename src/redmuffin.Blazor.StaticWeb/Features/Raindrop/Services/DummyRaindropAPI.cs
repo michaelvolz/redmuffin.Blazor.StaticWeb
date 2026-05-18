@@ -35,7 +35,7 @@ public sealed partial class DummyRaindropAPI(IHttpClientFactory httpClientFactor
             LogLoadingVideos(_logger);
 
             var jsonContent = await LoadJsonFileAsync("mockdata/videos.json", cancellationToken).ConfigureAwait(false);
-            var videos = await DeserializeWithFallbackAsync<List<RaindropItem>>(jsonContent, "videos.json", cancellationToken).ConfigureAwait(false);
+            var videos = await DeserializeWithFallbackAsync<List<RaindropItem>>(jsonContent, "videos.json", _logger, cancellationToken).ConfigureAwait(false);
 
             if (videos == null) throw new InvalidOperationException("Failed to deserialize videos JSON data - all deserialization strategies failed.");
 
@@ -75,7 +75,7 @@ public sealed partial class DummyRaindropAPI(IHttpClientFactory httpClientFactor
             LogLoadingArticles(_logger);
 
             var jsonContent = await LoadJsonFileAsync("mockdata/articles.json", cancellationToken).ConfigureAwait(false);
-            var articles = await DeserializeWithFallbackAsync<List<RaindropItem>>(jsonContent, "articles.json", cancellationToken).ConfigureAwait(false);
+            var articles = await DeserializeWithFallbackAsync<List<RaindropItem>>(jsonContent, "articles.json", _logger, cancellationToken).ConfigureAwait(false);
 
             if (articles == null) throw new InvalidOperationException("Failed to deserialize articles JSON data - all deserialization strategies failed.");
 
@@ -150,7 +150,7 @@ public sealed partial class DummyRaindropAPI(IHttpClientFactory httpClientFactor
     /// <param name="fileName">The file name for logging purposes.</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>The deserialized object or null if all strategies fail.</returns>
-    private Task<T?> DeserializeWithFallbackAsync<T>(string jsonContent, string fileName, CancellationToken cancellationToken) where T : class
+    public static Task<T?> DeserializeWithFallbackAsync<T>(string jsonContent, string fileName, ILogger logger, CancellationToken cancellationToken) where T : class
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(jsonContent);
         ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
@@ -158,53 +158,53 @@ public sealed partial class DummyRaindropAPI(IHttpClientFactory httpClientFactor
         // Strategy 1: Try with DefaultOptions (most common case)
         try
         {
-            LogAttemptingDeserialization(_logger, fileName, "DefaultOptions");
+            LogAttemptingDeserialization(logger, fileName, "DefaultOptions");
             var result = JsonSerializer.Deserialize<T>(jsonContent, RaindropJsonSerializerContext.DefaultOptions);
             if (result != null)
             {
-                LogDeserializationSuccess(_logger, fileName, "DefaultOptions");
+                LogDeserializationSuccess(logger, fileName, "DefaultOptions");
                 return Task.FromResult<T?>(result);
             }
         }
         catch (JsonException ex)
         {
-            LogDeserializationAttemptFailed(_logger, ex, fileName, "DefaultOptions");
+            LogDeserializationAttemptFailed(logger, ex, fileName, "DefaultOptions");
         }
 
         // Strategy 2: Try with LenientOptions for malformed JSON
         try
         {
-            LogAttemptingDeserialization(_logger, fileName, "LenientOptions");
+            LogAttemptingDeserialization(logger, fileName, "LenientOptions");
             var result = JsonSerializer.Deserialize<T>(jsonContent, RaindropJsonSerializerContext.LenientOptions);
             if (result != null)
             {
-                LogDeserializationSuccess(_logger, fileName, "LenientOptions");
+                LogDeserializationSuccess(logger, fileName, "LenientOptions");
                 return Task.FromResult<T?>(result);
             }
         }
         catch (JsonException ex)
         {
-            LogDeserializationAttemptFailed(_logger, ex, fileName, "LenientOptions");
+            LogDeserializationAttemptFailed(logger, ex, fileName, "LenientOptions");
         }
 
         // Strategy 3: Try with StrictOptions as last resort
         try
         {
-            LogAttemptingDeserialization(_logger, fileName, "StrictOptions");
+            LogAttemptingDeserialization(logger, fileName, "StrictOptions");
             var result = JsonSerializer.Deserialize<T>(jsonContent, RaindropJsonSerializerContext.StrictOptions);
             if (result != null)
             {
-                LogDeserializationSuccess(_logger, fileName, "StrictOptions");
+                LogDeserializationSuccess(logger, fileName, "StrictOptions");
                 return Task.FromResult<T?>(result);
             }
         }
         catch (JsonException ex)
         {
-            LogDeserializationAttemptFailed(_logger, ex, fileName, "StrictOptions");
+            LogDeserializationAttemptFailed(logger, ex, fileName, "StrictOptions");
         }
 
         // All strategies failed
-        LogAllDeserializationStrategiesFailed(_logger, fileName);
+        LogAllDeserializationStrategiesFailed(logger, fileName);
         return Task.FromResult<T?>(null);
     }
 

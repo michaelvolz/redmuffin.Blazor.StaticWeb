@@ -110,13 +110,13 @@ public partial class Redirect
         var apiResponse = await JsonSerializer.DeserializeAsync<ApiExchangeResponse>(
             responseStream, ApiExchangeRequestContext.Default.ApiExchangeResponse).ConfigureAwait(false);
 
-        if (!string.IsNullOrEmpty(apiResponse?.AccessToken))
+        if (ParseAccessToken(apiResponse, out var token, out var error))
         {
-            await StoreAccessTokenAsync(apiResponse.AccessToken).ConfigureAwait(false);
+            await StoreAccessTokenAsync(token).ConfigureAwait(false);
         }
         else
         {
-            _error = apiResponse?.Error ?? "Failed to retrieve access token from API: No token in response.";
+            _error = error;
             LogFailedToRetrieveAccessToken(Logger, apiResponse?.Error, null);
         }
     }
@@ -154,6 +154,20 @@ public partial class Redirect
         }
 
         _error = apiErrorResponse?.Error ?? $"Token exchange with API failed: {response.StatusCode}. Details: {errorContentString}";
+    }
+
+    public static bool ParseAccessToken(ApiExchangeResponse? response, out string token, out string? error)
+    {
+        if (!string.IsNullOrEmpty(response?.AccessToken))
+        {
+            token = response.AccessToken;
+            error = null;
+            return true;
+        }
+
+        token = string.Empty;
+        error = response?.Error ?? "Failed to retrieve access token from API: No token in response.";
+        return false;
     }
 
     public class ApiExchangeRequest

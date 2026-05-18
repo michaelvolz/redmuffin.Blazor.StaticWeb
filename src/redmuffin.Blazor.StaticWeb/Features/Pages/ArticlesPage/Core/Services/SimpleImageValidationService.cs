@@ -42,6 +42,14 @@ public sealed class SimpleImageValidationService : ISimpleImageValidationService
         LoggerMessage.Define(LogLevel.Warning, new EventId(6, nameof(LogCacheCleanupFailed)),
             "Failed to perform cache cleanup");
 
+    private static readonly (string Keyword, string Label)[] FailureReasons =
+    [
+        ("CORS", "CORS blocked"),
+        ("404", "Image not found"),
+        ("timeout", "Network error"),
+        ("content type", "Invalid format"),
+    ];
+
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IBrowserStorageService _browserStorageService;
     private readonly ILogger<SimpleImageValidationService> _logger;
@@ -68,7 +76,7 @@ public sealed class SimpleImageValidationService : ISimpleImageValidationService
     /// <summary>
     ///     Generates cache key for the image URL.
     /// </summary>
-    private static string GetCacheKey(string imageUrl)
+    public static string GetCacheKey(string imageUrl)
     {
         var urlHash = ComputeUrlHash(imageUrl);
         return CacheKeyPrefix + urlHash;
@@ -108,22 +116,20 @@ public sealed class SimpleImageValidationService : ISimpleImageValidationService
     /// </summary>
     private static string GenerateSimplePlaceholder(string reason)
     {
-        // Standard failure reasons mapping
-        var displayReason = reason switch
-        {
-            var r when r.Contains("CORS", StringComparison.OrdinalIgnoreCase) => "CORS blocked",
-            var r when r.Contains("404", StringComparison.OrdinalIgnoreCase) => "Image not found",
-            var r when r.Contains("timeout", StringComparison.OrdinalIgnoreCase) => "Network error",
-            var r when r.Contains("content type", StringComparison.OrdinalIgnoreCase) => "Invalid format",
-            _ => "Image not available"
-        };
-
+        var displayReason = MapFailureReason(reason);
         var svg = $@"<svg width=""400"" height=""200"" xmlns=""http://www.w3.org/2000/svg"">
   <rect width=""100%"" height=""100%"" fill=""#f5f5f5"" stroke=""#ddd"" stroke-width=""2""/>
   <text x=""50%"" y=""50%"" dominant-baseline=""middle"" text-anchor=""middle"" font-family=""Arial, sans-serif"" font-size=""16"" fill=""#999"">{displayReason}</text>
 </svg>";
 
         return "data:image/svg+xml;base64," + Convert.ToBase64String(Encoding.UTF8.GetBytes(svg));
+    }
+
+    public static string MapFailureReason(string reason)
+    {
+        return FailureReasons
+            .FirstOrDefault(r => reason.Contains(r.Keyword, StringComparison.OrdinalIgnoreCase))
+            .Label ?? "Image not available";
     }
 
     public async Task<ImageValidationResult> ValidateImageAsync(string imageUrl, CancellationToken cancellationToken = default)

@@ -197,26 +197,36 @@ public class BrowserStorageService(ILocalStorageService localStorage, ILogger<Br
         // Sort by last accessed time (oldest first)
         var sortedItems = itemsWithSizes.OrderBy(item => item.LastAccessed).ToList();
 
-        // Calculate current total size
         var currentSize = sortedItems.Sum(item => item.Size);
 
-        // Evict items until we reach the target size
-        foreach (var item in sortedItems)
+        var candidatesToEvict = SelectItemsToEvict(sortedItems, currentSize, targetSizeBytes).ToList();
+        foreach (var (key, size, lastAccessed) in candidatesToEvict)
         {
-            if (currentSize <= targetSizeBytes) break;
-
-            await localStorage.RemoveItemAsync(item.Key, cancellationToken).ConfigureAwait(false);
-            await RemoveFromIndexAsync(item.Key, cancellationToken).ConfigureAwait(false);
-            currentSize -= item.Size;
+            await localStorage.RemoveItemAsync(key, cancellationToken).ConfigureAwait(false);
+            await RemoveFromIndexAsync(key, cancellationToken).ConfigureAwait(false);
             evictedCount++;
 
-            LogEvictedLRUItem(logger, item.Key, item.Size, item.LastAccessed, null);
+            LogEvictedLRUItem(logger, key, size, lastAccessed, null);
         }
 
         if (evictedCount > 0)
             LogLRUEvictionCompleted(logger, evictedCount, sortedItems.Take(evictedCount).Sum(item => item.Size), null);
 
         return evictedCount;
+    }
+
+    public static IEnumerable<(string Key, long Size, DateTime LastAccessed)> SelectItemsToEvict(
+        IReadOnlyList<(string Key, long Size, DateTime LastAccessed)> sortedItems, long totalSize, long targetSizeBytes)
+    {
+        var remaining = totalSize;
+        foreach (var item in sortedItems)
+        {
+            if (remaining <= targetSizeBytes)
+                yield break;
+
+            remaining -= item.Size;
+            yield return item;
+        }
     }
 
     public async Task<int> CleanupExpiredItemsAsync(CancellationToken cancellationToken = default)

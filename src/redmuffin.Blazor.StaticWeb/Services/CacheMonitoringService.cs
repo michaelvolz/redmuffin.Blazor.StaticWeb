@@ -237,7 +237,7 @@ public class CacheMonitoringService : ICacheMonitoringService
         if (healthMetrics.PerformanceIssues.Any()) recommendations.MaintenanceRecommendations.Add("Address performance issues identified");
     }
 
-    private static int CalculateHealthScore(CacheHealthMetrics healthMetrics, CacheStats stats)
+    public static int CalculateHealthScore(CacheHealthMetrics healthMetrics, CacheStats stats)
     {
         var score = 100;
 
