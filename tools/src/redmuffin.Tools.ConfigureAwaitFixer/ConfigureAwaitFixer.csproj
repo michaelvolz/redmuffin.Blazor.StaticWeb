@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>ConfigureAwaitFixer</AssemblyName>
+    <RootNamespace>redmuffin.Tools.ConfigureAwaitFixer</RootNamespace>
+    <IsPackable>true</IsPackable>
+    <PackageId>redmuffin.Tools.ConfigureAwaitFixer</PackageId>
+    <Version>1.0.1</Version>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IsConfigureAwaitFixerProject>true</IsConfigureAwaitFixerProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+  </ItemGroup>
+
+  <!-- Pre-built publish output, committed to repo -->
+  <ItemGroup>
+    <None Include="publish/*"
+          Pack="true"
+          PackagePath="tools/net10.0/any"
+          Visible="false" />
+  </ItemGroup>
+
+  <!-- Targets file -->
+  <ItemGroup>
+        <None Include="build\redmuffin.Tools.ConfigureAwaitFixer.targets"
+          Pack="true"
+          PackagePath="build"
+          Visible="false" />
+  </ItemGroup>
+
+</Project>
