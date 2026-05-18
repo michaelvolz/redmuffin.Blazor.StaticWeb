@@ -20,3 +20,6 @@ the protocols (structural-first order, functional catalog, mutation
 decision tree). rm-guide-csharp-features is the pattern catalog.
 rm-tdd governs test discipline. rm-code-philosophy governs architectural
 judgment. rm-guide-testing provides test patterns.
+rm-uncle-bob-martin-agentic-coding enforces Uncle Bob's
+metrics-driven quality standards (zero survivors, CRAP ≤ 8,
+high-90s coverage).
