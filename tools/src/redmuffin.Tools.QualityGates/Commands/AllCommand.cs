@@ -54,17 +54,17 @@ public static class AllCommand
 
     private static readonly Option<bool?> DupesOption = new("--duplicates")
     {
-        Description = "Run the duplicate code detection gate. Enabled by default. Use --no-duplicates to disable.",
+        Description = "Run the duplicate code detection gate. Enabled by default.",
     };
 
     private static readonly Option<bool?> DepthOption = new("--depth")
     {
-        Description = "Run the structural depth analysis gate. Enabled by default. Use --no-depth to disable.",
+        Description = "Run the structural depth analysis gate. Enabled by default.",
     };
 
     private static readonly Option<bool?> AutoCoverageOption = new("--auto-coverage")
     {
-        Description = "Auto-generate coverage before CRAP analysis. Enabled by default. Use --no-auto-coverage to disable.",
+        Description = "Auto-generate coverage before CRAP analysis. Enabled by default.",
     };
 
     private static readonly Func<ParseResult, Task<int>> AllAction = async parseResult =>
@@ -142,17 +142,20 @@ public static class AllCommand
             return project.FullName;
         }
 
-        return ResolveSourceRoot(solution);
+        if (solution is not null)
+            return ResolveSourceRootFromSolution(solution);
+
+        return ResolveSourceRootFromDiscovery();
     }
 
-    private static string ResolveSourceRoot(FileInfo? solution)
+    private static string ResolveSourceRootFromSolution(FileInfo solution)
     {
-        if (solution is not null)
-        {
-            return Path.Combine(
-                Path.GetDirectoryName(solution.FullName)!, "src");
-        }
+        return Path.Combine(
+            Path.GetDirectoryName(solution.FullName)!, "src");
+    }
 
+    private static string ResolveSourceRootFromDiscovery()
+    {
         var discovered = SlnxProjectDiscovery.Discover(null);
         if (discovered.SourceProjects.Count == 0)
             throw new InvalidOperationException(
