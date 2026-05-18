@@ -158,5 +158,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+  <!-- ConfigureAwaitFixer — auto-fixes CA2007 on dev machine (skipped on CI) -->
+  <ItemGroup Condition="'$(IsConfigureAwaitFixerProject)' != 'true'">
+    <PackageReference Include="redmuffin.Tools.ConfigureAwaitFixer">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 
 </Project>

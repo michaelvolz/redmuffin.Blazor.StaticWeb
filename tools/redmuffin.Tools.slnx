@@ -1,7 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/redmuffin.Tools.QualityGates/redmuffin.Tools.QualityGates.csproj" />
-    <Project Path="src/redmuffin.Tools.ConfigureAwaitAnalyzer/ConfigureAwaitAnalyzer.csproj" />
+    <Project Path="src/redmuffin.Tools.ConfigureAwaitFixer/ConfigureAwaitFixer.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/redmuffin.Tools.QualityGates.Tests/redmuffin.Tools.QualityGates.Tests.csproj" />

@@ -43,6 +43,12 @@
         "resolved": "2.1.0",
         "contentHash": "aHkjNTGIA+Zbdw6RJgSFrbDrCjO0CgqpElqYcvkRSeUhBv2bKarnvU3ep786U7UqrPlArT/B7VmImRibJD0Zrg=="
       },
+      "redmuffin.Tools.ConfigureAwaitFixer": {
+        "type": "Direct",
+        "requested": "[1.0.1, )",
+        "resolved": "1.0.1",
+        "contentHash": "/lzlTRDG5+JOZJ191GRH2eMxmXSzr4UifEdOzST5d6e6UxuGFmpmnfIIF0boyQXsXNHG2wxtmky2ia5NIrLgmQ=="
+      },
       "TUnit": {
         "type": "Direct",
         "requested": "[1.28.7, )",
