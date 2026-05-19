@@ -3,7 +3,8 @@
         <CoreCompileDependsOn>$(CoreCompileDependsOn);ConfigureAwaitFix</CoreCompileDependsOn>
     </PropertyGroup>
 
-    <Target Name="ConfigureAwaitFix" BeforeTargets="CoreCompile"
+    <Target Name="ConfigureAwaitFix" AfterTargets="ResolveReferences"
+            BeforeTargets="CoreCompile"
             Condition="'$(CI)' != 'true' AND '$(GITHUB_ACTIONS)' != 'true'">
         <Message Importance="high" Text="=== ConfigureAwaitFix FIRED ===" />
         <PropertyGroup>

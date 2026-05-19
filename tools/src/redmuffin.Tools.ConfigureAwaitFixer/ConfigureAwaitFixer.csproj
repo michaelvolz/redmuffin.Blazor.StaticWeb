@@ -9,15 +9,53 @@
     <RootNamespace>redmuffin.Tools.ConfigureAwaitFixer</RootNamespace>
     <IsPackable>true</IsPackable>
     <PackageId>redmuffin.Tools.ConfigureAwaitFixer</PackageId>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <DevelopmentDependency>true</DevelopmentDependency>
     <NoWarn>$(NoWarn);NU5128</NoWarn>
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <IsConfigureAwaitFixerProject>true</IsConfigureAwaitFixerProject>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" PrivateAssets="none"
+                      GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <!-- Extract CA2007 analyzer DLLs and BuildHost from .nupkg, and copy fixer to publish -->
+  <Target Name="CopyAnalyzerDll" AfterTargets="Build">
+    <PropertyGroup>
+      <_NupkgPath>$(NuGetPackageRoot)microsoft.codeanalysis.netanalyzers/10.0.300/microsoft.codeanalysis.netanalyzers.10.0.300.nupkg</_NupkgPath>
+      <_WorkspaceNupkg>$(PkgMicrosoft_CodeAnalysis_Workspaces_MSBuild)/microsoft.codeanalysis.workspaces.msbuild.5.3.0.nupkg</_WorkspaceNupkg>
+    </PropertyGroup>
+    <!-- Analyzer DLLs -->
+    <Exec Command="unzip -o -j &quot;$(_NupkgPath)&quot; &quot;analyzers/dotnet/Microsoft.CodeAnalysis.NetAnalyzers.dll&quot; &quot;analyzers/dotnet/cs/Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll&quot; -d &quot;$(OutputPath)&quot;"
+          ContinueOnError="true" />
+    <Exec Command="unzip -o -j &quot;$(_NupkgPath)&quot; &quot;analyzers/dotnet/Microsoft.CodeAnalysis.NetAnalyzers.dll&quot; &quot;analyzers/dotnet/cs/Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll&quot; -d &quot;$(ProjectDir)/publish/&quot;"
+          ContinueOnError="true"
+          Condition="Exists('$(ProjectDir)/publish/')" />
+    <!-- MSBuildWorkspace BuildHost (needed for OpenProjectAsync) -->
+    <Exec Command="unzip -o -j &quot;$(_WorkspaceNupkg)&quot; &quot;contentFiles/any/any/BuildHost-netcore/*&quot; -d &quot;$(OutputPath)BuildHost-netcore/&quot;"
+          ContinueOnError="true" />
+    <Exec Command="unzip -o -j &quot;$(_WorkspaceNupkg)&quot; &quot;contentFiles/any/any/BuildHost-netcore/*&quot; -d &quot;$(ProjectDir)/publish/BuildHost-netcore/&quot;"
+          ContinueOnError="true"
+          Condition="Exists('$(ProjectDir)/publish/')" />
+    <!-- Copy fixer output DLL to publish directory -->
+    <Exec Command="cp &quot;$(OutputPath)/ConfigureAwaitFixer.dll&quot; &quot;$(ProjectDir)/publish/ConfigureAwaitFixer.dll&quot;"
+          Condition="Exists('$(ProjectDir)/publish/')" />
+    <Exec Command="cp &quot;$(OutputPath)/ConfigureAwaitFixer&amp;&quot; &quot;$(ProjectDir)/publish/ConfigureAwaitFixer&amp;&quot;"
+          Condition="Exists('$(ProjectDir)/publish/') And Exists('$(OutputPath)/ConfigureAwaitFixer&amp;')" />
+  </Target>
+
+  <!-- README (packed as PackageReadmeFile) -->
+  <ItemGroup>
+    <None Include="README.md"
+          Pack="true"
+          PackagePath="\"
+          Visible="false" />
   </ItemGroup>
 
   <!-- Pre-built publish output, committed to repo -->
@@ -26,13 +64,9 @@
           Pack="true"
           PackagePath="tools/net10.0/any"
           Visible="false" />
-  </ItemGroup>
-
-  <!-- Targets file -->
-  <ItemGroup>
-        <None Include="build\redmuffin.Tools.ConfigureAwaitFixer.targets"
+    <None Include="publish/BuildHost-netcore/*"
           Pack="true"
-          PackagePath="build"
+          PackagePath="tools/net10.0/any/BuildHost-netcore"
           Visible="false" />
   </ItemGroup>
 
