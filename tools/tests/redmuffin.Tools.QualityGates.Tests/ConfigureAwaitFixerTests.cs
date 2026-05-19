@@ -96,6 +96,77 @@ public sealed class ConfigureAwaitFixerTests
         await Assert.That(count).IsEqualTo(1);
     }
 
+    [Test]
+    public async Task should_return_error_when_no_csproj_found()
+    {
+        using var temp = new TempDir();
+        var (exitCode, stderr) = await RunFixerWithOutputAsync(temp.Path).ConfigureAwait(false);
+        await Assert.That(exitCode).IsEqualTo(1);
+        await Assert.That(stderr).Contains("No .csproj found");
+    }
+
+    [Test]
+    public async Task should_emit_timer_when_zero_violations()
+    {
+        using var temp = new TempDir();
+        await CreateTestProjectAsync(temp.Path).ConfigureAwait(false);
+        await File.WriteAllTextAsync(Path.Combine(temp.Path, "TestClass.cs"),
+            "public class TestClass { }").ConfigureAwait(false);
+
+        var (exitCode, stderr) = await RunFixerWithOutputAsync(temp.Path).ConfigureAwait(false);
+        await Assert.That(exitCode).IsEqualTo(0);
+        await Assert.That(stderr).Contains("[ConfigureAwaitFixer] Completed in");
+    }
+
+    [Test]
+    public async Task should_fix_multiple_awaits_in_same_file()
+    {
+        using var temp = new TempDir();
+        await CreateTestProjectAsync(temp.Path).ConfigureAwait(false);
+        var testFile = Path.Combine(temp.Path, "TestClass.cs");
+        await File.WriteAllTextAsync(testFile, """
+            using System.Threading.Tasks;
+            public class TestClass
+            {
+                public async Task DoAsync()
+                {
+                    await Task.Delay(1);
+                    await Task.Delay(2);
+                    await Task.Delay(3);
+                }
+            }
+            """).ConfigureAwait(false);
+
+        var exitCode = await RunFixerAsync(temp.Path).ConfigureAwait(false);
+        await Assert.That(exitCode).IsEqualTo(0);
+        var fixedText = await File.ReadAllTextAsync(testFile).ConfigureAwait(false);
+        await Assert.That(CountSubstrings(fixedText, ".ConfigureAwait(false)")).IsEqualTo(3);
+    }
+
+    [Test]
+    public async Task should_leave_configureawait_true_unchanged()
+    {
+        using var temp = new TempDir();
+        await CreateTestProjectAsync(temp.Path).ConfigureAwait(false);
+        var testFile = Path.Combine(temp.Path, "TestClass.cs");
+        await File.WriteAllTextAsync(testFile, """
+            using System.Threading.Tasks;
+            public class TestClass
+            {
+                public async Task DoAsync()
+                {
+                    await Task.Delay(100).ConfigureAwait(true);
+                }
+            }
+            """).ConfigureAwait(false);
+
+        var exitCode = await RunFixerAsync(temp.Path).ConfigureAwait(false);
+        await Assert.That(exitCode).IsEqualTo(0);
+        var fixedText = await File.ReadAllTextAsync(testFile).ConfigureAwait(false);
+        await Assert.That(fixedText).Contains(".ConfigureAwait(true)");
+        await Assert.That(CountSubstrings(fixedText, ".ConfigureAwait(")).IsEqualTo(1);
+    }
+
     private static async Task CreateTestProjectAsync(string dir)
     {
         var csproj = Path.Combine(dir, "TestProject.csproj");
@@ -118,6 +189,12 @@ public sealed class ConfigureAwaitFixerTests
 
     private static async Task<int> RunFixerAsync(string targetDir)
     {
+        var (exitCode, _) = await RunFixerWithOutputAsync(targetDir).ConfigureAwait(false);
+        return exitCode;
+    }
+
+    private static async Task<(int ExitCode, string Stderr)> RunFixerWithOutputAsync(string targetDir)
+    {
         var proc = Process.Start(new ProcessStartInfo
         {
             FileName = "dotnet",
@@ -126,8 +203,9 @@ public sealed class ConfigureAwaitFixerTests
             RedirectStandardError = true,
         })!;
 
+        var stderr = await proc.StandardError.ReadToEndAsync().ConfigureAwait(false);
         await proc.WaitForExitAsync().ConfigureAwait(false);
-        return proc.ExitCode;
+        return (proc.ExitCode, stderr);
     }
 
     private static int CountSubstrings(string text, string substring)
