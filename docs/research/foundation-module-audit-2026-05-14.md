@@ -41,7 +41,7 @@ library files are modified.
 | `foundation-callout`            |  ✅   | `callout` + alert/success/warning/primary/secondary 30× in 6 files                                  |
 | `foundation-card`               |  ✅   | `card`, `card-divider`, `card-section` in both Articles + Videos                                    |
 | `foundation-prototype-classes`  |  ✅   | `padding-*`, `margin-*` utility classes                                                             |
-| `foundation-forms`              |  ❌   | No Foundation form classes or mixins used                                                           |
+| `foundation-forms`              |  ✅   | `input-group`, `input-group-field`, `input-group-label` in FoundationExamples.razor                 |
 | `foundation-grid`               |  ❌   | Legacy grid — not used                                                                              |
 | `foundation-flex-grid`          |  ❌   | Legacy flex grid — not used                                                                         |
 | `foundation-close-button`       |  ❌   | No close buttons                                                                                    |
@@ -51,7 +51,7 @@ library files are modified.
 | `foundation-switch`             |  ❌   | No switches                                                                                         |
 | `foundation-table`              |  ❌   | No tables styled via Foundation                                                                     |
 | `foundation-badge`              |  ❌   | No badges                                                                                           |
-| `foundation-breadcrumbs`        |  ❌   | No breadcrumbs                                                                                      |
+| `foundation-breadcrumbs`        |  ✅   | `breadcrumbs` in NavMenu.razor (main navigation bar)                                                |
 | `foundation-dropdown`           |  ❌   | No dropdowns                                                                                        |
 | `foundation-pagination`         |  ❌   | No pagination                                                                                       |
 | `foundation-tooltip`            |  ❌   | No tooltips                                                                                         |
@@ -75,7 +75,7 @@ library files are modified.
 | `foundation-flex-classes`       |  ❌   | One `flex-direction: column` in DebugNavigation.razor — inline style, not Foundation class          |
 | `foundation-visibility-classes` |  ❌   | No `show-for-*`, `hide-for-*` usage                                                                 |
 
-**Summary**: 8 used out of ~38 modules (21%). 30 modules shipping unused CSS.
+**Summary**: 10 used out of ~38 modules (26%). 28 modules shipping unused CSS.
 
 ## Files by Foundation Class Count
 
@@ -212,6 +212,9 @@ Without it, xy-grid falls back to legacy float grid classes.
 - Build: 0 errors, 0 warnings
 - Tests: 334/334 pass
 - Compiled CSS: 152,127 bytes → 100,523 bytes (34% reduction)
+- 2026-05-19: Gap fix — added `foundation-breadcrumbs` and `foundation-forms`
+  (both were omitted in the original audit, breaking NavMenu and FoundationExamples).
+  Compiled CSS: 105,905 bytes (now 10 of ~38 modules).
 - Deployment: site renders correctly with all Foundation-dependent pages intact
 
 ## Foundation 6 Deprecation Context
