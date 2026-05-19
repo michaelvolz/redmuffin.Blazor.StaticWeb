@@ -1,30 +1,19 @@
 // =============================================================================
 // Main Application SCSS Entry Point
 // =============================================================================
-// This is the main SCSS entry point using the modern @use directive system.
-// All styles are now properly organized in modules with namespace protection.
+// Simplified 4-folder structure: abstracts, base, components, vendor.
+// Foundation lib lives in lib/ — compiled via dart-sass CLI only.
 // =============================================================================
-
-// All @use directives must come first (SCSS module system rule)
 
 @use "../lib/foundation-sites/scss/foundation" as foundation;
 
-@use "abstracts/index" as abstracts; // Variables, mixins, functions
-@use "base/index" as base; // Base styles (reset, global, typography)
-@use "components/index" as components; // Reusable components
-@use "layout/index" as layout; // Layout structures
-@use "features/branding/index" as branding; // Branding features
-@use "features/content/index" as content; // Content features
-@use "features/layout/index" as layout-features; // Layout features
-@use "features/shared/index" as shared; // Shared features
-@use "utilities/index" as utils; // Utility classes
-
-@use "accessibility"; // Accessibility utility classes and enhancements
+@use "abstracts/index" as abstracts;
+@use "base/index" as base;
+@use "components/index" as components;
 
 // =============================================================================
 // FOUNDATION CONFIGURATION & INCLUDES
 // =============================================================================
-// Foundation color palette — maps project colors to Foundation role names
 $foundation-palette: (
   "primary": abstracts.$steel-blue,
   "secondary": abstracts.$ultra-violet,
@@ -37,9 +26,7 @@ $foundation-palette: (
 );
 
 // Foundation module includes — only the modules we actually use
-// (audit: 2026-05-14, 8 out of ~38 modules, drops ~100KB unused CSS)
-// Used: global-styles, xy-grid, typography, button, button-group, callout,
-//       card, prototype-classes (for spacing).
+// (audit: 2026-05-14, 8 out of ~38 modules, +2 after gap fix 2026-05-19)
 $global-flexbox: true !global;
 @include foundation.foundation-global-styles;
 @include foundation.foundation-xy-grid-classes;
