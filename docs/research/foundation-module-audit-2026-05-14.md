@@ -227,7 +227,11 @@ by the volunteer maintainers.
 
 ## Future Work
 
-If Foundation is removed entirely (replaced with modern CSS Grid/Flexbox and
-custom component styles), the ~100KB residual CSS can be eliminated. Estimated
-effort: 3-5 days for a full migration, rewriting ~300 lines of owned SCSS
+If Foundation is removed entirely, the ~106KB residual CSS can be eliminated.
+The recommended replacement is **daisyUI** (free, CSS-only, 65 components,
+semantic class names — `btn`, `card`, `alert`, `breadcrumbs` — matching
+Foundation's philosophy on modern Tailwind v4 infrastructure).
+
+See [SCSS, Foundation, Tailwind, and daisyUI — Landscape Analysis 2026](scss-foundation-tailwind-daisyui-landscape-2026-05-19.md)
+for full component mapping, migration feasibility, and decision framework.
 that currently extends Foundation internals.

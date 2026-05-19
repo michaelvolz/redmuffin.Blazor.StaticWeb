@@ -595,3 +595,9 @@ and using modern CSS features directly:
 [w3c-dtcg]: https://www.w3.org/community/design-tokens/
 [reddit-v9-roadmap]: https://www.reddit.com/r/Blazor/comments/1ljcvbn/future_of_blazor/
 [tailwind-hot-reload]: https://medium.com/@pinyo.rungoral/tailwind-css-in-net-9-blazor-fixing-hot-reload-issues-5ccc49a37954
+
+## 13. Related Research
+
+- [SCSS, Foundation, Tailwind, and daisyUI — Landscape Analysis 2026](scss-foundation-tailwind-daisyui-landscape-2026-05-19.md) —
+  Updated 2026 landscape with Foundation-vs-daisyUI component mapping,
+  migration feasibility, and decision framework.

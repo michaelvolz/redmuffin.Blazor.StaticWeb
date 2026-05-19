@@ -355,6 +355,10 @@ trim), `test/` (standalone test).
 
 CSS output unchanged (105,905 bytes). Build 0/0.
 
+**See also**: [SCSS, Foundation, Tailwind, and daisyUI — Landscape Analysis 2026](scss-foundation-tailwind-daisyui-landscape-2026-05-19.md)
+for the broader ecosystem context (SCSS declining, Foundation is dead,
+daisyUI as Foundation successor).
+
 ## Sources
 
 1. Sass Blog — "LibSass Has Reached End-Of-Life" (Oct 23, 2025):
