@@ -159,7 +159,7 @@
     </PackageReference>
   </ItemGroup>
   <!-- ConfigureAwaitFixer — auto-fixes CA2007 on dev machine (skipped on CI) -->
-  <ItemGroup Condition="'$(IsConfigureAwaitFixerProject)' != 'true'">
+  <ItemGroup Condition="'$(CI)' == '' AND '$(GITHUB_ACTIONS)' == '' AND '$(IsConfigureAwaitFixerProject)' != 'true'">
     <PackageReference Include="redmuffin.Tools.ConfigureAwaitFixer">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
