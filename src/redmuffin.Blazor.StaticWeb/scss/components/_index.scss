@@ -1,8 +1,8 @@
 // =============================================================================
 // Components Index
 // =============================================================================
-// This file forwards all component styles using the modern @forward directive.
-// Components are reusable UI elements that extend Foundation's component system.
+// Forwards all component styles. Components are reusable UI elements
+// and page-specific styles that extend Foundation's component system.
 // =============================================================================
 
 @forward "buttons";
@@ -11,3 +11,12 @@
 @forward "masonry";
 @forward "navigation";
 @forward "refresh-badge";
+@forward "grid";
+@forward "privacy-notice";
+@forward "logo";
+@forward "site-header";
+@forward "articles";
+@forward "videos";
+@forward "article-image-display";
+@forward "shimmer-loading-effect";
+@forward "page-load-speed";
