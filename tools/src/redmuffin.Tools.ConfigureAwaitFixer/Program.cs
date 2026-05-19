@@ -1,53 +1,178 @@
+using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Globalization;
+using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.MSBuild;
 
-var dir = args.Length > 0 ? args[0] : Environment.CurrentDirectory;
+if (string.Equals(
+        Environment.GetEnvironmentVariable("CI"),
+        "true",
+        StringComparison.OrdinalIgnoreCase))
+    return 0;
 
-if (!Directory.Exists(dir))
+var stopwatch = Stopwatch.StartNew();
+string? singleFile = null;
+var targetDir = Environment.CurrentDirectory;
+
+// Parse --file <path> flag
+for (var i = 0; i < args.Length; i++)
 {
-    await Console.Error.WriteLineAsync($"Directory not found: {dir}").ConfigureAwait(false);
+    if (string.Equals(args[i], "--file", StringComparison.Ordinal))
+    {
+        if (i + 1 < args.Length)
+        {
+            singleFile = Path.GetFullPath(args[i + 1]);
+            targetDir = Path.GetDirectoryName(singleFile)!;
+            i++;
+        }
+        else
+        {
+            await Console.Error.WriteLineAsync("--file requires a path argument").ConfigureAwait(false);
+            return 1;
+        }
+    }
+    else
+    {
+        targetDir = args[i];
+    }
+}
+
+// Walk up from targetDir to find .csproj
+var csprojFiles = new List<string>();
+var searchDir = targetDir;
+while (searchDir is not null)
+{
+    csprojFiles.AddRange(Directory.EnumerateFiles(searchDir, "*.csproj", SearchOption.TopDirectoryOnly));
+    if (csprojFiles.Count > 0)
+        break;
+    searchDir = Path.GetDirectoryName(searchDir);
+}
+
+if (csprojFiles.Count == 0)
+{
+    await Console.Error.WriteLineAsync($"No .csproj found above {targetDir}").ConfigureAwait(false);
     return 1;
 }
 
-var csFiles = Directory.EnumerateFiles(dir, "*.cs", SearchOption.AllDirectories)
-    .Where(IsSourceFile)
+var projectPath = csprojFiles[0];
+
+// Load the official CA2007 analyzer
+// Load the official CA2007 analyzer from both NetAnalyzers assemblies
+var analyzerAssemblies = new[]
+{
+    Path.Combine(AppContext.BaseDirectory, "Microsoft.CodeAnalysis.NetAnalyzers.dll"),
+    Path.Combine(AppContext.BaseDirectory, "Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll"),
+};
+
+var analyzers = ImmutableArray<DiagnosticAnalyzer>.Empty;
+foreach (var dll in analyzerAssemblies)
+{
+    if (!File.Exists(dll))
+    {
+        await Console.Error.WriteLineAsync($"Analyzer DLL not found: {dll}").ConfigureAwait(false);
+        return 1;
+    }
+
+    var assembly = Assembly.LoadFrom(dll);
+    var loaded = assembly.GetTypes()
+        .Where(t => typeof(DiagnosticAnalyzer).IsAssignableFrom(t) && !t.IsAbstract)
+        .Select(t => (DiagnosticAnalyzer)Activator.CreateInstance(t)!);
+    analyzers = analyzers.AddRange(loaded);
+}
+
+if (analyzers.IsEmpty)
+{
+    await Console.Error.WriteLineAsync("No DiagnosticAnalyzer types found in analyzer DLL.").ConfigureAwait(false);
+    return 1;
+}
+
+// Load the project and get CA2007 diagnostics
+using var workspace = MSBuildWorkspace.Create();
+var project = await workspace.OpenProjectAsync(projectPath).ConfigureAwait(false);
+var compilation = await project.GetCompilationAsync().ConfigureAwait(false);
+if (compilation is null)
+{
+    await Console.Error.WriteLineAsync($"Failed to get compilation for {projectPath}").ConfigureAwait(false);
+    return 1;
+}
+
+var diagnostics = (await compilation
+        .WithAnalyzers(analyzers)
+        .GetAnalyzerDiagnosticsAsync()
+        .ConfigureAwait(false))
+    .Where(d => string.Equals(d.Id, "CA2007", StringComparison.Ordinal))
     .ToList();
 
-if (csFiles.Count == 0)
+if (diagnostics.Count == 0)
+{
+    stopwatch.Stop();
+    await Console.Error.WriteLineAsync(
+        $"[ConfigureAwaitFixer] Completed in {stopwatch.Elapsed.TotalSeconds.ToString("F3", CultureInfo.InvariantCulture)}s")
+        .ConfigureAwait(false);
     return 0;
+}
+
+// Group diagnostics by file and apply fixes
+var diagnosticsByFile = diagnostics
+    .Where(d => d.Location.SourceTree is not null
+        && IsSourceFile(d.Location.SourceTree.FilePath)
+        && (singleFile is null
+            || string.Equals(d.Location.SourceTree.FilePath, singleFile, StringComparison.Ordinal)))
+    .GroupBy(d => d.Location.SourceTree!.FilePath, StringComparer.Ordinal)
+    .ToList();
 
 var totalFilesFixed = 0;
 var totalAwaitsFixed = 0;
 
-foreach (var file in csFiles)
+foreach (var fileGroup in diagnosticsByFile)
 {
-    var text = await File.ReadAllTextAsync(file).ConfigureAwait(false);
-    var tree = CSharpSyntaxTree.ParseText(text, path: file);
-    var root = tree.GetCompilationUnitRoot();
+    var tree = fileGroup.First().Location.SourceTree!;
+    var root = await tree.GetRootAsync().ConfigureAwait(false);
+    var newRoot = root;
 
-    var awaits = root.DescendantNodes()
-        .OfType<AwaitExpressionSyntax>()
-        .Where(e => !HasConfigureAwait(e) && !IsTestAssertion(e))
-        .ToList();
+    foreach (var diagnostic in fileGroup
+        .OrderByDescending(d => d.Location.SourceSpan.Start))
+    {
+        var found = root.FindNode(diagnostic.Location.SourceSpan);
+        var awaitExpr = found.AncestorsAndSelf()
+            .OfType<AwaitExpressionSyntax>()
+            .FirstOrDefault();
 
-    if (awaits.Count == 0)
-        continue;
+        if (awaitExpr is null || HasConfigureAwait(awaitExpr))
+            continue;
 
-    var newRoot = root.ReplaceNodes(
-        awaits,
-        (original, _) => AddConfigureAwait(original));
+        // Find the same node in newRoot (which may have been modified by prior fixes)
+        var nodeInNewRoot = newRoot.FindNode(awaitExpr.Span);
+        newRoot = newRoot.ReplaceNode(nodeInNewRoot, AddConfigureAwait((AwaitExpressionSyntax)nodeInNewRoot));
+        totalAwaitsFixed++;
+    }
 
     var newText = newRoot.GetText().ToString();
     if (string.Equals(newText, root.GetText().ToString(), StringComparison.Ordinal))
         continue;
 
-    await File.WriteAllTextAsync(file, newText).ConfigureAwait(false);
+    // Verify the fix parses
+    var parsed = CSharpSyntaxTree.ParseText(newText, path: fileGroup.Key);
+    var parseErrors = parsed.GetDiagnostics()
+        .Where(d => d.Severity == DiagnosticSeverity.Error)
+        .ToList();
+    if (parseErrors.Count > 0)
+    {
+        await Console.Error.WriteLineAsync(
+            $"Parse error after fix in {fileGroup.Key}: {parseErrors[0].Id} {parseErrors[0].GetMessage()} — skipping write")
+            .ConfigureAwait(false);
+        totalAwaitsFixed -= fileGroup.Count();
+        continue;
+    }
+
+    await File.WriteAllTextAsync(fileGroup.Key, newText).ConfigureAwait(false);
     await Console.Error.WriteLineAsync(
-        $"Fixed {awaits.Count.ToString(CultureInfo.InvariantCulture)} await(s) in {file}").ConfigureAwait(false);
+        $"Fixed {fileGroup.Count().ToString(CultureInfo.InvariantCulture)} await(s) in {fileGroup.Key}").ConfigureAwait(false);
     totalFilesFixed++;
-    totalAwaitsFixed += awaits.Count;
 }
 
 if (totalFilesFixed > 0)
@@ -57,10 +182,22 @@ if (totalFilesFixed > 0)
         .ConfigureAwait(false);
 }
 
+stopwatch.Stop();
+var elapsed = stopwatch.Elapsed.TotalSeconds.ToString("F3", CultureInfo.InvariantCulture);
+await Console.Error.WriteLineAsync(
+    $"[ConfigureAwaitFixer] Completed in {elapsed}s")
+    .ConfigureAwait(false);
+
 return 0;
 
 static bool IsSourceFile(string path)
 {
+    var fileName = Path.GetFileName(path);
+    if (fileName.EndsWith(".Designer.cs", StringComparison.Ordinal)
+        || fileName.EndsWith(".g.cs", StringComparison.Ordinal)
+        || fileName.EndsWith("_AssemblyInfo.cs", StringComparison.Ordinal))
+        return false;
+
     var dirName = Path.GetDirectoryName(path) ?? string.Empty;
     return !dirName.Contains("obj", StringComparison.Ordinal)
         && !dirName.Contains("bin", StringComparison.Ordinal);
@@ -73,44 +210,6 @@ static bool HasConfigureAwait(AwaitExpressionSyntax expr)
         && string.Equals(
             member.Name.Identifier.Text,
             "ConfigureAwait",
-            StringComparison.Ordinal);
-}
-
-/// <summary>
-///     Skip awaits on test assertion chains (TUnit, xUnit, NUnit).
-///     These return assertion-builders that are not real tasks — adding
-///     <c>.ConfigureAwait(false)</c> would produce a type error.
-/// </summary>
-static bool IsTestAssertion(AwaitExpressionSyntax expr)
-{
-    return StartsWithAssertChain(expr.Expression);
-}
-
-static bool StartsWithAssertChain(ExpressionSyntax expression)
-{
-    // Walk through member access and invocation chains to find the root identifier.
-    // Assert.That(...).IsEmpty() → invocation(IsEmpty) → memberAccess(That) → identifier(Assert)
-    while (true)
-    {
-        if (expression is MemberAccessExpressionSyntax memberAccess)
-        {
-            expression = memberAccess.Expression;
-        }
-        else if (expression is InvocationExpressionSyntax invocation)
-        {
-            expression = invocation.Expression;
-        }
-        else
-        {
-            break;
-        }
-    }
-
-    // The root of the chain should be an identifier like "Assert"
-    return expression is IdentifierNameSyntax identifier
-        && string.Equals(
-            identifier.Identifier.Text,
-            "Assert",
             StringComparison.Ordinal);
 }
 
