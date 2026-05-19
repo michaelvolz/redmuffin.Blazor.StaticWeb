@@ -362,6 +362,17 @@
         ".razor"
       ]
     },
+    "configureawait-fixer": {
+      "command": [
+        "dotnet",
+        "/home/flynn/.nuget/packages/redmuffin.tools.configureawaitfixer/1.0.2/tools/net10.0/any/ConfigureAwaitFixer.dll",
+        "--file",
+        "$FILE"
+      ],
+      "extensions": [
+        ".cs"
+      ]
+    },
     "prettier": {
       "command": [
         "prettier",
