@@ -1,0 +1,90 @@
+// =============================================================================
+// Site Header Layout Styles
+// =============================================================================
+// This file contains site header layout styles that work with Foundation's
+// grid system and breakpoint utilities using modern @use directives.
+// =============================================================================
+
+@use "../../lib/foundation-sites/scss/foundation" as foundation;
+@use "../abstracts/variables" as vars;
+
+.site-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: vars.$header-spacing;
+  margin-bottom: 0;
+
+  .logo-container {
+    margin-bottom: vars.$logo-nav-spacing;
+
+    .logo {
+      @include foundation.breakpoint(small only) {
+        font-size: vars.$logo-font-size-small;
+      }
+      @include foundation.breakpoint(medium) {
+        font-size: vars.$logo-font-size-medium;
+      }
+      @include foundation.breakpoint(large) {
+        font-size: vars.$logo-font-size-large;
+      }
+    }
+  }
+
+  nav {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 0;
+
+    ul.breadcrumbs {
+      justify-content: flex-start;
+      flex-wrap: wrap;
+      margin: 0;
+      padding: 0;
+
+      @include foundation.breakpoint(small only) {
+        font-size: vars.$nav-font-size-small;
+        li {
+          padding: vars.$nav-compact-spacing vars.$nav-item-spacing
+            vars.$nav-compact-spacing 0;
+          margin: 0;
+          i.fa {
+            font-size: vars.$nav-icon-size-small;
+            margin-right: calc(vars.$nav-compact-spacing * 1.25);
+          }
+        }
+      }
+
+      @include foundation.breakpoint(medium) {
+        font-size: vars.$nav-font-size-medium;
+        li {
+          padding: calc(vars.$nav-compact-spacing * 1.25) vars.$nav-item-spacing
+            calc(vars.$nav-compact-spacing * 1.25) 0;
+          margin: 0;
+          i.fa {
+            font-size: vars.$nav-icon-size-medium;
+            margin-right: calc(vars.$nav-item-spacing * 0.5);
+          }
+        }
+      }
+    }
+  }
+}
+
+main {
+  padding-top: vars.$header-content-spacing;
+  padding-left: vars.$header-spacing;
+  padding-right: vars.$header-spacing;
+
+  @include foundation.breakpoint(small only) {
+    padding-top: vars.$header-content-spacing;
+  }
+  @include foundation.breakpoint(medium) {
+    padding-top: vars.$header-content-spacing;
+  }
+  @include foundation.breakpoint(large) {
+    padding-top: vars.$header-content-spacing;
+  }
+}
