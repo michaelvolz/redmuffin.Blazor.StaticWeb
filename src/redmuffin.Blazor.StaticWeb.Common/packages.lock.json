@@ -43,6 +43,12 @@
         "resolved": "17.14.15",
         "contentHash": "mXQPJsbuUD2ydq4/ffd8h8tSOFCXec+2xJOVNCvXjuMOq/+5EKHq3D2m2MC2+nUaXeFMSt66VS/J4HdKBixgcw=="
       },
+      "redmuffin.Tools.ConfigureAwaitFixer": {
+        "type": "Direct",
+        "requested": "[1.0.2, )",
+        "resolved": "1.0.2",
+        "contentHash": "ggK3YlSRIHpxK4AoAKGgm6eEZfR+vAGWpe+wvbeJ+9j/qzuvtlM8H5hwgVkzr7zQOPUEhKcGCf/VWTMNxrR5YA=="
+      },
       "Roslynator.Analyzers": {
         "type": "Direct",
         "requested": "[4.15.0, )",
