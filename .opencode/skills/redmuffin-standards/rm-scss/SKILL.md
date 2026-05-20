@@ -1,9 +1,13 @@
 ---
 name: rm-scss
-description: "SCSS architecture, design system philosophy (Foundation-inspired naming and mobile-first principles), partial conventions, build pipeline, and component styling patterns. Use when writing SCSS, creating new partials, organizing styles, or making design system decisions."
+description: "SCSS architecture, design system philosophy (Foundation-inspired naming and mobile-first principles), partial conventions, build pipeline, and component styling patterns. Use when writing SCSS, creating new partials, organizing styles, or making design system decisions. NOTE: SCSS pipeline is being phased out in favor of daisyUI v5 + Tailwind CSS v4. See rm-ui-styling and docs/research/daisyui-* for migration details. SCSS rules here remain authoritative until migration is complete."
 ---
 
 # rm-scss
+
+> **Migration notice**: This skill describes the current SCSS pipeline (Foundation 6 + dart-sass). The project is migrating to daisyUI v5 + Tailwind CSS v4 — a CSS-only framework that replaces SCSS entirely. During migration, this skill remains the source of truth for existing SCSS code. New components should use daisyUI classes (see `rm-ui-styling`). Post-migration, this skill will be archived.
+>
+> Research: `docs/research/daisyui-blazor-wasm-integration.md`, `docs/research/daisyui-long-term-styling-evaluation.md`, `docs/research/scss-foundation-tailwind-daisyui-landscape-2026-05-19.md`
 
 ## Design Philosophy
 

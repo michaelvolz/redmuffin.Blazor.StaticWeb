@@ -316,3 +316,10 @@ When the trigger fires (dart-sass 4.0 or a critical Foundation bug), migrate in 
 - [Masuga — Converting Foundation's Grid to Tailwind](https://www.gomasuga.com/articles/converting-foundations-grid-to-tailwind)
 - [Tailwind CSS Responsive Design Docs](https://tailwindcss.com/docs/responsive-design)
 - [Tailwind Plus UI Blocks](https://tailwindcss.com/plus/ui-blocks/)
+
+## Related Research (2026-05-20)
+
+Subsequent research expanded on this landscape analysis:
+
+- **[daisyUI + Blazor WASM Integration](daisyui-blazor-wasm-integration.md)** — Full integration feasibility: CDN dev workflow, conditional loading, CLI performance benchmarks (5ms incremental rebuilds), CSS isolation analysis, known issues, migration plan
+- **[daisyUI Long-Term Styling Evaluation](daisyui-long-term-styling-evaluation.md)** — Multi-vector evaluation: project health (daisyUI 41k stars, Tailwind Labs 75% layoffs), bus factor analysis, decision matrix (daisyUI scores 42/55 vs Foundation 26), multi-project standardization strategy
