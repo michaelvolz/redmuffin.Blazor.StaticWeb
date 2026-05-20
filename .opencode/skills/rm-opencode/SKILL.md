@@ -168,6 +168,48 @@ global AGENTS.md §Secrets & Supply Chain for the full policy). If a new
 OpenCode release falls inside the window, the update is delayed until the age
 threshold passes. Wait for blocked updates.
 
+### snippets — text expansion plugin
+
+Expands `#hashtag` shortcuts in user messages into reusable text blocks.
+Installed as an npm plugin at `~/.cache/opencode/packages/opencode-snippets@latest/`.
+
+**Snippet locations:** `.md` files in `~/.config/opencode/snippet/` (primary,
+singular) or `~/.config/opencode/snippets/` (alternate, plural). Project-level
+variants at `.opencode/snippet/` and `.opencode/snippets/` override global
+versions when present.
+
+**Config:** `~/.config/opencode/snippet/config.jsonc` — logging, experimental
+features (skill rendering, skill loading, inject blocks).
+
+**Logs:** `~/.config/opencode/logs/snippets/daily/YYYY-MM-DD.log`
+
+**Format:** filename minus `.md` is the primary hashtag. Optional YAML frontmatter
+with `aliases:` (list) and `description:`.
+
+```md
+---
+aliases:
+  - short
+  - alt
+description: What this snippet does
+---
+
+Content expanded when user types #hashtag.
+```
+
+**Features:**
+
+- `#other` — include another snippet inline (recursive, max depth 15)
+- `` !`cmd` `` — shell command substitution, output injected into expansion
+- `<prepend>` / `<append>` blocks — move section content to message start or end
+
+**Experimental (disabled by default):** inject blocks (`<inject>...</inject>`
+for persistent hidden context), skill rendering (`<skill>name</skill>`),
+skill loading (`#skill(name)`). Enable in config per-feature.
+
+**Commands:** `/snippet add <name> [content]`, `/snippet list`, `/snippet delete <name>`.
+Use `--project` flag for project-scoped snippets.
+
 ---
 
 ## Skill & Agent Conventions
