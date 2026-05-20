@@ -103,6 +103,35 @@ export function computeSessionCounts(
   return counts;
 }
 
+// --- Stash info ---
+
+export interface StashInfo {
+  count: number;
+  latestFileCount: number;
+  /** Unix timestamp of the oldest stash (for age-based coloring). null when no stashes. */
+  oldestTimestamp: number | null;
+}
+
+/**
+ * Parse stash list output (lines of Unix timestamps from `git stash list --format="%ct"`)
+ * and latest file count. Returns null when zero stashes exist.
+ */
+export function buildStashInfo(
+  timestampsOutput: string,
+  latestShowOutput: string,
+): StashInfo | null {
+  const timestamps = timestampsOutput.trim().split("\n").filter(Boolean).map(Number).filter((n) => !isNaN(n));
+  if (timestamps.length === 0) return null;
+  const latestFileCount = latestShowOutput.trim()
+    ? latestShowOutput.trim().split("\n").length
+    : 0;
+  return {
+    count: timestamps.length,
+    latestFileCount,
+    oldestTimestamp: Math.min(...timestamps),
+  };
+}
+
 // --- Ahead/behind parsing ---
 
 export interface AheadBehind {

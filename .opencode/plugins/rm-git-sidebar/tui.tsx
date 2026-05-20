@@ -13,8 +13,10 @@ import {
   computeSessionCounts,
   parseGitCounts,
   parseAheadBehind,
+  buildStashInfo,
   type AheadBehind,
   type GitCounts,
+  type StashInfo,
   type ThemeToken,
 } from "./git";
 
@@ -27,13 +29,20 @@ interface GitState {
   sessionCounts: GitCounts;
   total: number;
   aheadBehind: AheadBehind | null;
+  stash: StashInfo | null;
 }
 
 const DB_PATH = pathResolve(homedir(), ".local/share/opencode/opencode.db");
 
 // --- Status Dot constants ---
 const SERVICE_NAME = "redmuffin.Blazor.StaticWeb-sass-dotnet-watch.service";
+const SOLUTION_DIR = "/home/flynn/Projects/redmuffin.Blazor.StaticWeb";
 const SERVICE_POLL_MS = 5000;
+
+function isInSolution(dir: string | null): boolean {
+  if (!dir) return false;
+  return dir === SOLUTION_DIR || dir.startsWith(SOLUTION_DIR + "/");
+}
 
 // --- Session file tracking ---
 
@@ -155,6 +164,7 @@ const [gitState, setGitState] = createSignal<GitState>({
   sessionCounts: { ...EMPTY_COUNTS },
   total: 0,
   aheadBehind: null,
+  stash: null,
 });
 
 const ERROR_STATE: GitState = {
@@ -164,6 +174,7 @@ const ERROR_STATE: GitState = {
   sessionCounts: { ...EMPTY_COUNTS },
   total: 0,
   aheadBehind: null,
+  stash: null,
 };
 
 let interval: ReturnType<typeof setInterval> | null = null;
@@ -188,9 +199,28 @@ function pollGitStatus() {
     // If it has, compute against an empty set — session counts are stale.
     const files = (storedSessionId === sid) ? sessionFiles : new Set<string>();
     const sessionCounts = computeSessionCounts(output, dir, files);
-    setGitState({ dir, error: false, counts, sessionCounts, total: categoryTotal(counts), aheadBehind });
+
+    // --- Stash poll (added to existing 10s interval) ---
+    let stash: StashInfo | null = null;
+    try {
+      const stashList = execSync(`git -C "${dir}" stash list --format="%ct" 2>/dev/null || true`, {
+        encoding: "utf8",
+        timeout: 2000,
+      });
+      if (stashList.trim()) {
+        const stashShow = execSync(`git -C "${dir}" stash show --name-only stash@{0} 2>/dev/null || true`, {
+          encoding: "utf8",
+          timeout: 2000,
+        });
+        stash = buildStashInfo(stashList, stashShow);
+      }
+    } catch {
+      stash = null;
+    }
+
+    setGitState({ dir, error: false, counts, sessionCounts, total: categoryTotal(counts), aheadBehind, stash });
   } catch {
-    setGitState({ dir: null, error: true, counts: { ...EMPTY_COUNTS }, sessionCounts: { ...EMPTY_COUNTS }, total: 0, aheadBehind: null });
+    setGitState({ dir: null, error: true, counts: { ...EMPTY_COUNTS }, sessionCounts: { ...EMPTY_COUNTS }, total: 0, aheadBehind: null, stash: null });
   }
 }
 
@@ -206,8 +236,7 @@ const tui: TuiPlugin = async (api) => {
   storedApi = api;
   pollGitStatus();
   interval = setInterval(pollGitStatus, 10000);
-  pollServiceStatus();
-  serviceInterval = setInterval(pollServiceStatus, SERVICE_POLL_MS);
+  // Service polling starts on first render when PWD enters solution dir
 
   // Event-driven refresh: fires when agent changes files
   api.event.on("session.diff", (event: SessionDiffEvent) => {
@@ -322,16 +351,46 @@ const tui: TuiPlugin = async (api) => {
           setTimeout(() => seedSessionFiles(sid), 0);
         }
 
+        const dir = api.state?.path?.directory ?? null;
+        const inSolution = isInSolution(dir);
+
+        // Start/stop service polling based on directory
+        if (inSolution && serviceInterval === null) {
+          pollServiceStatus();
+          serviceInterval = setInterval(pollServiceStatus, SERVICE_POLL_MS);
+        } else if (!inSolution && serviceInterval !== null) {
+          clearInterval(serviceInterval);
+          serviceInterval = null;
+          setServiceDot("grey");
+        }
+
         const dot = serviceDot();
         const dotFg: RGBA =
           dot === "green" ? api.theme.current.success
           : dot === "yellow" ? api.theme.current.warning
           : dot === "red" ? api.theme.current.error
           : api.theme.current.textMuted;
+
+        // --- Stash indicator ---
+        let stashFg: RGBA = api.theme.current.textMuted;
+        let stashText: string | null = null;
+        const s = gitState();
+        if (s.stash && s.stash.count > 0) {
+          const ageSeconds = s.stash.oldestTimestamp
+            ? (Date.now() / 1000) - s.stash.oldestTimestamp
+            : 0;
+          const ageDays = ageSeconds / 86400;
+          stashFg = ageDays >= 2 ? api.theme.current.error
+            : ageDays >= 1 ? api.theme.current.warning
+            : api.theme.current.success;
+          stashText = `※${s.stash.count}[${s.stash.latestFileCount}f]`;
+        }
+
         return (
           <box paddingLeft={0} flexDirection="row">
             {renderBadge(gitState(), api.theme.current)}
-            <text fg={dotFg}> ●</text>
+            {stashText && <text fg={stashFg}> {stashText}</text>}
+            {inSolution && <text fg={dotFg}> ●</text>}
           </box>
         );
       },

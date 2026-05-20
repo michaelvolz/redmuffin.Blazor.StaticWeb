@@ -93,6 +93,19 @@ function computeSessionCounts(output, dir, sessionFiles) {
   }
   return counts;
 }
+function buildStashInfo(timestampsOutput, latestShowOutput) {
+  const timestamps = timestampsOutput.trim().split(`
+`).filter(Boolean).map(Number).filter((n) => !isNaN(n));
+  if (timestamps.length === 0)
+    return null;
+  const latestFileCount = latestShowOutput.trim() ? latestShowOutput.trim().split(`
+`).length : 0;
+  return {
+    count: timestamps.length,
+    latestFileCount,
+    oldestTimestamp: Math.min(...timestamps)
+  };
+}
 function parseAheadBehind(output) {
   if (!output)
     return null;
@@ -115,7 +128,13 @@ function parseAheadBehind(output) {
 var id = "rm-git-sidebar";
 var DB_PATH = pathResolve2(homedir(), ".local/share/opencode/opencode.db");
 var SERVICE_NAME = "redmuffin.Blazor.StaticWeb-sass-dotnet-watch.service";
+var SOLUTION_DIR = "/home/flynn/Projects/redmuffin.Blazor.StaticWeb";
 var SERVICE_POLL_MS = 5000;
+function isInSolution(dir) {
+  if (!dir)
+    return false;
+  return dir === SOLUTION_DIR || dir.startsWith(SOLUTION_DIR + "/");
+}
 var SESSION_ID_RE = /^ses_[a-zA-Z0-9]{16,}$/;
 var sessionFiles = new Set;
 var storedSessionId = null;
@@ -223,7 +242,8 @@ var [gitState, setGitState] = createSignal({
     ...EMPTY_COUNTS
   },
   total: 0,
-  aheadBehind: null
+  aheadBehind: null,
+  stash: null
 });
 var ERROR_STATE = {
   dir: null,
@@ -235,7 +255,8 @@ var ERROR_STATE = {
     ...EMPTY_COUNTS
   },
   total: 0,
-  aheadBehind: null
+  aheadBehind: null,
+  stash: null
 };
 var interval = null;
 var lastRefresh = 0;
@@ -256,13 +277,30 @@ function pollGitStatus() {
     const aheadBehind = parseAheadBehind(output);
     const files = storedSessionId === sid ? sessionFiles : new Set;
     const sessionCounts = computeSessionCounts(output, dir, files);
+    let stash = null;
+    try {
+      const stashList = execSync(`git -C "${dir}" stash list --format="%ct" 2>/dev/null || true`, {
+        encoding: "utf8",
+        timeout: 2000
+      });
+      if (stashList.trim()) {
+        const stashShow = execSync(`git -C "${dir}" stash show --name-only stash@{0} 2>/dev/null || true`, {
+          encoding: "utf8",
+          timeout: 2000
+        });
+        stash = buildStashInfo(stashList, stashShow);
+      }
+    } catch {
+      stash = null;
+    }
     setGitState({
       dir,
       error: false,
       counts,
       sessionCounts,
       total: categoryTotal(counts),
-      aheadBehind
+      aheadBehind,
+      stash
     });
   } catch {
     setGitState({
@@ -275,7 +313,8 @@ function pollGitStatus() {
         ...EMPTY_COUNTS
       },
       total: 0,
-      aheadBehind: null
+      aheadBehind: null,
+      stash: null
     });
   }
 }
@@ -286,8 +325,6 @@ var tui = async (api) => {
   storedApi = api;
   pollGitStatus();
   interval = setInterval(pollGitStatus, 1e4);
-  pollServiceStatus();
-  serviceInterval = setInterval(pollServiceStatus, SERVICE_POLL_MS);
   api.event.on("session.diff", (event) => {
     if (event?.properties?.sessionID === storedSessionId) {
       if (event?.properties?.diff) {
@@ -435,16 +472,45 @@ var tui = async (api) => {
           const sid = storedSessionId;
           setTimeout(() => seedSessionFiles(sid), 0);
         }
+        const dir = api.state?.path?.directory ?? null;
+        const inSolution = isInSolution(dir);
+        if (inSolution && serviceInterval === null) {
+          pollServiceStatus();
+          serviceInterval = setInterval(pollServiceStatus, SERVICE_POLL_MS);
+        } else if (!inSolution && serviceInterval !== null) {
+          clearInterval(serviceInterval);
+          serviceInterval = null;
+          setServiceDot("grey");
+        }
         const dot = serviceDot();
         const dotFg = dot === "green" ? api.theme.current.success : dot === "yellow" ? api.theme.current.warning : dot === "red" ? api.theme.current.error : api.theme.current.textMuted;
+        let stashFg = api.theme.current.textMuted;
+        let stashText = null;
+        const s = gitState();
+        if (s.stash && s.stash.count > 0) {
+          const ageSeconds = s.stash.oldestTimestamp ? Date.now() / 1000 - s.stash.oldestTimestamp : 0;
+          const ageDays = ageSeconds / 86400;
+          stashFg = ageDays >= 2 ? api.theme.current.error : ageDays >= 1 ? api.theme.current.warning : api.theme.current.success;
+          stashText = `\u203B${s.stash.count}[${s.stash.latestFileCount}f]`;
+        }
         return (() => {
-          var _el$17 = _$createElement("box"), _el$18 = _$createElement("text");
-          _$insertNode(_el$17, _el$18);
+          var _el$17 = _$createElement("box");
           _$setProp(_el$17, "paddingLeft", 0);
           _$setProp(_el$17, "flexDirection", "row");
-          _$insert(_el$17, () => renderBadge(gitState(), api.theme.current), _el$18);
-          _$insertNode(_el$18, _$createTextNode(` \u25CF`));
-          _$setProp(_el$18, "fg", dotFg);
+          _$insert(_el$17, () => renderBadge(gitState(), api.theme.current), null);
+          _$insert(_el$17, stashText && (() => {
+            var _el$18 = _$createElement("text"), _el$19 = _$createTextNode(` `);
+            _$insertNode(_el$18, _el$19);
+            _$setProp(_el$18, "fg", stashFg);
+            _$insert(_el$18, stashText, null);
+            return _el$18;
+          })(), null);
+          _$insert(_el$17, inSolution && (() => {
+            var _el$20 = _$createElement("text");
+            _$insertNode(_el$20, _$createTextNode(` \u25CF`));
+            _$setProp(_el$20, "fg", dotFg);
+            return _el$20;
+          })(), null);
           return _el$17;
         })();
       }
