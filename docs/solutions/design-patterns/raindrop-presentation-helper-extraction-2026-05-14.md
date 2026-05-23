@@ -47,16 +47,32 @@ Both `.razor.cs` files and `.razor` files reference the static class:
 @using static redmuffin.Blazor.StaticWeb.Features.Raindrop.Presentation.RaindropItemPresentationHelper
 ```
 
-## What Was NOT Extracted
+## What Was NOT Extracted (Superseded)
+
+> **Update 2026-05-23**: The objections below were resolved by the
+> composition-over-inheritance orchestrator pattern — a `RaindropPageContext`
+> record bundling mutable state and a static `RaindropPageOrchestrator` with
+> `Func<>` callback parameters. See
+> `docs/solutions/architecture-patterns/composition-over-inheritance-orchestrator-pattern-2026-05-23.md`.
 
 The larger orchestration methods (`LoadCachedDataAsync`, `FetchItemsAsync`,
 `HandleRefreshClickAsync`) were evaluated against the extraction gates and
-**rejected**:
+**rejected at the time (2026-05-14)**:
 
 - Only 2 occurrences — Metz Rule of Three not met
 - Differ in state management (`_isLoading`, image cache clearing)
 - Differ in error messages and log delegates
 - Forcing a shared service would require 6+ parameters per method → shallow module
+
+The context-record + Func<> pattern (implemented 2026-05-23) resolves all four:
+
+- **Parameter count**: `RaindropPageContext` consolidates 6 state fields into 1
+- **State differences**: `Func<Task>` callbacks for `populateImagesAsync` and
+  `stateHasChangedAsync` let each page wire its own implementation
+- **Log delegates**: orchestrator uses `ILogger` directly; page-specific
+  LoggerMessage delegates stay in partial classes for background refresh
+- **Metz Rule of Three**: the orchestrator is a function library, not an
+  interface — tested independently of consumer count
 
 The one real seam already extracted: `RaindropBackgroundRefreshHelper.TryFetchFreshDataAsync`
 (prior session).
