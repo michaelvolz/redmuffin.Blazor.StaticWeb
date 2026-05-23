@@ -77,10 +77,23 @@ Safe alternatives: `git stash` before destructive operations,
   and you do not know what caused it, ask the user — never silently
   ignore it and never mark the working tree as clean with drift
   remaining.
+- NEVER stop in COMMIT_BATCH when the user says `commit all` while
+  any modified file remains. `commit all` means: first commit all
+  files from this session in ordered batches, then analyze every
+  remaining modified file (including files changed by parallel
+  OpenCode sessions) and commit those too in ordered batches with
+  appropriate messages. Stop only when `git status --porcelain`
+  shows zero modified files and zero untracked files that belong
+  to the repo. Each file gets a proper commit message reflecting
+  its actual changes — never use generic messages for
+  parallel-session files.
+- `commit` (without `all`) means: commit only files modified by this
+  session. Stop after those files are committed — do not commit files
+  changed by parallel sessions.
 
-If the working tree is clean (no modified files including
-`packages.lock.json`, no untracked files), there is nothing to
-commit — stop and report to the user.
+When the working tree is completely clean (no modified files including
+`packages.lock.json`, no untracked files that should be committed),
+there is nothing to commit — stop and report to the user.
 
 ## Commit Shape
 
