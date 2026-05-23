@@ -267,7 +267,7 @@ public sealed class DepthDetectorTests
 
     [Test]
     [Category("Feature:Depth")]
-    public async Task CollectMethodsFromFile_adds_methods_with_issues_to_results()
+    public async Task Analyze_detects_shallow_private_method_in_temp_directory()
     {
         var tempDir = Path.Combine(Path.GetTempPath(), $"depth-cmff-{Guid.NewGuid()}");
         Directory.CreateDirectory(tempDir);
@@ -282,16 +282,13 @@ public sealed class DepthDetectorTests
                 }
                 """).ConfigureAwait(false);
 
-            var results = new List<DepthResult>();
-            var allMethods = new List<(Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax, string)>();
+            var results = DepthDetector.Analyze(tempDir);
 
-            DepthDetector.CollectMethodsFromFile(tempFile, results, allMethods);
-
-            // Helper is private, 2 lines, no branching → shallow(3)
-            await Assert.That(results).IsNotEmpty();
-            await Assert.That(results[0].MethodName).IsEqualTo("Helper");
-            await Assert.That(results[0].IsShallow).IsTrue();
-            await Assert.That(allMethods.Count).IsEqualTo(2); // both methods collected
+            // Helper is private, ≤4 lines, no branching, no callers → shallow(3)
+            var helper = results.FirstOrDefault(r => r.MethodName == "Helper");
+            await Assert.That(helper).IsNotNull();
+            await Assert.That(helper!.IsShallow).IsTrue();
+            await Assert.That(helper.CompositeScore).IsEqualTo(3);
         }
         finally
         {
@@ -301,15 +298,27 @@ public sealed class DepthDetectorTests
 
     [Test]
     [Category("Feature:Depth")]
-    public async Task CollectMethodsFromFile_skips_nonexistent_file()
+    public async Task Should_not_flag_property_read_on_parameter_as_entangled()
     {
-        var nonExistent = Path.Combine(Path.GetTempPath(), $"depth-nofile-{Guid.NewGuid()}", "ghost.cs");
-        var results = new List<DepthResult>();
-        var allMethods = new List<(Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax, string)>();
+        // Blocker 1: VisitMemberAccessExpression over-flags pure property reads like
+        // items.Count as side effects. A method that reads a property on a parameter
+        // is not entangled — it's doing pure data access.
+        var code = """
+            using System.Collections.Generic;
+            class X {
+                private int Sum(int a, int b, int c, List<int> items) {
+                    return a + b + c + items.Count;
+                }
+            }
+            """;
+        var tree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(code);
+        var root = (Microsoft.CodeAnalysis.CSharp.Syntax.CompilationUnitSyntax)await tree.GetRootAsync(CancellationToken.None).ConfigureAwait(false);
+        var method = root.DescendantNodes()
+            .OfType<Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax>()
+            .First(m => m.Identifier.Text == "Sum");
 
-        DepthDetector.CollectMethodsFromFile(nonExistent, results, allMethods);
+        var result = DepthDetector.AnalyzeMethod(method, "/test/ShouldNotFlagPropertyRead.cs");
 
-        await Assert.That(results).IsEmpty();
-        await Assert.That(allMethods).IsEmpty();
+        await Assert.That(result.IsEntangled).IsFalse();
     }
 }
