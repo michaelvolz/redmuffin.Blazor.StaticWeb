@@ -5,7 +5,7 @@ using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.WebUtilities;
 
-namespace redmuffin.Blazor.StaticWeb.Features.Pages.VideosPage;
+namespace redmuffin.Blazor.StaticWeb.Features.Pages.AuthPage;
 
 /// <summary>
 ///     Redirect component for handling OAuth callback and token exchange.

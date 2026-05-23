@@ -1,7 +1,7 @@
 using TUnit.Core;
-using P = redmuffin.Blazor.StaticWeb.Features.Pages.VideosPage;
+using P = redmuffin.Blazor.StaticWeb.Features.Pages.AuthPage;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.VideosPage;
+namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.AuthPage;
 
 public class RedirectTests
 {

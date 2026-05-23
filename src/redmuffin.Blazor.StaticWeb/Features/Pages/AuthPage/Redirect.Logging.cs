@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace redmuffin.Blazor.StaticWeb.Features.Pages.VideosPage;
+namespace redmuffin.Blazor.StaticWeb.Features.Pages.AuthPage;
 
 /// <summary>
 ///     LoggerMessage delegates for Redirect component.
