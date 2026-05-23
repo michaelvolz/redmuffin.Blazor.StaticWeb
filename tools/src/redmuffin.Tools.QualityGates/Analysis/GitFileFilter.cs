@@ -1,9 +1,9 @@
-namespace redmuffin.Tools.QualityGates.Commands;
+namespace redmuffin.Tools.QualityGates.Analysis;
 
 /// <summary>
 ///     Shared helpers for git-based file filtering across commands.
 /// </summary>
-internal static class GitFileFilter
+public static class GitFileFilter
 {
     private const int GitTimeoutMs = 30_000;
 
