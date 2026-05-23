@@ -319,16 +319,12 @@ public static class ScrapDuplication
 
     public static bool AllLowComplexity(IReadOnlyList<SimpleMethodMetrics> metrics)
     {
-        const double complexityFloor = 1.0;
-        const double complexityRiseRate = 0.18;
-        const double complexityCap = 25.0;
-
         return metrics.All(m =>
             m.LineCount <= 12
             && m.AssertionCount <= 1
             && m.BranchCount <= 0
             && m.SetupDepth <= 2
-            && Math.Min(complexityCap, complexityFloor + (complexityRiseRate * (m.BranchCount + 1))) <= 18);
+            && TestMethodMetricsCalculator.ComputeComplexityScore(m.BranchCount + 1) <= 18);
     }
 
     public sealed record SimpleMethodMetrics(

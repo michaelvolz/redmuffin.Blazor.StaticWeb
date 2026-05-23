@@ -4,9 +4,6 @@ using Microsoft.CodeAnalysis;
 
 public static class ScrapScorer
 {
-    private const double ComplexityCap = 25.0;
-    private const double ComplexityRiseRate = 0.18;
-    private const double ComplexityFloor = 1.0;
     private const double ZeroAssertionPenalty = 5.0;
     private const double LowAssertionPenalty = 2.0;
     private const double BranchingPenaltyPerBranch = 1.0;
@@ -22,7 +19,7 @@ public static class ScrapScorer
         var branchCount = TestMethodMetricsCalculator.CountBranches(body);
         var setupDepth = TestMethodMetricsCalculator.ComputeSetupDepth(body);
         var structuralComplexity = branchCount + 1;
-        var complexityScore = Math.Min(ComplexityCap, ComplexityFloor + (ComplexityRiseRate * structuralComplexity));
+        var complexityScore = TestMethodMetricsCalculator.ComputeComplexityScore(structuralComplexity);
 
         var smells = CollectSmells(assertionCount, branchCount, setupDepth);
         var scrapScore = ComputeScore(complexityScore, assertionCount, branchCount, setupDepth);
