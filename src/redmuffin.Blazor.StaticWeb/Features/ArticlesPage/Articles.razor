@@ -1,6 +1,5 @@
 @page "/articles"
 @using redmuffin.Blazor.StaticWeb.Features.Common.Components
-@using static redmuffin.Blazor.StaticWeb.Features.Raindrop.Presentation.RaindropItemPresentationHelper
 
 <PageTitle>Programming & AI Article Hub</PageTitle>
 
@@ -16,40 +15,10 @@
     </div>
 }
 
-@if (_context.Items != null && _context.Items.Any())
-{
-    <div class="masonry">
-        @foreach (var (item, index) in _context.Items.Select((v, i) => (v, i)))
-        {
-            <div class="card article-card">
-                <div class="card-divider">
-                    <h5>@DisplayTitle(item)</h5>
-                </div>
-                <div class="shimmer-placeholder" id="shimmer-@item.Id">
-                    <img src="@GetImageUrl(item)" alt="Article Cover"
-                         loading="@(index < 6 ? "eager" : "lazy")"
-                         fetchpriority="@(index < 6 ? "high" : "low")"
-                         decoding="async"
-                          @onload="@(() => HandleImageLoadAsync($"shimmer-{item.Id}", item.Link ?? item.Id.ToString(), true))"
-                                                   @onerror="@(() => HandleImageLoadAsync($"shimmer-{item.Id}", item.Link ?? item.Id.ToString(), false))"/>
-                    @if (HasFallbackPlaceholder(item))
-                    {
-                        <div class="fallback-placeholder-overlay">
-                            <i class="fas fa-image"></i>
-                            <span>@GetFallbackReason(item)</span>
-                        </div>
-                    }
-                </div>
-                <div class="card-section">
-                    <p>@DisplayExcerpt(item)</p>
-                    <p><i class="fas fa-calendar-alt"></i> Created: @item.Created.ToString("yyyy-MM-dd")</p>
-                    <a href="@item.Link" target="_blank" class="button"><i class="fas fa-external-link-alt"></i> Read Article</a>
-                </div>
-            </div>
-        }
-    </div>
-}
-else
-{
-    <p>No articles available.</p>
-}
+<RaindropItemList Items="@_context.Items"
+                  ImageUrlCache="@_context.ImageUrlCache"
+                  CardCssClass="article-card"
+                  ImageAlt="Article Cover"
+                  LinkButtonText="Read Article"
+                  LinkButtonIcon="fa-external-link-alt"
+                  EmptyMessage="No articles available."/>
