@@ -1,31 +1,31 @@
 using System.Net;
 using System.Text;
 using Microsoft.Extensions.Logging;
-using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Models;
+using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Models;
 using redmuffin.Blazor.StaticWeb.Services;
-using SimpleImageValidationService = redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Services.SimpleImageValidationService;
+using ImageValidator = redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services.ImageValidator;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.ArticlesPage.Core;
 
-public sealed class SimpleImageValidationServiceInfrastructure : IDisposable
+public sealed class ImageValidatorInfrastructure : IDisposable
 {
     private readonly ControlledHttpHandler_Fake _handler;
     private readonly BrowserStorage_Stub _browserStorage;
-    private readonly SimpleImageValidationService _service;
+    private readonly ImageValidator _service;
 
-    public SimpleImageValidationServiceInfrastructure()
+    public ImageValidatorInfrastructure()
     {
         _handler = new ControlledHttpHandler_Fake();
         _browserStorage = new BrowserStorage_Stub();
         var factory = new TestHttpClientFactory(_handler);
         using var loggerFactory = LoggerFactory.Create(b => b.SetMinimumLevel(LogLevel.None));
-        _service = new SimpleImageValidationService(
+        _service = new ImageValidator(
             factory,
             _browserStorage,
-            loggerFactory.CreateLogger<SimpleImageValidationService>());
+            loggerFactory.CreateLogger<ImageValidator>());
     }
 
-    public SimpleImageValidationService Service => _service;
+    public ImageValidator Service => _service;
 
     public void SetupResponse(string url, HttpStatusCode status, string content, string contentType = "image/jpeg")
     {
@@ -47,7 +47,7 @@ public sealed class SimpleImageValidationServiceInfrastructure : IDisposable
     /// <summary>Pre-populates the cache for a given image URL.</summary>
     public void SetupCachedResult(string imageUrl, ImageValidationResult? result)
     {
-        var cacheKey = SimpleImageValidationService.GetCacheKey(imageUrl);
+        var cacheKey = ImageValidator.GetCacheKey(imageUrl);
         _browserStorage.CachedResults[cacheKey] = result;
     }
 

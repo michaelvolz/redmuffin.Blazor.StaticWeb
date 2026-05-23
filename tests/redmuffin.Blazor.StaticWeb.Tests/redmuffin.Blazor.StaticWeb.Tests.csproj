@@ -36,7 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Features\Pages\ArticlesPage\Core\Services\" />
+    <Folder Include="Features\Pages\ArticlesPage\Core\" />
   </ItemGroup>
 
 </Project>

@@ -75,9 +75,9 @@ public partial class VideosPageCacheTests
         public ImagePlaceholderService_Mock ImagePlaceholderService_Mock { get; } = new();
 
         /// <summary>
-        ///     Gets the mock for IImageValidationCacheService.
+        ///     Gets the mock for IImageUrlResolver.
         /// </summary>
-        public ImageValidationCacheService_Mock ImageValidationCacheService_Mock { get; } = new();
+        public ImageUrlResolver_Mock ImageUrlResolver_Mock { get; } = new();
 
         /// <summary>
         ///     Gets the mock logger for Videos component (external dependency - uses LightMock).
@@ -94,7 +94,7 @@ public partial class VideosPageCacheTests
             Context.Services.AddSingleton<IRaindropItemsCache>(CacheService_Mock);
             Context.Services.AddSingleton<IRaindropAPI>(RaindropAPI_Mock);
             Context.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderService_Mock);
-            Context.Services.AddSingleton<IImageValidationCacheService>(ImageValidationCacheService_Mock);
+            Context.Services.AddSingleton<IImageUrlResolver>(ImageUrlResolver_Mock);
             Context.Services.AddSingleton(Logger_Mock.Object);
 
             return this;
@@ -253,9 +253,9 @@ public partial class VideosPageCacheTests
     }
 
     /// <summary>
-    ///     Custom mock for IImageValidationCacheService to simulate image validation behavior.
+    ///     Custom mock for IImageUrlResolver to simulate image validation behavior.
     /// </summary>
-    public sealed class ImageValidationCacheService_Mock : IImageValidationCacheService
+    public sealed class ImageUrlResolver_Mock : IImageUrlResolver
     {
         public Task PopulateImageUrlCacheAsync(IEnumerable<RaindropItem> items, IDictionary<string, string> imageUrlCache, Func<Task> stateHasChangedCallback,
             CancellationToken cancellationToken = default)

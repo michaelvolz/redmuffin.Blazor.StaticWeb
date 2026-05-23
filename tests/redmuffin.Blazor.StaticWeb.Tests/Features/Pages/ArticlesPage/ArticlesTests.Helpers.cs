@@ -57,7 +57,7 @@ public partial class ArticlesTests
         public NavigationManager_Mock NavigationManager { get; } = new(baseUri);
         public Logger_Spy<ArticlesComponent> Logger { get; } = new();
         public ImagePlaceholderService_Mock ImagePlaceholderService { get; } = new();
-        public ImageValidationCacheService_Mock ImageValidationCacheService { get; } = new();
+        public ImageUrlResolver_Mock ImageUrlResolver { get; } = new();
         public RaindropAPI_Mock RaindropAPI { get; } = new();
         public Mock<IRaindropItemsCache> RaindropItemsCache_Mock { get; } = new();
 
@@ -69,7 +69,7 @@ public partial class ArticlesTests
             BUnitContext.Services.AddSingleton<NavigationManager>(NavigationManager);
             BUnitContext.Services.AddSingleton<ILogger<ArticlesComponent>>(Logger);
             BUnitContext.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderService);
-            BUnitContext.Services.AddSingleton<IImageValidationCacheService>(ImageValidationCacheService);
+            BUnitContext.Services.AddSingleton<IImageUrlResolver>(ImageUrlResolver);
             BUnitContext.Services.AddSingleton<IRaindropAPI>(RaindropAPI);
             BUnitContext.Services.AddSingleton<IRaindropItemsCache>(RaindropItemsCache_Mock.Object);
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
@@ -85,7 +85,7 @@ public partial class ArticlesTests
             BUnitContext.Services.AddSingleton<NavigationManager>(NavigationManager);
             BUnitContext.Services.AddSingleton<ILogger<ArticlesComponent>>(Logger);
             BUnitContext.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderService);
-            BUnitContext.Services.AddSingleton<IImageValidationCacheService>(ImageValidationCacheService);
+            BUnitContext.Services.AddSingleton<IImageUrlResolver>(ImageUrlResolver);
             BUnitContext.Services.AddSingleton<IRaindropAPI>(failingAPI);
             BUnitContext.Services.AddSingleton<IRaindropItemsCache>(RaindropItemsCache_Mock.Object);
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
@@ -101,7 +101,7 @@ public partial class ArticlesTests
             BUnitContext.Services.AddSingleton<NavigationManager>(NavigationManager);
             BUnitContext.Services.AddSingleton<ILogger<ArticlesComponent>>(Logger);
             BUnitContext.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderService);
-            BUnitContext.Services.AddSingleton<IImageValidationCacheService>(ImageValidationCacheService);
+            BUnitContext.Services.AddSingleton<IImageUrlResolver>(ImageUrlResolver);
             BUnitContext.Services.AddSingleton<IRaindropAPI>(emptyAPI);
             BUnitContext.Services.AddSingleton<IRaindropItemsCache>(RaindropItemsCache_Mock.Object);
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
@@ -231,8 +231,8 @@ public partial class ArticlesTests
         }
     }
 
-    // Mock ImageValidationCacheService for testing
-    public class ImageValidationCacheService_Mock : IImageValidationCacheService
+    // Mock ImageUrlResolver for testing
+    public class ImageUrlResolver_Mock : IImageUrlResolver
     {
         public Task PopulateImageUrlCacheAsync(IEnumerable<RaindropItem> items, IDictionary<string, string> imageUrlCache, Func<Task> stateHasChangedCallback,
             CancellationToken cancellationToken = default)

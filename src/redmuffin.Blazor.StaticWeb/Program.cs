@@ -7,7 +7,6 @@ using redmuffin.Blazor.StaticWeb.Core.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 using redmuffin.Blazor.StaticWeb.Core.Services;
-using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Services;
 using redmuffin.Blazor.StaticWeb.Features.Pages.DebugPage.Services;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
@@ -32,12 +31,12 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<IBrowserStorageService, BrowserStorageService>();
 builder.Services.AddScoped<IWarmupService, WarmupService>();
 
-builder.Services.AddScoped<ISimpleImageValidationService, SimpleImageValidationService>();
+builder.Services.AddScoped<IImageValidator, ImageValidator>();
 builder.Services.AddScoped<IPerformanceMetricsService, PerformanceMetricsService>();
 
 // Register image placeholder services
 builder.Services.AddScoped<IImagePlaceholderService, ImagePlaceholderService>();
-builder.Services.AddScoped<IImageValidationCacheService, ImageValidationCacheService>();
+builder.Services.AddScoped<IImageUrlResolver, ImageUrlResolver>();
 builder.Services.AddScoped<PlaceholderGenerationService>();
 
 // Register cache services

@@ -3,18 +3,17 @@ using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
-using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Core;
 
 /// <summary>
-///     Helper classes and methods for ImageValidationCacheServiceTests.
+///     Helper classes and methods for ImageUrlResolverTests.
 /// </summary>
 [Category("Feature:Core")]
-public sealed partial class ImageValidationCacheServiceTests
+public sealed partial class ImageUrlResolverTests
 {
     /// <summary>
-    ///     Creates a test scope for ImageValidationCacheService tests.
+    ///     Creates a test scope for ImageUrlResolver tests.
     /// </summary>
     /// <returns>A configured test scope.</returns>
     private static TestScope CreateTestScope()
@@ -43,7 +42,7 @@ public sealed partial class ImageValidationCacheServiceTests
     }
 
     /// <summary>
-    ///     Test scope for ImageValidationCacheService tests with dependency injection setup.
+    ///     Test scope for ImageUrlResolver tests with dependency injection setup.
     /// </summary>
     public sealed class TestScope : IDisposable
     {
@@ -51,20 +50,20 @@ public sealed partial class ImageValidationCacheServiceTests
 
         public TestScope()
         {
-            ImageValidationService_Mock = new Mock<ISimpleImageValidationService>();
+            ImageValidationService_Mock = new Mock<IImageValidator>();
             ImagePlaceholderService_Mock = new Mock<IImagePlaceholderService>();
-            Logger = new Logger_Spy<ImageValidationCacheService>();
+            Logger = new Logger_Spy<ImageUrlResolver>();
 
-            Service = new ImageValidationCacheService(
+            Service = new ImageUrlResolver(
                 ImageValidationService_Mock.Object,
                 ImagePlaceholderService_Mock.Object,
                 Logger);
         }
 
         /// <summary>
-        ///     Gets the mock for ISimpleImageValidationService.
+        ///     Gets the mock for IImageValidator.
         /// </summary>
-        public Mock<ISimpleImageValidationService> ImageValidationService_Mock { get; }
+        public Mock<IImageValidator> ImageValidationService_Mock { get; }
 
         /// <summary>
         ///     Gets the mock for IImagePlaceholderService.
@@ -72,14 +71,14 @@ public sealed partial class ImageValidationCacheServiceTests
         public Mock<IImagePlaceholderService> ImagePlaceholderService_Mock { get; }
 
         /// <summary>
-        ///     Gets the test logger for ImageValidationCacheService.
+        ///     Gets the test logger for ImageUrlResolver.
         /// </summary>
-        public Logger_Spy<ImageValidationCacheService> Logger { get; }
+        public Logger_Spy<ImageUrlResolver> Logger { get; }
 
         /// <summary>
-        ///     Gets the ImageValidationCacheService instance under test.
+        ///     Gets the ImageUrlResolver instance under test.
         /// </summary>
-        public ImageValidationCacheService Service { get; }
+        public ImageUrlResolver Service { get; }
 
         /// <summary>
         ///     Disposes the test scope and releases resources.

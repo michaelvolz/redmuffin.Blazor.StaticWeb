@@ -31,7 +31,7 @@ public partial class Videos
     private IImagePlaceholderService ImagePlaceholderService { get; set; } = null!;
 
     [Inject]
-    private IImageValidationCacheService ImageValidationCacheService { get; set; } = null!;
+    private IImageUrlResolver ImageUrlResolver { get; set; } = null!;
 
     [Inject]
     private IRaindropItemsCache RaindropItemsCache { get; set; } = null!;
@@ -44,7 +44,7 @@ public partial class Videos
         ArgumentNullException.ThrowIfNull(Navigation);
         ArgumentNullException.ThrowIfNull(RaindropAPI);
         ArgumentNullException.ThrowIfNull(ImagePlaceholderService);
-        ArgumentNullException.ThrowIfNull(ImageValidationCacheService);
+        ArgumentNullException.ThrowIfNull(ImageUrlResolver);
         ArgumentNullException.ThrowIfNull(RaindropItemsCache);
 #pragma warning restore MA0015
 
@@ -53,7 +53,7 @@ public partial class Videos
             CacheKey,
             RaindropItemsCache,
             ct => RaindropAPI.GetVideosAsync(ct),
-            () => ImageValidationCacheService.PopulateImageUrlCacheAsync(
+            () => ImageUrlResolver.PopulateImageUrlCacheAsync(
                 _context.Items!, _context.ImageUrlCache, () => InvokeAsync(StateHasChanged), CancellationToken.None),
             Logger).ConfigureAwait(false);
 
@@ -62,7 +62,7 @@ public partial class Videos
         _ = Task.Run(() => RaindropPageOrchestrator.RefreshInBackgroundAsync(
             _context, CacheKey, ct => RaindropAPI.GetVideosAsync(ct),
             RaindropItemsCache,
-            () => ImageValidationCacheService.PopulateImageUrlCacheAsync(
+            () => ImageUrlResolver.PopulateImageUrlCacheAsync(
                 _context.Items!, _context.ImageUrlCache, () => InvokeAsync(StateHasChanged), CancellationToken.None),
             () => InvokeAsync(StateHasChanged), Logger));
     }
@@ -74,7 +74,7 @@ public partial class Videos
             CacheKey,
             ct => RaindropAPI.GetVideosAsync(ct),
             RaindropItemsCache,
-            () => ImageValidationCacheService.PopulateImageUrlCacheAsync(
+            () => ImageUrlResolver.PopulateImageUrlCacheAsync(
                 _context.Items!, _context.ImageUrlCache, () => InvokeAsync(StateHasChanged), CancellationToken.None),
             () => InvokeAsync(StateHasChanged),
             Logger);

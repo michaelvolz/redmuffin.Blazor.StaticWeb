@@ -7,8 +7,7 @@ using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
-using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Models;
-using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Services;
+using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Models;
 using redmuffin.Blazor.StaticWeb.Features.Pages.VideosPage;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
@@ -68,10 +67,10 @@ public sealed partial class VideosTests
             RaindropItemsCache_Mock = new Mock<IRaindropItemsCache>();
 
             // Create actual service instance with mocked dependencies
-            ImageValidationCacheService = new ImageValidationCacheService(
+            ImageUrlResolver = new ImageUrlResolver(
                 ImageValidationService_Mock,
                 ImagePlaceholderService_Mock,
-                new Logger_Spy<ImageValidationCacheService>());
+                new Logger_Spy<ImageUrlResolver>());
         }
 
         public BunitContext BUnitContext { get; }
@@ -80,7 +79,7 @@ public sealed partial class VideosTests
         public RaindropAPI_Mock RaindropAPI_Mock { get; }
         public ImagePlaceholderService_Mock ImagePlaceholderService_Mock { get; }
         public ImageValidationService_Mock ImageValidationService_Mock { get; }
-        public IImageValidationCacheService ImageValidationCacheService { get; }
+        public IImageUrlResolver ImageUrlResolver { get; }
         public Mock<IRaindropItemsCache> RaindropItemsCache_Mock { get; }
 
         /// <summary>
@@ -102,7 +101,7 @@ public sealed partial class VideosTests
             BUnitContext.Services.AddSingleton<ILogger<Videos>>(Logger);
             BUnitContext.Services.AddSingleton<IRaindropAPI>(RaindropAPI_Mock);
             BUnitContext.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderService_Mock);
-            BUnitContext.Services.AddSingleton(ImageValidationCacheService);
+            BUnitContext.Services.AddSingleton(ImageUrlResolver);
             BUnitContext.Services.AddSingleton<IRaindropItemsCache>(RaindropItemsCache_Mock.Object);
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
 
@@ -190,9 +189,9 @@ public sealed partial class VideosTests
     }
 
     /// <summary>
-    ///     Manual mock implementation for ISimpleImageValidationService since LightMock.Generator doesn't support it.
+    ///     Manual mock implementation for IImageValidator since LightMock.Generator doesn't support it.
     /// </summary>
-    public sealed class ImageValidationService_Mock : ISimpleImageValidationService
+    public sealed class ImageValidationService_Mock : IImageValidator
     {
         private readonly Dictionary<string, ImageValidationResult?> _cachedResults = new();
         private readonly Dictionary<string, ImageValidationResult> _validationResults = new();

@@ -1,9 +1,9 @@
-using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Models;
+using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Models;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Core;
 
 [Category("Feature:Core")]
-public sealed partial class ImageValidationCacheServiceTests
+public sealed partial class ImageUrlResolverTests
 {
     [Test]
     public async Task GetCachedImageUrlAsync_Should_Return_Cover_When_Cached_As_Valid()

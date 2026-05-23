@@ -1,14 +1,14 @@
-using SimpleImageValidationService = redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Services.SimpleImageValidationService;
+using ImageValidator = redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services.ImageValidator;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.ArticlesPage.Core;
 
-public class SimpleImageValidationServiceTests
+public class ImageValidatorTests
 {
     [Test]
     [MethodDataSource(nameof(MapFailureReasonTestData))]
     public async Task MapFailureReason_ShouldReturnExpectedLabel(string reason, string expectedLabel)
     {
-        var result = SimpleImageValidationService.MapFailureReason(reason);
+        var result = ImageValidator.MapFailureReason(reason);
 
         await Assert.That(result).IsEqualTo(expectedLabel);
     }

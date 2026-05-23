@@ -28,7 +28,7 @@ public partial class Articles
     private IImagePlaceholderService ImagePlaceholderService { get; set; } = null!;
 
     [Inject]
-    private IImageValidationCacheService ImageValidationCacheService { get; set; } = null!;
+    private IImageUrlResolver ImageUrlResolver { get; set; } = null!;
 
     [Inject]
     private IRaindropAPI RaindropAPI { get; set; } = null!;
@@ -44,7 +44,7 @@ public partial class Articles
         ArgumentNullException.ThrowIfNull(Js);
         ArgumentNullException.ThrowIfNull(Navigation);
         ArgumentNullException.ThrowIfNull(ImagePlaceholderService);
-        ArgumentNullException.ThrowIfNull(ImageValidationCacheService);
+        ArgumentNullException.ThrowIfNull(ImageUrlResolver);
         ArgumentNullException.ThrowIfNull(RaindropAPI);
         ArgumentNullException.ThrowIfNull(RaindropItemsCache);
 #pragma warning restore MA0015
@@ -85,7 +85,7 @@ public partial class Articles
 
     private Task PopulateImageUrlCacheAsync()
     {
-        return ImageValidationCacheService.PopulateImageUrlCacheAsync(
+        return ImageUrlResolver.PopulateImageUrlCacheAsync(
             _context.Items!,
             _context.ImageUrlCache,
             () => InvokeAsync(StateHasChanged),
