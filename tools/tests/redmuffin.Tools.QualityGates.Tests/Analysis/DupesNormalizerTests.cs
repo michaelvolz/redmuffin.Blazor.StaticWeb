@@ -27,7 +27,7 @@ public sealed partial class DupesNormalizerTests
     public async Task Normalize_handles_binary_expression()
     {
         var result = await ParseNormalized("class C { void M() { var x = a + b; } }").ConfigureAwait(false);
-        await Assert.That(result.Count).IsGreaterThan(0);
+        await Assert.That(result.Children.Count).IsGreaterThan(0);
     }
 
     [Test]
@@ -37,7 +37,7 @@ public sealed partial class DupesNormalizerTests
         var tree = CSharpSyntaxTree.ParseText(code);
         var root = await tree.GetRootAsync().ConfigureAwait(false);
         var result = DupesNormalizer.Normalize(root);
-        await Assert.That(result.Count).IsGreaterThan(0);
+        await Assert.That(result.Children.Count).IsGreaterThan(0);
     }
 
     [Test]
@@ -47,7 +47,7 @@ public sealed partial class DupesNormalizerTests
         var tree = CSharpSyntaxTree.ParseText(code);
         var root = await tree.GetRootAsync().ConfigureAwait(false);
         var result = DupesNormalizer.Normalize(root);
-        await Assert.That(result.Count).IsGreaterThan(0);
+        await Assert.That(result.Children.Count).IsGreaterThan(0);
     }
 
     [Test]
@@ -57,7 +57,7 @@ public sealed partial class DupesNormalizerTests
         var tree = CSharpSyntaxTree.ParseText(code);
         var root = await tree.GetRootAsync().ConfigureAwait(false);
         var result = DupesNormalizer.Normalize(root);
-        await Assert.That(result.Count).IsGreaterThan(0);
+        await Assert.That(result.Children.Count).IsGreaterThan(0);
     }
 
     [Test]
@@ -67,7 +67,7 @@ public sealed partial class DupesNormalizerTests
         var tree = CSharpSyntaxTree.ParseText(code);
         var root = await tree.GetRootAsync().ConfigureAwait(false);
         var result = DupesNormalizer.Normalize(root);
-        await Assert.That(result.Count).IsGreaterThan(0);
+        await Assert.That(result.Children.Count).IsGreaterThan(0);
     }
 
     [Test]
@@ -77,7 +77,7 @@ public sealed partial class DupesNormalizerTests
         var tree = CSharpSyntaxTree.ParseText(code);
         var root = await tree.GetRootAsync().ConfigureAwait(false);
         var result = DupesNormalizer.Normalize(root);
-        await Assert.That(result.Count).IsGreaterThan(0);
+        await Assert.That(result.Children.Count).IsGreaterThan(0);
     }
 
     [Test]
@@ -93,6 +93,6 @@ class C {
         var tree = CSharpSyntaxTree.ParseText(code);
         var root = await tree.GetRootAsync().ConfigureAwait(false);
         var result = DupesNormalizer.Normalize(root);
-        await Assert.That(result.Count).IsGreaterThan(0);
+        await Assert.That(result.Children.Count).IsGreaterThan(0);
     }
 }

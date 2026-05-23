@@ -1,5 +1,6 @@
 namespace redmuffin.Tools.QualityGates.Analysis;
 
+using System.Globalization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -11,11 +12,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 /// </summary>
 public static class DupesNormalizer
 {
-    /// <summary>
-    ///     Normalizes a syntax node into a structural tree.
-    /// </summary>
-    /// <returns></returns>
-    public static IReadOnlyList<object> Normalize(SyntaxNode root)
+    public static NormalizedNode Normalize(SyntaxNode root)
     {
         return NormalizeNode(root);
     }
@@ -25,14 +22,14 @@ public static class DupesNormalizer
     ///     normalized tree and serializing every sub-form to a string.
     /// </summary>
     /// <returns></returns>
-    public static ISet<string> ComputeFingerprints(IReadOnlyList<object> normalized)
+    public static ISet<string> ComputeFingerprints(NormalizedNode normalized)
     {
         var fingerprints = new HashSet<string>(StringComparer.Ordinal);
         CollectFingerprints(normalized, fingerprints);
         return fingerprints;
     }
 
-    private static List<object> NormalizeNode(SyntaxNode node)
+    private static NormalizedNode NormalizeNode(SyntaxNode node)
     {
         return node switch
         {
@@ -43,169 +40,166 @@ public static class DupesNormalizer
             CompilationUnitSyntax u => NormalizeMemberContainer("unit", u.Members),
             NamespaceDeclarationSyntax ns => NormalizeMemberContainer("namespace", ns.Members),
             FileScopedNamespaceDeclarationSyntax fns => NormalizeMemberContainer("namespace", fns.Members),
-            VariableDeclarationSyntax => ["declare"],
+            VariableDeclarationSyntax => new NormalizedNode("declare"),
             ArgumentSyntax a => NormalizeNode(a.Expression),
             _ => WalkChildren(node),
         };
     }
 
-    private static List<object> NormalizeExpression(ExpressionSyntax node)
+    private static NormalizedNode NormalizeExpression(ExpressionSyntax node)
     {
         return node switch
         {
-            IdentifierNameSyntax => ["symbol"],
-            LiteralExpressionSyntax literal => [LiteralTag(literal)],
+            IdentifierNameSyntax => new NormalizedNode("symbol"),
+            LiteralExpressionSyntax literal => new NormalizedNode(LiteralTag(literal)),
             _ => NormalizeComplexExpression(node),
         };
     }
 
-    private static List<object> NormalizeComplexExpression(ExpressionSyntax node) => node switch
+    private static NormalizedNode NormalizeComplexExpression(ExpressionSyntax node) => node switch
     {
-        BinaryExpressionSyntax binary => ["binary", NormalizeNode(binary.Left), NormalizeNode(binary.Right)],
-        AssignmentExpressionSyntax assign => ["assign", NormalizeNode(assign.Left), NormalizeNode(assign.Right)],
+        BinaryExpressionSyntax binary => Node("binary", NormalizeNode(binary.Left), NormalizeNode(binary.Right)),
+        AssignmentExpressionSyntax assign => Node("assign", NormalizeNode(assign.Left), NormalizeNode(assign.Right)),
         _ => NormalizeUnaryExpression(node),
     };
 
-    private static List<object> NormalizeUnaryExpression(ExpressionSyntax node) => node switch
+    private static NormalizedNode NormalizeUnaryExpression(ExpressionSyntax node) => node switch
     {
-        PrefixUnaryExpressionSyntax unary => ["unary", NormalizeNode(unary.Operand)],
-        PostfixUnaryExpressionSyntax postUnary => ["unary", NormalizeNode(postUnary.Operand)],
-        ParenthesizedExpressionSyntax paren => [NormalizeNode(paren.Expression)],
+        PrefixUnaryExpressionSyntax unary => Node("unary", NormalizeNode(unary.Operand)),
+        PostfixUnaryExpressionSyntax postUnary => Node("unary", NormalizeNode(postUnary.Operand)),
+        ParenthesizedExpressionSyntax paren => NormalizeNode(paren.Expression),
         _ => NormalizeNestedExpression(node),
     };
 
-    private static List<object> NormalizeNestedExpression(ExpressionSyntax node) => node switch
+    private static NormalizedNode NormalizeNestedExpression(ExpressionSyntax node) => node switch
     {
         InvocationExpressionSyntax invoke => NormalizeInvoke(invoke),
-        MemberAccessExpressionSyntax member => ["member", NormalizeNode(member.Expression), NormalizeNode(member.Name)],
+        MemberAccessExpressionSyntax member => Node("member", NormalizeNode(member.Expression), NormalizeNode(member.Name)),
         _ => NormalizeFinalExpression(node),
     };
 
-    private static List<object> NormalizeFinalExpression(ExpressionSyntax node) => node switch
+    private static NormalizedNode NormalizeFinalExpression(ExpressionSyntax node) => node switch
     {
         ObjectCreationExpressionSyntax creation => NormalizeCreation(creation),
-        ConditionalExpressionSyntax cond => ["ternary", NormalizeNode(cond.Condition), NormalizeNode(cond.WhenTrue), NormalizeNode(cond.WhenFalse)],
+        ConditionalExpressionSyntax cond => Node("ternary", NormalizeNode(cond.Condition), NormalizeNode(cond.WhenTrue), NormalizeNode(cond.WhenFalse)),
         _ => WalkChildren(node),
     };
 
-    private static List<object> NormalizeStatement(StatementSyntax node)
+    private static NormalizedNode NormalizeStatement(StatementSyntax node)
     {
         return node switch
         {
-            IfStatementSyntax or SwitchStatementSyntax or WhileStatementSyntax
-                => NormalizeControlFlowStatement(node),
-            BlockSyntax or TryStatementSyntax
-                => NormalizeBlockStatement(node),
-            ReturnStatementSyntax or ThrowStatementSyntax or LocalDeclarationStatementSyntax or ExpressionStatementSyntax
-                => NormalizeLeafStatement(node),
-            ForStatementSyntax or ForEachStatementSyntax
-                => NormalizeLoopStatement(node),
+            IfStatementSyntax or SwitchStatementSyntax or WhileStatementSyntax => NormalizeControlFlowStatement(node),
+            BlockSyntax or TryStatementSyntax => NormalizeBlockStatement(node),
+            ReturnStatementSyntax or ThrowStatementSyntax or LocalDeclarationStatementSyntax or ExpressionStatementSyntax => NormalizeLeafStatement(node),
+            ForStatementSyntax or ForEachStatementSyntax => NormalizeLoopStatement(node),
             _ => WalkChildren(node),
         };
     }
 
-    private static List<object> NormalizeControlFlowStatement(StatementSyntax node) => node switch
+    private static NormalizedNode NormalizeControlFlowStatement(StatementSyntax node) => node switch
     {
         IfStatementSyntax ifStmt => NormalizeIf(ifStmt),
         SwitchStatementSyntax switchStmt => NormalizeSwitch(switchStmt),
-        WhileStatementSyntax whileStmt => ["while", NormalizeNode(whileStmt.Condition), NormalizeNode(whileStmt.Statement)],
+        WhileStatementSyntax whileStmt => Node("while", NormalizeNode(whileStmt.Condition), NormalizeNode(whileStmt.Statement)),
         _ => WalkChildren(node),
     };
 
-    private static List<object> NormalizeBlockStatement(StatementSyntax node) => node switch
+    private static NormalizedNode NormalizeBlockStatement(StatementSyntax node) => node switch
     {
         BlockSyntax block => NormalizeMemberContainer("block", block.Statements),
         TryStatementSyntax tryStmt => NormalizeTry(tryStmt),
         _ => WalkChildren(node),
     };
 
-    private static List<object> NormalizeLeafStatement(StatementSyntax node) => node switch
+    private static NormalizedNode NormalizeLeafStatement(StatementSyntax node) => node switch
     {
         ReturnStatementSyntax ret => NormalizeReturn(ret),
         ThrowStatementSyntax thr => NormalizeThrow(thr),
         LocalDeclarationStatementSyntax local => NormalizeLocal(local),
-        ExpressionStatementSyntax exprStmt => [NormalizeNode(exprStmt.Expression)],
+        ExpressionStatementSyntax exprStmt => NormalizeNode(exprStmt.Expression),
         _ => WalkChildren(node),
     };
 
-    private static List<object> NormalizeLoopStatement(StatementSyntax node) => node switch
+    private static NormalizedNode NormalizeLoopStatement(StatementSyntax node) => node switch
     {
-        ForStatementSyntax => NormalizeLoopTagged("for", ((ForStatementSyntax)node).Statement),
-        ForEachStatementSyntax => NormalizeLoopTagged("foreach", ((ForEachStatementSyntax)node).Statement),
+        ForStatementSyntax forStmt => Node("for", NormalizeNode(forStmt.Statement)),
+        ForEachStatementSyntax forEachStmt => Node("foreach", NormalizeNode(forEachStmt.Statement)),
         _ => WalkChildren(node),
     };
 
-    private static List<object> NormalizeReturn(ReturnStatementSyntax ret) =>
-        ret.Expression != null ? ["return", NormalizeNode(ret.Expression)] : ["return"];
+    private static NormalizedNode NormalizeReturn(ReturnStatementSyntax ret) =>
+        ret.Expression != null
+            ? Node("return", NormalizeNode(ret.Expression))
+            : new NormalizedNode("return");
 
-    private static List<object> NormalizeThrow(ThrowStatementSyntax thr) =>
-        thr.Expression != null ? ["throw", NormalizeNode(thr.Expression)] : ["throw"];
+    private static NormalizedNode NormalizeThrow(ThrowStatementSyntax thr) =>
+        thr.Expression != null
+            ? Node("throw", NormalizeNode(thr.Expression))
+            : new NormalizedNode("throw");
 
-    private static List<object> NormalizeLoopTagged(string tag, StatementSyntax body) =>
-        [tag, NormalizeNode(body)];
-
-    private static List<object> WalkChildren(SyntaxNode node)
+    private static NormalizedNode WalkChildren(SyntaxNode node)
     {
-        var children = new List<object>();
+        var children = new List<NormalizedNode>();
         foreach (var child in node.ChildNodes())
             children.Add(NormalizeNode(child));
-        return children.Count > 0 ? children : ["unknown"];
+        return children.Count > 0
+            ? new NormalizedNode("unknown", children)
+            : new NormalizedNode("unknown");
     }
 
-    private static List<object> NormalizeMemberContainer(string tag, SyntaxList<StatementSyntax> statements) =>
+    private static NormalizedNode NormalizeMemberContainer(string tag, SyntaxList<StatementSyntax> statements) =>
         NormalizeMemberList(tag, statements);
 
-    private static List<object> NormalizeMemberContainer(string tag, SyntaxList<MemberDeclarationSyntax> members) =>
+    private static NormalizedNode NormalizeMemberContainer(string tag, SyntaxList<MemberDeclarationSyntax> members) =>
         NormalizeMemberList(tag, members);
 
-    private static List<object> NormalizeMemberList(string tag, SyntaxList<SyntaxNode> nodes)
+    private static NormalizedNode NormalizeMemberList(string tag, SyntaxList<SyntaxNode> nodes)
     {
-        var result = new List<object> { tag };
+        var children = new List<NormalizedNode>();
         foreach (var node in nodes)
-            result.Add(NormalizeNode(node));
-        return result;
+            children.Add(NormalizeNode(node));
+        return new NormalizedNode(tag, children);
     }
 
-    private static List<object> NormalizeCreation(ObjectCreationExpressionSyntax creation)
+    private static NormalizedNode NormalizeCreation(ObjectCreationExpressionSyntax creation)
     {
-        var parts = new List<object> { "new" };
-        AddCreationArguments(creation, parts);
-        return parts;
+        var children = new List<NormalizedNode>();
+        if (creation.ArgumentList is not null)
+        {
+            foreach (var arg in creation.ArgumentList.Arguments)
+                children.Add(NormalizeNode(arg));
+        }
+
+        return new NormalizedNode("new", children);
     }
 
-    private static void AddCreationArguments(ObjectCreationExpressionSyntax creation, List<object> parts)
+    private static NormalizedNode NormalizeSwitch(SwitchStatementSyntax switchStmt)
     {
-        if (creation.ArgumentList is null) return;
-        foreach (var arg in creation.ArgumentList.Arguments)
-            parts.Add(NormalizeNode(arg));
-    }
-
-    private static List<object> NormalizeSwitch(SwitchStatementSyntax switchStmt)
-    {
-        var parts = new List<object> { "switch", NormalizeNode(switchStmt.Expression) };
+        var children = new List<NormalizedNode> { NormalizeNode(switchStmt.Expression) };
         foreach (var section in switchStmt.Sections)
-            parts.Add(BuildCaseParts(section));
-        return parts;
+            children.Add(BuildCaseNode(section));
+        return new NormalizedNode("switch", children);
     }
 
-    private static List<object> BuildCaseParts(SwitchSectionSyntax section)
+    private static NormalizedNode BuildCaseNode(SwitchSectionSyntax section)
     {
-        var caseParts = new List<object> { "case" };
+        var children = new List<NormalizedNode>();
         foreach (var label in section.Labels)
-            caseParts.Add(NormalizeNode(label));
+            children.Add(NormalizeNode(label));
         foreach (var stmt in section.Statements)
-            caseParts.Add(NormalizeNode(stmt));
-        return caseParts;
+            children.Add(NormalizeNode(stmt));
+        return new NormalizedNode("case", children);
     }
 
-    private static List<object> NormalizeTry(TryStatementSyntax tryStmt)
+    private static NormalizedNode NormalizeTry(TryStatementSyntax tryStmt)
     {
-        var parts = new List<object> { "try", NormalizeNode(tryStmt.Block) };
+        var children = new List<NormalizedNode> { NormalizeNode(tryStmt.Block) };
         foreach (var catchClause in tryStmt.Catches)
-            parts.Add(NormalizeNode(catchClause.Block));
+            children.Add(NormalizeNode(catchClause.Block));
         if (tryStmt.Finally != null)
-            parts.Add(NormalizeNode(tryStmt.Finally.Block));
-        return parts;
+            children.Add(NormalizeNode(tryStmt.Finally.Block));
+        return new NormalizedNode("try", children);
     }
 
     private static string LiteralTag(LiteralExpressionSyntax literal)
@@ -226,88 +220,74 @@ public static class DupesNormalizer
         _ => "literal",
     };
 
-    private static List<object> NormalizeIf(IfStatementSyntax node)
+    private static NormalizedNode NormalizeIf(IfStatementSyntax node)
     {
-        var result = new List<object> { "if", NormalizeNode(node.Condition), NormalizeNode(node.Statement) };
+        var children = new List<NormalizedNode> { NormalizeNode(node.Condition), NormalizeNode(node.Statement) };
         if (node.Else != null)
         {
-            // Include the else keyword and the else statement
-            result.Add("else");
-            result.Add(NormalizeNode(node.Else.Statement));
+            children.Add(new NormalizedNode("else"));
+            children.Add(NormalizeNode(node.Else.Statement));
         }
 
-        return result;
+        return new NormalizedNode("if", children);
     }
 
-    private static List<object> NormalizeInvoke(InvocationExpressionSyntax node)
+    private static NormalizedNode NormalizeInvoke(InvocationExpressionSyntax node)
     {
-        var parts = new List<object> { "invoke", NormalizeNode(node.Expression) };
+        var children = new List<NormalizedNode> { NormalizeNode(node.Expression) };
         foreach (var arg in node.ArgumentList.Arguments)
-        {
-            parts.Add(NormalizeNode(arg));
-        }
-
-        return parts;
+            children.Add(NormalizeNode(arg));
+        return new NormalizedNode("invoke", children);
     }
 
-    private static List<object> NormalizeLocal(LocalDeclarationStatementSyntax node)
+    private static NormalizedNode NormalizeLocal(LocalDeclarationStatementSyntax node)
     {
-        var parts = new List<object> { "local" };
+        var children = new List<NormalizedNode>();
         foreach (var variable in node.Declaration.Variables)
         {
             if (variable.Initializer?.Value != null)
-            {
-                parts.Add(NormalizeNode(variable.Initializer.Value));
-            }
+                children.Add(NormalizeNode(variable.Initializer.Value));
         }
 
-        return parts;
+        return new NormalizedNode("local", children);
     }
 
-    private static List<object> NormalizeMethod(MethodDeclarationSyntax method)
+    private static NormalizedNode NormalizeMethod(MethodDeclarationSyntax method)
     {
-        var parts = new List<object> { "method" };
         if (method.Body != null)
-        {
-            parts.Add(NormalizeNode(method.Body));
-        }
-        else if (method.ExpressionBody != null)
-        {
-            parts.Add(NormalizeNode(method.ExpressionBody.Expression));
-        }
+            return new NormalizedNode("method", [NormalizeNode(method.Body)]);
 
-        return parts;
+        if (method.ExpressionBody != null)
+            return new NormalizedNode("method", [NormalizeNode(method.ExpressionBody.Expression)]);
+
+        return new NormalizedNode("method");
     }
 
     /// <summary>
     ///     Serializes a normalized tree to a string for inspection or comparison.
     /// </summary>
     /// <returns></returns>
-    public static string SerializeNormalized(IReadOnlyList<object> normalized)
+    public static string SerializeNormalized(NormalizedNode normalized)
     {
         return Serialize(normalized);
     }
 
-    private static string Serialize(object node)
+    private static string Serialize(NormalizedNode node)
     {
-        return node switch
-        {
-            string s => s,
-            List<object> list => "(" + string.Join(' ', list.Select(Serialize)) + ")",
-            _ => node.ToString() ?? "?",
-        };
+        if (node.Children.Count == 0)
+            return node.Kind;
+
+        var childStrings = node.Children.Select(Serialize);
+        return string.Create(CultureInfo.InvariantCulture, $"({node.Kind} {string.Join(' ', childStrings)})");
     }
 
-    private static void CollectFingerprints(object node, HashSet<string> fingerprints)
+    private static void CollectFingerprints(NormalizedNode node, HashSet<string> fingerprints)
     {
         fingerprints.Add(Serialize(node));
-
-        if (node is List<object> list)
-        {
-            foreach (var child in list)
-            {
-                CollectFingerprints(child, fingerprints);
-            }
-        }
+        foreach (var child in node.Children)
+            CollectFingerprints(child, fingerprints);
     }
+
+    private static NormalizedNode Node(string kind, params NormalizedNode[] children) =>
+        new(kind, children);
 }

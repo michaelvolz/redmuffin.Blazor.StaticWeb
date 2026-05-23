@@ -5,7 +5,7 @@ using redmuffin.Tools.QualityGates.Analysis;
 
 public partial class DupesNormalizerTests
 {
-    private static async Task<IReadOnlyList<object>> ParseNormalized(string code)
+    private static async Task<NormalizedNode> ParseNormalized(string code)
     {
         var tree = CSharpSyntaxTree.ParseText(code);
         var root = await tree.GetRootAsync().ConfigureAwait(false);
