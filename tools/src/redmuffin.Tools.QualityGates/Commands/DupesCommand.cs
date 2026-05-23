@@ -49,7 +49,19 @@ public static class DupesCommand
 
         var options = new DupesOptions(threshold, minLines, minNodes, format, [.. paths]);
 
-        var (exitCode, candidates) = DupesHandler.Run(options);
+        int exitCode;
+        IReadOnlyList<DupesCandidate> candidates;
+        try
+        {
+            candidates = DupesDetector.FindDuplicates(options);
+            exitCode = candidates.Count > 0 ? 2 : 0;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
+            return 1;
+        }
+
         Console.WriteLine(DupesOutputFormatter.Format(candidates, format));
         return exitCode;
     };

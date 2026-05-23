@@ -329,30 +329,6 @@ public static class MutateHandler
     public static bool WasCoverageGenerated(string? generatedPath)
         => generatedPath is not null;
 
-    private static async Task<string?> GenerateCoverageAsync(string testProjectPath)
-    {
-        var newPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".cobertura.xml");
-
-        using var process = new Process
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "dotnet",
-                Arguments = $"run --project \"{testProjectPath}\" --coverage " +
-                    $"--coverage-output-format cobertura --coverage-output \"{newPath}\"",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            },
-        };
-
-        process.Start();
-        await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
-
-        if (process.ExitCode != 0 || !File.Exists(newPath))
-            return null;
-
-        return newPath;
-    }
+    private static Task<string?> GenerateCoverageAsync(string testProjectPath)
+        => CoverageRunner.GenerateAsync(testProjectPath);
 }

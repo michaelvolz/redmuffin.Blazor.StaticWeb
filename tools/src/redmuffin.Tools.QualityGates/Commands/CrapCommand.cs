@@ -3,6 +3,7 @@ namespace redmuffin.Tools.QualityGates.Commands;
 using System.CommandLine;
 using System.Diagnostics;
 using System.Globalization;
+using redmuffin.Tools.QualityGates.Analysis;
 
 public static class CrapCommand
 {
@@ -230,54 +231,6 @@ public static class CrapCommand
         }
     }
 
-    public static ProcessStartInfo BuildCoverageProcessStartInfo(
-        string testProjectPath, string outputPath)
-    {
-        return new ProcessStartInfo
-        {
-            FileName = "dotnet",
-            Arguments = $"run --project \"{testProjectPath}\" --coverage --coverage-output-format cobertura --coverage-output \"{outputPath}\"",
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-        };
-    }
-
-    public static bool IsCoverageRunSuccessful(int exitCode, string filePath)
-    {
-        return exitCode == 0 && File.Exists(filePath);
-    }
-
     private static string? GenerateCoverage(string testProjectPath)
-    {
-        var newPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".cobertura.xml");
-
-        using var process = new Process
-        {
-            StartInfo = BuildCoverageProcessStartInfo(testProjectPath, newPath),
-        };
-
-        process.Start();
-        process.WaitForExit();
-
-        if (!IsCoverageRunSuccessful(process.ExitCode, newPath))
-        {
-            ReportCoverageError(process);
-            return null;
-        }
-
-        return newPath;
-    }
-
-    private static void ReportCoverageError(Process process)
-    {
-        var exitString = process.ExitCode.ToString(CultureInfo.InvariantCulture);
-        Console.Error.WriteLine($"Failed to generate coverage. dotnet run exit code: {exitString}");
-        var stderr = process.StandardError.ReadToEnd();
-        if (!string.IsNullOrWhiteSpace(stderr))
-        {
-            Console.Error.WriteLine(stderr);
-        }
-    }
+        => CoverageRunner.Generate(testProjectPath);
 }

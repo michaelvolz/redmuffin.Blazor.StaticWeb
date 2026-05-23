@@ -150,9 +150,21 @@ public static class AllCommand
                 async () =>
                 {
                     var dupesOptions = new DupesOptions(Paths: [projectPath]);
-                    var (exitCode, candidates) = DupesHandler.Run(dupesOptions);
-                    await o.WriteLineAsync(DupesOutputFormatter.Format(candidates, "text")).ConfigureAwait(false);
-                    return exitCode;
+                    int dupesExit;
+                    IReadOnlyList<DupesCandidate> dupeCandidates;
+                    try
+                    {
+                        dupeCandidates = DupesDetector.FindDuplicates(dupesOptions);
+                        dupesExit = dupeCandidates.Count > 0 ? 2 : 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        await Console.Error.WriteLineAsync($"Error: {ex.Message}").ConfigureAwait(false);
+                        return 1;
+                    }
+
+                    await o.WriteLineAsync(DupesOutputFormatter.Format(dupeCandidates, "text")).ConfigureAwait(false);
+                    return dupesExit;
                 },
                 !runDupes),
         };
