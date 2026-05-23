@@ -66,7 +66,7 @@ public static class MutateHandler
             .ConfigureAwait(false);
 
         var (sites, covered, uncovered, changedCount) = ClassifyAndFilterSites(
-            allSites, resolvedLines, strippedSource, existingManifest, options);
+            allSites, resolvedLines, sourcePath, strippedSource, existingManifest, options);
 
         return (sites, allSites, covered, uncovered, changedCount, existingManifest, strippedSource);
     }
@@ -75,12 +75,13 @@ public static class MutateHandler
         IReadOnlyList<MutationSite> Uncovered, int ChangedCount)
         ClassifyAndFilterSites(
             IReadOnlyList<MutationSite> allSites,
-            IReadOnlySet<int> coveredLines,
+            IReadOnlySet<string> coveredLines,
+            string sourcePath,
             string strippedSource,
             Manifest? existingManifest,
             MutateOptions options)
     {
-        var (covered, uncovered) = CoverageReader.PartitionByCoverage(allSites, coveredLines);
+        var (covered, uncovered) = CoverageReader.PartitionByCoverage(allSites, sourcePath, coveredLines);
         var sites = new List<MutationSite>(covered);
         var changedCount = ApplyDifferentialFilter(sites, strippedSource, existingManifest, options);
 
@@ -140,13 +141,13 @@ public static class MutateHandler
         return TestClassDiscovery.Discover(sourcePath, testProjectPath);
     }
 
-    private static HashSet<int>? LoadCoverage(
+    private static HashSet<string>? LoadCoverage(
         string testProjectPath, MutateOptions options, TextWriter output)
     {
         return LoadCoverageFromPath(CoverageFilePath(testProjectPath), options, output);
     }
 
-    private static HashSet<int>? LoadCoverageFromPath(
+    private static HashSet<string>? LoadCoverageFromPath(
         string coveragePath, MutateOptions options, TextWriter output)
     {
         if (File.Exists(coveragePath))
@@ -157,7 +158,7 @@ public static class MutateHandler
         return CoverageFileMissing(options, output);
     }
 
-    private static HashSet<int>? CoverageFileMissing(MutateOptions options, TextWriter output)
+    private static HashSet<string>? CoverageFileMissing(MutateOptions options, TextWriter output)
     {
         if (options.ReuseCoverage)
         {
@@ -296,8 +297,8 @@ public static class MutateHandler
     private static string CoverageFilePath(string testProjectPath) =>
         Path.Combine(Path.GetDirectoryName(testProjectPath) ?? ".", "coverage.cobertura.xml");
 
-    public static async Task<IReadOnlySet<int>> ResolveCoverageLinesAsync(
-        string testProjectPath, MutateOptions options, IReadOnlySet<int> currentCoverage, TextWriter output,
+    public static async Task<IReadOnlySet<string>> ResolveCoverageLinesAsync(
+        string testProjectPath, MutateOptions options, IReadOnlySet<string> currentCoverage, TextWriter output,
         Func<string, Task<string?>>? generateCoverage = null)
     {
         if (ShouldSkipCoverageGeneration(currentCoverage, options))
@@ -319,10 +320,10 @@ public static class MutateHandler
         Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
         File.Copy(generatedPath!, destPath, overwrite: true);
 
-        return CoverageReader.LoadCoverage(destPath).ToHashSet();
+        return CoverageReader.LoadCoverage(destPath);
     }
 
-    public static bool ShouldSkipCoverageGeneration(IReadOnlySet<int> currentCoverage, MutateOptions options)
+    public static bool ShouldSkipCoverageGeneration(IReadOnlySet<string> currentCoverage, MutateOptions options)
         => currentCoverage.Count > 0 || !options.AutoCoverage;
 
     public static bool WasCoverageGenerated(string? generatedPath)

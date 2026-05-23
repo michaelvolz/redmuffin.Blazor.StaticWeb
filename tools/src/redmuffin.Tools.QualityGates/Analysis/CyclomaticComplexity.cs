@@ -70,13 +70,6 @@ public static class CyclomaticComplexity
             base.VisitForEachStatement(node);
         }
 
-        public override void VisitSwitchStatement(SwitchStatementSyntax node)
-        {
-            // Each case is a decision point; the switch itself is not counted.
-            // We count case labels in VisitCaseSwitchLabel.
-            base.VisitSwitchStatement(node);
-        }
-
         public override void VisitCaseSwitchLabel(CaseSwitchLabelSyntax node)
         {
             DecisionPoints++;

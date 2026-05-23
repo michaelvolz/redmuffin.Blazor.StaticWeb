@@ -70,10 +70,10 @@ public sealed class MutateHandlerHelperTests
     public async Task should_partition_sites_by_coverage()
     {
         var sites = new List<MutationSite> { MakeSite(0, 10), MakeSite(1, 20) };
-        var coveredLines = new HashSet<int> { 11 };
+        var coveredLines = new HashSet<string>(StringComparer.Ordinal) { "source:11" };
 
         var result = MutateHandler.ClassifyAndFilterSites(
-            sites, coveredLines, "source", null, new MutateOptions());
+            sites, coveredLines, "source", "source", null, new MutateOptions());
 
         await Assert.That(result.Sites.Count).IsEqualTo(1);
         await Assert.That(result.Covered.Count).IsEqualTo(1);
@@ -84,10 +84,10 @@ public sealed class MutateHandlerHelperTests
     public async Task should_fallback_to_all_sites_when_none_covered()
     {
         var sites = new List<MutationSite> { MakeSite(0, 10) };
-        var coveredLines = new HashSet<int>();
+        var coveredLines = new HashSet<string>(StringComparer.Ordinal);
 
         var result = MutateHandler.ClassifyAndFilterSites(
-            sites, coveredLines, "source", null, new MutateOptions());
+            sites, coveredLines, "source", "source", null, new MutateOptions());
 
         await Assert.That(result.Sites.Count).IsEqualTo(1);
         await Assert.That(result.Covered.Count).IsEqualTo(1);
@@ -98,11 +98,11 @@ public sealed class MutateHandlerHelperTests
     public async Task should_filter_by_lines_option()
     {
         var sites = new List<MutationSite> { MakeSite(0, 10), MakeSite(1, 20), MakeSite(2, 30) };
-        var coveredLines = new HashSet<int> { 11, 21, 31 };
+        var coveredLines = new HashSet<string>(StringComparer.Ordinal) { "source:11", "source:21", "source:31" };
         var options = new MutateOptions { Lines = new HashSet<int> { 10, 30 } };
 
         var result = MutateHandler.ClassifyAndFilterSites(
-            sites, coveredLines, "source", null, options);
+            sites, coveredLines, "source", "source", null, options);
 
         await Assert.That(result.Sites.Count).IsEqualTo(2);
         await Assert.That(result.Sites[0].Line).IsEqualTo(10);
@@ -115,7 +115,7 @@ public sealed class MutateHandlerHelperTests
     public async Task ShouldSkipCoverageGeneration_returns_true_when_coverage_exists()
     {
         var result = MutateHandler.ShouldSkipCoverageGeneration(
-            new HashSet<int> { 10 }, new MutateOptions { AutoCoverage = true });
+            new HashSet<string>(StringComparer.Ordinal) { "Foo.cs:10" }, new MutateOptions { AutoCoverage = true });
         await Assert.That(result).IsTrue();
     }
 
@@ -123,7 +123,7 @@ public sealed class MutateHandlerHelperTests
     public async Task ShouldSkipCoverageGeneration_returns_true_when_auto_disabled()
     {
         var result = MutateHandler.ShouldSkipCoverageGeneration(
-            new HashSet<int>(), new MutateOptions { AutoCoverage = false });
+            new HashSet<string>(StringComparer.Ordinal), new MutateOptions { AutoCoverage = false });
         await Assert.That(result).IsTrue();
     }
 
@@ -131,7 +131,7 @@ public sealed class MutateHandlerHelperTests
     public async Task ShouldSkipCoverageGeneration_returns_false_when_empty_and_auto()
     {
         var result = MutateHandler.ShouldSkipCoverageGeneration(
-            new HashSet<int>(), new MutateOptions { AutoCoverage = true });
+            new HashSet<string>(StringComparer.Ordinal), new MutateOptions { AutoCoverage = true });
         await Assert.That(result).IsFalse();
     }
 
@@ -152,7 +152,7 @@ public sealed class MutateHandlerHelperTests
     {
         using var writer = new StringWriter();
         var result = await MutateHandler.ResolveCoverageLinesAsync(
-                "/fake/project", new MutateOptions(), new HashSet<int> { 10 }, writer)
+                "/fake/project", new MutateOptions(), new HashSet<string>(StringComparer.Ordinal) { "Foo.cs:10" }, writer)
             .ConfigureAwait(false);
         await Assert.That(result.Count).IsEqualTo(1);
     }
@@ -164,7 +164,7 @@ public sealed class MutateHandlerHelperTests
         var result = await MutateHandler.ResolveCoverageLinesAsync(
                 "/fake/project",
                 new MutateOptions { AutoCoverage = true },
-                new HashSet<int>(),
+                    new HashSet<string>(StringComparer.Ordinal),
                 writer,
                 generateCoverage: _ => Task.FromResult<string?>(null))
             .ConfigureAwait(false);
@@ -199,12 +199,12 @@ public sealed class MutateHandlerHelperTests
             var result = await MutateHandler.ResolveCoverageLinesAsync(
                     destRoot,
                     new MutateOptions { AutoCoverage = true },
-                    new HashSet<int>(),
+                new HashSet<string>(StringComparer.Ordinal),
                     writer,
                     generateCoverage: _ => Task.FromResult<string?>(src))
                 .ConfigureAwait(false);
 
-            await Assert.That(result.Contains(10)).IsTrue();
+            await Assert.That(result.Contains("Foo.cs:10")).IsTrue();
         }
         finally
         {

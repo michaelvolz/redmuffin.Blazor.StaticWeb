@@ -5,18 +5,24 @@ using System.Xml.Linq;
 
 public static class CoverageReader
 {
-    public static IReadOnlySet<int> LoadCoverage(string coberturaPath)
+    public static IReadOnlySet<string> LoadCoverage(string coberturaPath)
     {
         var doc = XDocument.Load(coberturaPath);
-        var covered = new HashSet<int>();
+        var covered = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var classElement in doc.Descendants("class"))
         {
+            var filename = classElement.Attribute("filename")?.Value;
+            if (filename is null)
+            {
+                continue;
+            }
+
             foreach (var lineElement in classElement.Elements("lines").Elements("line"))
             {
                 if (TryParseLine(lineElement, out var lineNumber))
                 {
-                    covered.Add(lineNumber);
+                    covered.Add(FileLineKey(filename, lineNumber));
                 }
             }
         }
@@ -24,7 +30,10 @@ public static class CoverageReader
         return covered;
     }
 
-    public static bool TryParseLine(XElement lineElement, out int lineNumber)
+    private static string FileLineKey(string filename, int lineNumber) =>
+        string.Create(CultureInfo.InvariantCulture, $"{filename}:{lineNumber}");
+
+    private static bool TryParseLine(XElement lineElement, out int lineNumber)
     {
         if (!TryParseAttributes(lineElement, out var numberStr, out var hitsStr))
         {
@@ -37,7 +46,7 @@ public static class CoverageReader
             && hits > 0;
     }
 
-    public static bool TryParseAttributes(XElement lineElement, out string? numberStr, out string? hitsStr)
+    private static bool TryParseAttributes(XElement lineElement, out string? numberStr, out string? hitsStr)
     {
         numberStr = lineElement.Attribute("number")?.Value;
         hitsStr = lineElement.Attribute("hits")?.Value;
@@ -45,7 +54,10 @@ public static class CoverageReader
     }
 
     public static (IReadOnlyList<MutationSite> Covered, IReadOnlyList<MutationSite> Uncovered)
-        PartitionByCoverage(IReadOnlyList<MutationSite> sites, IReadOnlySet<int> coveredLines)
+        PartitionByCoverage(
+            IReadOnlyList<MutationSite> sites,
+            string sourceFilePath,
+            IReadOnlySet<string> coveredFileLines)
     {
         var covered = new List<MutationSite>();
         var uncovered = new List<MutationSite>();
@@ -54,8 +66,9 @@ public static class CoverageReader
         {
             // Roslyn returns 0-based line numbers; Cobertura XML uses 1-based
             var sourceLine = site.Line + 1;
+            var key = FileLineKey(sourceFilePath, sourceLine);
 
-            if (coveredLines.Contains(sourceLine))
+            if (coveredFileLines.Contains(key))
             {
                 covered.Add(site);
             }
