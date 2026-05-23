@@ -7,10 +7,10 @@ using redmuffin.Blazor.StaticWeb.Core.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 using redmuffin.Blazor.StaticWeb.Core.Services;
-using redmuffin.Blazor.StaticWeb.Features.Pages.DebugPage.Services;
+using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Services;
+using redmuffin.Blazor.StaticWeb.Features.DebugPage.Services;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
-using redmuffin.Blazor.StaticWeb.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
