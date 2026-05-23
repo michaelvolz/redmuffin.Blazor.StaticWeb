@@ -7,8 +7,8 @@ using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
-using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Models;
-using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Services;
+using redmuffin.Blazor.StaticWeb.Features.Raindrop.Models;
+using redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.ArticlesPage;
 

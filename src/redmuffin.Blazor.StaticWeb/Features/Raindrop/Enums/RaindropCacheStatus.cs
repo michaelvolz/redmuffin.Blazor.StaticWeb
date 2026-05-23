@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Features.RaindropItems.Enums;
+namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Enums;
 
 /// <summary>
 ///     Represents the status of a raindrop cache operation.

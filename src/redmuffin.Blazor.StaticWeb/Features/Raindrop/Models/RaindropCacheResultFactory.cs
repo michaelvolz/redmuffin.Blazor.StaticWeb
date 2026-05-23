@@ -1,6 +1,6 @@
-using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Enums;
+using redmuffin.Blazor.StaticWeb.Features.Raindrop.Enums;
 
-namespace redmuffin.Blazor.StaticWeb.Features.RaindropItems.Models;
+namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Models;
 
 /// <summary>
 ///     Static factory methods for creating RaindropCacheResult instances.

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using redmuffin.Blazor.StaticWeb.Common.Validation;
 
-namespace redmuffin.Blazor.StaticWeb.Features.RaindropItems.Models;
+namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Models;
 
 /// <summary>
 ///     Pruned version of RaindropItem containing only essential fields for UI display.

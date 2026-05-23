@@ -1,6 +1,6 @@
-using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Enums;
+using redmuffin.Blazor.StaticWeb.Features.Raindrop.Enums;
 
-namespace redmuffin.Blazor.StaticWeb.Features.RaindropItems.Models;
+namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Models;
 
 /// <summary>
 ///     Represents the result of a raindrop cache operation with success/failure states and optional data.

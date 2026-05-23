@@ -3,11 +3,11 @@ using Blazored.LocalStorage;
 using LightMock.Generator;
 using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Features.Cache.Services;
+using redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
+using redmuffin.Blazor.StaticWeb.Features.Raindrop.Models;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
-using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Models;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.Features.Cache.Services;
+namespace redmuffin.Blazor.StaticWeb.Tests.Features.Raindrop.Cache;
 
 [Category("Feature:Cache")]
 public partial class RaindropItemsCacheTests

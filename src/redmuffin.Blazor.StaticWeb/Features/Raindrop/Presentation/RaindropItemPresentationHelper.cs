@@ -1,6 +1,6 @@
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 
-namespace redmuffin.Blazor.StaticWeb.Features.RaindropItems.Services;
+namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Presentation;
 
 public static class RaindropItemPresentationHelper
 {

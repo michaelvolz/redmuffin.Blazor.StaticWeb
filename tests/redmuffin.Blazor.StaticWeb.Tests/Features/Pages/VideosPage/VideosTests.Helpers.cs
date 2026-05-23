@@ -11,7 +11,7 @@ using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Models;
 using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Services;
 using redmuffin.Blazor.StaticWeb.Features.Pages.VideosPage;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
-using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Services;
+using redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.VideosPage;
 

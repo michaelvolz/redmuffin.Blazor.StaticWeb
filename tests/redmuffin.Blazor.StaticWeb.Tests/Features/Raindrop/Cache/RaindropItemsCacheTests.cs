@@ -2,9 +2,9 @@ using System.Diagnostics;
 using System.Text.Json;
 using LZStringCSharp;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Enums;
+using redmuffin.Blazor.StaticWeb.Features.Raindrop.Enums;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.Features.Cache.Services;
+namespace redmuffin.Blazor.StaticWeb.Tests.Features.Raindrop.Cache;
 
 [Category("Feature:Cache")]
 [Category("Unit")]

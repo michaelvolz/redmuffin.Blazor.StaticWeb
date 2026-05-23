@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 
-namespace redmuffin.Blazor.StaticWeb.Features.RaindropItems.Services;
+namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Presentation;
 
 /// <summary>
 ///     Shared background refresh logic used by Videos and Articles pages.

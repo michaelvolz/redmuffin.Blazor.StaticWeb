@@ -1,7 +1,7 @@
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Models;
+using redmuffin.Blazor.StaticWeb.Features.Raindrop.Models;
 
-namespace redmuffin.Blazor.StaticWeb.Features.RaindropItems.Extensions;
+namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Extensions;
 
 /// <summary>
 ///     Extension methods for converting between RaindropItem and PrunedRaindropItem.

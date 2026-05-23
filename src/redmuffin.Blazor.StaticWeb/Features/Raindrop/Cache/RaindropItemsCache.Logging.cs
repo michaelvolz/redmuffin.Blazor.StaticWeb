@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Features.Cache.Services;
+namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
 
 /// <summary>
 ///     LoggerMessage delegates for RaindropItemsCache.

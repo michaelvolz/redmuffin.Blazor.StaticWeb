@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace redmuffin.Blazor.StaticWeb.Features.RaindropItems.Models;
+namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Models;
 
 /// <summary>
 ///     Metadata for raindrop cache entries including timestamps and version tracking.

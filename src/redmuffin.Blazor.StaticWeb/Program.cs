@@ -9,8 +9,8 @@ using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 using redmuffin.Blazor.StaticWeb.Core.Services;
 using redmuffin.Blazor.StaticWeb.Features.Cache.Services;
 using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Services;
+using redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
-using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Services;
 using redmuffin.Blazor.StaticWeb.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);

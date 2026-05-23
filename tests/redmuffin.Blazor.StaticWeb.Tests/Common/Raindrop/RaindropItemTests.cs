@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Extensions;
-using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Models;
+using redmuffin.Blazor.StaticWeb.Features.Raindrop.Extensions;
+using redmuffin.Blazor.StaticWeb.Features.Raindrop.Models;
 using TUnit;
 
 namespace redmuffin.Blazor.StaticWeb.Common;

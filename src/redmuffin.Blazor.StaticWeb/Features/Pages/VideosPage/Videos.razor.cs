@@ -3,9 +3,10 @@ using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Features.Cache.Enums;
+using redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
+using redmuffin.Blazor.StaticWeb.Features.Raindrop.Presentation;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
-using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Services;
-using static redmuffin.Blazor.StaticWeb.Features.RaindropItems.Services.RaindropItemPresentationHelper;
+using static redmuffin.Blazor.StaticWeb.Features.Raindrop.Presentation.RaindropItemPresentationHelper;
 
 namespace redmuffin.Blazor.StaticWeb.Features.Pages.VideosPage;
 

@@ -1,7 +1,7 @@
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Extensions;
+using redmuffin.Blazor.StaticWeb.Features.Raindrop.Extensions;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.Features.RaindropItems.Extensions;
+namespace redmuffin.Blazor.StaticWeb.Tests.Features.Raindrop.Extensions;
 
 /// <summary>
 ///     Unit tests for RaindropItemExtensions conversion methods.

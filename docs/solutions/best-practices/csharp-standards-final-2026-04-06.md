@@ -218,10 +218,10 @@ All C# files use file-scoped namespaces (C# 10+ feature):
 
 ```csharp
 // ✅ CORRECT: File-scoped namespace
-namespace redmuffin.Blazor.StaticWeb.Features.RaindropItems.Models;
+namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Models;
 
 // ❌ AVOID: Block-scoped namespace
-namespace redmuffin.Blazor.StaticWeb.Features.RaindropItems.Models
+namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Models
 {
     // ...
 }

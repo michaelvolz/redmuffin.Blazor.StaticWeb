@@ -1,7 +1,7 @@
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Models;
+using redmuffin.Blazor.StaticWeb.Features.Raindrop.Models;
 
-namespace redmuffin.Blazor.StaticWeb.Features.RaindropItems.Services;
+namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
 
 /// <summary>
 ///     Interface for caching raindrop items in LocalStorage with compression and expiration support.

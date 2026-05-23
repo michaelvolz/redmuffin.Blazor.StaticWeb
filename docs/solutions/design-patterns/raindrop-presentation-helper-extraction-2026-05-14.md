@@ -44,7 +44,7 @@ Both methods accept nullable items and handle all null guard scenarios.
 Both `.razor.cs` files and `.razor` files reference the static class:
 
 ```razor
-@using static redmuffin.Blazor.StaticWeb.Features.RaindropItems.Services.RaindropItemPresentationHelper
+@using static redmuffin.Blazor.StaticWeb.Features.Raindrop.Presentation.RaindropItemPresentationHelper
 ```
 
 ## What Was NOT Extracted

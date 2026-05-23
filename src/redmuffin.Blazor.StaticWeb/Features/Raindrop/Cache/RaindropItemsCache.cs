@@ -3,10 +3,9 @@ using System.Text.Json;
 using Blazored.LocalStorage;
 using LZStringCSharp;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Models;
-using redmuffin.Blazor.StaticWeb.Features.RaindropItems.Services;
+using redmuffin.Blazor.StaticWeb.Features.Raindrop.Models;
 
-namespace redmuffin.Blazor.StaticWeb.Features.Cache.Services;
+namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
 
 /// <summary>
 ///     Implementation of raindrop items cache using LocalStorage with compression and expiration support.
