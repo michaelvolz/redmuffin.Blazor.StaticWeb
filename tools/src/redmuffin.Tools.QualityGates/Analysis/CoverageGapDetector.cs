@@ -9,41 +9,53 @@ public static class CoverageGapDetector
     public static IReadOnlyList<MethodCrap> ClassifyCoverageGaps(
         IReadOnlyList<MethodCrap> methods, string projectPath)
     {
-        return methods.Select(m => ClassifyOne(m, projectPath)).ToList();
+        return methods
+            .GroupBy(m => m.FilePath, StringComparer.Ordinal)
+            .SelectMany(g => ClassifyGroup(g.Key, [.. g], projectPath))
+            .ToList();
     }
 
-    private static MethodCrap ClassifyOne(MethodCrap m, string projectPath)
+    private static IEnumerable<MethodCrap> ClassifyGroup(
+        string filePath, IReadOnlyList<MethodCrap> methods, string projectPath)
     {
-        if (TryClassifyAsConductor(m, projectPath, out var result)) return result;
-        if (TryClassifyAsSwitchDispatcher(m, projectPath, out result)) return result;
-        return m;
+        var resolved = ResolvePath(filePath, projectPath);
+        if (!File.Exists(resolved))
+        {
+            foreach (var m in methods)
+                yield return m;
+            yield break;
+        }
+
+        var sourceCode = File.ReadAllText(resolved);
+
+        foreach (var m in methods)
+        {
+            yield return ClassifyOneWithSource(m, sourceCode);
+        }
     }
 
-    private static bool TryClassifyAsConductor(MethodCrap m, string projectPath, out MethodCrap result)
+    private static MethodCrap ClassifyOneWithSource(MethodCrap m, string sourceCode)
     {
-        result = m;
-        if (m.Complexity > 4) return false;
-        if (m.Complexity <= 3 && m.Coverage >= 0.01) return false;
-
-        var filePath = ResolvePath(m.FilePath, projectPath);
-        if (!File.Exists(filePath)) return false;
-
-        var sourceCode = File.ReadAllText(filePath);
-        result = m with { IsCoverageGap = IsCoverageGap(sourceCode, m.MethodName, m.Complexity) };
-        return result.IsCoverageGap;
+        return TryClassifyAsConductor(m, sourceCode)
+            ?? TryClassifyAsSwitchDispatcher(m, sourceCode)
+            ?? m;
     }
 
-    private static bool TryClassifyAsSwitchDispatcher(MethodCrap m, string projectPath, out MethodCrap result)
+    private static MethodCrap? TryClassifyAsConductor(MethodCrap m, string sourceCode)
     {
-        result = m;
-        if (m.Complexity <= 3 || m.Coverage <= 0.5 || m.CrapScore <= 8) return false;
+        if (m.Complexity > 4) return null;
+        if (m.Complexity <= 3 && m.Coverage >= 0.01) return null;
 
-        var filePath = ResolvePath(m.FilePath, projectPath);
-        if (!File.Exists(filePath)) return false;
+        var result = m with { IsCoverageGap = IsCoverageGap(sourceCode, m.MethodName, m.Complexity) };
+        return result.IsCoverageGap ? result : null;
+    }
 
-        var sourceCode = File.ReadAllText(filePath);
-        result = m with { IsCoverageGap = IsSwitchDispatcher(sourceCode, m.MethodName) };
-        return result.IsCoverageGap;
+    private static MethodCrap? TryClassifyAsSwitchDispatcher(MethodCrap m, string sourceCode)
+    {
+        if (m.Complexity <= 3 || m.Coverage <= 0.5 || m.CrapScore <= 8) return null;
+
+        var result = m with { IsCoverageGap = IsSwitchDispatcher(sourceCode, m.MethodName) };
+        return result.IsCoverageGap ? result : null;
     }
 
     private static string ResolvePath(string filePath, string projectPath) =>

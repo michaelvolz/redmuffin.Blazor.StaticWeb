@@ -44,6 +44,11 @@ public static class CoberturaMerger
     {
         var key = GetClassKey(classElement);
 
+        if (key.Length == 0)
+        {
+            return;
+        }
+
         if (!classMap.TryGetValue(key, out var lineMap))
         {
             lineMap = new Dictionary<int, int>();

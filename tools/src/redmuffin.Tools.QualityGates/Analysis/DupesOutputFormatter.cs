@@ -1,12 +1,9 @@
 namespace redmuffin.Tools.QualityGates.Analysis;
 
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 
-/// <summary>
-///     Formats duplicate detection results in text or JSON format,
-///     matching the dry4clj output style.
-/// </summary>
 public static class DupesOutputFormatter
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
@@ -25,27 +22,35 @@ public static class DupesOutputFormatter
         if (candidates.Count == 0)
             return "No duplicate candidates found.";
 
-        return FormatCandidateList(candidates);
-    }
-
-    private static string FormatCandidateList(IReadOnlyList<DupesCandidate> candidates)
-    {
-        var lines = new List<string>();
-        foreach (var c in candidates)
+        var sb = new StringBuilder();
+        for (var i = 0; i < candidates.Count; i++)
         {
-            lines.Add(string.Create(
-                CultureInfo.InvariantCulture,
-                $"DUPLICATE score={c.Score:F2}"));
-            lines.Add(string.Create(
-                CultureInfo.InvariantCulture,
-                $"  {c.LeftFile}:{c.LeftStartLine}-{c.LeftEndLine}"));
-            lines.Add(string.Create(
-                CultureInfo.InvariantCulture,
-                $"  {c.RightFile}:{c.RightStartLine}-{c.RightEndLine}"));
-            lines.Add(string.Empty);
+            var c = candidates[i];
+            sb.Append("DUPLICATE score=");
+            sb.Append(c.Score.ToString("F2", CultureInfo.InvariantCulture));
+            sb.AppendLine();
+            sb.Append("  ");
+            sb.Append(c.LeftFile);
+            sb.Append(':');
+            sb.Append(c.LeftStartLine.ToString(CultureInfo.InvariantCulture));
+            sb.Append('-');
+            sb.Append(c.LeftEndLine.ToString(CultureInfo.InvariantCulture));
+            sb.AppendLine();
+            sb.Append("  ");
+            sb.Append(c.RightFile);
+            sb.Append(':');
+            sb.Append(c.RightStartLine.ToString(CultureInfo.InvariantCulture));
+            sb.Append('-');
+            sb.Append(c.RightEndLine.ToString(CultureInfo.InvariantCulture));
+            sb.AppendLine();
+
+            if (i < candidates.Count - 1)
+            {
+                sb.AppendLine();
+            }
         }
 
-        return string.Join(Environment.NewLine, lines).TrimEnd();
+        return sb.ToString();
     }
 
     private static string FormatJson(IReadOnlyList<DupesCandidate> candidates)

@@ -29,7 +29,13 @@ public static class DupesDetector
             }
         }
 
-        candidates.Sort(CandidateComparer);
+        candidates.Sort((a, b) =>
+        {
+            var c = b.Score.CompareTo(a.Score);
+            if (c != 0) return c;
+            c = string.CompareOrdinal(a.LeftFile, b.LeftFile);
+            return c != 0 ? c : a.LeftStartLine.CompareTo(b.LeftStartLine);
+        });
         return candidates;
     }
 
@@ -44,14 +50,6 @@ public static class DupesDetector
                 RightFile: right.File, RightStartLine: right.StartLine, RightEndLine: right.EndLine,
                 LeftNodes: left.Nodes, RightNodes: right.Nodes));
         }
-    }
-
-    public static int CandidateComparer(DupesCandidate a, DupesCandidate b)
-    {
-        var scoreCmp = b.Score.CompareTo(a.Score);
-        if (scoreCmp != 0) return scoreCmp;
-        var fileCmp = string.CompareOrdinal(a.LeftFile, b.LeftFile);
-        return fileCmp != 0 ? fileCmp : a.LeftStartLine.CompareTo(b.LeftStartLine);
     }
 
     private static List<DupesEntry> ScanFiles(IReadOnlyList<string> paths, int minLines, int minNodes)
@@ -76,9 +74,6 @@ public static class DupesDetector
 
         return entries;
     }
-
-    private static bool IsCsFile(string path) =>
-        File.Exists(path) && path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase);
 
     private static void TryAddEntries(string filePath, List<DupesEntry> entries, int minLines, int minNodes)
     {
