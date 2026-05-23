@@ -157,17 +157,17 @@ need limiting.
 
 Updated after each batch completes.
 
-| Batch | Date       | BLOCKERs | IMPROVEs | DEFENDs | SURFACEs | Deferred | Commit(s)             | Notes                   |
-| ----- | ---------- | -------- | -------- | ------- | -------- | -------- | --------------------- | ----------------------- |
-| B0    | 2026-05-23 | 2        | 3        | 2       | 0        | —        | `e6de9b41` `907cd4fc` | Pilot — proved workflow |
-| B1    | —          | —        | —        | —       | —        | —        | —                     | —                       |
-| B2    | —          | —        | —        | —       | —        | —        | —                     | —                       |
-| B3    | —          | —        | —        | —       | —        | —        | —                     | —                       |
-| B4    | —          | —        | —        | —       | —        | —        | —                     | —                       |
-| B5    | —          | —        | —        | —       | —        | —        | —                     | —                       |
-| B6    | —          | —        | —        | —       | —        | —        | —                     | —                       |
-| B7    | —          | —        | —        | —       | —        | —        | —                     | —                       |
-| B8    | —          | —        | —        | —       | —        | —        | —                     | —                       |
+| Batch | Date       | BLOCKERs | IMPROVEs | DEFENDs | SURFACEs | Deferred | Commit(s)             | Notes                                                                |
+| ----- | ---------- | -------- | -------- | ------- | -------- | -------- | --------------------- | -------------------------------------------------------------------- |
+| B0    | 2026-05-23 | 2        | 3        | 2       | 0        | —        | `e6de9b41` `907cd4fc` | Pilot — proved workflow                                              |
+| B1    | 2026-05-23 | 2        | 5        | 3       | 0        | —        | `3fccc46c`            | Process leak, source corruption, dead code, naming                   |
+| B2    | 2026-05-23 | 1        | 5        | 2       | 0        | —        | `01fe5a1c`            | Shared metrics calculator, dead code, float compare, bodyless filter |
+| B3    | —          | —        | —        | —       | —        | —        | —                     | —                                                                    |
+| B4    | —          | —        | —        | —       | —        | —        | —                     | —                                                                    |
+| B5    | —          | —        | —        | —       | —        | —        | —                     | —                                                                    |
+| B6    | —          | —        | —        | —       | —        | —        | —                     | —                                                                    |
+| B7    | —          | —        | —        | —       | —        | —        | —                     | —                                                                    |
+| B8    | —          | —        | —        | —       | —        | —        | —                     | —                                                                    |
 
 ---
 
