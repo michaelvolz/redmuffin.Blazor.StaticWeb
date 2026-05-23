@@ -1,6 +1,6 @@
 using ImageValidator = redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services.ImageValidator;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.ArticlesPage.Core;
+namespace redmuffin.Blazor.StaticWeb.Tests.Features.ArticlesPage.Core;
 
 public class ImageValidatorTests
 {

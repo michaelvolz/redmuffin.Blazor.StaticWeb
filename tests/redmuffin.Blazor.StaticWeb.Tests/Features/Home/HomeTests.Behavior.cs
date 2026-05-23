@@ -1,7 +1,7 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using HomePage = redmuffin.Blazor.StaticWeb.Features.Pages.HomePage.Home;
+using HomePage = redmuffin.Blazor.StaticWeb.Features.HomePage.Home;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Home;
 

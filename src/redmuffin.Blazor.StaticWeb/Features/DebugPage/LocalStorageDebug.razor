@@ -1,0 +1,181 @@
+@page "/debug/localstorage"
+
+<PageTitle>localStorage Debug</PageTitle>
+
+<redmuffin.Blazor.StaticWeb.Features.DebugPage.Components.DebugNavigation/>
+
+<div class="grid-container">
+    <div class="grid-x grid-margin-x">
+        <div class="cell">
+            <h1>localStorage Diagnostics</h1>
+
+            @if (_isRunning)
+            {
+                <div class="callout primary">
+                    <p><i class="fas fa-spinner fa-spin"></i> Running diagnostics...</p>
+                </div>
+            }
+            else if (_diagnostics != null)
+            {
+                <div class="grid-x grid-margin-x">
+                    <div class="cell medium-6">
+                        <div class="callout @(_diagnostics.IsLocalStorageAvailable ? "success" : "alert")">
+                            <h5>localStorage Availability</h5>
+                            <p>
+                                <strong>Status:</strong> @(_diagnostics.IsLocalStorageAvailable ? "✅ Available" : "❌ Not Available")
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="cell medium-6">
+                        <div class="callout @(_diagnostics.IsBlazoredServiceWorking ? "success" : "alert")">
+                            <h5>Blazored.LocalStorage Service</h5>
+                            <p>
+                                <strong>Status:</strong> @(_diagnostics.IsBlazoredServiceWorking ? "✅ Working" : "❌ Not Working")
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="cell medium-6">
+                        <div class="callout @(_diagnostics.JsonSerializationWorks ? "success" : "alert")">
+                            <h5>JSON Serialization</h5>
+                            <p>
+                                <strong>Status:</strong> @(_diagnostics.JsonSerializationWorks ? "✅ Working" : "❌ Not Working")
+                            </p>
+                        </div>
+                    </div>
+
+                    @if (_diagnostics.StorageInfo != null)
+                    {
+                        <div class="cell medium-6">
+                            <div class="callout secondary">
+                                <h5>Storage Information</h5>
+                                <p><strong>Quota:</strong> @((_diagnostics.StorageInfo.QuotaBytes / (1024.0 * 1024.0)).ToString("F1")) MB</p>
+                                <p><strong>Used:</strong> @((_diagnostics.StorageInfo.UsedBytes / (1024.0 * 1024.0)).ToString("F1")) MB</p>
+                                <p>
+                                    <strong>localStorage Items:</strong> @_diagnostics.StorageInfo.LocalStorageLength
+                                </p>
+                                <p><strong>localStorage Size:</strong> @((_diagnostics.StorageInfo.LocalStorageSize / 1024.0).ToString("F1")) KB</p>
+                            </div>
+                        </div>
+                    }
+
+                    @if (_diagnostics.ExistingCacheKeys.Any())
+                    {
+                        <div class="cell">
+                            <div class="callout success">
+                                <h5>Existing Cache Keys (@_diagnostics.ExistingCacheKeys.Count)</h5>
+                                <ul>
+                                    @foreach (var key in _diagnostics.ExistingCacheKeys)
+                                    {
+                                        <li>
+                                            <code>@key</code>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="cell">
+                            <div class="callout warning">
+                                <h5>No Cache Keys Found</h5>
+                                <p>No existing raindrop or image validation cache keys were found in localStorage.</p>
+                            </div>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(_diagnostics.DiagnosticError))
+                    {
+                        <div class="cell">
+                            <div class="callout alert">
+                                <h5>Diagnostic Error</h5>
+                                <p>
+                                    <code>@_diagnostics.DiagnosticError</code>
+                                </p>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="cell">
+                    <h2>Recommendations</h2>
+                    <div class="callout secondary">
+                        @if (!_diagnostics.IsLocalStorageAvailable)
+                        {
+                            <p>
+                                <strong>🚫 localStorage is not available:</strong>
+                            </p>
+                            <ul>
+                                <li>Check if you're in private/incognito mode</li>
+                                <li>Check browser localStorage settings</li>
+                                <li>Check if localStorage is disabled by policy</li>
+                            </ul>
+                        }
+                        else if (!_diagnostics.IsBlazoredServiceWorking)
+                        {
+                            <p>
+                                <strong>🚫 Blazored.LocalStorage service is not working:</strong>
+                            </p>
+                            <ul>
+                                <li>Check if the service is properly registered in DI</li>
+                                <li>Check for JavaScript interop issues</li>
+                                <li>Check browser console for errors</li>
+                            </ul>
+                        }
+                        else if (!_diagnostics.JsonSerializationWorks)
+                        {
+                            <p>
+                                <strong>🚫 JSON serialization is failing:</strong>
+                            </p>
+                            <ul>
+                                <li>Check JsonSerializerOptions configuration</li>
+                                <li>Check for circular references in data</li>
+                                <li>Check JsonSerializerContext usage</li>
+                            </ul>
+                        }
+                        else if (_diagnostics.ExistingCacheKeys.Any())
+                        {
+                            <p>
+                                <strong>✅ Cache keys found - caching appears to be working!</strong>
+                            </p>
+                            <p>If you're not seeing data on your live server, the issue might be:</p>
+                            <ul>
+                                <li>Data expiration (cache TTL)</li>
+                                <li>Different cache keys between environments</li>
+                                <li>Cache retrieval logic issues</li>
+                            </ul>
+                        }
+                        else
+                        {
+                            <p>
+                                <strong>⚠️ No cache keys found:</strong>
+                            </p>
+                            <ul>
+                                <li>Cache writing might be failing</li>
+                                <li>Data might not be reaching the cache layer</li>
+                                <li>Check application logs for cache-related errors</li>
+                            </ul>
+                        }
+                    </div>
+                </div>
+            }
+
+            <div class="cell">
+                <button class="button primary" @onclick="RunDiagnosticsAsync" disabled="@_isRunning">
+                    @if (_isRunning)
+                    {
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <text>&nbsp;Running...</text>
+                    }
+                    else
+                    {
+                        <i class="fas fa-play"></i>
+                        <text>&nbsp;Run Diagnostics</text>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

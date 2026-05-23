@@ -1,7 +1,7 @@
 using System.Net;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Models;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.ArticlesPage.Core;
+namespace redmuffin.Blazor.StaticWeb.Tests.Features.ArticlesPage.Core;
 
 public sealed class ImageValidatorBehaviorTests
 {

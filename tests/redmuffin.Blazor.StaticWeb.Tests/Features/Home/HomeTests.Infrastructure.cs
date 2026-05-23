@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
-using HomePage = redmuffin.Blazor.StaticWeb.Features.Pages.HomePage.Home;
+using HomePage = redmuffin.Blazor.StaticWeb.Features.HomePage.Home;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Home;
 

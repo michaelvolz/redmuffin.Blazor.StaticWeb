@@ -1,5 +1,5 @@
 using Bunit;
-using redmuffin.Blazor.StaticWeb.Features.Pages.HomePage;
+using redmuffin.Blazor.StaticWeb.Features.HomePage;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Integration;
 
