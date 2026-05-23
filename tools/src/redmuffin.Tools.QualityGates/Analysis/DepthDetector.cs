@@ -136,17 +136,32 @@ public static class DepthDetector
         var paramBloat = paramCount > 4;
         var isEntangled = isPrivate && paramCount >= 3 && HasSideEffects(method);
 
-        (bool Active, int Weight, string Label)[] signalData =
-        [
-            (isShallow, 3, "shallow(3)"),
-            (isWrongAbstract, 2, "wrong-abstraction(2)"),
-            (paramBloat, 1, "params(1)"),
-            (isEntangled, 2, "entangled(2)"),
-        ];
+        var composite = 0;
+        var signals = new List<string>();
 
-        var active = Array.FindAll(signalData, s => s.Active);
-        var composite = active.Sum(s => s.Weight);
-        var signals = Array.ConvertAll(active, s => s.Label);
+        if (isShallow)
+        {
+            composite += 3;
+            signals.Add("shallow(3)");
+        }
+
+        if (isWrongAbstract)
+        {
+            composite += 2;
+            signals.Add("wrong-abstraction(2)");
+        }
+
+        if (paramBloat)
+        {
+            composite += 1;
+            signals.Add("params(1)");
+        }
+
+        if (isEntangled)
+        {
+            composite += 2;
+            signals.Add("entangled(2)");
+        }
 
         var lineSpan = method.GetLocation().GetLineSpan();
         return new DepthResult(
@@ -230,17 +245,17 @@ public static class DepthDetector
 
     private sealed class SideEffectWalker : CSharpSyntaxWalker
     {
-        private static readonly FrozenDictionary<string, bool> KnownPureMethods =
-            new Dictionary<string, bool>(StringComparer.Ordinal)
+        private static readonly FrozenSet<string> KnownPureMethods =
+            new HashSet<string>(StringComparer.Ordinal)
             {
-                { "ToString", true }, { "ToUpper", true }, { "ToLower", true },
-                { "Length", true }, { "Count", true }, { "Equals", true },
-                { "StartsWith", true }, { "EndsWith", true }, { "Contains", true },
-                { "IndexOf", true }, { "Substring", true }, { "Trim", true },
-                { "TrimStart", true }, { "TrimEnd", true }, { "Replace", true },
-                { "Split", true }, { "Join", true }, { "Math", true },
-                { "Abs", true }, { "Max", true }, { "Min", true },
-            }.ToFrozenDictionary(StringComparer.Ordinal);
+                "ToString", "ToUpper", "ToLower",
+                "Length", "Count", "Equals",
+                "StartsWith", "EndsWith", "Contains",
+                "IndexOf", "Substring", "Trim",
+                "TrimStart", "TrimEnd", "Replace",
+                "Split", "Join", "Math",
+                "Abs", "Max", "Min",
+            }.ToFrozenSet(StringComparer.Ordinal);
 
         public bool HasSideEffect { get; private set; }
 
@@ -262,6 +277,6 @@ public static class DepthDetector
         }
 
         public static bool IsKnownPure(string name) =>
-            KnownPureMethods.ContainsKey(name);
+            KnownPureMethods.Contains(name);
     }
 }
