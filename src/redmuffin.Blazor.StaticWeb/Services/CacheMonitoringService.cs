@@ -78,9 +78,6 @@ public class CacheMonitoringService : ICacheMonitoringService
         LoggerMessage.Define<long>(LogLevel.Error, new EventId(16, nameof(LogCacheOptimizationFailedWithTime)),
             "Cache optimization failed after {ElapsedMs}ms");
 
-    // Commented out as these are not currently used
-    // private const double LowCacheHitRateThreshold = 60.0;
-    // private const double CriticalCacheHitRateThreshold = 40.0;
     private readonly IBrowserStorageService _browserStorageService;
     private readonly ILogger<CacheMonitoringService> _logger;
 
@@ -90,23 +87,6 @@ public class CacheMonitoringService : ICacheMonitoringService
     {
         _browserStorageService = browserStorageService ?? throw new ArgumentNullException(nameof(browserStorageService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
-
-    private static long CalculateTotalAccesses(CacheStats stats)
-    {
-        // Estimate total accesses based on namespace statistics
-        return stats.NamespaceStats.Values.Sum(ns => (long)(ns.TotalItems * ns.AverageAccessCount));
-    }
-
-    private static (double HitRate, double MissRate) CalculateHitMissRates(CacheStats stats, long totalAccesses)
-    {
-        if (totalAccesses == 0) return (0.0, 0.0);
-
-        // Estimate hit rate based on cache efficiency
-        var hitRate = Math.Min(95.0, 60.0 + stats.TotalItems * 0.01);
-        var missRate = 100.0 - hitRate;
-
-        return (hitRate, missRate);
     }
 
     private static double CalculateAverageAccessTime(CacheStats stats)
