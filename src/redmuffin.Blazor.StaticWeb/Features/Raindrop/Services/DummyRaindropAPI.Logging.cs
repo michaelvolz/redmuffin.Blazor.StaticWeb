@@ -52,13 +52,4 @@ public sealed partial class DummyRaindropAPI
 
     [LoggerMessage(Level = LogLevel.Error, Message = "All JSON deserialization strategies failed for {FileName}")]
     private static partial void LogAllDeserializationStrategiesFailed(ILogger logger, string fileName);
-
-    [LoggerMessage(Level = LogLevel.Warning, Message = "JSON content is empty for {FileName}, returning empty array")]
-    private static partial void LogJsonContentEmpty(ILogger logger, string fileName);
-
-    [LoggerMessage(Level = LogLevel.Warning, Message = "JSON content is null for {FileName}, returning empty array")]
-    private static partial void LogJsonContentNull(ILogger logger, string fileName);
-
-    [LoggerMessage(Level = LogLevel.Warning, Message = "JSON content is malformed for {FileName}: {Issue}, attempting to fix")]
-    private static partial void LogJsonContentMalformed(ILogger logger, string fileName, string issue);
 }

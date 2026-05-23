@@ -207,42 +207,4 @@ public sealed partial class DummyRaindropAPI(IHttpClientFactory httpClientFactor
         LogAllDeserializationStrategiesFailed(logger, fileName);
         return Task.FromResult<T?>(null);
     }
-
-    /// <summary>
-    ///     Validates and sanitizes JSON content before deserialization.
-    ///     Handles common edge cases like empty arrays, null values, and malformed structures.
-    /// </summary>
-    /// <param name="jsonContent">The raw JSON content.</param>
-    /// <param name="fileName">The file name for logging purposes.</param>
-    /// <returns>Sanitized JSON content ready for deserialization.</returns>
-    private string SanitizeJsonContent(string jsonContent, string fileName)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(jsonContent);
-        ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
-
-        var trimmed = jsonContent.Trim();
-
-        // Handle empty or whitespace-only content
-        if (string.IsNullOrWhiteSpace(trimmed))
-        {
-            LogJsonContentEmpty(_logger, fileName);
-            return "[]";
-        }
-
-        // Handle null content
-        if (string.Equals(trimmed, "null", StringComparison.OrdinalIgnoreCase))
-        {
-            LogJsonContentNull(_logger, fileName);
-            return "[]";
-        }
-
-        // Handle malformed array start/end
-        if (!trimmed.StartsWith('[') && !trimmed.StartsWith('{'))
-        {
-            LogJsonContentMalformed(_logger, fileName, "Missing opening bracket/brace");
-            return $"[{trimmed}]";
-        }
-
-        return trimmed;
-    }
 }
