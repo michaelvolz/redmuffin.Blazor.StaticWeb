@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Features.Cache.Enums;
+namespace redmuffin.Blazor.StaticWeb.Features.Common.Components;
 
 /// <summary>
 ///     Represents the different states of the refresh badge component.

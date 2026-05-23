@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Features.Cache.Models;
+namespace redmuffin.Blazor.StaticWeb.Features.Pages.DebugPage.Models;
 
 /// <summary>
 ///     Results from localStorage diagnostic tests.

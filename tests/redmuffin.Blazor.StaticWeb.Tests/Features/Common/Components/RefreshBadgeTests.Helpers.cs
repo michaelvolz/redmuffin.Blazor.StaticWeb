@@ -1,6 +1,6 @@
 using Bunit;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.Features.Cache.Components;
+namespace redmuffin.Blazor.StaticWeb.Tests.Features.Common.Components;
 
 /// <summary>
 ///     Helper methods and infrastructure for RefreshBadgeTests.

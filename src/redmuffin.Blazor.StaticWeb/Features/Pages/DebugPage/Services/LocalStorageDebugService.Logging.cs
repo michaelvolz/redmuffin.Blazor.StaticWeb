@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Features.Cache.Services;
+namespace redmuffin.Blazor.StaticWeb.Features.Pages.DebugPage.Services;
 
 public partial class LocalStorageDebugService
 {

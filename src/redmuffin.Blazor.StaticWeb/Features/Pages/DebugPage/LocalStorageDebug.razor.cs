@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components;
-using redmuffin.Blazor.StaticWeb.Features.Cache.Models;
-using redmuffin.Blazor.StaticWeb.Features.Cache.Services;
+using redmuffin.Blazor.StaticWeb.Features.Pages.DebugPage.Models;
+using redmuffin.Blazor.StaticWeb.Features.Pages.DebugPage.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Features.Pages.DebugPage;
 

@@ -2,9 +2,9 @@ using System.Globalization;
 using System.Text.Json;
 using Blazored.LocalStorage;
 using Microsoft.JSInterop;
-using redmuffin.Blazor.StaticWeb.Features.Cache.Models;
+using redmuffin.Blazor.StaticWeb.Features.Pages.DebugPage.Models;
 
-namespace redmuffin.Blazor.StaticWeb.Features.Cache.Services;
+namespace redmuffin.Blazor.StaticWeb.Features.Pages.DebugPage.Services;
 
 /// <summary>
 ///     Debug service to help diagnose localStorage issues.

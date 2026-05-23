@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Components;
-using redmuffin.Blazor.StaticWeb.Features.Cache.Enums;
 
-namespace redmuffin.Blazor.StaticWeb.Features.Cache.Components;
+namespace redmuffin.Blazor.StaticWeb.Features.Common.Components;
 
 /// <summary>
 ///     Code-behind for RefreshBadge component.

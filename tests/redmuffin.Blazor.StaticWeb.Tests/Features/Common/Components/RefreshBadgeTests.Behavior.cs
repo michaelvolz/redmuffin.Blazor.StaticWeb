@@ -1,10 +1,9 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using redmuffin.Blazor.StaticWeb.Features.Cache.Components;
-using redmuffin.Blazor.StaticWeb.Features.Cache.Enums;
+using redmuffin.Blazor.StaticWeb.Features.Common.Components;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.Features.Cache.Components;
+namespace redmuffin.Blazor.StaticWeb.Tests.Features.Common.Components;
 
 [Category("Feature:Cache")]
 public sealed partial class RefreshBadgeTests
