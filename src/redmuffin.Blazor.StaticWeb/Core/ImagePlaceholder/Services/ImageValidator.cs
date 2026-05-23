@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Models;
-using redmuffin.Blazor.StaticWeb.Services;
+using redmuffin.Blazor.StaticWeb.Core.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 

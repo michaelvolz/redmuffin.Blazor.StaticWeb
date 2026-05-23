@@ -6,7 +6,7 @@ using Blazored.LocalStorage;
 // defined in BrowserStorageService.Logging.cs, which include IsEnabled guards.
 #pragma warning disable CA1873
 
-namespace redmuffin.Blazor.StaticWeb.Services;
+namespace redmuffin.Blazor.StaticWeb.Core.Services;
 
 public partial class BrowserStorageService(ILocalStorageService localStorage, ILogger<BrowserStorageService> logger) : IBrowserStorageService
 {

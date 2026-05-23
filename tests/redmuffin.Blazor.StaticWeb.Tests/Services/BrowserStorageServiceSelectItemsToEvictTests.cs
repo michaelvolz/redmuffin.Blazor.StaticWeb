@@ -1,4 +1,4 @@
-using BrowserStorageService = redmuffin.Blazor.StaticWeb.Services.BrowserStorageService;
+using BrowserStorageService = redmuffin.Blazor.StaticWeb.Core.Services.BrowserStorageService;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Services;
 

@@ -2,10 +2,10 @@ using System.Net;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Models;
-using redmuffin.Blazor.StaticWeb.Services;
+using redmuffin.Blazor.StaticWeb.Core.Services;
 using ImageValidator = redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services.ImageValidator;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.Features.Pages.ArticlesPage.Core;
+namespace redmuffin.Blazor.StaticWeb.Tests.Features.ArticlesPage.Core;
 
 public sealed class ImageValidatorInfrastructure : IDisposable
 {

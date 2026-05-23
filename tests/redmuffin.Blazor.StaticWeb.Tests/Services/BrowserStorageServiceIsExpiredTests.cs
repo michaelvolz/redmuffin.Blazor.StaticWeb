@@ -1,4 +1,4 @@
-using redmuffin.Blazor.StaticWeb.Services;
+using redmuffin.Blazor.StaticWeb.Core.Services;
 using TUnit;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Services;

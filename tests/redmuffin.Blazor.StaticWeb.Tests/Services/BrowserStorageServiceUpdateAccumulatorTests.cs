@@ -1,6 +1,6 @@
 namespace redmuffin.Blazor.StaticWeb.Tests.Services;
 
-using redmuffin.Blazor.StaticWeb.Services;
+using redmuffin.Blazor.StaticWeb.Core.Services;
 using TUnit;
 
 public sealed class BrowserStorageServiceUpdateAccumulatorTests
