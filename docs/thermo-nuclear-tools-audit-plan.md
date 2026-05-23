@@ -171,6 +171,56 @@ Updated after each batch completes.
 
 ---
 
+## 7 — Lessons Learned (from Tools Audit, May 2026)
+
+These findings apply to every future thermo-nuclear audit run.
+
+### Classification is the value, not the findings
+
+The subagent produced ~50 findings across 8 batches. 10 were BLOCKERs (real
+bugs), 28 were IMPROVEs (real improvements), 20 were DEFENDed. Blindly
+applying all findings would have broken algorithm-inherent branching patterns
+and created shallow wrappers Ousterhout would reject. The precedence tree +
+author-backed defense is the product — not the subagent's raw output.
+
+### Batch-scope-as-defense is the #1 reversal pattern
+
+Every wrongly-defended finding shared the same cause: the agent defended it
+because it touched files across multiple batch boundaries, not because it
+was architecturally wrong. Examples: gate runner abstraction (defended as
+"cross-batch refactor"), GateRunResults record (defended as "works fine now").
+
+**Mitigation**: add a post-batch DEFEND review step. Before committing, scan
+your own DEFEND list and ask: "did I defend this because of batch scope, not
+because it's wrong?" If yes, flag it for reversal after the full audit.
+
+### Pre-load prior DEFEND lists
+
+The subagent re-discovers the same false positives on every run (visitor
+dispatch, algorithm-inherent branching, LoggerMessage partial methods,
+semantically-named shallow wrappers). Loading the prior audit's DEFEND list
+before the next audit prevents re-litigating these. The agent still gets to
+report them — they just get classified as DEFEND immediately with a citation
+to the prior audit, saving classification time.
+
+### The subagent finds bugs our test suite misses
+
+B1 (orphaned dotnet processes on timeout), B4 (coverage key collision across
+files), B7 (ArchHandler silently returning 0) — all genuine data-corruption
+or silent-failure bugs. The agent reads code with zero context about "this is
+how it's always been seen" — fresh eyes that complement, not replace, our
+test suite.
+
+### Post-audit code-judo review catches batch-scope defenses
+
+The 4 code-judo refactors applied after the full audit (gate runner, JSON,
+NormalizedNode, GateRunResults) were all defended during their batches on
+scope grounds. Reviewing the full DEFEND list after all batches complete
+surfaces these — the batch-boundary constraint is gone, so scope-based
+defenses become obviously wrong.
+
+---
+
 ## Related
 
 - `docs/thermo-nuclear-gate-precedence-tree.md` — conflict resolution
