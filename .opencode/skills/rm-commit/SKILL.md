@@ -177,22 +177,49 @@ component name affected (e.g., `feat(skills):`, `fix(core):`,
 - **Every body line ≤ 100 characters** — enforced by
   `body-max-line-length`. Target ≤ 80 as a safety margin:
   models miscount characters, so 80 keeps you safely under 100.
-- Describe the concrete behavior being changed in plain language
+- Never describe what the diff already shows — the body explains why
+  the change exists, not what it contains
 - Footer: `Refs: #123`, `Co-authored-by:`, or `BREAKING CHANGE:`
 - **Blank line before footer** — `footer-leading-blank` is enforced
 
-**Body template** — every message: one summary line, 1-2 why lines:
+**Body template** — every message must carry decision context, not diff
+summaries. The diff already shows what changed; the body exists for
+what the diff cannot show:
 
 ```
-<One-line concrete summary of what changed>
+<Why this change exists — what problem, gap, or friction does it
+address? Never describe what the diff already shows.>
 
-<1-2 lines: why this change exists or what it fixes.
-Keep each line ≤ 80 chars.>
+<What approach was chosen and why? What alternatives were rejected?
+What constraints or assumptions shaped the decision? What was
+intentionally not tested?>
 ```
 
-No "this commit" meta-talk. No filler. Target 2-3 lines of body for
-most commits; use more only when a trade-off or edge case must be
-explained.
+Never write diff summaries in the body. Never write "this commit" or
+"this change" meta-talk. Never write filler. Target 2-3 lines for
+straightforward commits; use more only when a trade-off, edge case,
+or rejected alternative must be explained.
+
+#### Decision trailers (optional — for commits where context matters)
+
+When a commit carries decision context that future readers (human or
+LLM) would need, add structured git trailers in the footer. Trailers
+are natively queryable via `git log --trailer=<key>:` and survive all
+git operations.
+
+Never add trailers to trivial commits. Only add them when the commit
+involves a trade-off, a rejected alternative, a constraint, or a
+forward-looking directive.
+
+| Trailer       | What it captures                                    | Example                                                                              |
+| ------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `Constraint:` | External rules that shaped the decision             | `Constraint: must work on both WSL (no compositor) and Laptop (Hyprland)`            |
+| `Rejected:`   | Alternatives considered and dismissed, with reasons | `Rejected: shell function approach — PATH wrappers cover non-interactive shells too` |
+| `Directive:`  | Forward-looking instruction for future modifiers    | `Directive: do not remove the timeout — race condition repro is intermittent`        |
+
+These go in the footer, after the body and before `Refs:` or
+`Co-authored-by:` trailers. Blank line before the footer group
+is enforced by `footer-leading-blank`.
 
 #### Breaking changes
 
