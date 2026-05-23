@@ -162,23 +162,15 @@ public sealed partial class CommandIntegrationTests
     }
 
     [Test]
-    public async Task RunArchAsync_null_config_skips_and_returns_zero()
+    public async Task RunGatesAsync_skipped_gate_returns_zero()
     {
         using var writer = new StringWriter();
-        var exit = await AllCommand.RunArchAsync(writer, "/fake/project", archConfig: null)
-            .ConfigureAwait(false);
-        await Assert.That(exit).IsEqualTo(0);
-        await Assert.That(writer.ToString()).Contains("SKIPPED");
-    }
-
-    [Test]
-    public async Task RunMutateAsync_null_source_skips_and_returns_zero()
-    {
-        using var writer = new StringWriter();
-        var exit = await AllCommand.RunMutateAsync(
-            writer, mutateSource: null, "/fake/tests", mutateScan: false)
-            .ConfigureAwait(false);
-        await Assert.That(exit).IsEqualTo(0);
+        var gates = new GateDescriptor[]
+        {
+            new("Test Gate", () => Task.FromResult(99), Skip: true),
+        };
+        var results = await AllCommand.RunGatesAsync(writer, gates).ConfigureAwait(false);
+        await Assert.That(results[0].ExitCode).IsEqualTo(0);
         await Assert.That(writer.ToString()).Contains("SKIPPED");
     }
 

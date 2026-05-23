@@ -3,86 +3,79 @@ namespace redmuffin.Tools.QualityGates.Tests.Commands;
 using redmuffin.Tools.QualityGates.Commands;
 
 /// <summary>
-///     Unit tests for extracted AllCommand helpers.
+///     Unit tests for AllCommand helpers.
 /// </summary>
 public sealed class AllCommandTests
 {
+    // ── RunGatesAsync ──
+
     [Test]
-    public async Task WriteGateHeaderAsync_with_null_config_returns_false_and_writes_skip_message()
+    public async Task RunGatesAsync_skipped_gate_writes_skip_and_returns_zero()
     {
         using var writer = new StringWriter();
-        var result = await AllCommand.WriteGateHeaderAsync(
-            writer, config: null, gateName: "Test Gate", missingFlag: "--test-flag")
-            .ConfigureAwait(false);
+        var gates = new GateDescriptor[]
+        {
+            new("Test Gate", () => Task.FromResult(2), Skip: true),
+        };
 
-        await Assert.That(result).IsFalse();
+        var results = await AllCommand.RunGatesAsync(writer, gates).ConfigureAwait(false);
+
+        await Assert.That(results.Count).IsEqualTo(1);
+        await Assert.That(results[0].ExitCode).IsEqualTo(0);
+        await Assert.That(results[0].Skipped).IsTrue();
         await Assert.That(writer.ToString()).Contains("SKIPPED");
     }
 
     [Test]
-    public async Task WriteGateHeaderAsync_with_config_returns_true_and_writes_header()
+    public async Task RunGatesAsync_running_gate_returns_its_exit_code()
     {
         using var writer = new StringWriter();
-        var result = await AllCommand.WriteGateHeaderAsync(
-            writer, config: "/some/path", gateName: "Test Gate", missingFlag: "--test-flag")
-            .ConfigureAwait(false);
+        var gates = new GateDescriptor[]
+        {
+            new("Test Gate", () => Task.FromResult(2), Skip: false),
+        };
 
-        await Assert.That(result).IsTrue();
-        await Assert.That(writer.ToString()).Contains("Test Gate");
+        var results = await AllCommand.RunGatesAsync(writer, gates).ConfigureAwait(false);
+
+        await Assert.That(results[0].ExitCode).IsEqualTo(2);
+        await Assert.That(results[0].Skipped).IsFalse();
         await Assert.That(writer.ToString()).DoesNotContain("SKIPPED");
     }
 
     [Test]
-    public async Task BuildSummaryLine_with_failures_reports_fail()
+    public async Task RunGatesAsync_multiple_gates_collects_all_results()
     {
-        var line = AllCommand.BuildSummaryLine(new GateRunResults(
-            OverallExit: 2, CrapExit: 0, ScrapExit: 0,
-            ArchConfig: "/cfg.yml", ArchExit: 0,
-            MutateSource: "/src.cs", MutateExit: 0,
-            RunDupes: false, DupesExit: 0,
-            RunDepth: true, DepthExit: 0));
+        using var writer = new StringWriter();
+        var gates = new GateDescriptor[]
+        {
+            new("Gate A", () => Task.FromResult(0), Skip: false),
+            new("Gate B", () => Task.FromResult(2), Skip: false),
+            new("Gate C", () => Task.FromResult(0), Skip: true),
+        };
 
-        await Assert.That(line).Contains("Overall: FAIL");
+        var results = await AllCommand.RunGatesAsync(writer, gates).ConfigureAwait(false);
+
+        await Assert.That(results.Count).IsEqualTo(3);
+        await Assert.That(results[0].ExitCode).IsEqualTo(0);
+        await Assert.That(results[1].ExitCode).IsEqualTo(2);
+        await Assert.That(results[2].Skipped).IsTrue();
     }
 
     [Test]
-    public async Task BuildSummaryLine_with_na_gates_uses_na()
+    public async Task RunGatesAsync_skipped_gate_appears_in_summary_as_na()
     {
-        var line = AllCommand.BuildSummaryLine(new GateRunResults(
-            OverallExit: 0, CrapExit: 0, ScrapExit: 0,
-            ArchConfig: null, ArchExit: 0,
-            MutateSource: null, MutateExit: 0,
-            RunDupes: false, DupesExit: 0,
-            RunDepth: false, DepthExit: 0));
+        using var writer = new StringWriter();
+        var gates = new GateDescriptor[]
+        {
+            new("Architecture", () => Task.FromResult(0), Skip: false),
+            new("Depth", () => Task.FromResult(0), Skip: true),
+        };
 
-        await Assert.That(line).Contains("Architecture: N/A");
-        await Assert.That(line).Contains("Depth: N/A");
-        await Assert.That(line).Contains("Mutation: N/A");
-        await Assert.That(line).Contains("Duplicates: N/A");
-    }
+        await AllCommand.RunGatesAsync(writer, gates).ConfigureAwait(false);
 
-    [Test]
-    public async Task CombineExitCodes_returns_two_when_any_fail()
-    {
-        var result = AllCommand.CombineExitCodes(
-            crapExit: 0, scrapExit: 2, archExit: 0, mutateExit: 0, dupesExit: 0, depthExit: 0);
-        await Assert.That(result).IsEqualTo(2);
-    }
-
-    [Test]
-    public async Task CombineExitCodes_returns_one_when_any_error_no_fails()
-    {
-        var result = AllCommand.CombineExitCodes(
-            crapExit: 1, scrapExit: 0, archExit: 0, mutateExit: 0, dupesExit: 0, depthExit: 0);
-        await Assert.That(result).IsEqualTo(1);
-    }
-
-    [Test]
-    public async Task CombineExitCodes_returns_zero_when_all_pass()
-    {
-        var result = AllCommand.CombineExitCodes(
-            crapExit: 0, scrapExit: 0, archExit: 0, mutateExit: 0, dupesExit: 0, depthExit: 0);
-        await Assert.That(result).IsEqualTo(0);
+        var output = writer.ToString();
+        await Assert.That(output).Contains("Architecture: PASS");
+        await Assert.That(output).Contains("Depth: N/A");
     }
 
     // ── ResolveArchConfig ──
@@ -147,8 +140,6 @@ public sealed class AllCommandTests
             Path.Combine(temp.Root, "quality-gates", "architecture-rules.yml"));
     }
 
-    // ── Helpers ──
-
     // ── ProjectDir ──
 
     [Test]
@@ -184,7 +175,6 @@ public sealed class AllCommandTests
     [Test]
     public async Task DiscoverFromSourceOrSolution_should_discover_from_null()
     {
-        // Walks up from cwd to find .slnx — expect discovery or InvalidOperationException
         var result = AllCommand.DiscoverFromSourceOrSolution(null);
 
         await Assert.That(result.SourceProjects.Count).IsGreaterThan(0);

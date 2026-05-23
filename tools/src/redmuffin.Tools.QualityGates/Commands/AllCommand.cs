@@ -82,7 +82,6 @@ public static class AllCommand
         var runDepth = parseResult.GetValue(DepthOption) ?? true;
         var autoCoverage = parseResult.GetValue(AutoCoverageOption) ?? true;
 
-        // Resolve defaults
         var projectPath = ResolveProjectPath(project, solution);
         var testProjectPaths = ResolveTestProjectPaths(testProject, solution);
         var coveragePath = coverageFile?.FullName ?? (autoCoverage ? null : DefaultCoverageFile);
@@ -114,23 +113,88 @@ public static class AllCommand
         bool runDepth, bool autoCoverage)
     {
         var o = Console.Out;
-
-        // Order: Architecture → Depth → CRAP → SCRAP → Mutation → Duplicates
-        var archExit = await RunArchAsync(o, projectPath, archConfig).ConfigureAwait(false);
-        var depthExit = runDepth ? RunDepth(o, projectPath) : 0;
-        var crapExit = await RunCrapAsync(o, projectPath, coveragePath, changedOnly,
-            autoCoverage, testProjectPaths).ConfigureAwait(false);
         var primaryTestProject = testProjectPaths.Count > 0 ? testProjectPaths[0] : projectPath;
-        var scrapExit = await RunScrapAsync(o, primaryTestProject, verbose, changedOnly).ConfigureAwait(false);
-        var mutateExit = await RunMutateAsync(o, mutateSource, primaryTestProject, mutateScan).ConfigureAwait(false);
-        var dupesExit = runDupes ? await RunDupesAsync(o, projectPath).ConfigureAwait(false) : 0;
 
-        var overallExit = CombineExitCodes(crapExit, scrapExit, archExit, mutateExit, dupesExit, depthExit);
-        var results = new GateRunResults(overallExit, crapExit, scrapExit,
-            archConfig, archExit, mutateSource, mutateExit, runDupes, dupesExit, runDepth, depthExit);
-        await WriteSummaryAsync(o, results).ConfigureAwait(false);
-        return overallExit;
+        var gates = new GateDescriptor[]
+        {
+            new(
+                "Architecture (Dependency Checker)",
+                () => Task.FromResult(ArchCommand.Execute(projectPath, archConfig!, json: false)),
+                archConfig is null),
+
+            new(
+                "Depth (Structural Quality)",
+                () => Task.FromResult(DepthCommand.Execute(projectPath)),
+                !runDepth),
+
+            new(
+                "CRAP (Complexity Risk Analysis)",
+                () => Task.FromResult(CrapCommand.Execute(projectPath, coveragePath, 8, changedOnly, autoCoverage, testProjectPaths)),
+                false),
+
+            new(
+                "SCRAP (Structural Analyzer)",
+                () => Task.FromResult(ScrapCommand.Execute(
+                    primaryTestProject, verbose, json: false, changedOnly, writeBaseline: false, comparePath: null)),
+                false),
+
+            new(
+                "Mutation Testing",
+                async () => await MutateHandler.RunAsync(
+                    mutateSource!, primaryTestProject,
+                    new MutateOptions(Scan: mutateScan, AutoCoverage: true)).ConfigureAwait(false),
+                mutateSource is null),
+
+            new(
+                "Duplicates (Duplicate Code Detection)",
+                async () =>
+                {
+                    var dupesOptions = new DupesOptions(Paths: [projectPath]);
+                    var (exitCode, candidates) = DupesHandler.Run(dupesOptions);
+                    await o.WriteLineAsync(DupesOutputFormatter.Format(candidates, "text")).ConfigureAwait(false);
+                    return exitCode;
+                },
+                !runDupes),
+        };
+
+        var results = await RunGatesAsync(o, gates).ConfigureAwait(false);
+        return results.Where(static r => !r.Skipped).Select(static r => r.ExitCode).DefaultIfEmpty(0).Max();
     }
+
+    public static async Task<IReadOnlyList<GateResult>> RunGatesAsync(TextWriter output, IReadOnlyList<GateDescriptor> gates)
+    {
+        var results = new List<GateResult>(gates.Count);
+        foreach (var gate in gates)
+        {
+            await output.WriteLineAsync().ConfigureAwait(false);
+            if (gate.Skip)
+            {
+                await output.WriteLineAsync($"=== {gate.Name}: SKIPPED ===").ConfigureAwait(false);
+                results.Add(new GateResult(gate.Name, 0, Skipped: true));
+            }
+            else
+            {
+                await output.WriteLineAsync($"=== {gate.Name} ===").ConfigureAwait(false);
+                var exitCode = await gate.Execute().ConfigureAwait(false);
+                results.Add(new GateResult(gate.Name, exitCode, Skipped: false));
+            }
+        }
+
+        var overallExit = results.Where(static r => !r.Skipped).Select(static r => r.ExitCode).DefaultIfEmpty(0).Max();
+        await WriteSummaryAsync(output, results, overallExit).ConfigureAwait(false);
+        return results;
+    }
+
+    private static async Task WriteSummaryAsync(TextWriter o, IReadOnlyList<GateResult> results, int overallExit)
+    {
+        await o.WriteLineAsync().ConfigureAwait(false);
+        var overall = overallExit == 0 ? "PASS" : "FAIL";
+        var parts = results.Select(r => $"{r.Name}: {(r.Skipped ? "N/A" : StatusText(r.ExitCode))}");
+        await o.WriteLineAsync($"{string.Join(" | ", parts)} | Overall: {overall}").ConfigureAwait(false);
+    }
+
+    private static string StatusText(int exitCode) =>
+        exitCode == 0 ? "PASS" : exitCode == 1 ? "ERROR" : "FAIL";
 
     private static string ResolveProjectPath(DirectoryInfo? project, FileInfo? solution)
     {
@@ -210,13 +274,11 @@ public static class AllCommand
     {
         if (archConfig is not null) return archConfig;
 
-        // Try the project directory first.
         var projectConfig = Path.Combine(
             projectPath,
             "quality-gates", "architecture-rules.yml");
         if (File.Exists(projectConfig)) return projectConfig;
 
-        // Walk up from the project to find a quality-gates/ directory.
         var current = projectPath;
         while (current is not null)
         {
@@ -229,96 +291,4 @@ public static class AllCommand
 
         return null;
     }
-
-    private static int RunDepth(TextWriter o, string projectPath)
-    {
-        o.WriteLine();
-        o.WriteLine("=== Depth (Structural Quality) ===");
-        return DepthCommand.Execute(projectPath);
-    }
-
-    private static async Task<int> RunCrapAsync(TextWriter o, string projectPath, string? coveragePath,
-        bool changedOnly, bool autoCoverage, IReadOnlyList<string> testProjectPaths)
-    {
-        await o.WriteLineAsync("=== CRAP (Complexity Risk Analysis) ===").ConfigureAwait(false);
-        return CrapCommand.Execute(projectPath, coveragePath, 8, changedOnly, autoCoverage, testProjectPaths);
-    }
-
-    private static async Task<int> RunScrapAsync(TextWriter o, string testProjectPath, bool verbose, bool changedOnly)
-    {
-        await o.WriteLineAsync().ConfigureAwait(false);
-        await o.WriteLineAsync("=== SCRAP (Structural Analyzer) ===").ConfigureAwait(false);
-        return ScrapCommand.Execute(
-            testProjectPath, verbose, json: false, changedOnly, writeBaseline: false, comparePath: null);
-    }
-
-    public static async Task<int> RunArchAsync(TextWriter o, string projectPath, string? archConfig)
-    {
-        return await WriteGateHeaderAsync(o, archConfig,
-                "Architecture (Dependency Checker)", "--architecture-config").ConfigureAwait(false)
-            ? ArchCommand.Execute(projectPath, archConfig!, json: false)
-            : 0;
-    }
-
-    public static async Task<int> RunMutateAsync(TextWriter o, string? mutateSource,
-        string testProjectPath, bool mutateScan)
-    {
-        return await WriteGateHeaderAsync(o, mutateSource,
-                "Mutation Testing", "--mutation-source").ConfigureAwait(false)
-            ? await MutateHandler.RunAsync(
-                mutateSource!, testProjectPath,
-                new MutateOptions(Scan: mutateScan, AutoCoverage: true)).ConfigureAwait(false)
-            : 0;
-    }
-
-    private static async Task<int> RunDupesAsync(TextWriter o, string projectPath)
-    {
-        await o.WriteLineAsync().ConfigureAwait(false);
-        await o.WriteLineAsync("=== Duplicates (Duplicate Code Detection) ===").ConfigureAwait(false);
-        var dupesOptions = new DupesOptions(Paths: [projectPath]);
-        var (exitCode, candidates) = DupesHandler.Run(dupesOptions);
-        await o.WriteLineAsync(DupesOutputFormatter.Format(candidates, "text")).ConfigureAwait(false);
-        return exitCode;
-    }
-
-    public static async Task<bool> WriteGateHeaderAsync(TextWriter o, string? config, string gateName, string missingFlag)
-    {
-        await o.WriteLineAsync().ConfigureAwait(false);
-        if (config is not null)
-        {
-            await o.WriteLineAsync($"=== {gateName} ===").ConfigureAwait(false);
-            return true;
-        }
-
-        await o.WriteLineAsync($"=== {gateName}: SKIPPED (no {missingFlag}) ===").ConfigureAwait(false);
-        return false;
-    }
-
-    private static async Task WriteSummaryAsync(TextWriter o, GateRunResults r)
-    {
-        await o.WriteLineAsync().ConfigureAwait(false);
-        var line = BuildSummaryLine(r);
-        await o.WriteLineAsync(line).ConfigureAwait(false);
-    }
-
-    public static string BuildSummaryLine(GateRunResults r)
-    {
-        var overallStatus = r.OverallExit == 0 ? "PASS" : "FAIL";
-        var archStatus = GateStatus(r.ArchConfig, r.ArchExit);
-        var depthStatus = r.RunDepth ? StatusText(r.DepthExit) : "N/A";
-        var crapStatus = StatusText(r.CrapExit);
-        var scrapStatus = StatusText(r.ScrapExit);
-        var mutateStatus = GateStatus(r.MutateSource, r.MutateExit);
-        var dupesStatus = r.RunDupes ? StatusText(r.DupesExit) : "N/A";
-        return $"Architecture: {archStatus} | Depth: {depthStatus} | CRAP: {crapStatus} | SCRAP: {scrapStatus} | Mutation: {mutateStatus} | Duplicates: {dupesStatus} | Overall: {overallStatus}";
-    }
-
-    private static string GateStatus(string? config, int exitCode) =>
-        config is null ? "N/A" : StatusText(exitCode);
-
-    private static string StatusText(int exitCode) =>
-        exitCode == 0 ? "PASS" : (exitCode == 1 ? "ERROR" : "FAIL");
-
-    public static int CombineExitCodes(int crapExit, int scrapExit, int archExit, int mutateExit = 0, int dupesExit = 0, int depthExit = 0) =>
-        Math.Max(crapExit, Math.Max(scrapExit, Math.Max(archExit, Math.Max(mutateExit, Math.Max(dupesExit, depthExit)))));
 }

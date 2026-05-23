@@ -178,16 +178,12 @@ public sealed class CrapBoostTests
     }
 
     [Test]
-    public async Task BuildSummaryLine_all_pass_returns_summary()
+    public async Task RunGatesAsync_all_pass_writes_pass_summary()
     {
-        var line = redmuffin.Tools.QualityGates.Commands.AllCommand.BuildSummaryLine(new GateRunResults(
-            OverallExit: 0, CrapExit: 0, ScrapExit: 0,
-            ArchConfig: "/cfg.yml", ArchExit: 0,
-            MutateSource: "/src.cs", MutateExit: 0,
-            RunDupes: true, DupesExit: 0,
-            RunDepth: true, DepthExit: 0));
-        await Assert.That(line).Contains("PASS");
-        await Assert.That(line).Contains("Overall: PASS");
+        using var writer = new StringWriter();
+        var gates = new [] { new GateDescriptor("Test", () => Task.FromResult(0), Skip: false) };
+        await AllCommand.RunGatesAsync(writer, gates).ConfigureAwait(false);
+        await Assert.That(writer.ToString()).Contains("PASS");
     }
 
     [Test]
@@ -232,7 +228,7 @@ public sealed class CrapBoostTests
         var creation = root.DescendantNodes()
             .OfType<Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax>().First();
         var result = redmuffin.Tools.QualityGates.Analysis.DupesNormalizer.Normalize(creation);
-        await Assert.That(result.Count).IsGreaterThan(0);
+        await Assert.That(result.Children.Count).IsGreaterThan(0);
     }
 
     [Test]
