@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Services;
+namespace redmuffin.Blazor.StaticWeb.Core.Services;
 
 /// <summary>
 ///     Storage usage statistics.
