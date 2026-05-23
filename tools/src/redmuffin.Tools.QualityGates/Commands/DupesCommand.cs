@@ -39,21 +39,19 @@ public static class DupesCommand
         Description = "Same as --format json",
     };
 
-    private static readonly Action<ParseResult> DupesAction = parseResult =>
+    private static readonly Func<ParseResult, int> DupesAction = parseResult =>
     {
         var paths = parseResult.GetValue(PathsArg) ?? [];
         var format = ResolveFormat(parseResult.GetValue(JsonOption), parseResult.GetValue(FormatOption));
+        var threshold = ResolveValue(parseResult.GetValue(ThresholdOption), 0.82);
+        var minLines = ResolveValue(parseResult.GetValue(MinLinesOption), 4);
+        var minNodes = ResolveValue(parseResult.GetValue(MinNodesOption), 20);
 
-        var options = new DupesOptions(
-            Threshold: ApplyDefault(parseResult.GetValue(ThresholdOption), 0.82),
-            MinLines: ApplyDefault(parseResult.GetValue(MinLinesOption), 4),
-            MinNodes: ApplyDefault(parseResult.GetValue(MinNodesOption), 20),
-            Format: format,
-            Paths: [.. paths]);
+        var options = new DupesOptions(threshold, minLines, minNodes, format, [.. paths]);
 
         var (exitCode, candidates) = DupesHandler.Run(options);
         Console.WriteLine(DupesOutputFormatter.Format(candidates, format));
-        Environment.ExitCode = exitCode;
+        return exitCode;
     };
 
     public static Command Create()
@@ -70,7 +68,7 @@ public static class DupesCommand
     public static string ResolveFormat(bool json, string? formatOption) =>
         json ? "json" : formatOption ?? "text";
 
-    public static double ApplyDefault(double value, double defaultValue) => value > 0 ? value : defaultValue;
+    private static double ResolveValue(double parsed, double defaultValue) => parsed > 0 ? parsed : defaultValue;
 
-    public static int ApplyDefault(int value, int defaultValue) => value > 0 ? value : defaultValue;
+    private static int ResolveValue(int parsed, int defaultValue) => parsed > 0 ? parsed : defaultValue;
 }

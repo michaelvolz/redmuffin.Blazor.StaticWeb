@@ -5,6 +5,8 @@ namespace redmuffin.Tools.QualityGates.Commands;
 /// </summary>
 internal static class GitFileFilter
 {
+    private const int GitTimeoutMs = 30_000;
+
     /// <summary>
     ///     Filters methods to only those in files modified since HEAD.
     /// </summary>
@@ -39,15 +41,22 @@ internal static class GitFileFilter
                     Arguments = "diff HEAD --name-only",
                     WorkingDirectory = projectPath,
                     RedirectStandardOutput = true,
-                    RedirectStandardError = true,
+                    RedirectStandardError = false,
                     UseShellExecute = false,
                     CreateNoWindow = true,
                 },
             };
 
             process.Start();
+
+            if (!process.WaitForExit(GitTimeoutMs))
+            {
+                process.Kill(entireProcessTree: true);
+                Console.Error.WriteLine("Warning: git diff timed out — running on all files.");
+                return null;
+            }
+
             var output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
 
             if (process.ExitCode != 0)
             {
@@ -56,14 +65,15 @@ internal static class GitFileFilter
 
             var files = output
                 .Split('\n', StringSplitOptions.RemoveEmptyEntries)
-                .Select(f => f.Trim())
-                .Where(f => f.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+                .Select(static f => f.Trim())
+                .Where(static f => f.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
                 .Select(f => Path.GetFullPath(f, projectPath));
 
             return new HashSet<string>(files, StringComparer.OrdinalIgnoreCase);
         }
-        catch
+        catch (Exception ex)
         {
+            Console.Error.WriteLine($"Warning: git diff failed ({ex.Message}) — running on all files.");
             return null;
         }
     }

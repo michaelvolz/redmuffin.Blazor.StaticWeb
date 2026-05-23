@@ -82,26 +82,26 @@ public static class CrapCommand
     {
         var resolvedPath = ResolveCoverage(coveragePath, testProjectPaths, autoCoverage);
         if (resolvedPath is null) return 1;
+        if (ValidatePaths(projectPath, resolvedPath)) return 1;
 
-        var error = ValidatePaths(projectPath, resolvedPath);
-        return error ?? RunAnalysis(projectPath, resolvedPath, maxCrap, changedOnly);
+        return RunAnalysis(projectPath, resolvedPath, maxCrap, changedOnly);
     }
 
-    public static int? ValidatePaths(string projectPath, string coveragePath)
+    public static bool ValidatePaths(string projectPath, string coveragePath)
     {
         if (!Directory.Exists(projectPath))
         {
             Console.Error.WriteLine($"Project directory not found: {projectPath}");
-            return 1;
+            return true;
         }
 
         if (!File.Exists(coveragePath))
         {
             Console.Error.WriteLine($"Coverage file not found: {coveragePath}");
-            return 1;
+            return true;
         }
 
-        return null;
+        return false;
     }
 
     public static string? ResolveCoverage(

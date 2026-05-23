@@ -116,36 +116,36 @@ public sealed class CrapCommandTests
     }
 
     [Test]
-    public async Task ValidatePaths_should_return_1_when_project_directory_does_not_exist()
+    public async Task ValidatePaths_should_return_true_when_project_directory_does_not_exist()
     {
         using var tempFile = new TempFile();
         var nonExistentDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
         var error = CrapCommand.ValidatePaths(nonExistentDir, tempFile.Path);
 
-        await Assert.That(error).IsEqualTo(1);
+        await Assert.That(error).IsTrue();
     }
 
     [Test]
-    public async Task ValidatePaths_should_return_1_when_coverage_file_does_not_exist()
+    public async Task ValidatePaths_should_return_true_when_coverage_file_does_not_exist()
     {
         var existingDir = Path.GetTempPath();
         var nonExistentFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
         var error = CrapCommand.ValidatePaths(existingDir, nonExistentFile);
 
-        await Assert.That(error).IsEqualTo(1);
+        await Assert.That(error).IsTrue();
     }
 
     [Test]
-    public async Task ValidatePaths_should_return_null_when_both_exist()
+    public async Task ValidatePaths_should_return_false_when_both_exist()
     {
         using var tempFile = new TempFile();
         var existingDir = Path.GetDirectoryName(tempFile.Path)!;
 
         var error = CrapCommand.ValidatePaths(existingDir, tempFile.Path);
 
-        await Assert.That(error).IsNull();
+        await Assert.That(error).IsFalse();
     }
 
     private static string ResolveTestProjectPath()

@@ -6,19 +6,19 @@ using redmuffin.Tools.QualityGates.Commands;
 public sealed class ScrapCommandTests
 {
     [Test]
-    public async Task CheckDirectoryMissing_should_return_false_when_directory_exists()
+    public async Task IsDirectoryMissing_should_return_false_when_directory_exists()
     {
         var path = AppContext.BaseDirectory;
 
-        var result = ScrapCommand.CheckDirectoryMissing(path);
+        var result = ScrapCommand.IsDirectoryMissing(path);
 
         await Assert.That(result).IsFalse();
     }
 
     [Test]
-    public async Task CheckDirectoryMissing_should_return_true_when_directory_missing()
+    public async Task IsDirectoryMissing_should_return_true_when_directory_missing()
     {
-        var result = ScrapCommand.CheckDirectoryMissing("/nonexistent/dir/xyzzy");
+        var result = ScrapCommand.IsDirectoryMissing("/nonexistent/dir/xyzzy");
 
         await Assert.That(result).IsTrue();
     }

@@ -14,14 +14,16 @@ public static class ArchHandler
             }
 
             var yaml = File.ReadAllText(configPath);
-            return (0, RunConfigPipeline(yaml, projectPath));
+            var result = RunConfigPipeline(yaml, projectPath);
+            return (result.ExitCode, result);
         }
         catch (DirectoryNotFoundException)
         {
             return (1, new ArchResult(1, [], [], 0, 0));
         }
-        catch (FormatException)
+        catch (FormatException ex)
         {
+            Console.Error.WriteLine($"Error parsing architecture config: {ex.Message}");
             return (1, new ArchResult(1, [], [], 0, 0));
         }
     }
@@ -157,7 +159,7 @@ public static class ArchHandler
 
     private static List<string> NormalizeCycle(List<string> cycle)
     {
-        var minIndex = cycle.IndexOf(cycle.Min()!);
+        var minIndex = cycle.IndexOf(cycle.Min(StringComparer.Ordinal)!);
         var normalized = new List<string>();
         for (var i = 0; i < cycle.Count; i++)
         {

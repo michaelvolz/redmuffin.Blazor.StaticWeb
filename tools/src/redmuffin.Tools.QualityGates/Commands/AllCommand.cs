@@ -5,7 +5,7 @@ using redmuffin.Tools.QualityGates.Analysis;
 
 public static class AllCommand
 {
-    private const string DefaultCoverageFile = "/tmp/coverage-data.xml";
+    private static readonly string DefaultCoverageFile = Path.Combine(Path.GetTempPath(), "quality-gates-coverage.xml");
 
     private static readonly Option<DirectoryInfo?> ProjectOption = new("--project")
     {

@@ -77,10 +77,10 @@ public static class ScrapCommand
 
     public static bool ValidateScrapInputs(string projectPath, string? comparePath)
     {
-        return CheckDirectoryMissing(projectPath) || CheckBaselineMissing(comparePath);
+        return IsDirectoryMissing(projectPath) || CheckBaselineMissing(comparePath);
     }
 
-    public static bool CheckDirectoryMissing(string projectPath)
+    public static bool IsDirectoryMissing(string projectPath)
     {
         if (!Directory.Exists(projectPath))
         {
