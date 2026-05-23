@@ -16,29 +16,43 @@ public static class DepthDetector
         }
 
         var csFiles = Directory.GetFiles(projectPath, "*.cs", SearchOption.AllDirectories);
-        var results = new List<DepthResult>();
         var allMethods = new List<(MethodDeclarationSyntax Method, string FilePath)>();
 
-        // Pass 1: collect all methods and flag structural quality issues.
+        // Pass 1: collect all methods (no signal computation yet).
         foreach (var file in csFiles)
         {
-            CollectMethodsFromFile(file, results, allMethods);
+            CollectMethods(file, allMethods);
         }
 
-        // Pass 2 (Phase 2): suppress shallow(3) for multi-caller methods.
-        ApplyCallerCountFilters(results, allMethods);
+        // Pass 2: compute caller counts, then emit results.
+        var results = new List<DepthResult>();
+        var callerCache = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var (method, filePath) in allMethods)
+        {
+            var name = method.Identifier.Text;
+            if (!callerCache.TryGetValue(name, out var callerCount))
+            {
+                callerCount = CountDistinctCallers(name, allMethods);
+                callerCache[name] = callerCount;
+            }
+
+            var result = AnalyzeMethod(method, filePath, callerCount);
+            if (result.CompositeScore > 0)
+            {
+                results.Add(result);
+            }
+        }
 
         return results
-            .Where(r => r.CompositeScore > 0)
             .OrderByDescending(r => r.CompositeScore)
             .ToList()
             .AsReadOnly();
     }
 
-    public static void CollectMethodsFromFile(
+    private static void CollectMethods(
         string file,
-        ICollection<DepthResult> results,
-        ICollection<(MethodDeclarationSyntax Method, string FilePath)> allMethods)
+        List<(MethodDeclarationSyntax Method, string FilePath)> allMethods)
     {
         string source;
         try
@@ -58,63 +72,14 @@ public static class DepthDetector
         }
         catch (Exception)
         {
-            // Catastrophic parse failure — skip file
             return;
         }
 
         var methods = root.DescendantNodes().OfType<MethodDeclarationSyntax>();
-
         foreach (var method in methods)
         {
             allMethods.Add((method, file));
-
-            var result = AnalyzeMethod(method, file);
-            if (result.CompositeScore > 0)
-            {
-                results.Add(result);
-            }
         }
-    }
-
-    private static void ApplyCallerCountFilters(
-        List<DepthResult> results,
-        List<(MethodDeclarationSyntax Method, string FilePath)> allMethods)
-    {
-        for (var i = 0; i < results.Count; i++)
-        {
-            var result = results[i];
-            if (!result.IsShallow)
-            {
-                continue;
-            }
-
-            var callers = CountDistinctCallers(result.MethodName, allMethods);
-            if (callers >= 3)
-            {
-                results[i] = RecalculateWithoutShallow(result);
-            }
-        }
-    }
-
-    private static DepthResult RecalculateWithoutShallow(DepthResult original)
-    {
-        if (!original.IsShallow)
-        {
-            return original;
-        }
-
-        var newSignals = original.Signals
-            .Where(s => !string.Equals(s, "shallow(3)", StringComparison.Ordinal))
-            .ToArray();
-
-        var newComposite = original.CompositeScore - 3;
-
-        return original with
-        {
-            IsShallow = false,
-            CompositeScore = newComposite,
-            Signals = newSignals.AsReadOnly(),
-        };
     }
 
     private static int CountDistinctCallers(
@@ -141,7 +106,7 @@ public static class DepthDetector
                     string.Equals(invokedName, methodName, StringComparison.Ordinal))
                 {
                     callers.Add(method.Identifier.Text + ":" + filePath);
-                    break; // one match per caller method is enough
+                    break;
                 }
             }
         }
@@ -159,14 +124,14 @@ public static class DepthDetector
         };
     }
 
-    public static DepthResult AnalyzeMethod(MethodDeclarationSyntax method, string filePath)
+    public static DepthResult AnalyzeMethod(MethodDeclarationSyntax method, string filePath, int callerCount = 0)
     {
         var isPrivate = method.Modifiers.Any(m => m.IsKind(SyntaxKind.PrivateKeyword));
         var paramCount = method.ParameterList.Parameters.Count;
         var loc = ComputeLinesOfCode(method);
         var hasBranching = HasBranching(method);
 
-        var isShallow = isPrivate && loc <= 4 && !hasBranching;
+        var isShallow = isPrivate && loc <= 4 && !hasBranching && callerCount < 3;
         var isWrongAbstract = isPrivate && IsWrongAbstraction(method);
         var paramBloat = paramCount > 4;
         var isEntangled = isPrivate && paramCount >= 3 && HasSideEffects(method);
@@ -286,17 +251,11 @@ public static class DepthDetector
 
         public override void VisitInvocationExpression(InvocationExpressionSyntax node)
         {
+            base.VisitInvocationExpression(node);
+
             var simpleName = GetInvokedMethodName(node.Expression);
 
             if (simpleName is not null && !IsKnownPure(simpleName))
-            {
-                HasSideEffect = true;
-            }
-        }
-
-        public override void VisitMemberAccessExpression(MemberAccessExpressionSyntax node)
-        {
-            if (node.Expression is not ThisExpressionSyntax)
             {
                 HasSideEffect = true;
             }
