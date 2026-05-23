@@ -915,7 +915,7 @@ Outer layers depend inward only. Domain has no dependencies. Application depends
 ### Frontend
 
 - Blazor WebAssembly (.NET 9)
-- Feature-based structure
+- Feature-based structure ([conventions](../conventions/blazor-wasm-folder-structure-conventions.md))
 - Build Settings: `WasmStripILAfterAOT=true`, `InvariantGlobalization=true`, `PublishTrimmed=true`
 - Deployment: Azure Static Web Apps with CSP and caching in `staticwebapp.config.json`
 

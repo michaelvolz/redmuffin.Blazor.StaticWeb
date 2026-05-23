@@ -77,6 +77,42 @@ components with different compositions.
 
 - No abbreviations: `architecture` not `arch`, `duplicates` not `dupes`.
 
+## Directory & Namespace Structure
+
+Folder names map 1:1 to namespace segments. A file at
+`Features/Raindrop/Services/RaindropAPIFactory.cs` has namespace
+`redmuffin.Blazor.StaticWeb.Features.Raindrop.Services`.
+
+### Feature folders (top-level)
+
+Every page, domain, and shared construct lives under `Features/`:
+
+| Pattern                     | Example                          | Contains                                                             |
+| --------------------------- | -------------------------------- | -------------------------------------------------------------------- |
+| `Features/{FeatureName}/`   | `Features/Raindrop/`             | Domain logic: `Services/`, `Models/`, `Cache/`, `Presentation/`      |
+| `Features/{PageName}/`      | `Features/HomePage/`             | Single-page feature: `.razor` + `.razor.cs` + optional `Components/` |
+| `Features/{PageName}/`      | `Features/DebugPage/`            | Multi-page feature: sub-pages, `Services/`, `Models/`, `Components/` |
+| `Features/Common/`          | `Features/Common/Components/`    | Shared reusable components used by 2+ features                       |
+| `Features/Common/{Domain}/` | `Features/Common/PageLoadSpeed/` | Cross-cutting domain: `Services/`, `Models/`, `Components/`          |
+
+### Core (app infrastructure)
+
+`Core/` holds application-level infrastructure shared across features
+but not feature-specific:
+
+| Folder                   | Purpose                                                           |
+| ------------------------ | ----------------------------------------------------------------- |
+| `Core/Layout/`           | Layout components (`MainLayout`, `NavMenu`)                       |
+| `Core/Services/`         | Cross-cutting services (`WarmupService`, `BrowserStorageService`) |
+| `Core/ImagePlaceholder/` | Cross-cutting feature: `Abstractions/`, `Models/`, `Services/`    |
+| `Core/Abstractions/`     | Truly app-wide interfaces (`IDelayProvider`)                      |
+
+### NEVER
+
+- Do not nest pages under `Features/Pages/` — the `Pages/` level adds zero signal. Flat: `Features/HomePage/`
+- Do not create `Services/` at the project root. Services belong in `Core/Services/` or `Features/{Domain}/Services/`
+- Do not create generic `Models/` folders at the root or in `Core/`. Models belong with their consumer
+
 ## Role-Based Naming (Purpose over Value)
 
 When naming constants — especially colors, thresholds, or configuration

@@ -34,3 +34,45 @@ flag, `arch-rules.yml`), `rm-guide-cleanup` §1 for SLAP and method quality.
 
 - Do not add architecture for hypothetical future use.
 - Do not use Service Locator in business code.
+
+## Feature Folder Structure
+
+The project follows the Blazor feature-folder pattern (Giesel 2022,
+Hilton 2021). Every feature lives as a top-level folder under `Features/`
+with all its code co-located:
+
+```
+Features/
+  Common/components/     ← shared by 2+ features
+  Common/PageLoadSpeed/   ← cross-cutting domain
+  Raindrop/               ← domain feature
+  HomePage/               ← single-page feature
+  DebugPage/              ← multi-page feature
+  ...
+```
+
+### Rules
+
+- **Feature isolation:** A component in one feature folder must never
+  reference a component in a sibling feature. Pull shared components
+  up to `Features/Common/Components/`.
+- **Locality before reuse:** Do not extract a shared component after
+  only 2 consumers. Wait for 3+ distinct features to prove the
+  abstraction is real (Metz: Rule of Three).
+- **No root `Services/`:** Services belong with their consumers:
+  feature-specific in `Features/{Domain}/Services/`, cross-cutting in
+  `Core/Services/`.
+- **Dead code has no home:** If a model has zero consumers, delete it.
+  Do not keep it in a generic bucket "in case we need it later."
+
+### Reference structure (Hilton)
+
+```
+Features/Components/ (most abstract)  ← Features/ can reference
+Features/Common/     (shared domain)
+Features/Raindrop/   (domain feature)
+Features/HomePage/   (leaf feature)    ← cannot reference siblings
+Core/                (infrastructure)  ← everything can reference
+```
+
+`rm-guide-naming` §Directory & Namespace Structure has the full folder-to-namespace mapping.
