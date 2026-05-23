@@ -7,13 +7,8 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 public static class MutationApplicator
 {
-    public static string Apply(string source, int siteIndex, MutationSite site)
+    public static string Apply(string source, MutationSite site)
     {
-        if (siteIndex < 0 || siteIndex != site.Index)
-        {
-            throw new ArgumentOutOfRangeException(nameof(siteIndex));
-        }
-
         var tree = CSharpSyntaxTree.ParseText(source);
         var root = tree.GetCompilationUnitRoot();
 
@@ -48,13 +43,13 @@ public static class MutationApplicator
             _site.Category switch
             {
                 MutationCategory.Arithmetic or MutationCategory.Comparison or MutationCategory.Equality
-                    => MutateComparison(node),
+                    => MutateBinaryExpression(node),
                 MutationCategory.Boolean => MutateBoolean(node),
                 MutationCategory.Conditional => MutateConditional(node),
                 _ => MutateConstant(node),
             };
 
-        private SyntaxNode MutateComparison(SyntaxNode node)
+        private SyntaxNode MutateBinaryExpression(SyntaxNode node)
         {
             if (node is BinaryExpressionSyntax binary)
             {

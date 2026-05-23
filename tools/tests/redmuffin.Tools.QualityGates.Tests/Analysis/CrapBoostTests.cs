@@ -59,7 +59,7 @@ public sealed class CrapBoostTests
             0, redmuffin.Tools.QualityGates.Analysis.MutationCategory.Arithmetic, 1, 20, "test",
             SyntaxKind.AddExpression, SyntaxKind.SubtractExpression, node);
 
-        var mutatedSource = redmuffin.Tools.QualityGates.Analysis.MutationApplicator.Apply(source, 0, site);
+        var mutatedSource = redmuffin.Tools.QualityGates.Analysis.MutationApplicator.Apply(source, site);
         await Assert.That(mutatedSource).IsNotNull();
         await Assert.That(mutatedSource).IsNotEqualTo(source);
     }
@@ -78,7 +78,7 @@ public sealed class CrapBoostTests
             1, 20, "test",
             SyntaxKind.GreaterThanExpression, SyntaxKind.LessThanExpression, node);
 
-        var mutatedSource = redmuffin.Tools.QualityGates.Analysis.MutationApplicator.Apply(source, 0, site);
+        var mutatedSource = redmuffin.Tools.QualityGates.Analysis.MutationApplicator.Apply(source, site);
         await Assert.That(mutatedSource).IsNotNull();
         await Assert.That(mutatedSource).Contains("<");
     }

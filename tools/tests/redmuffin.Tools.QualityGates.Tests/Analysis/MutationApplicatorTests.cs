@@ -61,24 +61,11 @@ public sealed partial class MutationApplicatorTests
         var sites = MutationDiscoverer.FindSites(source);
         await Assert.That(sites.Count).IsEqualTo(2);
 
-        var mutated = MutationApplicator.Apply(source, 1, sites[1]);
+        var mutated = MutationApplicator.Apply(source, sites[1]);
 
         await Assert.That(mutated.Contains('*')).IsFalse();
         await Assert.That(mutated.Contains('/')).IsTrue();
         await Assert.That(mutated.Contains('+')).IsTrue();
-    }
-
-    [Test]
-    public async Task Should_throw_for_out_of_range_index()
-    {
-        const string source = "class C { void M() { int x = a + b; } }";
-        var sites = MutationDiscoverer.FindSites(source);
-
-        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
-        {
-            MutationApplicator.Apply(source, 99, sites[0]);
-            return Task.CompletedTask;
-        });
     }
 
     [Test]
