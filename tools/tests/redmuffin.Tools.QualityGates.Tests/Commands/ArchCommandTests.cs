@@ -1,6 +1,7 @@
 namespace redmuffin.Tools.QualityGates.Tests.Commands;
 
 using System.Runtime.CompilerServices;
+using redmuffin.Tools.QualityGates.Analysis;
 using redmuffin.Tools.QualityGates.Commands;
 using redmuffin.Tools.QualityGates.Models;
 
@@ -226,7 +227,7 @@ public sealed class ArchCommandTests
             new Dictionary<string, ISet<string>> { ["Web"] = new HashSet<string> { "Core" } },
             new HashSet<string>());
 
-        var violations = ArchHandler.FindViolations(cg, config);
+        var violations = ArchAnalyzer.FindViolations(cg, config);
 
         await Assert.That(violations).IsEmpty();
     }
@@ -239,7 +240,7 @@ public sealed class ArchCommandTests
             new Dictionary<string, ISet<string>> { ["Core"] = new HashSet<string> { "Web" } },
             new HashSet<string>());
 
-        var violations = ArchHandler.FindViolations(cg, config);
+        var violations = ArchAnalyzer.FindViolations(cg, config);
 
         await Assert.That(violations.Count).IsEqualTo(1);
         await Assert.That(violations[0].SourceComponent).IsEqualTo("Core");
@@ -254,7 +255,7 @@ public sealed class ArchCommandTests
             new Dictionary<string, ISet<string>> { ["Default"] = new HashSet<string>() },
             new HashSet<string> { "SomeLib" });
 
-        var violations = ArchHandler.FindViolations(cg, config);
+        var violations = ArchAnalyzer.FindViolations(cg, config);
 
         await Assert.That(violations.Count).IsEqualTo(1);
         await Assert.That(violations[0].Reason).Contains("not assigned to any component");
@@ -268,7 +269,7 @@ public sealed class ArchCommandTests
             new Dictionary<string, ISet<string>> { ["Web"] = new HashSet<string>() },
             new HashSet<string>());
 
-        var violations = ArchHandler.FindViolations(cg, config);
+        var violations = ArchAnalyzer.FindViolations(cg, config);
 
         await Assert.That(violations).IsEmpty();
     }
@@ -282,7 +283,7 @@ public sealed class ArchCommandTests
             new Dictionary<string, ISet<string>> { ["A"] = new HashSet<string> { "B" }, ["B"] = new HashSet<string> { "C" } },
             new HashSet<string>());
 
-        var cycles = ArchHandler.FindCycles(cg);
+        var cycles = ArchAnalyzer.FindCycles(cg);
 
         await Assert.That(cycles).IsEmpty();
     }
@@ -294,7 +295,7 @@ public sealed class ArchCommandTests
             new Dictionary<string, ISet<string>> { ["A"] = new HashSet<string> { "B" }, ["B"] = new HashSet<string> { "A" } },
             new HashSet<string>());
 
-        var cycles = ArchHandler.FindCycles(cg);
+        var cycles = ArchAnalyzer.FindCycles(cg);
 
         await Assert.That(cycles.Count).IsEqualTo(1);
     }
@@ -306,7 +307,7 @@ public sealed class ArchCommandTests
             new Dictionary<string, ISet<string>> { ["A"] = new HashSet<string> { "B" }, ["B"] = new HashSet<string> { "C" }, ["C"] = new HashSet<string> { "A" } },
             new HashSet<string>());
 
-        var cycles = ArchHandler.FindCycles(cg);
+        var cycles = ArchAnalyzer.FindCycles(cg);
 
         await Assert.That(cycles.Count).IsEqualTo(1);
     }
@@ -318,7 +319,7 @@ public sealed class ArchCommandTests
             new Dictionary<string, ISet<string>> { ["A"] = new HashSet<string> { "B" }, ["B"] = new HashSet<string> { "A" }, ["C"] = new HashSet<string> { "D" }, ["D"] = new HashSet<string> { "C" } },
             new HashSet<string>());
 
-        var cycles = ArchHandler.FindCycles(cg);
+        var cycles = ArchAnalyzer.FindCycles(cg);
 
         await Assert.That(cycles.Count).IsEqualTo(2);
     }
@@ -330,7 +331,7 @@ public sealed class ArchCommandTests
     {
         var config = ConfigWithMap();
 
-        var exitCode = ArchHandler.DecideExitCode([], [], config);
+        var exitCode = ArchAnalyzer.DecideExitCode([], [], config);
 
         await Assert.That(exitCode).IsEqualTo(0);
     }
@@ -344,7 +345,7 @@ public sealed class ArchCommandTests
             new("p1", "p2", "Core", "Web", "bad"),
         };
 
-        var exitCode = ArchHandler.DecideExitCode(violations, [], config);
+        var exitCode = ArchAnalyzer.DecideExitCode(violations, [], config);
 
         await Assert.That(exitCode).IsEqualTo(2);
     }
@@ -362,7 +363,7 @@ public sealed class ArchCommandTests
             new("p1", "p2", "Core", "Web", "bad"),
         };
 
-        var exitCode = ArchHandler.DecideExitCode(violations, [], config);
+        var exitCode = ArchAnalyzer.DecideExitCode(violations, [], config);
 
         await Assert.That(exitCode).IsEqualTo(0);
     }
@@ -376,7 +377,7 @@ public sealed class ArchCommandTests
             new(["A", "B"], 2),
         };
 
-        var exitCode = ArchHandler.DecideExitCode([], cycles, config);
+        var exitCode = ArchAnalyzer.DecideExitCode([], cycles, config);
 
         await Assert.That(exitCode).IsEqualTo(2);
     }
@@ -394,7 +395,7 @@ public sealed class ArchCommandTests
             new(["A", "B"], 2),
         };
 
-        var exitCode = ArchHandler.DecideExitCode([], cycles, config);
+        var exitCode = ArchAnalyzer.DecideExitCode([], cycles, config);
 
         await Assert.That(exitCode).IsEqualTo(0);
     }
@@ -412,7 +413,7 @@ public sealed class ArchCommandTests
             new(["A", "B"], 2),
         };
 
-        var exitCode = ArchHandler.DecideExitCode(violations, cycles, config);
+        var exitCode = ArchAnalyzer.DecideExitCode(violations, cycles, config);
 
         await Assert.That(exitCode).IsEqualTo(2);
     }

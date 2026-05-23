@@ -318,7 +318,7 @@ public sealed class CrapCommandTests
     [Test]
     public async Task BuildCoverageProcessStartInfo_should_set_expected_properties()
     {
-        var startInfo = CrapCommand.BuildCoverageProcessStartInfo(
+        var startInfo = CoverageRunner.BuildStartInfo(
             testProjectPath: "/test/project",
             outputPath: "/tmp/output.xml");
 
@@ -332,7 +332,7 @@ public sealed class CrapCommandTests
     [Test]
     public async Task BuildCoverageProcessStartInfo_should_include_paths_in_arguments()
     {
-        var startInfo = CrapCommand.BuildCoverageProcessStartInfo(
+        var startInfo = CoverageRunner.BuildStartInfo(
             testProjectPath: "/test/project",
             outputPath: "/tmp/output.xml");
 
@@ -347,7 +347,7 @@ public sealed class CrapCommandTests
         using var tempFile = fileExists ? new TempFile() : null;
         var filePath = tempFile?.Path ?? "/nonexistent/path.xml";
 
-        var result = CrapCommand.IsCoverageRunSuccessful(exitCode, filePath);
+        var result = CoverageRunner.IsSuccessful(exitCode, filePath);
 
         await Assert.That(result).IsEqualTo(expected);
     }

@@ -59,7 +59,8 @@ public sealed partial class CommandIntegrationTests
         var dupesOptions = new DupesOptions(
             Threshold: 0.82, MinLines: 4, MinNodes: 20, Format: "text",
             Paths: [SrcProject]);
-        var (dupesExit, _) = DupesHandler.Run(dupesOptions);
+        var dupeCandidates = DupesDetector.FindDuplicates(dupesOptions);
+        var dupesExit = dupeCandidates.Count > 0 ? 2 : 0;
         AssertCrapExit(dupesExit);
 
         var sampleFile = Path.Combine(SrcProject, "Commands", "CrapHandler.cs");
