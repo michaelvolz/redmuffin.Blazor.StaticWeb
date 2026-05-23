@@ -10,6 +10,10 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 /// </summary>
 public static class TestMethodMetricsCalculator
 {
+    private const double ComplexityCap = 25.0;
+    private const double ComplexityRiseRate = 0.18;
+    private const double ComplexityFloor = 1.0;
+
     public static int CountAssertions(SyntaxNode body) =>
         body.DescendantNodes()
             .OfType<InvocationExpressionSyntax>()
@@ -68,4 +72,11 @@ public static class TestMethodMetricsCalculator
 
         return depth;
     }
+
+    /// <summary>
+    ///     Computes SCRAP complexity score from the structural complexity
+    ///     (branchCount + 1), clamped at the complexity cap.
+    /// </summary>
+    public static double ComputeComplexityScore(int structuralComplexity) =>
+        Math.Min(ComplexityCap, ComplexityFloor + (ComplexityRiseRate * structuralComplexity));
 }
