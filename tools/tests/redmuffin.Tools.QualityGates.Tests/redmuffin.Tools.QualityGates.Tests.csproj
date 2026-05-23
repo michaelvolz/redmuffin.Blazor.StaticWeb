@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\redmuffin.Tools.QualityGates\redmuffin.Tools.QualityGates.csproj" />
+    <ProjectReference Include="..\..\src\redmuffin.Tools.ConfigureAwaitFixer\ConfigureAwaitFixer.csproj" />
   </ItemGroup>
 
   <ItemGroup>
