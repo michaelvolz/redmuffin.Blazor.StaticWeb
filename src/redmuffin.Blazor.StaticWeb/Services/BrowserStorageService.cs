@@ -2,47 +2,18 @@ using System.Security.Cryptography;
 using System.Text;
 using Blazored.LocalStorage;
 
+// CA1873: All log calls in this file use [LoggerMessage] source-gen delegates
+// defined in BrowserStorageService.Logging.cs, which include IsEnabled guards.
+#pragma warning disable CA1873
+
 namespace redmuffin.Blazor.StaticWeb.Services;
 
-public class BrowserStorageService(ILocalStorageService localStorage, ILogger<BrowserStorageService> logger) : IBrowserStorageService
+public partial class BrowserStorageService(ILocalStorageService localStorage, ILogger<BrowserStorageService> logger) : IBrowserStorageService
 {
     private const string IndexKey = "browser_storage_index";
     private const double EvictionThreshold = 0.85; // Start eviction when 85% full
     private const double EvictionTarget = 0.75; // Evict down to 75% full
     private static readonly TimeSpan DefaultExpirationTime = TimeSpan.FromDays(7); // 7 days cache expiration
-
-    // LoggerMessage delegates for better performance
-    private static readonly Action<ILogger, string, long, DateTime, Exception?> LogEvictedLRUItem =
-        LoggerMessage.Define<string, long, DateTime>(LogLevel.Debug, new EventId(1, nameof(LogEvictedLRUItem)),
-            "Evicted LRU item: {Key}, Size: {Size} bytes, LastAccessed: {LastAccessed}");
-
-    private static readonly Action<ILogger, int, long, Exception?> LogLRUEvictionCompleted =
-        LoggerMessage.Define<int, long>(LogLevel.Information, new EventId(2, nameof(LogLRUEvictionCompleted)),
-            "LRU eviction completed. Evicted {Count} items, freed {FreedSize} bytes");
-
-    private static readonly Action<ILogger, string, Exception?> LogRemovedExpiredItem =
-        LoggerMessage.Define<string>(LogLevel.Debug, new EventId(3, nameof(LogRemovedExpiredItem)),
-            "Removed expired cache item: {Key}");
-
-    private static readonly Action<ILogger, int, Exception?> LogCleanedUpExpiredItems =
-        LoggerMessage.Define<int>(LogLevel.Information, new EventId(4, nameof(LogCleanedUpExpiredItems)),
-            "Cleaned up {ExpiredCount} expired cache items");
-
-    private static readonly Action<ILogger, double, double, Exception?> LogStorageApproachingCapacity =
-        LoggerMessage.Define<double, double>(LogLevel.Information, new EventId(5, nameof(LogStorageApproachingCapacity)),
-            "Storage approaching capacity ({Usage:P2}), starting LRU eviction to {Target:P2}");
-
-    private static readonly Action<ILogger, int, int, Exception?> LogStorageOptimizationCompleted =
-        LoggerMessage.Define<int, int>(LogLevel.Information, new EventId(6, nameof(LogStorageOptimizationCompleted)),
-            "Storage optimization completed. Expired: {ExpiredCount}, Evicted: {EvictedCount}");
-
-    private static readonly Action<ILogger, int, Exception?> LogStorageOptimizationExpiredOnly =
-        LoggerMessage.Define<int>(LogLevel.Information, new EventId(7, nameof(LogStorageOptimizationExpiredOnly)),
-            "Storage optimization completed using only expired item cleanup: {ExpiredCount}");
-
-    private static readonly Action<ILogger, int, Exception?> LogAllStorageCleared =
-        LoggerMessage.Define<int>(LogLevel.Information, new EventId(8, nameof(LogAllStorageCleared)),
-            "All localStorage data cleared. Total items removed: {ItemCount}");
 
     private long _quotaLimit = 1024 * 1024 * 10; // 10 MB default quota limit
 
@@ -206,11 +177,11 @@ public class BrowserStorageService(ILocalStorageService localStorage, ILogger<Br
             await RemoveFromIndexAsync(key, cancellationToken).ConfigureAwait(false);
             evictedCount++;
 
-            LogEvictedLRUItem(logger, key, size, lastAccessed, null);
+            LogEvictedLRUItem(logger, key, size, lastAccessed);
         }
 
         if (evictedCount > 0)
-            LogLRUEvictionCompleted(logger, evictedCount, sortedItems.Take(evictedCount).Sum(item => item.Size), null);
+            LogLRUEvictionCompleted(logger, evictedCount, sortedItems.Take(evictedCount).Sum(item => item.Size));
 
         return evictedCount;
     }
@@ -242,10 +213,10 @@ public class BrowserStorageService(ILocalStorageService localStorage, ILogger<Br
         {
             await localStorage.RemoveItemAsync(key, cancellationToken).ConfigureAwait(false);
             await RemoveFromIndexAsync(key, cancellationToken).ConfigureAwait(false);
-            LogRemovedExpiredItem(logger, key, null);
+            LogRemovedExpiredItem(logger, key);
         }
 
-        LogCleanedUpExpiredItems(logger, expiredKeys.Count, null);
+        LogCleanedUpExpiredItems(logger, expiredKeys.Count);
         return expiredKeys.Count;
     }
 
@@ -258,7 +229,7 @@ public class BrowserStorageService(ILocalStorageService localStorage, ILogger<Br
         await localStorage.ClearAsync(cancellationToken).ConfigureAwait(false);
 
         // Log the operation
-        LogAllStorageCleared(logger, itemCount, null);
+        LogAllStorageCleared(logger, itemCount);
 
         return itemCount;
     }
@@ -272,7 +243,7 @@ public class BrowserStorageService(ILocalStorageService localStorage, ILogger<Br
         if (quotaUsagePercent >= EvictionThreshold)
         {
             var targetSize = (long)(_quotaLimit * EvictionTarget);
-            LogStorageApproachingCapacity(logger, quotaUsagePercent, EvictionTarget, null);
+            LogStorageApproachingCapacity(logger, quotaUsagePercent, EvictionTarget);
 
             // First, clean up expired items
             var expiredCount = await CleanupExpiredItemsAsync(cancellationToken).ConfigureAwait(false);
@@ -284,11 +255,11 @@ public class BrowserStorageService(ILocalStorageService localStorage, ILogger<Br
             if (totalSize > targetSize)
             {
                 var evictedCount = await EvictLeastRecentlyUsedAsync(targetSize, cancellationToken).ConfigureAwait(false);
-                LogStorageOptimizationCompleted(logger, expiredCount, evictedCount, null);
+                LogStorageOptimizationCompleted(logger, expiredCount, evictedCount);
             }
             else
             {
-                LogStorageOptimizationExpiredOnly(logger, expiredCount, null);
+                LogStorageOptimizationExpiredOnly(logger, expiredCount);
             }
         }
     }

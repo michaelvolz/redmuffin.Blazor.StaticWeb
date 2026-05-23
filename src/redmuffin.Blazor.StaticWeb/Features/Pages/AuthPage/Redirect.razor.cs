@@ -31,12 +31,12 @@ public partial class Redirect
 
     protected override async Task OnInitializedAsync()
     {
-        LogOnInitializedAsyncStarted(Logger, null);
+        LogOnInitializedAsyncStarted(Logger);
         _redirectUri = Navigation.BaseUri.TrimEnd('/') + "/redirect";
-        LogRedirectUriSet(Logger, _redirectUri, null);
+        LogRedirectUriSet(Logger, _redirectUri);
 
         var uri = new Uri(Navigation.Uri);
-        LogCurrentUri(Logger, uri, null);
+        LogCurrentUri(Logger, uri);
         var query = QueryHelpers.ParseQuery(uri.Query);
 
         if (query.TryGetValue("code", out var codeVal))
@@ -45,26 +45,26 @@ public partial class Redirect
         }
         else
         {
-            LogNoCodeFoundInUrl(Logger, null);
+            LogNoCodeFoundInUrl(Logger);
             _error = "No authorization code found in URL.";
         }
 
-        LogOnInitializedAsyncFinished(Logger, null);
+        LogOnInitializedAsyncFinished(Logger);
     }
 
     private async Task ProcessAuthorizationCodeAsync(string authCode)
     {
         _authCode = authCode;
-        LogAuthCodeFound(Logger, _authCode, null);
+        LogAuthCodeFound(Logger, _authCode);
         try
         {
-            LogAttemptingToSetRaindropAuthCode(Logger, null);
+            LogAttemptingToSetRaindropAuthCode(Logger);
             await LocalStorage.SetItemAsync("raindrop_auth_code", _authCode).ConfigureAwait(false);
-            LogRaindropAuthCodeSetSuccessfully(Logger, null);
+            LogRaindropAuthCodeSetSuccessfully(Logger);
 
-            LogAttemptingToExchangeCode(Logger, null);
+            LogAttemptingToExchangeCode(Logger);
             await ExchangeCodeForTokenAsync(_authCode!).ConfigureAwait(false);
-            LogExchangeCodeCompleted(Logger, null);
+            LogExchangeCodeCompleted(Logger);
         }
         catch (Exception ex)
         {
@@ -75,19 +75,19 @@ public partial class Redirect
 
     private async Task ExchangeCodeForTokenAsync(string code)
     {
-        LogExchangeCodeStarted(Logger, code, null);
+        LogExchangeCodeStarted(Logger, code);
         var apiRequest = new ApiExchangeRequest { Code = code, RedirectUri = _redirectUri };
 
         // Use JsonSerializerContext for serialization to avoid trimming issues
         var jsonRequest = JsonSerializer.Serialize(apiRequest, ApiExchangeRequestContext.Default.ApiExchangeRequest);
-        LogApiRequestJson(Logger, jsonRequest, null);
+        LogApiRequestJson(Logger, jsonRequest);
         using var requestContent = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
         try
         {
-            LogPostingToExchangeApi(Logger, null);
+            LogPostingToExchangeApi(Logger);
             var response = await Http.PostAsync("/api/ExchangeRaindropCode", requestContent).ConfigureAwait(false);
-            LogResponseReceived(Logger, response.StatusCode, null);
+            LogResponseReceived(Logger, response.StatusCode);
 
             if (response.IsSuccessStatusCode)
                 await HandleSuccessfulTokenResponseAsync(response).ConfigureAwait(false);
@@ -100,12 +100,12 @@ public partial class Redirect
             _error = $"An exception occurred while exchanging token: {ex.Message}";
         }
 
-        LogExchangeCodeFinished(Logger, null);
+        LogExchangeCodeFinished(Logger);
     }
 
     private async Task HandleSuccessfulTokenResponseAsync(HttpResponseMessage response)
     {
-        LogSuccessfulResponseReceived(Logger, null);
+        LogSuccessfulResponseReceived(Logger);
         var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
         var apiResponse = await JsonSerializer.DeserializeAsync<ApiExchangeResponse>(
             responseStream, ApiExchangeRequestContext.Default.ApiExchangeResponse).ConfigureAwait(false);
@@ -117,19 +117,19 @@ public partial class Redirect
         else
         {
             _error = error;
-            LogFailedToRetrieveAccessToken(Logger, apiResponse?.Error, null);
+            LogFailedToRetrieveAccessToken(Logger, apiResponse?.Error);
         }
     }
 
     private async Task StoreAccessTokenAsync(string accessToken)
     {
         _accessToken = accessToken;
-        LogAccessTokenRetrieved(Logger, _accessToken, null);
+        LogAccessTokenRetrieved(Logger, _accessToken);
         try
         {
-            LogAttemptingToSetAccessToken(Logger, null);
+            LogAttemptingToSetAccessToken(Logger);
             await LocalStorage.SetItemAsync("raindrop_access_token", _accessToken).ConfigureAwait(false);
-            LogAccessTokenSetSuccessfully(Logger, null);
+            LogAccessTokenSetSuccessfully(Logger);
         }
         catch (Exception ex)
         {
@@ -141,7 +141,7 @@ public partial class Redirect
     private async Task HandleFailedTokenResponseAsync(HttpResponseMessage response)
     {
         var errorContentString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        LogTokenExchangeFailed(Logger, response.StatusCode, errorContentString, null);
+        LogTokenExchangeFailed(Logger, response.StatusCode, errorContentString);
         ApiExchangeResponse? apiErrorResponse = null;
         try
         {

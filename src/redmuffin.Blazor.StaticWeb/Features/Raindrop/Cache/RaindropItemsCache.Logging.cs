@@ -1,145 +1,82 @@
 namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
 
-/// <summary>
-///     LoggerMessage delegates for RaindropItemsCache.
-/// </summary>
 public sealed partial class RaindropItemsCache
 {
-    private static readonly Action<ILogger, string, Exception?> LogCacheRetrievalStarted =
-        LoggerMessage.Define<string>(
-            LogLevel.Debug,
-            new EventId(1, nameof(LogCacheRetrievalStarted)),
-            "Starting cache retrieval for cache type: {CacheType}");
+    [LoggerMessage(EventId = 1, Level = LogLevel.Debug, Message = "Starting cache retrieval for cache type: {CacheType}")]
+    private static partial void LogCacheRetrievalStarted(ILogger logger, string cacheType);
 
-    private static readonly Action<ILogger, string, Exception?> LogCacheNotFound =
-        LoggerMessage.Define<string>(
-            LogLevel.Information,
-            new EventId(2, nameof(LogCacheNotFound)),
-            "Cache not found for cache type: {CacheType}");
+    [LoggerMessage(EventId = 2, Level = LogLevel.Information, Message = "Cache not found for cache type: {CacheType}")]
+    private static partial void LogCacheNotFound(ILogger logger, string cacheType);
 
-    private static readonly Action<ILogger, string, Exception?> LogCacheMetadataCorrupted =
-        LoggerMessage.Define<string>(
-            LogLevel.Warning,
-            new EventId(3, nameof(LogCacheMetadataCorrupted)),
-            "Cache metadata corrupted for cache type: {CacheType}");
+    [LoggerMessage(EventId = 3, Level = LogLevel.Warning, Message = "Cache metadata corrupted for cache type: {CacheType}")]
+    private static partial void LogCacheMetadataCorrupted(ILogger logger, string cacheType);
 
-    private static readonly Action<ILogger, string, DateTime, Exception?> LogCacheExpired =
-        LoggerMessage.Define<string, DateTime>(
-            LogLevel.Information,
-            new EventId(4, nameof(LogCacheExpired)),
-            "Cache expired for cache type: {CacheType}, created at: {CreatedAt}");
+    [LoggerMessage(EventId = 4, Level = LogLevel.Information, Message = "Cache expired for cache type: {CacheType}, created at: {CreatedAt}")]
+    private static partial void LogCacheExpired(ILogger logger, string cacheType, DateTime createdAt);
 
-    private static readonly Action<ILogger, string, Exception?> LogCacheDataCorrupted =
-        LoggerMessage.Define<string>(
-            LogLevel.Warning,
-            new EventId(5, nameof(LogCacheDataCorrupted)),
-            "Cache data corrupted for cache type: {CacheType}");
+    [LoggerMessage(EventId = 5, Level = LogLevel.Warning, Message = "Cache data corrupted for cache type: {CacheType}")]
+    private static partial void LogCacheDataCorrupted(ILogger logger, string cacheType);
 
-    private static readonly Action<ILogger, string, int, Exception?> LogCacheRetrievalSuccessful =
-        LoggerMessage.Define<string, int>(
-            LogLevel.Debug,
-            new EventId(6, nameof(LogCacheRetrievalSuccessful)),
-            "Cache retrieval successful for cache type: {CacheType}, item count: {ItemCount}");
+    [LoggerMessage(EventId = 6, Level = LogLevel.Debug, Message = "Cache retrieval successful for cache type: {CacheType}, item count: {ItemCount}")]
+    private static partial void LogCacheRetrievalSuccessful(ILogger logger, string cacheType, int itemCount);
 
-    private static readonly Action<ILogger, string, Exception?> LogCacheRetrievalFailed =
-        LoggerMessage.Define<string>(
-            LogLevel.Error,
-            new EventId(7, nameof(LogCacheRetrievalFailed)),
-            "Cache retrieval failed for cache type: {CacheType}");
+    [LoggerMessage(EventId = 7, Level = LogLevel.Error, Message = "Cache retrieval failed for cache type: {CacheType}")]
+    private static partial void LogCacheRetrievalFailed(ILogger logger, string cacheType, Exception exception);
 
-    private static readonly Action<ILogger, string, int, Exception?> LogCacheStorageStarted =
-        LoggerMessage.Define<string, int>(
-            LogLevel.Debug,
-            new EventId(8, nameof(LogCacheStorageStarted)),
-            "Starting cache storage for cache type: {CacheType}, item count: {ItemCount}");
+    [LoggerMessage(EventId = 8, Level = LogLevel.Debug, Message = "Starting cache storage for cache type: {CacheType}, item count: {ItemCount}")]
+    private static partial void LogCacheStorageStarted(ILogger logger, string cacheType, int itemCount);
 
-    private static readonly Action<ILogger, string, int, int, int, double, Exception?> LogCacheStorageSuccessful =
-        LoggerMessage.Define<string, int, int, int, double>(
-            LogLevel.Information,
-            new EventId(9, nameof(LogCacheStorageSuccessful)),
-            "Cache storage successful for cache type: {CacheType}, item count: {ItemCount}, original size: {OriginalSize} bytes, compressed size: {CompressedSize} bytes, compression ratio: {CompressionRatio:P1}");
+    [LoggerMessage(EventId = 9, Level = LogLevel.Information, Message = "Cache storage successful for cache type: {CacheType}, item count: {ItemCount}, original size: {OriginalSize} bytes, compressed size: {CompressedSize} bytes, compression ratio: {CompressionRatio:P1}")]
+    private static partial void LogCacheStorageSuccessful(ILogger logger, string cacheType, int itemCount, int originalSize, int compressedSize, double compressionRatio);
 
-    private static readonly Action<ILogger, string, int, Exception?> LogCacheStorageFailed =
-        LoggerMessage.Define<string, int>(
-            LogLevel.Error,
-            new EventId(10, nameof(LogCacheStorageFailed)),
-            "Cache storage failed for cache type: {CacheType}, item count: {ItemCount}");
+    [LoggerMessage(EventId = 10, Level = LogLevel.Error, Message = "Cache storage failed for cache type: {CacheType}, item count: {ItemCount}")]
+    private static partial void LogCacheStorageFailed(ILogger logger, string cacheType, int itemCount, Exception exception);
 
-    private static readonly Action<ILogger, string, Exception?> LogCacheClearStarted =
-        LoggerMessage.Define<string>(
-            LogLevel.Debug,
-            new EventId(11, nameof(LogCacheClearStarted)),
-            "Starting cache clear for cache type: {CacheType}");
+    [LoggerMessage(EventId = 11, Level = LogLevel.Debug, Message = "Starting cache clear for cache type: {CacheType}")]
+    private static partial void LogCacheClearStarted(ILogger logger, string cacheType);
 
-    private static readonly Action<ILogger, string, Exception?> LogCacheClearSuccessful =
-        LoggerMessage.Define<string>(
-            LogLevel.Information,
-            new EventId(12, nameof(LogCacheClearSuccessful)),
-            "Cache clear successful for cache type: {CacheType}");
+    [LoggerMessage(EventId = 12, Level = LogLevel.Information, Message = "Cache clear successful for cache type: {CacheType}")]
+    private static partial void LogCacheClearSuccessful(ILogger logger, string cacheType);
 
-    private static readonly Action<ILogger, string, Exception?> LogCacheClearFailed =
-        LoggerMessage.Define<string>(
-            LogLevel.Error,
-            new EventId(13, nameof(LogCacheClearFailed)),
-            "Cache clear failed for cache type: {CacheType}");
+    [LoggerMessage(EventId = 13, Level = LogLevel.Error, Message = "Cache clear failed for cache type: {CacheType}")]
+    private static partial void LogCacheClearFailed(ILogger logger, string cacheType, Exception exception);
 
-    private static readonly Action<ILogger, string, Exception?> LogCacheExpirationCheckFailed =
-        LoggerMessage.Define<string>(
-            LogLevel.Error,
-            new EventId(14, nameof(LogCacheExpirationCheckFailed)),
-            "Cache expiration check failed for cache type: {CacheType}");
+    [LoggerMessage(EventId = 14, Level = LogLevel.Error, Message = "Cache expiration check failed for cache type: {CacheType}")]
+    private static partial void LogCacheExpirationCheckFailed(ILogger logger, string cacheType, Exception exception);
 
-    private static readonly Action<ILogger, Exception?> LogCacheClearAllStarted =
-        LoggerMessage.Define(
-            LogLevel.Debug,
-            new EventId(15, nameof(LogCacheClearAllStarted)),
-            "Starting clear all caches operation");
+    [LoggerMessage(EventId = 15, Level = LogLevel.Debug, Message = "Starting clear all caches operation")]
+    private static partial void LogCacheClearAllStarted(ILogger logger);
 
-    private static readonly Action<ILogger, Exception?> LogCacheClearAllSuccessful =
-        LoggerMessage.Define(
-            LogLevel.Information,
-            new EventId(16, nameof(LogCacheClearAllSuccessful)),
-            "Clear all caches operation successful");
+    [LoggerMessage(EventId = 16, Level = LogLevel.Information, Message = "Clear all caches operation successful")]
+    private static partial void LogCacheClearAllSuccessful(ILogger logger);
 
-    private static readonly Action<ILogger, Exception?> LogCacheClearAllFailed =
-        LoggerMessage.Define(
-            LogLevel.Error,
-            new EventId(17, nameof(LogCacheClearAllFailed)),
-            "Clear all caches operation failed");
+    [LoggerMessage(EventId = 17, Level = LogLevel.Error, Message = "Clear all caches operation failed")]
+    private static partial void LogCacheClearAllFailed(ILogger logger, Exception exception);
 
-    private static readonly Action<ILogger, string, Exception?> LogCompressionFailed =
-        LoggerMessage.Define<string>(
-            LogLevel.Error,
-            new EventId(18, nameof(LogCompressionFailed)),
-            "Data compression failed for cache type: {CacheType}");
+    [LoggerMessage(EventId = 18, Level = LogLevel.Error, Message = "Data compression failed for cache type: {CacheType}")]
+    private static partial void LogCompressionFailed(ILogger logger, string cacheType);
 
-    private static readonly Action<ILogger, string, Exception?> LogDecompressionFailed =
-        LoggerMessage.Define<string>(
-            LogLevel.Error,
-            new EventId(19, nameof(LogDecompressionFailed)),
-            "Data decompression failed for cache type: {CacheType}");
+    [LoggerMessage(EventId = 28, Level = LogLevel.Error, Message = "Data compression failed for cache type: {CacheType}")]
+    private static partial void LogCompressionFailed(ILogger logger, string cacheType, Exception exception);
 
-    private static readonly Action<ILogger, string, Exception?> LogSerializationFailed =
-        LoggerMessage.Define<string>(
-            LogLevel.Error,
-            new EventId(20, nameof(LogSerializationFailed)),
-            "Data serialization failed for cache type: {CacheType}");
+    [LoggerMessage(EventId = 19, Level = LogLevel.Error, Message = "Data decompression failed for cache type: {CacheType}")]
+    private static partial void LogDecompressionFailed(ILogger logger, string cacheType);
 
-    private static readonly Action<ILogger, string, Exception?> LogDeserializationFailed =
-        LoggerMessage.Define<string>(
-            LogLevel.Error,
-            new EventId(21, nameof(LogDeserializationFailed)),
-            "Data deserialization failed for cache type: {CacheType}");
+    [LoggerMessage(EventId = 29, Level = LogLevel.Error, Message = "Data decompression failed for cache type: {CacheType}")]
+    private static partial void LogDecompressionFailed(ILogger logger, string cacheType, Exception exception);
 
-    private static readonly Action<ILogger, string, Exception?> LogLocalStorageOperationFailed =
-        LoggerMessage.Define<string>(
-            LogLevel.Error,
-            new EventId(22, nameof(LogLocalStorageOperationFailed)),
-            "LocalStorage operation failed for cache type: {CacheType}");
+    [LoggerMessage(EventId = 20, Level = LogLevel.Error, Message = "Data serialization failed for cache type: {CacheType}")]
+    private static partial void LogSerializationFailed(ILogger logger, string cacheType, Exception exception);
 
-    private static readonly Action<ILogger, string, Exception?> LogLastAccessTimeUpdateFailed =
-        LoggerMessage.Define<string>(
-            LogLevel.Warning,
-            new EventId(23, nameof(LogLastAccessTimeUpdateFailed)),
-            "Failed to update last accessed time for cache type: {CacheType}");
+    [LoggerMessage(EventId = 21, Level = LogLevel.Error, Message = "Data deserialization failed for cache type: {CacheType}")]
+    private static partial void LogDeserializationFailed(ILogger logger, string cacheType);
+
+    [LoggerMessage(EventId = 30, Level = LogLevel.Error, Message = "Data deserialization failed for cache type: {CacheType}")]
+    private static partial void LogDeserializationFailed(ILogger logger, string cacheType, Exception exception);
+
+    [LoggerMessage(EventId = 22, Level = LogLevel.Error, Message = "LocalStorage operation failed for cache type: {CacheType}")]
+    private static partial void LogLocalStorageOperationFailed(ILogger logger, string cacheType, Exception exception);
+
+    [LoggerMessage(EventId = 23, Level = LogLevel.Warning, Message = "Failed to update last accessed time for cache type: {CacheType}")]
+    private static partial void LogLastAccessTimeUpdateFailed(ILogger logger, string cacheType, Exception exception);
 }

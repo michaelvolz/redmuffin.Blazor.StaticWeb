@@ -1,34 +1,22 @@
 namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 
-/// <summary>
-///     Logging partial class for ImageUrlResolver containing LoggerMessage delegates.
-/// </summary>
 public sealed partial class ImageUrlResolver
 {
-    /// <summary>
-    ///     LoggerMessage delegate for background validation failures.
-    /// </summary>
-    private static readonly Action<ILogger, string, Exception?> LogBackgroundValidationFailed =
-        LoggerMessage.Define<string>(
-            LogLevel.Warning,
-            new EventId(1, nameof(LogBackgroundValidationFailed)),
-            "Background validation failed for item: {ItemLink}");
+    [LoggerMessage(
+        EventId = 1,
+        Level = LogLevel.Warning,
+        Message = "Background validation failed for item: {ItemLink}")]
+    private static partial void LogBackgroundValidationFailed(ILogger logger, string itemLink, Exception exception);
 
-    /// <summary>
-    ///     LoggerMessage delegate for background tasks started.
-    /// </summary>
-    private static readonly Action<ILogger, int, Exception?> LogBackgroundTasksStarted =
-        LoggerMessage.Define<int>(
-            LogLevel.Debug,
-            new EventId(2, nameof(LogBackgroundTasksStarted)),
-            "Started {TaskCount} background validation tasks");
+    [LoggerMessage(
+        EventId = 2,
+        Level = LogLevel.Debug,
+        Message = "Started {TaskCount} background validation tasks")]
+    private static partial void LogBackgroundTasksStarted(ILogger logger, int taskCount);
 
-    /// <summary>
-    ///     LoggerMessage delegate for background validation completion.
-    /// </summary>
-    private static readonly Action<ILogger, string, bool, Exception?> LogBackgroundValidationCompleted =
-        LoggerMessage.Define<string, bool>(
-            LogLevel.Debug,
-            new EventId(3, nameof(LogBackgroundValidationCompleted)),
-            "Background validation completed for item: {ItemLink}, Valid: {IsValid}");
+    [LoggerMessage(
+        EventId = 3,
+        Level = LogLevel.Debug,
+        Message = "Background validation completed for item: {ItemLink}, Valid: {IsValid}")]
+    private static partial void LogBackgroundValidationCompleted(ILogger logger, string itemLink, bool isValid);
 }

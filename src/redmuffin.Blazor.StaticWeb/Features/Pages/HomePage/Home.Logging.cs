@@ -2,48 +2,69 @@ namespace redmuffin.Blazor.StaticWeb.Features.Pages.HomePage;
 
 public partial class Home
 {
-    // LoggerMessage delegates for better performance
-    private static readonly Action<ILogger, Exception?> LogOnInitializedCalled =
-        LoggerMessage.Define(LogLevel.Information, new EventId(1, nameof(LogOnInitializedCalled)),
-            "OnInitialized called");
+    [LoggerMessage(
+        EventId = 1,
+        Level = LogLevel.Information,
+        Message = "OnInitialized called")]
+    private static partial void LogOnInitializedCalled(ILogger logger);
 
-    private static readonly Action<ILogger, Exception?> LogOnParametersSetAsyncCalled =
-        LoggerMessage.Define(LogLevel.Information, new EventId(2, nameof(LogOnParametersSetAsyncCalled)),
-            "OnParametersSetAsync called");
+    [LoggerMessage(
+        EventId = 2,
+        Level = LogLevel.Information,
+        Message = "OnParametersSetAsync called")]
+    private static partial void LogOnParametersSetAsyncCalled(ILogger logger);
 
-    private static readonly Action<ILogger, Exception?> LogFirstRenderCalled =
-        LoggerMessage.Define(LogLevel.Information, new EventId(3, nameof(LogFirstRenderCalled)),
-            "First render: OnAfterRenderAsync called");
+    [LoggerMessage(
+        EventId = 3,
+        Level = LogLevel.Information,
+        Message = "First render: OnAfterRenderAsync called")]
+    private static partial void LogFirstRenderCalled(ILogger logger);
 
-    private static readonly Action<ILogger, Exception?> LogSubsequentRenderCalled =
-        LoggerMessage.Define(LogLevel.Information, new EventId(4, nameof(LogSubsequentRenderCalled)),
-            "Subsequent render: OnAfterRenderAsync called");
+    [LoggerMessage(
+        EventId = 4,
+        Level = LogLevel.Information,
+        Message = "Subsequent render: OnAfterRenderAsync called")]
+    private static partial void LogSubsequentRenderCalled(ILogger logger);
 
-    private static readonly Action<ILogger, Exception?> LogButtonClicked =
-        LoggerMessage.Define(LogLevel.Information, new EventId(5, nameof(LogButtonClicked)),
-            "Button clicked");
+    [LoggerMessage(
+        EventId = 5,
+        Level = LogLevel.Information,
+        Message = "Button clicked")]
+    private static partial void LogButtonClicked(ILogger logger);
 
-    private static readonly Action<ILogger, string, Exception?> LogApiCallStatus =
-        LoggerMessage.Define<string>(LogLevel.Information, new EventId(6, nameof(LogApiCallStatus)),
-            "Dummy API call status: {StatusCode}");
+    [LoggerMessage(
+        EventId = 6,
+        Level = LogLevel.Information,
+        Message = "Dummy API call status: {StatusCode}")]
+    private static partial void LogApiCallStatus(ILogger logger, string statusCode);
 
-    private static readonly Action<ILogger, Exception> LogApiCallFailed =
-        LoggerMessage.Define(LogLevel.Error, new EventId(7, nameof(LogApiCallFailed)),
-            "Dummy API call failed");
+    [LoggerMessage(
+        EventId = 7,
+        Level = LogLevel.Error,
+        Message = "Dummy API call failed")]
+    private static partial void LogApiCallFailed(ILogger logger, Exception exception);
 
-    private static readonly Action<ILogger, string, Exception?> LogFormSubmitted =
-        LoggerMessage.Define<string>(LogLevel.Information, new EventId(8, nameof(LogFormSubmitted)),
-            "Form submitted with value: {InputValue}");
+    [LoggerMessage(
+        EventId = 8,
+        Level = LogLevel.Information,
+        Message = "Form submitted with value: {InputValue}")]
+    private static partial void LogFormSubmitted(ILogger logger, string inputValue);
 
-    private static readonly Action<ILogger, string, Exception?> LogCascadingParameterChanged =
-        LoggerMessage.Define<string>(LogLevel.Information, new EventId(9, nameof(LogCascadingParameterChanged)),
-            "Cascading parameter changed: {ParameterName}");
+    [LoggerMessage(
+        EventId = 9,
+        Level = LogLevel.Information,
+        Message = "Cascading parameter changed: {ParameterName}")]
+    private static partial void LogCascadingParameterChanged(ILogger logger, string parameterName);
 
-    private static readonly Action<ILogger, string, Exception?> LogAuthorizationStateChanged =
-        LoggerMessage.Define<string>(LogLevel.Information, new EventId(10, nameof(LogAuthorizationStateChanged)),
-            "Authorization state changed: {IsAuthenticated}");
+    [LoggerMessage(
+        EventId = 10,
+        Level = LogLevel.Information,
+        Message = "Authorization state changed: {IsAuthenticated}")]
+    private static partial void LogAuthorizationStateChanged(ILogger logger, string isAuthenticated);
 
-    private static readonly Action<ILogger, Exception> LogAuthenticationFailure =
-        LoggerMessage.Define(LogLevel.Warning, new EventId(11, nameof(LogAuthenticationFailure)),
-            "Failed to retrieve authentication state");
+    [LoggerMessage(
+        EventId = 11,
+        Level = LogLevel.Warning,
+        Message = "Failed to retrieve authentication state")]
+    private static partial void LogAuthenticationFailure(ILogger logger, Exception exception);
 }

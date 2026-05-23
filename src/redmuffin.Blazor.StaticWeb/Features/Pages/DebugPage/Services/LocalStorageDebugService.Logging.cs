@@ -2,51 +2,51 @@ namespace redmuffin.Blazor.StaticWeb.Features.Pages.DebugPage.Services;
 
 public partial class LocalStorageDebugService
 {
-    private static readonly Action<ILogger, bool, bool, string, Exception?> LogDiagnosticsCompleted =
-        LoggerMessage.Define<bool, bool, string>(
-            LogLevel.Information,
-            new EventId(1, nameof(LogDiagnosticsCompleted)),
-            "LocalStorage diagnostics completed: Available={IsAvailable}, BlazoredWorking={BlazoredWorking}, UsedStorage={UsedBytes}MB");
+    [LoggerMessage(
+        EventId = 1,
+        Level = LogLevel.Information,
+        Message = "LocalStorage diagnostics completed: Available={IsAvailable}, BlazoredWorking={BlazoredWorking}, UsedStorage={UsedBytes}MB")]
+    private static partial void LogDiagnosticsCompleted(ILogger logger, bool isAvailable, bool blazoredWorking, string usedBytes);
 
-    private static readonly Action<ILogger, Exception?> LogDiagnosticsFailed =
-        LoggerMessage.Define(
-            LogLevel.Error,
-            new EventId(2, nameof(LogDiagnosticsFailed)),
-            "Failed to run localStorage diagnostics");
+    [LoggerMessage(
+        EventId = 2,
+        Level = LogLevel.Error,
+        Message = "Failed to run localStorage diagnostics")]
+    private static partial void LogDiagnosticsFailed(ILogger logger, Exception exception);
 
-    private static readonly Action<ILogger, Exception?> LogLocalStorageTestFailed =
-        LoggerMessage.Define(
-            LogLevel.Error,
-            new EventId(3, nameof(LogLocalStorageTestFailed)),
-            "localStorage availability test failed");
+    [LoggerMessage(
+        EventId = 3,
+        Level = LogLevel.Error,
+        Message = "localStorage availability test failed")]
+    private static partial void LogLocalStorageTestFailed(ILogger logger, Exception exception);
 
-    private static readonly Action<ILogger, string, string?, Exception?> LogBlazoredTestFailed =
-        LoggerMessage.Define<string, string?>(
-            LogLevel.Warning,
-            new EventId(4, nameof(LogBlazoredTestFailed)),
-            "Blazored localStorage test failed: expected '{Expected}', got '{Actual}'");
+    [LoggerMessage(
+        EventId = 4,
+        Level = LogLevel.Warning,
+        Message = "Blazored localStorage test failed: expected '{Expected}', got '{Actual}'")]
+    private static partial void LogBlazoredTestFailed(ILogger logger, string expected, string? actual);
 
-    private static readonly Action<ILogger, Exception?> LogBlazoredServiceFailed =
-        LoggerMessage.Define(
-            LogLevel.Error,
-            new EventId(5, nameof(LogBlazoredServiceFailed)),
-            "Blazored localStorage service test failed");
+    [LoggerMessage(
+        EventId = 5,
+        Level = LogLevel.Error,
+        Message = "Blazored localStorage service test failed")]
+    private static partial void LogBlazoredServiceFailed(ILogger logger, Exception exception);
 
-    private static readonly Action<ILogger, Exception?> LogStorageInfoFailed =
-        LoggerMessage.Define(
-            LogLevel.Error,
-            new EventId(6, nameof(LogStorageInfoFailed)),
-            "Failed to get storage info");
+    [LoggerMessage(
+        EventId = 6,
+        Level = LogLevel.Error,
+        Message = "Failed to get storage info")]
+    private static partial void LogStorageInfoFailed(ILogger logger, Exception exception);
 
-    private static readonly Action<ILogger, Exception?> LogJsonTestFailed =
-        LoggerMessage.Define(
-            LogLevel.Error,
-            new EventId(7, nameof(LogJsonTestFailed)),
-            "JSON serialization test failed");
+    [LoggerMessage(
+        EventId = 7,
+        Level = LogLevel.Error,
+        Message = "JSON serialization test failed")]
+    private static partial void LogJsonTestFailed(ILogger logger, Exception exception);
 
-    private static readonly Action<ILogger, Exception?> LogCacheKeysFailed =
-        LoggerMessage.Define(
-            LogLevel.Error,
-            new EventId(8, nameof(LogCacheKeysFailed)),
-            "Failed to get existing cache keys");
+    [LoggerMessage(
+        EventId = 8,
+        Level = LogLevel.Error,
+        Message = "Failed to get existing cache keys")]
+    private static partial void LogCacheKeysFailed(ILogger logger, Exception exception);
 }

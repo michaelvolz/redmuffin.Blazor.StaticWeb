@@ -4,6 +4,10 @@ using Blazored.LocalStorage;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Features.Pages.DebugPage.Models;
 
+// CA1873: All log calls in this file use [LoggerMessage] source-gen delegates
+// defined in LocalStorageDebugService.Logging.cs, which include IsEnabled guards.
+#pragma warning disable CA1873
+
 namespace redmuffin.Blazor.StaticWeb.Features.Pages.DebugPage.Services;
 
 /// <summary>
@@ -54,8 +58,7 @@ public partial class LocalStorageDebugService
                 _logger,
                 diagnostics.IsLocalStorageAvailable,
                 diagnostics.IsBlazoredServiceWorking,
-                (diagnostics.StorageInfo?.UsedBytes / (1024.0 * 1024.0) ?? 0).ToString(CultureInfo.InvariantCulture),
-                null);
+                (diagnostics.StorageInfo?.UsedBytes / (1024.0 * 1024.0) ?? 0).ToString(CultureInfo.InvariantCulture));
         }
         catch (Exception ex)
         {
@@ -110,7 +113,7 @@ public partial class LocalStorageDebugService
 
             var success = string.Equals(testValue, retrieved, StringComparison.Ordinal);
 
-            if (!success) LogBlazoredTestFailed(_logger, testValue, retrieved, null);
+            if (!success) LogBlazoredTestFailed(_logger, testValue, retrieved);
 
             return success;
         }

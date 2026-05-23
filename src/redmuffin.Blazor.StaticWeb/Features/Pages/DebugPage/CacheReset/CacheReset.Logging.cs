@@ -2,15 +2,21 @@ namespace redmuffin.Blazor.StaticWeb.Features.Pages.DebugPage.CacheResetPage;
 
 public partial class CacheReset
 {
-    private static readonly Action<ILogger, Exception?> LogCacheResetStarted =
-        LoggerMessage.Define(LogLevel.Information, new EventId(1, nameof(LogCacheResetStarted)),
-            "Starting cache reset operation");
+    [LoggerMessage(
+        EventId = 1,
+        Level = LogLevel.Information,
+        Message = "Starting cache reset operation")]
+    private static partial void LogCacheResetStarted(ILogger logger);
 
-    private static readonly Action<ILogger, int, Exception?> LogCacheResetCompleted =
-        LoggerMessage.Define<int>(LogLevel.Information, new EventId(2, nameof(LogCacheResetCompleted)),
-            "Cache reset completed successfully. Items cleared: {ItemsCleared}");
+    [LoggerMessage(
+        EventId = 2,
+        Level = LogLevel.Information,
+        Message = "Cache reset completed successfully. Items cleared: {ItemsCleared}")]
+    private static partial void LogCacheResetCompleted(ILogger logger, int itemsCleared);
 
-    private static readonly Action<ILogger, Exception?> LogCacheResetError =
-        LoggerMessage.Define(LogLevel.Error, new EventId(3, nameof(LogCacheResetError)),
-            "Error occurred during cache reset");
+    [LoggerMessage(
+        EventId = 3,
+        Level = LogLevel.Error,
+        Message = "Error occurred during cache reset")]
+    private static partial void LogCacheResetError(ILogger logger, Exception exception);
 }

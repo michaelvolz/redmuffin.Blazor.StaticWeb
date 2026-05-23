@@ -41,12 +41,12 @@ public partial class CacheReset : ComponentBase
 
         try
         {
-            LogCacheResetStarted(Logger, null);
+            LogCacheResetStarted(Logger);
 
             // Clear all localStorage data
             _itemsCleared = await BrowserStorageService.ClearAllStorageAsync().ConfigureAwait(false);
 
-            LogCacheResetCompleted(Logger, _itemsCleared, null);
+            LogCacheResetCompleted(Logger, _itemsCleared);
 
             _resetCompleted = true;
         }

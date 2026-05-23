@@ -80,7 +80,7 @@ public sealed partial class ImageUrlResolver : IImageUrlResolver
         }
 
         // Don't wait for background tasks to complete - they'll update the UI when done
-        if (backgroundValidationTasks.Count > 0) LogBackgroundTasksStarted(_logger, backgroundValidationTasks.Count, null);
+        if (backgroundValidationTasks.Count > 0) LogBackgroundTasksStarted(_logger, backgroundValidationTasks.Count);
     }
 
     /// <inheritdoc />
@@ -138,7 +138,7 @@ public sealed partial class ImageUrlResolver : IImageUrlResolver
                 // Trigger UI update on the main thread
                 await stateHasChangedCallback().ConfigureAwait(false);
 
-                LogBackgroundValidationCompleted(_logger, cacheKey, result.IsValid, null);
+                LogBackgroundValidationCompleted(_logger, cacheKey, result.IsValid);
             }
         }
         catch (Exception ex)

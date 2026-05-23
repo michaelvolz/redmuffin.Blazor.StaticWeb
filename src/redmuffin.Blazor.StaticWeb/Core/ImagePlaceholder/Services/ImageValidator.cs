@@ -12,38 +12,13 @@ namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 ///     (4 weeks for permanent failures, 30 minutes for transient), and manages
 ///     storage pressure through LRU eviction.
 /// </summary>
-public sealed class ImageValidator : IImageValidator
+public sealed partial class ImageValidator : IImageValidator
 {
     private const string CacheKeyPrefix = "img_validation_";
     private const int DefaultTimeoutMs = 5000; // 5 seconds
     private const int CacheExpirationMinutes = 40320; // 4 weeks cache
     private const double CacheCleanupThreshold = 0.75; // Clean up at 75% quota
     private const int TimeoutFailureCacheMinutes = 30; // Cache timeout failures for 30 minutes
-
-    // LoggerMessage delegates for better performance
-    private static readonly Action<ILogger, string, Exception?> LogImageValidationStarted =
-        LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, nameof(LogImageValidationStarted)),
-            "Starting image validation for URL: {ImageUrl}");
-
-    private static readonly Action<ILogger, string, Exception?> LogImageValidationSuccess =
-        LoggerMessage.Define<string>(LogLevel.Debug, new EventId(2, nameof(LogImageValidationSuccess)),
-            "Image validation successful for URL: {ImageUrl}");
-
-    private static readonly Action<ILogger, string, string, Exception?> LogImageValidationFailed =
-        LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(3, nameof(LogImageValidationFailed)),
-            "Image validation failed for URL: {ImageUrl}, Reason: {Reason}");
-
-    private static readonly Action<ILogger, string, Exception?> LogCacheHit =
-        LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, nameof(LogCacheHit)),
-            "Cache hit for image URL: {ImageUrl}");
-
-    private static readonly Action<ILogger, string, Exception?> LogCacheMiss =
-        LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, nameof(LogCacheMiss)),
-            "Cache miss for image URL: {ImageUrl}");
-
-    private static readonly Action<ILogger, Exception> LogCacheCleanupFailed =
-        LoggerMessage.Define(LogLevel.Warning, new EventId(6, nameof(LogCacheCleanupFailed)),
-            "Failed to perform cache cleanup");
 
     private static readonly (string Keyword, string Label)[] FailureReasons =
     [
@@ -139,7 +114,7 @@ public sealed class ImageValidator : IImageValidator
     {
         if (string.IsNullOrWhiteSpace(imageUrl)) return ImageValidationResult.Failure("Image URL is null or empty");
 
-        LogImageValidationStarted(_logger, imageUrl, null);
+        LogImageValidationStarted(_logger, imageUrl);
 
         // Upgrade to HTTPS if needed
         var processedUrl = UpgradeToHttpsIfNeeded(imageUrl);
@@ -187,7 +162,7 @@ public sealed class ImageValidator : IImageValidator
                 // Check if cached result is still valid
                 if (DateTime.UtcNow - cachedResult.ValidatedAt < TimeSpan.FromMinutes(cacheExpirationMinutes))
                 {
-                    LogCacheHit(_logger, imageUrl, null);
+                    LogCacheHit(_logger, imageUrl);
                     return cachedResult;
                 }
 
@@ -195,7 +170,7 @@ public sealed class ImageValidator : IImageValidator
                 await _browserStorageService.RemoveItemAsync(cacheKey, cancellationToken).ConfigureAwait(false);
             }
 
-            LogCacheMiss(_logger, imageUrl, null);
+            LogCacheMiss(_logger, imageUrl);
             return null;
         }
         catch (Exception ex)
@@ -233,7 +208,7 @@ public sealed class ImageValidator : IImageValidator
         if (!response.IsSuccessStatusCode)
         {
             var reason = $"HTTP {response.StatusCode}: {response.ReasonPhrase}";
-            LogImageValidationFailed(_logger, imageUrl, reason, null);
+            LogImageValidationFailed(_logger, imageUrl, reason);
             return ImageValidationResult.Failure(reason);
         }
 
@@ -242,11 +217,11 @@ public sealed class ImageValidator : IImageValidator
         if (!IsValidImageContentType(contentType))
         {
             var reason = $"Content type '{contentType}' is not an image";
-            LogImageValidationFailed(_logger, imageUrl, reason, null);
+            LogImageValidationFailed(_logger, imageUrl, reason);
             return ImageValidationResult.Failure(reason);
         }
 
-        LogImageValidationSuccess(_logger, imageUrl, null);
+        LogImageValidationSuccess(_logger, imageUrl);
         return ImageValidationResult.Success();
     }
 

@@ -2,108 +2,80 @@ using System.Net;
 
 namespace redmuffin.Blazor.StaticWeb.Features.Pages.AuthPage;
 
-/// <summary>
-///     LoggerMessage delegates for Redirect component.
-/// </summary>
 public partial class Redirect
 {
-    private static readonly Action<ILogger, Exception?> LogOnInitializedAsyncStarted =
-        LoggerMessage.Define(LogLevel.Information, new EventId(1, nameof(LogOnInitializedAsyncStarted)),
-            "OnInitializedAsync started.");
+    [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "OnInitializedAsync started.")]
+    private static partial void LogOnInitializedAsyncStarted(ILogger logger);
 
-    private static readonly Action<ILogger, string, Exception?> LogRedirectUriSet =
-        LoggerMessage.Define<string>(LogLevel.Information, new EventId(2, nameof(LogRedirectUriSet)),
-            "Redirect URI set to: {RedirectUri}");
+    [LoggerMessage(EventId = 2, Level = LogLevel.Information, Message = "Redirect URI set to: {RedirectUri}")]
+    private static partial void LogRedirectUriSet(ILogger logger, string redirectUri);
 
-    private static readonly Action<ILogger, Uri, Exception?> LogCurrentUri =
-        LoggerMessage.Define<Uri>(LogLevel.Information, new EventId(3, nameof(LogCurrentUri)),
-            "Current URI: {Uri}");
+    [LoggerMessage(EventId = 3, Level = LogLevel.Information, Message = "Current URI: {Uri}")]
+    private static partial void LogCurrentUri(ILogger logger, Uri uri);
 
-    private static readonly Action<ILogger, string, Exception?> LogAuthCodeFound =
-        LoggerMessage.Define<string>(LogLevel.Information, new EventId(4, nameof(LogAuthCodeFound)),
-            "Authorization code found: {AuthCode}");
+    [LoggerMessage(EventId = 4, Level = LogLevel.Information, Message = "Authorization code found: {AuthCode}")]
+    private static partial void LogAuthCodeFound(ILogger logger, string authCode);
 
-    private static readonly Action<ILogger, Exception?> LogAttemptingToSetRaindropAuthCode =
-        LoggerMessage.Define(LogLevel.Information, new EventId(5, nameof(LogAttemptingToSetRaindropAuthCode)),
-            "Attempting to set 'raindrop_auth_code' in LocalStorage.");
+    [LoggerMessage(EventId = 5, Level = LogLevel.Information, Message = "Attempting to set 'raindrop_auth_code' in LocalStorage.")]
+    private static partial void LogAttemptingToSetRaindropAuthCode(ILogger logger);
 
-    private static readonly Action<ILogger, Exception?> LogRaindropAuthCodeSetSuccessfully =
-        LoggerMessage.Define(LogLevel.Information, new EventId(6, nameof(LogRaindropAuthCodeSetSuccessfully)),
-            "'raindrop_auth_code' successfully set in LocalStorage.");
+    [LoggerMessage(EventId = 6, Level = LogLevel.Information, Message = "'raindrop_auth_code' successfully set in LocalStorage.")]
+    private static partial void LogRaindropAuthCodeSetSuccessfully(ILogger logger);
 
-    private static readonly Action<ILogger, Exception?> LogAttemptingToExchangeCode =
-        LoggerMessage.Define(LogLevel.Information, new EventId(7, nameof(LogAttemptingToExchangeCode)),
-            "Attempting to exchange code for token.");
+    [LoggerMessage(EventId = 7, Level = LogLevel.Information, Message = "Attempting to exchange code for token.")]
+    private static partial void LogAttemptingToExchangeCode(ILogger logger);
 
-    private static readonly Action<ILogger, Exception?> LogExchangeCodeCompleted =
-        LoggerMessage.Define(LogLevel.Information, new EventId(8, nameof(LogExchangeCodeCompleted)),
-            "ExchangeCodeForTokenAsync completed.");
+    [LoggerMessage(EventId = 8, Level = LogLevel.Information, Message = "ExchangeCodeForTokenAsync completed.")]
+    private static partial void LogExchangeCodeCompleted(ILogger logger);
 
-    private static readonly Action<ILogger, Exception> LogErrorDuringOnInitialized =
-        LoggerMessage.Define(LogLevel.Error, new EventId(9, nameof(LogErrorDuringOnInitialized)),
-            "Error during OnInitializedAsync after obtaining auth code.");
+    [LoggerMessage(EventId = 9, Level = LogLevel.Error, Message = "Error during OnInitializedAsync after obtaining auth code.")]
+    private static partial void LogErrorDuringOnInitialized(ILogger logger, Exception exception);
 
-    private static readonly Action<ILogger, Exception?> LogNoCodeFoundInUrl =
-        LoggerMessage.Define(LogLevel.Warning, new EventId(10, nameof(LogNoCodeFoundInUrl)),
-            "No 'code' found in URL query parameters.");
+    [LoggerMessage(EventId = 10, Level = LogLevel.Warning, Message = "No 'code' found in URL query parameters.")]
+    private static partial void LogNoCodeFoundInUrl(ILogger logger);
 
-    private static readonly Action<ILogger, Exception?> LogOnInitializedAsyncFinished =
-        LoggerMessage.Define(LogLevel.Information, new EventId(11, nameof(LogOnInitializedAsyncFinished)),
-            "OnInitializedAsync finished.");
+    [LoggerMessage(EventId = 11, Level = LogLevel.Information, Message = "OnInitializedAsync finished.")]
+    private static partial void LogOnInitializedAsyncFinished(ILogger logger);
 
-    private static readonly Action<ILogger, string, Exception?> LogExchangeCodeStarted =
-        LoggerMessage.Define<string>(LogLevel.Information, new EventId(12, nameof(LogExchangeCodeStarted)),
-            "ExchangeCodeForTokenAsync started with code: {Code}");
+    [LoggerMessage(EventId = 12, Level = LogLevel.Information, Message = "ExchangeCodeForTokenAsync started with code: {Code}")]
+    private static partial void LogExchangeCodeStarted(ILogger logger, string code);
 
-    private static readonly Action<ILogger, string, Exception?> LogApiRequestJson =
-        LoggerMessage.Define<string>(LogLevel.Debug, new EventId(13, nameof(LogApiRequestJson)),
-            "API Request JSON: {JsonRequest}");
+    [LoggerMessage(EventId = 13, Level = LogLevel.Debug, Message = "API Request JSON: {JsonRequest}")]
+    private static partial void LogApiRequestJson(ILogger logger, string jsonRequest);
 
-    private static readonly Action<ILogger, Exception?> LogPostingToExchangeApi =
-        LoggerMessage.Define(LogLevel.Information, new EventId(14, nameof(LogPostingToExchangeApi)),
-            "Posting to /api/ExchangeRaindropCode");
+    [LoggerMessage(EventId = 14, Level = LogLevel.Information, Message = "Posting to /api/ExchangeRaindropCode")]
+    private static partial void LogPostingToExchangeApi(ILogger logger);
 
-    private static readonly Action<ILogger, HttpStatusCode, Exception?> LogResponseReceived =
-        LoggerMessage.Define<HttpStatusCode>(LogLevel.Information, new EventId(15, nameof(LogResponseReceived)),
-            "Response received with status code: {StatusCode}");
+    [LoggerMessage(EventId = 15, Level = LogLevel.Information, Message = "Response received with status code: {StatusCode}")]
+    private static partial void LogResponseReceived(ILogger logger, HttpStatusCode statusCode);
 
-    private static readonly Action<ILogger, Exception?> LogSuccessfulResponseReceived =
-        LoggerMessage.Define(LogLevel.Information, new EventId(16, nameof(LogSuccessfulResponseReceived)),
-            "Response was successful. Attempting to deserialize.");
+    [LoggerMessage(EventId = 16, Level = LogLevel.Information, Message = "Response was successful. Attempting to deserialize.")]
+    private static partial void LogSuccessfulResponseReceived(ILogger logger);
 
-    private static readonly Action<ILogger, string, Exception?> LogAccessTokenRetrieved =
-        LoggerMessage.Define<string>(LogLevel.Information, new EventId(17, nameof(LogAccessTokenRetrieved)),
-            "Access token retrieved: {AccessToken}");
+    [LoggerMessage(EventId = 17, Level = LogLevel.Information, Message = "Access token retrieved: {AccessToken}")]
+    private static partial void LogAccessTokenRetrieved(ILogger logger, string accessToken);
 
-    private static readonly Action<ILogger, Exception?> LogAttemptingToSetAccessToken =
-        LoggerMessage.Define(LogLevel.Information, new EventId(18, nameof(LogAttemptingToSetAccessToken)),
-            "Attempting to set 'raindrop_access_token' in LocalStorage.");
+    [LoggerMessage(EventId = 18, Level = LogLevel.Information, Message = "Attempting to set 'raindrop_access_token' in LocalStorage.")]
+    private static partial void LogAttemptingToSetAccessToken(ILogger logger);
 
-    private static readonly Action<ILogger, Exception?> LogAccessTokenSetSuccessfully =
-        LoggerMessage.Define(LogLevel.Information, new EventId(19, nameof(LogAccessTokenSetSuccessfully)),
-            "'raindrop_access_token' successfully set in LocalStorage.");
+    [LoggerMessage(EventId = 19, Level = LogLevel.Information, Message = "'raindrop_access_token' successfully set in LocalStorage.")]
+    private static partial void LogAccessTokenSetSuccessfully(ILogger logger);
 
-    private static readonly Action<ILogger, Exception> LogErrorSettingAccessToken =
-        LoggerMessage.Define(LogLevel.Error, new EventId(20, nameof(LogErrorSettingAccessToken)),
-            "Error setting access token in LocalStorage.");
+    [LoggerMessage(EventId = 20, Level = LogLevel.Error, Message = "Error setting access token in LocalStorage.")]
+    private static partial void LogErrorSettingAccessToken(ILogger logger, Exception exception);
 
-    private static readonly Action<ILogger, string?, Exception?> LogFailedToRetrieveAccessToken =
-        LoggerMessage.Define<string?>(LogLevel.Warning, new EventId(21, nameof(LogFailedToRetrieveAccessToken)),
-            "Failed to retrieve access token. API Error: {Error}");
+    [LoggerMessage(EventId = 21, Level = LogLevel.Warning, Message = "Failed to retrieve access token. API Error: {Error}")]
+    private static partial void LogFailedToRetrieveAccessToken(ILogger logger, string? error);
 
-    private static readonly Action<ILogger, HttpStatusCode, string, Exception?> LogTokenExchangeFailed =
-        LoggerMessage.Define<HttpStatusCode, string>(LogLevel.Error, new EventId(22, nameof(LogTokenExchangeFailed)),
-            "Token exchange with API failed. Status: {StatusCode}, Details: {ErrorContent}");
+    [LoggerMessage(EventId = 22, Level = LogLevel.Error, Message = "Token exchange with API failed. Status: {StatusCode}, Details: {ErrorContent}")]
+    private static partial void LogTokenExchangeFailed(ILogger logger, HttpStatusCode statusCode, string errorContent);
 
-    private static readonly Action<ILogger, Exception> LogFailedToDeserializeErrorResponse =
-        LoggerMessage.Define(LogLevel.Error, new EventId(23, nameof(LogFailedToDeserializeErrorResponse)),
-            "Failed to deserialize error response from API.");
+    [LoggerMessage(EventId = 23, Level = LogLevel.Error, Message = "Failed to deserialize error response from API.")]
+    private static partial void LogFailedToDeserializeErrorResponse(ILogger logger, Exception exception);
 
-    private static readonly Action<ILogger, Exception> LogExceptionDuringTokenExchange =
-        LoggerMessage.Define(LogLevel.Error, new EventId(24, nameof(LogExceptionDuringTokenExchange)),
-            "An exception occurred while exchanging token.");
+    [LoggerMessage(EventId = 24, Level = LogLevel.Error, Message = "An exception occurred while exchanging token.")]
+    private static partial void LogExceptionDuringTokenExchange(ILogger logger, Exception exception);
 
-    private static readonly Action<ILogger, Exception?> LogExchangeCodeFinished =
-        LoggerMessage.Define(LogLevel.Information, new EventId(25, nameof(LogExchangeCodeFinished)),
-            "ExchangeCodeForTokenAsync finished.");
+    [LoggerMessage(EventId = 25, Level = LogLevel.Information, Message = "ExchangeCodeForTokenAsync finished.")]
+    private static partial void LogExchangeCodeFinished(ILogger logger);
 }

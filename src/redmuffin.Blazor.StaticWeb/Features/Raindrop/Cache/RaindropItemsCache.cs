@@ -63,21 +63,21 @@ public sealed partial class RaindropItemsCache : IRaindropItemsCache
 
         try
         {
-            LogCacheRetrievalStarted(_logger, cacheType, null);
+            LogCacheRetrievalStarted(_logger, cacheType);
 
             var metadata = await ValidateAndRetrieveMetadataAsync(cacheType, cancellationToken).ConfigureAwait(false);
             if (metadata == null) return RaindropCacheResultFactory.Miss<IList<RaindropItem>>();
 
             if (metadata.IsExpired)
             {
-                LogCacheExpired(_logger, cacheType, metadata.CreatedAt.DateTime, null);
+                LogCacheExpired(_logger, cacheType, metadata.CreatedAt.DateTime);
                 return RaindropCacheResultFactory.Expired<IList<RaindropItem>>();
             }
 
             var compressedData = await RetrieveCompressedDataAsync(cacheType, cancellationToken).ConfigureAwait(false);
             if (string.IsNullOrEmpty(compressedData))
             {
-                LogCacheDataCorrupted(_logger, cacheType, null);
+                LogCacheDataCorrupted(_logger, cacheType);
                 return RaindropCacheResultFactory.Miss<IList<RaindropItem>>();
             }
 
@@ -86,7 +86,7 @@ public sealed partial class RaindropItemsCache : IRaindropItemsCache
 
             await UpdateLastAccessedTimeAsync(cacheType, metadata, cancellationToken).ConfigureAwait(false);
 
-            LogCacheRetrievalSuccessful(_logger, cacheType, cachedData.Count, null);
+            LogCacheRetrievalSuccessful(_logger, cacheType, cachedData.Count);
             return RaindropCacheResultFactory.Success(cachedData, metadata);
         }
         catch (Exception ex)
@@ -109,14 +109,14 @@ public sealed partial class RaindropItemsCache : IRaindropItemsCache
             var cacheKey = GetCacheKey(cacheType);
             var metadataKey = GetMetadataKey(cacheType);
 
-            LogCacheStorageStarted(_logger, cacheType, items.Count, null);
+            LogCacheStorageStarted(_logger, cacheType, items.Count);
 
             var (compressedData, originalSize, compressedSize) = await SerializeAndCompressDataAsync(cacheType, items).ConfigureAwait(false);
             var metadata = CreateCacheMetadata(items.Count, originalSize, compressedSize);
 
             await StoreDataAndMetadataAsync(cacheKey, metadataKey, compressedData, metadata, cancellationToken).ConfigureAwait(false);
 
-            LogCacheStorageSuccessful(_logger, cacheType, items.Count, originalSize, compressedSize, metadata.CompressionRatio, null);
+            LogCacheStorageSuccessful(_logger, cacheType, items.Count, originalSize, compressedSize, metadata.CompressionRatio);
         }
         catch (Exception ex)
         {
@@ -134,7 +134,7 @@ public sealed partial class RaindropItemsCache : IRaindropItemsCache
             var cacheKey = GetCacheKey(cacheType);
             var metadataKey = GetMetadataKey(cacheType);
 
-            LogCacheClearStarted(_logger, cacheType, null);
+            LogCacheClearStarted(_logger, cacheType);
 
             try
             {
@@ -147,7 +147,7 @@ public sealed partial class RaindropItemsCache : IRaindropItemsCache
                 throw new InvalidOperationException("LocalStorage clear operation failed", ex);
             }
 
-            LogCacheClearSuccessful(_logger, cacheType, null);
+            LogCacheClearSuccessful(_logger, cacheType);
         }
         catch (Exception ex)
         {
@@ -203,13 +203,13 @@ public sealed partial class RaindropItemsCache : IRaindropItemsCache
     {
         try
         {
-            LogCacheClearAllStarted(_logger, null);
+            LogCacheClearAllStarted(_logger);
 
             // Clear both Videos and Articles caches
             await ClearAsync("Videos", cancellationToken).ConfigureAwait(false);
             await ClearAsync("Articles", cancellationToken).ConfigureAwait(false);
 
-            LogCacheClearAllSuccessful(_logger, null);
+            LogCacheClearAllSuccessful(_logger);
         }
         catch (Exception ex)
         {
@@ -229,14 +229,14 @@ public sealed partial class RaindropItemsCache : IRaindropItemsCache
             var metadataExists = await _localStorage.ContainKeyAsync(metadataKey, cancellationToken).ConfigureAwait(false);
             if (!metadataExists)
             {
-                LogCacheNotFound(_logger, cacheType, null);
+                LogCacheNotFound(_logger, cacheType);
                 return null;
             }
 
             var metadata = await _localStorage.GetItemAsync<RaindropCacheMetadata>(metadataKey, cancellationToken).ConfigureAwait(false);
             if (metadata == null)
             {
-                LogCacheMetadataCorrupted(_logger, cacheType, null);
+                LogCacheMetadataCorrupted(_logger, cacheType);
                 return null;
             }
 
@@ -274,14 +274,14 @@ public sealed partial class RaindropItemsCache : IRaindropItemsCache
             var decompressedJson = LZString.DecompressFromUTF16(compressedData);
             if (string.IsNullOrEmpty(decompressedJson))
             {
-                LogDecompressionFailed(_logger, cacheType, null);
+                LogDecompressionFailed(_logger, cacheType);
                 return Task.FromResult<IList<RaindropItem>?>(null);
             }
 
             var cachedData = JsonSerializer.Deserialize(decompressedJson, RaindropJsonSerializerContext.Default.RaindropItemList);
             if (cachedData == null)
             {
-                LogDeserializationFailed(_logger, cacheType, null);
+                LogDeserializationFailed(_logger, cacheType);
                 return Task.FromResult<IList<RaindropItem>?>(null);
             }
 
@@ -341,7 +341,7 @@ public sealed partial class RaindropItemsCache : IRaindropItemsCache
             compressedData = LZString.CompressToUTF16(jsonData);
             if (string.IsNullOrEmpty(compressedData))
             {
-                LogCompressionFailed(_logger, cacheType, null);
+                LogCompressionFailed(_logger, cacheType);
                 throw new InvalidOperationException("Data compression failed - result is null or empty");
             }
         }

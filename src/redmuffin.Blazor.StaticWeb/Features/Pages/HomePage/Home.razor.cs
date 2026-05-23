@@ -2,6 +2,11 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using redmuffin.Blazor.StaticWeb.Core.Abstractions;
 
+// CA1873: Analyzer cannot detect [LoggerMessage] source-gen methods defined in
+// separate partial file (Home.Logging.cs). All log calls in this file use source-gen
+// delegates that already include IsEnabled guards — no wasted argument evaluation.
+#pragma warning disable CA1873
+
 namespace redmuffin.Blazor.StaticWeb.Features.Pages.HomePage;
 
 public partial class Home : ComponentBase
@@ -81,16 +86,16 @@ public partial class Home : ComponentBase
 
     protected override void OnInitialized()
     {
-        LogOnInitializedCalled(Logger, null);
+        LogOnInitializedCalled(Logger);
     }
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync().ConfigureAwait(false);
-        LogOnParametersSetAsyncCalled(Logger, null);
+        LogOnParametersSetAsyncCalled(Logger);
 
         // Log cascading parameter changes
-        LogCascadingParameterChanged(Logger, $"AppTheme: {AppTheme}", null);
+        LogCascadingParameterChanged(Logger, $"AppTheme: {AppTheme}");
 
         // Handle authentication state changes
         if (AuthenticationState != null)
@@ -105,7 +110,7 @@ public partial class Home : ComponentBase
 #pragma warning restore VSTHRD003 // Calling method isn't async
                 IsAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
                 CurrentUserName = authState.User.Identity?.Name;
-                LogAuthorizationStateChanged(Logger, IsAuthenticated.ToString(), null);
+                LogAuthorizationStateChanged(Logger, IsAuthenticated.ToString());
             }
             catch (Exception ex)
             {
@@ -123,9 +128,9 @@ public partial class Home : ComponentBase
     {
         await base.OnAfterRenderAsync(firstRender).ConfigureAwait(false);
         if (firstRender)
-            LogFirstRenderCalled(Logger, null);
+            LogFirstRenderCalled(Logger);
         else
-            LogSubsequentRenderCalled(Logger, null);
+            LogSubsequentRenderCalled(Logger);
     }
 
     /// <summary>
@@ -133,7 +138,7 @@ public partial class Home : ComponentBase
     /// </summary>
     private async Task HandleClickAsync()
     {
-        LogButtonClicked(Logger, null);
+        LogButtonClicked(Logger);
         StatusMessage = "Processing API request...";
         StateHasChanged();
 
@@ -141,7 +146,7 @@ public partial class Home : ComponentBase
         try
         {
             var response = await client.GetAsync("https://example.com").ConfigureAwait(false);
-            LogApiCallStatus(Logger, response.StatusCode.ToString(), null);
+            LogApiCallStatus(Logger, response.StatusCode.ToString());
             StatusMessage = $"API call completed with status: {response.StatusCode}";
         }
         catch (Exception ex)
@@ -165,7 +170,7 @@ public partial class Home : ComponentBase
     /// </summary>
     private async Task HandleFormSubmitAsync()
     {
-        LogFormSubmitted(Logger, DemoInputValue, null);
+        LogFormSubmitted(Logger, DemoInputValue);
 
         if (string.IsNullOrWhiteSpace(DemoInputValue))
         {

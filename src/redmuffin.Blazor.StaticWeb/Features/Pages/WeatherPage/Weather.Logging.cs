@@ -2,8 +2,9 @@ namespace redmuffin.Blazor.StaticWeb.Features.Pages.WeatherPage;
 
 public partial class Weather
 {
-    private static readonly Action<ILogger, Exception?> LogOnInitializedAsync = LoggerMessage.Define(
-        LogLevel.Warning,
-        new EventId(1, "WeatherOnInitializedAsync"),
-        "Weather OnInitializedAsync(v1)");
+    [LoggerMessage(
+        EventId = 1,
+        Level = LogLevel.Warning,
+        Message = "Weather OnInitializedAsync(v1)")]
+    private static partial void LogOnInitializedCalled(ILogger logger);
 }

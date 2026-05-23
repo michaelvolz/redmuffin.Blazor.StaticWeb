@@ -21,7 +21,7 @@ public partial class Weather : ComponentBase
 #pragma warning disable MA0015 // Not a method parameter — validating Blazor [Inject] property
         ArgumentNullException.ThrowIfNull(HttpClientFactory);
 #pragma warning restore MA0015
-        LogOnInitializedAsync(Logger, null);
+        LogOnInitializedCalled(Logger);
 
         using var httpClient = HttpClientFactory.CreateClient();
         _forecasts = await httpClient.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json", JsonOptions).ConfigureAwait(false);
