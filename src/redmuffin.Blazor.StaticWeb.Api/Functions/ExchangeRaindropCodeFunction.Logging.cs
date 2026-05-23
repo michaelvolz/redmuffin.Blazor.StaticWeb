@@ -11,6 +11,9 @@ public sealed partial class ExchangeRaindropCodeFunction
     [LoggerMessage(2, LogLevel.Warning, "Request is null or code is missing.", EventName = nameof(Log_MissingCodeOrRequest))]
     public static partial void Log_MissingCodeOrRequest(ILogger logger);
 
+    [LoggerMessage(11, LogLevel.Warning, "Request body is not valid JSON.", EventName = nameof(Log_InvalidJsonBody))]
+    public static partial void Log_InvalidJsonBody(ILogger logger);
+
     [LoggerMessage(3, LogLevel.Warning, "Redirect URI is missing.", EventName = nameof(Log_MissingRedirectUri))]
     public static partial void Log_MissingRedirectUri(ILogger logger);
 

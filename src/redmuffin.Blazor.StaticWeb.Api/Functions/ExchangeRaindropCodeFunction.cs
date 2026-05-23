@@ -32,7 +32,7 @@ public sealed partial class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindro
             var request = await DeserializeRequestAsync(req, token).ConfigureAwait(false);
             if (request is null) return await CreateBadRequestResponseAsync(req, "Missing code.", token).ConfigureAwait(false);
 
-            var redirectUri = ValidateRedirectUri(request.RedirectUri);
+            var redirectUri = GetRedirectUriOrNull(request.RedirectUri);
             if (redirectUri is null) return await CreateBadRequestResponseAsync(req, "Missing redirect_uri.", token).ConfigureAwait(false);
 
             Log_RequestDetails(logger, request.Code, redirectUri);
@@ -63,12 +63,12 @@ public sealed partial class ExchangeRaindropCodeFunction(ILogger<ExchangeRaindro
         }
         catch (JsonException)
         {
-            Log_MissingCodeOrRequest(logger);
+            Log_InvalidJsonBody(logger);
             return null;
         }
     }
 
-    private string? ValidateRedirectUri(string? redirectUri)
+    private string? GetRedirectUriOrNull(string? redirectUri)
     {
         if (string.IsNullOrWhiteSpace(redirectUri))
         {

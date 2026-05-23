@@ -52,7 +52,7 @@ public static class RaindropListFetcher
                 return fallbackResp;
             }
 
-            var errResp = request.CreateResponse(HttpStatusCode.BadRequest);
+            var errResp = request.CreateResponse(HttpStatusCode.BadGateway);
             await errResp.WriteAsJsonAsync(
                     new { Error = $"Raindrop API request failed: {response.StatusCode}", Details = json }, cancellationToken)
                 .ConfigureAwait(false);

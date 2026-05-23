@@ -34,7 +34,7 @@ public sealed partial class RaindropListArticles_Tests
             response = (HttpResponseData_Mock)await function.RunAsync(request).ConfigureAwait(false);
 
             // Assert
-            await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
+            await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadGateway);
 
             var responseBody = response.GetBodyAsString();
             JsonDocument.Parse(responseBody); // Verify response is valid JSON

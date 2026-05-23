@@ -87,10 +87,10 @@ public sealed class RaindropListFetcher_Tests
 
     /// <summary>
     ///     Validates that non-success HTTP status codes from the Raindrop API
-    ///     are converted to HTTP 400 with a structured error body.
+    ///     are converted to HTTP 502 with a structured error body.
     /// </summary>
     [Test]
-    public async Task Should_Return_BadRequest_When_Api_Returns_Error()
+    public async Task Should_Return_BadGateway_When_Api_Returns_Error()
     {
         // Arrange
         using var handler = new ControlledHttpHandler_Fake(_ =>
@@ -112,7 +112,7 @@ public sealed class RaindropListFetcher_Tests
             cancellationToken: CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
+        await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadGateway);
         var body = response.GetBodyAsString();
         await Assert.That(body).Contains("invalid_token");
         JsonDocument.Parse(body); // Verify response is valid JSON
