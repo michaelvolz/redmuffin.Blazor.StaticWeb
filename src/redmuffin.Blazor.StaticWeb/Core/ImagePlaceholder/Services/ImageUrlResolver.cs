@@ -1,31 +1,34 @@
 using System.Globalization;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
-using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 
 /// <summary>
-///     Service for managing image validation caching and background validation.
+///     Orchestrates image URL resolution for Raindrop items.
+///     Popsulates an in-memory URL cache, resolves cached URLs, and runs
+///     background HTTP validation. Delegates all HTTP operations to
+///     <see cref="IImageValidator" /> and placeholder generation to
+///     <see cref="IImagePlaceholderService" />.
 /// </summary>
-public sealed partial class ImageValidationCacheService : IImageValidationCacheService
+public sealed partial class ImageUrlResolver : IImageUrlResolver
 {
-    private readonly ISimpleImageValidationService _simpleImageValidationService;
+    private readonly IImageValidator _imageValidator;
     private readonly IImagePlaceholderService _imagePlaceholderService;
-    private readonly ILogger<ImageValidationCacheService> _logger;
+    private readonly ILogger<ImageUrlResolver> _logger;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="ImageValidationCacheService" /> class.
+    ///     Initializes a new instance of the <see cref="ImageUrlResolver" /> class.
     /// </summary>
-    /// <param name="simpleImageValidationService">The simple image validation service</param>
+    /// <param name="imageValidator">The image validator for HTTP validation</param>
     /// <param name="imagePlaceholderService">The image placeholder service</param>
     /// <param name="logger">The logger instance</param>
-    public ImageValidationCacheService(
-        ISimpleImageValidationService simpleImageValidationService,
+    public ImageUrlResolver(
+        IImageValidator imageValidator,
         IImagePlaceholderService imagePlaceholderService,
-        ILogger<ImageValidationCacheService> logger)
+        ILogger<ImageUrlResolver> logger)
     {
-        _simpleImageValidationService = simpleImageValidationService ?? throw new ArgumentNullException(nameof(simpleImageValidationService));
+        _imageValidator = imageValidator ?? throw new ArgumentNullException(nameof(imageValidator));
         _imagePlaceholderService = imagePlaceholderService ?? throw new ArgumentNullException(nameof(imagePlaceholderService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -90,7 +93,7 @@ public sealed partial class ImageValidationCacheService : IImageValidationCacheS
             return _imagePlaceholderService.GetDefaultPlaceholder();
 
         // Check cache ONLY - no network requests
-        var cachedResult = await _simpleImageValidationService.GetCachedResultAsync(item.Cover, cancellationToken).ConfigureAwait(false);
+        var cachedResult = await _imageValidator.GetCachedResultAsync(item.Cover, cancellationToken).ConfigureAwait(false);
 
         if (cachedResult != null)
             // Use cached validation result
@@ -118,7 +121,7 @@ public sealed partial class ImageValidationCacheService : IImageValidationCacheS
         try
         {
             // Perform actual validation
-            var result = await _simpleImageValidationService.ValidateImageAsync(item.Cover, cancellationToken).ConfigureAwait(false);
+            var result = await _imageValidator.ValidateImageAsync(item.Cover, cancellationToken).ConfigureAwait(false);
 
             // Get the appropriate URL based on validation result
             var imageUrl = result.IsValid

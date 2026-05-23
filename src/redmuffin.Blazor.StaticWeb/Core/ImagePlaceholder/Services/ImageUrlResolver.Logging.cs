@@ -1,9 +1,9 @@
 namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 
 /// <summary>
-///     Logging partial class for ImageValidationCacheService containing LoggerMessage delegates.
+///     Logging partial class for ImageUrlResolver containing LoggerMessage delegates.
 /// </summary>
-public sealed partial class ImageValidationCacheService
+public sealed partial class ImageUrlResolver
 {
     /// <summary>
     ///     LoggerMessage delegate for background validation failures.

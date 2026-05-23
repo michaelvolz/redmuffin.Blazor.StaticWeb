@@ -1,12 +1,12 @@
-using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Models;
+using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Models;
 
-namespace redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Services;
+namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 
 /// <summary>
-///     Simple image validation service for verifying image URLs and managing cache.
-///     Provides a lean, maintainable approach to image validation with localStorage caching.
+///     Validates image URLs via HTTP HEAD requests and caches results in localStorage.
+///     Provides fast cache-first resolution with differential TTL for transient vs permanent failures.
 /// </summary>
-public interface ISimpleImageValidationService
+public interface IImageValidator
 {
     /// <summary>
     ///     Validates an image URL by performing HTTP HEAD request and checking response.

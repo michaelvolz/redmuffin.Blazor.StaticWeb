@@ -3,9 +3,11 @@ using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 
 /// <summary>
-///     Service for managing image validation caching and background validation.
+///     Resolves what image URL to display for Raindrop items.
+///     Orchestrates cache population, cached URL lookup, and background validation.
+///     Delegates actual HTTP validation to <see cref="IImageValidator" />.
 /// </summary>
-public interface IImageValidationCacheService
+public interface IImageUrlResolver
 {
     /// <summary>
     ///     Populates the image URL cache for all items using ONLY cached values.

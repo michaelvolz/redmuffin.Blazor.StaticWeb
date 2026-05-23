@@ -1,18 +1,21 @@
 using System.Security.Cryptography;
 using System.Text;
-using redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Models;
+using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
+using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Models;
 using redmuffin.Blazor.StaticWeb.Services;
 
-namespace redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Services;
+namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 
 /// <summary>
-///     Simple image validation service with localStorage caching.
-///     Provides a lean, maintainable approach to image validation without complex orchestration.
+///     HTTP-based image URL validator with localStorage caching.
+///     Validates image URLs via HTTP HEAD, caches results with differential TTL
+///     (4 weeks for permanent failures, 30 minutes for transient), and manages
+///     storage pressure through LRU eviction.
 /// </summary>
-public sealed class SimpleImageValidationService : ISimpleImageValidationService
+public sealed class ImageValidator : IImageValidator
 {
     private const string CacheKeyPrefix = "img_validation_";
-    private const int DefaultTimeoutMs = 5000; // 5 seconds - shorter than complex service
+    private const int DefaultTimeoutMs = 5000; // 5 seconds
     private const int CacheExpirationMinutes = 40320; // 4 weeks cache
     private const double CacheCleanupThreshold = 0.75; // Clean up at 75% quota
     private const int TimeoutFailureCacheMinutes = 30; // Cache timeout failures for 30 minutes
@@ -52,12 +55,12 @@ public sealed class SimpleImageValidationService : ISimpleImageValidationService
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IBrowserStorageService _browserStorageService;
-    private readonly ILogger<SimpleImageValidationService> _logger;
+    private readonly ILogger<ImageValidator> _logger;
 
-    public SimpleImageValidationService(
+    public ImageValidator(
         IHttpClientFactory httpClientFactory,
         IBrowserStorageService browserStorageService,
-        ILogger<SimpleImageValidationService> logger)
+        ILogger<ImageValidator> logger)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _browserStorageService = browserStorageService ?? throw new ArgumentNullException(nameof(browserStorageService));

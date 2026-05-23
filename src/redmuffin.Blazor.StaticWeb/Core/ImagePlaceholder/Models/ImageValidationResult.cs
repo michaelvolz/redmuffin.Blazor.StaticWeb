@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Features.Pages.ArticlesPage.Core.Models;
+namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Models;
 
 /// <summary>
 ///     Represents the result of an image validation operation.
