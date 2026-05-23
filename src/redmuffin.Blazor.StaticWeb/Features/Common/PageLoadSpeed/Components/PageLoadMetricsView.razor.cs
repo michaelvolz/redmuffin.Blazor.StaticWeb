@@ -2,8 +2,8 @@ using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using redmuffin.Blazor.StaticWeb.Configuration;
-using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Core;
-using redmuffin.Blazor.StaticWeb.Services;
+using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Models;
+using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Components;
 

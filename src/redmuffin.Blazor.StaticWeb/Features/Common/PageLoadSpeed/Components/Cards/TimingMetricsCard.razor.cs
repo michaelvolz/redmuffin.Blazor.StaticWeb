@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Components;
-using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Core;
+using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Models;
 
 namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Components;
 

@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Core;
+namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Models;
 
 /// <summary>
 ///     Data model for JavaScript interop. Contains all page load metrics

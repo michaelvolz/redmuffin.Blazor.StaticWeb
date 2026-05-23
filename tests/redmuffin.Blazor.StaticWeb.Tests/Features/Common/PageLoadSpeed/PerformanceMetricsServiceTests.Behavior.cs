@@ -1,6 +1,6 @@
 using Microsoft.JSInterop;
-using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Core;
-using redmuffin.Blazor.StaticWeb.Services;
+using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Models;
+using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Common.PageLoadSpeed;
 

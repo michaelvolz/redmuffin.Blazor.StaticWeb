@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Core;
+namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Models;
 
 /// <summary>
 ///     Named color constants for the page load metrics UI.

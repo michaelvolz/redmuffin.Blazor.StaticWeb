@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Core;
+namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Models;
 
 /// <summary>
 ///     Immutable WebAssembly metrics record containing WASM-specific performance data

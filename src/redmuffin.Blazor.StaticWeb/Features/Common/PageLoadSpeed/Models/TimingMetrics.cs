@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Core;
+namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Models;
 
 /// <summary>
 ///     Immutable timing metrics record
