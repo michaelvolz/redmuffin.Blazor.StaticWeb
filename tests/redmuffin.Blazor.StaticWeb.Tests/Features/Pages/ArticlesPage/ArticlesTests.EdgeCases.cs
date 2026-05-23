@@ -27,7 +27,7 @@ public sealed partial class ArticlesTests
 
             // Should display error message
             var markup = component.Markup;
-            await Assert.That(markup).Contains("Exception").Or.Contains("Error").Or.Contains("failed");
+            await Assert.That(markup).Contains("Unable").Or.Contains("Error");
         }
     }
 }

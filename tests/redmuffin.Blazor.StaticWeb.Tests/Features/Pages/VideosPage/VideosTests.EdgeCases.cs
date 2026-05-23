@@ -21,7 +21,7 @@ public sealed partial class VideosTests
 
         // Assert
         await Assert.That(component.Find(".callout.alert")).IsNotNull();
-        await Assert.That(component.Markup).Contains("Exception fetching videos");
+        await Assert.That(component.Markup).Contains("Unable to load items");
     }
 
     [Test]

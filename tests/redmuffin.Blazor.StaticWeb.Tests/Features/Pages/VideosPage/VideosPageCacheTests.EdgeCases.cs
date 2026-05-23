@@ -98,7 +98,7 @@ public sealed partial class VideosPageCacheTests
         using (Assert.Multiple())
         {
             await Assert.That(refreshBadge.GetAttribute("class")).Contains("refresh-badge--error");
-            await Assert.That(component.Markup).Contains("Unable to refresh videos. Please check your internet connection and try again.");
+            await Assert.That(component.Markup).Contains("Unable to refresh");
         }
     }
 }

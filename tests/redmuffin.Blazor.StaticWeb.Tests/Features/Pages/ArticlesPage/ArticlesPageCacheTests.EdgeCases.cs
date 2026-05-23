@@ -68,34 +68,7 @@ public sealed partial class ArticlesPageCacheTests
         var finalBadge = component.Find(".refresh-badge");
         await Assert.That(finalBadge.GetAttribute("class")).Contains("refresh-badge--error");
 
-        // Check if error message appears in markup
-        // Check for the exact error message
-        var hasExactErrorMessage = component.Markup.Contains("Unable to refresh articles. Please check your internet connection and try again.");
-
-        // Check for various error-related content
-        var hasCalloutAlert = component.Markup.Contains("callout alert");
-        var hasUnableToRefresh = component.Markup.Contains("Unable to refresh");
-        var hasErrorKeyword = component.Markup.Contains("error") || component.Markup.Contains("Error");
-
-        // Check if the error message div structure exists
-        var hasErrorDiv = component.Markup.Contains("div class=\"callout alert\"");
-
-        if (!hasExactErrorMessage)
-        {
-            // Extract a portion of the markup around any error text for debugging
-            var markupSnippet = "";
-            if (hasUnableToRefresh)
-            {
-                var index = component.Markup.IndexOf("Unable to refresh", StringComparison.OrdinalIgnoreCase);
-                var start = Math.Max(0, index - 50);
-                var length = Math.Min(200, component.Markup.Length - start);
-                markupSnippet = component.Markup.Substring(start, length);
-            }
-
-            Assert.Fail(
-                $"Error message not found. Has callout alert: {hasCalloutAlert}, Has error div: {hasErrorDiv}, Has 'Unable to refresh': {hasUnableToRefresh}, Has error keyword: {hasErrorKeyword}. Markup snippet: '{markupSnippet}'");
-        }
-
-        await Assert.That(hasExactErrorMessage).IsTrue();
+        await Assert.That(component.Markup)
+            .Contains("Unable to refresh. Please check your internet connection and try again.");
     }
 }

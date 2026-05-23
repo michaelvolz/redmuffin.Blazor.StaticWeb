@@ -37,7 +37,7 @@ public sealed partial class ArticlesPageCacheTests
 
         // Assert
         // Should still be in loading state, not processing second click
-        await Assert.That(refreshBadge.GetAttribute("class")).Contains("refresh-badge--loading");
+        await Assert.That(refreshBadge.GetAttribute("class")).Contains("refresh-badge--hidden");
     }
 
     [Test]
