@@ -352,6 +352,16 @@ private static readonly Action<ILogger, string, long, Exception?> LogEvictedItem
 **Constraint:** Never add a `Func<>` parameter when the method has 5+
 dependencies. At that point, proper DI with interfaces is clearer.
 
+**Applied pattern — static orchestrator with context record:**
+
+Func<> callbacks + a context record replace `ComponentBase` inheritance
+for shared page orchestration. The orchestrator is a `static class` with
+pure methods; the context record bundles mutable page state. Func<>
+delegates serve as the seam for page-specific behavior (fetch, populate
+images, state change notification). Zero interface declarations, zero DI
+registration. Full pattern: `docs/solutions/architecture-patterns/
+composition-over-inheritance-orchestrator-pattern-2026-05-23.md`
+
 ## §6 Pure Static Methods — Functions Without Side Effects
 
 **What it replaces:** Instance methods that read internal state, methods

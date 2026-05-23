@@ -26,6 +26,9 @@ flag, `arch-rules.yml`), `rm-guide-cleanup` §1 for SLAP and method quality.
 - Introduce patterns only when they reduce complexity.
 - After structural changes, run `dotnet run -- arch --arch-config arch-rules.yml`
   to verify no dependency violations.
+- When multiple components share a workflow, prefer a composed orchestrator
+  (context record + static methods with `Func<>` callbacks) over a base class.
+  Example: `docs/solutions/architecture-patterns/composition-over-inheritance-orchestrator-pattern-2026-05-23.md`
 
 ## NEVER
 

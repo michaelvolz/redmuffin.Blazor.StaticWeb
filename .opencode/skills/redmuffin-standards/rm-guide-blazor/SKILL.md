@@ -38,6 +38,28 @@ lifecycle rules, §4 for ConfigureAwait in Blazor WASM.
 - Never use custom delegates where `EventCallback` suffices.
 - Use `ShouldRender()` only when you can justify the optimization.
 
+### Shared page orchestration — composition over ComponentBase
+
+When multiple pages share the same data-fetching workflow (cache load →
+background refresh → manual refresh → error state machine), do NOT
+extract a `ComponentBase` subclass. Use the **context-record +
+static-orchestrator pattern** instead:
+
+1. **Context record** — plain class bundling mutable page state
+   (`Items`, `ImageUrlCache`, `ErrorMessage`, `BadgeState`, `IsLoading`,
+   `IsRefreshing`). Instantiated per page with `new()`.
+2. **Static orchestrator** — `static class` with pure methods taking
+   the context + `Func<>` callbacks for page-specific behavior
+   (`fetchAsync`, `populateImagesAsync`, `stateHasChangedAsync`).
+3. **Page becomes thin wiring** — DI properties + delegate arrows.
+
+Benefits: Unit-testable without bUnit (pass `new Context()` + fake
+callbacks + `Logger_Spy`). No hierarchy lock-in. Delegates serve as
+the seam — no per-page interfaces needed.
+
+Canonical example:
+`docs/solutions/architecture-patterns/composition-over-inheritance-orchestrator-pattern-2026-05-23.md`
+
 ### Blazor lifecycle methods (not dead code)
 
 `OnInitialized`, `OnInitializedAsync`, `OnParametersSet`, `OnAfterRender`,
