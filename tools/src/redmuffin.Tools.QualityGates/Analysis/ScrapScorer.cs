@@ -1,7 +1,6 @@
 namespace redmuffin.Tools.QualityGates.Analysis;
 
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 public static class ScrapScorer
 {
@@ -14,16 +13,14 @@ public static class ScrapScorer
     private const double HighSetupPenaltyPerLevel = 1.0;
     private const int MaxWorstExamples = 5;
 
-    /// <summary>Computes per-example SCRAP metrics for a single test method.</summary>
-    /// <returns></returns>
     public static TestMethodMetrics ScoreMethod(TestMethod method)
     {
         var body = method.BodySyntax;
         var lineCount = method.EndLine - method.StartLine + 1;
 
-        var assertionCount = CountAssertions(body);
-        var branchCount = CountBranches(body);
-        var setupDepth = ComputeSetupDepth(body);
+        var assertionCount = TestMethodMetricsCalculator.CountAssertions(body);
+        var branchCount = TestMethodMetricsCalculator.CountBranches(body);
+        var setupDepth = TestMethodMetricsCalculator.ComputeSetupDepth(body);
         var structuralComplexity = branchCount + 1;
         var complexityScore = Math.Min(ComplexityCap, ComplexityFloor + (ComplexityRiseRate * structuralComplexity));
 
@@ -40,8 +37,6 @@ public static class ScrapScorer
             SmellLabels: smells);
     }
 
-    /// <summary>Aggregates per-method metrics into a file-level report.</summary>
-    /// <returns></returns>
     public static FileScrapReport ScoreFile(
         IReadOnlyList<TestMethod> methods,
         DuplicationResults duplicationResults,
@@ -128,66 +123,5 @@ public static class ScrapScorer
         }
 
         return scrapScore;
-    }
-
-    private static int CountAssertions(SyntaxNode body)
-    {
-        return body.DescendantNodes()
-            .OfType<InvocationExpressionSyntax>()
-            .Count(i =>
-            {
-                if (i.Expression is MemberAccessExpressionSyntax ma)
-                {
-                    var exprStr = ma.Expression.ToString();
-                    return exprStr.StartsWith("Assert", StringComparison.Ordinal)
-                        && string.Equals(ma.Name.Identifier.Text, "That", StringComparison.Ordinal);
-                }
-
-                return false;
-            });
-    }
-
-    private static int CountBranches(SyntaxNode body)
-    {
-        return body.DescendantNodes().Count(n =>
-            n is IfStatementSyntax
-            or SwitchStatementSyntax
-            or WhileStatementSyntax
-            or ForStatementSyntax
-            or ForEachStatementSyntax
-            or ConditionalExpressionSyntax);
-    }
-
-    private static int ComputeSetupDepth(SyntaxNode body)
-    {
-        if (body is not BlockSyntax block)
-        {
-            return 0;
-        }
-
-        var depth = 0;
-        foreach (var stmt in block.Statements)
-        {
-            var hasAssert = stmt.DescendantNodes()
-                .OfType<InvocationExpressionSyntax>()
-                .Any(i =>
-                {
-                    if (i.Expression is MemberAccessExpressionSyntax ma)
-                    {
-                        return ma.Expression.ToString().StartsWith("Assert", StringComparison.Ordinal);
-                    }
-
-                    return false;
-                });
-
-            if (hasAssert)
-            {
-                break;
-            }
-
-            depth++;
-        }
-
-        return depth;
     }
 }

@@ -102,7 +102,7 @@ public static class ScrapRecommender
         return report.ExampleCount > SmallFileMaxExamples
             && report.MaxScrap <= GeneralMaxScrapStable
             && report.DuplicationResults.EffectiveDuplicationScore <= GeneralDupStable
-            && report.SmellCounts.ZeroAssertionRatio == 0.0
+            && report.SmellCounts.ZeroAssertionCount == 0
             && report.SmellCounts.LowAssertionRatio <= GeneralLowAssertRatioStable;
     }
 

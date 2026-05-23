@@ -26,6 +26,12 @@ public static class TestMethodParser
                     continue;
                 }
 
+                // Skip bodyless methods (abstract, interface, partial declarations)
+                if (method.Body is null)
+                {
+                    continue;
+                }
+
                 var lineSpan = method.GetLocation().GetLineSpan();
                 var className = method.Ancestors().OfType<ClassDeclarationSyntax>().FirstOrDefault()?.Identifier.Text ?? string.Empty;
 
@@ -34,7 +40,7 @@ public static class TestMethodParser
                     Path.GetFullPath(file),
                     lineSpan.StartLinePosition.Line + 1,
                     lineSpan.EndLinePosition.Line + 1,
-                    method.Body ?? (SyntaxNode)method,
+                    method.Body,
                     className));
             }
         }

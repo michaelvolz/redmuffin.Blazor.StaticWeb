@@ -35,12 +35,6 @@ public static class ScrapDuplication
         return unionCount == 0 ? 0.0 : (double)intersectionCount / unionCount;
     }
 
-    /// <summary>
-    /// Analyzes test methods for structural duplication using Jaccard
-    /// similarity on normalized bodies. Clusters connected components
-    /// and classifies into harmful, case-matrix, and subject channels.
-    /// </summary>
-    /// <returns></returns>
     public static DuplicationResults Analyze(IReadOnlyList<TestMethod> methods)
     {
         if (methods.Count == 0)
@@ -223,7 +217,7 @@ public static class ScrapDuplication
                 ClusterId: clusterId,
                 Methods: subjectMethods,
                 SharedForms: 0,
-                VariablePoints: normalized[0].Count,
+                VariablePoints: 0, // Not meaningful for Subject channels; set to zero
                 InstanceCount: subjectMethods.Count,
                 ChannelType: ChannelType.Subject));
         }
@@ -241,7 +235,7 @@ public static class ScrapDuplication
         return x;
     }
 
-    /// <summary>Union-find union by rank.</summary>
+    /// <summary>Union-find union.</summary>
     private static void Union(int[] parent, int a, int b)
     {
         var rootA = Find(parent, a);
@@ -252,10 +246,6 @@ public static class ScrapDuplication
         }
     }
 
-    /// <summary>
-    /// Computes the count of feature tokens shared across all methods
-    /// in the cluster.
-    /// </summary>
     private static int ComputeSharedForms(
         List<int> indices,
         IReadOnlyList<IReadOnlyList<string>> normalized)
@@ -274,9 +264,6 @@ public static class ScrapDuplication
         return firstSet.Count;
     }
 
-    /// <summary>
-    /// Counts feature tokens that differ across methods in the cluster.
-    /// </summary>
     private static int ComputeVariablePoints(
         List<int> indices,
         IReadOnlyList<IReadOnlyList<string>> normalized)
@@ -301,77 +288,16 @@ public static class ScrapDuplication
         return union.Count - intersection.Count;
     }
 
-    /// <summary>Simple per-method metrics extractable from raw syntax.</summary>
-    /// <returns></returns>
     public static SimpleMethodMetrics ComputeSimpleMetrics(TestMethod method)
     {
         var lineCount = method.EndLine - method.StartLine + 1;
         return new SimpleMethodMetrics(
             lineCount,
-            CountAssertions(method.BodySyntax),
-            CountBranches(method.BodySyntax),
-            ComputeSetupDepth(method));
+            TestMethodMetricsCalculator.CountAssertions(method.BodySyntax),
+            TestMethodMetricsCalculator.CountBranches(method.BodySyntax),
+            TestMethodMetricsCalculator.ComputeSetupDepth(method.BodySyntax));
     }
 
-    public static int CountAssertions(SyntaxNode body) =>
-        body.DescendantNodes()
-            .OfType<InvocationExpressionSyntax>()
-            .Count(i =>
-            {
-                if (i.Expression is MemberAccessExpressionSyntax ma)
-                {
-                    var exprStr = ma.Expression.ToString();
-                    return exprStr.StartsWith("Assert", StringComparison.Ordinal)
-                        && string.Equals(ma.Name.Identifier.Text, "That", StringComparison.Ordinal);
-                }
-
-                return false;
-            });
-
-    public static int CountBranches(SyntaxNode body) =>
-        body.DescendantNodes().Count(n =>
-            n is IfStatementSyntax
-            or SwitchStatementSyntax
-            or WhileStatementSyntax
-            or ForStatementSyntax
-            or ForEachStatementSyntax);
-
-    public static int ComputeSetupDepth(TestMethod method)
-    {
-        var setupDepth = 0;
-        if (method.BodySyntax is BlockSyntax block)
-        {
-            foreach (var stmt in block.Statements)
-            {
-                var hasAssert = stmt.DescendantNodes()
-                    .OfType<InvocationExpressionSyntax>()
-                    .Any(i =>
-                    {
-                        if (i.Expression is MemberAccessExpressionSyntax ma)
-                        {
-                            return ma.Expression.ToString().StartsWith("Assert", StringComparison.Ordinal);
-                        }
-
-                        return false;
-                    });
-
-                if (hasAssert)
-                {
-                    break;
-                }
-
-                setupDepth++;
-            }
-        }
-
-        return setupDepth;
-    }
-
-    /// <summary>
-    /// Classifies a cluster into Harmful, CaseMatrix, or Subject channel
-    /// based on shared forms, variable points, and per-method metrics.
-    /// </summary>
-    /// <returns></returns>
     public static ChannelType ClassifyChannel(
         IReadOnlyList<TestMethod> methods,
         int sharedForms,
@@ -393,18 +319,16 @@ public static class ScrapDuplication
 
     public static bool AllLowComplexity(IReadOnlyList<SimpleMethodMetrics> metrics)
     {
+        const double complexityFloor = 1.0;
+        const double complexityRiseRate = 0.18;
+        const double complexityCap = 25.0;
+
         return metrics.All(m =>
             m.LineCount <= 12
             && m.AssertionCount <= 1
             && m.BranchCount <= 0
             && m.SetupDepth <= 2
-            && (1.0 + (0.18 * m.BranchCount)) <= 18);
-    }
-
-    private static bool SameClass(List<TestMethod> methods)
-    {
-        var first = methods[0].ContainerClassName;
-        return methods.TrueForAll(m => string.Equals(m.ContainerClassName, first, StringComparison.Ordinal));
+            && Math.Min(complexityCap, complexityFloor + (complexityRiseRate * (m.BranchCount + 1))) <= 18);
     }
 
     public sealed record SimpleMethodMetrics(
