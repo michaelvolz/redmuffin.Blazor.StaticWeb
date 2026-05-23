@@ -1,0 +1,39 @@
+@using static redmuffin.Blazor.StaticWeb.Features.Raindrop.Presentation.RaindropItemPresentationHelper
+
+@if (Items != null && Items.Any())
+{
+    <div class="masonry">
+        @foreach (var (item, index) in Items.Select((it, i) => (it, i)))
+        {
+            <div class="card @CardCssClass">
+                <div class="card-divider">
+                    <h5>@DisplayTitle(item)</h5>
+                </div>
+                <div class="shimmer-placeholder" id="shimmer-@item.Id">
+                    <img src="@GetImageUrl(item)" alt="@ImageAlt"
+                         loading="@(index < 6 ? "eager" : "lazy")"
+                         fetchpriority="@(index < 6 ? "high" : "low")"
+                         decoding="async"
+                         @onload="@(() => HandleImageLoadAsync($"shimmer-{item.Id}", item.Link ?? item.Id.ToString(), true))"
+                         @onerror="@(() => HandleImageLoadAsync($"shimmer-{item.Id}", item.Link ?? item.Id.ToString(), false))"/>
+                    @if (HasFallbackPlaceholder(item))
+                    {
+                        <div class="fallback-placeholder-overlay">
+                            <i class="fas fa-image"></i>
+                            <span>@GetFallbackReason(item)</span>
+                        </div>
+                    }
+                </div>
+                <div class="card-section">
+                    <p>@DisplayExcerpt(item)</p>
+                    <p><i class="fas fa-calendar-alt"></i> Created: @item.Created.ToString("yyyy-MM-dd")</p>
+                    <a href="@item.Link" target="_blank" class="button"><i class="fas @LinkButtonIcon"></i> @LinkButtonText</a>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p>@EmptyMessage</p>
+}
