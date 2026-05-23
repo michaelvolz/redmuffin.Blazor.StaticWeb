@@ -41,12 +41,9 @@ public sealed partial class ImageValidationCacheService : IImageValidationCacheS
         ArgumentNullException.ThrowIfNull(imageUrlCache);
         ArgumentNullException.ThrowIfNull(stateHasChangedCallback);
 
-        var itemsList = items.ToList();
-        if (itemsList.Count == 0) return;
-
         var backgroundValidationTasks = new List<Task>();
 
-        foreach (var item in itemsList)
+        foreach (var item in items)
         {
             // Use only cached values - no network requests during initial render
             var imageUrl = await GetCachedImageUrlAsync(item, cancellationToken).ConfigureAwait(false);
