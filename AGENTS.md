@@ -11,6 +11,8 @@ description: Project-specific rules for the redmuffin.Blazor.StaticWeb repo. Sys
 > **Commit rules**: See `rm-commit` skill.
 > **Build & repo conventions**: See `rm-guide-config` skill.
 > **Lock files**: Every `packages.lock.json` change must be committed alongside the change that caused it. Never ignore lock file drift.
+> **LSP diagnostics before build**: After any C# or Razor edit, the `edit` and `write` tools return LSP diagnostics inline via `<diagnostics>` tags in the tool output. If zero diagnostics on the edited files, skip `dotnet build` — the edit is clean. Only run `dotnet build` as final integration verification at the end of a session or when cross-project changes are involved. Never default to a build cycle when LSP diagnostics already confirm zero errors.
+> **LSP tool over grep**: The `lsp` tool (`findReferences`, `goToDefinition`, `hover`, `goToImplementation`, `documentSymbol`, `workspaceSymbol`, `incomingCalls`, `outgoingCalls`) is available when `OPENCODE_EXPERIMENTAL_LSP_TOOL=true`. Never use `grep`/`glob`/`read` for a code structure question when the corresponding LSP operation handles it — semantic matching eliminates false positives, sub-second vs multi-step. See `rm-opencode` for operation usage.
 > **AGENTS.md maintenance**: See `rm-agents` skill.
 
 ## STRUCTURAL CHANGE GATE (READ FIRST — STOP HERE)
