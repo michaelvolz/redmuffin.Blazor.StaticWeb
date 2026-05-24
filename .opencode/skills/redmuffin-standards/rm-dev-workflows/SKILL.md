@@ -124,6 +124,48 @@ Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue | Where-Obje
 **SCSS/Sass note**: Hot reload does NOT process SCSS changes directly. The `sass --watch` background process handles SCSS compilation automatically. After editing `.scss` files, the compiled CSS lands in `wwwroot/css/` and `dotnet watch` detects it instantly. No manual build step required.
 See `rm-dev-tools` for tool installation and `rm-scss` for SCSS conventions.
 
+### Style Change Workflow (CSS / SCSS)
+
+When the dev server is running (`sass --watch` + `dotnet watch`), the pipeline is fully automatic:
+
+1. Edit the `.scss` file
+2. Sass watcher auto-compiles `app.css` and `app.min.css` (~0.5s)
+3. `dotnet watch` detects the CSS file change and hot-reloads the browser
+4. Verify: take a snapshot or evaluate script to confirm computed styles
+
+**Never restart the dev server for a CSS change. Never run manual `sass` commands.** The watchers are running. The pipeline handles it.
+
+**If `dotnet watch` decides to rebuild** (rare, caused by non-CSS file changes detected during the same save cycle): the rebuild produces new WASM assembly fingerprints. This causes an SRI integrity mismatch on the next page load. See "Site Broken — Recognition Pattern" below.
+
+### Site Broken — Recognition Pattern
+
+Blazor WASM enters a broken state after a `dotnet watch` rebuild when SRI hashes in `blazor.boot.json` no longer match the rebuilt assets. This is unrelated to your code changes — it is infrastructure breakage from the hot reload cycle.
+
+**Instant recognition** (use `take_snapshot`, `list_console_messages`):
+
+| Signal            | What you see                                             | Meaning                            |
+| ----------------- | -------------------------------------------------------- | ---------------------------------- |
+| Page snapshot     | `"An unhandled error has occurred."` and `"Reload"` link | Blazor error boundary triggered    |
+| Loading indicator | `"98%"`                                                  | WASM module failed to instantiate  |
+| Console errors    | `"SRI's integrity checks failed"`                        | Hash mismatch on `.wasm` or `.pdb` |
+| Console errors    | `"still waiting on run dependencies: wasm-instantiate"`  | Module never loaded                |
+
+**Any one of these signals → site is broken. Stop and fix. Do not keep navigating or testing.**
+
+**Fix** (clean rebuild, no hacks):
+
+```bash
+systemctl --user stop redmuffin.Blazor.StaticWeb-sass-dotnet-watch.service
+rm -rf src/redmuffin.Blazor.StaticWeb/{bin,obj}
+dotnet build src/redmuffin.Blazor.StaticWeb -c Debug --verbosity quiet
+systemctl --user reset-failed redmuffin.Blazor.StaticWeb-sass-dotnet-watch.service
+systemd-run --user \
+  --working-directory=/home/flynn/Projects/redmuffin.Blazor.StaticWeb/src/redmuffin.Blazor.StaticWeb \
+  -p TimeoutStopSec=1 \
+  --unit=redmuffin.Blazor.StaticWeb-sass-dotnet-watch \
+  bash -c 'sass --watch scss/app.scss:wwwroot/css/app.css & sass --style=compressed --watch scss/app.scss:wwwroot/css/app.min.css & dotnet watch --launch-profile https'
+```
+
 ### Build Verification
 
 See AGENTS.md CRITICAL BOUNDARIES for mandatory build and test rules.
