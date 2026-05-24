@@ -11,8 +11,8 @@ description: Project-specific rules for the redmuffin.Blazor.StaticWeb repo. Sys
 > **Commit rules**: See `rm-commit` skill.
 > **Build & repo conventions**: See `rm-guide-config` skill.
 > **Lock files**: Every `packages.lock.json` change must be committed alongside the change that caused it. Never ignore lock file drift.
-> **LSP diagnostics before build**: After any C# or Razor edit, the `edit` and `write` tools return LSP diagnostics inline via `<diagnostics>` tags in the tool output. If zero diagnostics on the edited files, skip `dotnet build` — the edit is clean. Only run `dotnet build` as final integration verification at the end of a session or when cross-project changes are involved. Never default to a build cycle when LSP diagnostics already confirm zero errors.
 > **LSP tool over grep**: The `lsp` tool (`findReferences`, `goToDefinition`, `hover`, `goToImplementation`, `documentSymbol`, `workspaceSymbol`, `incomingCalls`, `outgoingCalls`) is available when `OPENCODE_EXPERIMENTAL_LSP_TOOL=true`. Never use `grep`/`glob`/`read` for a code structure question when the corresponding LSP operation handles it — semantic matching eliminates false positives, sub-second vs multi-step. See `rm-opencode` for operation usage.
+> **Pre-commit verification**: See §PRE-COMMIT VERIFICATION below. Build and test are mandatory after any code file change — never commit before both pass.
 > **AGENTS.md maintenance**: See `rm-agents` skill.
 
 ## STRUCTURAL CHANGE GATE (READ FIRST — STOP HERE)
@@ -31,20 +31,53 @@ If any answer is incomplete, if you are guessing about a constraint the user hol
 
 Structural changes are not routine edits. They touch multiple systems. The user balances a dozen constraints that you cannot see. Only through this gate can we converge safely.
 
+## PRE-COMMIT VERIFICATION
+
+**Never commit after a code file change without running build and tests first.**
+This rule has no exceptions. LSP diagnostics are per-file only — they cannot
+detect cross-file reference breakage, test failures, or runtime errors. LSP is
+a fast pre-check, not a substitute for the build+test gate.
+
+**Code files** are any file whose change can break the build or any test:
+
+| Category      | Extensions                                                       | Rationale                                           |
+| ------------- | ---------------------------------------------------------------- | --------------------------------------------------- |
+| C# source     | `.cs`                                                            | Compilation, test logic, analyzers                  |
+| Razor markup  | `.razor`                                                         | Compilation, bUnit selectors, rendering             |
+| Project/build | `.csproj`, `.props`, `.targets`                                  | Compilation, package resolution                     |
+| Solution      | `.slnx`                                                          | Project discovery                                   |
+| SCSS          | `.scss`                                                          | CSS output affects bUnit DOM assertions             |
+| Config/CI     | `.yml`, `.jsonc`, `.editorconfig`                                | Analyzer rules affect build, CI steps affect deploy |
+| PowerShell    | `.ps1`                                                           | Build scripts, package tooling                      |
+| NuGet         | `Directory.Packages.props`, `nuget.config`, `packages.lock.json` | Package resolution                                  |
+
+**SCSS-only changes**: The sass watcher recompiles on save. If you edited only
+`.scss` files, the build does not need to recompile C# — `--no-build` is safe.
+Still run tests to catch CSS-driven bUnit DOM assertion breakage.
+
+**LSP diagnostics**: After every `edit` or `write`, the tool output includes
+`<diagnostics>` tags with per-file errors. Zero diagnostics means the file
+itself is clean. It does NOT mean the build passes or tests pass. Use LSP
+diagnostics as an edit confirmation, never as a build replacement.
+
+**Workflow**: edit → LSP confirms zero diagnostics → build → tests → commit.
+Never skip a step. Never batch-commit multiple changes without re-running
+the full build+test chain.
+
 ## COMMANDS
 
-| Command                                                                                       | Purpose                                            | When                                        |
-| --------------------------------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------- |
-| `dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests`                                 | Verify logic & prevent regressions                 | Pre-commit (mandatory)                      |
-| `dotnet build --verbosity quiet`                                                              | Verify C# compilation                              | Immediately after any C# edit               |
-| `sass --watch scss:wwwroot/css`                                                               | Auto-compile SCSS on save (background)             | Start of dev session                        |
-| `sass --style=compressed --no-source-map scss/app.scss:wwwroot/css/app.min.css`               | Production SCSS build (one-shot)                   | Before publish                              |
-| `scripts/Update-PackageVersions.ps1`                                                          | Update NuGet packages (Central Package Management) | After any package change                    |
-| `dotnet run --project tests/redmuffin.Tools.QualityGates.Tests`                               | Run quality gates tool tests (+ build)             | After any tools/ code change                |
-| `dotnet format [<solution-path>]`                                                             | Auto-fix ~75% of StyleCop/Roslyn violations        | Before manually fixing analyzer warnings    |
-| `dotnet clean && dotnet build && dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests` | Full verification cycle                            | After NuGet updates or repeated failures    |
-| `es.exe`                                                                                      | Ultra-fast file search                             | Large solutions or searches outside project |
-| `pwsh -NoProfile`                                                                             | Cross-platform PowerShell execution                | Any PowerShell task                         |
+| Command                                                                                       | Purpose                                            | When                                                  |
+| --------------------------------------------------------------------------------------------- | -------------------------------------------------- | ----------------------------------------------------- |
+| `dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests`                                 | Verify logic & prevent regressions                 | Pre-commit (mandatory — see §PRE-COMMIT VERIFICATION) |
+| `dotnet build --verbosity quiet`                                                              | Verify C# compilation                              | Immediately after any C# edit                         |
+| `sass --watch scss:wwwroot/css`                                                               | Auto-compile SCSS on save (background)             | Start of dev session                                  |
+| `sass --style=compressed --no-source-map scss/app.scss:wwwroot/css/app.min.css`               | Production SCSS build (one-shot)                   | Before publish                                        |
+| `scripts/Update-PackageVersions.ps1`                                                          | Update NuGet packages (Central Package Management) | After any package change                              |
+| `dotnet run --project tests/redmuffin.Tools.QualityGates.Tests`                               | Run quality gates tool tests (+ build)             | After any tools/ code change                          |
+| `dotnet format [<solution-path>]`                                                             | Auto-fix ~75% of StyleCop/Roslyn violations        | Before manually fixing analyzer warnings              |
+| `dotnet clean && dotnet build && dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests` | Full verification cycle                            | After NuGet updates or repeated failures              |
+| `es.exe`                                                                                      | Ultra-fast file search                             | Large solutions or searches outside project           |
+| `pwsh -NoProfile`                                                                             | Cross-platform PowerShell execution                | Any PowerShell task                                   |
 
 ## WORKFLOWS
 
