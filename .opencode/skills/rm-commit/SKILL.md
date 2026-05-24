@@ -57,6 +57,10 @@ Safe alternatives: `git stash` before destructive operations,
 - NEVER use `git revert` — use a regular commit to undo
 - NEVER use `git add -A` or `git add .` when targeted staging is safer
 - NEVER force unrelated changes into one commit
+- NEVER declare "nothing to commit" from a single status check. When
+  `git status --porcelain` shows clean but the user insists there are
+  files, re-verify with the full `git status` — porcelain output can
+  be compressed or stale.
 - Treat "undo commit" as `git reset HEAD~1` — remove the last
   commit and keep all changes as unstaged edits. Never use
   `git reset --hard` to undo a commit (that destroys work).
@@ -87,9 +91,9 @@ Safe alternatives: `git stash` before destructive operations,
   to the repo. Each file gets a proper commit message reflecting
   its actual changes — never use generic messages for
   parallel-session files.
-- `commit` (without `all`) means: commit only files modified by this
-  session. Stop after those files are committed — do not commit files
-  changed by parallel sessions.
+- `commit` (without `all`): commit only files modified by this session,
+  then stop. If this session modified nothing, commit all remaining
+  files.
 
 When the working tree is completely clean (no modified files including
 `packages.lock.json`, no untracked files that should be committed),
