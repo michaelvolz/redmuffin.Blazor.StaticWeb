@@ -38,6 +38,8 @@ OpenCode's official skill frontmatter only recognizes these fields:
 
 **Unknown frontmatter fields are silently ignored.** The `invocable: false` field that appeared in 12 of our 13 skills does nothing. It was likely inherited from a template or copied from another tool's format.
 
+> **2026-05-24 update:** All `invocable: false` instances have been stripped. The field is fully cleaned from the codebase. The principle below (unknown fields are silently ignored) still holds as a general OpenCode behavior warning.
+
 **Action**: Strip it from all skills. It adds noise without effect.
 
 ### 2. Global Skill Conflicts — Deny via Config, Not File Edits

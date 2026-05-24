@@ -17,6 +17,11 @@ applies_when: "Setting up or reorganizing OpenCode instruction files (skills, co
 
 The repo had a single 292-line `AGENTS.md` at root with no subfolder instructions, 15 skills, 11 snippets, 7 agents, and 1 command — all mixed together with no namespace, no folder organization, and no clear separation between custom repo-specific rules and 3rd-party skill content. OpenCode does NOT support subfolder `AGENTS.md` auto-discovery (issue #6316 is open). The `instructions` array in `opencode.json` eagerly loads everything at startup, causing context bloat.
 
+> **2026-05-24 update:** Skills grew to ~22 (including the `redmuffin-standards/` sub-folder with 22 sub-skills).
+> Agents expanded from ~7 to 15+ (including 5 new author-specific C# reviewers and primary/verifier agents).
+> Commands were consolidated to a single `rm-forward.md`. Snippets were eliminated.
+> The architectural principles below remain valid — only the counts have changed.
+
 ## Guidance
 
 ### Mechanism Selection
@@ -31,14 +36,14 @@ The repo had a single 292-line `AGENTS.md` at root with no subfolder instruction
 
 ### Namespace Strategy
 
-| Item Type                    | Folder                       | Naming                     | Rationale                                          |
-| ---------------------------- | ---------------------------- | -------------------------- | -------------------------------------------------- |
-| **Custom Skills**            | `.opencode/skills/rm-*/`     | `rm-csharp-standards`      | `rm-` prefix, hyphen-only (matches OpenCode regex) |
-| **Custom Skills (shortcut)** | Description field            | `Shortcut: rm:cs`          | Colons work in descriptions, not in `name:` field  |
-| **3rd-Party Skills**         | `.opencode/skills/vendor/`   | Original name              | Physical isolation, zero naming changes            |
-| **Custom Commands**          | `.opencode/commands/` (flat) | `rm-cleanup`, `rm-debug`   | Short names — typed manually without autocomplete  |
-| **Custom Agents**            | `.opencode/agents/rm-*.md`   | `rm-reliable-dotnet-coder` | `rm-` prefix for visual separation                 |
-| **3rd-Party Agents**         | `.opencode/agents/vendor/`   | Original name              | Physical isolation                                 |
+| Item Type                    | Folder                       | Naming                            | Rationale                                                                                                  |
+| ---------------------------- | ---------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Custom Skills**            | `.opencode/skills/rm-*/`     | `rm-guide-csharp-features`        | `rm-` prefix, hyphen-only (matches OpenCode regex). Standards now under `redmuffin-standards/` sub-folder. |
+| **Custom Skills (shortcut)** | Description field            | Removed (May 2026)                | Shortcut prefixes stripped — descriptions now match folder names exactly                                   |
+| **3rd-Party Skills**         | `.opencode/skills/vendor/`   | Original name                     | Physical isolation, zero naming changes. Now `cursor/` and `skill-creator/`                                |
+| **Custom Commands**          | `.opencode/commands/` (flat) | `rm-forward` (only one remaining) | Commands converted to skills — `rm-commit`, `rm-cleanup`, `rm-debug` are now skills                        |
+| **Custom Agents**            | `.opencode/agents/rm-*.md`   | `rm-uncle-bob-csharp-reviewer`    | `rm-` prefix for visual separation. Expanded to 15+ including 6 author reviewers                           |
+| **3rd-Party Agents**         | `.opencode/agents/vendor/`   | Original name                     | Physical isolation                                                                                         |
 
 ### Key Constraints (Verified 2026-04-03, OpenCode 1.3.3)
 

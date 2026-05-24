@@ -24,6 +24,8 @@ applies_when: >
 
 The `strict-coding-standards` skill was triggering "very often for the strangest reasons" — firing on config edits, CSS/SCSS changes, documentation updates, and running commands, not just on architectural or structural code work. The skill was supposed to enforce SOLID principles, composition over inheritance, and TDD patterns, but it was loading for literally every task.
 
+> **2026-05-24 update:** `strict-coding-standards` was fully decomposed into 22 sub-skills under `redmuffin-standards/` (`rm-guide-csharp-features`, `rm-guide-di`, `rm-guide-architecture`, `rm-guide-blazor`, `rm-guide-testing`, etc.). The over-triggering fix worked — the three-part pattern successfully scoped the monolithic skill down. The decomposed sub-skills now trigger individually on their specific domains. This doc remains the authoritative reference for the trigger-scoping technique, even though its central example skill no longer exists.
+
 ## Guidance
 
 Skill trigger descriptions must use **precise, conditional language** with three parts:

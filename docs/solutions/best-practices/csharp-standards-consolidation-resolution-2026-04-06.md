@@ -290,14 +290,20 @@ The consolidation process analyzed 11 source documents. Intermediate work produc
 
 ### Source Files (Archived)
 
-The following source files remain unchanged as archives:
+> **2026-05-24 update:** The four archived skill files have been deleted from the codebase:
+> `rm-csharp-standards`, `rm-output-style`, `rm-strict-coding-standards`, and `rm-dotnet`.
+> Their content was consolidated into the final standards doc and the `redmuffin-standards/` sub-skills.
+> The `.editorconfig` indentation conflict (.cs in both tab and space rules) is still unresolved
+> as of this update — the fix was never applied.
 
-- `.opencode/skills/redmuffin-standards/rm-csharp-standards/SKILL.md`
-- `.opencode/skills/redmuffin-standards/rm-output-style/SKILL.md`
-- `.opencode/skills/redmuffin-standards/rm-strict-coding-standards/SKILL.md`
-- `.opencode/skills/redmuffin-standards/rm-dotnet/SKILL.md`
-- `.editorconfig`
-- `docs/TestingGuidelines.md`
-- `.github/guides/blazor.md`
-- `.github/guides/azure-functions.md`
+The following source files were analyzed during consolidation (deleted status as noted):
+
+- ~~`.opencode/skills/redmuffin-standards/rm-csharp-standards/SKILL.md`~~ — deleted, content moved to `rm-guide-csharp-features`
+- ~~`.opencode/skills/redmuffin-standards/rm-output-style/SKILL.md`~~ — deleted, content absorbed by editorconfig
+- ~~`.opencode/skills/redmuffin-standards/rm-strict-coding-standards/SKILL.md`~~ — deleted, decomposed into 22 sub-skills
+- ~~`.opencode/skills/redmuffin-standards/rm-dotnet/SKILL.md`~~ — deleted, content moved to `rm-guide-csharp-features`
+- `.editorconfig` — still active, indentation conflict unresolved
+- `docs/TestingGuidelines.md` — still active
+- `.github/guides/blazor.md` — deleted
+- `.github/guides/azure-functions.md` — deleted
 - `AGENTS.md`

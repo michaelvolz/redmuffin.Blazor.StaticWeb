@@ -27,6 +27,8 @@ tags:
 
 The `rm-commit` skill instructed AI agents to use bash heredoc syntax (`git commit -m "$(cat <<'EOF'...)"`) for commit messages. This syntax fails in OpenCode's bash tool, which runs PowerShell (`pwsh`), causing immediate `ParserError`. Additionally, the skill's vague line-length guidance ("wrap at 72 chars") led to body lines exceeding the 100-character commitlint limit, triggering ~5 retry loops per commit.
 
+> **2026-05-24 update:** rm-commit now supports BOTH approaches — PowerShell here-string (`"@...\"@ | git commit -F -`) as the canonical method AND Bash heredoc as a valid alternative for Linux/macOS native bash. The original claim that heredoc "fails" was specific to the pwsh-wrapped bash tool in older OpenCode versions. The line-length guidance (≤80 target, ≤100 enforced) is unchanged.
+
 ## Symptoms
 
 - `ParserError: Missing file specification after redirection operator` when AI attempts heredoc commit
@@ -87,16 +89,19 @@ The backtick ` character is also safe here.
 - Count characters if unsure — do NOT guess
 - The here-string preserves your exact line breaks, so what you type is what commitlint sees
 
-### Linearized Skill Flow
+### Skill Structure (current as of 2026-05-24)
 
-The skill is structured as a numbered FLOW section (6 steps) that is harder for the AI to skip:
+The skill's FLOW section (6 numbered steps) was replaced by structural reorganization:
+Commitlint Rules → CRITICAL → Commit Shape → Commit Message Format → Commit Syntax → COMMANDS → Git CLI → Error Recovery → BOUNDARIES.
 
-1. Check repo rules first
-2. Inspect the working tree and recent history
-3. Decide whether changes belong in one commit or several
-4. Stage only the intended files or hunks
-5. Commit with Conventional Commits using PowerShell here-string piped to `git commit -F -`
-6. Verify the result with `git status`
+### Approaches That Didn't Work
+
+| Attempt                    | Why It Failed                                                                  |
+| -------------------------- | ------------------------------------------------------------------------------ |
+| Write tool with temp files | ENOTDIR errors from `$env:TEMP` path expansion in bash tool                    |
+| Single-quoted strings      | Apostrophes in commit messages broke parsing                                   |
+| Git Bash heredoc           | AI tools mangled heredoc syntax in older OpenCode versions                     |
+| `-m -m` flags              | Line-length discipline relied on AI behavior, leading to commitlint violations |
 
 ## Why This Works
 
