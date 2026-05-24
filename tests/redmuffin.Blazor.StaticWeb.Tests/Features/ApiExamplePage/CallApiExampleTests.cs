@@ -18,7 +18,7 @@ public partial class CallApiExampleTests
         using (Assert.Multiple())
         {
             // Page heading
-            var heading = component.Find("h3");
+            var heading = component.Find("h1");
             await Assert.That(heading).IsNotNull();
             await Assert.That(heading.TextContent).Contains("Call API Example");
 

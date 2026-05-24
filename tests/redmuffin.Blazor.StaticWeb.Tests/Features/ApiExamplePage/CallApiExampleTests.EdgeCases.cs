@@ -26,7 +26,7 @@ public sealed partial class CallApiExampleTests
             await Assert.That(errorElement.TextContent).Contains("Error calling API");
 
             // Verify component remains functional
-            await Assert.That(component.Find("h3").TextContent).Contains("Call API Example");
+            await Assert.That(component.Find("h1").TextContent).Contains("Call API Example");
         }
     }
 }
