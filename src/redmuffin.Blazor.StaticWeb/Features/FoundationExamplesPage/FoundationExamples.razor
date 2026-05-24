@@ -1,5 +1,7 @@
 @page "/foundationexamples"
 
+<PageTitle>Foundation Examples</PageTitle>
+
 <div class="grid-x grid-padding-x">
     <div class="large-12 cell">
         <h1>Welcome to Foundation</h1>
@@ -120,14 +122,18 @@
             </div>
             <div class="grid-x grid-padding-x">
                 <div class="large-6 medium-6 cell">
-                    <label>Choose Your Favorite</label>
-                    <input type="radio" name="pokemon" value="Red" id="pokemonRed"><label for="pokemonRed">Radio 1</label>
-                    <input type="radio" name="pokemon" value="Blue" id="pokemonBlue"><label for="pokemonBlue">Radio 2</label>
+                    <fieldset>
+                        <legend>Choose Your Favorite</legend>
+                        <input type="radio" name="pokemon" value="Red" id="pokemonRed"><label for="pokemonRed">Radio 1</label>
+                        <input type="radio" name="pokemon" value="Blue" id="pokemonBlue"><label for="pokemonBlue">Radio 2</label>
+                    </fieldset>
                 </div>
                 <div class="large-6 medium-6 cell">
-                    <label>Check these out</label>
-                    <input id="checkbox1" type="checkbox"><label for="checkbox1">Checkbox 1</label>
-                    <input id="checkbox2" type="checkbox"><label for="checkbox2">Checkbox 2</label>
+                    <fieldset>
+                        <legend>Check these out</legend>
+                        <input id="checkbox1" type="checkbox"><label for="checkbox1">Checkbox 1</label>
+                        <input id="checkbox2" type="checkbox"><label for="checkbox2">Checkbox 2</label>
+                    </fieldset>
                 </div>
             </div>
             <div class="grid-x grid-padding-x">

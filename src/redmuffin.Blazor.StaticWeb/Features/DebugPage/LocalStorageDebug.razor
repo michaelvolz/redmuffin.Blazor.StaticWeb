@@ -12,7 +12,7 @@
             @if (_isRunning)
             {
                 <div class="callout primary">
-                    <p><i class="fas fa-spinner fa-spin"></i> Running diagnostics...</p>
+                    <p><i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Running diagnostics...</p>
                 </div>
             }
             else if (_diagnostics != null)
@@ -171,7 +171,7 @@
                     }
                     else
                     {
-                        <i class="fas fa-play"></i>
+                        <i class="fas fa-play" aria-hidden="true"></i>
                         <text>&nbsp;Run Diagnostics</text>
                     }
                 </button>

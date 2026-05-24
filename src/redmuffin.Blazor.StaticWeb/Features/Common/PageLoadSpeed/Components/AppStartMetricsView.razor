@@ -6,6 +6,9 @@
 {
     <div class="page-speed-widget @(_isHidden ? "hidden" : "") @(_isCollapsed ? "collapsed" : "")"
          @onclick="ToggleVisibility"
+         @onkeydown="HandleKeyDown"
+         role="button"
+         tabindex="0"
          @ref="_speedElement">
 
         <div class="widget-header">

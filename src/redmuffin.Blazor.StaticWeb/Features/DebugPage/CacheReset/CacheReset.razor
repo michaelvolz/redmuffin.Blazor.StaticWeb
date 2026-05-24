@@ -14,7 +14,7 @@
             {
                 <div class="callout secondary">
                     <div class="loading-spinner">
-                        <i class="fas fa-spinner fa-spin"></i>
+                        <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
                         <span>Clearing localStorage cache...</span>
                     </div>
                 </div>
@@ -22,7 +22,7 @@
             else if (_resetCompleted)
             {
                 <div class="callout success">
-                    <h4><i class="fas fa-check-circle"></i> Cache Reset Successful</h4>
+                    <h4><i class="fas fa-check-circle" aria-hidden="true"></i> Cache Reset Successful</h4>
                     <p>
                         Successfully cleared <strong>@_itemsCleared</strong> items from localStorage.
                         All cached data including image validation results and other cached content has been removed.
@@ -37,10 +37,10 @@
                     </ul>
                     <div class="button-group">
                         <a href="/articles" class="button primary">
-                            <i class="fas fa-arrow-left"></i> Back to Articles
+                            <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Articles
                         </a>
                         <button @onclick="ResetAgainAsync" class="button secondary">
-                            <i class="fas fa-redo"></i> Reset Again
+                            <i class="fas fa-redo" aria-hidden="true"></i> Reset Again
                         </button>
                     </div>
                 </div>
@@ -48,16 +48,16 @@
             else if (_hasError)
             {
                 <div class="callout alert">
-                    <h4><i class="fas fa-exclamation-triangle"></i> Error During Reset</h4>
+                    <h4><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Error During Reset</h4>
                     <p>
                         An error occurred while clearing the cache: <strong>@_errorMessage</strong>
                     </p>
                     <div class="button-group">
                         <button @onclick="TryResetAgainAsync" class="button alert">
-                            <i class="fas fa-retry"></i> Try Again
+                            <i class="fas fa-retry" aria-hidden="true"></i> Try Again
                         </button>
                         <a href="/articles" class="button secondary">
-                            <i class="fas fa-arrow-left"></i> Back to Articles
+                            <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Articles
                         </a>
                     </div>
                 </div>
@@ -65,7 +65,7 @@
             else
             {
                 <div class="callout warning">
-                    <h4><i class="fas fa-exclamation-triangle"></i> Clear All Cache Data</h4>
+                    <h4><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Clear All Cache Data</h4>
                     <p>
                         This action will completely clear all localStorage data, including:
                     </p>
@@ -84,10 +84,10 @@
                     </p>
                     <div class="button-group">
                         <button @onclick="ConfirmResetAsync" class="button alert">
-                            <i class="fas fa-trash"></i> Clear All Cache
+                            <i class="fas fa-trash" aria-hidden="true"></i> Clear All Cache
                         </button>
                         <a href="/articles" class="button secondary">
-                            <i class="fas fa-times"></i> Cancel
+                            <i class="fas fa-times" aria-hidden="true"></i> Cancel
                         </a>
                     </div>
                 </div>

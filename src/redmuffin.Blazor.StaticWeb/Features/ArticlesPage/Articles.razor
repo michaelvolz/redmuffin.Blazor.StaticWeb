@@ -3,6 +3,10 @@
 
 <PageTitle>Programming & AI Article Hub</PageTitle>
 
+<HeadContent>
+    <meta name="description" content="Curated collection of programming, AI, .NET, C#, and Blazor articles featuring insights from industry experts and practical tutorials." />
+</HeadContent>
+
 <h1>Programming & AI Article Hub</h1>
 <p class="subheader">This page showcases a curated collection of articles on programming, AI, .NET, C#, Blazor, and more, featuring insights from industry experts and practical tutorials.</p>
 
@@ -10,7 +14,7 @@
 
 @if (!string.IsNullOrEmpty(_context.ErrorMessage))
 {
-    <div class="callout alert">
+    <div class="callout alert" role="alert">
         <p>@_context.ErrorMessage</p>
     </div>
 }

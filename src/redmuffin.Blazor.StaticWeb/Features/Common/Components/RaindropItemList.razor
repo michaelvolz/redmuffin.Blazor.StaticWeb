@@ -5,9 +5,9 @@
     <div class="masonry">
         @foreach (var (item, index) in Items.Select((it, i) => (it, i)))
         {
-            <div class="card @CardCssClass">
+            <article class="card @CardCssClass" @key="item.Id">
                 <div class="card-divider">
-                    <h5>@DisplayTitle(item)</h5>
+                    <h2>@DisplayTitle(item)</h2>
                 </div>
                 <div class="shimmer-placeholder" id="shimmer-@item.Id">
                     <img src="@GetImageUrl(item)" alt="@ImageAlt"
@@ -19,17 +19,17 @@
                     @if (HasFallbackPlaceholder(item))
                     {
                         <div class="fallback-placeholder-overlay">
-                            <i class="fas fa-image"></i>
+                            <i class="fas fa-image" aria-hidden="true"></i>
                             <span>@GetFallbackReason(item)</span>
                         </div>
                     }
                 </div>
                 <div class="card-section">
                     <p>@DisplayExcerpt(item)</p>
-                    <p><i class="fas fa-calendar-alt"></i> Created: @item.Created.ToString("yyyy-MM-dd")</p>
-                    <a href="@item.Link" target="_blank" class="button"><i class="fas @LinkButtonIcon"></i> @LinkButtonText</a>
+                    <p><i class="fas fa-calendar-alt" aria-hidden="true"></i> Created: <time datetime="@item.Created.ToString("yyyy-MM-dd")">@item.Created.ToString("yyyy-MM-dd")</time></p>
+                    <a href="@item.Link" target="_blank" rel="noopener noreferrer" class="button"><i class="fas @LinkButtonIcon" aria-hidden="true"></i> @LinkButtonText</a>
                 </div>
-            </div>
+            </article>
         }
     </div>
 }
