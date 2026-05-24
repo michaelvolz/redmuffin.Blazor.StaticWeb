@@ -87,7 +87,7 @@ public sealed partial class ArticlesPageCacheTests
             await Assert.That(component.FindAll(".article-card")).Count().IsEqualTo(2);
             await Assert.That(component.Markup).Contains("Updated Article");
             await Assert.That(component.Markup).Contains("New Article");
-            await Assert.That(refreshBadge.GetAttribute("class")).Contains("refresh-badge--hidden");
+            await Assert.That(component.FindAll(".refresh-badge")).IsEmpty();
         }
     }
 }

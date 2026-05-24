@@ -79,17 +79,16 @@ public sealed partial class VideosPageCacheTests
         var component = scope.Context.Render<Videos>();
         await Task.Delay(200).ConfigureAwait(false); // Allow background refresh to show badge
 
-        // Act
-        var refreshBadge = component.Find(".refresh-badge");
-        await refreshBadge.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
-
-        // Wait for error state to be set
+        // Wait for background refresh to fail and badge to appear in error state
         component.WaitForState(() =>
         {
-            var badge = component.Find(".refresh-badge");
-            var classes = badge.GetAttribute("class");
+            var badges = component.FindAll(".refresh-badge");
+            if (badges.Count == 0) return false;
+            var classes = badges[0].GetAttribute("class");
             return classes != null && classes.Contains("refresh-badge--error");
         }, TimeSpan.FromSeconds(2));
+
+        var refreshBadge = component.Find(".refresh-badge");
 
         // Debug: Check what's actually in the markup
         Console.WriteLine($"Component markup after error: {component.Markup}");

@@ -26,8 +26,7 @@ public sealed partial class VideosPageCacheTests
         await Task.Delay(200).ConfigureAwait(false); // Allow background refresh to complete
 
         // Assert
-        var refreshBadge = component.Find(".refresh-badge");
-        await Assert.That(refreshBadge.GetAttribute("class")).Contains("refresh-badge--hidden");
+        await Assert.That(component.FindAll(".refresh-badge")).IsEmpty();
     }
 
     [Test]
@@ -109,7 +108,7 @@ public sealed partial class VideosPageCacheTests
             await Assert.That(component.FindAll(".video-card")).Count().IsEqualTo(2);
             await Assert.That(component.Markup).Contains("Updated Video");
             await Assert.That(component.Markup).Contains("New Video");
-            await Assert.That(refreshBadge.GetAttribute("class")).Contains("refresh-badge--hidden");
+            await Assert.That(component.FindAll(".refresh-badge")).IsEmpty();
         }
     }
 }
