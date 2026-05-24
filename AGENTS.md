@@ -17,8 +17,6 @@ description: Project-specific rules for the redmuffin.Blazor.StaticWeb repo. Sys
 
 ## STRUCTURAL CHANGE GATE (READ FIRST — STOP HERE)
 
-**This is the highest-priority rule in this document. Violating it breaks everything else.**
-
 Before implementing ANY change that affects the build pipeline, toolchain, project structure, deployment, SCSS compilation, or any system spanning dev and production — you MUST answer three questions in writing:
 
 1. **What constraints am I aware of?** — List every known constraint that applies (AGENTS.md rules, user directives, architectural decisions, platform requirements, tool policies, build requirements, Omarchy rules, npm policies, package manager rules, etc.).
@@ -53,7 +51,8 @@ a fast pre-check, not a substitute for the build+test gate.
 
 **SCSS-only changes**: The sass watcher recompiles on save. If you edited only
 `.scss` files, the build does not need to recompile C# — `--no-build` is safe.
-Still run tests to catch CSS-driven bUnit DOM assertion breakage.
+Never skip tests on SCSS-only changes. bUnit DOM assertions still depend on
+the compiled CSS output.
 
 **LSP diagnostics**: After every `edit` or `write`, the tool output includes
 `<diagnostics>` tags with per-file errors. Zero diagnostics means the file
@@ -66,23 +65,20 @@ the full build+test chain.
 
 ## COMMANDS
 
-| Command                                                                                       | Purpose                                            | When                                                  |
-| --------------------------------------------------------------------------------------------- | -------------------------------------------------- | ----------------------------------------------------- |
-| `dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests`                                 | Verify logic & prevent regressions                 | Pre-commit (mandatory — see §PRE-COMMIT VERIFICATION) |
-| `dotnet build --verbosity quiet`                                                              | Verify C# compilation                              | Immediately after any C# edit                         |
-| `sass --watch scss:wwwroot/css`                                                               | Auto-compile SCSS on save (background)             | Start of dev session                                  |
-| `sass --style=compressed --no-source-map scss/app.scss:wwwroot/css/app.min.css`               | Production SCSS build (one-shot)                   | Before publish                                        |
-| `scripts/Update-PackageVersions.ps1`                                                          | Update NuGet packages (Central Package Management) | After any package change                              |
-| `dotnet run --project tests/redmuffin.Tools.QualityGates.Tests`                               | Run quality gates tool tests (+ build)             | After any tools/ code change                          |
-| `dotnet format [<solution-path>]`                                                             | Auto-fix ~75% of StyleCop/Roslyn violations        | Before manually fixing analyzer warnings              |
-| `dotnet clean && dotnet build && dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests` | Full verification cycle                            | After NuGet updates or repeated failures              |
-| `es.exe`                                                                                      | Ultra-fast file search                             | Large solutions or searches outside project           |
-| `pwsh -NoProfile`                                                                             | Cross-platform PowerShell execution                | Any PowerShell task                                   |
+| Command                                                                                       | Purpose                                         | When                                                  |
+| --------------------------------------------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------- |
+| `dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests`                                 | Verify logic & prevent regressions              | Pre-commit (mandatory — see §PRE-COMMIT VERIFICATION) |
+| `dotnet build --verbosity quiet`                                                              | Verify C# compilation                           | Immediately after any C# edit                         |
+| `dotnet run --project tests/redmuffin.Tools.QualityGates.Tests`                               | Run quality gates tool tests (+ build)          | After any tools/ code change                          |
+| `sass --style=compressed --no-source-map scss/app.scss:wwwroot/css/app.min.css`               | Production SCSS build (one-shot, commit output) | After any SCSS change                                 |
+| `dotnet format [<solution-path>]`                                                             | Auto-fix ~75% of StyleCop/Roslyn violations     | Before manually fixing analyzer warnings              |
+| `dotnet clean && dotnet build && dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests` | Full verification cycle                         | After NuGet updates or repeated failures              |
 
 ## WORKFLOWS
 
-- **Chrome DevTools MCP**: Available but disabled by default in `opencode.jsonc`. When the agent needs Lighthouse audits, performance tracing, screenshots, or browser-based testing, it will ask for them to be enabled. Enable on demand.
+- **Chrome DevTools MCP**: Available but disabled by default in `opencode.jsonc`. Enable on demand for Lighthouse audits, performance tracing, screenshots, or browser-based testing. See `rm-dev-workflows` for the full workflow.
 - **Quality Gates — Recursive Loop**: Gates are not one-shot. Run → fix worst violations → re-run → repeat until zero violations across all gates. See `rm-gates-cleanup` §0 for the full principle.
+- **Cleanup Sessions**: Load `rm-cleanup-session` to activate all 7 cleanup skills in one call (Depth → Architecture → CRAP → SCRAP → Mutation → Duplicates).
 
 ## STACK & STRUCTURE
 
@@ -94,4 +90,4 @@ the full build+test chain.
   - `src/redmuffin.Blazor.StaticWeb.Api/` — Backend API
   - `tests/` — Test project mirror
   - `docs/solutions/` — Persistent knowledge store
-  - `tools/` — Quality Gates toolchain (CRAP, SCRAP, Architecture, Mutation). See `tools/README.md`.
+  - `tools/` — Quality Gates toolchain (CRAP, SCRAP, Architecture, Depth, Mutation, Dupes). See `tools/README.md`.
