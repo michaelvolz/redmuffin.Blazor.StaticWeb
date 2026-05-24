@@ -58,7 +58,10 @@ jobs:
         id: check
         uses: tj-actions/changed-files@v47.0.6
         with:
-          since_last_remote_commit: true
+          # Use the push's base SHA (remote HEAD before push) to check ALL
+          # commits in the batch, not just the tip. github.event.before is
+          # the SHA before the push; for PR events, use the PR base.
+          base_sha: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           files: |
             README.md
             AGENTS.md
