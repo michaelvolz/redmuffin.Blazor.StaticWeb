@@ -186,3 +186,4 @@ systemd-run --user \
 - [Dev Server Lifecycle for Blazor WASM](/docs/solutions/developer-experience/agent-optimized-site-startup-for-blazor-wasm-2026-04-04.md) — Windows/Start-Process approach
 - [Bash Timeout Kills Long-Running Dotnet Processes](/docs/solutions/developer-experience/bash-timeout-kills-long-running-dotnet-processes-2026-04-04.md) — Windows PowerShell solution
 - [Debug-Sass Lockfile Drift Prevention](/docs/solutions/build-errors/debug-sass-lockfile-drift-2026-04-02.md) — obsolete post-migration (add deprecation note)
+- [Pre-Commit Verification Workflow](/docs/solutions/workflow-issues/pre-commit-verification-workflow-2026-05-24.md) — PRODUCTION OUTPUT RULE: `sass --style=compressed --no-source-map scss/app.scss:wwwroot/css/app.min.css` must run before every commit that touches `.scss`. The watcher only handles dev CSS — production minified CSS is a mandatory pre-commit step.
