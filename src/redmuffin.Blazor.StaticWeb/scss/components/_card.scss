@@ -70,7 +70,7 @@
   color: foundation.$dark-gray;
   gap: foundation.rem-calc(8);
 
-  h5 {
+  :is(h2, h3, h4, h5, h6) {
     margin: 0;
     flex: 1;
   }
