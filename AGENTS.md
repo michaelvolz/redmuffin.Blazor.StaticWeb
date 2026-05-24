@@ -49,10 +49,16 @@ a fast pre-check, not a substitute for the build+test gate.
 | PowerShell    | `.ps1`                                                           | Build scripts, package tooling                      |
 | NuGet         | `Directory.Packages.props`, `nuget.config`, `packages.lock.json` | Package resolution                                  |
 
-**SCSS-only changes**: The sass watcher recompiles on save. If you edited only
-`.scss` files, the build does not need to recompile C# — `--no-build` is safe.
-Never skip tests on SCSS-only changes. bUnit DOM assertions still depend on
-the compiled CSS output.
+**SCSS-only changes**: If you edited only `.scss` files, the build does not
+need to recompile C# — `--no-build` is safe. Never skip tests on SCSS-only
+changes — bUnit DOM assertions still depend on the compiled CSS output.
+
+**SCSS production output**: Every `.scss` change must be accompanied by a
+recompiled `app.min.css`. Run `sass --style=compressed --no-source-map
+scss/app.scss:wwwroot/css/app.min.css` before committing. The sass watcher
+only handles the dev CSS — production minified CSS is your responsibility.
+Commit the recompiled `app.min.css` alongside the `.scss` change that
+produced it.
 
 **LSP diagnostics**: After every `edit` or `write`, the tool output includes
 `<diagnostics>` tags with per-file errors. Zero diagnostics means the file
@@ -70,7 +76,7 @@ the full build+test chain.
 | `dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests`                                 | Verify logic & prevent regressions              | Pre-commit (mandatory — see §PRE-COMMIT VERIFICATION) |
 | `dotnet build --verbosity quiet`                                                              | Verify C# compilation                           | Immediately after any C# edit                         |
 | `dotnet run --project tests/redmuffin.Tools.QualityGates.Tests`                               | Run quality gates tool tests (+ build)          | After any tools/ code change                          |
-| `sass --style=compressed --no-source-map scss/app.scss:wwwroot/css/app.min.css`               | Production SCSS build (one-shot, commit output) | After any SCSS change                                 |
+| `sass --style=compressed --no-source-map scss/app.scss:wwwroot/css/app.min.css`               | Production SCSS build (one-shot, commit output) | Pre-commit (mandatory — see §PRE-COMMIT VERIFICATION) |
 | `dotnet format [<solution-path>]`                                                             | Auto-fix ~75% of StyleCop/Roslyn violations     | Before manually fixing analyzer warnings              |
 | `dotnet clean && dotnet build && dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests` | Full verification cycle                         | After NuGet updates or repeated failures              |
 
