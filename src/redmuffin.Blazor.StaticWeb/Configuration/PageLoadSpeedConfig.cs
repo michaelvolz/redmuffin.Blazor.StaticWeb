@@ -15,7 +15,7 @@ public static class PageLoadSpeedConfig
     ///     Gets or sets a value indicating whether the LoadSpeed component works on localhost.
     ///     Set to true to enable on localhost, false to disable on localhost
     /// </summary>
-    public static bool EnableOnLocalhost { get; set; } = true; // Set to true for your current needs
+    public static bool EnableOnLocalhost { get; set; }
 
     /// <summary>
     ///     Gets or sets the delay in milliseconds before automatically loading metrics.
