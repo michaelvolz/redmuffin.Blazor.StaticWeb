@@ -60,20 +60,17 @@
   }
 }
 
-// Shared card-divider styling that extends Foundation's card-divider
+// Shared card-divider styling that extends Foundation's card-divider.
+// Font sizes and colors are Foundation defaults — no custom overrides.
+// Heading level determines the size: <h3> for card titles.
 .card-divider {
-  background: foundation.$light-gray;
   display: flex;
   align-items: center;
-  padding: foundation.rem-calc(8);
-  font-size: foundation.rem-calc(19); // Using Foundation's font sizing
-  color: foundation.$dark-gray;
   gap: foundation.rem-calc(8);
 
   :is(h2, h3, h4, h5, h6) {
     margin: 0;
     flex: 1;
-    font-size: inherit;
   }
 
   i {
@@ -81,12 +78,9 @@
   }
 }
 
-// Shared card-section styling that extends Foundation's card-section
+// Shared card-section styling that extends Foundation's card-section.
+// Font sizes and colors are Foundation defaults — no custom overrides.
 .card-section {
-  padding: foundation.$global-padding;
-  font-size: foundation.rem-calc(14);
-  color: foundation.$dark-gray;
-
   p {
     margin: 0 0 foundation.rem-calc(8);
   }
@@ -100,14 +94,5 @@
     &:hover {
       transform: translateY(foundation.rem-calc(-3));
     }
-  }
-
-  .card-divider {
-    font-size: foundation.rem-calc(17);
-    padding: foundation.rem-calc(6) foundation.rem-calc(8);
-  }
-
-  .card-section {
-    padding: foundation.rem-calc(12);
   }
 }
