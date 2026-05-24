@@ -44,10 +44,10 @@ public static class RaindropItemExtensions
     /// <summary>
     ///     Converts a PrunedRaindropItem back to a RaindropItem with default values for non-essential fields.
     /// </summary>
-    /// <param name="prunedItem">The PrunedRaindropItem to convert.</param>
+    /// <param name="prunedItem">The PrunedRaindropItem to unprune.</param>
     /// <returns>A RaindropItem with essential fields copied from the pruned item.</returns>
     /// <exception cref="ArgumentNullException">Thrown when prunedItem is null.</exception>
-    public static RaindropItem ToFull(this PrunedRaindropItem prunedItem)
+    public static RaindropItem ToUnpruned(this PrunedRaindropItem prunedItem)
     {
         ArgumentNullException.ThrowIfNull(prunedItem);
 
@@ -70,10 +70,10 @@ public static class RaindropItemExtensions
     /// <param name="prunedItems">The collection of PrunedRaindropItems to convert.</param>
     /// <returns>A collection of RaindropItems.</returns>
     /// <exception cref="ArgumentNullException">Thrown when prunedItems is null.</exception>
-    public static IEnumerable<RaindropItem> ToFull(this IEnumerable<PrunedRaindropItem> prunedItems)
+    public static IEnumerable<RaindropItem> ToUnpruned(this IEnumerable<PrunedRaindropItem> prunedItems)
     {
         ArgumentNullException.ThrowIfNull(prunedItems);
 
-        return prunedItems.Select(item => item.ToFull());
+        return prunedItems.Select(item => item.ToUnpruned());
     }
 }
