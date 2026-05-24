@@ -236,8 +236,11 @@ systemd-run --user \
 **Stop** (~2s):
 
 ```bash
-systemctl --user stop redmuffin.Blazor.StaticWeb-sass-dotnet-watch.service
+systemctl --user stop redmuffin.Blazor.StaticWeb-sass-dotnet-watch.service && \
+  systemctl --user reset-failed redmuffin.Blazor.StaticWeb-sass-dotnet-watch.service
 ```
+
+_(`reset-failed` is required after every stop. `TimeoutStopSec=1` always force-kills, putting the unit in `failed` state. The sidebar plugin shows a red dot until reset.)_
 
 **Restart**:
 
