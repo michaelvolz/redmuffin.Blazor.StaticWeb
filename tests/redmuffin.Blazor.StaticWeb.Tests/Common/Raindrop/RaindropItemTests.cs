@@ -142,7 +142,7 @@ public class RaindropItemTests
     }
 
     [Test]
-    public async Task ToFull_FromPruned_CreatesRaindropItem()
+    public async Task ToUnpruned_FromPruned_CreatesRaindropItem()
     {
         // Arrange
         var pruned = new PrunedRaindropItem
@@ -155,7 +155,7 @@ public class RaindropItemTests
         };
 
         // Act
-        var result = pruned.ToFull();
+        var result = pruned.ToUnpruned();
 
         // Assert
         await Assert.That(result).IsNotNull();

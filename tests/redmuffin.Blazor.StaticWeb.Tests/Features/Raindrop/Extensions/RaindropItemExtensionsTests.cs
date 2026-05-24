@@ -12,14 +12,14 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Features.Raindrop.Extensions;
 public partial class RaindropItemExtensionsTests
 {
     [Test]
-    public async Task RoundTrip_Collection_ToPrunedAndToFull_PreservesEssentialData()
+    public async Task RoundTrip_Collection_ToPrunedAndToUnpruned_PreservesEssentialData()
     {
         // Arrange
         var originalItems = CreateTestRaindropItemCollection();
 
         // Act
         var prunedItems = originalItems.ToPruned().ToList();
-        var roundTripItems = prunedItems.ToFull().ToList();
+        var roundTripItems = prunedItems.ToUnpruned().ToList();
 
         // Assert
         await Assert.That(roundTripItems).Count().IsEqualTo(originalItems.Count);
@@ -35,14 +35,14 @@ public partial class RaindropItemExtensionsTests
     }
 
     [Test]
-    public async Task RoundTrip_ToPrunedAndToFull_PreservesEssentialData()
+    public async Task RoundTrip_ToPrunedAndToUnpruned_PreservesEssentialData()
     {
         // Arrange
         var originalItem = CreateTestRaindropItem();
 
         // Act
         var prunedItem = originalItem.ToPruned();
-        var roundTripItem = prunedItem.ToFull();
+        var roundTripItem = prunedItem.ToUnpruned();
 
         // Assert
         await Assert.That(roundTripItem.Id).IsEqualTo(originalItem.Id);

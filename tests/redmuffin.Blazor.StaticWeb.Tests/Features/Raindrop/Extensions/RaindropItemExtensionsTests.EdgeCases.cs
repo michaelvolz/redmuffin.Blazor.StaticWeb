@@ -8,20 +8,20 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Features.Raindrop.Extensions;
 public sealed partial class RaindropItemExtensionsTests
 {
     [Test]
-    public async Task ToFull_Collection_EmptyCollection_ReturnsEmptyCollection()
+    public async Task ToUnpruned_Collection_EmptyCollection_ReturnsEmptyCollection()
     {
         // Arrange
         var emptyCollection = new List<PrunedRaindropItem>();
 
         // Act
-        var fullItems = emptyCollection.ToFull().ToList();
+        var fullItems = emptyCollection.ToUnpruned().ToList();
 
         // Assert
         await Assert.That(fullItems).IsEmpty();
     }
 
     [Test]
-    public async Task ToFull_Collection_NullCollection_ThrowsArgumentNullException()
+    public async Task ToUnpruned_Collection_NullCollection_ThrowsArgumentNullException()
     {
         // Arrange
         IEnumerable<PrunedRaindropItem>? nullCollection = null;
@@ -29,24 +29,24 @@ public sealed partial class RaindropItemExtensionsTests
         // Act & Assert
         var exception = Assert.Throws<ArgumentNullException>(() =>
         {
-            var _ = nullCollection!.ToFull().ToList();
+            var _ = nullCollection!.ToUnpruned().ToList();
         });
         await Assert.That(exception).IsNotNull();
     }
 
     [Test]
-    public async Task ToFull_NullPrunedItem_ThrowsArgumentNullException()
+    public async Task ToUnpruned_NullPrunedItem_ThrowsArgumentNullException()
     {
         // Arrange
         PrunedRaindropItem? nullItem = null;
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentNullException>(() => nullItem!.ToFull());
+        var exception = Assert.Throws<ArgumentNullException>(() => nullItem!.ToUnpruned());
         await Assert.That(exception).IsNotNull();
     }
 
     [Test]
-    public async Task ToFull_PrunedItemWithEmptyStrings_PreservesEmptyValues()
+    public async Task ToUnpruned_PrunedItemWithEmptyStrings_PreservesEmptyValues()
     {
         // Arrange
         var prunedItem = new PrunedRaindropItem
@@ -59,7 +59,7 @@ public sealed partial class RaindropItemExtensionsTests
         };
 
         // Act
-        var fullItem = prunedItem.ToFull();
+        var fullItem = prunedItem.ToUnpruned();
 
         // Assert
         await Assert.That(fullItem).IsNotNull();

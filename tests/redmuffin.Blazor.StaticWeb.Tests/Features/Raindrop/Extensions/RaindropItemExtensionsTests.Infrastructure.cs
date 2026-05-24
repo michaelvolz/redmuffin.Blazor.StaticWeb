@@ -6,13 +6,13 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Features.Raindrop.Extensions;
 public sealed partial class RaindropItemExtensionsTests
 {
     [Test]
-    public async Task ToFull_Collection_ValidItems_ReturnsCorrectRaindropItems()
+    public async Task ToUnpruned_Collection_ValidItems_ReturnsCorrectRaindropItems()
     {
         // Arrange
         var prunedItems = CreateTestPrunedRaindropItemCollection();
 
         // Act
-        var fullItems = prunedItems.ToFull().ToList();
+        var fullItems = prunedItems.ToUnpruned().ToList();
 
         // Assert
         await Assert.That(fullItems).Count().IsEqualTo(3);
@@ -28,13 +28,13 @@ public sealed partial class RaindropItemExtensionsTests
     }
 
     [Test]
-    public async Task ToFull_ValidPrunedItem_ReturnsCorrectRaindropItem()
+    public async Task ToUnpruned_ValidPrunedItem_ReturnsCorrectRaindropItem()
     {
         // Arrange
         var prunedItem = CreateTestPrunedRaindropItem();
 
         // Act
-        var fullItem = prunedItem.ToFull();
+        var fullItem = prunedItem.ToUnpruned();
 
         // Assert
         await Assert.That(fullItem).IsNotNull();
