@@ -3,6 +3,7 @@ using System.Text.Json;
 using Blazored.LocalStorage;
 using LZStringCSharp;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
+using redmuffin.Blazor.StaticWeb.Features.Raindrop.Extensions;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Models;
 
 namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
@@ -278,14 +279,14 @@ public sealed partial class RaindropItemsCache : IRaindropItemsCache
                 return Task.FromResult<IList<RaindropItem>?>(null);
             }
 
-            var cachedData = JsonSerializer.Deserialize(decompressedJson, RaindropJsonSerializerContext.Default.RaindropItemList);
-            if (cachedData == null)
+            var prunedData = JsonSerializer.Deserialize(decompressedJson, PrunedRaindropItemSerializerContext.Default.ListPrunedRaindropItem);
+            if (prunedData == null)
             {
                 LogDeserializationFailed(_logger, cacheType);
                 return Task.FromResult<IList<RaindropItem>?>(null);
             }
 
-            return Task.FromResult<IList<RaindropItem>?>(cachedData);
+            return Task.FromResult<IList<RaindropItem>?>(prunedData.ToUnpruned().ToList());
         }
         catch (Exception ex) when (ex is not JsonException)
         {
@@ -324,7 +325,8 @@ public sealed partial class RaindropItemsCache : IRaindropItemsCache
         string jsonData;
         try
         {
-            jsonData = JsonSerializer.Serialize(items, RaindropJsonSerializerContext.Default.RaindropItemList);
+            var prunedItems = items.ToPruned().ToList();
+            jsonData = JsonSerializer.Serialize(prunedItems, PrunedRaindropItemSerializerContext.Default.ListPrunedRaindropItem);
         }
         catch (Exception ex)
         {
