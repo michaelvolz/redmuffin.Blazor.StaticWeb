@@ -35,7 +35,6 @@
 #blazor-error-ui {
   background: lightyellow;
   bottom: 0;
-  -webkit-box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
   box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
   display: none;
   left: 0;
@@ -81,11 +80,7 @@
   fill: none;
   stroke: #e0e0e0;
   stroke-width: 0.6rem;
-  -webkit-transform: rotate(-90deg);
-  -ms-transform: rotate(-90deg);
   transform: rotate(-90deg);
-  -webkit-transform-origin: 50% 50%;
-  -ms-transform-origin: 50% 50%;
   transform-origin: 50% 50%;
 }
 
@@ -137,8 +132,5 @@ body {
   background-color: white;
 }
 
-// Remove default outline from h1 elements with higher specificity
-h1,
-h1:focus {
-  outline: none !important;
-}
+// Accessibility: Foundation provides focus styles.
+// Explicit :focus-visible outline is in base/_typography.scss.
