@@ -49,9 +49,9 @@ a fast pre-check, not a substitute for the build+test gate.
 | PowerShell    | `.ps1`                                                           | Build scripts, package tooling                      |
 | NuGet         | `Directory.Packages.props`, `nuget.config`, `packages.lock.json` | Package resolution                                  |
 
-**SCSS-only changes**: If you edited only `.scss` files, the build does not
-need to recompile C# — `--no-build` is safe. Never skip tests on SCSS-only
-changes — bUnit DOM assertions still depend on the compiled CSS output.
+**SCSS-only changes**: CSS output affects bUnit DOM assertions. Never skip
+the full build+test chain, even when only SCSS files changed — a stale test
+binary from a prior build can silently pass against old C# code.
 
 **SCSS production output**: Every `.scss` change must be accompanied by a
 recompiled `app.min.css`. Run `sass --style=compressed --no-source-map
@@ -66,16 +66,17 @@ itself is clean. It does NOT mean the build passes or tests pass. Use LSP
 diagnostics as an edit confirmation, never as a build replacement.
 
 **Workflow**: edit → LSP confirms zero diagnostics → build → tests → commit.
-Never skip a step. Never batch-commit multiple changes without re-running
-the full build+test chain.
+Never skip a step. Never use `--no-build` for test runs — a stale binary
+can silently pass tests against old source. Never batch-commit multiple changes
+without re-running the full build+test chain.
 
 ## COMMANDS
 
 | Command                                                                                       | Purpose                                         | When                                                  |
 | --------------------------------------------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------- |
-| `dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests`                                 | Verify logic & prevent regressions              | Pre-commit (mandatory — see §PRE-COMMIT VERIFICATION) |
+| `dotnet build && dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests`                 | Verify logic & prevent regressions              | Pre-commit (mandatory — see §PRE-COMMIT VERIFICATION) |
 | `dotnet build --verbosity quiet`                                                              | Verify C# compilation                           | Immediately after any C# edit                         |
-| `dotnet run --project tests/redmuffin.Tools.QualityGates.Tests`                               | Run quality gates tool tests (+ build)          | After any tools/ code change                          |
+| `dotnet build && dotnet run --project tests/redmuffin.Tools.QualityGates.Tests`               | Run quality gates tool tests                    | After any tools/ code change                          |
 | `sass --style=compressed --no-source-map scss/app.scss:wwwroot/css/app.min.css`               | Production SCSS build (one-shot, commit output) | Pre-commit (mandatory — see §PRE-COMMIT VERIFICATION) |
 | `dotnet format [<solution-path>]`                                                             | Auto-fix ~75% of StyleCop/Roslyn violations     | Before manually fixing analyzer warnings              |
 | `dotnet clean && dotnet build && dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests` | Full verification cycle                         | After NuGet updates or repeated failures              |
