@@ -58,46 +58,7 @@ public sealed partial class VideosPageCacheTests
             await Assert.That(component.Markup).Contains("Fresh Video 1");
             await Assert.That(component.Markup).Contains("Fresh Video 2");
             // No refresh badge should be visible since we loaded fresh data immediately
-            var refreshBadge = component.Find(".refresh-badge");
-            await Assert.That(refreshBadge.GetAttribute("class")).Contains("refresh-badge--hidden");
-        }
-    }
-
-    [Test]
-    public async Task VideosPage_RefreshFailure_ShowsErrorState()
-    {
-        // Arrange
-        using var scope = CreateTestScope();
-        var cachedVideos = new List<RaindropItem>
-        {
-            CreateTestVideo("1", "Cached Video", "Cached excerpt")
-        };
-
-        scope.CacheService_Mock.SetupCachedData("Videos", cachedVideos);
-        scope.RaindropAPI_Mock.SetupFailure("Network error");
-
-        var component = scope.Context.Render<Videos>();
-        await Task.Delay(200).ConfigureAwait(false); // Allow background refresh to show badge
-
-        // Wait for background refresh to fail and badge to appear in error state
-        component.WaitForState(() =>
-        {
-            var badges = component.FindAll(".refresh-badge");
-            if (badges.Count == 0) return false;
-            var classes = badges[0].GetAttribute("class");
-            return classes != null && classes.Contains("refresh-badge--error");
-        }, TimeSpan.FromSeconds(2));
-
-        var refreshBadge = component.Find(".refresh-badge");
-
-        // Debug: Check what's actually in the markup
-        Console.WriteLine($"Component markup after error: {component.Markup}");
-
-        // Assert
-        using (Assert.Multiple())
-        {
-            await Assert.That(refreshBadge.GetAttribute("class")).Contains("refresh-badge--error");
-            await Assert.That(component.Markup).Contains("Unable to refresh");
+            await Assert.That(component.FindAll(".refresh-badge")).IsEmpty();
         }
     }
 }

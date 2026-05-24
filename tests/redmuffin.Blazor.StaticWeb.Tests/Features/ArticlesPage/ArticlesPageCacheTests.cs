@@ -30,7 +30,6 @@ public partial class ArticlesPageCacheTests
         await Task.Delay(200).ConfigureAwait(false); // Allow background refresh to complete
 
         // Assert
-        var refreshBadge = component.Find(".refresh-badge");
-        await Assert.That(refreshBadge.GetAttribute("class")).Contains("refresh-badge--hidden");
+        await Assert.That(component.FindAll(".refresh-badge")).IsEmpty();
     }
 }

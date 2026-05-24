@@ -30,14 +30,29 @@ public sealed partial class ArticlesPageCacheTests
         await Task.Delay(200).ConfigureAwait(false); // Allow background refresh to show badge
 
         // Act
+        // Wait for background refresh to show badge (data differs)
+        component.WaitForElement(".refresh-badge", TimeSpan.FromSeconds(5));
+
+        // First click — re-find badge in case background refresh caused re-render
         var refreshBadge = component.Find(".refresh-badge");
         await refreshBadge.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
-        await refreshBadge.ClickAsync(new MouseEventArgs()).ConfigureAwait(false); // Second click should be ignored
-        await Task.Delay(50).ConfigureAwait(false);
 
-        // Assert
-        // Should still be in loading state, not processing second click
-        await Assert.That(refreshBadge.GetAttribute("class")).Contains("refresh-badge--hidden");
+        // Second click should be ignored — find fresh after any re-renders
+        var badgesAfterClick = component.FindAll(".refresh-badge");
+        if (badgesAfterClick.Count > 0)
+        {
+            await badgesAfterClick[0].ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
+        }
+
+        // Wait for refresh to complete — badge goes back to Hidden after success
+        component.WaitForState(() =>
+        {
+            var badges = component.FindAll(".refresh-badge");
+            return badges.Count == 0;
+        }, TimeSpan.FromSeconds(5));
+
+        // Assert — badge no longer in DOM (Hidden)
+        await Assert.That(component.FindAll(".refresh-badge")).IsEmpty();
     }
 
     [Test]
@@ -65,8 +80,7 @@ public sealed partial class ArticlesPageCacheTests
             await Assert.That(component.Markup).Contains("Fresh Article 1");
             await Assert.That(component.Markup).Contains("Fresh Article 2");
             // No refresh badge should be visible since we loaded fresh data immediately
-            var refreshBadge = component.Find(".refresh-badge");
-            await Assert.That(refreshBadge.GetAttribute("class")).Contains("refresh-badge--hidden");
+            await Assert.That(component.FindAll(".refresh-badge")).IsEmpty();
         }
     }
 

@@ -49,13 +49,15 @@ public sealed partial class VideosPageCacheTests
 
         var component = scope.Context.Render<Videos>();
 
-        // Wait for component initialization and background refresh
-        component.WaitForState(() =>
+        // Wait for background refresh to show badge (different data detected)
+        for (var i = 0; i < 50; i++)
         {
+            await Task.Delay(100).ConfigureAwait(false);
+            component.Render();
             var badges = component.FindAll(".refresh-badge");
-            if (badges.Count == 0) return false;
-            return badges[0].GetAttribute("class")?.Contains("refresh-badge--visible") == true;
-        }, TimeSpan.FromSeconds(2));
+            if (badges.Count > 0 && badges[0].GetAttribute("class")?.Contains("refresh-badge--visible") == true)
+                break;
+        }
 
         // Verify refresh badge is visible
         var refreshBadge = component.Find(".refresh-badge");
@@ -64,13 +66,16 @@ public sealed partial class VideosPageCacheTests
         // Act - Click refresh badge
         await refreshBadge.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
 
-        // Wait for refresh operation to complete by checking badge state
-        component.WaitForState(() =>
+        // Wait for refresh operation to complete
+        for (var i = 0; i < 50; i++)
         {
-            var badge = component.Find(".refresh-badge");
-            var classes = badge.GetAttribute("class");
-            return classes != null && !classes.Contains("refresh-badge--loading");
-        }, TimeSpan.FromSeconds(2));
+            await Task.Delay(100).ConfigureAwait(false);
+            component.Render();
+            var badges = component.FindAll(".refresh-badge");
+            if (badges.Count == 0) break;
+            var classes = badges[0].GetAttribute("class");
+            if (classes != null && !classes.Contains("refresh-badge--loading")) break;
+        }
 
         // Assert - Verify no error state
         await Assert.That(component.Markup).DoesNotContain("refresh-badge--error");
