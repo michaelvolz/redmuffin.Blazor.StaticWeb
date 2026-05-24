@@ -7,10 +7,13 @@
     <meta name="description" content="Curated collection of programming, AI, .NET, C#, and Blazor videos featuring insights from industry experts and practical tutorials." />
 </HeadContent>
 
-<h1>Programming & AI Video Hub</h1>
+<h3>Programming &amp; AI Video Hub</h3>
 <p class="subheader">This page showcases a curated collection of videos on programming, AI, .NET, C#, Blazor, and more, featuring insights from industry experts and practical tutorials.</p>
 
-<RefreshBadge State="_context.BadgeState" OnClick="HandleRefreshClickAsync"/>
+@if (_context.BadgeState != RefreshBadgeState.Hidden)
+{
+    <RefreshBadge State="_context.BadgeState" OnClick="HandleRefreshClickAsync"/>
+}
 
 @if (!string.IsNullOrEmpty(_context.ErrorMessage))
 {
