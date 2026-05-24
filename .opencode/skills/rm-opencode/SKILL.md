@@ -263,19 +263,54 @@ skill({ name: "skill-name" })     ← Invokes a skill
 
 **Query sessions:** `sqlite3 ~/.local/share/opencode/opencode.db` (see schema + queries below).
 
+### LSP Tools
+
+The `lsp` tool provides code intelligence via Language Server Protocol.
+Requires `"lsp": true` in `opencode.jsonc` and
+`OPENCODE_EXPERIMENTAL_LSP_TOOL=true` (or `OPENCODE_EXPERIMENTAL=true`).
+Enabled per-directory via `.envrc`.
+
+**Automatic diagnostic injection** — the `edit` and `write` tools return
+LSP diagnostics inline in their output as `<diagnostics>` tags. This is
+always active when LSP servers are running. Zero diagnostics on the edited
+files means the edit is clean; `dotnet build` is only needed for final
+integration verification.
+
+**Explicit tool operations** — invoked via `lsp({operation, filePath, line, character})`:
+
+| Operation              | What it asks                  | Replaces                                    |
+| ---------------------- | ----------------------------- | ------------------------------------------- |
+| `findReferences`       | Who uses this symbol?         | `grep` for method name + manual audit       |
+| `goToDefinition`       | Where is this defined?        | `grep` for class/method + `read` to inspect |
+| `hover`                | What type/doc does this have? | `read` signature + memory/guess             |
+| `goToImplementation`   | What classes implement this?  | `grep` for `: IInterface` patterns          |
+| `documentSymbol`       | What symbols in this file?    | `read` entire file + manual scan            |
+| `workspaceSymbol`      | Find symbol by name anywhere  | `glob` + `grep` across solution             |
+| `prepareCallHierarchy` | Get call hierarchy root       | Manual call-graph construction              |
+| `incomingCalls`        | Who calls this function?      | `findReferences` + manual tree              |
+| `outgoingCalls`        | What does this function call? | `read` logic + manual walk                  |
+
+Never use `grep`, `glob`, or `read` for a code structure question when
+the corresponding LSP operation handles it. LSP matches symbols, not
+strings — zero false positives from comments, string literals, or
+similarly-named identifiers.
+
 ---
 
 ## Env Vars
 
-| Variable                 | Used by                                                                |
-| ------------------------ | ---------------------------------------------------------------------- |
-| `OPENCODE_ANALYST_MODEL` | Subagent model selection                                               |
-| `OPENCODE_PID`           | Process ID of the OpenCode TUI/server                                  |
-| `OPENCODE_RUN_ID`        | UUID for the current run (not the session ID)                          |
-| `OPENCODE_PROCESS_ROLE`  | Process role (`worker` for subprocess)                                 |
-| `OPENCODE_DISABLE_PRUNE` | UI filter — hides sessions >30d from TUI picker. Does NOT delete data. |
-| `CONTEXT7_API_KEY`       | Context7 MCP                                                           |
-| `BRAVE_API_KEY`          | Brave Search MCP                                                       |
+| Variable                         | Used by                                                                |
+| -------------------------------- | ---------------------------------------------------------------------- |
+| `OPENCODE_ANALYST_MODEL`         | Subagent model selection                                               |
+| `OPENCODE_PID`                   | Process ID of the OpenCode TUI/server                                  |
+| `OPENCODE_RUN_ID`                | UUID for the current run (not the session ID)                          |
+| `OPENCODE_PROCESS_ROLE`          | Process role (`worker` for subprocess)                                 |
+| `OPENCODE_DISABLE_PRUNE`         | UI filter — hides sessions >30d from TUI picker. Does NOT delete data. |
+| `OPENCODE_EXPERIMENTAL_LSP_TOOL` | Enables the `lsp` tool for semantic code intelligence                  |
+| `OPENCODE_EXPERIMENTAL`          | Enables all experimental features (includes LSP tool)                  |
+| `OPENCODE_DISABLE_LSP_DOWNLOAD`  | Blocks auto-downloading of LSP server binaries                         |
+| `CONTEXT7_API_KEY`               | Context7 MCP                                                           |
+| `BRAVE_API_KEY`                  | Brave Search MCP                                                       |
 
 ---
 
