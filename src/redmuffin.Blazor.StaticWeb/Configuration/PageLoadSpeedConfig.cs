@@ -46,7 +46,8 @@ public static class PageLoadSpeedConfig
     ///     Determines whether the given host string represents a localhost or
     ///     private network address.
     /// </summary>
-    /// <returns></returns>
+    /// <param name="host">The hostname or IP address to check.</param>
+    /// <returns>True if the host is a localhost or private network address.</returns>
     public static bool IsLocalhostHost(string host)
     {
         return host.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
