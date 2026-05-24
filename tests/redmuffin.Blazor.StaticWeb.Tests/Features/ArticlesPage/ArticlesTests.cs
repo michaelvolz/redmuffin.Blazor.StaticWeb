@@ -90,7 +90,7 @@ public partial class ArticlesTests
         using (Assert.Multiple())
         {
             await Assert.That(component).IsNotNull();
-            await Assert.That(component.Find("h1").TextContent).Contains("Article");
+            await Assert.That(component.Find("h3").TextContent).Contains("Article");
 
             // Should show "No articles available" message when empty
             var noArticlesMessage = component.FindAll(".callout.secondary, .empty-state, .no-content");

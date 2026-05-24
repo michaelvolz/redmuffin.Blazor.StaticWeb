@@ -79,7 +79,7 @@ public sealed partial class VideosTests
         var component = scope.BUnitContext.Render<Videos>();
 
         // Assert
-        await Assert.That(component.Find("h1").TextContent).Contains("Programming & AI Video Hub");
+        await Assert.That(component.Find("h3").TextContent).Contains("Programming & AI Video Hub");
         await Assert.That(component.FindAll(".video-card")).Count().IsEqualTo(0);
     }
 }
