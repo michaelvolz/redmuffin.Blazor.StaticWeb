@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using redmuffin.Blazor.StaticWeb.Configuration;
 using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Models;
 using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Services;
@@ -181,6 +182,12 @@ public partial class AppStartMetricsView : ComponentBase, IAsyncDisposable
     private void ToggleVisibility()
     {
         _isHidden = !_isHidden;
+    }
+
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key is "Enter" or " ")
+            ToggleVisibility();
     }
 
     private void ToggleCollapsed()
