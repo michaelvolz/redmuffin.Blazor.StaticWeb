@@ -460,6 +460,26 @@
       "model": "{env:OPENCODE_ANALYST_MODEL}",
       "mode": "subagent"
     },
+    "rm-ousterhout-csharp-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "rm-feathers-csharp-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "rm-beck-csharp-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "rm-fowler-csharp-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
+    "rm-farley-csharp-reviewer": {
+      "model": "{env:OPENCODE_ANALYST_MODEL}",
+      "mode": "subagent"
+    },
     "adversarial-document-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
       "mode": "subagent"
