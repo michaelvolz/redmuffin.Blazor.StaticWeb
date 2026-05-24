@@ -80,8 +80,15 @@ code {
 // =============================================================================
 // Typography improvements for better accessibility
 
-// Ensure better focus visibility for keyboard navigation only
-:focus-visible {
+// Ensure keyboard focus visibility on interactive elements
+// [tabindex="0"] means natural tab order — [tabindex="-1"] (programmatic
+// focus from FocusOnNavigate) is excluded to avoid outlines on headings.
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex="0"]:focus-visible {
   outline: 2px solid vars.$steel-blue;
   outline-offset: 2px;
 }

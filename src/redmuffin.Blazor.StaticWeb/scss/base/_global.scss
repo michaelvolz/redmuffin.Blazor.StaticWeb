@@ -132,5 +132,8 @@ body {
   background-color: white;
 }
 
-// Accessibility: Foundation provides focus styles.
-// Explicit :focus-visible outline is in base/_typography.scss.
+// H1 headings should never show a focus ring — they are read-only landmarks,
+// even when FocusOnNavigate injects tabindex and programmatic focus for AT.
+h1:focus-visible {
+  outline: none;
+}
