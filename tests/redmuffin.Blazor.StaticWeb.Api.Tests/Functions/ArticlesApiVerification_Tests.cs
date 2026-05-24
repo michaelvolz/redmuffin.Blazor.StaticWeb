@@ -14,23 +14,24 @@ public sealed partial class ArticlesApiVerification_Tests
 {
     private static readonly HttpStatusCode[] TransientStatuses = [HttpStatusCode.BadGateway, HttpStatusCode.ServiceUnavailable, HttpStatusCode.GatewayTimeout];
 
-    private static async Task<(HttpResponseMessage Response, string Content)> GetWithRetryAsync(HttpClient client, string url, int maxRetries = 3)
+    private static async Task<(HttpResponseMessage Response, string Content)> GetWithRetryAsync(
+        HttpClient client, string url, CancellationToken cancellationToken, int maxRetries = 3)
     {
         for (int i = 0; i < maxRetries; i++)
         {
-            var response = await client.GetAsync(url).ConfigureAwait(false);
-            var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var response = await client.GetAsync(url, cancellationToken).ConfigureAwait(false);
+            var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
             if (response.IsSuccessStatusCode || !TransientStatuses.Contains(response.StatusCode))
             {
                 return (response, content);
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+            await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
         }
 
-        var finalResponse = await client.GetAsync(url).ConfigureAwait(false);
-        var finalContent = await finalResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var finalResponse = await client.GetAsync(url, cancellationToken).ConfigureAwait(false);
+        var finalContent = await finalResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         return (finalResponse, finalContent);
     }
 
@@ -38,7 +39,9 @@ public sealed partial class ArticlesApiVerification_Tests
     ///     Validates that Articles API response maintains expected structure and data integrity.
     /// </summary>
     [Test]
-    public async Task Should_Maintain_Expected_Structure_When_Articles_API_Responds()
+    [Timeout(30_000)]
+    [Retry(2)]
+    public async Task Should_Maintain_Expected_Structure_When_Articles_API_Responds(CancellationToken cancellationToken)
     {
         // Arrange
         using var scope = CreateTestScope();
@@ -56,7 +59,7 @@ public sealed partial class ArticlesApiVerification_Tests
         var articlesUrl = "https://api.raindrop.io/rest/v1/raindrops/56658122?sort=-created";
 
         // Act
-        var (response, json) = await GetWithRetryAsync(httpClient, articlesUrl).ConfigureAwait(false);
+        var (response, json) = await GetWithRetryAsync(httpClient, articlesUrl, cancellationToken).ConfigureAwait(false);
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.OK);
@@ -71,7 +74,9 @@ public sealed partial class ArticlesApiVerification_Tests
     ///     Validates that Videos and Articles APIs maintain structural compatibility for unified processing.
     /// </summary>
     [Test]
-    public async Task Should_Maintain_Structural_Compatibility_When_Comparing_Videos_And_Articles_APIs()
+    [Timeout(60_000)]
+    [Retry(2)]
+    public async Task Should_Maintain_Structural_Compatibility_When_Comparing_Videos_And_Articles_APIs(CancellationToken cancellationToken)
     {
         // Arrange
         using var scope = CreateTestScope();
@@ -90,8 +95,8 @@ public sealed partial class ArticlesApiVerification_Tests
         var articlesUrl = "https://api.raindrop.io/rest/v1/raindrops/56658122?sort=-created";
 
         // Act
-        var (videosResponse, videosJson) = await GetWithRetryAsync(httpClient, videosUrl).ConfigureAwait(false);
-        var (articlesResponse, articlesJson) = await GetWithRetryAsync(httpClient, articlesUrl).ConfigureAwait(false);
+        var (videosResponse, videosJson) = await GetWithRetryAsync(httpClient, videosUrl, cancellationToken).ConfigureAwait(false);
+        var (articlesResponse, articlesJson) = await GetWithRetryAsync(httpClient, articlesUrl, cancellationToken).ConfigureAwait(false);
 
         // Assert
         await Assert.That(videosResponse.StatusCode).IsEqualTo(HttpStatusCode.OK);
