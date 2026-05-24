@@ -191,6 +191,31 @@ python -m venv .venv && source .venv/bin/activate && pip install <package>
 omarchy-update
 ```
 
+**Manage a .NET global tool (stable):**
+
+```
+dotnet tool install --global <package-id>
+dotnet tool update --global --all   # topgrade's built-in .NET step
+```
+
+Stable NuGet packages only. Topgrade auto-updates all global tools.
+
+**Manage a .NET tool (prerelease-only):**
+
+```
+dotnet tool install <package-id> --prerelease --tool-path ~/.local/bin
+```
+
+Prerelease-only NuGet packages require `--prerelease` — topgrade's built-in
+.NET step cannot pass it. Install to `~/.local/bin` (PATH position 19, before
+`~/.dotnet/tools/`). Curate updates in topgrade's `[post_commands]`:
+
+```
+"dotnet prerelease tools" = "dotnet tool update roslyn-language-server --prerelease --tool-path ~/.local/bin"
+```
+
+If a stable version ships later, migrate it back to `--global`.
+
 ## Safety Rules
 
 **NEVER modify anything in `~/.local/share/omarchy/`.** This directory
