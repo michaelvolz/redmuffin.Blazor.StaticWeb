@@ -7,19 +7,18 @@ Never begin cleanup without first loading all seven skills:
 
 ```
 skill({ name: "rm-guide-cleanup" })
-skill({ name: "rm-gates-cleanup" })
+skill({ name: "rm-guide-quality-gates" })
+skill({ name: "rm-review-heuristics" })
 skill({ name: "rm-guide-csharp-features" })
+skill({ name: "rm-guide-architecture" })
 skill({ name: "rm-tdd" })
-skill({ name: "rm-code-philosophy" })
 skill({ name: "rm-guide-testing" })
-skill({ name: "rm-uncle-bob-martin-agentic-coding" })
 ```
 
-rm-guide-cleanup defines code quality rules. rm-gates-cleanup defines
-the protocols (structural-first order, functional catalog, mutation
-decision tree). rm-guide-csharp-features is the pattern catalog.
-rm-tdd governs test discipline. rm-code-philosophy governs architectural
-judgment. rm-guide-testing provides test patterns.
-rm-uncle-bob-martin-agentic-coding enforces Uncle Bob's
-metrics-driven quality standards (zero survivors, CRAP ≤ 8,
-high-90s coverage).
+rm-guide-cleanup defines code quality rules. rm-guide-quality-gates
+defines the protocols (structural-first order, functional catalog,
+mutation decision tree). rm-review-heuristics defines structural
+signals gates miss. rm-guide-csharp-features is the pattern catalog.
+rm-guide-architecture loads Ousterhout and Uncle Bob Martin author
+sub-skills during architecture work. rm-tdd governs test discipline.
+rm-guide-testing provides test patterns.

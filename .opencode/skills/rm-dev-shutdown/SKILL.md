@@ -1,9 +1,9 @@
 ---
-name: rm-cleanup
+name: rm-dev-shutdown
 description: "Fast, low-noise dev environment cleanup — closes your Brave browser, stops non-VS dotnet processes, and removes stray artifacts. Use when you want speed, minimal chatter, and warnings/errors only."
 ---
 
-# Dev Environment Cleanup (Parallel)
+# rm-dev-shutdown (Parallel)
 
 Fast, parallel cleanup of the development environment. Spawn 3 cleanup teammates and 1 background verification teammate so the final checks happen without extra visible chatter.
 
@@ -22,7 +22,7 @@ Use the swarm pattern: create one team, then spawn 4 teammates together so the r
 ### Agent A: Browser Cleanup
 
 ```
-team_name: "rm-cleanup"
+team_name: "rm-dev-shutdown"
 name: "browser-cleanup"
 description: "Browser cleanup"
 subagent_type: general
@@ -38,7 +38,7 @@ prompt: |
 ### Agent B: Server Cleanup
 
 ```
-team_name: "rm-cleanup"
+team_name: "rm-dev-shutdown"
 name: "server-cleanup"
 description: "Server cleanup"
 subagent_type: general
@@ -55,7 +55,7 @@ prompt: |
 ### Agent C: Filesystem Cleanup
 
 ```
-team_name: "rm-cleanup"
+team_name: "rm-dev-shutdown"
 name: "filesystem-cleanup"
 description: "Filesystem cleanup"
 subagent_type: general
@@ -68,7 +68,7 @@ prompt: |
 ### Agent D: Verification
 
 ```
-team_name: "rm-cleanup"
+team_name: "rm-dev-shutdown"
 name: "verification"
 description: "Verification"
 subagent_type: general

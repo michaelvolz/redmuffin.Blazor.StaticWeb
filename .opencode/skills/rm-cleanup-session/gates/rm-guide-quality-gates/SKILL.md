@@ -1,12 +1,12 @@
 ---
-name: rm-gates-cleanup
-description: Quality gates cleanup workflows for systematically fixing CRAP violations, SCRAP LOCAL files, architecture issues, and mutation survivors. Step-by-step remediation patterns with verification checkpoints. Load rm-guide-cleanup alongside this skill — it defines the universal coding principles applied during cleanup. USE FOR: CRAP, SCRAP, architecture gate, mutation testing, code cleanup, quality gates remediation.
+name: rm-guide-quality-gates
+description: Quality gate tool protocols — CRAP, SCRAP, Depth, Architecture, Mutation, Dupes. Step-by-step remediation patterns with verification checkpoints. Loaded by rm-cleanup-session during cleanup. Do not load independently.
 version: 1.0
 prerequisite-skills:
   - rm-guide-cleanup
 ---
 
-# rm-gates-cleanup
+# rm-guide-quality-gates
 
 ## §0.0 Cleanup Philosophy — All Improvements Welcome
 
