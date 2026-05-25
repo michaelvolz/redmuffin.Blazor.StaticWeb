@@ -1,12 +1,3 @@
-<!--
-  DEAD FILE — OpenCode does NOT load this file. It is a snapshot copy of
-  ~/.config/opencode/AGENTS.md stored here for human reference only.
-
-  OpenCode loads AGENTS.md from the project ROOT (not .opencode/).
-  The global rules are applied from ~/.config/opencode/AGENTS.md at
-  session start. This copy has zero effect on any OpenCode session.
--->
-
 # Global Rules for OpenCode
 
 ## COMMIT AND PUSH RULES — ABSOLUTE, NON-NEGOTIABLE
@@ -223,6 +214,28 @@ reference for non-git blocks.
 **Known cc-safety-net false positive:** `rtk git stash push` is blocked as
 "git push" (cc-safety-net matches the substring "push" in "stash push").
 Use bare `git stash push` instead — it passes through safely.
+
+### Bulk Edits & Scripting — Preview Before You Touch
+
+When modifying multiple files or running transformations across files:
+
+- **Never run in-place edits on more than one file without previewing
+  first.** Before any `sed -i`, `awk -i`, or equivalent batch edit,
+  test the pattern on a single file and show me the diff. Do not proceed
+  to the batch until I confirm the diff is correct.
+- **Never run a regex or text transformation without testing the
+  pattern on sample data first.** If the transformation logic involves
+  a regex, sed expression, or awk pattern, extract a representative
+  sample from one target file, run the pattern against it, and show the
+  before/after. Do not assume a pattern works because it looks correct.
+- **Never write and execute a script for file modifications without
+  showing me the script first.** If a task requires a multi-step script
+  or a program to transform files, show the complete script, explain
+  each step, and wait for approval before executing it.
+- **When a safety net blocks a command, never write the same blocked
+  command into a script or pipe it through another tool.** A block
+  means the operation is unauthorized regardless of how you invoke it.
+  Stop and ask me to run it.
 
 ### Secrets & Supply Chain
 
