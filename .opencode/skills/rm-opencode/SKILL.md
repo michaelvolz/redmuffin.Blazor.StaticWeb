@@ -314,6 +314,105 @@ similarly-named identifiers.
 
 ---
 
+## Syncing Local ↔ Global
+
+OpenCode stores configuration in two locations: global (`~/.config/opencode/`)
+and per-project local (`.opencode/`). Both accumulate changes independently.
+Sync them to prevent drift.
+
+### Pre-Sync Checklist
+
+Before any sync:
+
+1. Generate a full diff report. Never sync without seeing what differs.
+2. Present the report. Never execute before the user reviews and gives
+   exclusions.
+3. Never delete or overwrite files without explicit confirmation.
+
+### Copy vs Merge — Check Before Every File
+
+For every file that differs between local and global, answer these two
+questions before choosing an action:
+
+1. **Does the local side have content the global side lacks?**
+2. **Does the global side have content the local side lacks?**
+
+| Local has new | Global has new | Action                                                                                                                                     |
+| :------------ | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
+| No            | Yes            | Copy global → local                                                                                                                        |
+| Yes           | No             | Copy local → global                                                                                                                        |
+| Yes           | Yes            | **Merge both sides.** Never discard one side's content. Read both files, combine new instructions from each, write back to both locations. |
+| No            | No             | Files are identical — no action (should not appear in diff)                                                                                |
+
+The numbered rules below pre-answer this for specific directories where
+the direction is fixed by design. For everything else (rm-_ skills,
+rm-_ agents, scripts, snippets, themes), apply this table individually
+per file.
+
+### Sync Rules
+
+Apply these rules in order. Never deviate:
+
+1. **Compound Engineering — global wins, all or nothing.**
+   `skills/compound-engineering/` and `agents/compound-engineering/` sync
+   as a unit. The newer side wins completely. Delete the stale side,
+   copy fresh from the newer side. Never partially sync — partial sync
+   leaves orphaned agents that OpenCode tries to load.
+
+2. **matt-pocock folder — same as compound engineering.** Global wins.
+   Delete local, copy fresh from global. Never partially sync.
+
+3. **Magic-context — global only, never copy to local.**
+   `magic-context.jsonc` and `context-mode/` exist only in global.
+   Never copy them into `.opencode/`.
+
+4. **Excluded files — never touch.**
+   Never sync: `logs/`, `node_modules/`, `.gitignore`, `package.json`,
+   `package-lock.json`. These are location-specific.
+
+5. **Global AGENTS.md → local as `global-AGENTS.md`.**
+   Global is the authoritative instruction file. The local copy is a
+   dead reference for documentation only. Never sync in reverse.
+
+6. **`tui.json` — global → local, never include `plugins` key.**
+   Plugins are global infrastructure. Duplicating them in the local
+   `tui.json` creates conflicts. Strip the `plugins` key before copying.
+
+7. **Plugins — global wins, never edit locally.**
+   `plugins/` directory syncs global → local. If any local plugin
+   differs from global (has local edits), report and ask before
+   overwriting.
+
+8. **`opencode.jsonc` — global is authoritative.**
+   Copy global → local. Global contains all provider, agent, and MCP
+   configuration.
+
+9. **Everything else — report and ask.**
+   rm-_ skills, rm-_ agents, snippets, scripts, themes — these are
+   not covered by the rules above. Diff individually, report
+   differences, and ask for direction per file.
+
+### Sync Workflow
+
+1. Load `rm-opencode` skill.
+2. Walk both `.opencode/` and `~/.config/opencode/` (excluding
+   `node_modules`, `logs`, `.gitignore`, `package*`).
+3. Categorize every difference by the rules above.
+4. Present the report with automatic actions and questions.
+5. Wait for user exclusions.
+6. Execute sync operations.
+7. Verify: every synced file has identical checksum on both sides.
+8. Report results.
+
+### Recovery
+
+If a sync corrupts `opencode.jsonc`: OpenCode falls back to project
+config only. Restore the global config from the dotfiles repo git
+history. Never attempt to fix corruption by hand — the file structure
+is too brittle.
+
+---
+
 ## Session Management CLI
 
 ```bash
