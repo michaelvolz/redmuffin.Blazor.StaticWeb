@@ -522,7 +522,7 @@ discuss whether the cost is acceptable before skipping it.
 
 Refactoring is not limited to extraction and testing. Design changes,
 architectural improvements, and pattern applications are all valid
-cleanup targets. See `rm-gates-cleanup` §0.0 for the full philosophy.
+cleanup targets. See `rm-guide-quality-gates` §0.0 for the full philosophy.
 
 ```
 Is the code correct?  → No → Fix with TDD (red-green-refactor)
@@ -555,4 +555,4 @@ Before any change is complete, verify:
 
 - `rm-guide-testing` — comprehensive test patterns, test doubles, and file structure
 - `rm-guide-naming` — naming conventions for types, members, and test doubles
-- `rm-gates-cleanup` — CRAP, SCRAP, Architecture remediation workflows; §4 for mutation testing execution protocol and survivor decision tree
+- `rm-guide-quality-gates` — CRAP, SCRAP, Architecture remediation workflows; §4 for mutation testing execution protocol and survivor decision tree

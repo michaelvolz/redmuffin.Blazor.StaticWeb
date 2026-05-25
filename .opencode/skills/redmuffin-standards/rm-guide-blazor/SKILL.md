@@ -112,4 +112,4 @@ that explicitly rather than waiting an arbitrary delay.
 - Do not extract `[LoggerMessage]` partial method declarations during cleanup.
   These are compile-time source-generated contracts — the method body is
   compiler IL, not logic. Depth gate shallow(3) failures on LoggerMessage
-  methods are false positives per `rm-gates-cleanup` §4 Q4. Always KEEP.
+  methods are false positives per `rm-guide-quality-gates` §4 Q4. Always KEEP.

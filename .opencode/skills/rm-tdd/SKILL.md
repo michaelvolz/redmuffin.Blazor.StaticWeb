@@ -117,7 +117,7 @@ Follow every rule and workflow step above rigorously and without exception. Gene
 ## Test Quality Verification
 
 After writing tests, verify they actually catch logic errors.
-See `rm-gates-cleanup` §4 for mutation testing workflow — the
+See `rm-guide-quality-gates` §4 for mutation testing workflow — the
 per-survivor decision tree (equivalent / no coverage / weak test),
 one-at-a-time TDD fix loop, and 100% kill rate standard.
 

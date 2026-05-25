@@ -371,7 +371,7 @@ Before any test is complete, verify:
   naming conventions for test doubles
 - `.opencode/skills/redmuffin-standards/rm-guide-cleanup/SKILL.md` —
   characterization tests and code quality standards
-- `.opencode/skills/redmuffin-standards/rm-gates-cleanup/SKILL.md` —
+- `.opencode/skills/redmuffin-standards/rm-guide-quality-gates/SKILL.md` —
   mutation testing workflow
 - `.opencode/skills/rm-tdd/SKILL.md` — TDD red-green-refactor workflow
 - `docs/pure-function-extraction-testing-guide-2026-05-10.md` —
