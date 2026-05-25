@@ -65,10 +65,17 @@ let storedSessionId: string | null = null;
 let lastCleanTimestamp = 0;
 let storedApi: TuiPluginApi | null = null;
 
+function expandTilde(p: string): string {
+  if (p === "~") return homedir();
+  if (p.startsWith("~/")) return pathResolve(homedir(), p.slice(2));
+  return p;
+}
+
 function normalizePath(rawPath: string): string {
-  if (isAbsolute(rawPath)) return rawPath;
+  const expanded = expandTilde(rawPath);
+  if (isAbsolute(expanded)) return expanded;
   const dir = storedApi?.state?.path?.directory ?? process.cwd();
-  return pathResolve(dir, rawPath);
+  return pathResolve(dir, expanded);
 }
 
 // Commands known to create, modify, or delete files on disk.
@@ -85,11 +92,11 @@ function extractPathsFromBashCommand(command: string): string[] {
   // and any other read-only or non-file-mutating operation.
   if (!FILE_MODIFYING_CMD_RE.test(command)) return paths;
 
-  // Absolute paths anywhere in the command
-  const absRe = /(?:\s|^)(\/[^\s"'`;|&<>]+)/g;
+  // Absolute paths anywhere in the command (also handle ~)
+  const absRe = /(?:\s|^)(\/[^\s"'`;|&<>]+|~[^\s"'`;|&<>]*)/g;
   let m: RegExpExecArray | null;
   while ((m = absRe.exec(command)) !== null) {
-    paths.push(m[1]);
+    paths.push(expandTilde(m[1]));
   }
 
   // Known file-operation commands — extract relative path args
@@ -101,7 +108,7 @@ function extractPathsFromBashCommand(command: string): string[] {
     const tokens = args.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) || [];
     for (const t of tokens) {
       if (t.startsWith("-")) continue;
-      const cleaned = t.replace(/^["']|["']$/g, "");
+      const cleaned = expandTilde(t.replace(/^["']|["']$/g, ""));
       if (cleaned.startsWith("/")) {
         paths.push(cleaned);
       } else if (cleaned.includes("/") || cleaned.includes(".")) {
@@ -119,14 +126,23 @@ function seedSessionFiles(sessionId: string) {
   if (sessionId !== storedSessionId) return;
 
   try {
-    const since = lastCleanTimestamp > 0
-      ? `AND time_created > ${lastCleanTimestamp * 1000}`
-      : "";
+    // In endless sessions (magic-context), we never want to query more than 7 days of history.
+    // Sessions this long are extremely rare, and older activity is no longer relevant for
+    // session-scoped counts. This bounds query size and prevents ENOBUFS / performance issues.
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+    const sevenDaysAgo = (Date.now() - SEVEN_DAYS_MS) / 1000;
+
+    let effectiveTimestamp = lastCleanTimestamp;
+    if (lastCleanTimestamp === 0 || lastCleanTimestamp < sevenDaysAgo) {
+      effectiveTimestamp = sevenDaysAgo;
+    }
+
+    const since = `AND time_created > ${effectiveTimestamp * 1000}`;
 
     // Write + edit tool filePaths
     const writeOutput = execSync(
       `sqlite3 "${DB_PATH}" "SELECT DISTINCT json_extract(data, '$.state.input.filePath') FROM part WHERE session_id = '${sessionId}' AND json_extract(data, '$.type') = 'tool' AND json_extract(data, '$.tool') IN ('write', 'edit') AND json_extract(data, '$.state.input.filePath') IS NOT NULL ${since};"`,
-      { encoding: "utf8", timeout: 5000 },
+      { encoding: "utf8", timeout: 5000, maxBuffer: 10 * 1024 * 1024 },
     );
     for (const p of writeOutput.trim().split("\n").filter(Boolean)) {
       sessionFiles.add(normalizePath(p));
@@ -135,7 +151,7 @@ function seedSessionFiles(sessionId: string) {
     // Bash tool commands — extract file paths
     const bashOutput = execSync(
       `sqlite3 "${DB_PATH}" "SELECT json_extract(data, '$.state.input.command') FROM part WHERE session_id = '${sessionId}' AND json_extract(data, '$.tool') = 'bash' AND json_extract(data, '$.state.input.command') LIKE '%/%' ${since};"`,
-      { encoding: "utf8", timeout: 5000 },
+      { encoding: "utf8", timeout: 5000, maxBuffer: 10 * 1024 * 1024 },
     );
     for (const cmd of bashOutput.trim().split("\n").filter(Boolean)) {
       for (const p of extractPathsFromBashCommand(cmd)) {
@@ -146,7 +162,7 @@ function seedSessionFiles(sessionId: string) {
     // Patch entries — file arrays
     const patchOutput = execSync(
       `sqlite3 "${DB_PATH}" "SELECT DISTINCT json_extract(data, '$.files') FROM part WHERE session_id = '${sessionId}' AND json_extract(data, '$.type') = 'patch' ${since};"`,
-      { encoding: "utf8", timeout: 5000 },
+      { encoding: "utf8", timeout: 5000, maxBuffer: 10 * 1024 * 1024 },
     );
     for (const line of patchOutput.trim().split("\n").filter(Boolean)) {
       try {
@@ -157,14 +173,8 @@ function seedSessionFiles(sessionId: string) {
       } catch { /* skip */ }
     }
   } catch (err) {
-    storedApi?.app.log({
-      body: {
-        service: id,
-        level: "error",
-        message: "seedSessionFiles failed",
-        extra: { error: err instanceof Error ? err.message : String(err) },
-      },
-    });
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`[rm-git-sidebar] seedSessionFiles failed: ${msg}`);
   }
 }
 
@@ -263,26 +273,32 @@ function pollGitStatus() {
     // correctly attribute pre-existing dirty files to this session.
     // The timestamp is set after the first seed (in seedSessionFiles).
     if (total === 0) {
-      lastCleanTimestamp = Date.now() / 1000;
+      // Never set the clean boundary older than 7 days, even on clean tree.
+      const SEVEN_DAYS_AGO = (Date.now() - 7 * 24 * 60 * 60 * 1000) / 1000;
+      lastCleanTimestamp = Math.max(Date.now() / 1000, SEVEN_DAYS_AGO);
       sessionFiles.clear();
     }
 
-    // Refresh session file set from database on every poll
-    if (sid) {
-      const wasFirstSeed = lastCleanTimestamp === 0;
-      seedSessionFiles(sid);
-      // After the initial full-load seed, set the boundary so future
-      // polls are incremental. This must happen AFTER seedSessionFiles
-      // so the first seed runs without the since filter.
-      if (wasFirstSeed) {
-        lastCleanTimestamp = Date.now() / 1000;
+    // Refresh session file set from database on every poll.
+    // Failures here must never break the main git status display.
+    let sessionCounts: GitCounts = { ...EMPTY_COUNTS };
+    try {
+      if (sid) {
+        const wasFirstSeed = lastCleanTimestamp === 0;
+        seedSessionFiles(sid);
+        if (wasFirstSeed) {
+          // Enforce 7-day maximum age even on first seed.
+          const SEVEN_DAYS_AGO = (Date.now() - 7 * 24 * 60 * 60 * 1000) / 1000;
+          lastCleanTimestamp = Math.max(Date.now() / 1000, SEVEN_DAYS_AGO);
+        }
       }
+      const files = (storedSessionId === sid) ? sessionFiles : new Set<string>();
+      sessionCounts = computeSessionCounts(output, dir, files);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`[rm-git-sidebar] Session tracking failed (non-fatal): ${msg}`);
+      sessionCounts = { ...EMPTY_COUNTS };
     }
-
-    // Only use sessionFiles if the session hasn't changed since capture.
-    // If it has, compute against an empty set — session counts are stale.
-    const files = (storedSessionId === sid) ? sessionFiles : new Set<string>();
-    const sessionCounts = computeSessionCounts(output, dir, files);
 
     // --- Stash poll (added to existing 10s interval) ---
     let stash: StashInfo | null = null;
@@ -303,7 +319,9 @@ function pollGitStatus() {
     }
 
     setGitState({ dir, error: false, counts, sessionCounts, total: categoryTotal(counts), aheadBehind, stash });
-  } catch {
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`[rm-git-sidebar] pollGitStatus threw: ${msg}`);
     setGitState({ dir: null, error: true, counts: { ...EMPTY_COUNTS }, sessionCounts: { ...EMPTY_COUNTS }, total: 0, aheadBehind: null, stash: null });
   }
 }

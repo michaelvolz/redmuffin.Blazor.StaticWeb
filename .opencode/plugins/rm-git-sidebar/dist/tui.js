@@ -140,11 +140,19 @@ var sessionFiles = new Set;
 var storedSessionId = null;
 var lastCleanTimestamp = 0;
 var storedApi = null;
+function expandTilde(p) {
+  if (p === "~")
+    return homedir();
+  if (p.startsWith("~/"))
+    return pathResolve2(homedir(), p.slice(2));
+  return p;
+}
 function normalizePath(rawPath) {
-  if (isAbsolute(rawPath))
-    return rawPath;
+  const expanded = expandTilde(rawPath);
+  if (isAbsolute(expanded))
+    return expanded;
   const dir = storedApi?.state?.path?.directory ?? process.cwd();
-  return pathResolve2(dir, rawPath);
+  return pathResolve2(dir, expanded);
 }
 var FILE_MODIFYING_CMD_RE = /\b(rm|git\s+rm|mv|cp|mkdir|touch|git\s+add|git\s+checkout|git\s+restore|git\s+mv|git\s+clean)\b/;
 function extractPathsFromBashCommand(command) {
@@ -152,10 +160,10 @@ function extractPathsFromBashCommand(command) {
   const paths = [];
   if (!FILE_MODIFYING_CMD_RE.test(command))
     return paths;
-  const absRe = /(?:\s|^)(\/[^\s"'`;|&<>]+)/g;
+  const absRe = /(?:\s|^)(\/[^\s"'`;|&<>]+|~[^\s"'`;|&<>]*)/g;
   let m;
   while ((m = absRe.exec(command)) !== null) {
-    paths.push(m[1]);
+    paths.push(expandTilde(m[1]));
   }
   const fileOps = ["rm ", "git rm ", "mv ", "cp ", "mkdir ", "touch "];
   for (const prefix of fileOps) {
@@ -167,7 +175,7 @@ function extractPathsFromBashCommand(command) {
     for (const t of tokens) {
       if (t.startsWith("-"))
         continue;
-      const cleaned = t.replace(/^["']|["']$/g, "");
+      const cleaned = expandTilde(t.replace(/^["']|["']$/g, ""));
       if (cleaned.startsWith("/")) {
         paths.push(cleaned);
       } else if (cleaned.includes("/") || cleaned.includes(".")) {
@@ -184,10 +192,17 @@ function seedSessionFiles(sessionId) {
   if (sessionId !== storedSessionId)
     return;
   try {
-    const since = lastCleanTimestamp > 0 ? `AND time_created > ${lastCleanTimestamp * 1000}` : "";
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+    const sevenDaysAgo = (Date.now() - SEVEN_DAYS_MS) / 1000;
+    let effectiveTimestamp = lastCleanTimestamp;
+    if (lastCleanTimestamp === 0 || lastCleanTimestamp < sevenDaysAgo) {
+      effectiveTimestamp = sevenDaysAgo;
+    }
+    const since = `AND time_created > ${effectiveTimestamp * 1000}`;
     const writeOutput = execSync(`sqlite3 "${DB_PATH}" "SELECT DISTINCT json_extract(data, '$.state.input.filePath') FROM part WHERE session_id = '${sessionId}' AND json_extract(data, '$.type') = 'tool' AND json_extract(data, '$.tool') IN ('write', 'edit') AND json_extract(data, '$.state.input.filePath') IS NOT NULL ${since};"`, {
       encoding: "utf8",
-      timeout: 5000
+      timeout: 5000,
+      maxBuffer: 10 * 1024 * 1024
     });
     for (const p of writeOutput.trim().split(`
 `).filter(Boolean)) {
@@ -195,7 +210,8 @@ function seedSessionFiles(sessionId) {
     }
     const bashOutput = execSync(`sqlite3 "${DB_PATH}" "SELECT json_extract(data, '$.state.input.command') FROM part WHERE session_id = '${sessionId}' AND json_extract(data, '$.tool') = 'bash' AND json_extract(data, '$.state.input.command') LIKE '%/%' ${since};"`, {
       encoding: "utf8",
-      timeout: 5000
+      timeout: 5000,
+      maxBuffer: 10 * 1024 * 1024
     });
     for (const cmd of bashOutput.trim().split(`
 `).filter(Boolean)) {
@@ -205,7 +221,8 @@ function seedSessionFiles(sessionId) {
     }
     const patchOutput = execSync(`sqlite3 "${DB_PATH}" "SELECT DISTINCT json_extract(data, '$.files') FROM part WHERE session_id = '${sessionId}' AND json_extract(data, '$.type') = 'patch' ${since};"`, {
       encoding: "utf8",
-      timeout: 5000
+      timeout: 5000,
+      maxBuffer: 10 * 1024 * 1024
     });
     for (const line of patchOutput.trim().split(`
 `).filter(Boolean)) {
@@ -217,16 +234,8 @@ function seedSessionFiles(sessionId) {
       } catch {}
     }
   } catch (err) {
-    storedApi?.app.log({
-      body: {
-        service: id,
-        level: "error",
-        message: "seedSessionFiles failed",
-        extra: {
-          error: err instanceof Error ? err.message : String(err)
-        }
-      }
-    });
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`[rm-git-sidebar] seedSessionFiles failed: ${msg}`);
   }
 }
 var [serviceDot, setServiceDot] = createSignal("grey");
@@ -315,18 +324,31 @@ function pollGitStatus() {
     const aheadBehind = parseAheadBehind(output);
     const total = categoryTotal(counts);
     if (total === 0) {
-      lastCleanTimestamp = Date.now() / 1000;
+      const SEVEN_DAYS_AGO = (Date.now() - 7 * 24 * 60 * 60 * 1000) / 1000;
+      lastCleanTimestamp = Math.max(Date.now() / 1000, SEVEN_DAYS_AGO);
       sessionFiles.clear();
     }
-    if (sid) {
-      const wasFirstSeed = lastCleanTimestamp === 0;
-      seedSessionFiles(sid);
-      if (wasFirstSeed) {
-        lastCleanTimestamp = Date.now() / 1000;
+    let sessionCounts = {
+      ...EMPTY_COUNTS
+    };
+    try {
+      if (sid) {
+        const wasFirstSeed = lastCleanTimestamp === 0;
+        seedSessionFiles(sid);
+        if (wasFirstSeed) {
+          const SEVEN_DAYS_AGO = (Date.now() - 7 * 24 * 60 * 60 * 1000) / 1000;
+          lastCleanTimestamp = Math.max(Date.now() / 1000, SEVEN_DAYS_AGO);
+        }
       }
+      const files = storedSessionId === sid ? sessionFiles : new Set;
+      sessionCounts = computeSessionCounts(output, dir, files);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`[rm-git-sidebar] Session tracking failed (non-fatal): ${msg}`);
+      sessionCounts = {
+        ...EMPTY_COUNTS
+      };
     }
-    const files = storedSessionId === sid ? sessionFiles : new Set;
-    const sessionCounts = computeSessionCounts(output, dir, files);
     let stash = null;
     try {
       const stashList = execSync(`git -C "${dir}" stash list --format="%ct" 2>/dev/null || true`, {
@@ -352,7 +374,9 @@ function pollGitStatus() {
       aheadBehind,
       stash
     });
-  } catch {
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`[rm-git-sidebar] pollGitStatus threw: ${msg}`);
     setGitState({
       dir: null,
       error: true,
