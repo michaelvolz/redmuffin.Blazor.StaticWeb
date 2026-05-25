@@ -16,9 +16,9 @@
       },
       "Meziantou.Analyzer": {
         "type": "Direct",
-        "requested": "[3.0.85, )",
-        "resolved": "3.0.85",
-        "contentHash": "GMTpPcWrTYxKu02P+/PoYsHbGO2/0u69UkpisTepd1Rwn3ToQrh2EorEXRsa0bW5ltX2LoOuryKKwQ4taxT8JA=="
+        "requested": "[3.0.91, )",
+        "resolved": "3.0.91",
+        "contentHash": "Fzo247z2fahf8xmghWPF2YGVp0kjxaLq8R3SZAm8i6WKAq7myHtsruR4HBdDlpH8xmkvFNJL/ZiCW+oxkBsaHQ=="
       },
       "Microsoft.ApplicationInsights.WorkerService": {
         "type": "Direct",
@@ -107,12 +107,6 @@
         "requested": "[17.14.15, )",
         "resolved": "17.14.15",
         "contentHash": "mXQPJsbuUD2ydq4/ffd8h8tSOFCXec+2xJOVNCvXjuMOq/+5EKHq3D2m2MC2+nUaXeFMSt66VS/J4HdKBixgcw=="
-      },
-      "redmuffin.Tools.ConfigureAwaitFixer": {
-        "type": "Direct",
-        "requested": "[1.0.2, )",
-        "resolved": "1.0.2",
-        "contentHash": "ggK3YlSRIHpxK4AoAKGgm6eEZfR+vAGWpe+wvbeJ+9j/qzuvtlM8H5hwgVkzr7zQOPUEhKcGCf/VWTMNxrR5YA=="
       },
       "Roslynator.Analyzers": {
         "type": "Direct",
