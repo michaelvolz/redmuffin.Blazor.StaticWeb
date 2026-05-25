@@ -18,7 +18,7 @@ For each section: ask the opening question, evaluate the answer against the qual
 
 **Opening question:** "What's the core problem this product solves - and what makes that problem hard?"
 
-Strong answers name a specific situation the target user is in, identify what makes the situation hard _right now_ (a crux, a constraint, something that isn't easy to route around), and are falsifiable - you could imagine the problem being absent and know the difference.
+Strong answers name a specific situation the target user is in, identify what makes the situation hard *right now* (a crux, a constraint, something that isn't easy to route around), and are falsifiable - you could imagine the problem being absent and know the difference.
 
 **Anti-patterns and pushback:**
 
@@ -38,15 +38,15 @@ Strong answers name a specific situation the target user is in, identify what ma
 
 This is the guiding choice: how the product competes or operates, so that many downstream decisions become easier. It is not the product and it is not a feature list.
 
-Strong answers are a choice (implying alternatives explicitly _not_ pursued), are general enough to direct many decisions but specific enough to rule things out, and sound more like "we win by [doing X differently]" than "we do [a list of things]".
+Strong answers are a choice (implying alternatives explicitly *not* pursued), are general enough to direct many decisions but specific enough to rule things out, and sound more like "we win by [doing X differently]" than "we do [a list of things]".
 
 **Anti-patterns and pushback:**
 
-- **Fluff / values** ("we're customer-obsessed and move fast") -> "Those are values, not an approach. What are you doing _differently_ from the other products users could pick? If the answer applies to any company, it's not your approach."
+- **Fluff / values** ("we're customer-obsessed and move fast") -> "Those are values, not an approach. What are you doing *differently* from the other products users could pick? If the answer applies to any company, it's not your approach."
 - **Feature list** ("we're building AI-powered X, Y, and Z") -> "That's a feature list. What's the underlying bet that makes you pick those features over others? What principle is guiding what you ship?"
-- **Product description as approach** ("we use AI to draft replies") -> "That's what the product does, but what's the _choice_ inside it? Every competitor will say the same thing. Your approach should name what you're doing that the obvious alternative isn't - is it a grounding choice, a trust-building commitment, a workflow bet? What are you betting on that they're not?"
+- **Product description as approach** ("we use AI to draft replies") -> "That's what the product does, but what's the *choice* inside it? Every competitor will say the same thing. Your approach should name what you're doing that the obvious alternative isn't - is it a grounding choice, a trust-building commitment, a workflow bet? What are you betting on that they're not?"
 - **Goal restated** ("our approach is to be the market leader") -> "That's still the goal. How does the product win? What choice are you making that competitors aren't?"
-- **Multiple approaches at once** ("we're going deep on enterprise, self-serve, and a consumer app") -> "Pick one as the guiding approach. The others may still get work, but one of them organizes the rest." Then fire the `question` tool asking which approach leads, options being the approaches the user listed.
+- **Multiple approaches at once** ("we're going deep on enterprise, self-serve, and a consumer app") -> "Pick one as the guiding approach. The others may still get work, but one of them organizes the rest. Which is it?"
 - **Doesn't connect to the problem** (problem: "users can't trust AI output"; approach: "build a fast, beautiful UI") -> "How does that approach solve the problem you named? If there's no line between them, one of the two is wrong."
 
 **Capture:** One or two sentences. Ideally ends with or implies "...so that [outcome tied to the problem]".
@@ -66,7 +66,7 @@ Strong answers name one primary persona (additional personas allowed but seconda
 - **Too many primary personas** ("it's for founders, PMs, engineers, and designers") -> "If it's for everyone, it's for no one. Who matters most? The others can still benefit, but one of them drives the product decisions."
 - **Demographic framing** ("25-45 year old professionals") -> "That's a demographic, not a user. What are they trying to do that makes them pick up this product?"
 - **Role without situation** ("PMs") -> "PMs doing what? Running a roadmap review? Writing a spec at midnight? Convincing a skeptical eng lead? The situation is where the product matters."
-- **Generic job** ("they want to be more productive") -> "Productive at what specifically? They're hiring this product to do _what_? The more specific, the better the product decisions downstream."
+- **Generic job** ("they want to be more productive") -> "Productive at what specifically? They're hiring this product to do *what*? The more specific, the better the product decisions downstream."
 
 **Capture:** Persona name plus JTBD sentence. Example: "Solo founders running their own roadmap. They're hiring the product to keep strategy and execution aligned without a PM on staff."
 
@@ -96,13 +96,13 @@ Strong answers stay at 3-5 (not 10), mix leading and lagging (something that mov
 
 **Opening question:** "What are the 2-4 tracks of work you're investing in to execute the approach?"
 
-Tracks are the coherent-actions half of the strategy kernel - concrete areas of investment that flow from the approach. They are not feature lists and not personal todo items. Each track is a named _domain of work_.
+Tracks are the coherent-actions half of the strategy kernel - concrete areas of investment that flow from the approach. They are not feature lists and not personal todo items. Each track is a named *domain of work*.
 
 Strong answers stay at 2-4 (not 8, not 1), connect clearly back to the approach, and are broad enough that multiple features live inside each one.
 
 **Anti-patterns and pushback:**
 
-- **Feature list in disguise** ("track 1: Slack integration; track 2: mobile app; track 3: dark mode") -> "Those are features. What's the _investment area_ each one lives inside? 'Integrations' might be one track, with Slack, Teams, and Discord as candidates inside it."
+- **Feature list in disguise** ("track 1: Slack integration; track 2: mobile app; track 3: dark mode") -> "Those are features. What's the *investment area* each one lives inside? 'Integrations' might be one track, with Slack, Teams, and Discord as candidates inside it."
 - **Too many tracks** ("we have 7 tracks this quarter") -> "With 7 tracks, every track is starved for attention. Which 3 are load-bearing? The others either fold in or drop."
 - **Doesn't connect to approach** (approach: "win by being the easiest to onboard"; track: "enterprise SSO") -> "How does that track serve the approach? If it's a separate bet, name it as one. If it's load-bearing for onboarding, explain the link."
 - **Too vague** ("improve the product") -> "Every track is 'improve the product.' What's the specific investment area that's different from the others?"
@@ -124,7 +124,7 @@ Default is to skip. Do not push the user to invent milestones. If they name some
 
 ## 7. Not Working On (optional)
 
-**Opening question:** "Is there anything you've explicitly decided _not_ to do right now that's worth naming? This is for things the team keeps being tempted by."
+**Opening question:** "Is there anything you've explicitly decided *not* to do right now that's worth naming? This is for things the team keeps being tempted by."
 
 Clarity tool, not a blocker list. Skip by default. If the user names items, one sentence each. Do not encourage a long list.
 

@@ -69,7 +69,7 @@ When Interactive mode's routing question is skipped entirely (R2 zero-findings c
 ## Label logic (Interactive mode)
 
 - When `confidence = high` AND `named_sink_available = true`: the routing question's option C and the walk-through's per-finding Defer option both include the tracker name verbatim. Example: `File a Linear ticket per finding`, `Defer — file a Linear ticket`.
-- When `any_sink_available = true` but either `confidence = low` or `named_sink_available = false` (a fallback tier is working instead): the labels read generically — `File an issue per finding`, `Defer — file a ticket`. Before executing the first Defer of the session, the agent confirms the effective tracker choice with the user using the platform's blocking question tool.
+- When `any_sink_available = true` but either `confidence = low` or `named_sink_available = false` (a fallback tier is working instead): the labels read generically — `File an issue per finding`, `Defer — file a ticket`. Before executing the first Defer of the session, the agent confirms the effective tracker choice with the user using the `question` tool (OpenCode).
 - When `any_sink_available = false`: option C is omitted from the routing question, option B (Defer) is omitted from the walk-through per-finding options, and the agent tells the user why in the routing question's stem.
 
 Non-interactive mode skips label decisions entirely — it acts silently on the detected sink.
@@ -109,7 +109,7 @@ The finding_id is a stable fingerprint composed as `normalize(file) + line_bucke
 
 When ticket creation fails at execution (API error, auth expiry mid-session, rate limit, malformed body rejected, 4xx/5xx response):
 
-**Interactive mode:** surface the failure inline and ask the user using the platform's blocking question tool.
+**Interactive mode:** surface the failure inline and ask the user using the `question` tool (OpenCode).
 
 Stem:
 > Defer failed: <tracker name> returned <error summary>. How should the agent handle this finding?
@@ -123,7 +123,7 @@ Options:
 
 When a high-confidence named tracker fails at execution, the cached `named_sink_available` is set to `false` for the rest of the session. Subsequent Defer actions fall straight through to the next tier without retrying a confirmed-broken sink. `any_sink_available` is only downgraded to `false` when every tier has been confirmed broken — a failed Linear call that succeeds via `gh` keeps `any_sink_available = true`.
 
-Only when `ToolSearch` explicitly returns no match or the tool call errors — or on a platform with no blocking question tool — fall back to numbered options and waiting for the user's reply (Interactive mode only).
+If the question tool errors, fall back to numbered options in chat (Interactive mode only).
 
 ---
 
@@ -144,6 +144,6 @@ When uncertain, prefer "drop with explicit user-facing notice" over "pass throug
 
 ## Cross-platform notes
 
-The question-tool name varies by platform. In Interactive mode, use the platform's blocking question tool (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension)) In OpenCode, use the `question` tool (no `ToolSearch` pre-load needed — its schema is always available). . In Claude Code the tool should already be loaded from the Interactive-mode pre-load step — if it isn't, call `ToolSearch` with query `select:AskUserQuestion` now. Fall back to numbered options in chat only when the harness genuinely lacks a blocking tool — `ToolSearch` returns no match, the tool call explicitly fails, or the runtime mode does not expose it (e.g., Codex edit modes without `request_user_input`). A pending schema load is not a fallback trigger. Never silently skip the question.
+The question-tool name varies by platform. Use the `question` tool (OpenCode). Fall back to numbered options in chat only if the question tool errors. Never silently skip the question.
 
 Non-interactive mode is platform-agnostic: it never prompts, so the platform's question tool is not relevant.

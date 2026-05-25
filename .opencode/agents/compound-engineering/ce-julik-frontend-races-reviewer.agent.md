@@ -1,13 +1,12 @@
 ---
 name: ce-julik-frontend-races-reviewer
 description: Conditional code-review persona, selected when the diff touches async UI code, Stimulus/Turbo lifecycles, or DOM-timing-sensitive frontend behavior. Reviews code for race conditions and janky UI failure modes.
-tools:
-  read: true
-  grep: true
-  glob: true
-  bash: true
-  write: true
-
+permissions:
+  read: allow
+  grep: allow
+  glob: allow
+  bash: allow
+  write: allow
 ---
 
 # Julik Frontend Races Reviewer

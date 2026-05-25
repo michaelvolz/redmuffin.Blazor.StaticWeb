@@ -44,7 +44,7 @@ prints the version string, or the sentinel `__CE_UPDATE_VERSION_FAILED__` if
 
 `scripts/currently-loaded-version.sh` and `scripts/marketplace-name.sh` parse
 `${CLAUDE_SKILL_DIR}` against the marketplace-cache layout
-`~/.config/opencode/plugins/cache/<marketplace>/compound-engineering/<version>/skillsskill({ name: "ce-update" })`.
+`~/.opencode/plugins/cache/<marketplace>/compound-engineering/<version>/skillsskill({ name: "ce-update" })`.
 They print the version segment / marketplace segment, or the sentinel
 `__CE_UPDATE_NOT_MARKETPLACE__` if the path doesn't match (typical for
 `claude --plugin-dir` local development).
@@ -65,7 +65,7 @@ platform (this skill is Claude Code-only because it relies on the plugin
 harness cache layout). Tell the user:
 
 > "Skill is loaded from outside the marketplace cache at
-> `~/.config/opencode/plugins/cache/`. This is normal when using
+> `~/.opencode/plugins/cache/`. This is normal when using
 > `claude --plugin-dir` for local development. No action for this session.
 > Your marketplace install (if any) is unaffected — run `skill({ name: "ce-update" })` in a
 > regular Claude Code session (no `--plugin-dir`) to check that cache."

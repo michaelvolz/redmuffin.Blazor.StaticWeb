@@ -84,7 +84,7 @@ For each release, render:
 After all releases are rendered, append a two-line footer:
 
 ```
-Showing the last 5 releases. For older history, ask a specific question (e.g., `skill({ name: "ce-release-notes" }) what happened to <skill>?`).
+Showing the last 5 releases. For older history, ask a specific question (e.g., `/ce-release-notes what happened to <skill>?`).
 Browse all releases at https://github.com/EveryInc/compound-engineering-plugin/releases
 ```
 

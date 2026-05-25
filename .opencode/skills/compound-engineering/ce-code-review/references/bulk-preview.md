@@ -80,15 +80,13 @@ When no `why_it_matters` is available for a finding (e.g., Unit 2's template upg
 
 ## Question and options
 
-After the preview body is rendered, ask the user using the platform's blocking question tool (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension)) In OpenCode, use the `question` tool (no `ToolSearch` pre-load needed — its schema is always available). . In Claude Code, the tool should already be loaded from the Interactive-mode pre-load step — if it isn't, call `ToolSearch` with query `select:AskUserQuestion` now. The text fallback below applies only when the harness genuinely lacks a blocking tool — `ToolSearch` returns no match, the tool call explicitly fails, or the runtime mode does not expose it (e.g., Codex edit modes without `request_user_input`). A pending schema load is not a fallback trigger. Never silently skip the question.
-
-Stem: `The agent is about to file the tickets above. Proceed?`
+After the preview body is rendered, ask the user using the `question` tool (OpenCode). Stem: `The agent is about to file the tickets above. Proceed?`
 
 Options (exactly two):
 - `Proceed` — file every ticket in the preview
 - `Cancel` — do nothing, return to the routing question
 
-Only when `ToolSearch` explicitly returns no match or the tool call errors — or on a platform with no blocking question tool — fall back to presenting numbered options and waiting for the user's next reply.
+If the question tool errors, fall back to numbered options in chat.
 
 ---
 

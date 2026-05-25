@@ -9,7 +9,7 @@ disable-model-invocation: true
 
 ## Interaction Method
 
-Ask the user each question below using the platform's blocking question tool: `AskUserQuestion` in Claude Code (call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded), `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension). In OpenCode, use the `question` tool (no `ToolSearch` pre-load needed — its schema is always available).  Fall back to presenting each question as a numbered list in chat only when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes) — not because a schema load is required. Never silently skip or auto-configure. For multiSelect questions, accept comma-separated numbers (e.g. `1, 3`).
+Ask the user using the `question` tool (OpenCode). Fall back to numbered options in chat only if the question tool errors. Never silently skip the question. For multiSelect questions, accept comma-separated numbers (e.g. `1, 3`).
 
 Interactive setup for compound-engineering — diagnoses environment health, cleans obsolete repo-local CE config, and helps configure required tools. Review agent selection is handled automatically by `skill({ name: "ce-code-review" })`; project-specific review guidance belongs in `CLAUDE.md` or `AGENTS.md`.
 
@@ -64,7 +64,7 @@ If everything is installed, no repo-local cleanup is needed, and `.compound-engi
     Skills: 🟢 ast-grep
     Config: ✅
 
-    Run /ce-setup anytime to re-check.
+    Run skill({ name: "ce-setup" }) anytime to re-check.
 ```
 
 If this is a Claude Code session (the **Plugin root** above resolved to a non-empty path), append to the message: "Run skill({ name: "ce-update" }) to grab the latest plugin version."
@@ -143,7 +143,7 @@ For each selected dependency, in order:
 
 2. **If approved:** Run the install command using a shell execution tool. After the command completes, verify installation:
    - For a CLI tool, run the dependency's check command (e.g., `command -v agent-browser`).
-   - For an agent skill, prefer `npx --yes skills list --global --json | jq -r '.[].name' | grep -qx <skill-name>` when `npx` is available; otherwise fall back to checking that `~/.config/opencode/skills/<skill-name>`, `~/.agents/skills/<skill-name>`, or `~/.codex/skills/<skill-name>` exists (file, directory, or symlink).
+   - For an agent skill, prefer `npx --yes skills list --global --json | jq -r '.[].name' | grep -qx <skill-name>` when `npx` is available; otherwise fall back to checking that `~/.opencode/skills/<skill-name>`, `~/.agents/skills/<skill-name>`, or `~/.codex/skills/<skill-name>` exists (file, directory, or symlink).
 
 3. **If verification succeeds:** Report success.
 
@@ -159,7 +159,7 @@ Display a brief summary:
     Installed: agent-browser, gh, jq
     Skipped:   rtk
 
-    Run /ce-setup anytime to re-check.
+    Run skill({ name: "ce-setup" }) anytime to re-check.
 ```
 
 If this is a Claude Code session (per platform detection in Step 3), append: "Run skill({ name: "ce-update" }) to grab the latest plugin version."

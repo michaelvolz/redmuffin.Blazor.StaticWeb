@@ -10,7 +10,7 @@ Interactive mode only.
 
 After `safe_auto` fixes apply and synthesis produces the remaining finding set, the orchestrator asks a four-option routing question before any walk-through or bulk action runs.
 
-Use the platform's blocking question tool (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension)) In OpenCode, use the `question` tool (no `ToolSearch` pre-load needed — its schema is always available). . In Claude Code, the tool should already be loaded from the Interactive-mode pre-load step in `SKILL.md` — if it isn't, call `ToolSearch` with query `select:AskUserQuestion` now. Fall back to presenting the options as a numbered list only when the harness genuinely lacks a blocking tool — `ToolSearch` returns no match, the tool call explicitly fails, or the runtime mode does not expose it (e.g., Codex edit modes without `request_user_input`). A pending schema load is not a fallback trigger. Never silently skip the question. Rendering the routing question as narrative text without the numbered-list fallback is a bug.
+Use the `question` tool (OpenCode). Use the `question` tool (OpenCode). Fall back to numbered options only if the question tool errors. Never silently skip the question. Rendering the routing question as narrative text without the numbered-list fallback is a bug.
 
 **Stem:** `What should the agent do with the remaining N findings?`
 
@@ -53,7 +53,7 @@ Each finding's recommended action has already been normalized by synthesis step 
 **Cascading root decisions.** When the user picks Skip or Defer on a finding with `dependents`:
 
 1. Announce the cascade in the terminal before firing the next question: "Skipping/Deferring this root will auto-resolve N dependent finding(s): {titles}. Continue?"
-2. Use the platform's blocking question tool with two options: `Cascade — apply same action to all dependents` (recommended) and `Decide each dependent individually`. Labels must be self-contained per the blocking-question tool design rules.
+2. Use the `question` tool (OpenCode) with two options: `Cascade — apply same action to all dependents` (recommended) and `Decide each dependent individually`. Labels must be self-contained per the blocking-question tool design rules.
 3. On Cascade: apply the root's action to every dependent and skip those findings' walk-through entries. Persistence follows the per-action routing rules from "Per-finding routing" below — the canonical home for every cascaded decision is the in-memory decision list (annotated with `cascaded from {root_title}` and the cascaded action), plus any action-specific side effect:
    - Cascaded `Apply` — add the dependent id to the Apply set and record in the decision list.
    - Cascaded `Defer` — invoke the open-questions append flow for the dependent and record the append outcome in the decision list. If the append fails, fall back to the per-finding failure path (Retry / Record only / Convert to Skip) for that dependent before advancing the cascade.
@@ -69,7 +69,7 @@ When the user picks Apply on a root, do NOT cascade — the premise held, so dep
 
 ## Per-finding presentation
 
-Each finding is presented in two parts: a terminal output block carrying the explanation, and a question via the platform's blocking question tool carrying the decision. Never merge the two — the terminal block uses markdown; the question uses plain text.
+Each finding is presented in two parts: a terminal output block carrying the explanation, and a question via the `question` tool (OpenCode) carrying the decision. Never merge the two — the terminal block uses markdown; the question uses plain text.
 
 ### Terminal output block (print before firing the question)
 
@@ -113,7 +113,7 @@ Substitutions:
 
 ### Question stem (short, decision-focused)
 
-After the terminal block renders, fire the platform's blocking question tool with a compact two-line stem:
+After the terminal block renders, use the `question` tool (OpenCode) with a compact two-line stem:
 
 ```
 Finding {N} of {M} — {severity} {short handle}.
@@ -133,7 +133,7 @@ After the user answers and before printing the next finding's terminal block, em
 
 ### Options (four; adapted as noted)
 
-Fixed order. Never reorder:
+These four options are the **complete, exclusive set** for the regular per-finding question. Fixed order — never reorder, never add, never substitute. In particular, **`Acknowledge` is NOT one of these options** — it appears only in the no-fix sub-question described under "Per-finding routing" below, which fires only when the user picks Apply on a finding that lacks a `suggested_fix`. Importing `Acknowledge` into the regular menu (in place of D, or as a fifth option) is a bug — it silently drops the `Auto-resolve with best judgment on the rest` workflow shortcut, and surfacing `Acknowledge` outside the no-fix path mislabels the user's choice in the completion report's bucket counts.
 
 ```
 A. Apply the proposed fix
@@ -161,7 +161,7 @@ When reviewers disagreed or evidence cuts against the default, still mark one op
 
 - **Combined N=1 + no-append:** the menu shows two options: Apply / Skip.
 
-Only when `ToolSearch` explicitly returns no match or the tool call errors — or on a platform with no blocking question tool — fall back to presenting the options as a numbered list and waiting for the user's next reply.
+If the question tool errors, fall back to numbered options in chat.
 
 ---
 
@@ -175,6 +175,8 @@ For each finding's answer:
 - **Auto-resolve with best judgment on the rest** — exit the walk-through loop. Dispatch the bulk preview from `references/bulk-preview.md`, scoped to the current finding and everything not yet decided. The preview header reports the count of already-decided findings ("K already decided"). If the user picks Cancel from the preview, return to the current finding's per-finding question (not to the routing question). If the user picks Proceed, execute the plan per `references/bulk-preview.md` — Apply findings join the in-memory Apply set with the ones the user already picked, Defer findings route through `references/open-questions-defer.md`, Skip is no-op — then proceed to end-of-walk-through execution.
 
 ### No-fix sub-question (Apply picked on a finding with no `suggested_fix`)
+
+This sub-question — and the `Acknowledge without applying` option in particular — is **exclusive to the no-fix path**. It fires only after the user picks Apply on a finding whose merged record has no `suggested_fix`. Do not surface this sub-question, or its `Acknowledge` option, in the regular per-finding menu. The regular menu's fourth option is always `Auto-resolve with best judgment on the rest` (per "Options" above), never `Acknowledge`.
 
 Synthesis step 3.5b demotes the default recommendation from Apply to Defer for any merged finding without a `suggested_fix`, so `(recommended)` never lands on Apply for these findings. But the menu still lets the user pick Apply manually. When that happens, do not add the finding to the Apply set — the execution pass has no edit payload to apply, which would either fail the batch or record a misleading "applied" outcome.
 

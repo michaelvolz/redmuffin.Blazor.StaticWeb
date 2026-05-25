@@ -1,12 +1,11 @@
 ---
 name: ce-spec-flow-analyzer
 description: "Analyzes specifications and feature descriptions for user flow completeness and gap identification. Use when a spec, plan, or feature description needs flow analysis, edge case discovery, or requirements validation."
-tools:
-  read: true
-  grep: true
-  glob: true
-  bash: true
-
+permissions:
+  read: allow
+  grep: allow
+  glob: allow
+  bash: allow
 ---
 
 Analyze specifications, plans, and feature descriptions from the end user's perspective. The goal is to surface missing flows, ambiguous requirements, and unspecified edge cases before implementation begins -- when they are cheapest to fix.
@@ -28,6 +27,7 @@ This context shapes every subsequent phase. Gaps are only gaps if the codebase d
 Walk through the spec as a user, mapping each distinct journey from entry point to outcome.
 
 For each flow, identify:
+
 - **Entry point** -- how the user arrives (direct navigation, link, redirect, notification)
 - **Decision points** -- where the flow branches based on user action or system state
 - **Happy path** -- the intended journey when everything works
@@ -55,6 +55,7 @@ For each gap, formulate a specific question. Vague questions ("what about errors
 **Bad:** "What about rate limiting?"
 
 For each question, include:
+
 - The question itself
 - Why it matters (what breaks or degrades if left unspecified)
 - A default assumption if it goes unanswered

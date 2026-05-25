@@ -51,7 +51,7 @@ If not installed, inform the user: "`agent-browser` is not installed. Run `skill
 
 **Pipeline mode (`mode:pipeline`):** Skip this step entirely. Default to headless — no question, no blocking. Proceed directly to step 3.
 
-**Manual mode:** Ask the user whether to run headed or headless using the platform's blocking question tool: `AskUserQuestion` in Claude Code (call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded), `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension). In OpenCode, use the `question` tool (no `ToolSearch` pre-load needed — its schema is always available).  Fall back to presenting options in chat only when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes) — not because a schema load is required. Never silently skip the question:
+**Manual mode:** Ask the user whether to run headed or headless using the `question` tool (OpenCode). Fall back to numbered options in chat only if the question tool errors. Never silently skip the question:
 
 ```
 Do you want to watch the browser tests run?

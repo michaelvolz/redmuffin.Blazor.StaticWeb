@@ -1,6 +1,6 @@
 ---
 name: ce-slack-research
-description: "Search Slack for interpreted organizational context -- decisions, constraints, and discussion arcs that shape the current task. Produces a research digest with cross-cutting analysis and research-value assessment, not raw message lists. Use when searching Slack for context during planning, brainstorming, or any task where organizational knowledge matters. Trigger phrases: 'search slack for', 'what did we discuss about', 'slack context for', 'organizational context about', 'what does the team think about', 'any slack discussions on'. Differs from slack:find-discussions which returns individual message results without synthesis."
+description: "Search Slack for interpreted organizational context -- decisions, constraints, and discussion arcs -- and produce a synthesized research digest with cross-cutting analysis. Use when the user says 'search slack for', 'what did we discuss about', 'slack context for', or 'what does the team think about'. Differs from slack:find-discussions, which returns raw message results without synthesis."
 
 ---
 
@@ -28,9 +28,9 @@ The input can be a keyword, a natural language question, or include Slack search
 
 ## Execution
 
-If no argument is provided, ask what topic to research. Use the platform's blocking question tool: `AskUserQuestion` in Claude Code (call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded), `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension). In OpenCode, use the `question` tool (no `ToolSearch` pre-load needed — its schema is always available).  Fall back to asking in plain text only when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes) — not because a schema load is required. Never silently skip the question.
+If no argument is provided, ask what topic to research. Use the `question` tool (OpenCode). Fall back to numbered options in chat only if the question tool errors. Never silently skip the question.
 
-Dispatch `@compound-engineering/ce-slack-researcher` with the user's topic as the task prompt. Omit the `mode` parameter so the user's configured permission settings apply.
+Dispatch `@compound-engineering@compound-engineering/ce-slack-researcher` with the user's topic as the task prompt. Omit the `mode` parameter so the user's configured permission settings apply.
 
 The agent handles everything from here -- Slack MCP discovery, search execution, thread reads, and synthesis. It returns a digest with:
 

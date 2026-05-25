@@ -8,13 +8,12 @@ This content is loaded when Phase 4 begins — after the requirements document i
 
 The Phase 4 menu's visible option count varies by state: no requirements doc hides the review and Proof options, unresolved `Resolve Before Planning` hides `Plan implementation` and `Build it now`, a failing direct-to-work gate hides `Build it now`. Count the visible options for the current state and choose the rendering mode accordingly:
 
-- **4 or fewer visible:** use the platform's blocking question tool (`AskUserQuestion` in Claude Code — call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded; `request_user_input` in Codex; `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension)) In OpenCode, use the `question` tool (no `ToolSearch` pre-load needed — its schema is always available). . This is the default.
+- **4 or fewer visible:** use the `question` tool (OpenCode). This is the default.
 - **5 or more visible:** render as a numbered list in chat. This is the narrow option-overflow fallback; trimming would hide legitimate choices (plan, review, Proof, build, refine, pause are all distinct destinations). Include a hint that free-form input is accepted ("Pick a number or describe what you want.") so the numbered list retains the blocking tool's open-endedness.
 
 Never silently skip the question.
 
 If `Resolve Before Planning` contains any items:
-
 - Ask the blocking questions now, one at a time, by default
 - If the user explicitly wants to proceed anyway, first convert each remaining item into an explicit decision, assumption, or `Deferred to Planning` question
 - If the user chooses to pause instead, present the handoff as paused or blocked rather than complete
@@ -26,11 +25,23 @@ In both preambles below, the "Pick a number or describe what you want." hint app
 
 **Preamble when no blocking questions remain:**
 
-Fire the `question` tool. Header: "Next" (≤12 chars). Question text: "Brainstorm complete. What would you like to do next?" Include the requirements doc path if one was created: "<absolute path>". Options: the visible choices below.
+```
+Brainstorm complete.
+
+Requirements doc: <absolute path to requirements doc>  # omit line if no doc was created
+
+What would you like to do next? (Pick a number or describe what you want.)
+```
 
 **Preamble when blocking questions remain and user wants to pause:**
 
-Fire the `question` tool. Header: "Next" (≤12 chars). Question text: "Brainstorm paused. Planning is blocked until the remaining questions are resolved. What would you like to do next?" Include the requirements doc path if one was created: "<absolute path>". Options: the visible choices below.
+```
+Brainstorm paused. Planning is blocked until the remaining questions are resolved.
+
+Requirements doc: <absolute path to requirements doc>  # omit line if no doc was created
+
+What would you like to do next? (Pick a number or describe what you want.)
+```
 
 Present only the options that apply. Renumber so visible options stay contiguous starting at 1.
 
@@ -70,7 +81,7 @@ Load the `ce-proof` skill in HITL-review mode with:
 - **identity:** `ai:compound-engineering` / `Compound Engineering`
 - **recommended next step:** `ce-plan` (shown in the ce-proof skill's final terminal output)
 
-Follow `references/hitl-review.md` in the ce-proof skill. It uploads the doc, prompts the user for review in Proof's web UI, ingests each thread by reading it fresh and replying in-thread, applies agreed edits as tracked suggestions, and syncs the final markdown back to the source file atomically on proceed.
+Follow `references/hitl-review.md` in the ce-proof skill. It uploads the doc, prompts the user for review in Proof's web UI, ingests filtered comment threads, applies agreed edits through the current Proof edit APIs, replies/resolves in-thread, and syncs the final markdown back to the source file atomically on proceed.
 
 When the ce-proof skill returns control:
 

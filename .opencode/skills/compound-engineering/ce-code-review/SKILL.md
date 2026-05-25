@@ -67,14 +67,14 @@ Sequence:
 
 - **Skip all user questions.** Never pause for approval or clarification once scope has been established.
 - **Apply only `safe_auto -> review-fixer` findings.** Leave `gated_auto`, `manual`, `human`, and `release` work unresolved.
-- **Write a run artifact** under `/tmp/compound-engineeringskill({ name: "ce-code-review" })/<run-id>/` summarizing findings, applied fixes, residual actionable work, and advisory outputs. Orchestrators read this artifact to route residual `downstream-resolver` findings; the skill itself does not file tickets or prompt the user in autofix.
-- **Emit a compact Residual Actionable Work summary in the autofix return** listing each residual `downstream-resolver` finding with severity, file:line, title, and autofix_class. Include the run-artifact path. Callers read this summary directly without parsing the artifact. When no residuals exist, state `Residual actionable work: none.` explicitly.
+- **Write a run artifact** under `/tmp/compound-engineering/ce-code-review/<run-id>/` summarizing findings, applied fixes, residual actionable work, and advisory outputs. Orchestrators read this artifact to route residual `downstream-resolver` findings; the skill itself does not file tickets or prompt the user in autofix.
+- **Emit a compact Residual Actionable Work summary in the autofix return** listing each residual `downstream-resolver` finding with its stable `#`, severity, file:line, title, and autofix_class. Structure the summary as two separate contiguous sections: applied `safe_auto` fixes first, then residual non-auto findings. Within the residual section, reuse each finding's stable `#` from Stage 5 -- never renumber. Include the run-artifact path. Callers read this summary directly without parsing the artifact. When no residuals exist, state `Residual actionable work: none.` explicitly.
 - **Never commit, push, or create a PR** from autofix mode. Parent workflows own those decisions.
 
 ### Report-only mode rules
 
 - **Skip all user questions.** Infer intent conservatively if the diff metadata is thin.
-- **Never edit files or externalize work.** Do not write `/tmp/compound-engineeringskill({ name: "ce-code-review" })/<run-id>/`, do not file tickets, and do not commit, push, or create a PR.
+- **Never edit files or externalize work.** Do not write `/tmp/compound-engineering/ce-code-review/<run-id>/`, do not file tickets, and do not commit, push, or create a PR.
 - **Safe for parallel read-only verification.** `mode:report-only` is the only mode that is safe to run concurrently with browser testing on the same checkout.
 - **Do not switch the shared checkout.** If the caller passes an explicit PR or branch target, `mode:report-only` must run in an isolated checkout/worktree or stop instead of running `gh pr checkout` / `git checkout`.
 - **Do not overlap mutating review with browser testing on the same checkout.** If a future orchestrator wants fixes, run the mutating review phase after browser testing or in an isolated checkout/worktree.
@@ -85,7 +85,7 @@ Sequence:
 - **Require a determinable diff scope.** If headless mode cannot determine a diff scope (no branch, PR, or `base:` ref determinable without user interaction), emit `Review failed (headless mode). Reason: no diff scope detected. Re-invoke with a branch name, PR number, or base:<ref>.` and stop without dispatching agents.
 - **Apply only `safe_auto -> review-fixer` findings in a single pass.** No bounded re-review rounds. Leave `gated_auto`, `manual`, `human`, and `release` work unresolved and return them in the structured output.
 - **Return all non-auto findings as structured text output.** Use the headless output envelope format (see Stage 6 below) preserving severity, autofix_class, owner, requires_verification, confidence, pre_existing, and suggested_fix per finding. Enrich with detail-tier fields (why_it_matters, evidence[]) from the per-agent artifact files on disk (see Detail enrichment in Stage 6).
-- **Write a run artifact** under `/tmp/compound-engineeringskill({ name: "ce-code-review" })/<run-id>/` summarizing findings, applied fixes, and advisory outputs. Include the artifact path in the structured output.
+- **Write a run artifact** under `/tmp/compound-engineering/ce-code-review/<run-id>/` summarizing findings, applied fixes, and advisory outputs. Include the artifact path in the structured output.
 - **Do not file tickets or externalize work.** The caller receives structured findings and routes downstream work itself.
 - **Do not switch the shared checkout.** If the caller passes an explicit PR or branch target, `mode:headless` must run in an isolated checkout/worktree or stop instead of running `gh pr checkout` / `git checkout`. When stopping, emit `Review failed (headless mode). Reason: cannot switch shared checkout. Re-invoke with base:<ref> to review the current checkout, or run from an isolated worktree.`
 - **Not safe for concurrent use on a shared checkout.** Unlike `mode:report-only`, headless mutates files (applies `safe_auto` fixes). Callers must not run headless concurrently with other mutating operations on the same checkout.
@@ -128,7 +128,7 @@ Routing rules:
 
 ## Reviewers
 
-18 reviewer personas in layered conditionals, plus CE-specific agents. See the persona catalog included below for the full catalog.
+14 reviewer personas in layered conditionals, plus CE-specific agents. See the persona catalog included below for the full catalog.
 
 **Always-on (every review):**
 
@@ -136,7 +136,7 @@ Routing rules:
 |-------|-------|
 | `@compound-engineering/ce-correctness-reviewer` | Logic errors, edge cases, state bugs, error propagation |
 | `@compound-engineering/ce-testing-reviewer` | Coverage gaps, weak assertions, brittle tests |
-| `@compound-engineering/ce-maintainability-reviewer` | Coupling, complexity, naming, dead code, abstraction debt |
+| `@compound-engineering/ce-maintainability-reviewer` | Structural quality, complexity deletion, 1k-line regressions, coupling, type-boundary leaks, dead code, abstraction debt |
 | `@compound-engineering/ce-project-standards-reviewer` | CLAUDE.md and AGENTS.md compliance -- frontmatter, references, naming, portability |
 | `@compound-engineering/ce-agent-native-reviewer` | Verify new features are agent-accessible |
 | `@compound-engineering/ce-learnings-researcher` | Search docs/solutions/ for past issues related to this PR |
@@ -148,7 +148,7 @@ Routing rules:
 | `@compound-engineering/ce-security-reviewer` | Auth, public endpoints, user input, permissions |
 | `@compound-engineering/ce-performance-reviewer` | DB queries, data transforms, caching, async |
 | `@compound-engineering/ce-api-contract-reviewer` | Routes, serializers, type signatures, versioning |
-| `@compound-engineering/ce-data-migrations-reviewer` | Migrations, schema changes, backfills |
+| `@compound-engineering/ce-data-migration-reviewer` | Migration files, schema dumps (`db/schema.rb`, `structure.sql`), backfills, data-transform scripts — **not** model/query-only changes without migration artifacts |
 | `@compound-engineering/ce-reliability-reviewer` | Error handling, retries, timeouts, background jobs |
 | `@compound-engineering/ce-adversarial-reviewer` | Diff >=50 changed non-test/non-generated/non-lockfile lines, or auth, payments, data mutations, external APIs |
 | `@compound-engineering/ce-previous-comments-reviewer` | Reviewing a PR that has existing review comments or threads |
@@ -157,10 +157,6 @@ Routing rules:
 
 | Agent | Select when diff touches... |
 |-------|---------------------------|
-| `@compound-engineering/ce-dhh-rails-reviewer` | Rails architecture, service objects, session/auth choices, or Hotwire-vs-SPA boundaries |
-| `@compound-engineering/ce-kieran-rails-reviewer` | Rails application code where conventions, naming, and maintainability are in play |
-| `@compound-engineering/ce-kieran-python-reviewer` | Python modules, endpoints, scripts, or services |
-| `@compound-engineering/ce-kieran-typescript-reviewer` | TypeScript components, services, hooks, utilities, or shared types |
 | `@compound-engineering/ce-julik-frontend-races-reviewer` | Stimulus/Turbo controllers, DOM events, timers, animations, or async UI flows |
 | `@compound-engineering/ce-swift-ios-reviewer` | Swift files, SwiftUI views, UIKit controllers, entitlements, privacy manifests, Core Data models, SPM manifests, storyboards/XIBs, or semantic build-setting/target/signing changes in .pbxproj |
 
@@ -168,12 +164,13 @@ Routing rules:
 
 | Agent | Select when diff includes migration files |
 |-------|------------------------------------------|
-| `@compound-engineering/ce-schema-drift-detector` | Cross-references schema.rb against included migrations |
-| `@compound-engineering/ce-deployment-verification-agent` | Produces deployment checklist with SQL verification queries |
+| `@compound-engineering/ce-deployment-verification-agent` | Produces deployment checklist with SQL verification queries and rollback procedures |
+
+Schema drift detection is folded into `@compound-engineering/ce-data-migration-reviewer` (Step 0) and surfaces as P1 findings — not a separate agent or report section.
 
 ## Review Scope
 
-Every review spawns all 4 always-on personas plus the 2 CE always-on agents, then adds whichever cross-cutting and stack-specific conditionals fit the diff. The model naturally right-sizes: a small config change triggers 0 conditionals = 6 reviewers. A Rails auth feature might trigger security + reliability + kieran-rails + dhh-rails = 10 reviewers.
+Every review spawns all 4 always-on personas plus the 2 CE always-on agents, then adds whichever cross-cutting and stack-specific conditionals fit the diff. The model naturally right-sizes: a small config change triggers 0 conditionals = 6 reviewers. A Rails auth feature might trigger security + reliability + adversarial = 9 reviewers.
 
 ## Protected Artifacts
 
@@ -206,7 +203,7 @@ Then produce the same output as the other paths:
 echo "BASE:$BASE" && echo "FILES:" && git diff --name-only $BASE && echo "DIFF:" && git diff -U10 $BASE && echo "UNTRACKED:" && git ls-files --others --exclude-standard
 ```
 
-This path works with any ref — a SHA, `origin/main`, a branch name. Automated callers (skill({ name: "ce-work" }), lfg, slfg) should prefer this to avoid the detection overhead. **Do not combine `base:` with a PR number or branch target.** If both are present, stop with an error: "Cannot use `base:` with a PR number or branch target — `base:` implies the current checkout is already the correct branch. Pass `base:` alone, or pass the target alone and let scope detection resolve the base." This avoids scope/intent mismatches where the diff base comes from one source but the code and metadata come from another.
+This path works with any ref — a SHA, `origin/main`, a branch name. Automated callers (skill({ name: "ce-work" }), skill({ name: "lfg" }), slfg) should prefer this to avoid the detection overhead. **Do not combine `base:` with a PR number or branch target.** If both are present, stop with an error: "Cannot use `base:` with a PR number or branch target — `base:` implies the current checkout is already the correct branch. Pass `base:` alone, or pass the target alone and let scope detection resolve the base." This avoids scope/intent mismatches where the diff base comes from one source but the code and metadata come from another.
 
 **If a PR number or GitHub URL is provided as an argument:**
 
@@ -293,15 +290,13 @@ If the output is non-empty, inform the user: "You have uncommitted changes on th
 git checkout <branch>
 ```
 
-Then detect the review base branch and compute the merge-base. Run the `scripts/resolve-base.sh` script, which handles fork-safe remote resolution with multi-fallback detection (PR metadata -> `origin/HEAD` -> `gh repo view` -> common branch names):
+Then detect the review base branch and compute the merge-base.
 
-```
-RESOLVE_OUT=$(bash scripts/resolve-base.sh) || { echo "ERROR: resolve-base.sh failed"; exit 1; }
-if [ -z "$RESOLVE_OUT" ] || echo "$RESOLVE_OUT" | grep -q '^ERROR:'; then echo "${RESOLVE_OUT:-ERROR: resolve-base.sh produced no output}"; exit 1; fi
-BASE=$(echo "$RESOLVE_OUT" | sed 's/^BASE://')
-```
+**If a PR exists for `<branch>`** (check with `gh pr view <branch> --json baseRefName,url`): reuse PR mode's `PR_BASE_REMOTE` block above. Use `baseRefName` as `<base>` and derive `<base-repo>` from the PR URL (e.g., `EveryInc/foo` from `https://github.com/EveryInc/foo/pull/123`). The block already sets `$BASE` to the merge-base SHA — `origin` may point at the user's fork, which is why naive `origin/<base>` is unsafe and the fork-safe block is required.
 
-If the script outputs an error, stop instead of falling back to `git diff HEAD`; a branch review without the base branch would only show uncommitted changes and silently miss all committed work.
+**If no PR exists**: derive the default branch. Primary source is `git symbolic-ref --quiet --short refs/remotes/origin/HEAD | sed 's#^origin/##'`; fall back to `gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'`, then to the first of `main`/`master`/`develop`/`trunk` that exists as `origin/<name>` or bare `<name>` locally. Compute `BASE=$(git merge-base HEAD <base-ref>)`, where `<base-ref>` is `origin/<base-branch>` when available, otherwise the bare local `<base-branch>` (covers single-branch clones, missing origin remote, and unfetched defaults). If `BASE` is empty and the clone is shallow (`git rev-parse --is-shallow-repository`), run `git fetch --unshallow origin` and retry.
+
+If no base can be resolved, **stop**. Do not fall back to `git diff HEAD` — a branch review without the base would only show uncommitted changes and silently miss all committed work.
 
 On success, produce the diff:
 
@@ -313,15 +308,9 @@ You may still fetch additional PR metadata with `gh pr view` for title, body, li
 
 **If no argument (standalone on current branch):**
 
-Detect the review base branch and compute the merge-base using the same `scripts/resolve-base.sh` script as branch mode:
+Apply the same base-detection logic as branch mode above, using the current branch (i.e., `gh pr view --json baseRefName,url` with no argument defaults to the current branch).
 
-```
-RESOLVE_OUT=$(bash scripts/resolve-base.sh) || { echo "ERROR: resolve-base.sh failed"; exit 1; }
-if [ -z "$RESOLVE_OUT" ] || echo "$RESOLVE_OUT" | grep -q '^ERROR:'; then echo "${RESOLVE_OUT:-ERROR: resolve-base.sh produced no output}"; exit 1; fi
-BASE=$(echo "$RESOLVE_OUT" | sed 's/^BASE://')
-```
-
-If the script outputs an error, stop instead of falling back to `git diff HEAD`; a standalone review without the base branch would only show uncommitted changes and silently miss all committed work on the branch.
+If no base can be resolved, **stop**. Do not fall back to `git diff HEAD` — a standalone review without the base would only show uncommitted changes and silently miss all committed work on the branch.
 
 On success, produce the diff:
 
@@ -375,7 +364,7 @@ Locate the plan document so Stage 6 can verify requirements completeness. Check 
 - Multiple/ambiguous PR body matches -> `plan_source: inferred` (lower confidence)
 - Auto-discover with single unambiguous match -> `plan_source: inferred` (lower confidence)
 
-If a plan is found, read its **Requirements** section — `## Requirements` in current plans, `## Requirements Trace` in legacy ones — and the R-IDs (R1, R2, etc.) listed there, plus **Implementation Units** (items listed under the `## Implementation Units` section). Store the extracted requirements list and `plan_source` for Stage 6. Do not block the review if no plan is found — requirements verification is additive, not required.
+If a plan is found, read its **Requirements** section — `## Requirements` in current plans, `## Requirements Trace` in legacy ones — and the R-IDs (R1, R2, etc.) listed there, plus **Implementation Units** (current numeric subsections such as `### U1.`, `### U2.`, or `### Unit 1:` under `## Implementation Units`; legacy bullet or checkbox unit entries under that section also count). Store the extracted requirements list and `plan_source` for Stage 6. Do not block the review if no plan is found — requirements verification is additive, not required.
 
 ### Stage 3: Select reviewers
 
@@ -390,9 +379,11 @@ Read the diff and file list from Stage 1. The 4 always-on personas and 2 CE alwa
 
 Skip it for standalone branch reviews with no associated PR, and skip it for PRs with no prior feedback yet -- there is nothing for the persona to verify, and a spawned subagent that returns empty findings still costs the full subagent startup overhead (persona spec, diff, schema, plus its own gh calls).
 
-Stack-specific personas are additive. A Rails UI change may warrant `kieran-rails` plus `julik-frontend-races`; a TypeScript API diff may warrant `kieran-typescript` plus `api-contract` and `reliability`.
+Stack-specific personas are additive when runtime behavior warrants them. A Hotwire UI change may warrant `julik-frontend-races`; a TypeScript API diff may warrant `api-contract` and `reliability`. Structural and maintainability concerns are handled by the always-on `maintainability` persona — do not spawn extra reviewers for convention or philosophy passes.
 
-For CE conditional agents, check if the diff includes files matching `db/migrate/*.rb`, `db/schema.rb`, or data backfill scripts.
+**`data-migration` spawn gate.** Select `@compound-engineering/ce-data-migration-reviewer` only when the diff includes at least one migration or schema artifact: `db/migrate/*`, `db/schema.rb`, `db/structure.sql`, Alembic/Flyway/Liquibase migration paths, or explicit backfill/data-transform scripts (rake tasks, one-off data migration classes). **Do not spawn** for model-only changes, query-only refactors, serializers/controllers that reference columns without a migration or schema dump in the diff, or migration tests alone.
+
+For `@compound-engineering/ce-deployment-verification-agent`, use the same migration-artifact gate when the change is risky (destructive DDL, backfills, NOT NULL without default, column renames/drops).
 
 Announce the team before spawning:
 
@@ -405,10 +396,9 @@ Review team:
 - ce-agent-native-reviewer (always)
 - ce-learnings-researcher (always)
 - security -- new endpoint in routes.rb accepts user-provided redirect URL
-- kieran-rails -- controller and Turbo flow changed in app/controllers and app/views
-- dhh-rails -- diff adds service objects around ordinary Rails CRUD
-- data-migrations -- adds migration 20260303_add_index_to_orders
-- ce-schema-drift-detector -- migration files present
+- julik-frontend-races -- Stimulus controller with async DOM updates
+- data-migration -- adds migration 20260303_add_index_to_orders
+- ce-deployment-verification-agent -- destructive migration with backfill
 ```
 
 This is progress reporting, not a blocking confirmation.
@@ -441,7 +431,7 @@ RUN_ID=$(date +%Y%m%d-%H%M%S)-$(head -c4 /dev/urandom | od -An -tx1 | tr -d ' ')
 mkdir -p "/tmp/compound-engineering/ce-code-review/$RUN_ID"
 ```
 
-Pass `{run_id}` to every persona sub-agent so they can write their full analysis to `/tmp/compound-engineeringskill({ name: "ce-code-review" })/{run_id}/{reviewer_name}.json`.
+Pass `{run_id}` to every persona sub-agent so they can write their full analysis to `/tmp/compound-engineering/ce-code-review/{run_id}/{reviewer_name}.json`.
 
 **Report-only mode:** Skip run-id generation and directory creation. Do not pass `{run_id}` to agents. Agents return compact JSON only with no file write, consistent with report-only's no-write contract.
 
@@ -462,12 +452,13 @@ Spawn each selected persona reviewer using the subagent template included below.
 5. Review context: intent summary, file list, diff
 6. Run ID and reviewer name for the artifact file path
 7. **For `project-standards` only:** the standards file path list from Stage 3b, wrapped in a `<standards-paths>` block appended to the review context
+8. **For `data-migration` only:** the resolved review base ref from Stage 1 (`BASE:` marker), wrapped in `<review-base>` inside the review context so schema drift checks never assume `main`
 
-Persona sub-agents are **read-only** with respect to the project: they review and return structured JSON. They do not edit project files or propose refactors. The one permitted write is saving their full analysis to the run-artifact path specified in the output contract (under `/tmp/compound-engineeringskill({ name: "ce-code-review" })/<run-id>/`).
+Persona sub-agents are **read-only** with respect to the project: they review and return structured JSON. They do not edit project files or propose refactors. The one permitted write is saving their full analysis to the run-artifact path specified in the output contract (under `/tmp/compound-engineering/ce-code-review/<run-id>/`).
 
 Read-only here means **non-mutating**, not "no shell access." Reviewer sub-agents may use non-mutating inspection commands when needed to gather evidence or verify scope, including read-oriented `git` / `gh` usage such as `git diff`, `git show`, `git blame`, `git log`, and `gh pr view`. They must not edit project files, change branches, commit, push, create PRs, or otherwise mutate the checkout or repository state.
 
-Each persona sub-agent writes full JSON (all schema fields) to `/tmp/compound-engineeringskill({ name: "ce-code-review" })/{run_id}/{reviewer_name}.json` and returns compact JSON with merge-tier fields only:
+Each persona sub-agent writes full JSON (all schema fields) to `/tmp/compound-engineering/ce-code-review/{run_id}/{reviewer_name}.json` and returns compact JSON with merge-tier fields only:
 
 ```json
 {
@@ -495,7 +486,7 @@ Detail-tier fields (`why_it_matters`, `evidence`) are in the artifact file only.
 
 **CE always-on agents** (@compound-engineering/ce-agent-native-reviewer, @compound-engineering/ce-learnings-researcher) are dispatched as standard Agent calls through the same bounded parallel scheduler as the persona agents. Give them the same review context bundle the personas receive: entry mode, any PR metadata gathered in Stage 1, intent summary, review base branch name when known, `BASE:` marker, file list, diff, and `UNTRACKED:` scope notes. Do not invoke them with a generic "review this" prompt. Their output is unstructured and synthesized separately in Stage 6.
 
-**CE conditional agents** (@compound-engineering/ce-schema-drift-detector, @compound-engineering/ce-deployment-verification-agent) are also dispatched as standard Agent calls through the same bounded parallel scheduler when applicable. Pass the same review context bundle plus the applicability reason (for example, which migration files triggered the agent). For @compound-engineering/ce-schema-drift-detector specifically, pass the resolved review base branch explicitly so it never assumes `main`. Their output is unstructured and must be preserved for Stage 6 synthesis just like the CE always-on agents.
+**CE conditional agents** (`@compound-engineering/ce-deployment-verification-agent` only) are dispatched as standard Agent calls through the same bounded parallel scheduler when the migration-artifact gate applies. Pass the same review context bundle plus the applicability reason (for example, which migration files triggered the agent). Their output is unstructured and must be preserved for Stage 6 synthesis just like the CE always-on agents. Schema drift is handled by the `data-migration` persona as structured findings — not here.
 
 ### Stage 5: Merge findings
 
@@ -551,9 +542,9 @@ Demotion is intentionally narrow. The conservative scope (testing/maintainabilit
    - in-skill fixer queue: only `safe_auto -> review-fixer`
    - residual actionable queue: unresolved `gated_auto` or `manual` findings whose owner is `downstream-resolver`
    - report-only queue: `advisory` findings plus anything owned by `human` or `release`
-9. **Sort.** Order by severity (P0 first) -> anchor (descending) -> file path -> line number.
+9. **Sort and number.** Order by severity (P0 first) -> anchor (descending) -> file path -> line number, then assign monotonically increasing `#` values across the full primary finding set in that sorted order. Do not restart numbering inside each severity table or autofix/routing bucket. If later sections repeat a finding (for example Residual Actionable Work after `safe_auto` fixes are applied), reuse the same stable `#` so users -- and downstream skills like `skill({ name: "ce-resolve-pr-feedback" })` -- can reference findings by `#` after the autofix loop rewrites the report. Renumbering after autofix invalidates any prior reference: copied snippets, follow-up prompts citing `#3`, or tickets filed against an earlier render.
 10. **Collect coverage data.** Union residual_risks and testing_gaps across reviewers.
-11. **Preserve CE agent artifacts.** Keep the learnings, agent-native, schema-drift, and deployment-verification outputs alongside the merged finding set. Do not drop unstructured agent output just because it does not match the persona JSON schema.
+11. **Preserve CE agent artifacts.** Keep the learnings, agent-native, and deployment-verification outputs alongside the merged finding set. Do not drop unstructured agent output just because it does not match the persona JSON schema. Schema drift from `data-migration` is already in the merged finding set.
 
 ### Stage 5b: Validation pass (externalizing modes only)
 
@@ -584,7 +575,7 @@ When Stage 5b does not run, the merged finding set from Stage 5 flows through to
 2. **Apply dispatch budget cap.** If the selected set exceeds 15 findings, validate the highest-severity 15 (P0 first, then P1, then P2, then P3, breaking ties by anchor descending). Drop the remainder and record the over-budget count for the Coverage section. The blunt drop is intentional; a review producing 15+ surviving findings is already in territory where a second wave would not change the user's triage approach.
 3. **Spawn validators with bounded parallelism.** One sub-agent per finding, dispatched independently using the validator template and the same bounded scheduler from Stage 4. Each validator receives:
    - The finding's title, severity, file, line, suggested_fix, original reviewer name, and confidence anchor
-   - `why_it_matters` when available — loaded from the per-agent artifact file at `/tmp/compound-engineeringskill({ name: "ce-code-review" })/{run_id}/{reviewer_name}.json`; omit when the file is absent or the artifact write failed. The validator proceeds without it, using the diff and cited code directly.
+   - `why_it_matters` when available — loaded from the per-agent artifact file at `/tmp/compound-engineering/ce-code-review/{run_id}/{reviewer_name}.json`; omit when the file is absent or the artifact write failed. The validator proceeds without it, using the diff and cited code directly.
    - The full diff
    - Read-tool access to inspect the cited code, callers, guards, framework defaults, and git blame
 4. **Collect verdicts.** Each validator returns `{ "validated": true | false, "reason": "<one sentence>" }`.
@@ -601,20 +592,19 @@ When Stage 5b does not run, the merged finding set from Stage 5 flows through to
 Assemble the final report using **pipe-delimited markdown tables for findings** from the review output template included below. The table format is mandatory for finding rows in interactive mode — do not render findings as freeform text blocks or horizontal-rule-separated prose. Other report sections (Applied Fixes, Learnings, Coverage, etc.) use bullet lists and the `---` separator before the verdict, as shown in the template.
 
 1. **Header.** Scope, intent, mode, reviewer team with per-conditional justifications.
-2. **Findings.** Rendered as pipe-delimited tables grouped by severity (`### P0 -- Critical`, `### P1 -- High`, `### P2 -- Moderate`, `### P3 -- Low`). Each finding row shows `#`, file, issue, reviewer(s), confidence, and synthesized route. Omit empty severity levels. Never render findings as freeform text blocks or numbered lists.
+2. **Findings.** Rendered as pipe-delimited tables grouped by severity (`### P0 -- Critical`, `### P1 -- High`, `### P2 -- Moderate`, `### P3 -- Low`). Each finding row shows `#`, file, issue, reviewer(s), confidence, and synthesized route. Omit empty severity levels. Never render findings as freeform text blocks or numbered lists. Finding numbers come from the stable assignment in Stage 5 -- never re-derive them per severity table.
 3. **Requirements Completeness.** Include only when a plan was found in Stage 2b. For each requirement (R1, R2, etc.) and implementation unit in the plan, report whether corresponding work appears in the diff. Use a simple checklist: met / not addressed / partially addressed. Routing depends on `plan_source`:
-   - **`explicit`** (caller-provided or PR body): Flag unaddressed requirements as P1 findings with `autofix_class: manual`, `owner: downstream-resolver`. These enter the residual actionable queue.
-   - **`inferred`** (auto-discovered): Flag unaddressed requirements as P3 findings with `autofix_class: advisory`, `owner: human`. These stay in the report only — no autonomous follow-up. An inferred plan match is a hint, not a contract.
+   - **`explicit`** (caller-provided or PR body): Flag unaddressed requirements or implementation units as P1 findings with `autofix_class: manual`, `owner: downstream-resolver`. These enter the residual actionable queue.
+   - **`inferred`** (auto-discovered): Flag unaddressed requirements or implementation units as P3 findings with `autofix_class: advisory`, `owner: human`. These stay in the report only — no autonomous follow-up. An inferred plan match is a hint, not a contract.
    Omit this section entirely when no plan was found — do not mention the absence of a plan.
 4. **Applied Fixes.** Include only if a fix phase ran in this invocation.
 5. **Residual Actionable Work.** Include when unresolved actionable findings were handed off or should be handed off.
 6. **Pre-existing.** Separate section, does not count toward verdict.
 7. **Learnings & Past Solutions.** Surface @compound-engineering/ce-learnings-researcher results: if past solutions are relevant, flag them as "Known Pattern" with links to docs/solutions/ files.
 8. **Agent-Native Gaps.** Surface @compound-engineering/ce-agent-native-reviewer results. Omit section if no gaps found.
-9. **Schema Drift Check.** If @compound-engineering/ce-schema-drift-detector ran, summarize whether drift was found. If drift exists, list the unrelated schema objects and the required cleanup command. If clean, say so briefly.
-10. **Deployment Notes.** If @compound-engineering/ce-deployment-verification-agent ran, surface the key Go/No-Go items: blocking pre-deploy checks, the most important verification queries, rollback caveats, and monitoring focus areas. Keep the checklist actionable rather than dropping it into Coverage.
-11. **Coverage.** Suppressed count by anchor (e.g., "N findings suppressed at anchor 50, M at anchor 25"), mode-aware demotion count (interactive/report-only) or suppression count (headless/autofix), validator drop count and reasons (when Stage 5b ran), validator over-budget drops (when the 15-cap fired), residual risks, testing gaps, failed/timed-out reviewers, and any intent uncertainty carried by non-interactive modes.
-12. **Verdict.** Ready to merge / Ready with fixes / Not ready. Fix order if applicable. When an `explicit` plan has unaddressed requirements, the verdict must reflect it — a PR that's code-clean but missing planned requirements is "Not ready" unless the omission is intentional. When an `inferred` plan has unaddressed requirements, note it in the verdict reasoning but do not block on it alone.
+9. **Deployment Notes.** If @compound-engineering/ce-deployment-verification-agent ran, surface the key Go/No-Go items: blocking pre-deploy checks, the most important verification queries, rollback caveats, and monitoring focus areas. Keep the checklist actionable rather than dropping it into Coverage. Schema drift appears in the findings tables as `data-migration` P1 rows — do not add a separate Schema Drift section.
+10. **Coverage.** Suppressed count by anchor (e.g., "N findings suppressed at anchor 50, M at anchor 25"), mode-aware demotion count (interactive/report-only) or suppression count (headless/autofix), validator drop count and reasons (when Stage 5b ran), validator over-budget drops (when the 15-cap fired), residual risks, testing gaps, failed/timed-out reviewers, and any intent uncertainty carried by non-interactive modes.
+11. **Verdict.** Ready to merge / Ready with fixes / Not ready. Fix order if applicable. When an `explicit` plan has unaddressed requirements or implementation units, the verdict must reflect it — a PR that's code-clean but missing planned requirements is "Not ready" unless the omission is intentional. When an `inferred` plan has unaddressed requirements or implementation units, note it in the verdict reasoning but do not block on it alone.
 
 Do not include time estimates.
 
@@ -667,9 +657,6 @@ Learnings & Past Solutions:
 Agent-Native Gaps:
 - <gap description>
 
-Schema Drift Check:
-- <drift status>
-
 Deployment Notes:
 - <deployment note>
 
@@ -688,7 +675,7 @@ Coverage:
 Review complete
 ```
 
-**Detail enrichment (headless only):** The headless envelope includes `Why:`, `Evidence:`, and `Suggested fix:` lines. After merge (Stage 5), read the per-agent artifact files from `/tmp/compound-engineeringskill({ name: "ce-code-review" })/{run_id}/` for only the findings that survived dedup and confidence gating.
+**Detail enrichment (headless only):** The headless envelope includes `Why:`, `Evidence:`, and `Suggested fix:` lines. After merge (Stage 5), read the per-agent artifact files from `/tmp/compound-engineering/ce-code-review/{run_id}/` for only the findings that survived dedup and confidence gating.
    - **Field tiers:** `Why:` and `Evidence:` are detail-tier -- load from per-agent artifact files. `Suggested fix:` is merge-tier -- use it directly from the compact return without artifact lookup.
    - **Artifact matching:** For each surviving finding, look up its detail-tier fields in the artifact files of the contributing reviewers. Match on `file + line_bucket(line, +/-3)` (the same tolerance used in Stage 5 dedup) within each contributing reviewer's artifact. When multiple artifact entries fall within the line bucket, apply `normalize(title)` to both the merged finding's title and each candidate entry's title as a tie-breaker.
    - **Reviewer order:** Try contributing reviewers in the order they appear in the merged finding's reviewer list; use the first match.
@@ -717,9 +704,9 @@ Before delivering the review, verify:
 
 ## Language-Aware Conditionals
 
-This skill uses stack-specific reviewer agents when the diff clearly warrants them. Keep those agents opinionated. They are not generic language checkers; they add a distinct review lens on top of the always-on and cross-cutting personas.
+This skill uses stack-specific reviewer agents when the diff touches runtime behavior those stacks specialize in (async UI races, iOS/Swift lifecycle). Structural quality — complexity deletion, 1k-line regressions, spaghetti growth, type-boundary leaks — lives in the always-on `@compound-engineering/ce-maintainability-reviewer`. Do not spawn extra reviewers for language conventions, philosophy, or "strict bar" passes; that signal is folded into maintainability.
 
-Do not spawn them mechanically from file extensions alone. The trigger is meaningful changed behavior, architecture, or UI state in that stack.
+Do not spawn stack reviewers mechanically from file extensions alone. The trigger is meaningful changed behavior in that stack's runtime domain.
 
 ## After Review
 
@@ -743,7 +730,7 @@ After presenting findings and verdict (Stage 6), route the next steps by mode. R
 - **Zero-remaining case:** if no `gated_auto` or `manual` findings remain after the `safe_auto` pass, skip the routing question entirely. Emit a one-line completion summary phrased so advisory and pre-existing findings (which are not handled by this flow) are not implied to be cleared. When no advisory or pre-existing findings remain in the report, `All findings resolved — N safe_auto fixes applied.` is accurate. When advisory and/or pre-existing findings do remain, use the qualified form `All actionable findings resolved — N safe_auto fixes applied. (K advisory, J pre-existing findings remain in the report.)`, omitting any zero-count clause. Follow the summary with the existing end-of-review verdict, then proceed to Step 5 per the gating rule there.
 - **Tracker pre-detection:** before rendering the routing question, consult `references/tracker-defer.md` for the session's tracker tuple `{ tracker_name, confidence, named_sink_available, any_sink_available }`. The probe runs at most once per session and is cached for the rest of the run. `named_sink_available` drives the option C label (inline tracker name only when the named sink can actually be invoked). `any_sink_available` drives whether option C is offered at all (it can still be offered when the named tracker is unreachable but GitHub Issues via `gh` works).
 - **Verify question-tool pre-load (checklist, Claude Code only).** Before firing the routing question in Claude Code, confirm `AskUserQuestion` is loaded (per Interactive mode rules at the top of this skill). If not yet loaded this session, call `ToolSearch` with query `select:AskUserQuestion` now. Do not proceed to the routing question without this verification. Rendering the question as narrative text because the schema isn't loaded yet is a bug, not a valid fallback. On Codex, Gemini, and Pi this checklist does not apply — there is no `ToolSearch` preload step to perform. (If `request_user_input` is unavailable in the current Codex runtime mode, use the numbered-list fallback described below.)
-- **Routing question.** Ask using the platform's blocking question tool (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension)) In OpenCode, use the `question` tool (no `ToolSearch` pre-load needed — its schema is always available). . Stem: `What should the agent do with the remaining N findings?` — use third-person voice referring to "the agent", not first-person "me" / "I". Options:
+- **Routing question.** Ask using the platform's blocking question tool (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension)). Stem: `What should the agent do with the remaining N findings?` — use third-person voice referring to "the agent", not first-person "me" / "I". Options:
 
   ```
   (A) Review each finding one by one — accept the recommendation or choose another action
@@ -832,7 +819,7 @@ The fixer accepts two queue shapes depending on which caller invoked it:
 
 #### Step 4: Emit artifacts and downstream handoff
 
-- In interactive, autofix, and headless modes, write a per-run artifact under `/tmp/compound-engineeringskill({ name: "ce-code-review" })/<run-id>/` containing:
+- In interactive, autofix, and headless modes, write a per-run artifact under `/tmp/compound-engineering/ce-code-review/<run-id>/` containing:
   - synthesized findings (merged output from Stage 5)
   - applied fixes
   - residual actionable work

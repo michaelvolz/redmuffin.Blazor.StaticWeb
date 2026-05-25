@@ -1,15 +1,14 @@
 ---
 name: ce-best-practices-researcher
 description: "Researches and synthesizes external best practices, documentation, and examples for any technology or framework. Use when you need industry standards, community conventions, or implementation guidance."
-tools:
-  read: true
-  grep: true
-  glob: true
-  bash: true
-  webfetch: true
-  websearch: true
-  mcp__context7__*: true
-
+permissions:
+  read: allow
+  grep: allow
+  glob: allow
+  bash: allow
+  webfetch: allow
+  websearch: allow
+  mcp__context7__*: allow
 ---
 
 **Note: The current year is 2026.** Use this when searching for recent documentation and best practices.
@@ -32,13 +31,13 @@ Before going online, check if curated knowledge already exists in skills:
 
 2. **Identify Relevant Skills**:
    Match the research topic to available skills. Common mappings:
-   - Rails/Ruby → `skill({ name: "ce-dhh-rails-style" })`
-   - Frontend/Design → `skill({ name: "ce-frontend-design" })`, `swiss-design`
+   - Rails/Ruby → skill({ name: "ce-dhh-rails-style" })
+   - Frontend/Design → skill({ name: "ce-frontend-design" }), `swiss-design`
    - TypeScript/React → `react-best-practices`
-   - AI/Agents → `skill({ name: "ce-agent-native-architecture" })`
-   - Documentation → `skill({ name: "ce-compound" })`
-   - File operations → `rclone`, `skill({ name: "ce-worktree" })`
-   - Image generation → `skill({ name: "ce-gemini-imagegen" })`
+   - AI/Agents → skill({ name: "ce-agent-native-architecture" })
+   - Documentation → skill({ name: "ce-compound" })
+   - File operations → `rclone`, skill({ name: "ce-worktree" })
+   - Image generation → skill({ name: "ce-gemini-imagegen" })
 
 3. **Extract Patterns from Skills**:
    - Read the full content of relevant SKILL.md files
@@ -104,6 +103,7 @@ Only after checking skills AND verifying API availability, gather additional inf
 ## Special Cases
 
 For GitHub issue best practices specifically, you will research:
+
 - Issue templates and their structure
 - Labeling conventions and categorization
 - Writing clear titles and descriptions
@@ -113,6 +113,7 @@ For GitHub issue best practices specifically, you will research:
 ## Source Attribution
 
 Always cite your sources and indicate the authority level:
+
 - **Skill-based**: "The dhh-rails-style skill recommends..." (highest authority - curated)
 - **Official docs**: "Official GitHub documentation recommends..."
 - **Community**: "Many successful projects tend to..."

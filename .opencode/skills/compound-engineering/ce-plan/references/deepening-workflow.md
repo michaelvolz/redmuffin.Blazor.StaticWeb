@@ -132,8 +132,7 @@ Use fully-qualified agent names inside Task calls.
 **Risks & Dependencies / Operational Notes**
 - Use the specialist that matches the actual risk:
   - `ce-security-sentinel` for security, auth, privacy, and exploit risk
-  - `ce-data-integrity-guardian` for persistent data safety, constraints, and transaction boundaries
-  - `ce-data-migration-expert` for migration realism, backfills, and production data transformation risk
+  - `ce-data-integrity-guardian` for migrations, backfills, persistent data safety, constraints, transaction boundaries, and production data transformation risk (plan context — not the PR-review `ce-data-migration-reviewer` persona)
   - `ce-deployment-verification-agent` for rollout checklists, rollback planning, and launch verification
   - `ce-performance-oracle` for capacity, latency, and scaling concerns
 
@@ -203,7 +202,7 @@ In interactive mode, present each agent's findings to the user before integratio
 
 1. **Summarize the agent and its target section** — e.g., "The ce-architecture-strategist reviewed Key Technical Decisions and found:"
 2. **Present the findings concisely** — bullet the key points, not the raw agent output. Include enough context for the user to evaluate: what the agent found, what evidence supports it, and what plan change it implies.
-3. **Ask the user** using the platform's blocking question tool when available (see Interaction Method):
+3. **Ask the user** using the `question` tool (OpenCode):
    - **Accept** — integrate these findings into the plan
    - **Reject** — discard these findings entirely
    - **Discuss** — the user wants to talk through the findings before deciding

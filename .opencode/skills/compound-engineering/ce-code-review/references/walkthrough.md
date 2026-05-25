@@ -20,9 +20,9 @@ Each finding's recommended action has already been normalized by Stage 5 (step 7
 
 ## Per-finding presentation
 
-Each finding is presented in two parts: a **terminal output block** carrying the explanation, and a **question** via the platform's blocking question tool (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension)) In OpenCode, use the `question` tool (no `ToolSearch` pre-load needed — its schema is always available).  carrying the decision. Never merge the two — the terminal block uses markdown; the question uses plain text.
+Each finding is presented in two parts: a **terminal output block** carrying the explanation, and a **question** via the `question` tool (OpenCode) (the `question` tool (OpenCode), `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension)) carrying the decision. Never merge the two — the terminal block uses markdown; the question uses plain text.
 
-In Claude Code the tool should already be loaded from the Interactive-mode pre-load step in `SKILL.md` — if it isn't, call `ToolSearch` with query `select:AskUserQuestion` now. Fall back to presenting the per-finding options as a numbered list only when the harness genuinely lacks a blocking tool — `ToolSearch` returns no match, the tool call explicitly fails, or the runtime mode does not expose it (e.g., Codex edit modes without `request_user_input`). A pending schema load is not a fallback trigger. Never silently skip the question.
+If the `question` tool (OpenCode) errors, fall back to numbered options in chat. Never silently skip the question.
 
 ### Terminal output block (print before firing the question)
 
@@ -71,7 +71,7 @@ When no artifact match exists for the finding (merge-synthesized finding, or the
 
 ### Question stem (short, decision-focused)
 
-After the terminal block renders, fire the platform's blocking question tool with a compact two-line stem:
+After the terminal block renders, use the `question` tool (OpenCode) with a compact two-line stem:
 
 ```
 Finding {N} of {M} — {severity} {short handle}.
@@ -145,7 +145,7 @@ When reviewers disagreed or content context cuts against the default, still mark
 - **No sink (Defer option unavailable):** when the tracker-detection tuple reports `any_sink_available: false` (every tier in the fallback chain — named tracker and GitHub Issues via `gh` — is unreachable), option B (`Defer`) is omitted. The stem appends one line explaining that no issue tracker is configured for this checkout (Linear, GitHub Issues, etc., were probed and unavailable). Phrase it for a developer audience — avoid `tracker sink` jargon, and avoid `platform` since the missing piece is per-project, not per-agent-platform. The menu shows three options: Apply / Skip / Auto-resolve with best judgment on the rest (and Acknowledge in place of Apply for advisory-only findings). **Before rendering the options, remap any per-finding `Defer` recommendation produced by Stage 5 step 7b to `Skip`** so the `(recommended)` marker always lands on an option that is actually in the menu. When the remap fires, surface it on the R15 conflict context line — name what was downgraded and why (so the reader sees the cross-reviewer Defer recommendation hasn't silently disappeared). This is a render-time runtime step; Stage 5 step 7b has no knowledge of sink availability and only orders conflicting reviewer recommendations.
 - **Combined N=1 + no sink:** the menu shows two options: Apply / Skip (or Acknowledge / Skip).
 
-Only when `ToolSearch` explicitly returns no match or the tool call errors — or on a platform with no blocking question tool — fall back to presenting the options as a numbered list and waiting for the user's next reply.
+If the question tool errors, fall back to numbered options in chat.
 
 ---
 

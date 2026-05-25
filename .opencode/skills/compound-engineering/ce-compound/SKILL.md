@@ -1,6 +1,8 @@
 ---
 name: ce-compound
 description: Document a recently solved problem to compound your team's knowledge
+argument-hint: "[optional: brief context] [mode:headless] "
+
 ---
 
 # skill({ name: "ce-compound" })
@@ -16,15 +18,28 @@ Captures problem solutions while context is fresh, creating structured documenta
 ## Usage
 
 ```bash
-/ce-compound                    # Document the most recent fix
-/ce-compound [brief context]    # Provide additional context hint
+/ce-compound                            # Document the most recent fix
+/ce-compound [brief context]            # Provide additional context hint
+/ce-compound mode:headless              # Non-interactive run for automations
+/ce-compound mode:headless [context]    # Non-interactive run with context hint
 ```
+
+## Mode Detection
+
+Check `$ARGUMENTS` for a `mode:headless` token. Tokens starting with `mode:` are flags, not context — strip `mode:headless` from arguments before treating the remainder as the brief context hint.
+
+| Mode | When | Behavior |
+|------|------|----------|
+| **Interactive** (default) | No mode token present | Ask Full vs Lightweight, ask about session history (Full only), prompt for Discoverability Check consent, end with "What's next?" |
+| **Headless** | `mode:headless` in arguments | No blocking questions. Run **Full mode without session history**. Apply the Discoverability Check edit silently if a gap exists. Skip Phase 3 specialized reviews. End with a structured terminal report — no "What's next?" menu. |
+
+Headless mode is intended for automations and skill-to-skill invocation where no human is present to answer questions. The doc itself is identical to what an interactive Full run would produce — classification work (track, category, overlap) follows the same rules and writes nothing extra into the artifact. Once detected, headless mode applies for the entire run.
 
 ## Pre-resolved context
 
 **Git branch (pre-resolved):** !`git rev-parse --abbrev-ref HEAD 2>/dev/null || true`
 
-If the line above resolved to a plain branch name (like `feat/my-branch`), pass it into the Session Historian dispatch in Phase 1 so the agent does not waste a turn deriving it. If it still contains a backtick command string or is empty, omit it and let the agent derive it at runtime.
+If the line above resolved to a plain branch name (like `feat/my-branch`), include it in the skill({ name: "ce-sessions" }) invocation payload in Phase 1 so the orchestrator does not waste a turn deriving it. If it still contains a backtick command string or is empty, omit it and let skill({ name: "ce-sessions" }) derive it at runtime.
 
 ## Support Files
 
@@ -38,16 +53,32 @@ When spawning subagents, pass the relevant file contents into the task prompt so
 
 ## Execution Strategy
 
-Call the `question` tool now with these options. Never output this as text.
+**In headless mode**, skip both questions below and go directly to **Full Mode** with session history disabled. Phase 1's session-history step (step 4) is omitted. Proceed straight to research.
 
-- Full (recommended) — the complete compound workflow. Researches, cross-references, and reviews your solution to produce documentation that compounds your team's knowledge.
-- Lightweight — same documentation, single pass. Faster and uses fewer tokens, but won't detect duplicates or cross-reference existing docs. Best for simple fixes or long sessions nearing context limits.
+**In interactive mode**, present the user with two options before proceeding, using the platform's blocking question tool: `AskUserQuestion` in Claude Code (call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded), `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension). Fall back to presenting options in chat only when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes) — not because a schema load is required. Never silently skip the question.
 
-Do NOT pre-select a mode. Wait for the user's choice before proceeding.
+```
+1. Full (recommended) — the complete compound workflow. Researches,
+   cross-references, and reviews your solution to produce documentation
+   that compounds your team's knowledge.
 
-**If the user chooses Full**, ask one follow-up question before proceeding. Fire the `question` tool: "Would you also like to search your OpenCode session history for relevant knowledge to help the Compound process? This adds time and token usage." Options: Yes / No.
+2. Lightweight — same documentation, single pass. Faster and uses
+   fewer tokens, but won't detect duplicates or cross-reference
+   existing docs. Best for simple fixes or long sessions nearing
+   context limits.
+```
 
-If the user says yes, dispatch the Session Historian in Phase 1. If no, skip it. Do not ask this in lightweight mode.
+In interactive mode, do NOT pre-select a mode, do NOT skip this prompt, and wait for the user's choice before proceeding. (Headless mode bypasses this prompt per the "**In headless mode**" rule above and runs Full directly — these "do not skip" directives do not apply to headless.)
+
+**If the user chooses Full** (interactive mode only), ask one follow-up question before proceeding. Detect which harness is running (Claude Code, Codex, or Cursor) and ask:
+
+```
+Would you also like to search your [harness name] session history
+for relevant knowledge to help the Compound process? This adds
+time and token usage.
+```
+
+If the user says yes, invoke skill({ name: "ce-sessions" }) in Phase 1 (see step 4). If no, skip it. Do not ask this in lightweight mode or headless mode.
 
 ---
 
@@ -85,110 +116,100 @@ If no relevant entries are found, proceed to Phase 1 without passing memory cont
 Launch research subagents. Each returns text data to the orchestrator.
 
 **Dispatch order:**
-
 - Launch `Context Analyzer`, `Solution Extractor`, and `Related Docs Finder` in parallel (background)
-- Then dispatch `@compound-engineering/ce-session-historian` in foreground — it reads session files outside the working directory that background agents may not have access to
-- The foreground dispatch runs while the background agents work, adding no wall-clock time
+- **Then** invoke the skill({ name: "ce-sessions" }) skill via the platform's skill-invocation primitive (see step 4 below) — only if the user opted in to session history. The skill call is synchronous from this orchestrator's main-context turn, but the already-dispatched background subagents continue running in parallel underneath, so the wall-clock benefit is preserved (`max(skill({ name: "ce-sessions" }), slowest background subagent)`, not their sum). Issuing the skill call before the parallel block would serialize skill({ name: "ce-sessions" }) in front of the research subagents and regress wall-clock time.
 
 <parallel_tasks>
 
 #### 1. **Context Analyzer**
-
-- Extracts conversation history
-- Reads `references/schema.yaml` for enum validation and **track classification**
-- Determines the track (bug or knowledge) from the problem_type
-- Identifies problem type, component, and track-appropriate fields:
-  - **Bug track**: symptoms, root_cause, resolution_type
-  - **Knowledge track**: applies_when (symptoms/root_cause/resolution_type optional)
-- Incorporates auto memory excerpts (if provided by the orchestrator) as supplementary evidence
-- Reads `references/yaml-schema.md` for category mapping into `docs/solutions/`
-- Suggests a filename using the pattern `[sanitized-problem-slug]-[date].md`
-- Returns: YAML frontmatter skeleton (must include `category:` field mapped from problem_type), category directory path, suggested filename, and which track applies
-- Does not invent enum values, categories, or frontmatter fields from memory; reads the schema and mapping files above
-- Does not force bug-track fields onto knowledge-track learnings or vice versa
+   - Extracts conversation history
+   - Reads `references/schema.yaml` for enum validation and **track classification**
+   - Determines the track (bug or knowledge) from the problem_type
+   - Identifies problem type, component, and track-appropriate fields:
+     - **Bug track**: symptoms, root_cause, resolution_type
+     - **Knowledge track**: applies_when (symptoms/root_cause/resolution_type optional)
+   - Incorporates auto memory excerpts (if provided by the orchestrator) as supplementary evidence
+   - Reads `references/yaml-schema.md` for category mapping into `docs/solutions/`
+   - Suggests a filename using the pattern `[sanitized-problem-slug].md` — no date suffix, even if existing files in the target directory have one; the `date:` frontmatter field is the canonical creation date
+   - Returns: YAML frontmatter skeleton (must include `category:` field mapped from problem_type), category directory path, suggested filename, and which track applies
+   - Does not invent enum values, categories, or frontmatter fields from memory; reads the schema and mapping files above
+   - Does not force bug-track fields onto knowledge-track learnings or vice versa
 
 #### 2. **Solution Extractor**
+   - Reads `references/schema.yaml` for track classification (bug vs knowledge)
+   - Adapts output structure based on the problem_type track
+   - Incorporates auto memory excerpts (if provided by the orchestrator) as supplementary evidence -- conversation history and the verified fix take priority; if memory notes contradict the conversation, note the contradiction as cautionary context
 
-- Reads `references/schema.yaml` for track classification (bug vs knowledge)
-- Adapts output structure based on the problem_type track
-- Incorporates auto memory excerpts (if provided by the orchestrator) as supplementary evidence -- conversation history and the verified fix take priority; if memory notes contradict the conversation, note the contradiction as cautionary context
+   **Bug track output sections:**
 
-**Bug track output sections:**
+   - **Problem**: 1-2 sentence description of the issue
+   - **Symptoms**: Observable symptoms (error messages, behavior)
+   - **What Didn't Work**: Failed investigation attempts and why they failed
+   - **Solution**: The actual fix with code examples (before/after when applicable)
+   - **Why This Works**: Root cause explanation and why the solution addresses it
+   - **Prevention**: Strategies to avoid recurrence, best practices, and test cases. Include concrete code examples where applicable (e.g., gem configurations, test assertions, linting rules)
 
-- **Problem**: 1-2 sentence description of the issue
-- **Symptoms**: Observable symptoms (error messages, behavior)
-- **What Didn't Work**: Failed investigation attempts and why they failed
-- **Solution**: The actual fix with code examples (before/after when applicable)
-- **Why This Works**: Root cause explanation and why the solution addresses it
-- **Prevention**: Strategies to avoid recurrence, best practices, and test cases. Include concrete code examples where applicable (e.g., gem configurations, test assertions, linting rules)
+   **Knowledge track output sections:**
 
-**Knowledge track output sections:**
-
-- **Context**: What situation, gap, or friction prompted this guidance
-- **Guidance**: The practice, pattern, or recommendation with code examples when useful
-- **Why This Matters**: Rationale and impact of following or not following this guidance
-- **When to Apply**: Conditions or situations where this applies
-- **Examples**: Concrete before/after or usage examples showing the practice in action
+   - **Context**: What situation, gap, or friction prompted this guidance
+   - **Guidance**: The practice, pattern, or recommendation with code examples when useful
+   - **Why This Matters**: Rationale and impact of following or not following this guidance
+   - **When to Apply**: Conditions or situations where this applies
+   - **Examples**: Concrete before/after or usage examples showing the practice in action
 
 #### 3. **Related Docs Finder**
+   - Searches `docs/solutions/` for related documentation
+   - Identifies cross-references and links
+   - Finds related GitHub issues
+   - Flags any related learning or pattern docs that may now be stale, contradicted, or overly broad
+   - **Assesses overlap** with the new doc being created across five dimensions: problem statement, root cause, solution approach, referenced files, and prevention rules. Score as:
+     - **High**: 4-5 dimensions match — essentially the same problem solved again
+     - **Moderate**: 2-3 dimensions match — same area but different angle or solution
+     - **Low**: 0-1 dimensions match — related but distinct
+   - Returns: Links, relationships, refresh candidates, and overlap assessment (score + which dimensions matched)
 
-- Searches `docs/solutions/` for related documentation
-- Identifies cross-references and links
-- Finds related GitHub issues
-- Flags any related learning or pattern docs that may now be stale, contradicted, or overly broad
-- **Assesses overlap** with the new doc being created across five dimensions: problem statement, root cause, solution approach, referenced files, and prevention rules. Score as:
-  - **High**: 4-5 dimensions match — essentially the same problem solved again
-  - **Moderate**: 2-3 dimensions match — same area but different angle or solution
-  - **Low**: 0-1 dimensions match — related but distinct
-- Returns: Links, relationships, refresh candidates, and overlap assessment (score + which dimensions matched)
+   **Search strategy (grep-first filtering for efficiency):**
 
-**Search strategy (grep-first filtering for efficiency):**
+   1. Extract keywords from the problem context: module names, technical terms, error messages, component types
+   2. If the problem category is clear, narrow search to the matching `docs/solutions/<category>/` directory
+   3. Use the native content-search tool (e.g., Grep in Claude Code) to pre-filter candidate files BEFORE reading any content. Run multiple searches in parallel, case-insensitive, targeting frontmatter fields. These are template patterns -- substitute actual keywords:
+      - `title:.*<keyword>`
+      - `tags:.*(<keyword1>|<keyword2>)`
+      - `module:.*<module name>`
+      - `component:.*<component>`
+   4. If search returns >25 candidates, re-run with more specific patterns. If <3, broaden to full content search
+   5. Read only frontmatter (first 30 lines) of candidate files to score relevance
+   6. Fully read only strong/moderate matches
+   7. Return distilled links and relationships, not raw file contents
 
-1.  Extract keywords from the problem context: module names, technical terms, error messages, component types
-2.  If the problem category is clear, narrow search to the matching `docs/solutions/<category>/` directory
-3.  Use the native content-search tool (e.g., Grep in Claude Code) to pre-filter candidate files BEFORE reading any content. Run multiple searches in parallel, case-insensitive, targeting frontmatter fields. These are template patterns -- substitute actual keywords:
-    - `title:.*<keyword>`
-    - `tags:.*(<keyword1>|<keyword2>)`
-    - `module:.*<module name>`
-    - `component:.*<component>`
-4.  If search returns >25 candidates, re-run with more specific patterns. If <3, broaden to full content search
-5.  Read only frontmatter (first 30 lines) of candidate files to score relevance
-6.  Fully read only strong/moderate matches
-7.  Return distilled links and relationships, not raw file contents
+   **GitHub issue search:**
 
-**GitHub issue search:**
-
-Prefer the `gh` CLI for searching related issues: `gh issue list --search "<keywords>" --state all --limit 5`. If `gh` is not installed, fall back to the GitHub MCP tools (e.g., `unblocked` data_retrieval) if available. If neither is available, skip GitHub issue search and note it was skipped in the output.
+   Prefer the `gh` CLI for searching related issues: `gh issue list --search "<keywords>" --state all --limit 5`. If `gh` is not installed, fall back to the GitHub MCP tools (e.g., `unblocked` data_retrieval) if available. If neither is available, skip GitHub issue search and note it was skipped in the output.
 
 </parallel_tasks>
 
-#### 4. **Session Historian** (foreground, after launching the above — only if the user opted in)
+#### 4. **Session History via skill({ name: "ce-sessions" })** (synchronous skill call, after launching the parallel block — only if the user opted in)
+   - **Skip entirely** if the user declined session history in the follow-up question, if running in lightweight mode, or if running in headless mode.
+   - Invoke the skill({ name: "ce-sessions" }) skill via the platform's skill-invocation primitive (`Skill` in Claude Code, `Skill` in Codex, the equivalent on Gemini/Pi). Pass the dispatch payload below as the skill argument string. skill({ name: "ce-sessions" }) runs in main context — it owns discovery, branch/keyword filtering, scan-window selection, the deep-dive cap, per-session extraction to a `mktemp` scratch dir, and dispatch of the synthesis-only @compound-engineering/ce-session-historian subagent. The compound orchestrator only needs to pass the topic and time window and read back the findings text.
 
-- **Skip entirely** if the user declined session history in the follow-up question
-- Dispatched as `@compound-engineering/ce-session-historian`
-- Dispatch in **foreground** — this agent reads session files outside the working directory (`~/.config/opencode/projects/`, `~/.codex/sessions/`, `~/.cursor/projects/`) which background agents may not have access to
-- Omit the `mode` parameter so the user's configured permission settings apply
-- Dispatch on the mid-tier model (e.g., `model: "sonnet"` in Claude Code) — the synthesis feeds into compound assembly and doesn't need frontier reasoning
+    **Dispatch payload — keep tight.** A long, keyword-rich payload licenses skill({ name: "ce-sessions" }) to keep widening. Use this shape:
 
-**Dispatch prompt — keep tight.** A long, keyword-rich prompt licenses the agent to keep widening. Use this shape:
+   - **Pre-resolved context** (only if values resolved cleanly above; otherwise omit): repo name, current git branch.
+   - **Time window**: explicit `7 days` unless the documented problem clearly spans a longer arc.
+   - **Problem topic**: one sentence naming the concrete issue — error message, module name, what broke and how it was fixed. Not a paragraph; not a bullet list of related topics.
+   - **Filter rule (one line)**: "Only surface findings directly relevant to this specific problem. Ignore unrelated work from the same sessions or branches."
+   - **Output schema**:
 
-- **Pre-resolved context** (only if values resolved cleanly above; otherwise omit and let the agent derive): repo name, current git branch.
-- **Time window**: explicit `7 days` unless the documented problem clearly spans a longer arc.
-- **Problem topic**: one sentence naming the concrete issue — error message, module name, what broke and how it was fixed. Not a paragraph; not a bullet list of related topics.
-- **Filter rule (one line)**: "Only surface findings directly relevant to this specific problem. Ignore unrelated work from the same sessions or branches."
-- **Output schema**:
+     ```
+     Structure your response with these sections (omit any with no findings):
+     - What was tried before
+     - What didn't work
+     - Key decisions
+     - Related context
+     ```
 
-  ```
-  Structure your response with these sections (omit any with no findings):
-  - What was tried before
-  - What didn't work
-  - Key decisions
-  - Related context
-  ```
-
-Do not append additional context blocks, exclusion lists, or topic-keyword bullets — verbose dispatch prompts give the agent license to keep widening the search and rapidly compound wall time. If the agent needs keyword search, it owns that decision via the `--keyword` mode on `skill({ name: "ce-session-inventory" })`.
-
-- Returns: structured digest of findings from prior sessions, or "no relevant prior sessions" if none found
+    Do not append additional context blocks, exclusion lists, or topic-keyword bullets — verbose payloads give skill({ name: "ce-sessions" }) license to keep widening the search and rapidly compound wall time. If keyword search is needed, skill({ name: "ce-sessions" }) owns that decision internally based on the topic.
+   - Returns: structured digest of findings from prior sessions, or "no relevant prior sessions" if none found.
 
 ### Phase 2: Assembly & Write
 
@@ -201,17 +222,17 @@ The orchestrating agent (main conversation) performs these steps:
 1. Collect all text results from Phase 1 subagents
 2. **Check the overlap assessment** from the Related Docs Finder before deciding what to write:
 
-   | Overlap                                                                       | Action                                                                                                                                                                                                      |
-   | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-   | **High** — existing doc covers the same problem, root cause, and solution     | **Update the existing doc** with fresher context (new code examples, updated references, additional prevention tips) rather than creating a duplicate. The existing doc's path and structure stay the same. |
-   | **Moderate** — same problem area but different angle, root cause, or solution | **Create the new doc** normally. Flag the overlap for Phase 2.5 to recommend consolidation review.                                                                                                          |
-   | **Low or none**                                                               | **Create the new doc** normally.                                                                                                                                                                            |
+   | Overlap | Action |
+   |---------|--------|
+   | **High** — existing doc covers the same problem, root cause, and solution | **Update the existing doc** with fresher context (new code examples, updated references, additional prevention tips) rather than creating a duplicate. The existing doc's path and structure stay the same. |
+   | **Moderate** — same problem area but different angle, root cause, or solution | **Create the new doc** normally. Flag the overlap for Phase 2.5 to recommend consolidation review. |
+   | **Low or none** | **Create the new doc** normally. |
 
    The reason to update rather than create: two docs describing the same problem and solution will inevitably drift apart. The newer context is fresher and more trustworthy, so fold it into the existing doc rather than creating a second one that immediately needs consolidation.
 
    When updating an existing doc, preserve its file path and frontmatter structure. Update the solution, code examples, prevention tips, and any stale references. Add a `last_updated: YYYY-MM-DD` field to the frontmatter. Do not change the title unless the problem framing has materially shifted.
 
-3. **Incorporate session history findings** (if available). When the Session History Researcher returned relevant prior-session context:
+3. **Incorporate session history findings** (if available). When skill({ name: "ce-sessions" }) returned relevant prior-session context:
    - Fold investigation dead ends and failed approaches into the **What Didn't Work** section (bug track) or **Context** section (knowledge track)
    - Use cross-session patterns to enrich the **Prevention** or **Why This Matters** sections
    - Tag session-sourced content with "(session history)" so its origin is clear to future readers
@@ -230,9 +251,9 @@ When creating a new doc, preserve the section order from `assets/resolution-temp
 
 After writing the new learning, decide whether this new solution is evidence that older docs should be refreshed.
 
-`skill({ name: "ce-compound-refresh" })` is **not** a default follow-up. Use it selectively when the new learning suggests an older learning or pattern doc may now be inaccurate.
+skill({ name: "ce-compound-refresh" }) is **not** a default follow-up. Use it selectively when the new learning suggests an older learning or pattern doc may now be inaccurate.
 
-It makes sense to invoke `skill({ name: "ce-compound-refresh" })` when one or more of these are true:
+It makes sense to invoke skill({ name: "ce-compound-refresh" }) when one or more of these are true:
 
 1. A related learning or pattern doc recommends an approach that the new fix now contradicts
 2. The new fix clearly supersedes an older documented solution
@@ -241,7 +262,7 @@ It makes sense to invoke `skill({ name: "ce-compound-refresh" })` when one or mo
 5. The Related Docs Finder surfaced high-confidence refresh candidates in the same problem space
 6. The Related Docs Finder reported **moderate overlap** with an existing doc — there may be consolidation opportunities that benefit from a focused review
 
-It does **not** make sense to invoke `skill({ name: "ce-compound-refresh" })` when:
+It does **not** make sense to invoke skill({ name: "ce-compound-refresh" }) when:
 
 1. No related docs were found
 2. Related docs still appear consistent with the new learning
@@ -250,11 +271,12 @@ It does **not** make sense to invoke `skill({ name: "ce-compound-refresh" })` wh
 
 Use these rules:
 
-- If there is **one obvious stale candidate**, invoke `skill({ name: "ce-compound-refresh" })` with a narrow scope hint after the new learning is written
+- If there is **one obvious stale candidate**, invoke skill({ name: "ce-compound-refresh" }) with a narrow scope hint after the new learning is written
 - If there are **multiple candidates in the same area**, ask the user whether to run a targeted refresh for that module, category, or pattern set
-- If context is already tight or you are in lightweight mode, do not expand into a broad refresh automatically; instead recommend `skill({ name: "ce-compound-refresh" })` as the next step with a scope hint
+- If context is already tight or you are in lightweight mode, do not expand into a broad refresh automatically; instead recommend skill({ name: "ce-compound-refresh" }) as the next step with a scope hint
+- **In headless mode**, never invoke skill({ name: "ce-compound-refresh" }) and never ask the user. Surface the recommended scope hint in the terminal report's "Refresh recommendation" line and let the caller decide
 
-When invoking or recommending `skill({ name: "ce-compound-refresh" })`, be explicit about the argument to pass. Prefer the narrowest useful scope:
+When invoking or recommending skill({ name: "ce-compound-refresh" }), be explicit about the argument to pass. Prefer the narrowest useful scope:
 
 - **Specific file** when one learning or pattern doc is the likely stale artifact
 - **Module or component name** when several related docs may need review
@@ -263,14 +285,14 @@ When invoking or recommending `skill({ name: "ce-compound-refresh" })`, be expli
 
 Examples:
 
-- `skill({ name: "ce-compound-refresh" }) plugin-versioning-requirements`
-- `skill({ name: "ce-compound-refresh" }) payments`
-- `skill({ name: "ce-compound-refresh" }) performance-issues`
-- `skill({ name: "ce-compound-refresh" }) critical-patterns`
+- skill({ name: "ce-compound-refresh" }) plugin-versioning-requirements
+- skill({ name: "ce-compound-refresh" }) payments
+- skill({ name: "ce-compound-refresh" }) performance-issues
+- skill({ name: "ce-compound-refresh" }) critical-patterns
 
 A single scope hint may still expand to multiple related docs when the change is cross-cutting within one domain, category, or pattern area.
 
-Do not invoke `skill({ name: "ce-compound-refresh" })` without an argument unless the user explicitly wants a broad sweep.
+Do not invoke skill({ name: "ce-compound-refresh" }) without an argument unless the user explicitly wants a broad sweep.
 
 Always capture the new learning first. Refresh is a targeted maintenance follow-up, not a prerequisite for documentation.
 
@@ -291,42 +313,37 @@ After the learning is written and the refresh decision is made, check whether th
    a. Based on the file's existing structure, tone, and density, identify where a mention fits naturally. Before creating a new section, check whether the information could be a single line in the closest related section — an architecture tree, a directory listing, a documentation section, or a conventions block. A line added to an existing section is almost always better than a new headed section. Only add a new section as a last resort when the file has clear sectioned structure and nothing is even remotely related.
    b. Draft the smallest addition that communicates the three things. Match the file's existing style and density. The addition should describe the knowledge store itself, not the plugin — an agent without the plugin should still find value in it.
 
-   Keep the tone informational, not imperative. Express timing as description, not instruction — "relevant when implementing or debugging in documented areas" rather than "check before implementing or debugging." Imperative directives like "always search before implementing" cause redundant reads when a workflow already includes a dedicated search step. The goal is awareness: agents learn the folder exists and what's in it, then use their own judgment about when to consult it.
+      Keep the tone informational, not imperative. Express timing as description, not instruction — "relevant when implementing or debugging in documented areas" rather than "check before implementing or debugging." Imperative directives like "always search before implementing" cause redundant reads when a workflow already includes a dedicated search step. The goal is awareness: agents learn the folder exists and what's in it, then use their own judgment about when to consult it.
 
-   Examples of calibration (not templates — adapt to the file):
+      Examples of calibration (not templates — adapt to the file):
 
-   When there's an existing directory listing or architecture section — add a line:
+      When there's an existing directory listing or architecture section — add a line:
+      ```
+      docs/solutions/  # documented solutions to past problems (bugs, best practices, workflow patterns), organized by category with YAML frontmatter (module, tags, problem_type)
+      ```
 
-   ```
-   docs/solutions/  # documented solutions to past problems (bugs, best practices, workflow patterns), organized by category with YAML frontmatter (module, tags, problem_type)
-   ```
+      When nothing in the file is a natural fit — a small headed section is appropriate:
+      ```
+      ## Documented Solutions
 
-   When nothing in the file is a natural fit — a small headed section is appropriate:
-
-   ```
-   ## Documented Solutions
-
-   `docs/solutions/` — documented solutions to past problems (bugs, best practices, workflow patterns), organized by category with YAML frontmatter (`module`, `tags`, `problem_type`). Relevant when implementing or debugging in documented areas.
-   ```
-
-   c. In full mode, explain to the user why this matters — agents working in this repo (including fresh sessions, other tools, or collaborators without the plugin) won't know to check `docs/solutions/` unless the instruction file surfaces it. Show the proposed change and where it would go, then use the platform's blocking question tool to get consent before making the edit: `AskUserQuestion` in Claude Code (call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded), `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension). Fall back to presenting the proposal in chat only when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes) — not because a schema load is required. Never silently skip the question. In lightweight mode, output a one-liner note and move on
+      `docs/solutions/` — documented solutions to past problems (bugs, best practices, workflow patterns), organized by category with YAML frontmatter (`module`, `tags`, `problem_type`). Relevant when implementing or debugging in documented areas.
+      ```
+   c. In full interactive mode, explain to the user why this matters — agents working in this repo (including fresh sessions, other tools, or collaborators without the plugin) won't know to check `docs/solutions/` unless the instruction file surfaces it. Show the proposed change and where it would go, then use the platform's blocking question tool to get consent before making the edit: `AskUserQuestion` in Claude Code (call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded), `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension). Fall back to presenting the proposal in chat only when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes) — not because a schema load is required. Never silently skip the question. In lightweight mode, output a one-liner note and move on. In headless mode, apply the edit directly without prompting and surface it in the terminal report under "Instruction-file edit"
 
 ### Phase 3: Optional Enhancement
 
 **WAIT for Phase 2 to complete before proceeding.**
 
+**Skip Phase 3 entirely in headless mode** to bound token usage — the caller does not have a human-in-the-loop to act on reviewer findings, and downstream automations can run specialized reviewers themselves if they want that pass.
+
 <parallel_tasks>
 
 Based on problem type, optionally invoke specialized agents to review the documentation:
 
-- **performance_issue** → `@compound-engineering/ce-performance-oracle`
-- **security_issue** → `@compound-engineering/ce-security-sentinel`
-- **database_issue** → `@compound-engineering/ce-data-integrity-guardian`
-- Any code-heavy issue → always run `@compound-engineering/ce-code-simplicity-reviewer`, and additionally run the kieran reviewer that matches the repo's primary stack:
-  - Ruby/Rails → also run `@compound-engineering/ce-kieran-rails-reviewer`
-  - Python → also run `@compound-engineering/ce-kieran-python-reviewer`
-  - TypeScript/JavaScript → also run `@compound-engineering/ce-kieran-typescript-reviewer`
-  - Other stacks → no kieran reviewer needed
+- **performance_issue** → @compound-engineering/ce-performance-oracle
+- **security_issue** → @compound-engineering/ce-security-sentinel
+- **database_issue** → @compound-engineering/ce-data-integrity-guardian
+- Any code-heavy issue → always run @compound-engineering/ce-code-simplicity-reviewer for minimal, clear examples. Structural concerns in the diff are already covered when the same work goes through skill({ name: "ce-code-review" }) (maintainability persona).
 
 </parallel_tasks>
 
@@ -338,6 +355,8 @@ Based on problem type, optionally invoke specialized agents to review the docume
 **Single-pass alternative — same documentation, fewer tokens.**
 
 This mode skips parallel subagents entirely. The orchestrator performs all work in a single pass, producing the same solution document without cross-referencing or duplicate detection.
+
+Headless mode forces Full and does not enter Lightweight — automations get the cross-reference and overlap detection benefits without the interactive overhead.
 </critical_requirement>
 
 The orchestrator (main conversation) performs ALL of the following in one sequential pass:
@@ -351,7 +370,6 @@ The orchestrator (main conversation) performs ALL of the following in one sequen
 4. **Skip specialized agent reviews** (Phase 3) to conserve context
 
 **Lightweight output:**
-
 ```
 ✓ Documentation complete (lightweight mode)
 
@@ -369,7 +387,7 @@ re-run /ce-compound in a fresh session.
 
 **No subagents are launched. No parallel tasks. One file written.**
 
-In lightweight mode, the overlap check is skipped (no Related Docs Finder subagent). This means lightweight mode may create a doc that overlaps with an existing one. That is acceptable — `skill({ name: "ce-compound-refresh" })` will catch it later. Only suggest `skill({ name: "ce-compound-refresh" })` if there is an obvious narrow refresh target. Do not broaden into a large refresh sweep from a lightweight session.
+In lightweight mode, the overlap check is skipped (no Related Docs Finder subagent). This means lightweight mode may create a doc that overlaps with an existing one. That is acceptable — skill({ name: "ce-compound-refresh" }) will catch it later. Only suggest skill({ name: "ce-compound-refresh" }) if there is an obvious narrow refresh target. Do not broaden into a large refresh sweep from a lightweight session.
 
 ---
 
@@ -405,7 +423,6 @@ In lightweight mode, the overlap check is skipped (no Related Docs Finder subage
 **Categories auto-detected from problem:**
 
 Bug track:
-
 - build-errors/
 - test-failures/
 - runtime-errors/
@@ -417,7 +434,6 @@ Bug track:
 - logic-errors/
 
 Knowledge track:
-
 - architecture-patterns/ — architectural or structural patterns (agent/skill/pipeline/workflow shape decisions)
 - design-patterns/ — reusable non-architectural design approaches (content generation, interaction patterns, prompt shapes)
 - tooling-decisions/ — language, library, or tool choices with durable rationale
@@ -429,14 +445,44 @@ Knowledge track:
 
 ## Common Mistakes to Avoid
 
-| ❌ Wrong                                                              | ✅ Correct                                                                                                                                                     |
-| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Subagents write files like `context-analysis.md`, `solution-draft.md` | Subagents return text data; orchestrator writes one final file                                                                                                 |
-| Research and assembly run in parallel                                 | Research completes → then assembly runs                                                                                                                        |
-| Multiple files created during workflow                                | One solution doc written or updated: `docs/solutions/[category]/[filename].md` (plus an optional small edit to a project instruction file for discoverability) |
-| Creating a new doc when an existing doc covers the same problem       | Check overlap assessment; update the existing doc when overlap is high                                                                                         |
+| ❌ Wrong | ✅ Correct |
+|----------|-----------|
+| Subagents write files like `context-analysis.md`, `solution-draft.md` | Subagents return text data; orchestrator writes one final file |
+| Research and assembly run in parallel | Research completes → then assembly runs |
+| Multiple files created during workflow | One solution doc written or updated: `docs/solutions/[category]/[filename].md` (plus an optional small edit to a project instruction file for discoverability) |
+| Creating a new doc when an existing doc covers the same problem | Check overlap assessment; update the existing doc when overlap is high |
 
 ## Success Output
+
+### Headless mode
+
+Emit a structured terminal report and end the turn. No "What's next?" question, no blocking prompt. End with `Documentation complete` as the terminal signal so callers can detect completion.
+
+```
+✓ Documentation complete (headless mode)
+
+File: docs/solutions/<category>/<filename>.md  (created | updated)
+Track: <bug | knowledge>
+Category: <category>
+Overlap: <none | low | moderate — see <path> | high — existing doc updated>
+Instruction-file edit: <none needed | applied to <path> | gap noted, not applied>
+Refresh recommendation: <none | scope hint for skill({ name: "ce-compound-refresh" })>
+
+Documentation complete
+```
+
+When no doc was written (e.g., headless invoked on a session where the problem is not yet solved), emit a structured failure instead and end with `Documentation skipped` so callers can distinguish success from no-op:
+
+```
+✗ Documentation skipped (headless mode)
+
+Reason: <one-sentence explanation — e.g., "no solved problem detected in
+conversation history" or "solution not yet verified">
+
+Documentation skipped
+```
+
+### Interactive mode
 
 ```
 ✓ Documentation complete
@@ -451,7 +497,6 @@ Subagent Results:
 
 Specialized Agent Reviews (Auto-Triggered):
   ✓ ce-performance-oracle: Validated query optimization approach
-  ✓ ce-kieran-rails-reviewer: Code examples meet Rails conventions
   ✓ ce-code-simplicity-reviewer: Solution is appropriately minimal
 
 File created:
@@ -468,9 +513,9 @@ What's next?
 5. Other
 ```
 
-**After displaying the success output, present the "What's next?" options using the platform's blocking question tool:** `AskUserQuestion` in Claude Code (call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded), `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension). In OpenCode, use the `question` tool (no `ToolSearch` pre-load needed — its schema is always available). Fall back to numbered options in chat only when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes) — not because a schema load is required. Never silently skip the question. Do not continue the workflow or end the turn without the user's selection.
+**After displaying the interactive success output above, present the "What's next?" options using the platform's blocking question tool:** `AskUserQuestion` in Claude Code (call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded), `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension). Fall back to numbered options in chat only when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes) — not because a schema load is required. Never silently skip the question. Do not continue the workflow or end the turn without the user's selection. (Interactive mode only — headless skips this per the headless block above.)
 
-**Alternate output (when updating an existing doc due to high overlap):**
+**Alternate interactive output (when updating an existing doc due to high overlap):** in headless mode, this case is communicated via the `Overlap: high — existing doc updated` line of the headless terminal report above, not as a separate output block.
 
 ```
 ✓ Documentation updated (existing doc refreshed with current context)
@@ -517,30 +562,23 @@ Writes the final learning directly into `docs/solutions/`.
 Based on problem type, these agents can enhance documentation:
 
 ### Code Quality & Review
-
-- **@compound-engineering/ce-kieran-rails-reviewer**: Reviews code examples for Rails best practices
-- **@compound-engineering/ce-kieran-python-reviewer**: Reviews code examples for Python best practices
-- **@compound-engineering/ce-kieran-typescript-reviewer**: Reviews code examples for TypeScript best practices
 - **@compound-engineering/ce-code-simplicity-reviewer**: Ensures solution code is minimal and clear
 - **@compound-engineering/ce-pattern-recognition-specialist**: Identifies anti-patterns or repeating issues
 
 ### Specific Domain Experts
-
 - **@compound-engineering/ce-performance-oracle**: Analyzes performance_issue category solutions
 - **@compound-engineering/ce-security-sentinel**: Reviews security_issue solutions for vulnerabilities
 - **@compound-engineering/ce-data-integrity-guardian**: Reviews database_issue migrations and queries
 
 ### Enhancement & Research
-
 - **@compound-engineering/ce-best-practices-researcher**: Enriches solution with industry best practices
 - **@compound-engineering/ce-framework-docs-researcher**: Links to framework/library documentation references
 
 ### When to Invoke
-
 - **Auto-triggered** (optional): Agents can run post-documentation for enhancement
 - **Manual trigger**: User can invoke agents after skill({ name: "ce-compound" }) completes for deeper review
 
 ## Related Commands
 
 - `/research [topic]` - Deep investigation (searches docs/solutions/ for patterns)
-- `skill({ name: "ce-plan" })` - Planning workflow (references documented solutions)
+- skill({ name: "ce-plan" }) - Planning workflow (references documented solutions)

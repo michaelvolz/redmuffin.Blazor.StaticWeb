@@ -1,6 +1,6 @@
 ---
 name: ce-optimize
-description: "Run metric-driven iterative optimization loops. Define a measurable goal, build measurement scaffolding, then run parallel experiments that try many approaches, measure each against hard gates and/or LLM-as-judge quality scores, keep improvements, and converge toward the best solution. Use when optimizing clustering quality, search relevance, build performance, prompt quality, or any measurable outcome that benefits from systematic experimentation. Inspired by Karpathy's autoresearch, generalized for multi-file code changes and non-ML domains."
+description: "Run metric-driven iterative optimization loops -- define a measurable goal, run parallel experiments, measure each against hard gates or LLM-as-judge scores, keep improvements, and converge on the best solution. Use when optimizing clustering quality, search relevance, build performance, prompt quality, or any measurable outcome that benefits from systematic experimentation."
 argument-hint: "[path to optimization spec YAML, or describe the optimization goal]"
 
 ---
@@ -11,7 +11,7 @@ Run metric-driven iterative optimization. Define a goal, build measurement scaff
 
 ## Interaction Method
 
-Use the platform's blocking question tool: `AskUserQuestion` in Claude Code (call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded), `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension). In OpenCode, use the `question` tool (no `ToolSearch` pre-load needed — its schema is always available). Fall back to numbered options in chat only when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes) — not because a schema load is required. Never silently skip the question.
+Use the platform's blocking question tool: `AskUserQuestion` in Claude Code (call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded), `request_user_input` in Codex, `ask_user` in Gemini, `ask_user` in Pi (requires the `pi-ask-user` extension). Fall back to numbered options in chat only when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes) — not because a schema load is required. Never silently skip the question.
 
 ## Input
 
@@ -52,7 +52,7 @@ For a friendly overview of what this skill is for, when to use hard metrics vs L
 
 **CRITICAL: The experiment log on disk is the single source of truth. The conversation context is NOT durable storage. Results that exist only in the conversation WILL be lost.**
 
-The files under `.context/compound-engineeringskill({ name: "ce-optimize" })/<spec-name>/` are local scratch state. They are ignored by git, so they survive local resumes on the same machine but are not preserved by commits, branches, or pushes unless the user exports them separately.
+The files under `.context/compound-engineering/ce-optimize/<spec-name>/` are local scratch state. They are ignored by git, so they survive local resumes on the same machine but are not preserved by commits, branches, or pushes unless the user exports them separately.
 
 This skill runs for hours. Context windows compact, sessions crash, and agents restart. Every piece of state that matters MUST live on disk, not in the agent's memory.
 
@@ -93,7 +93,7 @@ These are non-negotiable write-then-verify steps. At each checkpoint, the agent 
 3. Confirm the expected content is present
 4. If verification fails, retry the write. If it fails twice, alert the user.
 
-### File Locations (all under `.context/compound-engineeringskill({ name: "ce-optimize" })/<spec-name>/`)
+### File Locations (all under `.context/compound-engineering/ce-optimize/<spec-name>/`)
 
 | File | Purpose | Written When |
 |------|---------|-------------|
@@ -214,12 +214,12 @@ Check whether the input is:
    - Any constraints or dependencies?
    - If this is the first run: recommend `execution.mode: serial`, `execution.max_concurrent: 1`, `stopping.max_iterations: 4`, and `stopping.max_hours: 1`
    - If `type: judge`: recommend `sample_size: 10`, `batch_size: 5`, and `max_total_cost_usd: 5` until the rubric and harness are trusted
-6. Write the spec to `.context/compound-engineeringskill({ name: "ce-optimize" })/<spec-name>/spec.yaml`
+6. Write the spec to `.context/compound-engineering/ce-optimize/<spec-name>/spec.yaml`
 7. Present the spec to the user for approval before proceeding
 
 ### 0.3 Search Prior Learnings
 
-Dispatch `@compound-engineering/ce-learnings-researcher` to search for prior optimization work on similar topics. If relevant learnings exist, incorporate them into the approach.
+Dispatch @compound-engineering/ce-learnings-researcher to search for prior optimization work on similar topics. If relevant learnings exist, incorporate them into the approach.
 
 ### 0.4 Run Identity Detection
 
@@ -229,7 +229,7 @@ Check if `optimize/<spec-name>` branch already exists:
 git rev-parse --verify "optimize/<spec-name>" 2>/dev/null
 ```
 
-**If branch exists**, check for an existing experiment log at `.context/compound-engineeringskill({ name: "ce-optimize" })/<spec-name>/experiment-log.yaml`.
+**If branch exists**, check for an existing experiment log at `.context/compound-engineering/ce-optimize/<spec-name>/experiment-log.yaml`.
 
 Present the user with a choice via the platform question tool:
 - **Resume**: read ALL state from the experiment log on disk (do not rely on any in-memory context from a prior session). Recover any measured-but-unlogged experiments by scanning worktree directories for `result.yaml` markers. Continue from the last iteration number in the log.
@@ -334,7 +334,7 @@ If count + `execution.max_concurrent` would exceed 12:
 
 **MANDATORY CHECKPOINT.** Before presenting results to the user, write the initial experiment log with baseline metrics to disk:
 
-1. Create the experiment log file at `.context/compound-engineeringskill({ name: "ce-optimize" })/<spec-name>/experiment-log.yaml`
+1. Create the experiment log file at `.context/compound-engineering/ce-optimize/<spec-name>/experiment-log.yaml`
 2. Include all required top-level sections from `references/experiment-log-schema.yaml`: `spec`, `run_id`, `started_at`, `baseline`, `experiments`, and `best`
 3. Seed `experiments` as an empty array and seed `best` from the baseline snapshot (use `iteration: 0`, baseline metrics, and baseline judge scores if present) so later phases have a valid current-best state to compare against
 4. Optionally seed `hypothesis_backlog: []` here as well so the log shape is stable before Phase 2 populates it
@@ -374,7 +374,7 @@ Read the code within `scope.mutable` to understand:
 - Obvious improvement opportunities
 - Constraints and dependencies between components
 
-Optionally dispatch `@compound-engineering/ce-repo-research-analyst` for deeper codebase analysis if the scope is large or unfamiliar.
+Optionally dispatch @compound-engineering/ce-repo-research-analyst for deeper codebase analysis if the scope is large or unfamiliar.
 
 ### 2.2 Generate Hypothesis List
 
@@ -502,7 +502,7 @@ For each completed experiment, **immediately**:
 6. **If gates pass AND primary type is `hard`**:
    - Use the metric value directly from the measurement output
 
-7. **IMMEDIATELY append to experiment log on disk (CP-3)** — do not defer this to batch evaluation. Write the experiment entry (iteration, hypothesis, outcome, metrics, learnings) to `.context/compound-engineeringskill({ name: "ce-optimize" })/<spec-name>/experiment-log.yaml` right now. Use the transitional outcome `measured` once the experiment has valid metrics but has not yet been compared to the current best. Update the outcome to `kept`, `reverted`, or another terminal state in the evaluation step, but the raw metrics are on disk and safe from context compaction.
+7. **IMMEDIATELY append to experiment log on disk (CP-3)** — do not defer this to batch evaluation. Write the experiment entry (iteration, hypothesis, outcome, metrics, learnings) to `.context/compound-engineering/ce-optimize/<spec-name>/experiment-log.yaml` right now. Use the transitional outcome `measured` once the experiment has valid metrics but has not yet been compared to the current best. Update the outcome to `kept`, `reverted`, or another terminal state in the evaluation step, but the raw metrics are on disk and safe from context compaction.
 
 8. **VERIFY the write (CP-3 verification)** — read the experiment log back from disk and confirm the entry just written is present. If verification fails, retry the write. Do NOT proceed to the next experiment until this entry is confirmed on disk.
 
@@ -548,7 +548,7 @@ After all experiments in the batch have been measured:
 
 3. **Update the `best` section** in the experiment log if a new best was found. Write to disk.
 
-4. **Write strategy digest** to `.context/compound-engineeringskill({ name: "ce-optimize" })/<spec-name>/strategy-digest.md`:
+4. **Write strategy digest** to `.context/compound-engineering/ce-optimize/<spec-name>/strategy-digest.md`:
    - Categories tried so far (with success/failure counts)
    - Key learnings from this batch and overall
    - Exploration frontier: what categories and approaches remain untried
@@ -641,8 +641,8 @@ The experiment log and strategy digest remain in local `.context/...` scratch sp
 
 Present post-completion options via the platform question tool:
 
-1. **Run `skill({ name: "ce-code-review" })`** on the cumulative diff (baseline to final). Load the `skill({ name: "ce-code-review" })` skill with `mode:autofix` on the optimization branch.
-2. **Run `skill({ name: "ce-compound" })`** to document the winning strategy as an institutional learning.
+1. **Run skill({ name: "ce-code-review" })** on the cumulative diff (baseline to final). Load the skill({ name: "ce-code-review" }) skill with `mode:autofix` on the optimization branch.
+2. **Run skill({ name: "ce-compound" })** to document the winning strategy as an institutional learning.
 3. **Create PR** from the optimization branch to the default branch.
 4. **Continue** with more experiments: re-enter Phase 3 with the current state. State re-read first.
 5. **Done** -- leave the optimization branch for manual review.
