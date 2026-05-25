@@ -42,6 +42,20 @@
           }
         }
       }
+    },
+    "xai": {
+      "models": {
+        "grok-4.3": {
+          "limit": {
+            "context": 393216,
+            "output": 262144
+          },
+          "options": {
+            "thinking": { "type": "enabled" },
+            "reasoning_effort": "max"
+          }
+        }
+      }
     }
   },
   "plugin": [
