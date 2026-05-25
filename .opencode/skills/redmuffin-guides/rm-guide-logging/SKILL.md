@@ -5,8 +5,6 @@ description: "Use when adding structured logging or LoggerMessage delegates."
 
 # rm-guide-logging
 
-See also: `rm-guide-cleanup` §7 for `[LoggerMessage]` source generator pattern.
-
 ## CRITICAL
 
 - Use structured `ILogger<T>` logging.

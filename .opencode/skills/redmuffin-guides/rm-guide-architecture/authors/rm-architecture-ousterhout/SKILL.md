@@ -1,5 +1,5 @@
 ---
-name: rm-guide-architecture-ousterhout
+name: rm-architecture-ousterhout
 description: John Ousterhout's deep-module philosophy and complexity elimination principles. Loaded by rm-guide-architecture during architecture work. Do not load independently.
 tags:
   [
@@ -12,7 +12,7 @@ tags:
   ]
 ---
 
-# rm-guide-architecture-ousterhout
+# rm-architecture-ousterhout
 
 **Skill:** Code Philosophy (John Ousterhout)  
 **Book:** A Philosophy of Software Design — <https://web.stanford.edu/~ouster/cgi-bin/book.php>

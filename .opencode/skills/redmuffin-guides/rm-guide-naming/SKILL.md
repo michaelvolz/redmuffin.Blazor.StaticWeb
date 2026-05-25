@@ -113,6 +113,12 @@ but not feature-specific:
 - Do not create `Services/` at the project root. Services belong in `Core/Services/` or `Features/{Domain}/Services/`
 - Do not create generic `Models/` folders at the root or in `Core/`. Models belong with their consumer
 
+### Namespace Syntax
+
+- Use file-scoped namespaces in all C# files: `namespace A.B.C;`
+- Never add block-scoped namespaces in new code.
+- Keep namespaces predictable. Match the file's responsibility, not its historical origin.
+
 ## Role-Based Naming (Purpose over Value)
 
 When naming constants — especially colors, thresholds, or configuration

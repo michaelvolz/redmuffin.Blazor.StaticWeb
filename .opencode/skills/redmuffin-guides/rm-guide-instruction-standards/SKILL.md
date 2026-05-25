@@ -321,7 +321,7 @@ too vague to be actionable (rewrite it).
 
 - **Writing positive behavioral directives.** "Follow code style"
   actively harms performance. Convert to negative constraints: "Never
-  violate the code style conventions in rm-guide-code-quality."
+  violate the code style conventions in rm-guide-cleanup."
 
 - **Duplicating global rules in local AGENTS.md.** The global file
   already applies. Do not repeat it.

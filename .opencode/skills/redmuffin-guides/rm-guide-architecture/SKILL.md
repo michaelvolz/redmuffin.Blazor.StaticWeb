@@ -5,7 +5,7 @@ description: "Use when designing services, boundaries, patterns, or cross-layer 
 
 # rm-guide-architecture
 
-See also: `rm-guide-quality-gates` Gate 3 for the Architecture gate (`--arch-config`
+See also: `rm-quality-gates` Gate 3 for the Architecture gate (`--arch-config`
 flag, `arch-rules.yml`), `rm-guide-cleanup` §1 for SLAP and method quality.
 
 ## Author Sub-Skills
@@ -13,13 +13,13 @@ flag, `arch-rules.yml`), `rm-guide-cleanup` §1 for SLAP and method quality.
 Load both during architecture work for author-specific principles:
 
 ```
-skill({ name: "rm-guide-architecture-ousterhout" })
-skill({ name: "rm-guide-architecture-uncle-bob-martin" })
+skill({ name: "rm-architecture-ousterhout" })
+skill({ name: "rm-architecture-uncle-bob-martin" })
 ```
 
-rm-guide-architecture-ousterhout covers deep modules, complexity
+rm-architecture-ousterhout covers deep modules, complexity
 elimination, and information hiding (John Ousterhout).
-rm-guide-architecture-uncle-bob-martin covers SOLID principles, Clean
+rm-architecture-uncle-bob-martin covers SOLID principles, Clean
 Architecture, and metrics-driven quality standards (Robert C. Martin).
 
 Never load one without the other — they are complementary lenses on the

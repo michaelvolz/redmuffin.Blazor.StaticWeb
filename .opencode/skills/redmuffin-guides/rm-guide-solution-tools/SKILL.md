@@ -252,7 +252,7 @@ Per-diagnostic cost is only the syntax rewrite function.
 
 **Phase 3 (report only)**: MA0051, MA0048. Structural refactoring
 required — cannot be pattern-replaced. Produce a JSON report for
-cleanup sessions. See `rm-guide-quality-gates` for the remediation workflow.
+cleanup sessions. See `rm-quality-gates` for the remediation workflow.
 
 ### Operationalizing Phases via .editorconfig
 

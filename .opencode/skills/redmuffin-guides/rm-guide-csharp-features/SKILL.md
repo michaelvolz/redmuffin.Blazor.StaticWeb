@@ -24,6 +24,9 @@ principles. When in doubt, the decision catalogs in §Patterns resolve the tensi
   return the result instead. Side effects are the exception, not the default.
 - **Never expose mutable collections** in public signatures. Return
   `IReadOnlyList<T>`, `IReadOnlySet<T>`, or `IReadOnlyDictionary<K,V>`.
+  Follow Postel's Law: `IEnumerable<T>`/`IReadOnlyList<T>` for parameters,
+  `IReadOnlyList<T>`/`IReadOnlyCollection<T>` for returns. Internal
+  collections (`List<T>`, `Dictionary<K,V>`) are fine.
   Use `.AsReadOnly()` at boundaries.
 - **Never use `new List<T>()` in a field initializer** when `.AsReadOnly()`
   or `FrozenDictionary.ToFrozenDictionary()` can produce an immutable value.

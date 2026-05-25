@@ -1,5 +1,5 @@
 ---
-name: rm-guide-architecture-uncle-bob-martin
+name: rm-architecture-uncle-bob-martin
 description: Robert C. Martin's SOLID principles, Clean Architecture, and metrics-driven quality standards (CRAP ≤8, mutation kill rate 100%, high-90s coverage, dependency integrity). Loaded by rm-guide-architecture during architecture work. Do not load independently.
 version: 1.0
 author: Compiled from primary sources (Uncle Bob's GitHub repositories, X posts, and Clean AI series)

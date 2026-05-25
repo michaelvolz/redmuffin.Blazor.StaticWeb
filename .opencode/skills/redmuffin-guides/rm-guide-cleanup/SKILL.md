@@ -26,6 +26,17 @@ Every code change must make the code better. Not just fix a warning or
 pass a gate. The change must improve simplicity, maintainability,
 testability, or architecture per the principles below.
 
+## 0. Style Conventions
+
+Never write code that requires a comment to explain what it does.
+Use records for immutable DTOs and value shapes.
+Use `is null` / `is not null` instead of `== null` / `!= null`.
+Use expression-bodied members for trivial computed members only.
+Never expose mutable state without justification.
+Add XML docs to public APIs when they improve discoverability.
+Never trade clarity for clever syntax.
+Never introduce comments that explain obvious code.
+
 ## 1. Superfluous Code Removal
 
 ### Taxonomy
@@ -426,19 +437,8 @@ Never nest if-else when early return is possible. Every early return reduces CC 
 
 ## 4. Async Patterns
 
-### ConfigureAwait(false) rules
-
-| Context                              | Use ConfigureAwait(false)?                  |
-| ------------------------------------ | ------------------------------------------- |
-| Blazor WASM (single-threaded)        | No — no SynchronizationContext exists       |
-| Library code (no UI context)         | Yes — avoid capturing unknown context       |
-| Blazor Server (SignalR circuit)      | No — need the Blazor SynchronizationContext |
-| ASP.NET Core (no HttpContext needed) | Yes — avoid capturing HttpContext           |
-| Console apps, background services    | Yes                                         |
-| Azure Functions (isolated)           | Not needed — no SynchronizationContext      |
-
-In **our** Blazor WASM project: do NOT use `ConfigureAwait(false)` in
-component code-behind. It's unnecessary and a noise indicator.
+See `rm-guide-async` for the definitive ConfigureAwait rules table
+and async conventions.
 
 ### Fire-and-forget
 
@@ -473,35 +473,13 @@ outside of Blazor lifecycle events (e.g., event handlers, timer callbacks).
 
 ## 6. Collection Abstractions
 
-Follow Postel's Law: be conservative in what you send, liberal in what
-you accept.
-
-| Direction                     | Use                                                            |
-| ----------------------------- | -------------------------------------------------------------- |
-| Method **parameters** (input) | `IEnumerable<T>`, `IReadOnlyList<T>`, `IReadOnlyCollection<T>` |
-| Method **returns** (output)   | `IReadOnlyList<T>`, `IReadOnlyCollection<T>`                   |
-| Internal collections          | `List<T>`, `Dictionary<K,V>` — fine, no need to abstract       |
-| Public API surface            | `IReadOnlyList<T>` out, `IEnumerable<T>` in                    |
-
-Never expose `List<T>` or `Dictionary<K,V>` in public return types.
+See `rm-guide-csharp-features` for immutable collection conventions
+and `rm-guide-di` for DI lifetime rules for collection registrations.
 
 ## 7. Logging
 
-Use `LoggerMessageAttribute` source generators (compile-time, no
-allocations, structured logging):
-
-```csharp
-private static partial class Log
-{
-    [LoggerMessage(Level = LogLevel.Warning,
-        Message = "Image load failed for {Url}: {Error}")]
-    public static partial void ImageLoadFailed(
-        ILogger logger, string url, string error);
-}
-```
-
-Dynamic messages (with `$` interpolation) defeat structured logging.
-Use format templates with named placeholders.
+See `rm-guide-logging` for structured logging patterns and
+`[LoggerMessage]` source-generator conventions.
 
 ## 8. No Pragma Suppression (Zero-Tolerance Policy)
 
@@ -522,7 +500,7 @@ discuss whether the cost is acceptable before skipping it.
 
 Refactoring is not limited to extraction and testing. Design changes,
 architectural improvements, and pattern applications are all valid
-cleanup targets. See `rm-guide-quality-gates` §0.0 for the full philosophy.
+cleanup targets. See `rm-quality-gates` §0.0 for the full philosophy.
 
 ```
 Is the code correct?  → No → Fix with TDD (red-green-refactor)
@@ -555,4 +533,4 @@ Before any change is complete, verify:
 
 - `rm-guide-testing` — comprehensive test patterns, test doubles, and file structure
 - `rm-guide-naming` — naming conventions for types, members, and test doubles
-- `rm-guide-quality-gates` — CRAP, SCRAP, Architecture remediation workflows; §4 for mutation testing execution protocol and survivor decision tree
+- `rm-quality-gates` — CRAP, SCRAP, Architecture remediation workflows; §4 for mutation testing execution protocol and survivor decision tree

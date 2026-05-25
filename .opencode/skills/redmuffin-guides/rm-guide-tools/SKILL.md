@@ -28,7 +28,7 @@ description: Quality gates toolchain conventions, operational rules, gotchas, an
 
 5. **Never mutate production code to kill a mutation survivor.** Only add
    tests or extract genuine seams (≥5 lines of replaceable behavior).
-   Use the survivor decision tree in rm-guide-quality-gates §4.
+   Use the survivor decision tree in rm-quality-gates §4.
 
 ## Build and Test
 
@@ -159,7 +159,7 @@ tools/
 ## References
 
 - `tools/README.md` — human-facing overview, gates table, usage, ADR links
-- `rm-guide-architecture-uncle-bob-martin` skill — Uncle Bob's full metric suite
-- `rm-guide-quality-gates` skill — cleanup workflows, survivor decision tree, Feathers extraction
+- `rm-architecture-uncle-bob-martin` skill — Uncle Bob's full metric suite
+- `rm-quality-gates` skill — cleanup workflows, survivor decision tree, Feathers extraction
 - `rm-guide-cleanup` skill — universal code quality rules, seam extraction gates
 - `rm-tdd` skill — TDD workflow enforced for all quality gates development

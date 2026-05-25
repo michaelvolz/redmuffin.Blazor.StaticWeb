@@ -7,7 +7,7 @@ Never begin cleanup without first loading all seven skills:
 
 ```
 skill({ name: "rm-guide-cleanup" })
-skill({ name: "rm-guide-quality-gates" })
+skill({ name: "rm-quality-gates" })
 skill({ name: "rm-review-heuristics" })
 skill({ name: "rm-guide-csharp-features" })
 skill({ name: "rm-guide-architecture" })
@@ -15,7 +15,7 @@ skill({ name: "rm-tdd" })
 skill({ name: "rm-guide-testing" })
 ```
 
-rm-guide-cleanup defines code quality rules. rm-guide-quality-gates
+rm-guide-cleanup defines code quality rules. rm-quality-gates
 defines the protocols (structural-first order, functional catalog,
 mutation decision tree). rm-review-heuristics defines structural
 signals gates miss. rm-guide-csharp-features is the pattern catalog.
