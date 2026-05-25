@@ -1,5 +1,5 @@
 ---
-name: rm-opencode
+name: rm-guide-opencode
 description: >
   LOAD FIRST whenever OpenCode itself is being modified, configured,
   debugged, or documented. Contains the single source of truth for

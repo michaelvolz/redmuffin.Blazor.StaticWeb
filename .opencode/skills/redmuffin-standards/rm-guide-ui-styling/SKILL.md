@@ -1,5 +1,5 @@
 ---
-name: rm-ui-styling
+name: rm-guide-ui-styling
 description: "CSS framework selection, Blazor styling, and WCAG 2.1 AA accessibility. Currently: Foundation 6 + SCSS. Target migration: daisyUI v5 + Tailwind CSS v4 (CDN for dev, precompiled for prod). Use when writing CSS, choosing framework classes, styling Blazor components, or implementing accessibility. For SCSS conventions, see rm-scss. For daisyUI migration research, see docs/research/daisyui-*. For dev workflow details, see rm-dev-workflows."
 ---
 

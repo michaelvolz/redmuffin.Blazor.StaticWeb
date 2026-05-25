@@ -1,9 +1,9 @@
 ---
-name: rm-dev-tools
+name: rm-guide-dev-tools
 description: "Complete dev toolchain reference: required tools, versions, cross-platform install (Arch Linux / Windows 11), SCSS compilation, JS minification, and tool command summaries. Use when installing required tools, troubleshooting missing executables, or looking up the correct dev tool for a task."
 ---
 
-# rm-dev-tools
+# rm-guide-dev-tools
 
 Complete development toolchain for the redmuffin.Blazor.StaticWeb project. Every tool required to build, test, style, and deploy. Cross-platform: Arch Linux (Omarchy) and Windows 11.
 
@@ -197,12 +197,12 @@ dotnet publish src/redmuffin.Blazor.StaticWeb -c Release -p:PublishTrimmed=true
 - **Only ONE instance** must watch the same `scss/` directory. Multiple watchers writing to the same CSS files on save causes race conditions and corrupt output.
 - Always check before starting: `pgrep -f "sass --watch"` (Linux) or `Get-CimInstance Win32_Process` (Windows).
 - Cleanup kills it: `pkill -f "sass --watch"` (Linux) or `Stop-Process` by command line match (Windows).
-- `rm-cleanup` handles this automatically at session end.
+- `rm-dev-shutdown` handles this automatically at session end.
 
 ### dotnet watch
 
 - `dotnet watch` owns a port (5233 by default). Only ONE instance can bind to that port.
-- `rm-cleanup` kills stale dotnet processes before starting a new session.
+- `rm-dev-shutdown` kills stale dotnet processes before starting a new session.
 - The `sass --watch` process has NO port — cannot conflict with `dotnet watch`.
 
 ---

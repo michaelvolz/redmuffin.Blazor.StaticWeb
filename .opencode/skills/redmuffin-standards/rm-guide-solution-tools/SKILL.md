@@ -1,9 +1,9 @@
 ---
-name: rm-solution-tools
-description: Guides development of auto-fix tools for Roslyn analyzer diagnostics in this .NET solution. Covers the MSBuildWorkspace + official analyzer architecture pattern, diagnostic prioritization (Phase 1/2/3 distribution data), and the extensible fixer scaffold. USE FOR: adding a new auto-fix diagnostic, extending the ConfigureAwait fixer, building any syntax-rewrite-based code fixer, deciding which analyzer warnings to auto-fix next. DO NOT USE FOR: quality gates toolchain (see tools-guide), general MSBuild configuration (see rm-guide-config), or analyzer warning policy (see rm-guide-warnings).
+name: rm-guide-solution-tools
+description: Guides development of auto-fix tools for Roslyn analyzer diagnostics in this .NET solution. Covers the MSBuildWorkspace + official analyzer architecture pattern, diagnostic prioritization (Phase 1/2/3 distribution data), and the extensible fixer scaffold. USE FOR: adding a new auto-fix diagnostic, extending the ConfigureAwait fixer, building any syntax-rewrite-based code fixer, deciding which analyzer warnings to auto-fix next. DO NOT USE FOR: quality gates toolchain (see rm-guide-tools), general MSBuild configuration (see rm-guide-config), or analyzer warning policy (see rm-guide-warnings).
 ---
 
-# rm-solution-tools
+# rm-guide-solution-tools
 
 ## Purpose
 
@@ -252,7 +252,7 @@ Per-diagnostic cost is only the syntax rewrite function.
 
 **Phase 3 (report only)**: MA0051, MA0048. Structural refactoring
 required — cannot be pattern-replaced. Produce a JSON report for
-cleanup sessions. See `rm-gates-cleanup` for the remediation workflow.
+cleanup sessions. See `rm-guide-quality-gates` for the remediation workflow.
 
 ### Operationalizing Phases via .editorconfig
 
@@ -318,7 +318,7 @@ static SyntaxNode FixCultureInvariantToString(SyntaxNode node, Diagnostic diag)
 
 ## Related Skills
 
-- `tools-guide` — Quality gates toolchain conventions. Separate scope.
+- `rm-guide-tools` — Quality gates toolchain conventions. Separate scope.
 - `rm-guide-warnings` — Analyzer warning policy, pragma decision tree.
 - `rm-guide-config` — Build commands, MSBuild conventions.
 - `rm-guide-async` — ConfigureAwait conventions and async patterns.

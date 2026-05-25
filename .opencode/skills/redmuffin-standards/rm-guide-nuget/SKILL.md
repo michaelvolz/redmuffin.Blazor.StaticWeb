@@ -1,5 +1,5 @@
 ---
-name: rm-nuget-manager
+name: rm-guide-nuget
 description: "NuGet package management via dotnet CLI. Use when adding, removing, or updating NuGet package versions in .NET projects."
 ---
 

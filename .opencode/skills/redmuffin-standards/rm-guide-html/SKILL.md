@@ -1,9 +1,9 @@
 ---
-name: rm-html
+name: rm-guide-html
 description: HTML standards, deprecated elements catalog, anti-patterns, and 2026 best practices for semantics, accessibility, performance, security, and SEO. Use when writing, editing, reviewing, or auditing HTML — any .html, .razor, .cshtml file, or markup in components. Contains the definitive deprecated elements list and anti-patterns for this repo.
 ---
 
-# rm-html
+# rm-guide-html
 
 ## Quick Start
 
@@ -186,4 +186,4 @@ Use `<HeadContent>` and `<PageTitle>` (instead of raw `<title>` in `index.html`)
 </HeadContent>
 ```
 
-See `rm-css` for CSS-specific standards and `rm-ui-styling` for framework selection.
+See `rm-guide-css` for CSS-specific standards and `rm-guide-ui-styling` for framework selection.

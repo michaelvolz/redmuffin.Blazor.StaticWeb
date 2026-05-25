@@ -1,5 +1,5 @@
 ---
-name: rm-markdown
+name: rm-guide-markdown
 description: "Markdown content standards, MarkdownLint rules (MD001-MD059), and formatting guidelines. Use when writing markdown files, fixing MarkdownLint errors, or formatting documentation."
 ---
 

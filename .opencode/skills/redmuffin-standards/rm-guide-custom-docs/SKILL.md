@@ -1,5 +1,5 @@
 ---
-name: rm-custom-docs
+name: rm-guide-custom-docs
 description: >
   Create and maintain manually authored, long-living documentation in
   the docs/ knowledge base. USE FOR: writing specs (formal references),
@@ -428,8 +428,8 @@ first, human readability second.
 
 ## COMMANDS (for this skill)
 
-| Command                                   | Purpose                             |
-| ----------------------------------------- | ----------------------------------- |
-| `skill({ name: "rm-custom-docs" })`       | Load authoring rules before writing |
-| `skill({ name: "rm-custom-docs" }) spec`  | Load + create a new spec            |
-| `skill({ name: "rm-custom-docs" }) guide` | Load + create a new guide           |
+| Command                                         | Purpose                             |
+| ----------------------------------------------- | ----------------------------------- |
+| `skill({ name: "rm-guide-custom-docs" })`       | Load authoring rules before writing |
+| `skill({ name: "rm-guide-custom-docs" }) spec`  | Load + create a new spec            |
+| `skill({ name: "rm-guide-custom-docs" }) guide` | Load + create a new guide           |

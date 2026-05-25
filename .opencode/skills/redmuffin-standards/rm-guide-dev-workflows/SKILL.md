@@ -1,9 +1,9 @@
 ---
-name: rm-dev-workflows
+name: rm-guide-dev-workflows
 description: "Canonical reference for dev sessions, site startup, process management, port workflow, browser tab hygiene, and tool selection. Use when managing dev environment processes, checking ports, or deciding which tools to use."
 ---
 
-# rm-dev-workflows
+# rm-guide-dev-workflows
 
 Canonical reference for development workflow on Windows. Covers process management, port handling, browser tab hygiene, and tool selection.
 
@@ -17,7 +17,7 @@ Canonical reference for development workflow on Windows. Covers process manageme
 
 This skill does NOT cover:
 
-- Cleanup execution → use `rm-cleanup`
+- Cleanup execution → use `rm-dev-shutdown`
 - Commit workflow → use `rm-commit`
 - NuGet management → use `rm-nuget-manager`
 - Coding standards → use `strict-coding-standards`
@@ -28,7 +28,7 @@ This skill does NOT cover:
 
 - Never omit the `url` parameter from browser tool calls. Reuse existing pages. Never leave blank tabs open.
 - Never navigate to a URL by creating a new tab when an existing tab can be reused.
-- **NEVER** use `chrome-devtools_close_page` for cleanup. Use process-level identification only (see `rm-cleanup` skill).
+- **NEVER** use `chrome-devtools_close_page` for cleanup. Use process-level identification only (see `rm-dev-shutdown` skill).
 - **NEVER** create new blank tabs when an existing tab can be reused.
 - If only one tab remains open in the MCP browser after cleanup, leave it. Do not attempt to close the last tab or treat it as a stale page to reopen.
 
@@ -288,4 +288,4 @@ Rules are stated inline in each section. Key cross-references:
 
 ## CONTEXT
 
-This skill is the canonical reference for development workflow on Windows. It replaces the old GitHub Copilot instructions file with focused, current guidance. For cleanup execution, use `rm-cleanup`. For commit workflow, use `rm-commit`.
+This skill is the canonical reference for development workflow on Windows. It replaces the old GitHub Copilot instructions file with focused, current guidance. For cleanup execution, use `rm-dev-shutdown`. For commit workflow, use `rm-commit`.

@@ -1,9 +1,9 @@
 ---
-name: rm-css
+name: rm-guide-css
 description: CSS standards, anti-patterns catalog, Baseline decision framework, and 2026 best practices for structure, design, formatting, and modern feature usage. Use when writing, editing, reviewing, modularizing, or auditing CSS — any .css or .scss file, any style tag, any styling decision. Contains the definitive anti-patterns list and Widely-available Baseline definition for this repo.
 ---
 
-# rm-css
+# rm-guide-css
 
 ## Quick Start
 
@@ -110,7 +110,7 @@ Full catalog at `docs/research/css-2026-baseline.md` §CSS Anti-Patterns Catalog
 
 ## This Repo
 
-- SCSS still active — see `rm-scss` for partial conventions and build pipeline.
-- daisyUI + Tailwind migration in progress — see `rm-ui-styling` and `docs/research/daisyui-*`.
+- SCSS still active — see `rm-guide-scss` for partial conventions and build pipeline.
+- daisyUI + Tailwind migration in progress — see `rm-guide-ui-styling` and `docs/research/daisyui-*`.
 - SCSS anti-patterns from this skill apply to both SCSS and compiled CSS.
 - Production SCSS compiled via `sass --style=compressed --no-source-map scss/app.scss:wwwroot/css/app.min.css`.

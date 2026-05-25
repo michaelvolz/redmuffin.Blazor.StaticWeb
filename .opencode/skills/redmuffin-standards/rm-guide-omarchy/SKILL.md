@@ -1,5 +1,5 @@
 ---
-name: rm-omarchy
+name: rm-guide-omarchy
 description: >
   LOAD FIRST for ANY system-level change on this machine — installing,
   updating, or removing packages, adding language runtimes, modifying
