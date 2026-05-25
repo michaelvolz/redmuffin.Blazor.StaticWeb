@@ -1,6 +1,6 @@
 ---
-name: rm-uncle-bob-martin-agentic-coding
-description: One-stop comprehensive guide compiling all concepts, patterns, workflows, guidelines, tips, tricks, and tools from Robert C. Martin (Uncle Bob) on disciplined agentic coding. Includes full adaptation instructions for C#, PowerShell, and TypeScript environments. Enforces metrics-driven management (CRAP ≤8, mutation kill rate 100%, high 90s coverage, low duplication, dependency integrity) over manual code review or vibe coding. Designed for OpenCode agents to produce semantically stable, maintainable systems. Latest tool versions pinned to GitHub sources as of May 2026. All tools are convertible to native C#/PowerShell/TS equivalents via agent prompts provided.
+name: rm-guide-architecture-uncle-bob-martin
+description: Robert C. Martin's SOLID principles, Clean Architecture, and metrics-driven quality standards (CRAP ≤8, mutation kill rate 100%, high-90s coverage, dependency integrity). Loaded by rm-guide-architecture during architecture work. Do not load independently.
 version: 1.0
 author: Compiled from primary sources (Uncle Bob's GitHub repositories, X posts, and Clean AI series)
 tags:

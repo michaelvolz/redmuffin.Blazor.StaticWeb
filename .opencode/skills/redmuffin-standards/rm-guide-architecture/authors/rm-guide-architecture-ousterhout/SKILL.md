@@ -1,6 +1,6 @@
 ---
-name: rm-code-philosophy
-description: Apply John Ousterhout's Philosophy of Software Design principles whenever doing architecture, system design, module/API design, refactoring, or code reviews. Primary goal is always to minimize long-term complexity.
+name: rm-guide-architecture-ousterhout
+description: John Ousterhout's deep-module philosophy and complexity elimination principles. Loaded by rm-guide-architecture during architecture work. Do not load independently.
 tags:
   [
     "architecture",
@@ -12,7 +12,7 @@ tags:
   ]
 ---
 
-# rm-code-philosophy
+# rm-guide-architecture-ousterhout
 
 **Skill:** Code Philosophy (John Ousterhout)  
 **Book:** A Philosophy of Software Design — <https://web.stanford.edu/~ouster/cgi-bin/book.php>
