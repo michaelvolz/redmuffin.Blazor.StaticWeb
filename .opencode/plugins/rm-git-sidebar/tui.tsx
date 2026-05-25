@@ -59,7 +59,10 @@ interface SessionDiffEvent {
 
 let sessionFiles = new Set<string>();
 let storedSessionId: string | null = null;
-let sessionFilesSeeded = false;
+// Timestamp of the last observed clean working tree (all changes committed).
+// sessionFiles only counts files touched after this point — files touched
+// before the last commit cannot explain current dirty state.
+let lastCleanTimestamp = 0;
 let storedApi: TuiPluginApi | null = null;
 
 function normalizePath(rawPath: string): string {
@@ -68,35 +71,91 @@ function normalizePath(rawPath: string): string {
   return pathResolve(dir, rawPath);
 }
 
+// Commands known to create, modify, or delete files on disk.
+// Commands NOT in this list (grep, cat, ls, file, read, echo, etc.)
+// must never contribute paths, even if they reference absolute paths.
+const FILE_MODIFYING_CMD_RE = /\b(rm|git\s+rm|mv|cp|mkdir|touch|git\s+add|git\s+checkout|git\s+restore|git\s+mv|git\s+clean)\b/;
+
+function extractPathsFromBashCommand(command: string): string[] {
+  const dir = storedApi?.state?.path?.directory ?? process.cwd();
+  const paths: string[] = [];
+
+  // Guard: skip commands that do not create/modify/delete files.
+  // Prevents false positives from grep, cat, ls, file, read, echo,
+  // and any other read-only or non-file-mutating operation.
+  if (!FILE_MODIFYING_CMD_RE.test(command)) return paths;
+
+  // Absolute paths anywhere in the command
+  const absRe = /(?:\s|^)(\/[^\s"'`;|&<>]+)/g;
+  let m: RegExpExecArray | null;
+  while ((m = absRe.exec(command)) !== null) {
+    paths.push(m[1]);
+  }
+
+  // Known file-operation commands — extract relative path args
+  const fileOps = ["rm ", "git rm ", "mv ", "cp ", "mkdir ", "touch "];
+  for (const prefix of fileOps) {
+    const idx = command.indexOf(prefix);
+    if (idx === -1) continue;
+    const args = command.slice(idx + prefix.length).trim();
+    const tokens = args.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) || [];
+    for (const t of tokens) {
+      if (t.startsWith("-")) continue;
+      const cleaned = t.replace(/^["']|["']$/g, "");
+      if (cleaned.startsWith("/")) {
+        paths.push(cleaned);
+      } else if (cleaned.includes("/") || cleaned.includes(".")) {
+        paths.push(pathResolve(dir, cleaned));
+      }
+    }
+    break;
+  }
+
+  return paths;
+}
+
 function seedSessionFiles(sessionId: string) {
-  // Guard: only seed once per session, skip stale or empty
-  if (sessionFilesSeeded) return;
   if (!SESSION_ID_RE.test(sessionId)) return;
   if (sessionId !== storedSessionId) return;
 
   try {
+    const since = lastCleanTimestamp > 0
+      ? `AND time_created > ${lastCleanTimestamp * 1000}`
+      : "";
+
+    // Write + edit tool filePaths
     const writeOutput = execSync(
-      `sqlite3 "${DB_PATH}" "SELECT DISTINCT json_extract(data, '$.state.input.filePath') FROM part WHERE session_id = '${sessionId}' AND json_extract(data, '$.type') = 'tool' AND json_extract(data, '$.tool') IN ('write', 'edit') AND json_extract(data, '$.state.input.filePath') IS NOT NULL;"`,
+      `sqlite3 "${DB_PATH}" "SELECT DISTINCT json_extract(data, '$.state.input.filePath') FROM part WHERE session_id = '${sessionId}' AND json_extract(data, '$.type') = 'tool' AND json_extract(data, '$.tool') IN ('write', 'edit') AND json_extract(data, '$.state.input.filePath') IS NOT NULL ${since};"`,
       { encoding: "utf8", timeout: 5000 },
     );
-    const patchOutput = execSync(
-      `sqlite3 "${DB_PATH}" "SELECT DISTINCT json_extract(data, '$.files') FROM part WHERE session_id = '${sessionId}' AND json_extract(data, '$.type') = 'patch';"`,
-      { encoding: "utf8", timeout: 5000 },
-    );
-    const paths = writeOutput.trim().split("\n").filter(Boolean);
-    for (const p of paths) {
+    for (const p of writeOutput.trim().split("\n").filter(Boolean)) {
       sessionFiles.add(normalizePath(p));
     }
-    const patchLines = patchOutput.trim().split("\n").filter(Boolean);
-    for (const line of patchLines) {
+
+    // Bash tool commands — extract file paths
+    const bashOutput = execSync(
+      `sqlite3 "${DB_PATH}" "SELECT json_extract(data, '$.state.input.command') FROM part WHERE session_id = '${sessionId}' AND json_extract(data, '$.tool') = 'bash' AND json_extract(data, '$.state.input.command') LIKE '%/%' ${since};"`,
+      { encoding: "utf8", timeout: 5000 },
+    );
+    for (const cmd of bashOutput.trim().split("\n").filter(Boolean)) {
+      for (const p of extractPathsFromBashCommand(cmd)) {
+        sessionFiles.add(normalizePath(p));
+      }
+    }
+
+    // Patch entries — file arrays
+    const patchOutput = execSync(
+      `sqlite3 "${DB_PATH}" "SELECT DISTINCT json_extract(data, '$.files') FROM part WHERE session_id = '${sessionId}' AND json_extract(data, '$.type') = 'patch' ${since};"`,
+      { encoding: "utf8", timeout: 5000 },
+    );
+    for (const line of patchOutput.trim().split("\n").filter(Boolean)) {
       try {
         const files: Array<string> = JSON.parse(line);
         for (const f of files) {
           sessionFiles.add(normalizePath(f));
         }
-      } catch { /* invalid JSON, skip */ }
+      } catch { /* skip */ }
     }
-    sessionFilesSeeded = true;
   } catch (err) {
     storedApi?.app.log({
       body: {
@@ -195,6 +254,31 @@ function pollGitStatus() {
     });
     const counts = parseGitCounts(output);
     const aheadBehind = parseAheadBehind(output);
+    const total = categoryTotal(counts);
+
+    // Clean-tree boundary — when all changes are committed, files touched
+    // before this point are stale and cannot explain current dirty state.
+    // On startup with dirty tree, do NOT set lastCleanTimestamp yet —
+    // seedSessionFiles must load all historical tool calls first to
+    // correctly attribute pre-existing dirty files to this session.
+    // The timestamp is set after the first seed (in seedSessionFiles).
+    if (total === 0) {
+      lastCleanTimestamp = Date.now() / 1000;
+      sessionFiles.clear();
+    }
+
+    // Refresh session file set from database on every poll
+    if (sid) {
+      const wasFirstSeed = lastCleanTimestamp === 0;
+      seedSessionFiles(sid);
+      // After the initial full-load seed, set the boundary so future
+      // polls are incremental. This must happen AFTER seedSessionFiles
+      // so the first seed runs without the since filter.
+      if (wasFirstSeed) {
+        lastCleanTimestamp = Date.now() / 1000;
+      }
+    }
+
     // Only use sessionFiles if the session hasn't changed since capture.
     // If it has, compute against an empty set — session counts are stale.
     const files = (storedSessionId === sid) ? sessionFiles : new Set<string>();
@@ -340,13 +424,18 @@ const tui: TuiPlugin = async (api) => {
     order: 10,
     slots: {
       session_prompt_right(_ctx: unknown, _value: { session_id: string }) {
-        // Session tracking init
+        // Session tracking init — sessionFiles must be scoped to this session's
+        // tool calls. lastCleanTimestamp must NOT reset here — the clean-tree
+        // boundary is independent of session identity and persists across sessions.
         if (_value.session_id !== storedSessionId) {
           storedSessionId = _value.session_id;
           sessionFiles = new Set<string>();
-          sessionFilesSeeded = false;
         }
-        if (!sessionFilesSeeded && storedSessionId) {
+        // Initial seed on session change — pollGitStatus handles periodic refresh.
+        // lastCleanTimestamp === 0 means plugin just started (no clean boundary yet).
+        // sessionFiles are empty from the reset above, so initial seed loads only
+        // tool calls from the current session after the clean boundary.
+        if (storedSessionId && lastCleanTimestamp === 0) {
           const sid = storedSessionId;
           setTimeout(() => seedSessionFiles(sid), 0);
         }

@@ -138,7 +138,7 @@ function isInSolution(dir) {
 var SESSION_ID_RE = /^ses_[a-zA-Z0-9]{16,}$/;
 var sessionFiles = new Set;
 var storedSessionId = null;
-var sessionFilesSeeded = false;
+var lastCleanTimestamp = 0;
 var storedApi = null;
 function normalizePath(rawPath) {
   if (isAbsolute(rawPath))
@@ -146,30 +146,69 @@ function normalizePath(rawPath) {
   const dir = storedApi?.state?.path?.directory ?? process.cwd();
   return pathResolve2(dir, rawPath);
 }
+var FILE_MODIFYING_CMD_RE = /\b(rm|git\s+rm|mv|cp|mkdir|touch|git\s+add|git\s+checkout|git\s+restore|git\s+mv|git\s+clean)\b/;
+function extractPathsFromBashCommand(command) {
+  const dir = storedApi?.state?.path?.directory ?? process.cwd();
+  const paths = [];
+  if (!FILE_MODIFYING_CMD_RE.test(command))
+    return paths;
+  const absRe = /(?:\s|^)(\/[^\s"'`;|&<>]+)/g;
+  let m;
+  while ((m = absRe.exec(command)) !== null) {
+    paths.push(m[1]);
+  }
+  const fileOps = ["rm ", "git rm ", "mv ", "cp ", "mkdir ", "touch "];
+  for (const prefix of fileOps) {
+    const idx = command.indexOf(prefix);
+    if (idx === -1)
+      continue;
+    const args = command.slice(idx + prefix.length).trim();
+    const tokens = args.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) || [];
+    for (const t of tokens) {
+      if (t.startsWith("-"))
+        continue;
+      const cleaned = t.replace(/^["']|["']$/g, "");
+      if (cleaned.startsWith("/")) {
+        paths.push(cleaned);
+      } else if (cleaned.includes("/") || cleaned.includes(".")) {
+        paths.push(pathResolve2(dir, cleaned));
+      }
+    }
+    break;
+  }
+  return paths;
+}
 function seedSessionFiles(sessionId) {
-  if (sessionFilesSeeded)
-    return;
   if (!SESSION_ID_RE.test(sessionId))
     return;
   if (sessionId !== storedSessionId)
     return;
   try {
-    const writeOutput = execSync(`sqlite3 "${DB_PATH}" "SELECT DISTINCT json_extract(data, '$.state.input.filePath') FROM part WHERE session_id = '${sessionId}' AND json_extract(data, '$.type') = 'tool' AND json_extract(data, '$.tool') IN ('write', 'edit') AND json_extract(data, '$.state.input.filePath') IS NOT NULL;"`, {
+    const since = lastCleanTimestamp > 0 ? `AND time_created > ${lastCleanTimestamp * 1000}` : "";
+    const writeOutput = execSync(`sqlite3 "${DB_PATH}" "SELECT DISTINCT json_extract(data, '$.state.input.filePath') FROM part WHERE session_id = '${sessionId}' AND json_extract(data, '$.type') = 'tool' AND json_extract(data, '$.tool') IN ('write', 'edit') AND json_extract(data, '$.state.input.filePath') IS NOT NULL ${since};"`, {
       encoding: "utf8",
       timeout: 5000
     });
-    const patchOutput = execSync(`sqlite3 "${DB_PATH}" "SELECT DISTINCT json_extract(data, '$.files') FROM part WHERE session_id = '${sessionId}' AND json_extract(data, '$.type') = 'patch';"`, {
-      encoding: "utf8",
-      timeout: 5000
-    });
-    const paths = writeOutput.trim().split(`
-`).filter(Boolean);
-    for (const p of paths) {
+    for (const p of writeOutput.trim().split(`
+`).filter(Boolean)) {
       sessionFiles.add(normalizePath(p));
     }
-    const patchLines = patchOutput.trim().split(`
-`).filter(Boolean);
-    for (const line of patchLines) {
+    const bashOutput = execSync(`sqlite3 "${DB_PATH}" "SELECT json_extract(data, '$.state.input.command') FROM part WHERE session_id = '${sessionId}' AND json_extract(data, '$.tool') = 'bash' AND json_extract(data, '$.state.input.command') LIKE '%/%' ${since};"`, {
+      encoding: "utf8",
+      timeout: 5000
+    });
+    for (const cmd of bashOutput.trim().split(`
+`).filter(Boolean)) {
+      for (const p of extractPathsFromBashCommand(cmd)) {
+        sessionFiles.add(normalizePath(p));
+      }
+    }
+    const patchOutput = execSync(`sqlite3 "${DB_PATH}" "SELECT DISTINCT json_extract(data, '$.files') FROM part WHERE session_id = '${sessionId}' AND json_extract(data, '$.type') = 'patch' ${since};"`, {
+      encoding: "utf8",
+      timeout: 5000
+    });
+    for (const line of patchOutput.trim().split(`
+`).filter(Boolean)) {
       try {
         const files = JSON.parse(line);
         for (const f of files) {
@@ -177,7 +216,6 @@ function seedSessionFiles(sessionId) {
         }
       } catch {}
     }
-    sessionFilesSeeded = true;
   } catch (err) {
     storedApi?.app.log({
       body: {
@@ -275,6 +313,18 @@ function pollGitStatus() {
     });
     const counts = parseGitCounts(output);
     const aheadBehind = parseAheadBehind(output);
+    const total = categoryTotal(counts);
+    if (total === 0) {
+      lastCleanTimestamp = Date.now() / 1000;
+      sessionFiles.clear();
+    }
+    if (sid) {
+      const wasFirstSeed = lastCleanTimestamp === 0;
+      seedSessionFiles(sid);
+      if (wasFirstSeed) {
+        lastCleanTimestamp = Date.now() / 1000;
+      }
+    }
     const files = storedSessionId === sid ? sessionFiles : new Set;
     const sessionCounts = computeSessionCounts(output, dir, files);
     let stash = null;
@@ -466,9 +516,8 @@ var tui = async (api) => {
         if (_value.session_id !== storedSessionId) {
           storedSessionId = _value.session_id;
           sessionFiles = new Set;
-          sessionFilesSeeded = false;
         }
-        if (!sessionFilesSeeded && storedSessionId) {
+        if (storedSessionId && lastCleanTimestamp === 0) {
           const sid = storedSessionId;
           setTimeout(() => seedSessionFiles(sid), 0);
         }
