@@ -254,7 +254,7 @@ boundary. Methods that call `Process.Start`, `File.ReadAllText`, or
 other I/O can accept an optional `Func<string, Task<string?>>` parameter
 that defaults to the real implementation but accepts a fake in tests.
 
-See `rm-guide-cleanup` §2.1 (I/O boundary injection example) and
+See `rm-guide-code-quality` §2.1 (I/O boundary injection example) and
 `docs/solutions/design-patterns/io-injection-optional-func-parameter-2026-05-16.md`
 for the full pattern with Process.Start example.
 
@@ -369,7 +369,7 @@ Before any test is complete, verify:
 
 - `.opencode/skills/redmuffin-guides/rm-guide-naming/SKILL.md` —
   naming conventions for test doubles
-- `.opencode/skills/redmuffin-guides/rm-guide-cleanup/SKILL.md` —
+- `.opencode/skills/redmuffin-guides/rm-guide-code-quality/SKILL.md` —
   characterization tests and code quality standards
 - `.opencode/skills/redmuffin-guides/rm-quality-gates/SKILL.md` —
   mutation testing workflow

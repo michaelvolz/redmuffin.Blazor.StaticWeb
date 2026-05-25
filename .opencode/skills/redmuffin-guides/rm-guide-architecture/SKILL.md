@@ -6,7 +6,7 @@ description: "Use when designing services, boundaries, patterns, or cross-layer 
 # rm-guide-architecture
 
 See also: `rm-quality-gates` Gate 3 for the Architecture gate (`--arch-config`
-flag, `arch-rules.yml`), `rm-guide-cleanup` §1 for SLAP and method quality.
+flag, `arch-rules.yml`), `rm-guide-code-quality` §1 for SLAP and method quality.
 
 ## Author Sub-Skills
 

@@ -111,6 +111,6 @@ Full catalog at `docs/research/css-2026-baseline.md` §CSS Anti-Patterns Catalog
 ## This Repo
 
 - SCSS still active — see `rm-guide-scss` for partial conventions and build pipeline.
-- daisyUI + Tailwind migration in progress — see `rm-guide-ui-styling` and `docs/research/daisyui-*`.
+- daisyUI + Tailwind migration in progress — see `rm-guide-styling` and `docs/research/daisyui-*`.
 - SCSS anti-patterns from this skill apply to both SCSS and compiled CSS.
 - Production SCSS compiled via `sass --style=compressed --no-source-map scss/app.scss:wwwroot/css/app.min.css`.

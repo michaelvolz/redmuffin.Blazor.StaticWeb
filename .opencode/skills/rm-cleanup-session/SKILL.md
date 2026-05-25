@@ -6,19 +6,19 @@ description: Master orchestrator for quality gates cleanup sessions. Loads all r
 Never begin cleanup without first loading all seven skills:
 
 ```
-skill({ name: "rm-guide-cleanup" })
+skill({ name: "rm-guide-code-quality" })
 skill({ name: "rm-quality-gates" })
 skill({ name: "rm-review-heuristics" })
-skill({ name: "rm-guide-csharp-features" })
+skill({ name: "rm-guide-csharp-functional" })
 skill({ name: "rm-guide-architecture" })
 skill({ name: "rm-tdd" })
 skill({ name: "rm-guide-testing" })
 ```
 
-rm-guide-cleanup defines code quality rules. rm-quality-gates
+rm-guide-code-quality defines code quality rules. rm-quality-gates
 defines the protocols (structural-first order, functional catalog,
 mutation decision tree). rm-review-heuristics defines structural
-signals gates miss. rm-guide-csharp-features is the pattern catalog.
+signals gates miss. rm-guide-csharp-functional is the pattern catalog.
 rm-guide-architecture loads Ousterhout and Uncle Bob Martin author
 sub-skills during architecture work. rm-tdd governs test discipline.
 rm-guide-testing provides test patterns.

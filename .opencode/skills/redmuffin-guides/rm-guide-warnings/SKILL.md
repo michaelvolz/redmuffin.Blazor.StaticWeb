@@ -5,7 +5,7 @@ description: "Use when fixing analyzer warnings, pragma directives, or zero-warn
 
 # rm-guide-warnings
 
-See also: `rm-guide-cleanup` §8 for the no-pragma-suppression policy.
+See also: `rm-guide-code-quality` §8 for the no-pragma-suppression policy.
 
 ## CRITICAL
 

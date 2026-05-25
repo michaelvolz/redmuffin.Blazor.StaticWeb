@@ -5,7 +5,7 @@ description: "Use when building or reviewing Blazor components, render behavior,
 
 # rm-guide-blazor
 
-See also: `rm-guide-cleanup` §5 for Blazor-specific false-positives and
+See also: `rm-guide-code-quality` §5 for Blazor-specific false-positives and
 lifecycle rules, §4 for ConfigureAwait in Blazor WASM.
 
 ## CRITICAL

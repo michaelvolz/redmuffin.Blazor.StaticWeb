@@ -163,7 +163,7 @@ For C#:
 - Functional C# patterns (immutable records, LINQ pipelines, pure static methods,
   FrozenDictionary lookups, pattern-matching switch expressions) implement
   Uncle Bob's Clean Code principles — small functions, low complexity, zero
-  side effects. Full catalog at `rm-guide-csharp-features`.
+  side effects. Full catalog at `rm-guide-csharp-functional`.
 
 For PowerShell:
 

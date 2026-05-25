@@ -1,5 +1,5 @@
 ---
-name: rm-guide-cleanup
+name: rm-guide-code-quality
 description: Universal code quality principles applied to every code change. Covers superfluous code removal, characterization tests, method simplicity, async patterns, Blazor-specific rules, collection abstractions, and coding standards for C# .NET 9 Blazor WASM. Use when writing new code, refactoring, or cleaning up existing functionality. USE FOR: code quality, cleanup, refactoring, code review, superfluous code, dead code, method size, async patterns, ConfigureAwait, Blazor lifecycle.
 version: 1.0
 guide-authors:
@@ -15,7 +15,7 @@ guide-authors:
   - Mary & Tom Poppendieck (Lean Software Development, eliminate waste)
 ---
 
-# rm-guide-cleanup
+# rm-guide-code-quality
 
 Universal code quality principles for every code change in this .NET 9 /
 Blazor WASM / C# project. Not gate-specific — these govern all work.
@@ -473,7 +473,7 @@ outside of Blazor lifecycle events (e.g., event handlers, timer callbacks).
 
 ## 6. Collection Abstractions
 
-See `rm-guide-csharp-features` for immutable collection conventions
+See `rm-guide-csharp-functional` for immutable collection conventions
 and `rm-guide-di` for DI lifetime rules for collection registrations.
 
 ## 7. Logging

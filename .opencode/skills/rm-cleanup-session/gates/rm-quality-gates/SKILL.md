@@ -3,7 +3,7 @@ name: rm-quality-gates
 description: Quality gate tool protocols — CRAP, SCRAP, Depth, Architecture, Mutation, Dupes. Step-by-step remediation patterns with verification checkpoints. Loaded by rm-cleanup-session during cleanup. Do not load independently.
 version: 1.0
 prerequisite-skills:
-  - rm-guide-cleanup
+  - rm-guide-code-quality
 ---
 
 # rm-quality-gates
@@ -105,7 +105,7 @@ to `/tmp/gates-output.txt`. Working directory must be the repo root.
 **Step 2: EXTRACT** — work through fixable violations methodically.
 
 - Characterize FIRST (golden-master test), THEN extract seams per
-  rm-guide-cleanup §2.1.
+  rm-guide-code-quality §2.1.
 - One seam per edit cycle within a file. Work top-to-bottom.
 - Write all unit tests for extracted methods (rm-guide-testing pattern).
 - Do NOT re-run gates between methods — trust the Feathers pattern.
@@ -126,7 +126,7 @@ disappeared is a win. Regressions are rare if §2.1 was followed.
 - Infrastructure (git-spawned methods, System.CommandLine factories)
 
 Document them in `tools/README.md` under Known Issues as justified
-exceptions per rm-guide-cleanup §3.
+exceptions per rm-guide-code-quality §3.
 
 **Why this works:** The Feathers Seam Pattern (characterize → extract →
 test) is deterministic. If extracted correctly, CRAP drops without
@@ -137,7 +137,7 @@ Systematic cleanup workflows for each quality gate. Every remediation
 follows the same pattern: gate reveals problem → characterize behavior →
 fix → re-gate to verify.
 
-Load `rm-guide-cleanup` alongside this skill. It defines the universal
+Load `rm-guide-code-quality` alongside this skill. It defines the universal
 coding principles applied during cleanup.
 
 ## Gate Execution Order
@@ -220,11 +220,11 @@ simplify.
 | Introduce Null Object                 | Removes null checks (-1 per check removed)     | Repeated `if (x != null)` patterns                                                                                                                                                               |
 | Table-driven method                   | Replaces branching with lookup. CC drops to 1. | Switch expression with ≥4 arms mapping to constant values. Use `FrozenDictionary<K,V>` + `GetValueOrDefault` for allocation-free lookup. Split `or` patterns into individual dictionary entries. |
 
-### Functional C# Pattern Catalog (rm-guide-csharp-features)
+### Functional C# Pattern Catalog (rm-guide-csharp-functional)
 
 When a CRAP or Depth violation appears, match the code smell to the pattern.
 These are the patterns that delivered 91-100% CC reduction this session
-(2026-05-17). See `rm-guide-csharp-features` for full pattern documentation.
+(2026-05-17). See `rm-guide-csharp-functional` for full pattern documentation.
 
 | Problem pattern                          | Functional pattern                      | CC reduction     | Example                                                                             |
 | ---------------------------------------- | --------------------------------------- | ---------------- | ----------------------------------------------------------------------------------- |
@@ -239,7 +239,7 @@ These are the patterns that delivered 91-100% CC reduction this session
 
 For the full functional C# pattern catalog that directly reduces CC
 (LINQ `.Any()`/`.All()` chains, signal arrays with `.Where()`/`.Sum()`,
-pattern-matching dispatchers), see `rm-guide-csharp-features`. Every
+pattern-matching dispatchers), see `rm-guide-csharp-functional`. Every
 technique in that catalog is a CRAP reduction tool.
 
 ### 0%-coverage method classification
@@ -253,7 +253,7 @@ violations. Classify before acting:
 | Logging delegates (LoggerMessage source gen)                 | Keep. These are compile-time generated. The source generator is the test target, not the delegate.                                                                                                                                                                                                                                                                                                                                                                               |
 | Blazor lifecycle (OnInitializedAsync, etc.)                  | Ignore CRAP score. Runtime-called methods are tested via integration/blazor-renderer tests, not CRAP's line coverage.                                                                                                                                                                                                                                                                                                                                                            |
 | Factory/Creation methods                                     | If single-line `new X()` → test the callers. If complex creation logic → write characterization tests.                                                                                                                                                                                                                                                                                                                                                                           |
-| True dead code                                               | Remove per superfluous code rules in rm-guide-cleanup §1.                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| True dead code                                               | Remove per superfluous code rules in rm-guide-code-quality §1.                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | Conductor/orchestrator (CC ≤ 3, 0% cov)                      | Auto-detected by CoverageGapDetector. Body is only delegation + guards + try/catch. Shown as COVERAGE GAP, excluded from exit code.                                                                                                                                                                                                                                                                                                                                              |
 | Switch dispatcher (CC > 3, >50% cov)                         | Auto-detected by CoverageGapDetector. Body is return switch where every arm delegates to one sub-method. Shown as COVERAGE GAP. Sub-dispatchers verified independently.                                                                                                                                                                                                                                                                                                          |
 | Formula-bound (CC ≥ 8, cov >80%, not a conductor/dispatcher) | CRAP score exceeds 8.0 despite high Cobertura coverage. Caused by CC counting differences: `or` patterns, `foreach`, `??`, `?.` operators that source CC counts but Cobertura instruments differently. Two fixes: (1) replace switch with FrozenDictionary to drop CC, or (2) extract I/O boundary via Func<> injection. If neither applies, accept as measurement artifact. See `docs/solutions/developer-experience/crap-formula-cobertura-coverage-divergence-2026-05-16.md`. |
@@ -567,7 +567,7 @@ After fixing 3-5 survivors, pause and ask two questions:
 
 1. **Is the code better?** — Did you extract a method just to make it
    testable? Does the new method pass the Extraction Decision Tree in
-   `rm-guide-cleanup` §2.1 (Q1: ≥5 lines, Q2: reads clearly inline)?
+   `rm-guide-code-quality` §2.1 (Q1: ≥5 lines, Q2: reads clearly inline)?
    If the extraction created a shallow module, **revert it.** Code
    quality comes first. Mutation kill rate is a measure of test quality,
    not a license to damage production code.
@@ -636,7 +636,7 @@ After each cleanup session:
 ## Related
 
 - `rm-guide-testing` — test patterns for CRAP fixes (pure functions, fakes, scopes)
-- `rm-guide-cleanup` — universal code quality principles
-- `rm-guide-csharp-features` — functional C# patterns (LINQ pipelines, FrozenDictionary,
+- `rm-guide-code-quality` — universal code quality principles
+- `rm-guide-csharp-functional` — functional C# patterns (LINQ pipelines, FrozenDictionary,
   pattern matching) that eliminate branching and reduce CC during CRAP cleanup
 - `docs/pure-function-extraction-testing-guide-2026-05-10.md` — pure function pattern

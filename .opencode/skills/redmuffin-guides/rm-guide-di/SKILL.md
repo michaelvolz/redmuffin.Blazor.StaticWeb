@@ -5,7 +5,7 @@ description: "Use when injecting dependencies, registering services, or shaping 
 
 # rm-guide-di
 
-See also: `rm-guide-cleanup` §6 for collection abstraction conventions
+See also: `rm-guide-code-quality` §6 for collection abstraction conventions
 (IReadOnlyList/IReadOnlyCollection vs List).
 
 ## CRITICAL

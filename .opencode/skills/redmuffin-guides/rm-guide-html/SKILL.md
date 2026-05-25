@@ -186,4 +186,4 @@ Use `<HeadContent>` and `<PageTitle>` (instead of raw `<title>` in `index.html`)
 </HeadContent>
 ```
 
-See `rm-guide-css` for CSS-specific standards and `rm-guide-ui-styling` for framework selection.
+See `rm-guide-css` for CSS-specific standards and `rm-guide-styling` for framework selection.

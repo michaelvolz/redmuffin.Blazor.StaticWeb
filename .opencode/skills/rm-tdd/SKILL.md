@@ -125,7 +125,7 @@ one-at-a-time TDD fix loop, and 100% kill rate standard.
 
 The Refactor step of red-green-refactor benefits from functional C#
 patterns that directly reduce complexity and improve testability.
-See `rm-guide-csharp-features` for the full catalog — LINQ pipelines,
+See `rm-guide-csharp-functional` for the full catalog — LINQ pipelines,
 FrozenDictionary lookups, pattern-matching switch expressions, and
 pure static methods eliminate branching that would otherwise require
 extraction during later cleanup passes.
