@@ -1,10 +1,5 @@
 {
   "$schema": "https://opencode.ai/tui.json",
-  "plugin": [
-    "opencode-bytheway",
-    "file:///home/flynn/.config/opencode/plugins/rm-git-sidebar",
-    "@cortexkit/opencode-magic-context@latest"
-  ],
   "keybinds": {
     "input_submit": "ctrl+return",
     "input_newline": "return,shift+return,ctrl+j,alt+return",
