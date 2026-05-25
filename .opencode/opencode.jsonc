@@ -75,7 +75,13 @@
     // Do NOT remove or shorten any entry.
     "skill": {
       "git-commit": "deny",
-      "git-commit-push-pr": "deny"
+      "git-commit-push-pr": "deny",
+      "ce-dhh-rails-style": "deny",
+      "ce-riffrec-feedback-analysis": "deny",
+      "ce-test-xcode": "deny",
+      "ce-gemini-imagegen": "deny",
+      "ce-product-pulse": "deny",
+      "ce-demo-reel": "deny"
     },
     "read": {
       "*": "allow",
@@ -485,175 +491,218 @@
     },
     "ce-adversarial-document-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-adversarial-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-agent-native-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-ankane-readme-writer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": true
     },
     "ce-api-contract-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-architecture-strategist": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-best-practices-researcher": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-code-simplicity-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-coherence-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-correctness-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-data-integrity-guardian": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": true
     },
     "ce-data-migration-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": true
     },
     "ce-deployment-verification-agent": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": true
     },
     "ce-design-implementation-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": true
     },
     "ce-design-iterator": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-design-lens-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-feasibility-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-figma-design-sync": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": true
     },
     "ce-framework-docs-researcher": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-git-history-analyzer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-issue-intelligence-analyst": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": true
     },
     "ce-julik-frontend-races-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": true
     },
     "ce-learnings-researcher": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-maintainability-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-pattern-recognition-specialist": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-performance-oracle": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-performance-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-pr-comment-resolver": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-previous-comments-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": true
     },
     "ce-product-lens-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-project-standards-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-reliability-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-repo-research-analyst": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-scope-guardian-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-security-lens-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-security-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-security-sentinel": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-session-historian": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-slack-researcher": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": true
     },
     "ce-spec-flow-analyzer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": true
     },
     "ce-swift-ios-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": true
     },
     "ce-testing-reviewer": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     },
     "ce-web-researcher": {
       "model": "{env:OPENCODE_ANALYST_MODEL}",
-      "mode": "subagent"
+      "mode": "subagent",
+      "disable": false
     }
   }
 }
