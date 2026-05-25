@@ -411,6 +411,47 @@ config only. Restore the global config from the dotfiles repo git
 history. Never attempt to fix corruption by hand — the file structure
 is too brittle.
 
+### TUI plugin `execSync` buffer exhaustion (ENOBUFS)
+
+**Symptom:** A TUI plugin (e.g. git sidebar) works on first poll, then
+permanently enters error state (`git ?` in red) on subsequent polls.
+The console shows:
+
+```
+spawnSync /bin/sh ENOBUFS (stdout or stderr buffer reached maxBuffer size limit)
+```
+
+**Root cause:** `execSync` calls inside the plugin (commonly SQLite queries
+in `seedSessionFiles` or similar) return more data than Node's default
+`maxBuffer` (200KB). Long sessions with many tool calls (especially bash
+commands containing `/`) easily exceed this. The uncaught exception
+propagates to the outer `pollGitStatus` catch, setting permanent error state.
+
+**Fix:** Explicitly set `maxBuffer: 10 * 1024 * 1024` (10MB) on every
+`execSync` call that may return large result sets:
+
+```ts
+execSync(sqliteQuery, {
+  encoding: "utf8",
+  timeout: 5000,
+  maxBuffer: 10 * 1024 * 1024,
+});
+```
+
+Also replace any `storedApi?.app.log(...)` calls with `console.error(...)`
+— `app.log` is not always a function in CLI / certain OpenCode versions
+and will itself throw, masking the real error.
+
+**Prevention:** When writing TUI plugins that query the session database
+or run commands that may produce large output, always set an explicit
+`maxBuffer`.
+
+**Endless session policy (magic-context):** In never-ending sessions,
+`lastCleanTimestamp` must be capped at 7 days. Real sessions never last
+that long, so older activity is irrelevant for session-scoped counts.
+This hard floor prevents unbounded query growth while preserving all
+meaningful data.
+
 ---
 
 ## Session Management CLI
