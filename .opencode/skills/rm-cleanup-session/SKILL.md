@@ -874,5 +874,4 @@ maintainability pass. It catches what gates and heuristics miss:
 - Structural simplification opportunities (code-judo)
 
 The subagent has `disable-model-invocation: true` — spawn it as a
-subagent, never load it as a skill. It is the same review engine
-that `rm-nuclear-audit` previously wrapped.
+subagent, never load it as a skill.

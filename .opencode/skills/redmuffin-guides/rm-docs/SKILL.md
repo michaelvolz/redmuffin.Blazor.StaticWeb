@@ -424,8 +424,8 @@ first, human readability second.
 
 ## COMMANDS (for this skill)
 
-| Command                                         | Purpose                             |
-| ----------------------------------------------- | ----------------------------------- |
+| Command                                            | Purpose                             |
+| -------------------------------------------------- | ----------------------------------- |
 | `skill({ name: "rm-docs-authoring" })`       | Load authoring rules before writing |
 | `skill({ name: "rm-docs-authoring" }) spec`  | Load + create a new spec            |
 | `skill({ name: "rm-docs-authoring" }) guide` | Load + create a new guide           |

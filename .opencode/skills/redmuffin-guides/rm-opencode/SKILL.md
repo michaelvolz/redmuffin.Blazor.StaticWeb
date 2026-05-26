@@ -204,6 +204,23 @@ skill loading (`#skill(name)`). Enable in config per-feature.
 **Commands:** `/snippet add <name> [content]`, `/snippet list`, `/snippet delete <name>`.
 Use `--project` flag for project-scoped snippets.
 
+### JSONC Parsing
+
+`opencode.jsonc` is not valid JSON — `JSON.parse` and standard parsers fail
+on line comments (`//`), block comments (`/* */`), trailing commas, and
+multi-line strings embedded in values. When a script needs to extract config
+values from `opencode.jsonc` without full parsing, use regex extraction for
+the specific fields needed:
+
+```
+Provider context: /"limit"\s*:\s*\{[^}]*"context"\s*:\s*(\d+)[^}]*\}/g
+Permission denies: /"skill"\s*:\s*\{[^}]*\}/g (then manual key inspection)
+```
+
+Never rely on `JSON.parse` with comment stripping as the only fallback —
+the JSONC format has edge cases (multi-line strings, trailing commas) that
+regex stripping cannot repair.
+
 ---
 
 ## Skill & Agent Conventions
@@ -232,6 +249,24 @@ one-level glob. Treat the docs as approximate; the code uses `**`.
 ### Naming
 
 - The `name:` field in SKILL.md frontmatter must match the directory name
+
+### Skill Prompt Budget
+
+Every skill loaded at session startup consumes context tokens. The budget
+math: **2% of the active provider's `limit.context`** is allocated to all
+skill names and descriptions. Token cost is `ceil(utf8_bytes / 4)` per
+rendered line. When descriptions exceed the 2% budget, OpenCode truncates
+them equally across all skills.
+
+At 393,216 context (DeepSeek V4 Pro default), the skills budget is 7,864
+tokens. With 70 skills averaging ~110 description characters each,
+descriptions consume ~85% of that allocation. Adding skills without removing
+old ones silently pushes the budget past 100% — every response is then
+shorter than it could be by the amount of overspend.
+
+Use `rm-skill-cleaner` to audit the current budget. Prefer short, trigger-focused
+descriptions over exhaustive prose. Every description character is a permanent
+tax on every session.
 
 ### Invocation Syntax
 
