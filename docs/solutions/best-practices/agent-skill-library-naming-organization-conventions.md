@@ -29,7 +29,7 @@ At scale, skill discovery relies on two mechanisms: the `description` field (the
 
 Web research across 6 authoritative sources—the Agent Skills spec (agentskills.io / Microsoft), Perplexity's internal design docs, enterprise guides from noqta.tn, Lalit Madan's agent-engineering patterns, mgechev/skills-best-practices, and laguagu/agents-best-practices—produced consistent principles that ground the conventions below.
 
-This doc extends the implemented architecture in [OpenCode Instruction Architecture Pattern](../integration-issues/opencode-instruction-architecture-pattern-2026-04-03.md) with external research and a formal decision tree. The earlier doc defines the namespace strategy (`rm-*` prefix, vendor isolation, `redmuffin-standards/` subfolder). This doc formalizes the naming rules, folder placement decision tree, and rename plan for the current library.
+This doc extends the implemented architecture in [OpenCode Instruction Architecture Pattern](../integration-issues/opencode-instruction-architecture-pattern-2026-04-03.md) with external research and a formal decision tree. The earlier doc defines the namespace strategy (`rm-*` prefix, vendor isolation, `redmuffin-standards/` subfolder) under `~/.config/opencode/`. This doc formalizes the naming rules, folder placement decision tree, and rename plan for the current library.
 
 ## Guidance
 
