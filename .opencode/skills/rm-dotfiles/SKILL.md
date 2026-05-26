@@ -1,20 +1,10 @@
 ---
 name: rm-dotfiles
 description: >
-  LOAD FIRST when evaluating untracked files in the dotfiles repo, after
-  a git pull or git fetch from the dotfiles remote, after installing
-  software that may create new config files, or when tracked files are
-  auto-dirtying the working tree (chromium state, runtime databases,
-  machine-specific prefs). Contains the portability classification engine
-  that determines what to track or exclude, the file evaluation protocol,
-  the change analysis protocol that scans incoming changes for cross-machine
-  issues, and the tracked file audit that catches chronic auto-dirty files.
-  USE FOR: dotfiles, gitignore, untracked files, portability, config
-  tracking, git pull review, post-install scan, evaluating new files,
-  adding config directories, what to track, what to exclude, auto-dirty
-  tracked files, why are these files modified.
-  DO NOT USE FOR: general git operations outside the dotfiles repo,
-  package installation (use rm-omarchy), desktop customization.
+  Classifies files for cross-machine dotfiles sync — change analysis
+  after git pull, post-install scan after software install, tracked file
+  audit for chronic auto-dirty files. Never use for general git ops,
+  package installs, or desktop customization.
 ---
 
 # rm-dotfiles — Principle-First Dotfiles Management

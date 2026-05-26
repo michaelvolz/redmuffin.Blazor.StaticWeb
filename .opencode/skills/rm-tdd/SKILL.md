@@ -1,6 +1,6 @@
 ---
 name: rm-tdd
-description: Triggers automatically for any task that involves writing new code with tests first or generating comprehensive tests for existing code or any test related work Enforces veteran TDD standards from Robert C Martin and Kent Beck with LLM optimized guardrails for planning vertical slicing one test at a time 100 percent meaningful coverage black box focus and maximum refactor safety
+description: Test-Driven Development with veteran standards from Robert C Martin and Kent Beck — vertical slicing, one test at a time, 100% meaningful coverage, black box focus, maximum refactor safety.
 ---
 
 **OpenCode Skill: Ultimate Professional TDD Testing Mastery Protocol (LLM-Optimized)**
@@ -125,7 +125,7 @@ one-at-a-time TDD fix loop, and 100% kill rate standard.
 
 The Refactor step of red-green-refactor benefits from functional C#
 patterns that directly reduce complexity and improve testability.
-See `rm-guide-csharp-functional` for the full catalog — LINQ pipelines,
+See `rm-csharp-functional` for the full catalog — LINQ pipelines,
 FrozenDictionary lookups, pattern-matching switch expressions, and
 pure static methods eliminate branching that would otherwise require
 extraction during later cleanup passes.

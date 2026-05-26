@@ -1,6 +1,6 @@
 ---
 name: rm-commit
-description: "Use when the user says commit or wants help making a commit. Generates repo-specific conventional commit payloads with commitlint enforcement. Covers commit shape (grouping by concern, ordering by import chains), message format (conventional commits, body rules, scope conventions), error recovery, and tooling (PowerShell here-string, Bash heredoc). USE FOR: commit, create a commit, conventional commits, commitlint, commit message format, commit batch ordering."
+description: "Creates conventional commit payloads with commitlint enforcement. Covers commit shape, message format, and error recovery. Use when user says commit."
 ---
 
 # rm-commit

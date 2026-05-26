@@ -2,14 +2,14 @@
 date: 2026-04-20
 title: AGENTS Project Guide (OpenCode-Optimized v2)
 tags: [agent, rules, blazor, critical-policies, context-management, dotnet9]
-description: Project-specific rules for the redmuffin.Blazor.StaticWeb repo. System-wide rules are in ~/.config/opencode/AGENTS.md. Build and repo conventions are in rm-guide-config. Commit rules are in rm-commit.
+description: Project-specific rules for the redmuffin.Blazor.StaticWeb repo. System-wide rules are in ~/.config/opencode/AGENTS.md. Build and repo conventions are in rm-build-config. Commit rules are in rm-commit.
 ---
 
 # AGENTS: Project Guide
 
 > **System-wide rules**: See `~/.config/opencode/AGENTS.md` for communication protocol, safety blocks, API rate limits, Git rules, PowerShell patterns, NPM policies, and global workflows.
 > **Commit rules**: See `rm-commit` skill.
-> **Build & repo conventions**: See `rm-guide-config` skill.
+> **Build & repo conventions**: See `rm-build-config` skill.
 > **Lock files**: Every `packages.lock.json` change must be committed alongside the change that caused it. Never ignore lock file drift.
 > **LSP tool over grep**: The `lsp` tool (`findReferences`, `goToDefinition`, `hover`, `goToImplementation`, `documentSymbol`, `workspaceSymbol`, `incomingCalls`, `outgoingCalls`) is available when `OPENCODE_EXPERIMENTAL_LSP_TOOL=true`. Never use `grep`/`glob`/`read` for a code structure question when the corresponding LSP operation handles it — semantic matching eliminates false positives, sub-second vs multi-step. See `rm-opencode` for operation usage.
 > **Pre-commit verification**: See §PRE-COMMIT VERIFICATION below. Build and test are mandatory after any code file change — never commit before both pass.
