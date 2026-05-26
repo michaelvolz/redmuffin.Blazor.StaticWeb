@@ -3,7 +3,6 @@ name: rm-cleanup-session
 description: Master orchestrator for quality gates cleanup — loads all cleanup skills at once. Use when user says "cleanup," "quality gates," "fix CRAP," or wants systematic gate violation elimination.
 ---
 
-
 Notes that were previously loaded as separate sub-skills are now
 inlined as sections below — they always loaded together and their
 only cost as separate files was 2 extra names in every prompt.
@@ -29,8 +28,6 @@ discipline. rm-testing provides test patterns.
 ---
 
 ## §Quality Gates Workflow (inlined from rm-quality-gates)
-
-
 
 # rm-quality-gates
 
@@ -279,7 +276,7 @@ violations. Classify before acting:
 | Logging delegates (LoggerMessage source gen)                 | Keep. These are compile-time generated. The source generator is the test target, not the delegate.                                                                                                                                                                                                                                                                                                                                                                               |
 | Blazor lifecycle (OnInitializedAsync, etc.)                  | Ignore CRAP score. Runtime-called methods are tested via integration/blazor-renderer tests, not CRAP's line coverage.                                                                                                                                                                                                                                                                                                                                                            |
 | Factory/Creation methods                                     | If single-line `new X()` → test the callers. If complex creation logic → write characterization tests.                                                                                                                                                                                                                                                                                                                                                                           |
-| True dead code                                               | Remove per superfluous code rules in rm-code-quality §1.                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| True dead code                                               | Remove per superfluous code rules in rm-code-quality §1.                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | Conductor/orchestrator (CC ≤ 3, 0% cov)                      | Auto-detected by CoverageGapDetector. Body is only delegation + guards + try/catch. Shown as COVERAGE GAP, excluded from exit code.                                                                                                                                                                                                                                                                                                                                              |
 | Switch dispatcher (CC > 3, >50% cov)                         | Auto-detected by CoverageGapDetector. Body is return switch where every arm delegates to one sub-method. Shown as COVERAGE GAP. Sub-dispatchers verified independently.                                                                                                                                                                                                                                                                                                          |
 | Formula-bound (CC ≥ 8, cov >80%, not a conductor/dispatcher) | CRAP score exceeds 8.0 despite high Cobertura coverage. Caused by CC counting differences: `or` patterns, `foreach`, `??`, `?.` operators that source CC counts but Cobertura instruments differently. Two fixes: (1) replace switch with FrozenDictionary to drop CC, or (2) extract I/O boundary via Func<> injection. If neither applies, accept as measurement artifact. See `docs/solutions/developer-experience/crap-formula-cobertura-coverage-divergence-2026-05-16.md`. |
@@ -671,7 +668,6 @@ After each cleanup session:
 
 ## §Review Heuristics (inlined from rm-review-heuristics)
 
-
 # Review Heuristics — Signals Gates Miss
 
 ## Quick start
@@ -865,3 +861,18 @@ SCRAP and Mutation.
 Never skip the heuristics check and proceed directly to SCRAP/Mutation.
 Gate-passing code can still carry redundant state, parameter bloat,
 hot-path latency, and no-op cycles.
+
+### Thermo-Nuclear Final Pass
+
+After gates pass and all four heuristics are clean, spawn the
+`thermo-nuclear-code-quality-review` subagent for a final strict
+maintainability pass. It catches what gates and heuristics miss:
+
+- File-size gate (1K lines) and spaghetti detection
+- Type-boundary cleanliness and canonical-layer logic
+- Atomic orchestration and boring-maintainable code bias
+- Structural simplification opportunities (code-judo)
+
+The subagent has `disable-model-invocation: true` — spawn it as a
+subagent, never load it as a skill. It is the same review engine
+that `rm-nuclear-audit` previously wrapped.
