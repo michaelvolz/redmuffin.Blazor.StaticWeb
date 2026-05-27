@@ -10,9 +10,9 @@ description: Project-specific rules for the redmuffin.Blazor.StaticWeb repo. Sys
 > **System-wide rules**: See `~/.config/opencode/AGENTS.md` for communication protocol, safety blocks, API rate limits, Git rules, PowerShell patterns, NPM policies, and global workflows.
 > **Commit rules**: See `rm-commit` skill.
 > **Build & repo conventions**: See `rm-build-config` skill.
-> **Lock files**: Every `packages.lock.json` change must be committed alongside the change that caused it. Never ignore lock file drift.
+> **Lock files**: Never ignore `packages.lock.json` drift — see `rm-commit` §CRITICAL for enforcement.
 > **LSP tool over grep**: The `lsp` tool (`findReferences`, `goToDefinition`, `hover`, `goToImplementation`, `documentSymbol`, `workspaceSymbol`, `incomingCalls`, `outgoingCalls`) is available when `OPENCODE_EXPERIMENTAL_LSP_TOOL=true`. Never use `grep`/`glob`/`read` for a code structure question when the corresponding LSP operation handles it — semantic matching eliminates false positives, sub-second vs multi-step. See `rm-opencode` for operation usage.
-> **Pre-commit verification**: See §PRE-COMMIT VERIFICATION below. Build and test are mandatory after any code file change — never commit before both pass.
+> **Pre-commit verification**: See §PRE-COMMIT VERIFICATION below. Never commit after a code file change without running build and tests first.
 > **AGENTS.md maintenance**: See `rm-agents` skill.
 
 ## STRUCTURAL CHANGE GATE (READ FIRST — STOP HERE)
@@ -66,9 +66,9 @@ itself is clean. It does NOT mean the build passes or tests pass. Use LSP
 diagnostics as an edit confirmation, never as a build replacement.
 
 **Workflow**: edit → LSP confirms zero diagnostics → build → tests → commit.
-Never skip a step. Never use `--no-build` for test runs — a stale binary
-can silently pass tests against old source. Never batch-commit multiple changes
-without re-running the full build+test chain.
+Never skip a step. Always use `dotnet clean && dotnet build && dotnet run`
+for test runs — a stale binary silently passes tests against old source. Never
+batch-commit multiple changes without re-running the full build+test chain.
 
 ## COMMANDS
 
@@ -83,8 +83,8 @@ without re-running the full build+test chain.
 
 ## WORKFLOWS
 
-- **Chrome DevTools MCP**: Available but disabled by default in `opencode.jsonc`. Enable on demand for Lighthouse audits, performance tracing, screenshots, or browser-based testing. See `rm-dev-workflows` for the full workflow.
-- **Quality Gates — Recursive Loop**: Gates are not one-shot. Run → fix worst violations → re-run → repeat until zero violations across all gates. See `rm-gates-cleanup` §0 for the full principle.
+- **Chrome DevTools MCP**: Configured in `opencode.jsonc` but disabled by default (`enabled: false`). Never assume it is available — ask the user to enable it via `/mcp` when a task requires Lighthouse audits, performance tracing, screenshots, or browser-based testing. See `rm-dev-environment` for the full workflow.
+- **Quality Gates — Recursive Loop**: Gates are not one-shot. Run → fix worst violations → re-run → repeat until zero violations across all gates. See `rm-cleanup-session` §0 for the full principle.
 - **Cleanup Sessions**: Load `rm-cleanup-session` to activate all 7 cleanup skills in one call (Depth → Architecture → CRAP → SCRAP → Mutation → Duplicates).
 
 ## STACK & STRUCTURE
@@ -93,8 +93,7 @@ without re-running the full build+test chain.
 - **SDK vs Target**: All projects target `net9.0` for Azure SWA compatibility. The .NET 10 SDK provides build tooling, Roslyn, and MSBuild — it does not require changing target frameworks. When SWA adds .NET 10 Functions support, updating targets is a one-line change per `.csproj`.
 - **Knowledge Base**: `docs/solutions/` — searchable archive of past solutions, bugs, best practices, and workflow patterns. All entries use YAML frontmatter with `module`, `tags`, and `problem_type` fields.
 - **Key Paths**:
-  - `src/redmuffin.Blazor.StaticWeb/` — Frontend application
-  - `src/redmuffin.Blazor.StaticWeb.Api/` — Backend API
+  - `src/` — Application projects (Blazor frontend, Azure Functions API)
   - `tests/` — Test project mirror
-  - `docs/solutions/` — Persistent knowledge store
+  - `docs/solutions/` — Persistent knowledge store (YAML frontmatter: `module`, `tags`, `problem_type`)
   - `tools/` — Quality Gates toolchain (CRAP, SCRAP, Architecture, Depth, Mutation, Dupes). See `tools/README.md`.
