@@ -281,7 +281,7 @@ function Save-LastProcessedCommit {
         [string]$CommitHash,
         
         [Parameter(Mandatory = $false)]
-        [string]$FilePath = ".changelog-state"
+        [string]$FilePath = ".config/changelog-state.json"
     )
     
     try {
@@ -313,7 +313,7 @@ function Get-LastProcessedCommit {
     #>
     param(
         [Parameter(Mandatory = $false)]
-        [string]$FilePath = ".changelog-state"
+        [string]$FilePath = ".config/changelog-state.json"
     )
     
     if (-not (Test-Path $FilePath)) {

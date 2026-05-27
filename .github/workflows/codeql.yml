@@ -63,10 +63,8 @@ jobs:
             ".trae/**/*"
             # Development configuration
             "swa-cli.config.json"
-            "Start.ps1"
-            "test.ps1"
+            "scripts/**/*"
             "config/**/*"
-            ".changelog-state"
             "src/**/Properties/launchSettings.json"
             "src/**/appsettings.Development.json"
             "src/**/*.local.settings.json*"
