@@ -5,7 +5,7 @@ date: 2025-07-19
 
 ## Overview
 
-`Start.ps1` is a PowerShell helper for final integration-style testing and full
+`scripts/Start.ps1` is a PowerShell helper for final integration-style testing and full
 environment validation. It is not the normal day-to-day development startup path.
 
 For routine development, start the frontend directly with:

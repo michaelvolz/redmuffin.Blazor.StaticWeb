@@ -108,7 +108,7 @@ function Clear-ExistingProcesses {
 try {
     if ($autoMode) {
         if (Test-Path $pidFile) {
-            Write-Host "Development environment already running. Run Stop.ps1 first or use -Auto flag." -ForegroundColor Yellow
+            Write-Host "Development environment already running. Run scripts/Stop.ps1 first or use -Auto flag." -ForegroundColor Yellow
             exit 0
         }
         Write-Host "Starting in AUTO mode (PID tracking enabled)" -ForegroundColor Cyan
@@ -157,7 +157,7 @@ try {
         ) | Out-File -FilePath $pidFile -Encoding utf8
         
         Write-Host "PID file created: $pidFile" -ForegroundColor Gray
-        Write-Host "To stop, run: pwsh Stop.ps1" -ForegroundColor Cyan
+        Write-Host "To stop, run: pwsh scripts/Stop.ps1" -ForegroundColor Cyan
     } else {
         Write-Host "Running in INTERACTIVE mode. Close the windows manually when done." -ForegroundColor Cyan
     }

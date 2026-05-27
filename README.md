@@ -448,7 +448,7 @@ Set-Alias -Name opencode -Value "C:\path\to\scripts\opencode-secure.ps1"
    dotnet run --project src/redmuffin.Blazor.StaticWeb/redmuffin.Blazor.StaticWeb.csproj --launch-profile https
    ```
 
-   This is the normal day-to-day dev server command. `Start.ps1` is reserved for
+   This is the normal day-to-day dev server command. `scripts/Start.ps1` is reserved for
    final integration-style testing and broader environment validation.
 
 7. **Navigate to:**
