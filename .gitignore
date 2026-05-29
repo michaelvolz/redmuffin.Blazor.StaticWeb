@@ -403,8 +403,8 @@ src/redmuffin.Blazor.StaticWeb/wwwroot/css/app.css
 /src/redmuffin.Blazor.StaticWeb/wwwroot/lib/
 /reports/bundle-size
 
-# OpenCode generated files to exclude
-.opencode/package-lock.json
+# OpenCode generated files — local installs (use global ~/.config/opencode/)
+.opencode/
 
 # Environment variables (secrets)
 .env
