@@ -76,13 +76,20 @@ console.log("Chromium launched with remote debugging on port 9222");
 chmod +x ~/.config/opencode/scripts/mcp/chrome-devtools-start.mjs
 ```
 
-**4. Install chrome-devtools-mcp globally (7-day delay rule applies to npm global installs):**
+**4. Install chrome-devtools-mcp via Omarchy npx wrapper:**
 
 ```bash
-sudo npm install -g chrome-devtools-mcp@0.21.0
+omarchy-npx-install chrome-devtools-mcp
 ```
 
+This creates `~/.local/bin/chrome-devtools-mcp` wrapping `mise exec node@latest -- sfw npx --yes chrome-devtools-mcp "$@"` — following Omarchy guidance (no `npm install -g`).
+
 **5. Configure the MCP in your settings:**
+
+> **Note (2026-06-05):** The current setup uses `browser-launcher.js` as the MCP server entry
+> point in OpenCode config, which handles cross-platform browser detection and delegates to
+> the Omarchy wrapper on WSL/Linux. The direct `chrome-devtools-mcp` command below is the
+> simplified approach for when you manage the browser path yourself.
 
 ```json
 {
@@ -97,7 +104,7 @@ sudo npm install -g chrome-devtools-mcp@0.21.0
 ### Why This Matters
 
 - **Reliability**: Running Chromium locally in WSL eliminates all cross-OS networking complexity.
-- **Security**: Using a global npm install instead of `npx` satisfies the 7-day release age filter.
+- **Security**: The Omarchy npx wrapper (`omarchy-npx-install`) includes `sfw` in the command chain, providing supply chain protection at runtime without `npm install -g`.
 - **Simplicity**: Avoids `.wslconfig` tweaks and port proxies entirely.
 - **Performance**: Direct browser control without network bridging overhead.
 
