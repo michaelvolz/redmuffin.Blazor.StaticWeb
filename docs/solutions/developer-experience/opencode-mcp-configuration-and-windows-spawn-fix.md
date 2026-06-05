@@ -129,10 +129,19 @@ const child = spawn("npx", ["-y", "chrome-devtools-mcp"], {
 
 ## Prevention
 
+> **Note (2026-06-05):** The `shell: true` pattern below is correct for general npx-on-Windows
+> spawning but was superseded for chrome-devtools-mcp specifically. The sfw-protected
+> `.cmd` shims use `<nul` to prevent sfw from hanging on non-TTY stdin — this redirect
+> breaks the MCP JSON-RPC protocol. The current architecture uses direct `node` execution
+> with a globally-installed `chrome-devtools-mcp` on Windows and the Omarchy npx wrapper
+> on WSL/Linux. See the cross-platform MCP launcher doc for details.
+
 1. **Always verify MCP server names** - Check the exact npm package entry point name (usually matches the package name with hyphens preserved)
 
 2. **Always include enabled: true** - Required flag for all MCP server configurations
 
 3. **Use shell: true for Windows npx spawn** - Any Node.js script spawning `npx` on Windows must use `shell: true` in spawn options
 
-4. **Test MCP servers after config changes** - Run OpenCode with verbose logging or check available tools list after configuration edits
+4. **For MCP servers that need stdin** - The `shell: true` pattern does not help when the npx invocation goes through sfw-protected `.cmd` shims that redirect stdin to NUL. Use direct `node` execution with a global npm install for Windows MCP servers that require stdin-based protocols.
+
+5. **Test MCP servers after config changes** - Run OpenCode with verbose logging or check available tools list after configuration edits
