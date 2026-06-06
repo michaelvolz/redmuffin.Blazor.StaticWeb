@@ -1,0 +1,85 @@
+---
+title: feat/modular-monolith-first-module
+date: 2026-06-06
+status: draft
+---
+
+## Problem
+
+Our codebase uses a flat project structure with no enforced module
+boundaries between features. As features grow, so does the risk of
+accidental coupling. We want to evolve toward a modular monolith
+style inspired by Ardalis's RiverBooks — but we need to learn the
+patterns first on a safe testbed before applying them at scale.
+
+The API Example page is the simplest feature in the repo. It makes one
+HTTP call and displays the response.
+
+## Solution
+
+Convert the API Example page into the first module: **ApiHealth**.
+The name reflects the domain (health check), not the mechanism (calls
+an API). Three projects per module with Mediator.SourceGen, pipeline
+behaviors, and a service abstraction for mock/real switching.
+Extend incrementally with OpenTelemetry and validation behaviors as
+next steps. Document findings for future module conversions.
+
+## Key Technical Decisions
+
+- **Mediator.SourceGen for CQRS.** Pipeline behaviors for cross-cutting
+  concerns (logging now, validation + OpenTelemetry next). Handler
+  receives only its domain dependency.
+- **Per-module service abstraction for mock switching.** Handler
+  injects `IHealthCheckService` — an interface in the Contracts
+  project. Two implementations (`HealthCheckService` real HTTP,
+  `DummyHealthCheckService` mock data). Program.cs chooses at
+  startup via `builder.HostEnvironment.BaseAddress`.
+- **Three projects per module** (Module, Module.Contracts, Module.Tests)
+  grouped under `src/redmuffin.Blazor.StaticWeb.Modules/`.
+- **Internal-by-default.** Module internals are `internal`; only Contracts
+  types are `public`. `InternalsVisibleTo` grants access to the module's
+  own test project only.
+- **Uncle Bob comment philosophy.** Comments explain _why_, never _what_.
+  Code explains itself through clear names and small methods.
+
+## Modules & Seams
+
+| Module              | Path                                                                                                                                          | Change                                                                                                                                                                   | Test surface                                                                             |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| Common              | `src/redmuffin.Blazor.StaticWeb.Common/Pipeline/`                                                                                             | Add `LoggingBehavior<>` + `MediatorServiceExtensions`                                                                                                                    | Verify logging pipeline output                                                           |
+| ApiHealth.Contracts | `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Contracts/`                                                                                 | New project: `GetHelloQuery`, `HelloResponse`, `IHealthCheckService`                                                                                                     | — (contracts have no logic)                                                              |
+| ApiHealth           | `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth/`                                                                                           | New project: `GetHelloHandler`, `HealthCheckService`, `DummyHealthCheckService`, `ApiHealthModuleServicesExtensions`                                                     | Handler passes through, real HTTP error handling (5 cases), mock returns expected string |
+| ApiHealth.Tests     | `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Tests/`                                                                                     | New project: handler tests, service tests, behavior test                                                                                                                 | All pass                                                                                 |
+| Web host            | `src/redmuffin.Blazor.StaticWeb/Program.cs`                                                                                                   | Add Mediator + pipeline + module registrations                                                                                                                           | `dotnet build` succeeds                                                                  |
+| Web host — pages    | `src/redmuffin.Blazor.StaticWeb/Features/ApiHealth/ApiHealth.razor`<br>`src/redmuffin.Blazor.StaticWeb/Features/ApiHealth/ApiHealth.razor.cs` | Renamed from `ApiExamplePage/CallApiExample` — folder, both files, class, route (`/api-health`), namespace. Page uses `IMediator.Send()` instead of direct service call. | Page load test                                                                           |
+| Web host — tests    | `tests/redmuffin.Blazor.StaticWeb.Tests/Features/ApiHealth/ApiHealthTests*.cs`                                                                | Renamed from `CallApiExampleTests.*` — class names, namespace, folder. Tests adapted to new page structure.                                                              | Mock `IMediator`, assert page renders and response displays correctly                    |
+
+## Testing Strategy
+
+- **Handler test:** mock `IHealthCheckService`, assert result matches.
+- **Real service test:** `ControlledHttpHandler_Fake` per `rm-testing`.
+  Test all 5 error paths (connection failure, 404, 503, timeout,
+  cancellation) plus success path.
+- **Mock service test:** instantiate `DummyHealthCheckService`, assert
+  exact response string.
+- **Behavior test:** `Logger_Spy<T>` per `rm-testing`. Once, applies
+  to all handlers.
+- **Next: test properties** for FluentValidation behaviors once
+  validation is added to a query with real parameters.
+- **Existing tests:** host-level page tests (`ApiHealthTests.*`) updated to match new names and structure. Full suite passes at the end.
+
+## Out of Scope
+
+- Rewriting any existing feature besides the API Example page.
+- NsDepCop (evaluate after pattern is proven).
+- Database or storage decisions.
+
+## Assumptions
+
+- The unnamed `HttpClient` registration in `Program.cs` is sufficient
+  for `HealthCheckService` (no named clients needed).
+- Mediator.SourceGen auto-discovers `IRequestHandler<>` across all
+  referenced projects without manual assembly scanning.
+- `builder.HostEnvironment.BaseAddress` on `localhost:5233` uses the
+  same port as the existing mock-data URL check, so the conditional
+  registration works identically.
