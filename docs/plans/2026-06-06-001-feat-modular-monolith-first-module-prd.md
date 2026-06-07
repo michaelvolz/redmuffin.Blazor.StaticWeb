@@ -39,14 +39,12 @@ next steps. Document findings for future module conversions.
 - **Internal-by-default.** Module internals are `internal`; only Contracts
   types are `public`. `InternalsVisibleTo` grants access to the module's
   own test project only.
-- **Uncle Bob comment philosophy.** Comments explain _why_, never _what_.
-  Code explains itself through clear names and small methods.
 
 ## Modules & Seams
 
 | Module              | Path                                                                                                                                          | Change                                                                                                                                                                   | Test surface                                                                             |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| Common              | `src/redmuffin.Blazor.StaticWeb.Common/Pipeline/`                                                                                             | Add `LoggingBehavior<>` + `MediatorServiceExtensions`                                                                                                                    | Verify logging pipeline output                                                           |
+| Common              | `src/redmuffin.Blazor.StaticWeb.Common/Pipeline/`                                                                                             | Add `LoggingBehavior<>` + `MediatorServiceExtensions`                                                                                                                    | `Logger_Spy<T>` verifies `LogInformation` called before and after handler invocation     |
 | ApiHealth.Contracts | `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Contracts/`                                                                                 | New project: `GetHelloQuery`, `HelloResponse`, `IHealthCheckService`                                                                                                     | — (contracts have no logic)                                                              |
 | ApiHealth           | `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth/`                                                                                           | New project: `GetHelloHandler`, `HealthCheckService`, `DummyHealthCheckService`, `ApiHealthModuleServicesExtensions`                                                     | Handler passes through, real HTTP error handling (5 cases), mock returns expected string |
 | ApiHealth.Tests     | `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Tests/`                                                                                     | New project: handler tests, service tests, behavior test                                                                                                                 | All pass                                                                                 |
@@ -64,8 +62,6 @@ next steps. Document findings for future module conversions.
   exact response string.
 - **Behavior test:** `Logger_Spy<T>` per `rm-testing`. Once, applies
   to all handlers.
-- **Next: test properties** for FluentValidation behaviors once
-  validation is added to a query with real parameters.
 - **Existing tests:** host-level page tests (`ApiHealthTests.*`) updated to match new names and structure. Full suite passes at the end.
 
 ## Out of Scope
