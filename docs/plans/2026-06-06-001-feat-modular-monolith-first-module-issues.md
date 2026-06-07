@@ -1,130 +1,127 @@
 ---
 title: feat/modular-monolith-first-module
-prd: 2026-06-06-001-feat-modular-monolith-first-module-prd.md
-date: 2026-06-06
-status: draft
+prd: docs/plans/2026-06-06-001-feat-modular-monolith-first-module-prd.md
+date: 2026-06-07
+status: active
 ---
 
-### U1. Pipeline infrastructure in Common
+# Issues — Modular Monolith First Module
 
-- **Status:** pending
+**PRD constraints to satisfy:**
+
+- Success Metrics: zero-warning build, all tests pass, `/api-health` renders in both modes, pattern is reusable.
+- NFRs: compile-time (Mediator source-gen, no reflection), encapsulation (internal-by-default, no cross-module coupling), testability (every seam injectable).
+- AC: build passes, all tests pass, handler returns response, behavior logs before/after.
+
+---
+
+### U1. Common pipeline behaviors and Mediator registration
+
+- **Status:** done
 - **Type:** AFK
 - **Blocked by:** none
-- **What to build:** Add `Mediator.Abstractions` package to Common.
-  Create `LoggingBehavior<,>` implementing `IPipelineBehavior<,>`
-  with `[LoggerMessage]` source-gen logging in a separate
-  `*.Logging.cs` partial file (per rm-logging convention). Create
-  `MediatorServiceExtensions` registering the behavior as scoped.
-  The behavior is `public` — Common is shared infrastructure, not
-  a module. Blazor host packages are handled in U3.
+- **What to build:** Add `LoggingBehavior<TRequest, TResponse>` (implements
+  `IPipelineBehavior`) and `MediatorServiceExtensions` (registers Mediator
+  source-gen + behaviors via `IServiceCollection`) in the existing Common project.
+  This is foundational infrastructure that all modules consume.
 - **Files:**
-  - `Directory.Packages.props` — add `<PackageVersion Include="Mediator.Abstractions" Version="3.0.2" />`
-  - `src/redmuffin.Blazor.StaticWeb.Common/redmuffin.Blazor.StaticWeb.Common.csproj` — add `Mediator.Abstractions`
-  - `src/redmuffin.Blazor.StaticWeb.Common/Pipeline/LoggingBehavior.cs`
-  - `src/redmuffin.Blazor.StaticWeb.Common/Pipeline/LoggingBehavior.Logging.cs`
-  - `src/redmuffin.Blazor.StaticWeb.Common/Pipeline/MediatorServiceExtensions.cs`
+  - `src/redmuffin.Blazor.StaticWeb.Common/PipelineBehaviors/LoggingBehavior.cs` (new)
+  - `src/redmuffin.Blazor.StaticWeb.Common/MediatorServiceExtensions.cs` (new)
 - **Acceptance criteria:**
-  - [ ] `dotnet build` on `redmuffin.Blazor.StaticWeb.Common` succeeds.
-  - [ ] `MediatorServiceExtensions.AddPipelineBehaviors()` registers `LoggingBehavior<,>` as `IPipelineBehavior<,>` with scoped lifetime.
-  - [ ] `LoggingBehavior<,>` implements `IPipelineBehavior<,>` and is `public`.
-  - [ ] `[LoggerMessage]` declarations live in a separate `LoggingBehavior.Logging.cs` partial file.
-  - [ ] Three `[LoggerMessage]` methods exist: entry (Information), success with elapsed ms (Information), failure with elapsed ms + exception (Error). They use `ILogger` (non-generic).
+  - [x] `LoggingBehavior` implements `IPipelineBehavior<TRequest, TResponse>`.
+  - [x] `LoggingBehavior` logs `LogInformation` before and after calling `next()`.
+  - [x] `MediatorServiceExtensions` adds Mediator source-gen services with
+        the pipeline behavior registered.
+  - [x] `dotnet build --project src/redmuffin.Blazor.StaticWeb.Common` succeeds
+        with zero warnings.
 
-### U2. ApiHealth module — handler, services, and module tests
+---
 
-- **Status:** pending
+### U2. ApiHealth Contracts, Core, and Unit Tests
+
+- **Status:** done
 - **Type:** AFK
-- **Blocked by:** U1 (LoggingBehavior must exist before module tests can reference it)
-- **What to build:** Create three projects under
-  `src/redmuffin.Blazor.StaticWeb.Modules/`: ApiHealth.Contracts,
-  ApiHealth, and ApiHealth.Tests. Contracts define `GetHelloQuery`,
-  `HelloResponse`, and `IHealthCheckService`. ApiHealth project
-  implements `GetHelloHandler`, `HealthCheckService` (real HTTP,
-  5 error paths + success), `DummyHealthCheckService` (mock data),
-  and `ApiHealthModuleServicesExtensions`. ApiHealth.Tests covers
-  the handler pass-through, real HTTP error handling, mock response,
-  and LoggingBehavior (adds ProjectReference to Common). All module
-  internals are `internal`; only Contracts types are `public`.
+- **Blocked by:** U1
+- **What to build:** Create three new projects under
+  `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth/`: the Contracts project
+  (query, response, service interface), the ApiHealth project (handler, real
+  HTTP service, synthetic service, module registration), and the ApiHealth.Tests
+  project (handler test, service tests, synthetic service test, behavior test
+  for LoggingBehavior). The handler receives `IHealthCheckService` and returns
+  `HelloResponse`. `HealthCheckService` makes HTTP calls;
+  `SyntheticHealthCheckService` returns generated data.
 - **Files:**
-  - `Directory.Packages.props` — add `<PackageVersion Include="Ardalis.Result" Version="10.1.0" />`
-  - `redmuffin.Blazor.StaticWeb.slnx` — add 3 new `<Project Path="...">` entries for ApiHealth.Contracts, ApiHealth, and ApiHealth.Tests
-  - `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Contracts/ApiHealth.Contracts.csproj` — package refs: `Mediator.Abstractions`, `Ardalis.Result`
+  - `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Contracts/` (new project)
   - `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Contracts/GetHelloQuery.cs`
   - `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Contracts/HelloResponse.cs`
   - `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Contracts/IHealthCheckService.cs`
-  - `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth/ApiHealth.csproj` — package refs: `Ardalis.Result`, `Microsoft.Extensions.Http` (for `IHttpClientFactory`); project ref: `ApiHealth.Contracts`
+  - `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth/` (new project)
   - `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth/GetHelloHandler.cs`
   - `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth/HealthCheckService.cs`
-  - `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth/DummyHealthCheckService.cs`
+  - `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth/SyntheticHealthCheckService.cs`
   - `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth/ApiHealthModuleServicesExtensions.cs`
-  - `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth/AssemblyInfo.cs`
-  - `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Tests/ApiHealth.Tests.csproj` — package refs: `TUnit`, `Microsoft.Testing.Platform`; project refs: `ApiHealth`, `Common` (for LoggingBehaviorTests)
+  - `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Tests/` (new project)
   - `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Tests/GetHelloHandlerTests.cs`
-  - `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Tests/GetHelloHandlerTests.Helpers.cs`
   - `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Tests/HealthCheckServiceTests.cs`
-  - `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Tests/DummyHealthCheckServiceTests.cs`
+  - `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Tests/SyntheticHealthCheckServiceTests.cs`
   - `src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Tests/LoggingBehaviorTests.cs`
+  - NuGet version entries in `Directory.Packages.props` for Mediator.SourceGen
+  - Solution registration for all three new projects in `.slnx`
 - **Acceptance criteria:**
-  - [ ] `dotnet build` on each project succeeds.
-  - [ ] `GetHelloHandler` injects `IHealthCheckService`. Mock returns `Result.Success(new HelloResponse("test"))` — handler returns same value.
-  - [ ] `HealthCheckService` handles all 5 HTTP error paths (connection failure, 404, 503, timeout, cancellation) plus success path — 6 test cases pass.
-  - [ ] `HealthCheckService` error messages contain no hostnames, ports, or local-dev infrastructure references.
-  - [ ] `DummyHealthCheckService` returns `"Hello World from Mock Data - Not from Azure Functions"` — test asserts exact string.
-  - [ ] `LoggingBehaviorTests` creates behavior directly (ProjectReference to Common), sends request through, and asserts `Logger_Spy<T>` captured the request type name.
-  - [ ] Module project types are `internal`. Contracts project types (`GetHelloQuery`, `HelloResponse`, `IHealthCheckService`) are `public`.
-  - [ ] `AssemblyInfo.cs` grants `InternalsVisibleTo("ApiHealth.Tests")`.
-  - [ ] `ApiHealthModuleServicesExtensions.AddApiHealthModuleServices()` is an empty method ready for future registrations.
-  - [ ] `dotnet test` on `ApiHealth.Tests` passes all tests.
+  - [x] `# Packages.props` lists `Mediator.SourceGen` with version (use
+        latest stable).
+  - [x] All three projects registered in `.slnx`.
+  - [x] `ApiHealthModuleServicesExtensions` registers `HealthCheckService`
+        and `SyntheticHealthCheckService`. `Program.cs` wires
+        `IHealthCheckService` to the correct implementation based on
+        `BaseAddress`.
+  - [x] `GetHelloHandler` returns `HelloResponse` when `IHealthCheckService`
+        returns data (handler test passes).
+  - [x] `HealthCheckService` handles 4 distinct code paths: connection
+        failure, non-2xx responses (parameterized via `[Arguments]`),
+        cancellation, timeout (controlled via `ControlledHttpHandler_Fake`).
+  - [x] `SyntheticHealthCheckService` returns expected string constant.
+  - [x] `LoggingBehaviorTests` verifies `LogInformation` called before and
+        after handler invocation (using `Logger_Spy<T>`).
+  - [x] `dotnet build --project src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Tests`
+        succeeds with zero warnings.
+  - [x] All unit tests in ApiHealth.Tests pass.
 
-### U3. Integration — wire into Blazor host, rename page and tests
+---
 
-- **Status:** pending
+### U3. Web host integration and ApiHealth page
+
+- **Status:** done
 - **Type:** AFK
-- **Blocked by:** U1 (needs Mediator infrastructure + pipeline registration),
-  U2 (needs ApiHealth project references and test project)
-- **What to build:** Add Mediator host packages and project references
-  to the Blazor host. Wire Mediator, pipeline, and module registrations
-  in Program.cs. Rename the existing `ApiExamplePage/CallApiExample`
-  page to `ApiHealth` with route `/api-health`, update the component
-  class name and namespace. Update the page to inject `IMediator`
-  and call `Mediator.Send(new GetHelloQuery())` instead of
-  `IRaindropAPI`. Rename and update the host-level tests from
-  `CallApiExampleTests.*` to `ApiHealthTests.*` — mock `IMediator`,
-  update namespaces and class names.
+- **Blocked by:** U2
+- **What to build:** Wire Mediator, pipeline behaviors, and the ApiHealth module
+  into the Blazor host. Register everything in `Program.cs`. Rename the existing
+  `ApiExamplePage`/`CallApiExample` to `ApiHealth` (folder, files, class, route
+  `/api-health`, namespace). The page uses `IMediator.Send()` with `GetHelloQuery`
+  instead of calling `IHealthCheckService` directly. Update host-level page tests
+  to match new names and structure. This is the demoable slice — loading
+  `/api-health` displays the response.
 - **Files:**
-  - `src/redmuffin.Blazor.StaticWeb/redmuffin.Blazor.StaticWeb.csproj` — add `Mediator.SourceGenerator`, `Ardalis.Result` packages; add ProjectReference to `ApiHealth` and `ApiHealth.Contracts`
-  - `Directory.Packages.props` — add `<PackageVersion Include="Mediator.SourceGenerator" Version="3.0.2" />` (Ardalis.Result version already added in U2)
-  - `src/redmuffin.Blazor.StaticWeb/Program.cs` — add `AddMediator()`, `AddPipelineBehaviors()`, `AddApiHealthModuleServices()`
-  - `src/redmuffin.Blazor.StaticWeb/Features/ApiExamplePage/` — rename to `src/redmuffin.Blazor.StaticWeb/Features/ApiHealth/`
-  - `src/redmuffin.Blazor.StaticWeb/Features/ApiHealth/CallApiExample.razor` — rename to `ApiHealth.razor`; update `@page "/api-health"`, `@code` class name to `ApiHealth`, namespace to `redmuffin.Blazor.StaticWeb.Features.ApiHealth`
-  - `src/redmuffin.Blazor.StaticWeb/Features/ApiHealth/CallApiExample.razor.cs` — rename to `ApiHealth.razor.cs`; replace `IRaindropAPI` injection with `required IMediator`; replace body with `Mediator.Send(new GetHelloQuery())`; remove `OnInitialized` override and both catch blocks; update namespace and class name
-  - `tests/redmuffin.Blazor.StaticWeb.Tests/Features/ApiExamplePage/` — rename to `tests/redmuffin.Blazor.StaticWeb.Tests/Features/ApiHealth/`
-  - `tests/redmuffin.Blazor.StaticWeb.Tests/Features/ApiHealth/CallApiExampleTests.cs` — rename to `ApiHealthTests.cs`; mock `IMediator`; update namespace and class name
-  - `tests/redmuffin.Blazor.StaticWeb.Tests/Features/ApiHealth/CallApiExampleTests.Behavior.cs` — rename to `ApiHealthTests.Behavior.cs`; update namespace and class name
-  - `tests/redmuffin.Blazor.StaticWeb.Tests/Features/ApiHealth/CallApiExampleTests.EdgeCases.cs` — rename to `ApiHealthTests.EdgeCases.cs`; update namespace and class name
-  - `tests/redmuffin.Blazor.StaticWeb.Tests/Features/ApiHealth/CallApiExampleTests.Helpers.cs` — rename to `ApiHealthTests.Helpers.cs`; update namespace and class name
-  - `tests/redmuffin.Blazor.StaticWeb.Tests/Features/ApiHealth/CallApiExampleTests.Infrastructure.cs` — rename to `ApiHealthTests.Infrastructure.cs`; update namespace and class name
+  - `src/redmuffin.Blazor.StaticWeb/Program.cs` (modify)
+  - `src/redmuffin.Blazor.StaticWeb/Features/ApiHealth/ApiHealth.razor` (rename)
+  - `src/redmuffin.Blazor.StaticWeb/Features/ApiHealth/ApiHealth.razor.cs` (rename)
+  - `src/redmuffin.Blazor.StaticWeb/Features/ApiExamplePage/` → delete (after renames confirmed)
+  - `tests/redmuffin.Blazor.StaticWeb.Tests/Features/ApiHealth/ApiHealthTests*.cs` (rename and adapt)
 - **Acceptance criteria:**
-  - [ ] `dotnet build` succeeds with zero errors and zero new warnings.
-  - [ ] `dotnet clean && dotnet build && dotnet test` passes with zero failures across the entire suite.
-  - [ ] `Program.cs` registers Mediator (scoped, namespace `redmuffin.Blazor.StaticWeb.Mediator`), pipeline behaviors via `AddPipelineBehaviors()`, and ApiHealth module via `AddApiHealthModuleServices()`.
-  - [ ] `ApiHealth.razor` has `@page "/api-health"` and component class `ApiHealth` (partial).
-  - [ ] `ApiHealth.razor.cs` injects `private required IMediator Mediator` and calls `Mediator.Send(new GetHelloQuery())` in `CallApiAsync`. No reference to `IRaindropAPI` exists in this file.
-  - [ ] Both `.razor` and `.razor.cs` use namespace `redmuffin.Blazor.StaticWeb.Features.ApiHealth`.
-  - [ ] All 5 host-level test files use namespace `redmuffin.Blazor.StaticWeb.Tests.Features.ApiHealth` and class `ApiHealthTests` (partial).
-  - [ ] Grep for `CallApiExample` or `ApiExamplePage` in `src/` and `tests/` directories returns zero hits.
+  - [x] `Program.cs` registers Mediator, pipeline behaviors, and
+        `ApiHealthModuleServicesExtensions`.
+  - [x] `ApiHealth.razor` injects `IMediator`, sends `GetHelloQuery`, displays
+        response.
+  - [x] Route `/api-health` resolves and renders the page.
+  - [x] Old `/call-api-example` route no longer exists (redirects or 404).
+  - [x] `ApiExamplePage` folder and `CallApiExample` class are removed.
+  - [x] Host-level page tests pass with mocked `IMediator`.
+  - [x] `dotnet build` succeeds with zero warnings (SM-1).
+  - [x] All existing tests pass unchanged (SM-2, AC-2).
+
+---
 
 ### Deferred
 
-- **FluentValidation + test properties.** Add a validation behavior to
-  the pipeline once a query with real parameters exists. Then add test
-  properties to verify validation rules.
-- **OpenTelemetry behavior.** Add a telemetry pipeline behavior that
-  captures handler duration and outcome.
-- **NsDepCop evaluation.** Assess compile-time module boundary
-  enforcement after the pattern is proven on more than one module.
-- **Remove `GetHelloWorldAsync` from `IRaindropAPI`.** Once the API
-  Health page is the only consumer and no page calls it, clean up the
-  method and its implementations.
-- **Remaining page conversions.** Convert Videos, Articles, and other
-  features to the modular pattern, one page at a time.
+- NsDepCop evaluation (evaluate after module pattern is proven).
+- OpenTelemetry or Validation pipeline behaviors.

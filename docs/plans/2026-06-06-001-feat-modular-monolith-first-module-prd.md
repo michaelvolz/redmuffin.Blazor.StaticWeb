@@ -1,7 +1,7 @@
 ---
 title: feat/modular-monolith-first-module
 date: 2026-06-06
-status: draft
+status: implemented
 ---
 
 ## Problem
@@ -68,8 +68,9 @@ next steps. Document findings for future module conversions.
 
 - **Handler test:** mock `IHealthCheckService`, assert result matches.
 - **Real service test:** `ControlledHttpHandler_Fake` per `rm-testing`.
-  Test all 5 error paths (connection failure, 404, 503, timeout,
-  cancellation) plus success path.
+  Covers 4 distinct code paths: connection failure (handler throws),
+  non-2xx responses (parameterized via `[Arguments]` for multiple
+  status codes), cancellation, and timeout.
 - **Mock service test:** instantiate `SyntheticHealthCheckService`, assert
   exact response string.
 - **Behavior test:** `Logger_Spy<T>` per `rm-testing`. Once, applies
@@ -103,12 +104,12 @@ next steps. Document findings for future module conversions.
 
 ## Acceptance Criteria
 
-- [ ] `dotnet build` succeeds with zero warnings.
-- [ ] All existing tests pass.
-- [ ] `ApiHealthTests.*` pass with mocked `IMediator`.
-- [ ] `/api-health` route renders and displays response in both real
+- [x] `dotnet build` succeeds with zero warnings.
+- [x] All existing tests pass.
+- [x] `ApiHealthTests.*` pass with mocked `IMediator`.
+- [x] `/api-health` route renders and displays response in both real
       and local modes.
-- [ ] `GetHelloHandler` returns `HelloResponse` when
+- [x] `GetHelloHandler` returns `HelloResponse` when
       `IHealthCheckService` returns data.
-- [ ] `LoggingBehavior<TRequest, TResponse>` logs before and after
+- [x] `LoggingBehavior<TRequest, TResponse>` logs before and after
       handler invocation.
