@@ -25,29 +25,40 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" GeneratePathProperty="true" />
   </ItemGroup>
 
-  <!-- Extract CA2007 analyzer DLLs and BuildHost from .nupkg, and copy fixer to publish -->
+  <!-- Bundle analyzer DLLs and BuildHost into output and publish directories -->
   <Target Name="CopyAnalyzerDll" AfterTargets="Build">
-    <PropertyGroup>
-      <_NupkgPath>$(NuGetPackageRoot)microsoft.codeanalysis.netanalyzers/10.0.300/microsoft.codeanalysis.netanalyzers.10.0.300.nupkg</_NupkgPath>
-      <_WorkspaceNupkg>$(PkgMicrosoft_CodeAnalysis_Workspaces_MSBuild)/microsoft.codeanalysis.workspaces.msbuild.5.3.0.nupkg</_WorkspaceNupkg>
-    </PropertyGroup>
-    <!-- Analyzer DLLs -->
-    <Exec Command="unzip -o -j &quot;$(_NupkgPath)&quot; &quot;analyzers/dotnet/Microsoft.CodeAnalysis.NetAnalyzers.dll&quot; &quot;analyzers/dotnet/cs/Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll&quot; -d &quot;$(OutputPath)&quot;"
-          ContinueOnError="true" />
-    <Exec Command="unzip -o -j &quot;$(_NupkgPath)&quot; &quot;analyzers/dotnet/Microsoft.CodeAnalysis.NetAnalyzers.dll&quot; &quot;analyzers/dotnet/cs/Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll&quot; -d &quot;$(ProjectDir)/publish/&quot;"
-          ContinueOnError="true"
-          Condition="Exists('$(ProjectDir)/publish/')" />
-    <!-- MSBuildWorkspace BuildHost (needed for OpenProjectAsync) -->
-    <Exec Command="unzip -o -j &quot;$(_WorkspaceNupkg)&quot; &quot;contentFiles/any/any/BuildHost-netcore/*&quot; -d &quot;$(OutputPath)BuildHost-netcore/&quot;"
-          ContinueOnError="true" />
-    <Exec Command="unzip -o -j &quot;$(_WorkspaceNupkg)&quot; &quot;contentFiles/any/any/BuildHost-netcore/*&quot; -d &quot;$(ProjectDir)/publish/BuildHost-netcore/&quot;"
-          ContinueOnError="true"
-          Condition="Exists('$(ProjectDir)/publish/')" />
-    <!-- Copy fixer output DLL to publish directory -->
-    <Exec Command="cp &quot;$(OutputPath)/ConfigureAwaitFixer.dll&quot; &quot;$(ProjectDir)/publish/ConfigureAwaitFixer.dll&quot;"
-          Condition="Exists('$(ProjectDir)/publish/')" />
-    <Exec Command="cp &quot;$(OutputPath)/ConfigureAwaitFixer&amp;&quot; &quot;$(ProjectDir)/publish/ConfigureAwaitFixer&amp;&quot;"
-          Condition="Exists('$(ProjectDir)/publish/') And Exists('$(OutputPath)/ConfigureAwaitFixer&amp;')" />
+    <!-- Guard: GeneratePathProperty must have resolved -->
+    <Error Text="PkgMicrosoft_CodeAnalysis_NetAnalyzers is not set. Verify the PackageReference resolves and dotnet restore has run."
+           Condition="'$(PkgMicrosoft_CodeAnalysis_NetAnalyzers)' == ''" />
+
+    <!-- Ensure publish directory exists for dotnet pack -->
+    <MakeDir Directories="$(ProjectDir)publish" />
+
+    <!-- Analyzer DLLs: copy from NuGet cache to build output (for runtime Assembly.LoadFrom) -->
+    <Copy SourceFiles="$(PkgMicrosoft_CodeAnalysis_NetAnalyzers)\analyzers\dotnet\Microsoft.CodeAnalysis.NetAnalyzers.dll"
+          DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(PkgMicrosoft_CodeAnalysis_NetAnalyzers)\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll"
+          DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+
+    <!-- Analyzer DLLs: copy from output to publish (for NuGet packaging) -->
+    <Copy SourceFiles="$(OutputPath)Microsoft.CodeAnalysis.NetAnalyzers.dll;$(OutputPath)Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll"
+          DestinationFolder="$(ProjectDir)publish" SkipUnchangedFiles="true" />
+
+    <!-- BuildHost: populated by contentFiles from Workspaces.MSBuild package. Copy to publish. -->
+    <ItemGroup>
+      <_BuildHostNetCore Include="$(OutputPath)BuildHost-netcore\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_BuildHostNetCore)"
+          DestinationFiles="@(_BuildHostNetCore->'$(ProjectDir)publish\BuildHost-netcore\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true"
+          Condition="@(_BuildHostNetCore->Count()) &gt; 0" />
+
+    <!-- Fixer output: copy all DLLs, EXEs, and JSON files from output root to publish -->
+    <ItemGroup>
+      <_FixerOutput Include="$(OutputPath)*.dll;$(OutputPath)*.exe;$(OutputPath)*.json" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_FixerOutput)"
+          DestinationFolder="$(ProjectDir)publish" SkipUnchangedFiles="true" />
   </Target>
 
   <!-- README (packed as PackageReadmeFile) -->
