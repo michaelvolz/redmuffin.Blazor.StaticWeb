@@ -8,6 +8,15 @@
         "resolved": "2.1.0",
         "contentHash": "OOHNlH7GF39qk0Pv4cIQWA99hUh3nujDgGE2nADPpw88lD7s2qwlxEhuJIBfstC8ng3B1yY6SQy2JW/tddlMAQ=="
       },
+      "Mediator.Abstractions": {
+        "type": "Direct",
+        "requested": "[3.0.2, )",
+        "resolved": "3.0.2",
+        "contentHash": "TytjnyN8gLObZBxkM7HHPFJF3LHtk6Y8mHW56ONuXRuVEK6Fmed3f0z79H9TpmoZQP2zQAIS4/0O9R2w0v02qw==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0"
+        }
+      },
       "Meziantou.Analyzer": {
         "type": "Direct",
         "requested": "[3.0.98, )",
@@ -47,7 +56,7 @@
         "type": "Direct",
         "requested": "[1.0.2, )",
         "resolved": "1.0.2",
-        "contentHash": "PMuX/FCqT7s33g+UifU/QpFFWl+w1Ls2tqKAH+AKmadAhfmDoE4qWWK+zkvdEjeXZfN3gKO43JM/RwKT2U2Blg=="
+        "contentHash": "iuClZOFwy5e0TeHzz4FOOASsohuaPCBrw9yt3c7bEgNsLg7rhNjG6uUWrR7JzXFwR+xdpvHOBoIbH9ixFuL10g=="
       },
       "Roslynator.Analyzers": {
         "type": "Direct",
