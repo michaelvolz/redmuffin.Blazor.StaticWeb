@@ -1,10 +1,12 @@
-@page "/call-api-example"
+@page "/api-health"
+@using Mediator
+@using redmuffin.Blazor.StaticWeb.Modules.ApiHealth.Contracts
 
-<PageTitle>Call API Example</PageTitle>
+<PageTitle>ApiHealth</PageTitle>
 
-<h1>Call API Example</h1>
+<h1>ApiHealth</h1>
 
-<button class="button" @onclick="CallApiAsync">Call Hello World API</button>
+<button class="button" @onclick="CallApiAsync">Call ApiHealth</button>
 
 @if (!string.IsNullOrEmpty(_apiResponse))
 {

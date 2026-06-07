@@ -54,6 +54,7 @@
     <PackageReference Include="Blazored.LocalStorage" />
     <PackageReference Include="LZStringCSharp" />
     <PackageReference Include="Markdig" />
+    <PackageReference Include="Mediator.SourceGenerator" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
@@ -81,6 +82,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Common\redmuffin.Blazor.StaticWeb.Common.csproj" />
+    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Modules\ApiHealth\ApiHealth.csproj" />
+    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Modules\ApiHealth.Contracts\ApiHealth.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

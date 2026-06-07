@@ -1,40 +1,40 @@
+using Mediator;
 using Microsoft.AspNetCore.Components;
-using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
+using redmuffin.Blazor.StaticWeb.Modules.ApiHealth.Contracts;
 
-namespace redmuffin.Blazor.StaticWeb.Features.ApiExamplePage;
+namespace redmuffin.Blazor.StaticWeb.Features.ApiHealth;
 
-public partial class CallApiExample
+#pragma warning disable MA0049 // Type name matches namespace — standard Blazor component pattern
+public partial class ApiHealth
+#pragma warning restore MA0049
 {
     private string? _apiResponse;
     private string? _errorMessage;
 
     [Inject]
-    private IRaindropAPI RaindropAPI { get; set; } = default!;
+    private IMediator Mediator { get; set; } = default!; // Injected by DI container
 
     protected override void OnInitialized()
     {
 #pragma warning disable MA0015 // Not a method parameter — validating Blazor [Inject] property
-        ArgumentNullException.ThrowIfNull(RaindropAPI);
+        ArgumentNullException.ThrowIfNull(Mediator);
 #pragma warning restore MA0015
         base.OnInitialized();
     }
 
     private async Task CallApiAsync()
     {
-#pragma warning disable MA0015 // Not a method parameter — validating Blazor [Inject] property
-        ArgumentNullException.ThrowIfNull(RaindropAPI);
-#pragma warning restore MA0015
-
         _apiResponse = null;
         _errorMessage = null;
+
         try
         {
-            _apiResponse = await RaindropAPI.GetHelloWorldAsync().ConfigureAwait(false);
+            var response = await Mediator.Send(new GetHelloQuery()).ConfigureAwait(false);
+            _apiResponse = response.Message;
         }
         catch (HttpRequestException ex)
         {
             _errorMessage = $"Error calling API: {ex.Message}";
-            // Log the full exception if needed for debugging
             Console.WriteLine(ex);
         }
         catch (Exception ex)

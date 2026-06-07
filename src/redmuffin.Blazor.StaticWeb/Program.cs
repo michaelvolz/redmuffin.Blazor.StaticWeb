@@ -1,8 +1,10 @@
 using Blazored.LocalStorage;
+using Mediator;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb;
+using redmuffin.Blazor.StaticWeb.Common;
 using redmuffin.Blazor.StaticWeb.Core.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
@@ -11,6 +13,8 @@ using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Services;
 using redmuffin.Blazor.StaticWeb.Features.DebugPage.Services;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
+using redmuffin.Blazor.StaticWeb.Modules.ApiHealth;
+using redmuffin.Blazor.StaticWeb.Modules.ApiHealth.Contracts;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -45,6 +49,26 @@ builder.Services.AddScoped<LocalStorageDebugService>();
 
 // Register delay provider for production (real delays for UX)
 builder.Services.AddScoped<IDelayProvider, ProductionDelayProvider>();
+
+// Register Mediator with source-generated handlers and pipeline behaviors
+builder.Services.AddMediator(options =>
+{
+    options.ServiceLifetime = ServiceLifetime.Scoped;
+});
+builder.Services.AddModulePipelineBehaviors();
+builder.Services.AddApiHealthModule();
+
+// Register IHealthCheckService: synthetic in dev (no real API backend), real HTTP otherwise
+builder.Services.AddScoped<IHealthCheckService>(serviceProvider =>
+{
+    var hostEnv = serviceProvider.GetRequiredService<IWebAssemblyHostEnvironment>();
+    if (hostEnv.BaseAddress.Contains("localhost", StringComparison.OrdinalIgnoreCase))
+    {
+        return serviceProvider.GetRequiredService<SyntheticHealthCheckService>();
+    }
+
+    return serviceProvider.GetRequiredService<HealthCheckService>();
+});
 
 // Register Raindrop services with factory pattern
 builder.Services.AddScoped<IRaindropAPIFactory, RaindropAPIFactory>();
