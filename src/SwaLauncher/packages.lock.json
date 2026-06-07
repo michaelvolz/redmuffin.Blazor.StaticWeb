@@ -30,7 +30,7 @@
         "type": "Direct",
         "requested": "[1.0.2, )",
         "resolved": "1.0.2",
-        "contentHash": "PMuX/FCqT7s33g+UifU/QpFFWl+w1Ls2tqKAH+AKmadAhfmDoE4qWWK+zkvdEjeXZfN3gKO43JM/RwKT2U2Blg=="
+        "contentHash": "iuClZOFwy5e0TeHzz4FOOASsohuaPCBrw9yt3c7bEgNsLg7rhNjG6uUWrR7JzXFwR+xdpvHOBoIbH9ixFuL10g=="
       },
       "Roslynator.Analyzers": {
         "type": "Direct",

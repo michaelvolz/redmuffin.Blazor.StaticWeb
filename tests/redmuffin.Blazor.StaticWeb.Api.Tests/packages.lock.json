@@ -34,7 +34,7 @@
         "type": "Direct",
         "requested": "[1.0.2, )",
         "resolved": "1.0.2",
-        "contentHash": "PMuX/FCqT7s33g+UifU/QpFFWl+w1Ls2tqKAH+AKmadAhfmDoE4qWWK+zkvdEjeXZfN3gKO43JM/RwKT2U2Blg=="
+        "contentHash": "iuClZOFwy5e0TeHzz4FOOASsohuaPCBrw9yt3c7bEgNsLg7rhNjG6uUWrR7JzXFwR+xdpvHOBoIbH9ixFuL10g=="
       },
       "TUnit": {
         "type": "Direct",
@@ -874,6 +874,7 @@
       "redmuffin.blazor.staticweb.common": {
         "type": "Project",
         "dependencies": {
+          "Mediator.Abstractions": "[3.0.2, )",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.7, )",
           "Microsoft.Extensions.Logging": "[9.0.16, )"
         }
@@ -883,6 +884,15 @@
         "requested": "[1.4.0, )",
         "resolved": "1.4.0",
         "contentHash": "6ph8mpaQx0KL0COYRt0kI8MB9gSp1PtKijKMhJU//+aVFgKAJLKDesG/+26JSaVCOrHNgPf12wpfoyRcMYOeXg=="
+      },
+      "Mediator.Abstractions": {
+        "type": "CentralTransitive",
+        "requested": "[3.0.2, )",
+        "resolved": "3.0.2",
+        "contentHash": "TytjnyN8gLObZBxkM7HHPFJF3LHtk6Y8mHW56ONuXRuVEK6Fmed3f0z79H9TpmoZQP2zQAIS4/0O9R2w0v02qw==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0"
+        }
       },
       "Microsoft.ApplicationInsights.WorkerService": {
         "type": "CentralTransitive",

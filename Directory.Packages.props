@@ -28,6 +28,7 @@
     <AsyncFixerVersion>2.1.0</AsyncFixerVersion>
     <SystemCommandLineVersion>2.0.7</SystemCommandLineVersion>
     <MicrosoftCodeAnalysisVersion>5.3.0</MicrosoftCodeAnalysisVersion>
+    <MediatorVersion>3.0.2</MediatorVersion>
   </PropertyGroup>
   <ItemGroup Label="MicrosoftExtensions">
     <PackageVersion Include="coverlet.collector" Version="10.0.0">
@@ -38,6 +39,8 @@
     <PackageVersion Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="YamlDotNet" Version="17.1.0" />
+    <PackageVersion Include="Mediator.Abstractions" Version="$(MediatorVersion)" />
+    <PackageVersion Include="Mediator.SourceGenerator" Version="$(MediatorVersion)" />
   </ItemGroup>
   <ItemGroup Label="AspNetCore">
     <PackageVersion Include="Microsoft.AspNetCore.Components.Analyzers" Version="$(MicrosoftExtensionsVersion)" />
