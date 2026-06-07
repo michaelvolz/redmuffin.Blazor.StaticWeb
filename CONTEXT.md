@@ -54,6 +54,15 @@ _Avoid_: local storage (the raw API), Blazored
 
 ### Infrastructure
 
+**Synthetic**:
+An application-code implementation that returns artificially generated
+data in place of a live backend service. Used during development and
+design iteration so pages render with realistic content without requiring
+the full backend stack. Lives in the application project alongside the
+real implementation — distinct from test doubles (Stubs, Fakes, Mocks)
+which belong in test projects.
+_Avoid_: fake, mock, dummy, stub, placeholder (for data substitution)
+
 **Azure Functions API**:
 The serverless backend tier. Currently handles Raindrop OAuth code exchange
 and proxied article/video listing. Uses PrefixedLogger for structured logging
