@@ -66,9 +66,11 @@ itself is clean. It does NOT mean the build passes or tests pass. Use LSP
 diagnostics as an edit confirmation, never as a build replacement.
 
 **Workflow**: edit → LSP confirms zero diagnostics → build → tests → commit.
-Never skip a step. Always use `dotnet clean && dotnet build && dotnet run`
-for test runs — a stale binary silently passes tests against old source. Never
-batch-commit multiple changes without re-running the full build+test chain.
+Never skip a step. Never use `dotnet test` for TUnit test runs — a stale
+binary from `dotnet test` silently passes tests against old source. Use
+`dotnet clean && dotnet build && dotnet run` for the full verification
+cycle. Never batch-commit multiple changes without re-running the full
+build+test chain.
 
 ## COMMANDS
 
