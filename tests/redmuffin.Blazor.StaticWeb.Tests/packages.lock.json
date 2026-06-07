@@ -47,7 +47,7 @@
         "type": "Direct",
         "requested": "[1.0.2, )",
         "resolved": "1.0.2",
-        "contentHash": "PMuX/FCqT7s33g+UifU/QpFFWl+w1Ls2tqKAH+AKmadAhfmDoE4qWWK+zkvdEjeXZfN3gKO43JM/RwKT2U2Blg=="
+        "contentHash": "iuClZOFwy5e0TeHzz4FOOASsohuaPCBrw9yt3c7bEgNsLg7rhNjG6uUWrR7JzXFwR+xdpvHOBoIbH9ixFuL10g=="
       },
       "TUnit": {
         "type": "Direct",
@@ -1278,9 +1278,26 @@
           "TUnit.Core": "1.28.7"
         }
       },
+      "apihealth": {
+        "type": "Project",
+        "dependencies": {
+          "ApiHealth.Contracts": "[0.1.0, )",
+          "Mediator.Abstractions": "[3.0.2, )",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.8, )",
+          "Microsoft.Extensions.Http": "[9.0.16, )"
+        }
+      },
+      "apihealth.contracts": {
+        "type": "Project",
+        "dependencies": {
+          "Mediator.Abstractions": "[3.0.2, )"
+        }
+      },
       "redmuffin.blazor.staticweb": {
         "type": "Project",
         "dependencies": {
+          "ApiHealth": "[0.1.0, )",
+          "ApiHealth.Contracts": "[0.1.0, )",
           "Blazored.LocalStorage": "[4.5.0, )",
           "LZStringCSharp": "[1.4.0, )",
           "Markdig": "[1.2.0, )",
@@ -1294,6 +1311,7 @@
       "redmuffin.blazor.staticweb.common": {
         "type": "Project",
         "dependencies": {
+          "Mediator.Abstractions": "[3.0.2, )",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.7, )",
           "Microsoft.Extensions.Logging": "[9.0.16, )"
         }
@@ -1327,6 +1345,15 @@
         "requested": "[1.2.0, )",
         "resolved": "1.2.0",
         "contentHash": "LoBVOgeDWfHthWTPzQJkjDkxImqBXRA5XpuTyjdM4SAURyWQGG1CbEEbfPbmvAavggnAZPaTYpbhIPUurWvIXA=="
+      },
+      "Mediator.Abstractions": {
+        "type": "CentralTransitive",
+        "requested": "[3.0.2, )",
+        "resolved": "3.0.2",
+        "contentHash": "TytjnyN8gLObZBxkM7HHPFJF3LHtk6Y8mHW56ONuXRuVEK6Fmed3f0z79H9TpmoZQP2zQAIS4/0O9R2w0v02qw==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0"
+        }
       },
       "Microsoft.AspNetCore.Components.Authorization": {
         "type": "CentralTransitive",
@@ -1376,8 +1403,8 @@
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "CentralTransitive",
         "requested": "[10.0.8, )",
-        "resolved": "10.0.7",
-        "contentHash": "Z6mfFEaFcwCfSboxJwOLfu7/31npCY9q70WUamHW/vRQhDvBKOT4Vf9YkZj5J6hLvJpb0oDEYfHunQZj0xxvKw=="
+        "resolved": "10.0.8",
+        "contentHash": "21nbDV60SRPWGIivsyl6lqBeEJNG1sginhhfWgRrr3Ais7aQ12To25OAHQxgoiJkjqy1aQ6RxpZBGYuTi7Ge6A=="
       },
       "Microsoft.Extensions.Http": {
         "type": "CentralTransitive",
