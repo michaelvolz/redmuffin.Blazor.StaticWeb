@@ -10,6 +10,15 @@
   <Project Path="src/redmuffin.Blazor.StaticWeb.Common/redmuffin.Blazor.StaticWeb.Common.csproj">
     <BuildType Solution="Debug-Sass|*" Project="Debug" />
   </Project>
+  <Project Path="src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Contracts/ApiHealth.Contracts.csproj">
+    <BuildType Solution="Debug-Sass|*" Project="Debug" />
+  </Project>
+  <Project Path="src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth/ApiHealth.csproj">
+    <BuildType Solution="Debug-Sass|*" Project="Debug" />
+  </Project>
+  <Project Path="src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Tests/ApiHealth.Tests.csproj">
+    <BuildType Solution="Debug-Sass|*" Project="Debug" />
+  </Project>
   <Project Path="src/redmuffin.Blazor.StaticWeb/redmuffin.Blazor.StaticWeb.csproj" />
   <Project Path="src/SwaLauncher/SwaLauncher.csproj">
     <BuildType Solution="Debug-Sass|*" Project="Debug" />
