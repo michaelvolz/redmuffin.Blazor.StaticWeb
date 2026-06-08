@@ -25,21 +25,15 @@
       },
       "Microsoft.AspNetCore.Components.Analyzers": {
         "type": "Direct",
-        "requested": "[9.0.16, )",
-        "resolved": "9.0.16",
-        "contentHash": "qGwdgswNcTW0KcDYWFD3cJJTcl0elHHWpnMc3pNCYfZ2pdIHphRlJge5tfgWySIiU+tLlZBWHU9tqUx/JmFHaQ=="
+        "requested": "[10.0.7, )",
+        "resolved": "10.0.7",
+        "contentHash": "WJB74Y3kA+EzTQeCyqjEDm15gOfTa6DFVbSWA/N4Bifwg6i5isVKUa8CESCtwRytFdx3mx5eAK2Pa1rMsruYyQ=="
       },
       "Microsoft.VisualStudio.Threading.Analyzers": {
         "type": "Direct",
         "requested": "[17.14.15, )",
         "resolved": "17.14.15",
         "contentHash": "mXQPJsbuUD2ydq4/ffd8h8tSOFCXec+2xJOVNCvXjuMOq/+5EKHq3D2m2MC2+nUaXeFMSt66VS/J4HdKBixgcw=="
-      },
-      "redmuffin.Tools.ConfigureAwaitFixer": {
-        "type": "Direct",
-        "requested": "[1.0.2, )",
-        "resolved": "1.0.2",
-        "contentHash": "iuClZOFwy5e0TeHzz4FOOASsohuaPCBrw9yt3c7bEgNsLg7rhNjG6uUWrR7JzXFwR+xdpvHOBoIbH9ixFuL10g=="
       },
       "Roslynator.Analyzers": {
         "type": "Direct",
