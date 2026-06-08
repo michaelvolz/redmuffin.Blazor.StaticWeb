@@ -18,6 +18,16 @@ status: resolved
 
 # The `.targets` Hook Is Fundamentally Incompatible With MSBuildWorkspace
 
+> **Resolution (2026-06-08):** Path A was implemented via an OpenCode plugin
+> (`~/.config/opencode/plugins/configureawait-fixer.ts`, `tool.execute.after` hook)
+> that runs the fixer on every `.cs` file write — outside MSBuild entirely, zero
+> deadlock risk. The `.targets` hook still exists in the codebase as a secondary
+> safety net using `AfterTargets="ResolveReferences" BeforeTargets="CoreCompile"`.
+> `TreatWarningsAsErrors` is conditionally gated on `DotNetWatchBuild` so CA2007
+> is a hard error during `dotnet build` but a warning during `dotnet watch`. The
+> deadlock analysis below remains the authoritative reference for why `.targets` +
+> MSBuildWorkspace is architecturally impossible.
+
 ## Problem
 
 We want a transparent auto-fix on every `dotnet build`: write `await
@@ -252,6 +262,30 @@ Alternatively, wrap in a shell alias: `alias db='dotnet fix && dotnet build'`.
 
 The fixer can also be wired as a pre-commit hook (runs before every
 commit, ensures zero CA2007 violations reach the repository).
+
+### Implemented resolution: OpenCode plugin
+
+Path A was implemented as an OpenCode plugin that runs on every `.cs`
+file write/edit via `tool.execute.after` hook — no developer action
+needed, no manual `dotnet fix` step. Key design:
+
+- **Outside MSBuild:** The plugin invokes the fixer DLL directly
+  (`dotnet ~/.local/bin/ConfigureAwaitFixer/ConfigureAwaitFixer.dll`),
+  completely avoiding the MSBuild process tree and deadlock.
+- **`isBuildActive()` guard:** If a `dotnet` build is in progress, the
+  plugin skips the fixer invocation — the build's `.targets` hook will
+  catch it.
+- **Dual-hook pattern:** `tool.execute.after` (agent writes, no debounce)
+  and `file.edited` (external saves, 300ms debounce).
+- **`TreatWarningsAsErrors` gating:** `Directory.Build.props` disables
+  `TreatWarningsAsErrors` during `dotnet watch` (via `DotNetWatchBuild`
+  property). Rare plugin misses produce warnings during watch, not
+  broken hot-reload loops. Pre-commit `dotnet build` remains strict.
+
+The MSBuild `.targets` hook remains deployed as a secondary safety net
+for files modified outside an agent session. It uses
+`AfterTargets="ResolveReferences" BeforeTargets="CoreCompile"` — the
+least-deadlock-prone timing among the three approaches analyzed.
 
 ## Key Decisions Documented
 

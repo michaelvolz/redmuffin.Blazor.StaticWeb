@@ -24,6 +24,15 @@ tags:
 
 # Build-Time CA2007 Auto-Fix: Official Analyzer + MSBuildWorkspace
 
+> **Current (2026-06-08):** This research correctly predicted the architecture.
+> The fixer at `tools/src/redmuffin.Tools.ConfigureAwaitFixer/Program.cs` uses
+> `MSBuildWorkspace.OpenProjectAsync()` with the official CA2007 analyzer exactly
+> as recommended. The "separate script" path is implemented by the OpenCode
+> plugin (`~/.config/opencode/plugins/configureawait-fixer.ts`, `tool.execute.after`
+> hook). The MSBuild `.targets` hook still exists as a secondary safety net
+> (using `AfterTargets="ResolveReferences" BeforeTargets="CoreCompile"`).
+> `TreatWarningsAsErrors` is conditionally gated on `DotNetWatchBuild`.
+
 ## Context
 
 A Blazor WASM project needed `.ConfigureAwait(false)` auto-applied to all
@@ -235,7 +244,7 @@ The tool loads the project's cached compilation, runs only the official CA2007
 analyzer, and fixes exactly what it flags — nothing more, nothing less:
 
 ```csharp
-// tools/ApplyConfigureAwait/Program.cs
+// tools/src/redmuffin.Tools.ConfigureAwaitFixer/Program.cs
 var workspace = MSBuildWorkspace.Create();
 var project = await workspace.OpenProjectAsync(projectPath);
 
@@ -253,6 +262,12 @@ ApplyFixes(project, ca2007Diagnostics);
 **Result**: Only CA2007-flagged awaits fixed. TUnit `Assert.*` chains untouched
 (CA2007 correctly identifies `ThrowsAssertion<T>` as non-Task). Build passes
 on next compilation. ~3-9 seconds per project.
+
+The OpenCode plugin (`~/.config/opencode/plugins/configureawait-fixer.ts`)
+now implements this pattern as the primary delivery path: the fixer runs on
+every `.cs` file write (outside MSBuild), with an `isBuildActive()` guard to
+prevent deadlock. The MSBuild `.targets` hook coexists as a secondary safety
+net for files modified outside an agent session.
 
 ## Related
 

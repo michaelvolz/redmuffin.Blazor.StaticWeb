@@ -5,6 +5,8 @@ tags: [blazor, dotnet, infrastructure]
 problem_type: architecture
 ---
 
+> **Superseded (2026-06-08):** This 2025 doc is superseded by httpclient-to-ihttpclientfactory-migration.md (2026-04-03) which covers the same ground with current patterns. Retained as historical reference for the earlier iteration.
+
 ## Problem
 
 The codebase had multiple named `HttpClient` configurations, direct `HttpClient` injection in components and services, and inconsistent usage patterns across the Blazor WebAssembly app, Azure Functions API, and test projects. Developers had to remember client names and wrestle with configuration details instead of focusing on business logic. Local/test environments used yet another pattern (`AddScoped` with a factory lambda).

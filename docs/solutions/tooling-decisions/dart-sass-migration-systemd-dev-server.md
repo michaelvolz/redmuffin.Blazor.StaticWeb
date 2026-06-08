@@ -67,7 +67,9 @@ deploys it without any SCSS toolchain.
 
 **What was removed:**
 
-- `BuildWebCompiler2022` from `Directory.Packages.props`
+- `BuildWebCompiler2022` PackageReference from all `.csproj` files (the
+  `PackageVersion` entry in `Directory.Packages.props` remains as a
+  leftover — functionally unused, no `PackageReference` references it)
 - `compilerconfig.json`
 - `Debug-Sass` build configuration from `.csproj`
 - MSBuild swap target (replaced `app.css` → `app.min.css` in published

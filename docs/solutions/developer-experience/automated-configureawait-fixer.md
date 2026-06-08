@@ -31,7 +31,17 @@ tags:
   - build-pipeline
 ---
 
-# Automated ConfigureAwait(false) Fixer via MSBuild CoreCompileDependsOn
+# Automated ConfigureAwait(false) Fixer
+
+> **Current (2026-06-08):** The fixer now uses `MSBuildWorkspace.OpenProjectAsync()` with
+> the official Microsoft CA2007 analyzer instead of the 3-assembly semantic model
+> (sections 2-3 describe the V1 approach, retained as archival reference). The primary
+> delivery mechanism is an OpenCode plugin (`~/.config/opencode/plugins/configureawait-fixer.ts`,
+> `tool.execute.after` hook) that runs outside MSBuild on every `.cs` write — the MSBuild
+> `.targets` hook remains as a secondary path. `TreatWarningsAsErrors` is conditionally
+> gated on `DotNetWatchBuild` in `Directory.Build.props`; the Watch launch profile passes
+> `-p:TreatWarningsAsErrors=false` to tolerate transient CA2007 warnings during hot reload.
+> See §9 (plugin architecture) and §10 (TreatWarningsAsErrors gating).
 
 ## Context
 
@@ -184,9 +194,68 @@ Published output goes in `tools/net10.0/any/` via static `<None Pack="true" Pack
 
 The fixer adds approximately **1 second per project** per build (type checking + file I/O for all `.cs` files). It runs on EVERY build regardless of whether new `await` expressions exist. This overhead is acceptable for the tools solution (~4 projects, ~4s total). For larger solutions, an incremental optimization (compare file modification times against last fix timestamp) would be warranted but is not yet implemented.
 
-### 9. Formatter pipeline integration (OpenCode on-save hook)
+### 9. OpenCode plugin — primary delivery mechanism
 
-The fixer integrates with OpenCode's on-save formatting pipeline. When a `.cs` file is saved in the editor, the on-save hook triggers the ConfigureAwait fixer before `dotnet format`, ensuring `.ConfigureAwait(false)` annotations are present before the file is committed. This eliminates the build-time fix cycle entirely — annotations land in the file at save time, not at build time.
+The fixer's primary delivery mechanism is an OpenCode plugin. When any `.cs`
+file is written or edited during an agent session, a `tool.execute.after`
+hook fires the fixer on that specific file — no build required, no MSBuild
+involvement, no deadlock risk.
+
+| Component  | Path                                                       | Role                                      |
+| ---------- | ---------------------------------------------------------- | ----------------------------------------- |
+| Plugin     | `~/.config/opencode/plugins/configureawait-fixer.ts`       | Hooks `tool.execute.after` for write/edit |
+| Fixer DLL  | `~/.local/bin/ConfigureAwaitFixer/ConfigureAwaitFixer.dll` | Standalone fixer invoked by the plugin    |
+| Plugin log | `~/.config/opencode/logs/configureawait-plugin.log`        | Debug output (no `console.log`)           |
+
+**Key design decisions:**
+
+- **Dual-hook pattern:** `tool.execute.after` for agent writes (no debounce),
+  `file.edited` for external/editor saves (300ms debounce).
+- **`isBuildActive()` guard:** The plugin skips fixer invocation when a
+  `dotnet` build process is running, preventing deadlock with
+  `MSBuildWorkspace`.
+- **File-only logging:** All routine output goes to the log file.
+  `console.log` is reserved for critical errors only — `console.log` output
+  breaks the OpenCode GUI.
+- **Zero configuration:** The plugin self-registers from the `plugins/`
+  directory. No `opencode.jsonc` formatter entry needed (the previous
+  formatter-based approach was silently broken — OpenCode does not expand
+  tilde in formatter paths).
+
+This eliminates the build-time fix cycle entirely: `.ConfigureAwait(false)`
+annotations land in the file at write time, before `dotnet build` ever sees
+the code. The MSBuild `.targets` hook (§5) remains as a secondary safety net
+for files modified outside an agent session.
+
+### 10. TreatWarningsAsErrors gating during dotnet watch
+
+CA2007 must be a hard error during `dotnet build` (pre-commit enforcement)
+but a warning during `dotnet watch` (hot-reload tolerance). The plugin handles
+the common case, but a rare miss during an active watch session should not
+break the hot-reload loop.
+
+Two mechanisms work together:
+
+```xml
+<!-- Directory.Build.props (root and tools/) -->
+<TreatWarningsAsErrors
+    Condition="'$(DotNetWatchBuild)' != 'true'">true</TreatWarningsAsErrors>
+```
+
+```json
+// launchSettings.json — Watch profile
+"commandLineArgs": "watch --non-interactive -- -p:TreatWarningsAsErrors=false"
+```
+
+- **`DotNetWatchBuild` property:** The .NET SDK sets `DotNetWatchBuild=true`
+  during design-time builds triggered by `dotnet watch`. The conditional
+  `TreatWarningsAsErrors` disables error treatment only for those builds.
+- **Launch profile flag:** The `-- -p:TreatWarningsAsErrors=false` passes
+  the same property to the inner `dotnet run` compilation, covering the
+  full watch build pipeline.
+- **Pre-commit gate:** `dotnet build` (no watch) keeps
+  `TreatWarningsAsErrors=true`. Every CA2007 violation is a hard error.
+  Committed code never contains a missing `ConfigureAwait(false)`.
 
 ## Why This Matters
 
@@ -199,10 +268,11 @@ LLM writes async code → dotnet build → CA2007 error (line 9, col 15)
 
 Cost: 2 extra turns, ~8 seconds wall time, ~200 tokens per error. At 124 errors in a single batch, the LLM needed ~50 turns just to fix ConfigureAwait violations.
 
-### After the fixer
+### After the fixer (plugin + build)
 
 ```
-LLM writes async code → dotnet build → 0 errors, 0 warnings
+LLM writes async code → plugin auto-adds .ConfigureAwait(false) at write time
+  → dotnet build → 0 errors, 0 warnings
 ```
 
 Cost: zero. The fixer added `.ConfigureAwait(false)` before the compiler inspected the file.
@@ -217,12 +287,12 @@ Without semantic analysis, the fixer corrupts test files. `await Assert.That(res
 
 ## When to Apply
 
-- When LLMs (or developers) repeatedly produce CA2007/MA0004 violations in a codebase enforcing `ConfigureAwait(false)`
-- When building any Roslyn-based automated code fixer that must run during `dotnet build`
-- When the fixer must modify source files BEFORE the compiler runs (pre-compilation, not post-build)
+- When LLMs (or developers) repeatedly produce CA2007/MA0004 violations
+- When building any Roslyn-based automated code fixer
 - When `dotnet format` has been confirmed incapable of applying the desired CodeFixProvider
-- When the overhead of running the fixer on every build (~1s per project) is acceptable relative to the cost of manual fixes
-- When the consumer project can reference a NuGet package from a local feed (not yet published to nuget.org)
+- When the fixer must run outside MSBuild to avoid deadlock (see §9 for plugin architecture)
+- When the fixer must run inside MSBuild as a secondary safety net (see §5 for `.targets` hook)
+- When the consumer project can reference a NuGet package from a local feed
 
 ## Examples
 

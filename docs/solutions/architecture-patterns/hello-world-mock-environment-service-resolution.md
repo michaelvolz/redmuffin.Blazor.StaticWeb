@@ -21,6 +21,11 @@ tags:
   - testing-patterns
 ---
 
+> **Current (2026-06-08):** The factory pattern (`RaindropAPIFactory`) still
+> exists in the Raindrop module. Newer modules (ApiHealth) use the Strategy
+> pattern via Contracts — the factory approach documented here represents the
+> older architectural layer. Both patterns coexist.
+
 # Hello World Mock Example &mdash; Environment-Based Service Resolution Pattern
 
 ## Problem

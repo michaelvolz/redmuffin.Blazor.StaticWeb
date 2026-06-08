@@ -10,7 +10,7 @@ applies_when:
   - You reach for a base class and immediately need abstract members, virtual hooks, or sealed override chains
   - Testing page lifecycle requires bUnit setup that a plain class would not need
 symptoms:
-  - ~300 lines of duplicated orchestration code across Videos.razor.cs and Articles.razor.cs
+  - ~300 lines of duplicated orchestration code across `Videos.razor.cs` and `Articles.razor.cs`
   - Parallel maintenance bugs — a fix to one page's orchestration flow is not applied to the other
   - Page code-behind files exceed 200 lines with mixed concerns (state management, caching, API calls, error handling)
 tags:
@@ -27,8 +27,8 @@ tags:
 
 ## Context
 
-`Features/Raindrop/Presentation/Videos.razor.cs` (271 lines) and
-`Features/Raindrop/Presentation/Articles.razor.cs` (356 lines) implement
+`Features/VideosPage/Videos.razor.cs` (271 lines) and
+`Features/ArticlesPage/Articles.razor.cs` (356 lines) implement
 the same page lifecycle for displaying Raindrop.io content: load from
 cache, background refresh with change detection, manual refresh with badge
 state machine, error handling, image cache population, and image delegate

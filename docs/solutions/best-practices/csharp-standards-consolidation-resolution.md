@@ -23,6 +23,8 @@ tags:
   - editorconfig
 ---
 
+> **Historical (2026-06-08):** Process documentation for the April 2026 consolidation. References several skills that were since deleted (m-csharp-standards, m-output-style, m-strict-coding-standards, m-dotnet). The actual standards live in csharp-standards-final.md. Retained as process archaeology.
+
 # Consolidate C# Coding Standards and Resolve Documentation Contradictions
 
 ## Context

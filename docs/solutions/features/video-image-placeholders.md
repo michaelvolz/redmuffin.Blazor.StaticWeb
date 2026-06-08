@@ -5,6 +5,8 @@ tags: [image, video, placeholder, architecture, refactor, wasm]
 problem_type: feature
 ---
 
+> **Current (2026-06-08):** IImageValidationCacheService no longer exists. The architecture split into IImageValidator + IImageUrlResolver in Core/ImagePlaceholder/. PlaceholderGenerationService exists but interfaces changed.
+
 ## Problem
 
 The Videos page lacked image placeholder functionality entirely — if a video cover image was missing or failed to load, the card appeared blank. Meanwhile, the Articles page had its own image placeholder logic, creating duplicated code between the two pages.

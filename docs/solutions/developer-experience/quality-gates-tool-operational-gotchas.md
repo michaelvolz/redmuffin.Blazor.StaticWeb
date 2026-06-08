@@ -37,21 +37,15 @@ fresh work on this tool.
 
 ## Guidance
 
-### SDK version: always run from `tools/` directory
+### SDK version: single root `global.json`
 
-The repo root `global.json` pins SDK 9.0.100, but the tool requires .NET 10
-(pinned in `tools/global.json` to 10.0.104). Running dotnet commands from the
-repo root produces:
-
-```
-error NETSDK1045: The current .NET SDK does not support targeting .NET 10.0
-```
-
-**All commands must run with `tools/` as the working directory:**
+The repo root `global.json` pins SDK 10.0.100 (SDK consolidation, 2026-05).
+The `tools/global.json` (previously pinned SDK 10.0.104) was removed — a single
+SDK version now serves all projects. All `dotnet` commands run from the repo
+root with the workdir flag; no directory-switching needed.
 
 ```bash
-cd tools
-dotnet build src/redmuffin.Tools.QualityGates --verbosity quiet
+dotnet build tools/src/redmuffin.Tools.QualityGates --verbosity quiet
 ```
 
 ### Test execution: use `dotnet run`, NOT `dotnet test`

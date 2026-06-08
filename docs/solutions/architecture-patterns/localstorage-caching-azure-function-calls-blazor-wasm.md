@@ -5,6 +5,8 @@ tags: [blazor, azure-functions, caching, performance]
 problem_type: architecture
 ---
 
+> **Current (2026-06-08):** Cache infrastructure (RaindropItemsCache, PrunedRaindropItem) still exists. Page integration now uses RaindropPageOrchestrator (see composition-over-inheritance-orchestrator-pattern.md) — the page-level wiring documented here has been superseded.
+
 ## Problem
 
 The `Videos.razor` and `Articles.razor` pages made fresh Azure Function API calls on every page load, causing slow time-to-first-content. There was no caching layer between the Blazor components and the `IRaindropAPI` service. The `RaindropItem` model carried many fields not used in the UI, inflating the data payload unnecessarily.

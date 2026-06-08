@@ -10,6 +10,8 @@ tags:
   - pipe
 ---
 
+> **Current (2026-06-08):** The here-string pipe pattern has been superseded for commit messages by the tool-call gate pattern in design-patterns/enforcement-surfaces-and-commit-body-verification.md (Write-Output → verify → Set-Content → git commit -F). Pipe is still valid for simple cases.
+
 # Fix rm-commit ENOTDIR Error with Here-String Pipe Pattern
 
 ## Problem

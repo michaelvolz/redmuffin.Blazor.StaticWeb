@@ -24,7 +24,7 @@ tags:
 
 ## Problem
 
-The SCSS codebase had a flat structure with `.scss` files directly in the `wwwroot/scss/` directory. All imports used the deprecated `@import` directive, which makes all variables, mixins, and functions globally available &mdash; no namespace protection, no clear dependency graph. Several custom files duplicated Foundation framework features (reset/normalize, spacing utilities, typography utilities, grid system, card/button/callout components).
+The SCSS codebase had a flat structure with `.scss` files directly in the `scss/` directory (now at `src/redmuffin.Blazor.StaticWeb/scss/`). All imports used the deprecated `@import` directive, which makes all variables, mixins, and functions globally available &mdash; no namespace protection, no clear dependency graph. Several custom files duplicated Foundation framework features (reset/normalize, spacing utilities, typography utilities, grid system, card/button/callout components).
 
 ## Root Cause
 
@@ -32,17 +32,17 @@ The SCSS was organically grown without an architectural plan. Foundation was imp
 
 ## Solution
 
-### 1. 7-1 Pattern Directory Structure
+### 1. Directory Structure (simplified 4-folder)
+
+The fully-specified 7-1 pattern was reduced to a 4-folder structure matching
+the project's actual needs:
 
 ```
 scss/
-├── abstracts/     # Variables, mixins, functions, animations, placeholders
-├── base/          # Reset, typography, global
-├── components/    # Card, masonry, buttons, callouts, navigation
-├── features/      # Branding (logo), layout (site-header), content (articles, videos)
-├── layout/        # Grid
-├── utilities/     # Spacing, typography (documentation-only, Foundation provides these)
-└── vendors/       # Foundation configuration
+├── abstracts/     # Variables, mixins, functions
+├── base/          # Reset, typography, fonts
+├── components/    # Feature components, app-shell, navigation
+└── lib/           # Vendored Foundation framework
 ```
 
 ### 2. @use/@forward Migration

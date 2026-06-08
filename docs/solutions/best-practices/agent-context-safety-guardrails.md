@@ -14,6 +14,8 @@ tags:
   [context-mode, aguents-md, context-window, safety-net, routing-rules, sandbox]
 ---
 
+> **Current (2026-06-08):** AGENTS.md line numbers referenced in this doc have shifted. lock-push.js lives in ~/.config/opencode/plugins/ (global config), not the project's .opencode/ directory (which is gitignored).
+
 # Agent Context and Safety Guardrails via AGENTS.md
 
 ## Context

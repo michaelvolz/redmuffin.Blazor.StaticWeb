@@ -5,6 +5,11 @@ tags: [image, validation, cache, performance, refactor, wasm]
 problem_type: feature
 ---
 
+> **Current (2026-06-08):** The simplification was planned but never implemented.
+> The over-engineered system described below still exists in the codebase.
+> This doc is preserved as architectural intent — the WHY behind the planned
+> refactor remains valid and may be executed in a future cleanup pass.
+
 ## Problem
 
 The Articles component image validation system had become over-engineered: multiple validation phases, complex state dictionaries, progressive enhancement logic, elaborate background validation orchestration, and redundant caching layers. This made the code hard to understand and maintain while providing no measurable benefit over a simpler approach.

@@ -49,7 +49,7 @@ public interface IHealthCheckService
 internal sealed class HealthCheckService(IHttpClientFactory clientFactory)
     : IHealthCheckService { /* real HTTP */ }
 
-internal sealed class DummyHealthCheckService()
+internal sealed class SyntheticHealthCheckService()
     : IHealthCheckService { /* hardcoded mock */ }
 ```
 
@@ -58,7 +58,7 @@ startup, not per-request:
 
 ```csharp
 if (builder.HostEnvironment.BaseAddress.Contains("localhost:5233"))
-    services.AddSingleton<IHealthCheckService, DummyHealthCheckService>();
+    services.AddSingleton<IHealthCheckService, SyntheticHealthCheckService>();
 else
     services.AddSingleton<IHealthCheckService, HealthCheckService>();
 ```

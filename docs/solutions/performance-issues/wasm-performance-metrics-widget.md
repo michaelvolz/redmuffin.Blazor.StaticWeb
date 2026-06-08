@@ -5,6 +5,8 @@ tags: [blazor, wasm, performance]
 problem_type: optimization
 ---
 
+> **Current (2026-06-08):** LoadSpeed.razor renamed to PageLoadMetricsView.razor. Widget evolved into card-based architecture (TimingMetricsCard, WasmBootstrapCard, ResourceSizeCard, PerformanceBreakdownCard).
+
 ## Problem
 
 The Page Performance Widget displayed only web-level metrics (TTFB, FCP, LCP, DOM, Load) and data transfer metrics, providing zero visibility into Blazor WebAssembly-specific startup characteristics. Developers could not see WASM download time, assembly sizes, runtime initialization time, or memory heap usage, making WASM performance regressions invisible.

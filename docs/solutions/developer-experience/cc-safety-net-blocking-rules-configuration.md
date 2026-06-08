@@ -32,35 +32,26 @@ Reorder the rules in this priority sequence:
 2. Remaining Git commands (e.g., `git reset --hard`, `git clean -fd`)
 3. Other dangerous commands (e.g., `rm -rf /`, `format c:`)
 
-Example `.safety-net.json` structure:
+Example `.safety-net.json` structure (current `block_args` format):
 
 ```json
 {
+  "version": 1,
   "rules": [
     {
-      "pattern": "git push --force",
-      "action": "block",
-      "message": "Force push blocked for safety"
-    },
-    {
-      "pattern": "git push --force-with-lease",
-      "action": "block",
-      "message": "Force with lease push blocked for safety"
-    },
-    {
-      "pattern": "git reset --hard",
-      "action": "block",
-      "message": "Hard reset blocked for safety"
-    },
-    {
-      "pattern": "rm -rf /",
-      "action": "block",
-      "message": "Root deletion blocked for safety"
+      "name": "block-rtk-git-push",
+      "command": "rtk",
+      "subcommand": "git",
+      "block_args": ["push"],
+      "reason": "Only humans may push to remote repositories."
     }
-  ],
-  "exclusions": ["npm install -g", "winget install", "choco install", "pwsh rm"]
+  ]
 }
 ```
+
+The format changed from regex-based `pattern`/`action`/`message` to named
+`command`/`subcommand`/`block_args`/`reason` rules. The `block_args` array
+matches substrings in command arguments, not regex patterns.
 
 ## Why This Matters
 

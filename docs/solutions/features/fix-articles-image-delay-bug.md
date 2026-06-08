@@ -5,6 +5,8 @@ tags: [image, performance, cache, bug, wasm]
 problem_type: bug
 ---
 
+> **Current (2026-06-08):** Image loading now flows through RaindropPageOrchestrator.FetchAsync and IImageUrlResolver. The PopulateImageUrlCacheAsync/SemaphoreSlim pattern described here has been superseded.
+
 ## Problem
 
 The Articles page took 2-10 seconds to display the first article because `PopulateImageUrlCacheAsync` made synchronous `await` calls to `ValidateImageWithCacheAsync()` for every image during initial render.

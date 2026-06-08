@@ -18,6 +18,11 @@ tags:
 
 # Configuring CE Package Analyzers to Use Grok Model
 
+> **Current (2026-06-08):** The configuration lives in
+> `~/.config/opencode/opencode.jsonc` (global config, not project-level).
+> The doc examples reference `opencode.json` (`.jsonc` extension convention
+> now standard).
+
 ## Context
 
 CE package analyzers are specialized reviewer agents that provide automated code analysis, security checks, performance reviews, and other quality assessments. These agents can be configured to use different AI models, with the default model potentially not optimized for the specialized review tasks they perform.

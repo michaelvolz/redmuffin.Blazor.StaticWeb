@@ -28,6 +28,13 @@ tags:
 
 # Analyzer Violation Baseline: TreatWarningsAsErrors Enablement Distribution
 
+> **Implementation status (2026-06-08):** The per-diagnostic severity approach
+> (primary recommendation) was not implemented — `TreatWarningsAsErrors=true`
+> remains the global policy. Phase 1 was validated on CA2007 via the
+> ConfigureAwaitFixer at `tools/src/redmuffin.Tools.ConfigureAwaitFixer/Program.cs`.
+> Phases 2-3 are aspirational. The distribution data and prioritization framework
+> remain useful for planning.
+
 ## Context
 
 When `TreatWarningsAsErrors` was enabled on May 12 2026 across a .NET 10 SDK
@@ -108,7 +115,8 @@ diagnostic categories (66.1% of the baseline).
 | CA18XX group | Mixed         | Conditional syntax rewrites                               |
 
 **Infrastructure pattern:** All share the identical `MSBuildWorkspace` pattern
-validated on CA2007. A single `ApplyAnalyzerFixes` tool loads the project,
+validated on CA2007. A single fixer tool
+(`tools/src/redmuffin.Tools.ConfigureAwaitFixer/`) loads the project,
 runs all official analyzers, filters to the diagnostic IDs in scope, and
 applies syntax rewrites.
 
@@ -273,11 +281,11 @@ Reference this distribution data and prioritization framework whenever:
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-### MSBuildWorkspace Pattern Scaffold (Phase 2 Template)
+### MSBuildWorkspace Pattern Scaffold (Phase 2 — aspirational)
 
 ```csharp
-// tools/ApplyAnalyzerFixes/Program.cs
-// Generalized pattern — add diagnostic IDs to extend coverage
+// CA2007 only — implemented at tools/src/redmuffin.Tools.ConfigureAwaitFixer/Program.cs
+// Other diagnostics below are aspirational (not yet built)
 
 var diagnosticFixers = new Dictionary<string, Func<SyntaxNode, Diagnostic, SyntaxNode>>
 {

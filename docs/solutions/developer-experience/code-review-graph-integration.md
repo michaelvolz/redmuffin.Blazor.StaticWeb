@@ -18,6 +18,13 @@ tags:
 
 # code-review-graph Integration for OpenCode
 
+> **Current (2026-06-08):** The MCP server is configured in
+> `~/.config/opencode/opencode.jsonc` (not project-level `.opencode.json`).
+> AGENTS.md warns that C# semantic queries (`callers_of`, `callees_of`,
+> `inheritors_of`, `tests_for`, `impact`) are unreliable due to Tree-sitter
+> C# parser limitations. Only `file_summary`, `children_of`, and
+> `large_functions` are safe for C#.
+
 ## Context
 
 AI coding assistants like OpenCode traditionally read large portions of codebase on every task. Even with context-mode providing sandboxed execution, the AI still receives excessive file content—often hundreds of files for a targeted change. This wastes tokens, slows responses, and reduces context quality for actual code reasoning.

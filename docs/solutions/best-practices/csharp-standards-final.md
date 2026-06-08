@@ -18,6 +18,8 @@ tags:
   - dependency-injection
 ---
 
+> **Current (2026-06-08):** Not updated since April 2026. Some referenced skill names have evolved (e.g., m-code-quality). C# 12/13 features are now standard practice. Full audit deferred.
+
 # C# Coding Standards
 
 This document is the single source of truth for C# coding standards in this repository. All C# code must follow these standards.
@@ -38,6 +40,8 @@ This document is the single source of truth for C# coding standards in this repo
 
 ---
 
+> **Current (2026-06-08):** Not updated since April 2026. Some referenced skill names have evolved (e.g., m-code-quality). C# 12/13 features are now standard practice. Full audit deferred.
+
 ## 1. Naming Conventions
 
 | Element            | Convention                | Example                                        |
@@ -50,6 +54,8 @@ This document is the single source of truth for C# coding standards in this repo
 | Test doubles       | `[Class]_[Type]`          | `NavigationManager_Mock`, `DelayProvider_Stub` |
 
 ---
+
+> **Current (2026-06-08):** Not updated since April 2026. Some referenced skill names have evolved (e.g., m-code-quality). C# 12/13 features are now standard practice. Full audit deferred.
 
 ## 2. C# 12/13 Features
 
@@ -158,6 +164,8 @@ public class UserService(ILogger<UserService> logger, IUserRepository repository
 
 ---
 
+> **Current (2026-06-08):** Not updated since April 2026. Some referenced skill names have evolved (e.g., m-code-quality). C# 12/13 features are now standard practice. Full audit deferred.
+
 ## 3. Async Programming
 
 ### Naming
@@ -212,6 +220,8 @@ await InvokeAsync(StateHasChanged).ConfigureAwait(false);
 
 ---
 
+> **Current (2026-06-08):** Not updated since April 2026. Some referenced skill names have evolved (e.g., m-code-quality). C# 12/13 features are now standard practice. Full audit deferred.
+
 ## 4. File-Scoped Namespaces
 
 All C# files use file-scoped namespaces (C# 10+ feature):
@@ -230,6 +240,8 @@ namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Models
 **Codebase verification:** 116 occurrences of file-scoped namespaces.
 
 ---
+
+> **Current (2026-06-08):** Not updated since April 2026. Some referenced skill names have evolved (e.g., m-code-quality). C# 12/13 features are now standard practice. Full audit deferred.
 
 ## 5. Logging
 
@@ -298,6 +310,8 @@ Split into `TestClassName.cs` (`[Test]` methods) and `TestClassName.Helpers.cs` 
 **Codebase verification:** 126 occurrences of LoggerMessage.Define pattern.
 
 ---
+
+> **Current (2026-06-08):** Not updated since April 2026. Some referenced skill names have evolved (e.g., m-code-quality). C# 12/13 features are now standard practice. Full audit deferred.
 
 ## 6. Dependency Injection
 
@@ -375,6 +389,8 @@ public class MyClass(IDependency dependency)
 **Note:** `ArgumentNullException.ThrowIfNull` may trigger analyzer warnings. Investigate and standardize on ONE approach. Document the chosen solution.
 
 ---
+
+> **Current (2026-06-08):** Not updated since April 2026. Some referenced skill names have evolved (e.g., m-code-quality). C# 12/13 features are now standard practice. Full audit deferred.
 
 ## 7. Testing Standards
 
@@ -572,6 +588,8 @@ Before committing any test changes:
 
 ---
 
+> **Current (2026-06-08):** Not updated since April 2026. Some referenced skill names have evolved (e.g., m-code-quality). C# 12/13 features are now standard practice. Full audit deferred.
+
 ## 8. Zero Warnings Policy
 
 ### Goal
@@ -611,6 +629,8 @@ See `.editorconfig` for complete analyzer configuration. Key rules:
 - Microsoft: CA1845 (AsSpan), CA1854 (TryGetValue), CA1848 (LoggerMessage), CA2016 (CancellationToken)
 
 ---
+
+> **Current (2026-06-08):** Not updated since April 2026. Some referenced skill names have evolved (e.g., m-code-quality). C# 12/13 features are now standard practice. Full audit deferred.
 
 ## 9. Blazor Components
 
@@ -713,6 +733,8 @@ public partial class Home
 
 ---
 
+> **Current (2026-06-08):** Not updated since April 2026. Some referenced skill names have evolved (e.g., m-code-quality). C# 12/13 features are now standard practice. Full audit deferred.
+
 ## 10. Azure Functions (Isolated Worker)
 
 ### Setup
@@ -799,6 +821,8 @@ For HTTP-triggered functions, implement API versioning (e.g., via query paramete
 Sanitize inputs and outputs to prevent injection attacks (e.g., SQL, XSS). Use libraries like `AntiXssEncoder` for output encoding in HTTP responses.
 
 ---
+
+> **Current (2026-06-08):** Not updated since April 2026. Some referenced skill names have evolved (e.g., m-code-quality). C# 12/13 features are now standard practice. Full audit deferred.
 
 ## 11. Architecture & Design
 
@@ -899,6 +923,8 @@ Outer layers depend inward only. Domain has no dependencies. Application depends
 - Configuration: Data annotations, validation attributes
 
 ---
+
+> **Current (2026-06-08):** Not updated since April 2026. Some referenced skill names have evolved (e.g., m-code-quality). C# 12/13 features are now standard practice. Full audit deferred.
 
 ## 12. Project Configuration
 
@@ -1013,6 +1039,8 @@ pwsh scripts/View-CoverageReport.ps1
 - After updates: `dotnet clean && dotnet build --verbosity quiet && dotnet test`
 
 ---
+
+> **Current (2026-06-08):** Not updated since April 2026. Some referenced skill names have evolved (e.g., m-code-quality). C# 12/13 features are now standard practice. Full audit deferred.
 
 ## 13. .NET 9 Best Practices
 
@@ -1171,6 +1199,8 @@ private static readonly Action<ILogger, string, Exception?> LogProcessing
 
 ---
 
+> **Current (2026-06-08):** Not updated since April 2026. Some referenced skill names have evolved (e.g., m-code-quality). C# 12/13 features are now standard practice. Full audit deferred.
+
 ## 14. Code Quality
 
 ### Formatting
@@ -1292,6 +1322,8 @@ public sealed class RaindropCacheResult<T>
 - Security: validate inputs, least privilege, no secrets in code
 
 ---
+
+> **Current (2026-06-08):** Not updated since April 2026. Some referenced skill names have evolved (e.g., m-code-quality). C# 12/13 features are now standard practice. Full audit deferred.
 
 ## Related Documents
 

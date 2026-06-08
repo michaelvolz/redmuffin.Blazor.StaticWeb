@@ -18,6 +18,11 @@ tags:
   - fail-safe
 ---
 
+> **Current (2026-06-08):** Permission settings are configured in
+> `~/.config/opencode/opencode.jsonc` (global config, not project-level
+> `opencode.json`). The project's `.opencode/` directory is gitignored
+> and contains only `magic-context/`.
+
 ## Problem
 
 Agent or model errors can cause accidental file deletion or corruption. Without proper permission boundaries, a well-intentioned but mistaken command can delete critical files, corrupt the repo, or break the development environment. Need a fail-safe configuration that errs on the side of restriction.
