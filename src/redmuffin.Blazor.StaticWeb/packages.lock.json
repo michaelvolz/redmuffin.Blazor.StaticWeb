@@ -40,9 +40,9 @@
       },
       "Meziantou.Analyzer": {
         "type": "Direct",
-        "requested": "[3.0.98, )",
-        "resolved": "3.0.98",
-        "contentHash": "rs1eAdHccwRCf0o4cYU7hA6d4CX4KTFkrmAuUvpjwO/QLVYptDibDkKWCzGf+BJXrws1xzYXPjrpblQAC+tAdQ=="
+        "requested": "[3.0.99, )",
+        "resolved": "3.0.99",
+        "contentHash": "p3iWg8H4ZukyJK4Kw4WhVXQUMVXcUwW3mwoSlFIL59h9YeH83z+B4pN5zVeDHYjr6Kjj27t3nS0w0W3gp2r7kg=="
       },
       "Microsoft.AspNetCore.Components.Analyzers": {
         "type": "Direct",
@@ -104,21 +104,15 @@
       },
       "Microsoft.NET.Sdk.WebAssembly.Pack": {
         "type": "Direct",
-        "requested": "[10.0.8, )",
-        "resolved": "10.0.8",
-        "contentHash": "xQ05xw4t8wjFxwD7a/Nye/IPEihIyUkZIbRzTytVFqko6Ows3UvjqHIEjk3gCOIZloNFOLykYPsTyKRCvEs6ng=="
+        "requested": "[10.0.3, )",
+        "resolved": "10.0.3",
+        "contentHash": "Wv9ugg75HxuYeBxJSoK2UPN6lpqsASkyZwd90bdRyVKOtaXZFaKg7R+dYqbZSHJXAIxC1HOcYR0imuIcKpI1yw=="
       },
       "Microsoft.VisualStudio.Threading.Analyzers": {
         "type": "Direct",
         "requested": "[17.14.15, )",
         "resolved": "17.14.15",
         "contentHash": "mXQPJsbuUD2ydq4/ffd8h8tSOFCXec+2xJOVNCvXjuMOq/+5EKHq3D2m2MC2+nUaXeFMSt66VS/J4HdKBixgcw=="
-      },
-      "redmuffin.Tools.ConfigureAwaitFixer": {
-        "type": "Direct",
-        "requested": "[1.0.2, )",
-        "resolved": "1.0.2",
-        "contentHash": "iuClZOFwy5e0TeHzz4FOOASsohuaPCBrw9yt3c7bEgNsLg7rhNjG6uUWrR7JzXFwR+xdpvHOBoIbH9ixFuL10g=="
       },
       "Roslynator.Analyzers": {
         "type": "Direct",
