@@ -119,7 +119,12 @@
   <PropertyGroup>
     <NoWarn>1701;1702;CA1014;AD0001</NoWarn>
     <WarningsAsErrors>Nullable</WarningsAsErrors>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- TreatWarningsAsErrors is conditionally disabled during dotnet watch
+         to keep the loop responsive. The ConfigureAwaitFixer plugin handles
+         CA2007 on agent writes. Pre-commit dotnet build enforces zero-warning
+         policy. dotnet watch requires the -p:TreatWarningsAsErrors=false flag
+         passed after the double-hyphen separator. -->
+    <TreatWarningsAsErrors Condition="'$(DotNetWatchBuild)' != 'true'">true</TreatWarningsAsErrors>
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
