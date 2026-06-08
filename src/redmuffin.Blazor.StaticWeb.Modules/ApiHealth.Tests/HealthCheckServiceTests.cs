@@ -39,8 +39,7 @@ public sealed partial class HealthCheckServiceTests
 
         // Assert
         await Assert.That(act).Throws<HttpRequestException>();
-        await Assert.That(scope.LogEntries.Count).IsEqualTo(1);
-        await Assert.That(scope.LogEntries[0].Level).IsEqualTo(LogLevel.Error);
+        await AssertThatSingleWarningLogged(scope).ConfigureAwait(false);
     }
 
     [Test]
@@ -56,8 +55,7 @@ public sealed partial class HealthCheckServiceTests
 
         // Assert
         await Assert.That(act).Throws<OperationCanceledException>();
-        await Assert.That(scope.LogEntries.Count).IsEqualTo(1);
-        await Assert.That(scope.LogEntries[0].Level).IsEqualTo(LogLevel.Warning);
+        await AssertThatSingleWarningLogged(scope).ConfigureAwait(false);
     }
 
     [Test]
@@ -72,6 +70,11 @@ public sealed partial class HealthCheckServiceTests
 
         // Assert
         await Assert.That(act).Throws<TaskCanceledException>();
+        await AssertThatSingleWarningLogged(scope).ConfigureAwait(false);
+    }
+
+    private static async Task AssertThatSingleWarningLogged(TestScope scope)
+    {
         await Assert.That(scope.LogEntries.Count).IsEqualTo(1);
         await Assert.That(scope.LogEntries[0].Level).IsEqualTo(LogLevel.Warning);
     }
