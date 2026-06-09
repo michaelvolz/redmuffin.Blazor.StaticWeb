@@ -92,6 +92,32 @@ Functions chain end-to-end against real data and real functions. Seldom used
 — reserved for final integration verification before deployment.
 _Avoid_: E2E runner (it's specifically for the SWA + Functions chain)
 
+### Telemetry
+
+**Telemetry Buffer**:
+An in-memory queue on the Blazor WASM client that collects completed
+traces before bundling them for transmission. Flushes automatically on the
+next backend HTTP call or after a configurable timeout.
+_Avoid_: trace queue, span accumulator
+
+**Telemetry Relay**:
+An Azure Function endpoint (`/api/telemetry`) that receives OTLP protobuf
+payloads from the client and forwards them to Grafana Cloud. Acts as a
+pass-through proxy — no deserialization or enrichment.
+_Avoid_: telemetry collector, OTLP gateway
+
+**Mediator Telemetry Behavior**:
+A pipeline behavior that wraps every Mediator request in an OpenTelemetry
+Activity (span), recording the request type, response type, success/failure
+outcome, and duration. The same pattern as LoggingBehavior applied to
+telemetry.
+
+**Custom OTLP Exporter**:
+A lightweight trace exporter on the WASM client that hand-encodes
+Activities into OTLP protobuf without depending on the `Google.Protobuf`
+NuGet package. Avoids doubling the WASM download size while preserving the
+standard OTLP wire format. See ADR-0012.
+
 ### UI Features
 
 **Articles Page**:
@@ -113,6 +139,12 @@ A page displaying Raindrop Items filtered to video-type content.
   (OAuth code exchange, article listing, video listing)
 - **Warmup** primes the **Raindrop Items Cache** on app startup
 - **SwaLauncher** exercises the full WASM → Functions → Raindrop chain
+- The **Mediator Telemetry Behavior** wraps Mediator requests in Activities
+  that flow into the **Telemetry Buffer**
+- The **Telemetry Buffer** flushes to the **Telemetry Relay** (piggyback on
+  HTTP calls or after timeout)
+- The **Telemetry Relay** forwards OTLP protobuf to **Grafana Cloud**
+  without deserialization
 
 ## Example dialogue
 
