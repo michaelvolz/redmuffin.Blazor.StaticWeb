@@ -200,11 +200,13 @@ jobs:
         id: deploy
         if: github.event_name == 'push'
         uses: shibayan/swa-deploy@v1
+        env:
+          ACTIONS_RUNNER_DEBUG: true
         with:
           app-location: ${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot
           api-location: ${{ env.API_LOCATION }}/bin/Release/publish
           api-language: dotnetisolated
-          api-version: 9.0
+          api-version: "9.0"
           environment-name: production
           deployment-token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_CLIFF_0945BE603 }}
 
