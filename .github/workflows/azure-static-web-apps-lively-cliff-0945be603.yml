@@ -202,11 +202,11 @@ jobs:
         if: github.event_name == 'push'
         uses: shibayan/swa-deploy@v1
         with:
-          app_location: ${{ env.APP_LOCATION }}/bin/Release/publish
-          api_location: ${{ env.API_LOCATION }}/bin/Release/publish
-          api_language: dotnetisolated
-          environment: production
-          deployment_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_CLIFF_0945BE603 }}
+          app-location: ${{ env.APP_LOCATION }}/bin/Release/publish
+          api-location: ${{ env.API_LOCATION }}/bin/Release/publish
+          api-language: dotnetisolated
+          environment-name: production
+          deployment-token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_CLIFF_0945BE603 }}
 
       - name: Pipeline summary
         if: github.event_name == 'push'
@@ -214,7 +214,7 @@ jobs:
           echo "::group::Summary"
           echo "tests=pass"
           echo "publish=ok"
-          echo "url=${{ steps.deploy.outputs.deployment_url }}"
+          echo "url=${{ steps.deploy.outputs.deployment-url }}"
           echo "::endgroup::"
 
   # JOB: Verify WASM integrity and API health after deployment (push only)
