@@ -110,16 +110,16 @@ jobs:
           echo "sdk=$(dotnet --version)"
           echo "::endgroup::"
 
-      # Runner image (ubuntu-24.04) provides .NET SDK 10.0.201 pre-installed.
-      # global.json (10.0.100 + latestMinor) accepts it — no setup-dotnet download.
-      # Only install the one workload we actually need, if it's not already present.
+      # Runner image provides .NET SDK pre-installed. global.json accepts it
+      # via latestMinor — no setup-dotnet download needed.
+      # Install WASM workload for Blazor WASM publish (net10.0 TFM).
       - name: Install WASM workload for Blazor publish
         run: |
-          if dotnet workload list | grep -q wasm-tools-net9; then
+          if dotnet workload list | grep -q wasm-tools; then
             echo "wasm=cached"
           else
             echo "wasm=installing"
-            dotnet workload install wasm-tools-net9
+            dotnet workload install wasm-tools
           fi
 
       # OPTIMIZATION: Cache NuGet packages for faster subsequent builds
