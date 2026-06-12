@@ -46,8 +46,24 @@ The deployment workflow originally used the SWA CLI (`swa deploy`), which trigge
 
 **Current state (2026-05):** The `Azure/static-web-apps-deploy@v1` GitHub Action with `skip_app_build: true` is the primary deployment path and correctly preserves pre-compressed assets. The `swa deploy` CLI is still used for on-demand deployments from local — it still triggers Oryx rebuilds and should only be used when a full rebuild is desired. Production CI uses the GitHub Action exclusively.
 
+**Current state (2026-06):** Deploy uses `shibayan/swa-deploy@v1` which calls
+`StaticSitesClient` directly — no Oryx, no build step. Pre-compressed
+files are preserved correctly. However, files modified by custom
+`AfterTargets="Publish"` MSBuild targets (like CSS fingerprinting) have
+stale `.br`/`.gz` companions — see
+`pre-compressed-html-content-negotiation-swa.md`.
+
 ## Prevention
 
-- When using `dotnet publish` for Blazor WASM (which generates pre-compressed assets), always deploy with `skip_app_build: true` to prevent Oryx from rebuilding and overwriting them.
-- Add a verification step in the workflow that checks for `.br` file presence in the publish output before deployment.
-- The `Azure/static-web-apps-deploy` GitHub Action with `skip_app_build: true` is the Microsoft-recommended pattern when you want full control over the build process.
+- When using `dotnet publish` for Blazor WASM, always deploy with
+  `skip_app_build: true` to prevent Oryx from rebuilding.
+- Add a verification step in the workflow that checks for `.br` file
+  presence in the publish output before deployment.
+- Custom MSBuild targets that modify files after compression MUST also
+  regenerate or delete the compressed variants. See
+  `pre-compressed-html-content-negotiation-swa.md` for the full
+  analysis.
+
+## Related
+
+- `docs/solutions/workflow-issues/pre-compressed-html-content-negotiation-swa.md`
