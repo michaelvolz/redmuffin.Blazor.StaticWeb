@@ -6,22 +6,20 @@
   <PropertyGroup Label="SharedVersions">
     <MicrosoftExtensionsVersion>10.0.9</MicrosoftExtensionsVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>10.0.9</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
-    <TUnitVersion>1.28.7</TUnitVersion>
+    <TUnitVersion>1.53.0</TUnitVersion>
     <AzureFunctionsWorkerVersion>2.52.0</AzureFunctionsWorkerVersion>
-    <AzureFunctionsWorkerApplicationInsightsVersion>2.50.0</AzureFunctionsWorkerApplicationInsightsVersion>
     <AzureFunctionsWorkerExtensionsHttpVersion>3.3.0</AzureFunctionsWorkerExtensionsHttpVersion>
     <AzureFunctionsWorkerExtensionsHttpAspNetCoreVersion>2.1.0</AzureFunctionsWorkerExtensionsHttpAspNetCoreVersion>
     <AzureFunctionsWorkerSdkVersion>2.0.7</AzureFunctionsWorkerSdkVersion>
-    <ApplicationInsightsWorkerServiceVersion>2.23.0</ApplicationInsightsWorkerServiceVersion>
     <CoverletVersion>8.0.1</CoverletVersion>
     <BunitVersion>2.7.2</BunitVersion>
-    <MicrosoftTestingPlatformVersion>2.1.0</MicrosoftTestingPlatformVersion>
-    <AngleSharpVersion>1.4.0</AngleSharpVersion>
+    <MicrosoftTestingPlatformVersion>2.2.3</MicrosoftTestingPlatformVersion>
+    <AngleSharpVersion>1.5.0</AngleSharpVersion>
     <BlazoredLocalStorageVersion>4.5.0</BlazoredLocalStorageVersion>
     <LZStringCSharpVersion>1.4.0</LZStringCSharpVersion>
     <MarkdigVersion>1.2.0</MarkdigVersion>
     <NewtonsoftJsonVersion>13.0.4</NewtonsoftJsonVersion>
-    <MeziantouAnalyzerVersion>3.0.99</MeziantouAnalyzerVersion>
+    <MeziantouAnalyzerVersion>3.0.102</MeziantouAnalyzerVersion>
     <VSThreadingAnalyzersVersion>17.14.15</VSThreadingAnalyzersVersion>
     <RoslynatorVersion>4.15.0</RoslynatorVersion>
     <StyleCopAnalyzersVersion>1.2.0-beta.556</StyleCopAnalyzersVersion>
@@ -52,12 +50,10 @@
   </ItemGroup>
   <ItemGroup Label="AzureFunctions">
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="$(AzureFunctionsWorkerVersion)" />
-    <PackageVersion Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="$(AzureFunctionsWorkerApplicationInsightsVersion)" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Core" Version="$(AzureFunctionsWorkerVersion)" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="$(AzureFunctionsWorkerExtensionsHttpVersion)" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="$(AzureFunctionsWorkerExtensionsHttpAspNetCoreVersion)" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Sdk" Version="$(AzureFunctionsWorkerSdkVersion)" />
-    <PackageVersion Include="Microsoft.ApplicationInsights.WorkerService" Version="$(ApplicationInsightsWorkerServiceVersion)" />
   </ItemGroup>
   <ItemGroup Label="Testing">
     <PackageVersion Include="TUnit" Version="$(TUnitVersion)" />
