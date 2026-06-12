@@ -66,6 +66,10 @@ jobs:
       - name: Set skip output
         id: skip_output
         run: |
+          echo "::group::Change Detection"
+          echo "all_changed=${{ steps.check.outputs.all_changed_files }}"
+          echo "matched_neutral=${{ steps.check.outputs.only_changed_files }}"
+          echo "matched_relevant=${{ steps.check.outputs.other_changed_files }}"
           if [[ "${{ steps.check.outputs.only_changed }}" == "true" ]]; then
             echo "result=skip reason=pipeline-neutral"
             echo "should_skip=true" >> $GITHUB_OUTPUT
@@ -208,6 +212,16 @@ jobs:
             exit 1
           fi
 
+          INDEX_HTML="${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot/index.html"
+          PUBLISH_DIR="${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot"
+
+          echo "css_ref_in_html=$(grep -o 'css/app\.min[^"]*' "$INDEX_HTML" | tr '\n' ' ')"
+          echo "css_files_publish=$(find "$PUBLISH_DIR/css/" -maxdepth 1 -name 'app.min*' -type f -exec basename {} \; | tr '\n' ' ')"
+          echo "index_html_bytes=$(wc -c < "$INDEX_HTML")"
+          echo "import_map=$(grep -c '"imports"' "$INDEX_HTML" || echo 0)"
+          echo "swa_config=$(test -f "$PUBLISH_DIR/staticwebapp.config.json" && echo present || echo missing)"
+          echo "publish_file_count=$(find "$PUBLISH_DIR" -type f | wc -l)"
+          echo "publish_size_kb=$(du -sk "$PUBLISH_DIR" | cut -f1)"
           echo "::endgroup::"
 
       - name: Deploy to Azure Static Web Apps
