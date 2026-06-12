@@ -127,7 +127,7 @@ message, `D#` = solution doc.
 ```
 check_changes ──→ test_and_build_job ──→ health_check
                       │
-                      ├── docs_only_changed_job (alternative path)
+                      ├── pipeline_neutral_changed_job (alternative path)
                       └── close_pull_request_job (PR close only)
 ```
 
@@ -176,7 +176,7 @@ Only runs after `test_and_build_job` succeeds. On PR events,
 `test_and_build_job` runs (tests pass) → health check runs → curls
 production URLs that haven't changed. Waste: ~15s.
 
-### `docs_only_changed_job` (~1s)
+### `pipeline_neutral_changed_job` (~1s)
 
 Correct — only runs when `should_skip == 'true'`. For branch protection.
 
@@ -185,7 +185,7 @@ Correct — only runs when `should_skip == 'true'`. For branch protection.
 | Phase                          | Time    | Notes                                      |
 | ------------------------------ | ------- | ------------------------------------------ |
 | `check_changes` (shell script) | ~3s     | 30+ inline patterns, `sed` glob→regex      |
-| `docs_only_changed_job`        | ~1s     | Skip notification                          |
+| `pipeline_neutral_changed_job` | ~1s     | Skip notification                          |
 | `analyze` (matrix)             | ~30-60s | `actions` language (<1s) + `csharp` (~30s) |
 
 **Issues found:**

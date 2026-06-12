@@ -36,8 +36,8 @@ skipped deploy even when earlier commits in the same push touched code files.
 
 - Push 4 commits: commits 1-3 change `src/`, commit 4 updates `docs/`. CI sees only commit 4
   (docs-only) and skips the deploy step. The code changes never reach staging.
-- Deploy is silently skipped. The only indication is the `docs_only_changed_job` running with
-  "Only documentation and non-deployed files changed" — which is misleading.
+- Deploy is silently skipped. The only indication is the `pipeline_neutral_changed_job` running with
+  "result=skip reason=pipeline-neutral" — which is misleading when code was pushed.
 - Discovered only when the expected deploy didn't appear on the live site.
 
 ## What Didn't Work

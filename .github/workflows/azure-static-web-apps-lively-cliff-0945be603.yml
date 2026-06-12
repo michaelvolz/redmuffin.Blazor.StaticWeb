@@ -10,7 +10,7 @@
 # 6. No duplicate steps — single checkout, single restore, single build
 # 7. Single job for build+deploy — avoids duplicate overhead
 # 8. Health check after deploy — confirms production is live (push only)
-# 9. Pipeline-neutral skips — skip deploy for docs/config-only changes
+# 9. Pipeline-neutral skips — skip deploy for pipeline-neutral changes
 #
 # This workflow will build and push a web application to an Azure Static Web App when you change your code.
 #
@@ -73,6 +73,7 @@ jobs:
             echo "result=run reason=code-changed"
             echo "should_skip=false" >> $GITHUB_OUTPUT
           fi
+          echo "::endgroup::"
 
   test_and_build_job:
     needs: check_changes
@@ -206,6 +207,7 @@ jobs:
             echo "FAIL: css_fingerprint missing"
             exit 1
           fi
+
           echo "::endgroup::"
 
       - name: Deploy to Azure Static Web Apps
@@ -277,14 +279,14 @@ jobs:
           echo "result=pass"
           echo "::endgroup::"
 
-  # JOB: Handle documentation-only changes (skipped deployment)
-  docs_only_changed_job:
+  # JOB: Handle pipeline-neutral changes (skipped deployment)
+  pipeline_neutral_changed_job:
     needs: check_changes
     if: |
       (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')) &&
       needs.check_changes.outputs.should_skip == 'true'
     runs-on: ubuntu-latest
-    name: Documentation Only Changed
+    name: Pipeline-Neutral Changed
     steps:
       - name: Skip Deployment
         run: |

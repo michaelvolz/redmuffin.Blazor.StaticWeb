@@ -124,7 +124,7 @@ The CI/CD architecture follows these core principles:
 
 1. **Fast Feedback Loop**: Fail early and fast with comprehensive test coverage before deployment
    - _Why_: Finding bugs in production is 100x more expensive than finding them in CI
-2. **Resource Efficiency**: Skip unnecessary work for documentation-only changes
+2. **Resource Efficiency**: Skip unnecessary work for pipeline-neutral changes
    - _Why_: Azure charges for compute minutes. Skipping docs-only changes saves ~$50/month and reduces carbon footprint
 3. **Caching Strategy**: Aggressive caching at multiple levels (NuGet, npm, build artifacts)
    - _Why_: Downloading the same packages 100 times wastes time and bandwidth
@@ -156,13 +156,13 @@ The CI/CD architecture follows these core principles:
 
 #### Job: `check_changes` (Change Detection)
 
-**Purpose**: Intelligently skip full pipeline execution for documentation-only changes.
+**Purpose**: Intelligently skip full pipeline execution for pipeline-neutral changes.
 
 **Why this matters**:
 
-- **Time saved**: ~6 minutes per docs-only PR
-- **Cost saved**: ~$0.08 per docs-only PR (seems small, but adds up to $50+/month)
-- **Developer experience**: Faster feedback on documentation PRs
+- **Time saved**: ~6 minutes per pipeline-neutral PR
+- **Cost saved**: ~$0.08 per pipeline-neutral PR
+- **Developer experience**: Faster feedback on config/docs-only PRs
 
 **Key Features**:
 
@@ -213,7 +213,7 @@ We experimented with separate jobs (one for test, one for build/deploy) but foun
 
 **Preconditions**:
 
-- Not a documentation-only change
+- Not a pipeline-neutral change
 - Not a closed pull request
 
 **Environment Variables**:
@@ -541,9 +541,10 @@ curl -f -s --max-time 5 --retry 1 --retry-delay 2 \
 
 ---
 
-#### Job: `docs_only_changed_job` (Skip Notification)
+#### Job: `pipeline_neutral_changed_job` (Skip Notification)
 
-**Purpose**: Provides clear feedback when deployment is skipped due to documentation-only changes.
+**Purpose**: Provides clear feedback when deployment is skipped due to
+pipeline-neutral changes (docs, config files that don't affect build output).
 
 **Trigger Condition**:
 
@@ -551,7 +552,9 @@ curl -f -s --max-time 5 --retry 1 --retry-delay 2 \
 - `should_skip == 'true'`
 
 **Why have this job?**
-Without it, developers would see a green checkmark and think "Great, deployment done!" But nothing was deployed. This job makes it explicit: "We intentionally skipped deployment because you only changed docs."
+Without it, developers would see a green checkmark and think "Great,
+deployment done!" But nothing was deployed. This job makes it explicit:
+the changed files are pipeline-neutral — no build or deploy needed.
 
 ---
 
@@ -601,10 +604,11 @@ New vulnerabilities are discovered daily. Even if our code doesn't change, a new
 
 #### Job: `check_changes` (Smart Analysis Triggering)
 
-**Purpose**: Skip security analysis for documentation-only changes (except scheduled runs).
+**Purpose**: Skip security analysis for pipeline-neutral changes (except scheduled runs).
 
-**Why skip docs?**
-Documentation changes can't introduce security vulnerabilities. They don't contain executable code!
+**Why skip pipeline-neutral changes?**
+Pipeline-neutral files (docs, config, tooling) can't introduce security
+vulnerabilities. They don't contain executable code!
 
 **Implementation**:
 
@@ -628,7 +632,7 @@ fi
 
 ---
 
-#### Job: `docs_only_changed_job` (Skip Notification)
+#### Job: `pipeline_neutral_changed_job` (Skip Notification)
 
 **Purpose**: User-friendly notification when analysis is skipped.
 

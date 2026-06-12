@@ -47,20 +47,20 @@ jobs:
             echo "should_skip=false" >> $GITHUB_OUTPUT
           fi
 
-  docs_only_changed_job:
+  pipeline_neutral_changed_job:
     needs: check_changes
     if: |
       needs.check_changes.outputs.should_skip == 'true' &&
       github.event_name != 'schedule'
     runs-on: ubuntu-latest
-    name: Documentation Only Changed
+    name: Pipeline-Neutral Changed
     steps:
       - name: Skip CodeQL Analysis
         run: echo "result=skip reason=pipeline-neutral"
 
   analyze:
     needs: [check_changes]
-    # Run if docs didn't change OR if this is a scheduled run
+    # Run if pipeline-relevant changes detected OR if scheduled
     if: |
       github.event_name == 'schedule' ||
       needs.check_changes.outputs.should_skip != 'true'
