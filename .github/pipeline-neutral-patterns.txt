@@ -1,0 +1,43 @@
+# Pipeline-neutral patterns — single source of truth for both workflows.
+# One glob pattern per line. Each entry has a justification comment above it.
+# Consumed by tj-actions/changed-files via files_from_source_file.
+# See rm-github-workflows skill §DECISION TREE for classification rules.
+
+# Root documentation — not compiled, not deployed, not read by any build tool
+README.md
+AGENTS.md
+CHANGELOG.md
+.gitattributes
+.gitignore
+
+# Docs directory — markdown only, no code or build config
+docs/**
+
+# GitHub config — dependabot.yml does not affect CI pipeline or deployment artifact
+.github/dependabot.yml
+
+# GitHub agent docs — instruction files for LLM agents, not build tools
+.github/guides/**/*.md
+.github/prompts/**/*.md
+.github/chatmodes/**/*.md
+
+# Dev tool config — not read by MSBuild, Roslyn, or CI runner
+.mcp.json
+.coverletrc
+.filenesting.json
+swa-cli.config.json
+
+# Editor/IDE config — workspace, formatting, settings; not build tools
+.vscode/**
+*.code-workspace
+*.sln.DotSettings
+.config/**
+
+# Dev-only launch/settings files — never included in publish output
+src/**/Properties/launchSettings.json
+src/**/appsettings.Development.json
+src/**/*.local.settings.json*
+
+# Policy pipeline-neutral — local dev only, never called by CI, never deployed
+tools/**
+scripts/**
