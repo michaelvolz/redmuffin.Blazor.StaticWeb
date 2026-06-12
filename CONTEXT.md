@@ -52,6 +52,21 @@ An abstraction over the browser's localStorage API, used to persist cache
 data, debug state, and user preferences client-side.
 _Avoid_: local storage (the raw API), Blazored
 
+### CI/CD
+
+**Pipeline-Neutral**:
+A file whose change has zero effect on the CI/CD pipeline execution or the
+published deployment artifact. Pipeline-neutral files trigger no CI run and
+no deploy. Examples: `docs/**`, root `.md` files, `.vscode/**`, `.gitignore`,
+`.github/dependabot.yml`, `swa-cli.config.json`.
+_Avoid_: docs-only, non-code, skip files
+
+**Pipeline-Relevant**:
+A file whose change alters either the CI/CD pipeline execution or the
+published deployment artifact. Pipeline-relevant files trigger the full
+CI → test → deploy pipeline.
+_Avoid_: code files, deployable
+
 ### Infrastructure
 
 **Synthetic**:
