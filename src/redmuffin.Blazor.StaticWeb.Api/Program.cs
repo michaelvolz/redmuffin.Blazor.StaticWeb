@@ -18,8 +18,6 @@ var host = new HostBuilder()
     .ConfigureFunctionsWebApplication()
     .ConfigureServices(services =>
     {
-        services.AddApplicationInsightsTelemetryWorkerService();
-        services.ConfigureFunctionsApplicationInsights();
         services.AddHttpClient();
         services.AddSingleton<Settings>();
         services.AddSingleton<ILogger>(provider =>

@@ -11,6 +11,9 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+    <!-- WASM0001: false positive from MSBuild framework P/Invoke in inline C# tasks.
+         GetModuleFileName is in build-only assemblies, never shipped to browser. -->
+    <NoWarn>$(NoWarn);WASM0001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
