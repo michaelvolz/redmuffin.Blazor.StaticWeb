@@ -5,12 +5,12 @@
 # 2. Fastest possible pipeline (no redundant steps, cache everything cacheable)
 # 3. Minimum number of steps (consolidate where safe, eliminate no-ops)
 # 4. Fast-fail on errors (tests before deploy, set -e in shell blocks)
-# 5. Tests run immediately before deploy, not after
-# 6. Zero duplicate steps (one checkout, one restore, one publish each)
-# 7. Transparent output (no --verbosity quiet — show what happened)
-# 8. LLM-debuggable output (visible error details, structured exit codes,
-#    upload artifacts on failure so an agent can inspect them)
-# 9. Preserve doc-only-change skip mechanic (check_changes job)
+# 5. Harden supply chain — Directory.Packages.props pins all package
+#    versions; deployment token auth; no npm in CI
+# 6. No duplicate steps — single checkout, single restore, single build
+# 7. Single job for build+deploy — avoids duplicate overhead
+# 8. Health check after deploy — confirms production is live (push only)
+# 9. Pipeline-neutral skips — skip deploy for docs/config-only changes
 #
 # This workflow will build and push a web application to an Azure Static Web App when you change your code.
 #
@@ -54,7 +54,7 @@ jobs:
           fetch-depth: 0 # Full history for reliable change detection
           show-progress: false # Reduce log noise
 
-      - name: Check if only documentation files changed
+      - name: Check if only pipeline-neutral files changed
         id: check
         uses: tj-actions/changed-files@v47.0.6
         with:
@@ -62,46 +62,16 @@ jobs:
           # commits in the batch, not just the tip. github.event.before is
           # the SHA before the push; for PR events, use the PR base.
           base_sha: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
-          files: |
-            README.md
-            AGENTS.md
-            CHANGELOG.md
-            docs/**/*.md
-            tasks/**/*.md
-            spec/**/*
-            .github/guides/**/*.md
-            .github/prompts/**/*.md
-            .github/chatmodes/**/*.md
-            .opencode/**/*
-            tests/**/*
-            scripts/**/*
-            .editorconfig
-            .mcp.json
-            .coverletrc
-            .vscode/**/*
-            *.code-workspace
-            *.sln.DotSettings
-            .config/**/*
-            .filenesting.json
-            .trae/**/*
-            swa-cli.config.json
-            scripts/**/*
-            config/**/*
-            src/**/Properties/launchSettings.json
-            src/**/appsettings.Development.json
-            src/**/*.local.settings.json*
-            .gitattributes
-            .gitignore
+          files_from_source_file: .github/pipeline-neutral-patterns.txt
 
       - name: Set skip output
         id: skip_output
         run: |
-          # Use the changed-files action's built-in logic instead of complex shell script
           if [[ "${{ steps.check.outputs.only_changed }}" == "true" ]]; then
-            echo "Only documentation and non-deployed files changed, skipping deployment"
+            echo "result=skip reason=pipeline-neutral"
             echo "should_skip=true" >> $GITHUB_OUTPUT
           else
-            echo "Code files changed, proceeding with deployment"
+            echo "result=run reason=code-changed"
             echo "should_skip=false" >> $GITHUB_OUTPUT
           fi
 
@@ -128,34 +98,37 @@ jobs:
           fetch-depth: 1 # Shallow clone for faster checkout
           show-progress: false # Reduce log noise
 
-      - name: Display job context and system resources
+      - name: Job context
         run: |
-          echo "=== Job Context ==="
-          echo "Job: test_and_build_job"
-          echo "Trigger: ${{ github.event_name }}"
-          echo "Ref: ${{ github.ref }}"
-          echo "Commit: ${{ github.sha }}"
-          echo "Actor: ${{ github.actor }}"
-          echo "Runner: ${{ runner.os }}"
-          echo ""
-          echo "=== System Resources ==="
-          echo "CPU: $(nproc) cores"
-          echo "Memory: $(free -h | grep Mem | awk '{print $2}' | sed 's/i//g')"
-          echo "Disk available: $(df -h / | tail -1 | awk '{print $4}')"
-          echo ""
+          echo "::group::Context"
+          echo "event=${{ github.event_name }}"
+          echo "ref=${{ github.ref }}"
+          echo "commit=${{ github.sha }}"
+          echo "runner=${{ runner.os }}"
+          echo "cpu=$(nproc)"
+          echo "mem=$(free -h | grep Mem | awk '{print $2}' | sed 's/i//g')"
+          echo "disk=$(df -h / | tail -1 | awk '{print $4}')"
+          echo "sdk=$(dotnet --version)"
+          echo "::endgroup::"
 
       # Runner image (ubuntu-24.04) provides .NET SDK 10.0.201 pre-installed.
       # global.json (10.0.100 + latestMinor) accepts it — no setup-dotnet download.
-      # Only install the one workload we actually need.
+      # Only install the one workload we actually need, if it's not already present.
       - name: Install WASM workload for Blazor publish
-        run: dotnet workload install wasm-tools-net9
+        run: |
+          if dotnet workload list | grep -q wasm-tools-net9; then
+            echo "wasm=cached"
+          else
+            echo "wasm=installing"
+            dotnet workload install wasm-tools-net9
+          fi
 
       # OPTIMIZATION: Cache NuGet packages for faster subsequent builds
       - name: Cache NuGet packages
         uses: actions/cache@v5
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/packages.lock.json') }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/Directory.Packages.props') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
 
@@ -173,81 +146,26 @@ jobs:
 
       - name: Run tests
         run: |
-          echo "Running tests in parallel..."
+          echo "::group::Tests"
           dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests -c Release --no-build &
           PID1=$!
           dotnet run --project tests/redmuffin.Blazor.StaticWeb.Api.Tests -c Release --no-build &
           PID2=$!
-          wait $PID1 || { echo "❌ Blazor tests failed"; kill $PID2 2>/dev/null; exit 1; }
-          wait $PID2 || { echo "❌ API tests failed"; exit 1; }
-          echo "✅ All tests passed"
+          wait $PID1 || { echo "FAIL: blazor_tests exit_code=$?"; kill $PID2 2>/dev/null; exit 1; }
+          wait $PID2 || { echo "FAIL: api_tests exit_code=$?"; exit 1; }
+          echo "result=pass"
+          echo "::endgroup::"
 
-      # BUILD AND DEPLOY PHASE: Only runs if tests pass
-      # OPTIMIZATION: Cache npm global packages for SWA CLI
-      # Using static key since we install a specific global package version
-      - name: Cache npm and SWA CLI
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.npm
-            $(npm root -g)
-            ~/.swa
-          key: ${{ runner.os }}-npm-swa-cli-v2
-          restore-keys: |
-            ${{ runner.os }}-npm-swa-cli-
-
-      # Supply chain hardening — mirrors .npmrc in repo root
-      - name: Configure npm supply chain protection
+      # DEPLOY PHASE — push events only. PR events stop after tests.
+      - name: Publish and verify trimming
+        if: github.event_name == 'push'
         run: |
-          cat >> ~/.npmrc <<'NPMRC'
-          min-release-age=1
-          ignore-scripts=true
-          save-exact=true
-          strict-peer-deps=true
-          engine-strict=true
-          NPMRC
-          echo "Supply chain hardening applied: min-release-age=1, ignore-scripts, save-exact, strict-peer-deps, engine-strict"
+          set -e
+          echo "::group::Publish"
 
-      # Install Azure Static Web Apps CLI (uses cache when available)
-      - name: Install Azure Static Web Apps CLI
-        run: |
-          echo "Installing Azure Static Web Apps CLI..."
-          npm install -g @azure/static-web-apps-cli --silent --no-audit --no-fund
-          echo "Azure Static Web Apps CLI version: $(swa --version)"
-
-      - name: Build and Deploy to Azure Static Web Apps
-        env:
-          AZURE_STATIC_WEB_APPS_API_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_CLIFF_0945BE603 }}
-        run: |
-          # OPTIMIZED AZURE STATIC WEB APPS DEPLOYMENT
-          # Benefits of this optimized approach:
-          # - Single job reduces runner overhead and speeds up pipeline
-          # - Tests run first for fast failure (fail-fast principle)
-          # - No duplicate .NET setup, checkout, or dependency restoration
-          # - Shared environment and context between test and deploy phases
-          # - No local.settings.json file creation - uses environment variables directly
-
-          set -e  # Exit on any error
-
-          echo "Environment Information:"
-          echo "Working Directory: $(pwd)"
-          echo "Node Version: $(node --version)"
-          echo "NPM Version: $(npm --version)"
-          echo ".NET Version: $(dotnet --version)"
-          echo "SWA CLI Version: $(swa --version)"
-
-          echo ""
-          echo "Project Structure:"
-          echo "App Location: ${{ env.APP_LOCATION }}"
-          echo "API Location: ${{ env.API_LOCATION }}"
-          echo "Output Location: ${{ env.APP_ARTIFACT_LOCATION }}"
-
-          echo ""
-          echo "Building Blazor WebAssembly and Azure Functions API in parallel..."
           # Blazor publish CANNOT use --no-build (known bug in .NET 9 SDK:
           # dotnet/aspnetcore issue 58321 — content files get named wrong).
-          # API publish CAN use --no-build since it's a regular .NET project
-          # and the build step above already compiled everything.
+          # API publish CAN use --no-build — already compiled above.
           dotnet publish ${{ env.APP_LOCATION }} \
             -c Release \
             -o ${{ env.APP_LOCATION }}/bin/Release/publish \
@@ -260,88 +178,83 @@ jobs:
             -c Release \
             -o ${{ env.API_LOCATION }}/bin/Release/publish \
             --no-restore \
-             --no-build \
-             --no-dependencies \
+            --no-build \
+            --no-dependencies \
             --nologo &
           PID_A=$!
 
-          # Wait for Blazor (needed for assembly count check below)
-          wait $PID_B || { echo "❌ Blazor publish failed"; kill $PID_A 2>/dev/null; exit 1; }
+          wait $PID_B || { echo "FAIL: blazor_publish exit_code=$?"; kill $PID_A 2>/dev/null; exit 1; }
+          echo "blazor_publish=ok"
 
-          echo ""
-          echo "Verifying trimming effectiveness..."
           ASSEMBLY_COUNT=$(jq '.resources.fingerprinting | keys | map(select(endswith(".wasm"))) | length' "${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot/_framework/blazor.boot.json")
-          echo "Number of WASM assemblies: $ASSEMBLY_COUNT"
+          echo "wasm_assemblies=$ASSEMBLY_COUNT"
           if [ "$ASSEMBLY_COUNT" -gt 60 ]; then
-            echo "❌ ERROR: High assembly count ($ASSEMBLY_COUNT) — trimming is NOT working. Max allowed: 60."
+            echo "FAIL: trimming check count=$ASSEMBLY_COUNT max=60"
             exit 1
-          else
-            echo "✅ Assembly count ($ASSEMBLY_COUNT) looks good for trimmed build"
           fi
 
-          # Wait for API (may have finished already while Blazor was publishing)
-          wait $PID_A || { echo "❌ API publish failed"; exit 1; }
+          wait $PID_A || { echo "FAIL: api_publish exit_code=$?"; exit 1; }
+          echo "api_publish=ok"
+          echo "::endgroup::"
 
-          echo ""
-          echo "Deploying to Azure Static Web Apps..."
-          # Deploy with minimal output (removed --print-config for faster execution)
-          swa deploy \
-            --app-location ${{ env.APP_LOCATION }}/bin/Release/publish \
-            --api-location ${{ env.API_LOCATION }}/bin/Release/publish \
-            --output-location ${{ env.APP_ARTIFACT_LOCATION }} \
-            --deployment-token $AZURE_STATIC_WEB_APPS_API_TOKEN \
-            --env production \
-            --no-use-keychain
+      - name: Deploy to Azure Static Web Apps
+        id: deploy
+        if: github.event_name == 'push'
+        uses: shibayan/swa-deploy@v1
+        with:
+          app_location: ${{ env.APP_LOCATION }}/bin/Release/publish
+          api_location: ${{ env.API_LOCATION }}/bin/Release/publish
+          api_language: dotnetisolated
+          environment: production
+          deployment_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_CLIFF_0945BE603 }}
 
-          echo ""
-          echo "=== Pipeline Summary ==="
-          echo "Tests: Completed"
-          echo "Build: Success"
-          echo "Deploy: Success"
-          echo ""
-          echo "✅ All checks passed"
+      - name: Pipeline summary
+        if: github.event_name == 'push'
+        run: |
+          echo "::group::Summary"
+          echo "tests=pass"
+          echo "publish=ok"
+          echo "url=${{ steps.deploy.outputs.deployment_url }}"
+          echo "::endgroup::"
 
-  # JOB: Verify WASM integrity and API health after deployment
+  # JOB: Verify WASM integrity and API health after deployment (push only)
   health_check:
     needs: test_and_build_job
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     name: Health Check
     steps:
       - name: Verify deployment health
         run: |
           set -e
-
-          echo "=== Health Check ==="
+          echo "::group::Health"
 
           check_wasm() {
-            echo "Checking WASM: https://redmuffin.net/_framework/blazor.boot.json"
             BOOT=$(curl -f -s --max-time 10 --retry 3 --retry-delay 5 \
               "https://redmuffin.net/_framework/blazor.boot.json")
 
             LINKER=$(echo "$BOOT" | jq -r '.linkerEnabled // "false"')
-            echo "  linkerEnabled: $LINKER"
+            echo "wasm_linker=$LINKER"
             if [ "$LINKER" != "true" ]; then
-              echo "❌ WASM trimming NOT active"
+              echo "FAIL: wasm_linker=$LINKER expected=true"
               return 1
             fi
 
             ASSEMBLIES=$(echo "$BOOT" | jq '[.resources.fingerprinting | keys[] | select(endswith(".wasm"))] | length')
-            echo "  WASM assemblies: $ASSEMBLIES"
+            echo "wasm_assemblies=$ASSEMBLIES"
             if [ "$ASSEMBLIES" -gt 60 ]; then
-              echo "❌ Assembly count ($ASSEMBLIES) indicates trimming failure"
+              echo "FAIL: wasm_assemblies=$ASSEMBLIES max=60"
               return 1
             fi
-            echo "✅ WASM trimming verified ($ASSEMBLIES assemblies)"
           }
 
           check_api() {
-            echo "Checking API: https://redmuffin.net/api/HelloWorld"
             RESPONSE=$(curl -f -s --max-time 10 --retry 3 --retry-delay 5 \
               "https://redmuffin.net/api/HelloWorld")
             if echo "$RESPONSE" | grep -q "Welcome to Azure Functions!"; then
-              echo "✅ API healthy"
+              echo "api=healthy"
             else
-              echo "❌ API response unexpected: $RESPONSE"
+              echo "FAIL: api response_unexpected"
               return 1
             fi
           }
@@ -351,12 +264,10 @@ jobs:
           check_api &
           A_PID=$!
 
-          wait $W_PID || { echo "❌ WASM check failed"; kill $A_PID 2>/dev/null; exit 1; }
-          wait $A_PID || { echo "❌ API check failed"; exit 1; }
-
-          echo ""
-          echo "=== Health Check Complete ==="
-          echo "✅ All endpoints verified"
+          wait $W_PID || { echo "FAIL: wasm_check exit_code=$?"; kill $A_PID 2>/dev/null; exit 1; }
+          wait $A_PID || { echo "FAIL: api_check exit_code=$?"; exit 1; }
+          echo "result=pass"
+          echo "::endgroup::"
 
   # JOB: Handle documentation-only changes (skipped deployment)
   docs_only_changed_job:
@@ -369,14 +280,7 @@ jobs:
     steps:
       - name: Skip Deployment
         run: |
-          echo "Only documentation and non-deployed files changed."
-          echo "Skipping deployment process as no code changes were detected."
-          echo ""
-          echo "WHAT THIS MEANS FOR YOU:"
-          echo "  - Tests and builds are skipped to save time and resources"
-          echo "  - Documentation changes don't require application redeployment"
-          echo "  - Your live application remains unchanged and operational"
-          echo "  - GitHub Pages documentation will still be updated automatically"
+          echo "result=skip reason=pipeline-neutral"
 
   # JOB: Handle pull request closures
   close_pull_request_job:
