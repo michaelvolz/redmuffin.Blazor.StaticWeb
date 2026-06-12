@@ -8,13 +8,14 @@
     <title>redmuffin</title>
     <base href="/"/>
     <link href="favicon.png" rel="icon" type="image/png"/>
+    <script type="importmap"></script>
     <!-- Preload critical CSS file for faster rendering -->
     <link rel="preload" href="css/app.min.css" as="style">
     <link href="css/app.min.css" rel="stylesheet"/>
 
     <link rel="stylesheet" href="css/fontawesome/all.min.css"/>
     <!-- Preload Blazor WebAssembly runtime for faster startup -->
-    <link rel="preload" href="_framework/blazor.webassembly.js" as="script" crossorigin="anonymous">
+    <link rel="preload" href="_framework/blazor.webassembly#[.{fingerprint}].js" as="script" crossorigin="anonymous">
     <!-- Add the media query debugger CSS below the main stylesheets -->
     <link href="css/media-query-debugger.min.css" rel="stylesheet"/>
     <script>
@@ -41,8 +42,8 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
-<script src="js/page-load-timing.min.js" defer></script>
-<script src="_framework/blazor.webassembly.js" crossorigin="anonymous"></script>
+<script src="js/page-load-timing.min#[.{fingerprint}].js" defer></script>
+<script src="_framework/blazor.webassembly#[.{fingerprint}].js" crossorigin="anonymous"></script>
 </body>
 
 </html>

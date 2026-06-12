@@ -8,9 +8,14 @@
     Basic framework and language settings that apply to all configurations
   -->
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
+    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
   </PropertyGroup>
+
+  <ItemGroup>
+    <StaticWebAssetFingerprintPattern Include="JSModule" Pattern="*.js" Expression="#[.{fingerprint}]!" />
+  </ItemGroup>
 
   <!--
     DEBUG CONFIGURATION: Optimized for fast builds and AI agent workflows
@@ -85,5 +90,71 @@
     <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Modules\ApiHealth\ApiHealth.csproj" />
     <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Modules\ApiHealth.Contracts\ApiHealth.Contracts.csproj" />
   </ItemGroup>
+
+  <!--
+    CSS FINGERPRINTING TARGET (Release only)
+    SHA-256 hashes app.min.css, renames it with content hash in filename,
+    and rewrites index.html references. .br/.gz companions are also renamed.
+    Blazor's built-in fingerprinting only handles JS modules — CSS gets this
+    custom target. Only runs on Release (production) builds.
+  -->
+  <UsingTask TaskName="ReplaceFileText"
+             TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <FilePath ParameterType="System.String" Required="true" />
+      <FindText ParameterType="System.String" Required="true" />
+      <ReplaceWith ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.IO" />
+      <Code Type="Fragment" Language="cs">
+        string content = File.ReadAllText(FilePath);
+        content = content.Replace(FindText, ReplaceWith);
+        File.WriteAllText(FilePath, content);
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="FingerprintCustomCssAssets" AfterTargets="Publish"
+          Condition="'$(Configuration)' == 'Release'">
+
+    <PropertyGroup>
+      <CssFilePath>$([System.IO.Path]::Combine('$(PublishDir)', 'wwwroot', 'css', 'app.min.css'))</CssFilePath>
+      <IndexHtmlPath>$([System.IO.Path]::Combine('$(PublishDir)', 'wwwroot', 'index.html'))</IndexHtmlPath>
+    </PropertyGroup>
+
+    <GetFileHash Files="$(CssFilePath)" Algorithm="SHA256" HashEncoding="hex"
+                 Condition="Exists('$(CssFilePath)')">
+      <Output TaskParameter="Hash" PropertyName="CssHash" />
+    </GetFileHash>
+
+    <PropertyGroup Condition="'$(CssHash)' != ''">
+      <CssHash8>$(CssHash.Substring(0,8))</CssHash8>
+      <NewCssName>app.min.$(CssHash8).css</NewCssName>
+      <NewCssPath>$([System.IO.Path]::Combine('$(PublishDir)', 'wwwroot', 'css', '$(NewCssName)'))</NewCssPath>
+    </PropertyGroup>
+
+    <Message Importance="high" Text="Fingerprinting CSS: app.min.css -> $(NewCssName) (SHA256=$(CssHash8))"
+             Condition="'$(CssHash)' != ''" />
+    <Error Text="CSS fingerprinting failed: app.min.css missing from publish output. This file must be compiled from SCSS and committed before deploy. Locally: sass --style=compressed --no-source-map scss/app.scss:wwwroot/css/app.min.css. In CI: commit the compiled app.min.css." Condition="!Exists('$(CssFilePath)')" />
+
+    <!-- Rename CSS + compressed companions -->
+    <Move SourceFiles="$(CssFilePath)" DestinationFiles="$(NewCssPath)"
+          Condition="Exists('$(CssFilePath)') And '$(CssHash)' != ''" />
+    <Move SourceFiles="$(CssFilePath).br" DestinationFiles="$(NewCssPath).br"
+          Condition="$([System.IO.File]::Exists('$(CssFilePath).br')) And '$(CssHash)' != ''" />
+    <Move SourceFiles="$(CssFilePath).gz" DestinationFiles="$(NewCssPath).gz"
+          Condition="$([System.IO.File]::Exists('$(CssFilePath).gz')) And '$(CssHash)' != ''" />
+
+    <!-- Rewrite index.html to reference fingerprinted CSS -->
+    <ReplaceFileText FilePath="$(IndexHtmlPath)"
+                     FindText="css/app.min.css"
+                     ReplaceWith="css/$(NewCssName)"
+                     Condition="'$(CssHash)' != ''" />
+
+    <Message Importance="high" Text="Updated index.html with fingerprinted CSS reference: css/$(NewCssName)"
+             Condition="'$(CssHash)' != ''" />
+  </Target>
 
 </Project>
