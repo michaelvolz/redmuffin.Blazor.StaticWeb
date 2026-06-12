@@ -73,7 +73,7 @@ public sealed partial class ImageValidator : IImageValidator
     /// </summary>
     private static string UpgradeToHttpsIfNeeded(string imageUrl)
     {
-        if (imageUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase)) return string.Concat("https://", imageUrl.AsSpan(7));
+        if (imageUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase)) return string.Concat("https://", imageUrl[7..]);
 
         return imageUrl;
     }

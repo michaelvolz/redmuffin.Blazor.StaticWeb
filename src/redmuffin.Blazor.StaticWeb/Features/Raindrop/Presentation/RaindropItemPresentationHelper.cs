@@ -15,7 +15,7 @@ public static class RaindropItemPresentationHelper
             return "No Excerpt Available";
 
         return item.Excerpt.Length > 250
-            ? string.Concat(item.Excerpt.AsSpan(0, 250), "...")
+            ? string.Concat(item.Excerpt[..250], "...")
             : item.Excerpt;
     }
 }
