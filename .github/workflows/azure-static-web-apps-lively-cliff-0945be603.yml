@@ -200,17 +200,23 @@ jobs:
           wait $PID_A || { echo "FAIL: api_publish exit_code=$?"; exit 1; }
           echo "api_publish=ok"
 
-          # CSS fingerprinting HTML rewrite: Blazor's publish pipeline may overwrite
-          # the index.html after our MSBuild target runs. This guarantees ordering.
-          FINGERPRINTED_CSS=$(find "${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot/css/" -name "app.min.*.css" -not -name "*.map" | head -1)
-          if [ -n "$FINGERPRINTED_CSS" ]; then
-            CSS_NAME=$(basename "$FINGERPRINTED_CSS")
-            sed -i "s|css/app.min.css|css/${CSS_NAME}|g" "${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot/index.html"
-            echo "css_fingerprint=${CSS_NAME}"
-          else
-            echo "FAIL: css_fingerprint missing"
-            exit 1
-          fi
+           # CSS fingerprinting HTML rewrite: Blazor's publish pipeline may overwrite
+           # the index.html after our MSBuild target runs. This guarantees ordering.
+           FINGERPRINTED_CSS=$(find "${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot/css/" -name "app.min.*.css" -not -name "*.map" | head -1)
+           if [ -n "$FINGERPRINTED_CSS" ]; then
+             CSS_NAME=$(basename "$FINGERPRINTED_CSS")
+             sed -i "s|css/app.min.css|css/${CSS_NAME}|g" "${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot/index.html"
+             # Regenerate compressed files from modified index.html.
+             # SWA platform serves pre-compressed files via content negotiation;
+             # the .br/.gz files generated during publish are stale.
+             INDEX="${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot/index.html"
+             gzip -c -9 "$INDEX" > "${INDEX}.gz"
+             brotli --best -o "${INDEX}.br" "$INDEX"
+             echo "css_fingerprint=${CSS_NAME}"
+           else
+             echo "FAIL: css_fingerprint missing"
+             exit 1
+           fi
 
           INDEX_HTML="${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot/index.html"
           PUBLISH_DIR="${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot"
