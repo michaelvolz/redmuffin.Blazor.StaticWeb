@@ -1372,8 +1372,6 @@ Attackers compromise trusted packages to infiltrate downstream applications. Com
 | **npm**   | Ignore scripts           | Blocks `postinstall` scripts that could execute malicious code during install                         |
 | **npm**   | Exact versions           | `save-exact=true` prevents unexpected version changes from `^` or `~` ranges                          |
 | **npm**   | Strict peer deps         | Prevents malformed peer dependency resolution attacks                                                 |
-| **NuGet** | Locked-mode restore      | `RestoreLockedMode=true` prevents dependency hijacking during restore                                 |
-| **NuGet** | Package lock files       | `packages.lock.json` with contentHashes ensures bit-for-bit identical restores                        |
 | **NuGet** | Signature validation     | `signatureValidationMode=accept` validates signed packages while allowing unsigned popular ones       |
 
 ### Configuration Files
@@ -1381,8 +1379,7 @@ Attackers compromise trusted packages to infiltrate downstream applications. Com
 ```text
 .npmrc                    # npm supply chain settings
 nuget.config              # NuGet supply chain settings
-Directory.Build.props     # MSBuild restore settings
-packages.lock.json       # Per-project NuGet lock files (6 total)
+Directory.Packages.props  # Centralized package versioning
 ```
 
 ### npm Configuration (.npmrc)
@@ -1403,24 +1400,12 @@ engine-strict=true        # Enforce Node.js version
 </config>
 ```
 
-### Directory.Build.props
-
-```xml
-<PropertyGroup>
-  <RestoreLockedMode>true</RestoreLockedMode>
-  <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-  <NuGetLockFilePath>packages.lock.json</NuGetLockFilePath>
-</PropertyGroup>
-```
-
 ### Why These Protections Matter
 
-- **Locked-mode restore**: Without this, attackers who compromise a transitive dependency can inject malicious code during any restore
 - **7-day filter**: The Axios compromise used a same-day malicious release; this blocks that vector entirely
-- **Content hashes**: Lock files include SHA512 hashes that detect any tampering after publication
+- **Signature validation**: NuGet validates package signatures to detect tampering after publication
 
 ### Maintenance Notes
 
-- NuGet lock files must be regenerated after adding/removing packages: `dotnet restore`
-- The `accept` mode allows unsigned packages (BenchmarkDotNet, Dapper, MediatR) while validating signed ones
+- The `accept` mode allows unsigned packages while validating signed ones
 - npm settings are repository-scoped via `.npmrc` — applies to all projects in the repo
