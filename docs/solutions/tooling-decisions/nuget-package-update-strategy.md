@@ -21,6 +21,19 @@ module: ci-cd
 
 **Dependabot is the sole automated mechanism for NuGet package updates.** No other bot (Renovate, etc.) runs alongside it. Manual tools (`scripts/Update-PackageVersions.ps1`, `dotnet list package --outdated`) are complementary for ad-hoc developer workflows but must not be used while Dependabot PRs are open.
 
+## Lock file removal (2026-06-12)
+
+`packages.lock.json` was removed from all projects. The research
+(`docs/research/restore-locked-mode-placebo.md`) proved `RestoreLockedMode`
+is a performance placebo — zero speed benefit. The remaining value (content
+hash validation) did not justify the merge conflict cost on every package
+update. NuGet 6.12+ resolver rewrite provides the actual restore performance
+improvement.
+
+`Directory.Packages.props` is the single source of package versions.
+The §Lock file handling section below is historical — the conflict
+resolution procedure no longer applies.
+
 ## Why Dependabot alone
 
 ### Microsoft endorsement
@@ -97,7 +110,7 @@ After grouping: 5 patch updates → 1 PR → 1 lock file change → no self-conf
 
 Grouping is enabled for minor+patch (the high-frequency, low-risk updates) and disabled for major (each deserves focused review).
 
-## Lock file handling
+## Lock file handling (HISTORICAL — lock files removed 2026-06-12)
 
 ### Why we commit lock files
 

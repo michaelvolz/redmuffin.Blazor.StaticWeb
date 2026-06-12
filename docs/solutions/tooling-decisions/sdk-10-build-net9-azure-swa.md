@@ -18,7 +18,6 @@ tags:
   - azure-swa
   - trimming
   - ci-pipeline
-  - restore-locked-mode
   - wasm-tools
 ---
 

@@ -10,7 +10,6 @@ description: Project-specific rules for the redmuffin.Blazor.StaticWeb repo. Sys
 > **System-wide rules**: See `~/.config/opencode/AGENTS.md` for communication protocol, safety blocks, API rate limits, Git rules, PowerShell patterns, NPM policies, and global workflows.
 > **Commit rules**: See `rm-commit` skill.
 > **Build & repo conventions**: See `rm-build-config` skill.
-> **Lock files**: Never ignore `packages.lock.json` drift — see `rm-commit` §CRITICAL for enforcement.
 > **LSP tool over grep**: The `lsp` tool (`findReferences`, `goToDefinition`, `hover`, `goToImplementation`, `documentSymbol`, `workspaceSymbol`, `incomingCalls`, `outgoingCalls`) is available when `OPENCODE_EXPERIMENTAL_LSP_TOOL=true`. Never use `grep`/`glob`/`read` for a code structure question when the corresponding LSP operation handles it — semantic matching eliminates false positives, sub-second vs multi-step. See `rm-opencode` for operation usage.
 > **Pre-commit verification**: See §PRE-COMMIT VERIFICATION below. Never commit after a code file change without running build and tests first.
 > **AGENTS.md maintenance**: See `rm-agents` skill.
@@ -38,16 +37,16 @@ a fast pre-check, not a substitute for the build+test gate.
 
 **Code files** are any file whose change can break the build or any test:
 
-| Category      | Extensions                                                       | Rationale                                           |
-| ------------- | ---------------------------------------------------------------- | --------------------------------------------------- |
-| C# source     | `.cs`                                                            | Compilation, test logic, analyzers                  |
-| Razor markup  | `.razor`                                                         | Compilation, bUnit selectors, rendering             |
-| Project/build | `.csproj`, `.props`, `.targets`                                  | Compilation, package resolution                     |
-| Solution      | `.slnx`                                                          | Project discovery                                   |
-| SCSS          | `.scss`                                                          | CSS output affects bUnit DOM assertions             |
-| Config/CI     | `.yml`, `.jsonc`, `.editorconfig`                                | Analyzer rules affect build, CI steps affect deploy |
-| PowerShell    | `.ps1`                                                           | Build scripts, package tooling                      |
-| NuGet         | `Directory.Packages.props`, `nuget.config`, `packages.lock.json` | Package resolution                                  |
+| Category      | Extensions                                 | Rationale                                           |
+| ------------- | ------------------------------------------ | --------------------------------------------------- |
+| C# source     | `.cs`                                      | Compilation, test logic, analyzers                  |
+| Razor markup  | `.razor`                                   | Compilation, bUnit selectors, rendering             |
+| Project/build | `.csproj`, `.props`, `.targets`            | Compilation, package resolution                     |
+| Solution      | `.slnx`                                    | Project discovery                                   |
+| SCSS          | `.scss`                                    | CSS output affects bUnit DOM assertions             |
+| Config/CI     | `.yml`, `.jsonc`, `.editorconfig`          | Analyzer rules affect build, CI steps affect deploy |
+| PowerShell    | `.ps1`                                     | Build scripts, package tooling                      |
+| NuGet         | `Directory.Packages.props`, `nuget.config` | Package resolution                                  |
 
 **SCSS-only changes**: CSS output affects bUnit DOM assertions. Never skip
 the full build+test chain, even when only SCSS files changed — a stale test

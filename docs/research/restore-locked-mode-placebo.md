@@ -71,6 +71,20 @@ Remove `RestoreLockedMode=true` from the main solution's `Directory.Build.props`
 **Performance impact of this change: zero.**
 **CI stability impact: fixes NU1004 permanently.**
 
+## Update (2026-06-12): Lock files fully removed
+
+The lock files (`packages.lock.json` in all projects) and
+`RestorePackagesWithLockFile` were fully removed. The initial decision
+to keep them for "dependency auditability" was re-evaluated — the
+merge conflict cost on every package update outweighed the theoretical
+content-hash validation benefit. NuGet 6.12+ resolver rewrite provides
+the actual restore performance. `Directory.Packages.props` is the
+single source of package versions.
+
+Nine lock files deleted. `RestorePackagesWithLockFile` set to `false`.
+NuGet cache hash changed from `packages.lock.json` to
+`Directory.Packages.props`.
+
 ## References
 
 - G-Research lock file benchmarks (2022): internal CI tests on NuGet.Client perf suite

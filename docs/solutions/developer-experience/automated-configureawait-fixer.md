@@ -188,7 +188,7 @@ Published output goes in `tools/net10.0/any/` via static `<None Pack="true" Pack
 - **Package source mapping** in `tools/nuget.config` is required for the `local-tools` feed. Without it, NuGet may resolve from `nuget.org` instead.
 - **Clear the NuGet cache** between pack iterations: `dotnet nuget locals all --clear`. Stale cached packages cause silent failures — the `.targets` import appears correct but the target never fires.
 - **`NU5128` warning** (missing lib/ref assemblies) is harmless for tool-only packages. Cannot be suppressed without adding dummy lib assemblies.
-- **`packages.lock.json`** changes when package source mapping changes — commit it alongside the config change.
+- **`packages.lock.json`** is no longer committed — removed 2026-06-12. Package source mapping changes only affect `Directory.Packages.props`.
 
 ### 8. Performance characteristics
 
