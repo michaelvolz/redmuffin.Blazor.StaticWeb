@@ -159,9 +159,42 @@
                      ReplaceWith="css/$(NewCssName)"
                      Condition="'$(CssHash)' != ''" />
 
+    <RegenerateCompressedHtml InputFile="$(IndexHtmlPath)"
+                             Condition="'$(CssHash)' != ''" />
+
     <Message Importance="high" Text="Updated index.html with fingerprinted CSS reference: css/$(NewCssName)"
              Condition="'$(CssHash)' != ''" />
   </Target>
+
+  <!--
+    Regenerate compressed index.html variants after CSS fingerprinting.
+    MSBuild generates .br/.gz files during publish BEFORE AfterTargets="Publish"
+    runs. Azure SWA serves pre-compressed files via content negotiation
+    (Accept-Encoding: br/gzip). If the compressed files are stale, clients
+    get the unfingerprinted HTML.
+  -->
+  <UsingTask TaskName="RegenerateCompressedHtml"
+             TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <InputFile ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.Diagnostics" />
+      <Using Namespace="System.IO" />
+      <Code Type="Fragment" Language="cs">
+      <![CDATA[
+        // Delete stale compressed files generated before CSS fingerprinting.
+        // The SWA platform will compress on-the-fly for local publish testing.
+        // CI deploys regenerate the compressed files with brotli/gzip CLI tools.
+        string brPath = InputFile + ".br";
+        string gzPath = InputFile + ".gz";
+        if (File.Exists(brPath)) File.Delete(brPath);
+        if (File.Exists(gzPath)) File.Delete(gzPath);
+      ]]>
+      </Code>
+    </Task>
+  </UsingTask>
 
   <Target Name="CopyStaticWebAppConfig" AfterTargets="Publish">
     <Copy SourceFiles="$(MSBuildProjectDirectory)\staticwebapp.config.json"
