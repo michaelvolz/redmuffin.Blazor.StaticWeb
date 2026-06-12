@@ -4,8 +4,8 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <PropertyGroup Label="SharedVersions">
-    <MicrosoftExtensionsVersion>9.0.16</MicrosoftExtensionsVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>10.0.8</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+    <MicrosoftExtensionsVersion>10.0.9</MicrosoftExtensionsVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>10.0.9</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
     <TUnitVersion>1.28.7</TUnitVersion>
     <AzureFunctionsWorkerVersion>2.52.0</AzureFunctionsWorkerVersion>
     <AzureFunctionsWorkerApplicationInsightsVersion>2.50.0</AzureFunctionsWorkerApplicationInsightsVersion>
@@ -43,7 +43,7 @@
     <PackageVersion Include="Mediator.SourceGenerator" Version="$(MediatorVersion)" />
   </ItemGroup>
   <ItemGroup Label="AspNetCore">
-    <PackageVersion Include="Microsoft.AspNetCore.Components.Analyzers" Version="$(MicrosoftExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.Analyzers" Version="10.0.9" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="$(MicrosoftExtensionsVersion)" />
@@ -91,6 +91,6 @@
     <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="$(RoslynatorVersion)" />
     <PackageVersion Include="StyleCop.Analyzers" Version="$(StyleCopAnalyzersVersion)" />
     <PackageVersion Include="AsyncFixer" Version="$(AsyncFixerVersion)" />
-    <PackageVersion Update="Microsoft.AspNetCore.Components.Analyzers" Version="$(MicrosoftExtensionsVersion)" />
+    <PackageVersion Update="Microsoft.AspNetCore.Components.Analyzers" Version="10.0.9" />
   </ItemGroup>
 </Project>

@@ -10,11 +10,7 @@
     <ExcludeFromCodeCoverage>**/Migrations/**;**/obj/**;**/bin/**;**/wwwroot/**;**/node_modules/**</ExcludeFromCodeCoverage>
   </PropertyGroup>
 
-  <!-- NuGet restore is deterministic within the same SDK version and feed.
-       packages.lock.json was removed — it provided zero performance benefit
-       (RestoreLockedMode placebo, documented in docs/research/) and caused
-       merge conflicts on every package update. NuGet 6.12+ resolver rewrite
-       provides the actual speed improvement. -->
+  <!-- NuGet restore is deterministic within the same SDK version and feed. -->
   <PropertyGroup>
     <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
   </PropertyGroup>
@@ -62,6 +58,9 @@
 
   <!-- RELEASE MODE: Full production optimizations -->
   <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' AND '$(Configuration)' == 'Release'">
+    <!-- Enable static web asset fingerprinting — SHA-256 content hashing
+         for cache-busting with immutable browser caching (.NET 10+) -->
+    <StaticWebAssetsFingerprintingEnabled>true</StaticWebAssetsFingerprintingEnabled>
     <!-- Enable globalization optimizations for smaller bundle size -->
     <InvariantGlobalization>true</InvariantGlobalization>
     <!-- Use system resource keys to reduce bundle size -->
