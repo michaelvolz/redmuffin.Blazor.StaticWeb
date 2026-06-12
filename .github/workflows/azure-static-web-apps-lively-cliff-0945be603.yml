@@ -202,7 +202,7 @@ jobs:
         if: github.event_name == 'push'
         uses: shibayan/swa-deploy@v1
         with:
-          app-location: ${{ env.APP_LOCATION }}/bin/Release/publish
+          app-location: ${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot
           api-location: ${{ env.API_LOCATION }}/bin/Release/publish
           api-language: dotnetisolated
           environment-name: production
