@@ -24,13 +24,16 @@ public sealed class BrowserStorageServiceUpdateAccumulatorTests
     [Test]
     public async Task Should_add_size_and_set_timestamps_when_item_not_expired()
     {
+        var now = DateTime.UtcNow;
+        var created = now.AddDays(-1);
+
         var acc = new BrowserStorageService.StatsAccumulator();
         var index = new Dictionary<string, StoredItemMetadata>
         {
             ["key1"] = new()
             {
-                CreatedAt = BaseTime,
-                ExpiresAt = BaseTime.AddDays(30)
+                CreatedAt = created,
+                ExpiresAt = now.AddDays(30)
             }
         };
 
@@ -38,8 +41,8 @@ public sealed class BrowserStorageServiceUpdateAccumulatorTests
 
         await Assert.That(acc.TotalSize).IsEqualTo(200);
         await Assert.That(acc.ExpiredCount).IsEqualTo(0);
-        await Assert.That(acc.Oldest).IsEqualTo(BaseTime);
-        await Assert.That(acc.Newest).IsEqualTo(BaseTime);
+        await Assert.That(acc.Oldest).IsEqualTo(created);
+        await Assert.That(acc.Newest).IsEqualTo(created);
     }
 
     [Test]
@@ -108,22 +111,24 @@ public sealed class BrowserStorageServiceUpdateAccumulatorTests
     [Test]
     public async Task Should_accumulate_across_multiple_calls()
     {
+        var now = DateTime.UtcNow;
+
         var acc = new BrowserStorageService.StatsAccumulator();
         var index = new Dictionary<string, StoredItemMetadata>
         {
             ["key1"] = new()
             {
-                CreatedAt = BaseTime.AddDays(-2),
-                ExpiresAt = BaseTime.AddDays(30)
+                CreatedAt = now.AddDays(-2),
+                ExpiresAt = now.AddDays(30)
             },
             ["key2"] = new()
             {
-                CreatedAt = BaseTime,
-                ExpiresAt = BaseTime.AddDays(30)
+                CreatedAt = now,
+                ExpiresAt = now.AddDays(30)
             },
             ["key3"] = new()
             {
-                CreatedAt = BaseTime.AddDays(-8),
+                CreatedAt = now.AddDays(-8),
                 ExpiresAt = null // expired (default 7-day)
             }
         };
@@ -134,8 +139,8 @@ public sealed class BrowserStorageServiceUpdateAccumulatorTests
 
         await Assert.That(acc.TotalSize).IsEqualTo(350);
         await Assert.That(acc.ExpiredCount).IsEqualTo(1);
-        await Assert.That(acc.Oldest).IsEqualTo(BaseTime.AddDays(-8));
-        await Assert.That(acc.Newest).IsEqualTo(BaseTime);
+        await Assert.That(acc.Oldest).IsEqualTo(now.AddDays(-8));
+        await Assert.That(acc.Newest).IsEqualTo(now);
     }
 
     [Test]
