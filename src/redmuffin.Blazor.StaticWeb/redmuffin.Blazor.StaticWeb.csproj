@@ -15,6 +15,9 @@
 
   <ItemGroup>
     <StaticWebAssetFingerprintPattern Include="JSModule" Pattern="*.js" Expression="#[.{fingerprint}]!" />
+    <!-- Source JS files kept in wwwroot for dev but excluded from publish.
+         Only the minified version (*.min.js) is deployed and fingerprinted. -->
+    <Content Update="wwwroot\js\page-load-timing.js" CopyToPublishDirectory="Never" />
   </ItemGroup>
 
   <!--
@@ -155,6 +158,12 @@
 
     <Message Importance="high" Text="Updated index.html with fingerprinted CSS reference: css/$(NewCssName)"
              Condition="'$(CssHash)' != ''" />
+  </Target>
+
+  <Target Name="CopyStaticWebAppConfig" AfterTargets="Publish">
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\staticwebapp.config.json"
+          DestinationFiles="$(PublishDir)wwwroot\staticwebapp.config.json"
+          Condition="Exists('$(MSBuildProjectDirectory)\staticwebapp.config.json')" />
   </Target>
 
 </Project>
