@@ -36,6 +36,7 @@
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" VersionOverride="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Http" VersionOverride="10.0.8" />
   </ItemGroup>
 
   <ItemGroup>
