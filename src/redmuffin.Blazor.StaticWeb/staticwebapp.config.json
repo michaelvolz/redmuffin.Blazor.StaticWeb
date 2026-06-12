@@ -16,13 +16,13 @@
     {
       "route": "/",
       "headers": {
-        "Cache-Control": "must-revalidate, max-age=604800"
+        "Cache-Control": "no-cache"
       }
     },
     {
       "route": "/index.html",
       "headers": {
-        "Cache-Control": "must-revalidate, max-age=604800"
+        "Cache-Control": "no-cache"
       }
     },
     {
