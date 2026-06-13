@@ -1,6 +1,6 @@
 ---
 date: 2026-06-12
-last_updated: 2026-06-12
+last_updated: 2026-06-13
 tags:
   - dotnet-10
   - csharp-14
@@ -506,6 +506,28 @@ Useful for filename sorting.
 `ReferenceHandler` can now be configured via `JsonSourceGenerationOptionsAttribute`
 for source-generated serializers. Important for the `LZStringCSharp` integration
 (JSON serialization in Blazor).
+
+### WASM Feature Compatibility — Old Safari
+
+.NET 8+ enables WASM SIMD and exception handling by default. Safari did not
+support either until version 16.4 (March 2023). Devices capped at iOS 15 or
+macOS 12 — including iPhone 7 Plus — cannot load the runtime with these features
+enabled.
+
+Both must be disabled for compatibility:
+
+```xml
+<WasmEnableSIMD>false</WasmEnableSIMD>
+<WasmEnableExceptionHandling>false</WasmEnableExceptionHandling>
+```
+
+When the minimum supported Safari becomes 16.4+, re-enable both to restore
+throughput on spans, strings, arrays, and JSON parsing. The two settings share
+the same browser cutoff and should always change together.
+
+**IMPACT**: ⭐⭐⭐ (blocks ~1-2% of visitors)
+**EFFORT**: Trivial (two properties)
+**STATUS**: `applied` (both disabled in Debug + Release)
 
 ---
 

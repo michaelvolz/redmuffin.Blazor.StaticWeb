@@ -30,6 +30,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <!-- Disable WASM SIMD optimizations for faster debug builds -->
     <WasmEnableSIMD>false</WasmEnableSIMD>
+    <!-- Disable WASM exception handling for Safari < 16.4 compatibility -->
+    <WasmEnableExceptionHandling>false</WasmEnableExceptionHandling>
     <!-- Disable trimming to speed up compilation (larger bundle, but faster builds) -->
     <PublishTrimmed>false</PublishTrimmed>
     <!-- Suppress trim analysis warnings since trimming is disabled in debug -->
@@ -51,8 +53,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <!-- Disable AOT compilation - AoT increases file size significantly -->
     <RunAOTCompilation>false</RunAOTCompilation>
-    <!-- Disable WASM SIMD for smaller bundle -->
+    <!-- WASM SIMD and exception handling disabled for Safari < 16.4 (iOS 15, macOS 12).
+         Both features require a runtime rebuild via wasm-tools workload.
+         When minimum supported Safari becomes 16.4+, re-enable both to restore
+         ~10-30% throughput on spans, strings, and JSON parsing. -->
     <WasmEnableSIMD>false</WasmEnableSIMD>
+    <WasmEnableExceptionHandling>false</WasmEnableExceptionHandling>
     <!-- Enable trimming (partial mode — Blazor SDK default, safe for WASM) -->
     <PublishTrimmed>true</PublishTrimmed>
       <!-- Specify trimmer descriptor to preserve essential types -->
