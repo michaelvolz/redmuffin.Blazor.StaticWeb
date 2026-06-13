@@ -28,6 +28,7 @@ docs/**
 swa-cli.config.json
 
 # Editor/IDE config — workspace, formatting, settings; not build tools
+.editorconfig
 .vscode/**
 *.code-workspace
 *.sln.DotSettings
