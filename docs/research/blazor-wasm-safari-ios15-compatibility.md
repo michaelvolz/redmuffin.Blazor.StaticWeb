@@ -80,6 +80,6 @@ The memory ceiling should remain reduced for iOS compatibility.
 
 ## References
 
-- [dotnet/runtime#84638](https://github.com/dotnet/runtime/issues/84638) — iOS Safari rejects large WASM memory ceilings
+- [dotnet/runtime#84638](https://github.com/dotnet/runtime/issues/84638) — iOS Safari can reject large WASM memory ceilings
 - [dotnet/runtime#95963](https://github.com/dotnet/runtime/issues/95963) — JITerpreter `do_jit_call` fails with JS-based exception fallback
 - [dotnet/runtime#104895](https://github.com/dotnet/runtime/issues/104895) — Unresolved iOS 15.4 crash (Future milestone)
