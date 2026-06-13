@@ -268,14 +268,14 @@ jobs:
           echo "::group::Health"
 
           check_wasm() {
-            # .NET 10 removed blazor.boot.json. Verify index.html loads and
-            # contains fingerprinted Blazor JS reference (proves WASM deploy).
+            # Verify index.html contains _framework/ — the canonical
+            # Blazor WASM deploy marker across all .NET versions.
             INDEX=$(curl -f -s --max-time 10 --retry 3 --retry-delay 5 \
               "https://redmuffin.net/")
-            if echo "$INDEX" | grep -q 'blazor\.webassembly\..*\.js'; then
+            if echo "$INDEX" | grep -q '/_framework/'; then
               echo "wasm=deployed"
             else
-              echo "FAIL: wasm blazor.webassembly reference missing"
+              echo "FAIL: wasm _framework/ deploy marker missing"
               return 1
             fi
           }
