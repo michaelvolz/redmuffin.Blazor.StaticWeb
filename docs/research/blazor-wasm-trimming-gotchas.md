@@ -1,18 +1,19 @@
 ---
 date: 2026-05-12
-title: Blazor WASM Trimming Gotchas — --no-restore and TrimMode=full
-tags: [research, blazor, trimming, ci, build, deployment]
-description: Two subtle Blazor WASM build configuration mistakes that cause deploy failures: --no-restore silently disables trimming, and TrimMode=full crashes the runtime.
+title: Blazor WASM Build Gotchas — --no-restore, --no-build, and TrimMode=full
+tags: [research, blazor, trimming, fingerprinting, ci, build, deployment]
+description: Three subtle Blazor WASM build configuration mistakes that cause deploy failures: --no-restore silently disables trimming, --no-build breaks .NET 10 fingerprinting, and TrimMode=full crashes the runtime.
 module: build-infrastructure
 problem_type: deployment
 ---
 
 ## Summary
 
-Two build configuration mistakes caused repeated deploy failures. Both are
-subtle — neither produces a build error. The first produces an untrimmed
-(204-assembly) build. The second produces a correctly-sized (38-assembly)
-build that crashes at runtime.
+Three build configuration mistakes caused repeated deploy failures.
+All three are subtle — none produces a build error. The first produces
+an untrimmed (204-assembly) build. The second produces a correctly-sized
+(38-assembly) build that crashes at runtime. The third leaves fingerprint
+placeholders unreplaced (404 on the Blazor runtime).
 
 ## Gotcha 1: --no-restore Silently Disables Trimming
 
@@ -70,9 +71,9 @@ dotnet publish -c Release -p:PublishTrimmed=true
 in Release mode with trim properties set. But removing `--no-restore`
 is simpler and adds negligible time (restore cache hits).
 
-### Detection
+### Detection (.NET 9 and earlier)
 
-Check assembly count in `blazor.boot.json`:
+Check assembly count in `blazor.boot.json` (removed in .NET 10):
 
 ```bash
 jq '.resources.fingerprinting | keys | map(select(endswith(".wasm"))) | length' \
@@ -81,6 +82,13 @@ jq '.resources.fingerprinting | keys | map(select(endswith(".wasm"))) | length' 
 
 - Expected (trimmed): 38
 - Untrimmed: 204
+
+On .NET 10, count WASM assemblies directly:
+
+```bash
+find publish/wwwroot/_framework -maxdepth 1 -name '*.wasm' -not -name 'dotnet.native.*' | wc -l
+# Expected: ≤60, Untrimmed: >120
+```
 
 ## Gotcha 2: TrimMode=full Crashes Blazor WASM at Runtime
 
@@ -176,7 +184,70 @@ JsonSerializer.Serialize(writer, value, RaindropJsonSerializerContext.Default.Cr
 zero IL2026/IL2067/IL2070 warnings. `TreatWarningsAsErrors=true` makes
 this enforcement automatic.
 
+## Gotcha 3: --no-build Breaks Blazor WASM Fingerprinting (.NET 10)
+
+**Date discovered**: 2026-06-12
+
+### Symptom
+
+`dotnet publish --no-build -c Release` leaves `#[.{fingerprint}]`
+placeholders unreplaced in `index.html`. The browser requests
+`_framework/blazor.webassembly#[.{fingerprint}].js` literally, gets
+a 404, and the app never loads. The build succeeds with zero errors
+or warnings. The `dotnet.publish.manifest.json` references are also
+left with placeholder names.
+
+### Root Cause
+
+.NET 10's Blazor WASM asset fingerprinting (`OverrideHtmlAssetPlaceholders`)
+requires the full publish pipeline — the build step computes asset
+hashes that the publish step uses to replace placeholders. The
+`--no-build` flag skips the build step, so the publish step receives
+no hash data. Microsoft has confirmed this is by design: the publish
+pipeline always sources content from the intermediate (`obj/`)
+directory regardless of `--no-build` (dotnet/sdk#52168).
+
+The .NET 9 content-file naming bug (dotnet/aspnetcore#58321) was
+fixed in the .NET 10 SDK (dotnet/sdk#44160). The fingerprinting
+issue (dotnet/aspnetcore#64543, reported 2025-11-26 for .NET
+10.0.100) is a separate, unfixed limitation.
+
+### Fix
+
+Never use `--no-build` for Blazor WASM `dotnet publish`. Always run
+the full publish command:
+
+✅ Working:
+
+```bash
+dotnet publish -c Release -p:PublishTrimmed=true --no-restore
+```
+
+❌ Broken (.NET 10):
+
+```bash
+dotnet publish -c Release -p:PublishTrimmed=true --no-restore --no-build
+```
+
+The `--no-restore` flag is safe (restore was run separately with
+correct properties). The `--no-build` flag is never safe for Blazor
+WASM publish on .NET 10.
+
+### Detection
+
+After publish, grep the output `index.html` for unreplaced
+placeholders:
+
+```bash
+grep -c '#\[\.{fingerprint}\]' publish/wwwroot/index.html
+# Expected: 0
+# Broken:  >0 (placeholders not replaced)
+```
+
 ## References
 
 - Microsoft docs: [Trimming options](https://learn.microsoft.com/en-us/dotnet/core/deploying/trimming/trimming-options)
 - Microsoft docs: [Blazor WASM trimming](https://learn.microsoft.com/en-us/aspnet/core/blazor/host-and-deploy/webassembly#trim-net-il-linker)
+- [dotnet/aspnetcore#58321](https://github.com/dotnet/aspnetcore/issues/58321) — .NET 9 `--no-build` content file naming (fixed)
+- [dotnet/aspnetcore#64543](https://github.com/dotnet/aspnetcore/issues/64543) — .NET 10 `--no-build` fingerprinting broken (open)
+- [dotnet/sdk#52168](https://github.com/dotnet/sdk/issues/52168) — publish sources from obj/, not bin/ (by design)
