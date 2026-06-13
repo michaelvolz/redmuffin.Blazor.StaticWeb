@@ -19,13 +19,11 @@
         .loading-progress-text{font-family:Arial,Helvetica,sans-serif;font-weight:bold;inset:calc(20vh + 3.25rem) 0 auto 0.2rem;position:absolute;text-align:center}
         .loading-progress-text:after{content:var(--blazor-load-percentage-text, "Loading")}
     </style>
-    <!-- Preload critical CSS file for faster rendering -->
     <link rel="preload" href="css/app.min.css" as="style">
     <link href="css/app.min.css" rel="stylesheet"/>
 
     <link rel="preload" href="css/fontawesome/all.min.css" as="style">
     <link rel="stylesheet" href="css/fontawesome/all.min.css"/>
-    <!-- Preload Blazor WebAssembly runtime for faster startup -->
     <link rel="preload" href="_framework/blazor.webassembly#[.{fingerprint}].js" as="script" crossorigin="anonymous">
     <link href="css/media-query-debugger.min.css" rel="stylesheet"/>
     <script>
