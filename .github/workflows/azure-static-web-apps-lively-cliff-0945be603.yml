@@ -204,7 +204,18 @@ jobs:
           wait $PID_A || { echo "FAIL: api_publish exit_code=$?"; exit 1; }
           echo "api_publish=ok"
 
-           # CSS fingerprinting HTML rewrite: Blazor's publish pipeline may overwrite
+          # Safari 15 transpile: .NET 10 blazor.webassembly.js uses class static
+          # blocks (static{...}) which require Safari 16.4+. Replace with equivalent
+          # static class field syntax (Safari 14.1+).
+          BLZR_JS="${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot/_framework/blazor.webassembly.js"
+          sed -i 's/static{this\.nextEventDelegatorId=0}/static nextEventDelegatorId=0;/' "$BLZR_JS"
+          if command -v brotli &>/dev/null; then
+            brotli --best -o "${BLZR_JS}.br" "$BLZR_JS"
+            gzip -c --best "$BLZR_JS" > "${BLZR_JS}.gz"
+          fi
+          echo "safari15_transpile=done"
+
+          # CSS fingerprinting HTML rewrite: Blazor's publish pipeline may overwrite
            # the index.html after our MSBuild target runs. This guarantees ordering.
            FINGERPRINTED_CSS=$(find "${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot/css/" -name "app.min.*.css" -not -name "*.map" | head -1)
            if [ -n "$FINGERPRINTED_CSS" ]; then

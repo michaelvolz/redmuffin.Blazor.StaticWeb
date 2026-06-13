@@ -85,6 +85,22 @@ Apply to both Debug and Release configurations.
 Together they ensure all framework files exist at their literal names,
 so `import("./dotnet.js")` resolves directly without the import map.
 
+### JavaScript Syntax Transpilation
+
+The .NET 10 SDK compiles `blazor.webassembly.js` with a TypeScript
+target of ES2024. The generated file contains one class static
+initialization block — `static{this.nextEventDelegatorId=0}` in the
+`T` event delegator class — which is a syntax error on Safari < 16.4.
+
+This cannot be prevented with MSBuild properties. The deploy workflow
+replaces it with equivalent static class field syntax after publish:
+
+```bash
+sed -i 's/static{this\.nextEventDelegatorId=0}/static nextEventDelegatorId=0;/' blazor.webassembly.js
+```
+
+Static class fields (`static x = 0`) are supported since Safari 14.1.
+
 ## Detection
 
 Test on iOS 15 Safari. The site either loads or shows a blank page /
