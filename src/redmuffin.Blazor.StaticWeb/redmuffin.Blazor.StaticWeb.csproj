@@ -28,10 +28,13 @@
     These settings prioritize compilation speed over runtime performance and bundle size
   -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <!-- Disable WASM SIMD optimizations for faster debug builds -->
+    <!-- WASM SIMD, exception handling, and JITerpreter disabled for Safari < 16.4
+         (iOS 15, macOS 12). All three must change together — same browser cutoff.
+         JITerpreter is disabled because its do_jit_call path does not handle the
+         JS-based exception fallback (dotnet/runtime#95963). -->
     <WasmEnableSIMD>false</WasmEnableSIMD>
-    <!-- Disable WASM exception handling for Safari < 16.4 compatibility -->
     <WasmEnableExceptionHandling>false</WasmEnableExceptionHandling>
+    <BlazorWebAssemblyJiterpreter>false</BlazorWebAssemblyJiterpreter>
     <!-- Disable trimming to speed up compilation (larger bundle, but faster builds) -->
     <PublishTrimmed>false</PublishTrimmed>
     <!-- Suppress trim analysis warnings since trimming is disabled in debug -->
@@ -53,12 +56,16 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <!-- Disable AOT compilation - AoT increases file size significantly -->
     <RunAOTCompilation>false</RunAOTCompilation>
-    <!-- WASM SIMD and exception handling disabled for Safari < 16.4 (iOS 15, macOS 12).
-         Both features require a runtime rebuild via wasm-tools workload.
-         When minimum supported Safari becomes 16.4+, re-enable both to restore
-         ~10-30% throughput on spans, strings, and JSON parsing. -->
+    <!-- WASM SIMD, exception handling, and JITerpreter disabled for Safari < 16.4
+         (iOS 15, macOS 12). All three share the same browser cutoff. SIMD and
+         exception handling require a runtime rebuild via wasm-tools workload.
+         JITerpreter is disabled because its do_jit_call path does not handle the
+         JS-based exception fallback mode (dotnet/runtime#95963).
+         When minimum supported Safari becomes 16.4+, re-enable all three to restore
+         throughput on spans, strings, arrays, and JSON parsing. -->
     <WasmEnableSIMD>false</WasmEnableSIMD>
     <WasmEnableExceptionHandling>false</WasmEnableExceptionHandling>
+    <BlazorWebAssemblyJiterpreter>false</BlazorWebAssemblyJiterpreter>
     <!-- Enable trimming (partial mode — Blazor SDK default, safe for WASM) -->
     <PublishTrimmed>true</PublishTrimmed>
       <!-- Specify trimmer descriptor to preserve essential types -->
