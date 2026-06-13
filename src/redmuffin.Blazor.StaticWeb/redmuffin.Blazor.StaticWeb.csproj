@@ -14,6 +14,21 @@
     <!-- WASM0001: false positive from MSBuild framework P/Invoke in inline C# tasks.
          GetModuleFileName is in build-only assemblies, never shipped to browser. -->
     <NoWarn>$(NoWarn);WASM0001</NoWarn>
+    <!-- WASM SIMD, exception handling, and JITerpreter disabled for Safari < 16.4
+         (iOS 15, macOS 12). All three must change together — same browser cutoff.
+         SIMD and exception handling require a runtime rebuild via wasm-tools.
+         JITerpreter is disabled because its do_jit_call path does not handle the
+         JS-based exception fallback mode (dotnet/runtime#95963).
+         When minimum supported Safari becomes 16.4+, re-enable all three to
+         restore throughput on spans, strings, arrays, and JSON parsing. -->
+    <WasmEnableSIMD>false</WasmEnableSIMD>
+    <WasmEnableExceptionHandling>false</WasmEnableExceptionHandling>
+    <BlazorWebAssemblyJiterpreter>false</BlazorWebAssemblyJiterpreter>
+    <!-- Reduce WASM max memory for iOS Safari compatibility.
+         iOS Safari can reject allocations with maximum > ~256MB
+         (dotnet/runtime#84638). Default is 2GB.
+         This is independent of Safari version — keep reduced for iOS. -->
+    <EmccMaximumHeapSize>268435456</EmccMaximumHeapSize>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,17 +43,6 @@
     These settings prioritize compilation speed over runtime performance and bundle size
   -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <!-- WASM SIMD, exception handling, and JITerpreter disabled for Safari < 16.4
-         (iOS 15, macOS 12). All three must change together — same browser cutoff.
-         JITerpreter is disabled because its do_jit_call path does not handle the
-         JS-based exception fallback (dotnet/runtime#95963). -->
-    <WasmEnableSIMD>false</WasmEnableSIMD>
-    <WasmEnableExceptionHandling>false</WasmEnableExceptionHandling>
-    <BlazorWebAssemblyJiterpreter>false</BlazorWebAssemblyJiterpreter>
-    <!-- Reduce WASM max memory for iOS Safari compatibility.
-         iOS Safari rejects allocations with maximum > ~256MB
-         (dotnet/runtime#84638). Default is 2GB. -->
-    <EmccMaximumHeapSize>268435456</EmccMaximumHeapSize>
     <!-- Disable trimming to speed up compilation (larger bundle, but faster builds) -->
     <PublishTrimmed>false</PublishTrimmed>
     <!-- Suppress trim analysis warnings since trimming is disabled in debug -->
@@ -60,20 +64,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <!-- Disable AOT compilation - AoT increases file size significantly -->
     <RunAOTCompilation>false</RunAOTCompilation>
-    <!-- WASM SIMD, exception handling, and JITerpreter disabled for Safari < 16.4
-         (iOS 15, macOS 12). All three share the same browser cutoff. SIMD and
-         exception handling require a runtime rebuild via wasm-tools workload.
-         JITerpreter is disabled because its do_jit_call path does not handle the
-         JS-based exception fallback mode (dotnet/runtime#95963).
-         When minimum supported Safari becomes 16.4+, re-enable all three to restore
-         throughput on spans, strings, arrays, and JSON parsing. -->
-    <WasmEnableSIMD>false</WasmEnableSIMD>
-    <WasmEnableExceptionHandling>false</WasmEnableExceptionHandling>
-    <BlazorWebAssemblyJiterpreter>false</BlazorWebAssemblyJiterpreter>
-    <!-- Reduce WASM max memory for iOS Safari compatibility.
-         iOS Safari rejects allocations with maximum > ~256MB
-         (dotnet/runtime#84638). Default is 2GB. -->
-    <EmccMaximumHeapSize>268435456</EmccMaximumHeapSize>
     <!-- Enable trimming (partial mode — Blazor SDK default, safe for WASM) -->
     <PublishTrimmed>true</PublishTrimmed>
       <!-- Specify trimmer descriptor to preserve essential types -->
