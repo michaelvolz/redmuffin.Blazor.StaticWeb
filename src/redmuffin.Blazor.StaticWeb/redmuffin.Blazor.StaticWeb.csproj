@@ -35,6 +35,10 @@
     <WasmEnableSIMD>false</WasmEnableSIMD>
     <WasmEnableExceptionHandling>false</WasmEnableExceptionHandling>
     <BlazorWebAssemblyJiterpreter>false</BlazorWebAssemblyJiterpreter>
+    <!-- Reduce WASM max memory for iOS Safari compatibility.
+         iOS Safari rejects allocations with maximum > ~256MB
+         (dotnet/runtime#84638). Default is 2GB. -->
+    <EmccMaximumHeapSize>268435456</EmccMaximumHeapSize>
     <!-- Disable trimming to speed up compilation (larger bundle, but faster builds) -->
     <PublishTrimmed>false</PublishTrimmed>
     <!-- Suppress trim analysis warnings since trimming is disabled in debug -->
@@ -66,6 +70,10 @@
     <WasmEnableSIMD>false</WasmEnableSIMD>
     <WasmEnableExceptionHandling>false</WasmEnableExceptionHandling>
     <BlazorWebAssemblyJiterpreter>false</BlazorWebAssemblyJiterpreter>
+    <!-- Reduce WASM max memory for iOS Safari compatibility.
+         iOS Safari rejects allocations with maximum > ~256MB
+         (dotnet/runtime#84638). Default is 2GB. -->
+    <EmccMaximumHeapSize>268435456</EmccMaximumHeapSize>
     <!-- Enable trimming (partial mode — Blazor SDK default, safe for WASM) -->
     <PublishTrimmed>true</PublishTrimmed>
       <!-- Specify trimmer descriptor to preserve essential types -->
