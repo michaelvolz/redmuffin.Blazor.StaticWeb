@@ -272,7 +272,7 @@ jobs:
             # Blazor WASM deploy marker across all .NET versions.
             INDEX=$(curl -f -s --max-time 10 --retry 3 --retry-delay 5 \
               "https://redmuffin.net/")
-            if echo "$INDEX" | grep -q '/_framework/'; then
+            if echo "$INDEX" | grep -q '_framework/'; then
               echo "wasm=deployed"
             else
               echo "FAIL: wasm _framework/ deploy marker missing"
