@@ -509,34 +509,31 @@ for source-generated serializers. Important for the `LZStringCSharp` integration
 
 ### WASM Feature Compatibility — Old Safari
 
-.NET 8+ enables two WASM features and a JIT optimization by default.
-Safari did not support any of them until version 16.4 (March 2023).
-Devices capped at iOS 15 or macOS 12 — including iPhone 7 Plus — cannot
-load the runtime with these features enabled.
-
-All three must be disabled for compatibility. The default 2GB WASM
-memory ceiling can also cause startup failures on iOS — iOS Safari may
-reject WASM module instantiation when the stated maximum exceeds
-available per-tab memory (dotnet/runtime#84638).
+.NET 10 Blazor WASM standalone requires five properties for iOS 15
+Safari compatibility. Three control WASM runtime features. One controls
+memory. The fifth disables framework JS fingerprinting — Safari < 16.4
+ignores `<script type="importmap">`, so the bootloader's
+`import("./dotnet.js")` cannot resolve fingerprinted paths.
 
 ```xml
 <WasmEnableSIMD>false</WasmEnableSIMD>
 <WasmEnableExceptionHandling>false</WasmEnableExceptionHandling>
 <BlazorWebAssemblyJiterpreter>false</BlazorWebAssemblyJiterpreter>
 <EmccMaximumHeapSize>268435456</EmccMaximumHeapSize>
+<BlazorFingerprintBlazorJs>false</BlazorFingerprintBlazorJs>
 ```
 
 Disabling only SIMD and exception handling is not sufficient — the
-JITerpreter's `do_jit_call` path does not handle the JS-based exception
-fallback correctly (dotnet/runtime#95963). The memory ceiling reduction
-is a documented iOS precaution (dotnet/runtime#84638). When the minimum
-supported Safari reaches 16.4+, re-enable the three runtime properties
-to restore throughput; the memory ceiling should remain reduced for iOS
-compatibility.
+JITerpreter's `do_jit_call` path fails with the JS-based exception
+fallback (dotnet/runtime#95963). The memory ceiling reduction is an
+iOS precaution (dotnet/runtime#84638). The framework JS fingerprinting
+property prevents import-map-dependent module resolution failure on
+Safari < 16.4. Full documentation in
+`docs/research/blazor-wasm-safari-ios15-compatibility.md`.
 
 **IMPACT**: ⭐⭐⭐ (blocks iOS 15 Safari)
-**EFFORT**: Trivial (four properties)
-**STATUS**: `applied` (all four set in Debug + Release)
+**EFFORT**: Trivial (five properties)
+**STATUS**: `applied` (all five set in Debug + Release)
 
 ---
 
