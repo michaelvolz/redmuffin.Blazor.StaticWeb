@@ -52,6 +52,17 @@
     <a href="" class="reload">Reload</a>
     <button class="dismiss" aria-label="Dismiss error">✕</button>
 </div>
+<pre id="wasm-diag" style="font:11px/1.4 monospace;color:#000;background:#fff;margin:0 auto;max-width:360px;padding:8px;white-space:pre-wrap;word-break:break-all">Starting...</pre>
+<script>
+(function(){var d=document.getElementById("wasm-diag"),l=function(m){d.textContent+=(d.textContent?"\n":"")+m};
+l(navigator.userAgent);
+l("WASM: simd="+WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,0,0,1,5,1,96,0,1,123,3,2,1,0,12,1,0,10,12,1,10,0,65,0,253,15,253,18,0,11]))+" eh="+WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,0,0,1,4,1,96,0,0,2,13,1,2,106,115,3,101,120,99,0,0,3,2,1,0,10,9,1,7,0,2,64,6,64,0,0,11,11]));
+try{var s=document.querySelector("script[src*='blazor.webassembly']");if(s){s.addEventListener("load",function(){l("blazor.js: loaded")});s.addEventListener("error",function(e){l("blazor.js: FAILED")})}}catch(e){l("blazor.js: not found")}
+window.addEventListener("error",function(e){l("ERR: "+(e.message||e.filename))});
+window.addEventListener("unhandledrejection",function(e){l("PROMISE: "+e.reason)});
+try{var n=0,o=typeof Blazor!=="undefined"?Blazor:null;if(o&&o.start){var orig=o.start;o.start=function(){n++;l("blazor.start: called");return orig.apply(o,arguments).then(function(){d.style.display="none"}).catch(function(e){l("FAIL: "+e)})}}setTimeout(function(){if(!n)l("blazor.start: NOT called ("+(o?"Blazor exists":"no Blazor")+")")},8000)}catch(e){l("hook err: "+e)}
+})();
+</script>
 <script src="js/page-load-timing.min#[.{fingerprint}].js" defer></script>
 <script src="_framework/blazor.webassembly#[.{fingerprint}].js" crossorigin="anonymous"></script>
 </body>
