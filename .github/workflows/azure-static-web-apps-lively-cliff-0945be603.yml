@@ -210,7 +210,7 @@ jobs:
           BLZR_JS="${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot/_framework/blazor.webassembly.js"
           sed -i 's/static{this\.nextEventDelegatorId=0}/static nextEventDelegatorId=0;/' "$BLZR_JS"
           if command -v brotli &>/dev/null; then
-            brotli --best -o "${BLZR_JS}.br" "$BLZR_JS"
+            brotli --best -f -o "${BLZR_JS}.br" "$BLZR_JS"
             gzip -c --best "$BLZR_JS" > "${BLZR_JS}.gz"
           fi
           echo "safari15_transpile=done"
@@ -235,7 +235,7 @@ jobs:
              # the .br/.gz files generated during publish are stale.
              INDEX="${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot/index.html"
              gzip -c -9 "$INDEX" > "${INDEX}.gz"
-             brotli --best -o "${INDEX}.br" "$INDEX"
+              brotli --best -f -o "${INDEX}.br" "$INDEX"
              echo "css_fingerprint=${CSS_NAME}"
            else
              echo "FAIL: css_fingerprint missing"
