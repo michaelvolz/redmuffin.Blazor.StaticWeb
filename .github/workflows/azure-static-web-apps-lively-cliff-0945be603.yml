@@ -215,6 +215,15 @@ jobs:
           fi
           echo "safari15_transpile=done"
 
+          # Verify no class static blocks remain. If Blazor SDK adds new ones,
+          # the sed above won't catch them and this gate will fail the build.
+          REMAINING=$(grep -c 'static{' "$BLZR_JS" || echo 0)
+          if [ "$REMAINING" -gt 0 ]; then
+            echo "FAIL: safari15_static_blocks_remaining=$REMAINING"
+            exit 1
+          fi
+          echo "safari15_static_check=0"
+
           # CSS fingerprinting HTML rewrite: Blazor's publish pipeline may overwrite
            # the index.html after our MSBuild target runs. This guarantees ordering.
            FINGERPRINTED_CSS=$(find "${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot/css/" -name "app.min.*.css" -not -name "*.map" | head -1)
