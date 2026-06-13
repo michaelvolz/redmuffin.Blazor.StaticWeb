@@ -101,6 +101,36 @@ sed -i 's/static{this\.nextEventDelegatorId=0}/static nextEventDelegatorId=0;/' 
 
 Static class fields (`static x = 0`) are supported since Safari 14.1.
 
+After the transpilation, compressed variants (`.br`, `.gz`) must be
+regenerated with `brotli --best -f` and `gzip`. The `-f` flag is
+required because MSBuild generates the initial compressed files during
+publish — brotli refuses to overwrite an existing output file without it.
+
+A post-transpile grep gate verifies zero `static{` patterns remain. If a
+future Blazor SDK update introduces new class static blocks with
+different content, the sed won't catch them and the gate fails the build.
+
+## Diagnosis History
+
+The site initially failed with a blank loading screen on iOS 15.5
+(iPhone 7 Plus). The root cause was identified through progressive
+in-browser diagnostics — since iOS 15 Safari lacks console access,
+four independent `<pre>` elements reported JavaScript execution state
+directly on the page.
+
+| Layer                  | Finding                                                                                    | Fix                                                              |
+| ---------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| 1. WASM features       | SIMD and EH enabled by default (Safari 16.4+)                                              | `WasmEnableSIMD=false`, `WasmEnableExceptionHandling=false`      |
+| 2. JITerpreter         | `do_jit_call` fails with JS-based EH fallback                                              | `BlazorWebAssemblyJiterpreter=false`                             |
+| 3. Memory ceiling      | 2GB default can be rejected on iOS                                                         | `EmccMaximumHeapSize=268435456`                                  |
+| 4. Import maps         | `<script type="importmap">` ignored (Safari 16.4+), `import("./dotnet.js")` fails silently | `BlazorFingerprintBlazorJs=false`, `WasmFingerprintAssets=false` |
+| 5. Class static blocks | `static{this.nextEventDelegatorId=0}` is a SyntaxError (Safari 16.4+)                      | CI sed transpilation to static class field                       |
+
+Each layer was proven before moving to the next — layers 1-3 produced
+no visible improvement, layer 4 made the script download but Blazor
+remained undefined, layer 5's `boot:parse:SyntaxError` diagnostic
+confirmed the exact syntax failure.
+
 ## Detection
 
 Test on iOS 15 Safari. The site either loads or shows a blank page /
