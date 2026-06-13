@@ -52,27 +52,8 @@
     <a href="" class="reload">Reload</a>
     <button class="dismiss" aria-label="Dismiss error">✕</button>
 </div>
-<pre id="d1" style="font:11px/1.4 monospace;color:#000;background:#fff;margin:0 auto;max-width:360px;padding:8px;white-space:pre-wrap;word-break:break-all">1:</pre>
-<script>(function(){var d=document.getElementById("d1");if(!d)return;var l=function(m){d.textContent+=m+"\n"};
-l("ua:"+navigator.userAgent);
-l("wasm:"+(typeof WebAssembly!=="undefined"?"yes":"no"));
-l("simd:"+WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,0,0,1,5,1,96,0,1,123,3,2,1,0,12,1,0,10,12,1,10,0,65,0,253,15,253,18,0,11])));
-l("eh:"+WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,0,0,1,4,1,96,0,0,2,13,1,2,106,115,3,101,120,99,0,0,3,2,1,0,10,9,1,7,0,2,64,6,64,0,0,11,11])));
-window.addEventListener("error",function(e){if(e.filename&&e.filename.indexOf("blazor.webassembly")!==-1)l("boot:parse:"+e.message)});
-setTimeout(function(){l("blazor:"+(typeof Blazor==="undefined"?"not loaded":"loaded"))},5000);
-})();</script>
-<pre id="d2" style="font:11px/1.4 monospace;color:#000;background:#fff;margin:0 auto;max-width:360px;padding:8px;white-space:pre-wrap;word-break:break-all">2:</pre>
-<script>(function(){var d=document.getElementById("d2");if(!d)return;d.textContent+="\nua:"+navigator.userAgent;
-d.textContent+="\nwasm:"+(typeof WebAssembly!=="undefined"?"yes":"no");
-})();</script>
-<pre id="d3" style="font:11px/1.4 monospace;color:#000;background:#fff;margin:0 auto;max-width:360px;padding:8px;white-space:pre-wrap;word-break:break-all">3:</pre>
-<script>(function(){var d=document.getElementById("d3");if(!d)return;d.textContent+="\nua:"+navigator.userAgent;})();</script>
-<pre id="d4" style="font:11px/1.4 monospace;color:#000;background:#fff;margin:0 auto;max-width:360px;padding:8px;white-space:pre-wrap;word-break:break-all">4:</pre>
-<script>(function(){var d=document.getElementById("d4");if(!d)return;d.textContent+="\nok";})();</script>
 <script src="js/page-load-timing.min#[.{fingerprint}].js" defer></script>
-<script src="_framework/blazor.webassembly#[.{fingerprint}].js" crossorigin="anonymous"
- onload="(function(){var d=document.getElementById('d1');if(d)d.textContent+='\nboot:loaded'})()"
- onerror="(function(){var d=document.getElementById('d1');if(d)d.textContent+='\nboot:FAILED'})()"></script>
+<script src="_framework/blazor.webassembly#[.{fingerprint}].js" crossorigin="anonymous"></script>
 </body>
 
 </html>
