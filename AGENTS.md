@@ -1,7 +1,7 @@
 ---
 date: 2026-04-20
 title: AGENTS Project Guide (OpenCode-Optimized v2)
-tags: [agent, rules, blazor, critical-policies, context-management, dotnet9]
+tags: [agent, rules, blazor, critical-policies, context-management, dotnet10]
 description: Project-specific rules for the redmuffin.Blazor.StaticWeb repo. System-wide rules are in ~/.config/opencode/AGENTS.md. Build and repo conventions are in rm-build-config. Commit rules are in rm-commit.
 ---
 
@@ -26,8 +26,6 @@ Before implementing ANY change that affects the build pipeline, toolchain, proje
 
 If any answer is incomplete, if you are guessing about a constraint the user holds, if you are unsure about a side effect, or if the solution might collide with something else the user is balancing — **STOP AND ASK.** Do not implement. Do not edit files. Do not run commands.
 
-Structural changes are not routine edits. They touch multiple systems. The user balances a dozen constraints that you cannot see. Only through this gate can we converge safely.
-
 ## PRE-COMMIT VERIFICATION
 
 **Never commit after a code file change without running build and tests first.**
@@ -44,9 +42,9 @@ a fast pre-check, not a substitute for the build+test gate.
 | Project/build | `.csproj`, `.props`, `.targets`            | Compilation, package resolution                     |
 | Solution      | `.slnx`                                    | Project discovery                                   |
 | SCSS          | `.scss`                                    | CSS output affects bUnit DOM assertions             |
-| Config/CI     | `.yml`, `.jsonc`, `.editorconfig`          | Analyzer rules affect build, CI steps affect deploy |
-| PowerShell    | `.ps1`                                     | Build scripts, package tooling                      |
 | NuGet         | `Directory.Packages.props`, `nuget.config` | Package resolution                                  |
+| PowerShell    | `.ps1`                                     | Build scripts, package tooling                      |
+| Workflow      | `.github/workflows/*.yml`                  | CI pipeline — validate with `act push`, never build |
 
 **SCSS-only changes**: CSS output affects bUnit DOM assertions. Never skip
 the full build+test chain, even when only SCSS files changed — a stale test
@@ -64,36 +62,57 @@ produced it.
 itself is clean. It does NOT mean the build passes or tests pass. Use LSP
 diagnostics as an edit confirmation, never as a build replacement.
 
-**Workflow**: edit → LSP confirms zero diagnostics → build → tests → commit.
-Never skip a step. Never use `dotnet test` for TUnit test runs — a stale
-binary from `dotnet test` silently passes tests against old source. Use
-`dotnet clean && dotnet build && dotnet run` for the full verification
-cycle. Never batch-commit multiple changes without re-running the full
-build+test chain.
+**Workflow**: edit → LSP confirms zero diagnostics →
+verify (see decision tree below) → commit. Never skip a step.
+Never use `dotnet test` for TUnit test runs — a stale binary from
+`dotnet test` silently passes tests against old source. Use
+`dotnet clean && dotnet build && dotnet run` for the full
+verification cycle. Never batch-commit multiple changes without
+re-running the full build+test chain.
+
+**Verification decision tree**: Not every change needs `dotnet build`.
+Start at Q1. Stop at the first match.
+
+```
+Q1: Did the change include any file in the "Code files" table above
+    EXCEPT the Workflow row?
+    ├─ YES → Run `dotnet build && dotnet run --project tests/...`
+    │        (or SCSS-only: also `sass --style=compressed`).
+    └─ NO → Q2
+
+Q2: Did the change include only Workflow files AND non-code files
+    (docs, .md, .gitignore, pipeline-neutral)?
+    ├─ YES → Never run dotnet build — it cannot detect workflow
+    │        issues. Validate with:
+    │        `wrkflw validate .github/workflows/<file>.yml`
+    │        (syntax gate) then `act push` (full pipeline gate).
+    │        Then commit.
+    └─ NO → This branch should not be reached. Re-trace Q1.
+```
 
 ## COMMANDS
 
-| Command                                                                                       | Purpose                                         | When                                                  |
-| --------------------------------------------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------- |
-| `dotnet build && dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests`                 | Verify logic & prevent regressions              | Pre-commit (mandatory — see §PRE-COMMIT VERIFICATION) |
-| `dotnet build --verbosity quiet`                                                              | Verify C# compilation                           | Immediately after any C# edit                         |
-| `dotnet build && dotnet run --project tests/redmuffin.Tools.QualityGates.Tests`               | Run quality gates tool tests                    | After any tools/ code change                          |
-| `sass --style=compressed --no-source-map scss/app.scss:wwwroot/css/app.min.css`               | Production SCSS build (one-shot, commit output) | Pre-commit (mandatory — see §PRE-COMMIT VERIFICATION) |
-| `dotnet format [<solution-path>]`                                                             | Auto-fix ~75% of StyleCop/Roslyn violations     | Before manually fixing analyzer warnings              |
-| `dotnet clean && dotnet build && dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests` | Full verification cycle                         | After NuGet updates or repeated failures              |
+| Command                                                                                       | Purpose                                         | When                                                                                    |
+| --------------------------------------------------------------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `dotnet build && dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests`                 | Verify logic & prevent regressions              | Pre-commit (mandatory — unless only workflow/non-code files changed, see decision tree) |
+| `dotnet build --verbosity quiet`                                                              | Verify C# compilation                           | Immediately after any C# edit                                                           |
+| `dotnet build && dotnet run --project tests/redmuffin.Tools.QualityGates.Tests`               | Run quality gates tool tests                    | After any tools/ code change                                                            |
+| `sass --style=compressed --no-source-map scss/app.scss:wwwroot/css/app.min.css`               | Production SCSS build (one-shot, commit output) | Pre-commit (mandatory — see §PRE-COMMIT VERIFICATION)                                   |
+| `dotnet format [<solution-path>]`                                                             | Auto-fix ~75% of StyleCop/Roslyn violations     | Before manually fixing analyzer warnings                                                |
+| `dotnet clean && dotnet build && dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests` | Full verification cycle                         | After NuGet updates or repeated failures                                                |
 
 ## WORKFLOWS
 
 - **Chrome DevTools MCP**: Configured in `opencode.jsonc` but disabled by default (`enabled: false`). Never assume it is available — ask the user to enable it via `/mcp` when a task requires Lighthouse audits, performance tracing, screenshots, or browser-based testing. See `rm-dev-environment` for the full workflow.
-- **Local workflow testing (`act`)**: Never push a workflow change without running the full pipeline locally first. `act push -W .github/workflows/azure-static-web-apps-lively-cliff-0945be603.yml -P ubuntu-latest=dotnet-sdk-node:10.0 --pull=false` runs the exact same YAML in Docker using a custom image (built once: `FROM mcr.microsoft.com/dotnet/sdk:10.0` + `nodejs npm`). Build and Blazor tests must pass; API tests fail without secrets (expected). The deploy and health check steps are skipped locally. Full procedure in `rm-github-workflows` skill.
+- **Local workflow testing (`act`)**: Never push a workflow change without running the full pipeline locally first. `act push -W .github/workflows/azure-static-web-apps-lively-cliff-0945be603.yml -P ubuntu-latest=dotnet-sdk-node:10.0 --pull=false`. Full procedure in `rm-github-workflows` skill.
 - **Quality Gates — Recursive Loop**: Gates are not one-shot. Run → fix worst violations → re-run → repeat until zero violations across all gates. See `rm-cleanup-session` §0 for the full principle.
-- **Cleanup Sessions**: Load `rm-cleanup-session` to activate all 7 cleanup skills in one call (Depth → Architecture → CRAP → SCRAP → Mutation → Duplicates).
+- **Cleanup Sessions**: Load `rm-cleanup-session` to activate all 7 cleanup skills in one call.
 - **Code Knowledge Graph (better-code-review-graph)**: Use for `file_summary`, `children_of`, and `large_functions` queries only. Never rely on `callers_of`, `callees_of`, `tests_for`, `inheritors_of`, `importers_of`, `impact`, or `security scan` for C# — the Tree-sitter C# parser produces incomplete semantic edges (no IMPLEMENTS, no TESTED_BY, no reliable cross-file calls). Use LSP tools for call graphs and references, quality gates for security, and `dotnet test` for test discovery.
 
 ## STACK & STRUCTURE
 
-- **Technology Stack**: .NET 10 SDK (builds net9.0 projects for Azure SWA), Blazor WebAssembly (.NET 9), Azure Functions (isolated worker, .NET 9), TUnit testing framework, SCSS.
-- **SDK vs Target**: All projects target `net9.0` for Azure SWA compatibility. The .NET 10 SDK provides build tooling, Roslyn, and MSBuild — it does not require changing target frameworks. When SWA adds .NET 10 Functions support, updating targets is a one-line change per `.csproj`.
+- **Technology Stack**: .NET 10 SDK, Blazor WebAssembly (.NET 10), Azure Functions (isolated worker, .NET 9), TUnit testing framework, SCSS.
+- **SDK vs Target**: The API project targets `net9.0` for Azure SWA Functions compatibility. The Blazor WASM frontend and SwaLauncher target `net10.0`. The .NET 10 SDK provides build tooling, Roslyn, and MSBuild for both frameworks. When SWA adds .NET 10 Functions support, updating the API target is a one-line change per `.csproj`.
 - **Knowledge Base**: `docs/solutions/` — searchable archive of past solutions, bugs, best practices, and workflow patterns. All entries use YAML frontmatter with `module`, `tags`, and `problem_type` fields.
 - **Key Paths**:
   - `src/` — Application projects (Blazor frontend, Azure Functions API)
