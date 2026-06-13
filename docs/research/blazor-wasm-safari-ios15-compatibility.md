@@ -1,8 +1,19 @@
 ---
 date: 2026-06-13
-title: Blazor WASM Safari iOS 15 Compatibility — Required .csproj Properties
-tags: [research, blazor, wasm, safari, ios15, compatibility, importmap]
-description: Five .NET 10 Blazor WASM defaults are incompatible with iOS 15 Safari. All five must be changed for the site to load on devices capped at iOS 15 (e.g., iPhone 7 Plus).
+title: Blazor WASM Safari iOS 15 Compatibility — Required .csproj, CSS, and CI Changes
+tags:
+  [
+    research,
+    blazor,
+    wasm,
+    safari,
+    ios15,
+    compatibility,
+    importmap,
+    font-awesome,
+    css,
+  ]
+description: Five .NET 10 Blazor WASM defaults and one Font Awesome CSS syntax are incompatible with iOS 15 Safari. All six must be changed for the site to load and render correctly on devices capped at iOS 15 (e.g., iPhone 7 Plus).
 module: build-infrastructure
 problem_type: compatibility
 ---
@@ -110,6 +121,37 @@ A post-transpile grep gate verifies zero `static{` patterns remain. If a
 future Blazor SDK update introduces new class static blocks with
 different content, the sed won't catch them and the gate fails the build.
 
+## Font Awesome CSS — Content Alt-Text
+
+Font Awesome 6.7.0 uses CSS alternate text syntax on pseudo-elements:
+
+```css
+.fa::before {
+  content: var(--fa);
+  content: var(--fa) / "";
+}
+```
+
+The `content: var(--fa)/""` syntax provides screen-reader alt text,
+supported since Safari 16.4. Safari 15 rejects the entire `content`
+declaration with this syntax, but the preceding `content: var(--fa)`
+declaration still applies — so the root cause was initially obscured.
+
+However, the CSS cascade behavior differs between browsers. On Safari
+15, the invalid declaration was not merely dropped — it caused the
+pseudo-element to render without content. Font Awesome confirmed this
+as issue 20752.
+
+**Fix**: Remove the alt-text line from `all.css`, then re-minify:
+
+```bash
+# In all.css (unminified source): delete the line "content: var(--fa)/"";"
+sass --style=compressed --no-source-map all.css all.min.css
+```
+
+Source file `all.css` documents both local modifications (font paths
+and alt-text removal) in its header comment for the next FA update.
+
 ## Diagnosis History
 
 The site initially failed with a blank loading screen on iOS 15.5
@@ -125,16 +167,19 @@ directly on the page.
 | 3. Memory ceiling      | 2GB default can be rejected on iOS                                                         | `EmccMaximumHeapSize=268435456`                                  |
 | 4. Import maps         | `<script type="importmap">` ignored (Safari 16.4+), `import("./dotnet.js")` fails silently | `BlazorFingerprintBlazorJs=false`, `WasmFingerprintAssets=false` |
 | 5. Class static blocks | `static{this.nextEventDelegatorId=0}` is a SyntaxError (Safari 16.4+)                      | CI sed transpilation to static class field                       |
+| 6. Font Awesome CSS    | `content:var(--fa)/""` alt-text syntax rejected (Safari 16.4+)                             | Remove `/""` from all.css, re-minify                             |
 
 Each layer was proven before moving to the next — layers 1-3 produced
 no visible improvement, layer 4 made the script download but Blazor
 remained undefined, layer 5's `boot:parse:SyntaxError` diagnostic
-confirmed the exact syntax failure.
+confirmed the exact syntax failure. Layer 6 was discovered after WASM
+loaded: Font Awesome icons rendered as empty spaces because the CSS
+content property's alternate text syntax was rejected.
 
 ## Detection
 
 Test on iOS 15 Safari. The site either loads or shows a blank page /
-infinite spinner. No build-time detection exists — all five defaults
+infinite spinner. No build-time detection exists — all six changes
 compile without warnings.
 
 ## Future Re-Enable
@@ -158,3 +203,4 @@ When the minimum supported Safari version reaches 16.4+:
 - [dotnet/runtime#104895](https://github.com/dotnet/runtime/issues/104895) — Unresolved iOS 15.4 crash (Future milestone)
 - [dotnet/sdk#46988](https://github.com/dotnet/sdk/pull/46988) — `BlazorFingerprintBlazorJs` MSBuild property
 - [caniuse.com/import-maps](https://caniuse.com/import-maps) — Safari import map support starts at 16.4
+- [FortAwesome/Font-Awesome#20752](https://github.com/FortAwesome/Font-Awesome/issues/20752) — `content:var(--fa)/""` alt-text syntax breaks Safari < 16.4
