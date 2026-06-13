@@ -37,13 +37,13 @@ on:
 env:
   APP_LOCATION: "src/redmuffin.Blazor.StaticWeb" # location of your client code
   API_LOCATION: "src/redmuffin.Blazor.StaticWeb.Api" # location of your api source code - optional
-  AZURE_STATIC_WEB_APPS_API_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_CLIFF_0945BE603 }} # secret containing deployment token for your static web app
 
 permissions:
   contents: read
 
 jobs:
   check_changes:
+    if: github.event_name != 'pull_request' || github.event.action != 'closed'
     runs-on: ubuntu-latest
     outputs:
       should_skip: ${{ steps.skip_output.outputs.should_skip }}
@@ -127,14 +127,15 @@ jobs:
             dotnet workload install wasm-tools
           fi
 
-      # OPTIMIZATION: Cache NuGet packages for faster subsequent builds
-      - name: Cache NuGet packages
+      # OPTIMIZATION: Restore cached NuGet packages to avoid re-downloading
+      - name: Restore NuGet package cache
         uses: actions/cache@v5
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/Directory.Packages.props') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
+          cache-write: ${{ github.event_name == 'push' }}
 
       # OPTIMIZATION: Single dependency restoration (includes trimming packages for Blazor publish)
       - name: Restore dependencies
@@ -167,8 +168,11 @@ jobs:
           set -e
           echo "::group::Publish"
 
-          # Blazor publish CANNOT use --no-build (known bug in .NET 9 SDK:
-          # dotnet/aspnetcore issue 58321 — content files get named wrong).
+          # Blazor publish CANNOT use --no-build. .NET 10 asset
+          # fingerprinting requires the build step's hash computations.
+          # Skipping the build leaves #[.{fingerprint}] placeholders
+          # unreplaced (dotnet/aspnetcore#64543, open). Publish sources
+          # from obj/, not bin/ (dotnet/sdk#52168 — by design).
           # API publish CAN use --no-build — already compiled above.
           dotnet publish ${{ env.APP_LOCATION }} \
             -c Release \
@@ -234,8 +238,6 @@ jobs:
         id: deploy
         if: github.event_name == 'push'
         uses: shibayan/swa-deploy@v1
-        env:
-          ACTIONS_RUNNER_DEBUG: true
         with:
           app-location: ${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot
           api-location: ${{ env.API_LOCATION }}/bin/Release/publish
