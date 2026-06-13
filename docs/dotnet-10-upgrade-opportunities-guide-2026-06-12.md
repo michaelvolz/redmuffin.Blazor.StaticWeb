@@ -514,24 +514,29 @@ Safari did not support any of them until version 16.4 (March 2023).
 Devices capped at iOS 15 or macOS 12 — including iPhone 7 Plus — cannot
 load the runtime with these features enabled.
 
-All three must be disabled for compatibility:
+All three must be disabled for compatibility. The default 2GB WASM
+memory ceiling can also cause startup failures on iOS — iOS Safari may
+reject WASM module instantiation when the stated maximum exceeds
+available per-tab memory (dotnet/runtime#84638).
 
 ```xml
 <WasmEnableSIMD>false</WasmEnableSIMD>
 <WasmEnableExceptionHandling>false</WasmEnableExceptionHandling>
 <BlazorWebAssemblyJiterpreter>false</BlazorWebAssemblyJiterpreter>
+<EmccMaximumHeapSize>268435456</EmccMaximumHeapSize>
 ```
 
 Disabling only SIMD and exception handling is not sufficient — the
 JITerpreter's `do_jit_call` path does not handle the JS-based exception
-fallback correctly (dotnet/runtime#95963). When the minimum supported
-Safari becomes 16.4+, re-enable all three to restore throughput on
-spans, strings, arrays, JSON parsing, and hot code paths. The three
-settings share the same browser cutoff and should always change together.
+fallback correctly (dotnet/runtime#95963). The memory ceiling reduction
+is a documented iOS precaution (dotnet/runtime#84638). When the minimum
+supported Safari reaches 16.4+, re-enable the three runtime properties
+to restore throughput; the memory ceiling should remain reduced for iOS
+compatibility.
 
-**IMPACT**: ⭐⭐⭐ (blocks ~1-2% of visitors)
-**EFFORT**: Trivial (two properties)
-**STATUS**: `applied` (both disabled in Debug + Release)
+**IMPACT**: ⭐⭐⭐ (blocks iOS 15 Safari)
+**EFFORT**: Trivial (four properties)
+**STATUS**: `applied` (all four set in Debug + Release)
 
 ---
 
