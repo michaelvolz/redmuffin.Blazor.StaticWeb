@@ -509,21 +509,25 @@ for source-generated serializers. Important for the `LZStringCSharp` integration
 
 ### WASM Feature Compatibility — Old Safari
 
-.NET 8+ enables WASM SIMD and exception handling by default. Safari did not
-support either until version 16.4 (March 2023). Devices capped at iOS 15 or
-macOS 12 — including iPhone 7 Plus — cannot load the runtime with these features
-enabled.
+.NET 8+ enables two WASM features and a JIT optimization by default.
+Safari did not support any of them until version 16.4 (March 2023).
+Devices capped at iOS 15 or macOS 12 — including iPhone 7 Plus — cannot
+load the runtime with these features enabled.
 
-Both must be disabled for compatibility:
+All three must be disabled for compatibility:
 
 ```xml
 <WasmEnableSIMD>false</WasmEnableSIMD>
 <WasmEnableExceptionHandling>false</WasmEnableExceptionHandling>
+<BlazorWebAssemblyJiterpreter>false</BlazorWebAssemblyJiterpreter>
 ```
 
-When the minimum supported Safari becomes 16.4+, re-enable both to restore
-throughput on spans, strings, arrays, and JSON parsing. The two settings share
-the same browser cutoff and should always change together.
+Disabling only SIMD and exception handling is not sufficient — the
+JITerpreter's `do_jit_call` path does not handle the JS-based exception
+fallback correctly (dotnet/runtime#95963). When the minimum supported
+Safari becomes 16.4+, re-enable all three to restore throughput on
+spans, strings, arrays, JSON parsing, and hot code paths. The three
+settings share the same browser cutoff and should always change together.
 
 **IMPACT**: ⭐⭐⭐ (blocks ~1-2% of visitors)
 **EFFORT**: Trivial (two properties)

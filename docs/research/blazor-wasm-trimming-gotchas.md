@@ -2,7 +2,7 @@
 date: 2026-06-13
 title: Blazor WASM Build Gotchas — --no-restore, --no-build, TrimMode=full, and Old Safari WASM Features
 tags: [research, blazor, trimming, fingerprinting, ci, build, deployment, wasm, safari]
-description: Four subtle Blazor WASM build configuration mistakes that cause deploy or runtime failures: --no-restore silently disables trimming, --no-build breaks .NET 10 fingerprinting, TrimMode=full crashes the runtime, and default WASM SIMD/exception handling breaks Safari < 16.4.
+description: Four subtle Blazor WASM build configuration mistakes that cause deploy or runtime failures: --no-restore silently disables trimming, --no-build breaks .NET 10 fingerprinting, TrimMode=full crashes the runtime, and default WASM SIMD, exception handling, and JITerpreter break Safari < 16.4.
 module: build-infrastructure
 problem_type: deployment
 ---
@@ -15,7 +15,10 @@ produces an untrimmed (204-assembly) build. The second produces a
 correctly-sized (38-assembly) build that crashes at runtime. The third
 leaves fingerprint placeholders unreplaced (404 on the Blazor runtime).
 The fourth silently breaks the runtime on Safari < 16.4 (iOS 15,
-macOS 12).
+macOS 12) unless all three runtime properties — WASM SIMD, exception
+handling, and JITerpreter — are disabled. Disabling only SIMD and
+exception handling is not sufficient; the JITerpreter must also be
+turned off.
 
 ## Gotcha 1: --no-restore Silently Disables Trimming
 
@@ -246,7 +249,7 @@ grep -c '#\[\.{fingerprint}\]' publish/wwwroot/index.html
 # Broken:  >0 (placeholders not replaced)
 ```
 
-## Gotcha 4: WASM SIMD and Exception Handling Break Old Safari
+## Gotcha 4: WASM SIMD, Exception Handling, and JITerpreter Break Old Safari
 
 **Date discovered**: 2026-06-13
 
@@ -259,13 +262,17 @@ the root cause. The build succeeds with zero warnings.
 
 ### Root Cause
 
-.NET 8+ enables two WASM features by default that Safari did not support
-until version 16.4 (March 2023):
+.NET 8+ enables two WASM features and an optimization by default that
+Safari did not support until version 16.4 (March 2023):
 
 - **WASM SIMD** (`WasmEnableSIMD`) — vectorized instructions for spans,
   strings, and arrays. Requires Safari 16.4+.
 - **WASM exception handling** (`WasmEnableExceptionHandling`) — native
   try/catch without JavaScript bridge. Requires Safari 16.4+.
+- **JITerpreter** (`BlazorWebAssemblyJiterpreter`) — browser-specific JIT
+  compiler that optimizes hot code paths in interpreted (non-AOT) mode.
+  Its `do_jit_call` path does not handle the JS-based exception fallback
+  correctly on Safari < 16.4 (dotnet/runtime#95963).
 
 Both features require a unique rebuild of the .NET runtime (different
 `.wasm` and `.js` files). When the browser doesn't support the feature,
@@ -276,7 +283,7 @@ upgrade past iOS 15 or macOS 12 is affected.
 
 ### Fix
 
-Set both properties to `false` in the `.csproj`:
+Set all three properties to `false` in the `.csproj`:
 
 ✅ Working:
 
@@ -284,11 +291,14 @@ Set both properties to `false` in the `.csproj`:
 <PropertyGroup>
   <WasmEnableSIMD>false</WasmEnableSIMD>
   <WasmEnableExceptionHandling>false</WasmEnableExceptionHandling>
+  <BlazorWebAssemblyJiterpreter>false</BlazorWebAssemblyJiterpreter>
 </PropertyGroup>
 ```
 
 Apply to both Debug and Release configurations. The wasm-tools workload
-handles the runtime rebuild during `dotnet publish`.
+handles the runtime rebuild for SIMD and exception handling during
+`dotnet publish`. The JITerpreter does not require a rebuild — it is a
+JavaScript-layer optimization controlled by this flag.
 
 ### Detection
 
@@ -299,10 +309,10 @@ target browser support.
 
 ### Future re-enable
 
-When the minimum supported Safari version reaches 16.4+, remove both
+When the minimum supported Safari version reaches 16.4+, remove all three
 properties (or set to `true`) to restore throughput on spans, strings,
-arrays, and JSON parsing. The two settings should always be changed
-together — they share the same browser cutoff.
+arrays, JSON parsing, and hot code paths. The three settings share the
+same browser cutoff and should always change together.
 
 ## References
 
