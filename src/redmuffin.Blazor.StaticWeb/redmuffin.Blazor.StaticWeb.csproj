@@ -29,6 +29,16 @@
          (dotnet/runtime#84638). Default is 2GB.
          This is independent of Safari version — keep reduced for iOS. -->
     <EmccMaximumHeapSize>268435456</EmccMaximumHeapSize>
+    <!-- Disable framework JS fingerprinting for Safari 15 import map
+         compatibility. Safari < 16.4 ignores <script type="importmap">,
+         so the bootloader's import("./dotnet.js") cannot resolve
+         fingerprinted paths. WasmFingerprintAssets controls WASM SDK
+         fingerprinting (dotnet.js, dotnet.native.js, dotnet.runtime.js,
+         .wasm files). Custom JS/CSS fingerprinting via
+         StaticWebAssetFingerprintPattern is unaffected.
+         Remove both properties when minimum Safari reaches 16.4+. -->
+    <BlazorFingerprintBlazorJs>false</BlazorFingerprintBlazorJs>
+    <WasmFingerprintAssets>false</WasmFingerprintAssets>
   </PropertyGroup>
 
   <ItemGroup>
