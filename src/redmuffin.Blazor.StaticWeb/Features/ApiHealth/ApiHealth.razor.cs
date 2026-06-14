@@ -9,18 +9,18 @@ namespace redmuffin.Blazor.StaticWeb.Features.ApiHealth;
 public partial class ApiHealth
 #pragma warning restore MA0049
 {
+    private readonly IMediator _mediator;
     private readonly Stopwatch _stopwatch = new();
 
     private ApiHealthViewModel _viewModel = ApiHealthViewModel.Idle;
 
-    [Inject]
-    private IMediator Mediator { get; set; } = default!; // Injected by DI container
+    public ApiHealth(IMediator mediator)
+    {
+        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+    }
 
     protected override void OnInitialized()
     {
-#pragma warning disable MA0015 // Not a method parameter — validating Blazor [Inject] property
-        ArgumentNullException.ThrowIfNull(Mediator);
-#pragma warning restore MA0015
         base.OnInitialized();
     }
 
@@ -31,7 +31,7 @@ public partial class ApiHealth
 
         try
         {
-            var response = await Mediator.Send(new GetHelloQuery()).ConfigureAwait(false);
+            var response = await _mediator.Send(new GetHelloQuery()).ConfigureAwait(false);
             _stopwatch.Stop();
             var elapsed = _stopwatch.Elapsed.TotalMilliseconds;
 

@@ -11,19 +11,21 @@ public partial class Weather : ComponentBase
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
+    private readonly ILogger<Weather> _logger;
+    private readonly IHttpClientFactory _httpClientFactory;
     private WeatherForecast[]? _forecasts;
 
-    [Inject] private ILogger<Weather> Logger { get; set; } = null!;
-    [Inject] private IHttpClientFactory HttpClientFactory { get; set; } = null!;
+    public Weather(ILogger<Weather> logger, IHttpClientFactory httpClientFactory)
+    {
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+    }
 
     protected override async Task OnInitializedAsync()
     {
-#pragma warning disable MA0015 // Not a method parameter — validating Blazor [Inject] property
-        ArgumentNullException.ThrowIfNull(HttpClientFactory);
-#pragma warning restore MA0015
-        LogOnInitializedCalled(Logger);
+        LogOnInitializedCalled(_logger);
 
-        using var httpClient = HttpClientFactory.CreateClient();
+        using var httpClient = _httpClientFactory.CreateClient();
         _forecasts = await httpClient.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json", JsonOptions).ConfigureAwait(false);
     }
 

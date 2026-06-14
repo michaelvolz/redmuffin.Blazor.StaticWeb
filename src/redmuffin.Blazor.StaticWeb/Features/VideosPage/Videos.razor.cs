@@ -12,48 +12,45 @@ public partial class Videos
     private const string CacheKey = "Videos";
     private readonly RaindropPageContext _context = new();
 
-    [Inject]
-    private ILogger<Videos> Logger { get; set; } = null!;
+    private readonly ILogger<Videos> _logger;
+    private readonly NavigationManager _navigation;
+    private readonly IRaindropAPI _raindropAPI;
+    private readonly IImageUrlResolver _imageUrlResolver;
+    private readonly IRaindropItemsCache _raindropItemsCache;
 
-    [Inject]
-    private NavigationManager Navigation { get; set; } = null!;
-
-    [Inject]
-    private IRaindropAPI RaindropAPI { get; set; } = null!;
-
-    [Inject]
-    private IImageUrlResolver ImageUrlResolver { get; set; } = null!;
-
-    [Inject]
-    private IRaindropItemsCache RaindropItemsCache { get; set; } = null!;
+    public Videos(
+        ILogger<Videos> logger,
+        NavigationManager navigation,
+        IRaindropAPI raindropAPI,
+        IImageUrlResolver imageUrlResolver,
+        IRaindropItemsCache raindropItemsCache)
+    {
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
+        _raindropAPI = raindropAPI ?? throw new ArgumentNullException(nameof(raindropAPI));
+        _imageUrlResolver = imageUrlResolver ?? throw new ArgumentNullException(nameof(imageUrlResolver));
+        _raindropItemsCache = raindropItemsCache ?? throw new ArgumentNullException(nameof(raindropItemsCache));
+    }
 
     protected override async Task OnInitializedAsync()
     {
-#pragma warning disable MA0015 // Not method parameters — validating Blazor [Inject] properties
-        ArgumentNullException.ThrowIfNull(Logger);
-        ArgumentNullException.ThrowIfNull(Navigation);
-        ArgumentNullException.ThrowIfNull(RaindropAPI);
-        ArgumentNullException.ThrowIfNull(ImageUrlResolver);
-        ArgumentNullException.ThrowIfNull(RaindropItemsCache);
-#pragma warning restore MA0015
-
         await RaindropPageOrchestrator.LoadCachedDataAsync(
             _context,
             CacheKey,
-            RaindropItemsCache,
-            ct => RaindropAPI.GetVideosAsync(ct),
-            () => ImageUrlResolver.PopulateImageUrlCacheAsync(
+            _raindropItemsCache,
+            ct => _raindropAPI.GetVideosAsync(ct),
+            () => _imageUrlResolver.PopulateImageUrlCacheAsync(
                 _context.Items!, _context.ImageUrlCache, () => InvokeAsync(StateHasChanged), CancellationToken.None),
-            Logger).ConfigureAwait(false);
+            _logger).ConfigureAwait(false);
 
         StateHasChanged();
 
         _ = Task.Run(() => RaindropPageOrchestrator.RefreshInBackgroundAsync(
-            _context, CacheKey, ct => RaindropAPI.GetVideosAsync(ct),
-            RaindropItemsCache,
-            () => ImageUrlResolver.PopulateImageUrlCacheAsync(
+            _context, CacheKey, ct => _raindropAPI.GetVideosAsync(ct),
+            _raindropItemsCache,
+            () => _imageUrlResolver.PopulateImageUrlCacheAsync(
                 _context.Items!, _context.ImageUrlCache, () => InvokeAsync(StateHasChanged), CancellationToken.None),
-            () => InvokeAsync(StateHasChanged), Logger));
+            () => InvokeAsync(StateHasChanged), _logger));
     }
 
     private Task HandleRefreshClickAsync()
@@ -61,11 +58,11 @@ public partial class Videos
         return RaindropPageOrchestrator.HandleRefreshClickAsync(
             _context,
             CacheKey,
-            ct => RaindropAPI.GetVideosAsync(ct),
-            RaindropItemsCache,
-            () => ImageUrlResolver.PopulateImageUrlCacheAsync(
+            ct => _raindropAPI.GetVideosAsync(ct),
+            _raindropItemsCache,
+            () => _imageUrlResolver.PopulateImageUrlCacheAsync(
                 _context.Items!, _context.ImageUrlCache, () => InvokeAsync(StateHasChanged), CancellationToken.None),
             () => InvokeAsync(StateHasChanged),
-            Logger);
+            _logger);
     }
 }

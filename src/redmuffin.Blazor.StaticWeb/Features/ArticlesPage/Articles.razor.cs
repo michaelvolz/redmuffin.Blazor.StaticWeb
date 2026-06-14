@@ -12,47 +12,43 @@ public partial class Articles
     private const string CacheKey = "Articles";
     private readonly RaindropPageContext _context = new();
 
-    [Inject]
-    private ILogger<Articles> Logger { get; set; } = null!;
+    private readonly ILogger<Articles> _logger;
+    private readonly NavigationManager _navigation;
+    private readonly IImageUrlResolver _imageUrlResolver;
+    private readonly IRaindropAPI _raindropAPI;
+    private readonly IRaindropItemsCache _raindropItemsCache;
 
-    [Inject]
-    private NavigationManager Navigation { get; set; } = null!;
-
-    [Inject]
-    private IImageUrlResolver ImageUrlResolver { get; set; } = null!;
-
-    [Inject]
-    private IRaindropAPI RaindropAPI { get; set; } = null!;
-
-    [Inject]
-    private IRaindropItemsCache RaindropItemsCache { get; set; } = null!;
+    public Articles(
+        ILogger<Articles> logger,
+        NavigationManager navigation,
+        IImageUrlResolver imageUrlResolver,
+        IRaindropAPI raindropAPI,
+        IRaindropItemsCache raindropItemsCache)
+    {
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
+        _imageUrlResolver = imageUrlResolver ?? throw new ArgumentNullException(nameof(imageUrlResolver));
+        _raindropAPI = raindropAPI ?? throw new ArgumentNullException(nameof(raindropAPI));
+        _raindropItemsCache = raindropItemsCache ?? throw new ArgumentNullException(nameof(raindropItemsCache));
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        // Validate injected dependencies
-#pragma warning disable MA0015 // Not method parameters — validating Blazor [Inject] properties
-        ArgumentNullException.ThrowIfNull(Logger);
-        ArgumentNullException.ThrowIfNull(Navigation);
-        ArgumentNullException.ThrowIfNull(ImageUrlResolver);
-        ArgumentNullException.ThrowIfNull(RaindropAPI);
-        ArgumentNullException.ThrowIfNull(RaindropItemsCache);
-#pragma warning restore MA0015
-
         // Load cached data first for immediate display
         await RaindropPageOrchestrator.LoadCachedDataAsync(
             _context,
             CacheKey,
-            RaindropItemsCache,
-            ct => RaindropAPI.GetArticlesAsync(ct),
+            _raindropItemsCache,
+            ct => _raindropAPI.GetArticlesAsync(ct),
             PopulateImageUrlCacheAsync,
-            Logger).ConfigureAwait(false);
+            _logger).ConfigureAwait(false);
 
         StateHasChanged();
 
         _ = Task.Run(() => RaindropPageOrchestrator.RefreshInBackgroundAsync(
-            _context, CacheKey, ct => RaindropAPI.GetArticlesAsync(ct),
-            RaindropItemsCache, PopulateImageUrlCacheAsync,
-            () => InvokeAsync(StateHasChanged), Logger));
+            _context, CacheKey, ct => _raindropAPI.GetArticlesAsync(ct),
+            _raindropItemsCache, PopulateImageUrlCacheAsync,
+            () => InvokeAsync(StateHasChanged), _logger));
     }
 
     private Task HandleRefreshClickAsync()
@@ -60,16 +56,16 @@ public partial class Articles
         return RaindropPageOrchestrator.HandleRefreshClickAsync(
             _context,
             CacheKey,
-            ct => RaindropAPI.GetArticlesAsync(ct),
-            RaindropItemsCache,
+            ct => _raindropAPI.GetArticlesAsync(ct),
+            _raindropItemsCache,
             PopulateImageUrlCacheAsync,
             () => InvokeAsync(StateHasChanged),
-            Logger);
+            _logger);
     }
 
     private Task PopulateImageUrlCacheAsync()
     {
-        return ImageUrlResolver.PopulateImageUrlCacheAsync(
+        return _imageUrlResolver.PopulateImageUrlCacheAsync(
             _context.Items!,
             _context.ImageUrlCache,
             () => InvokeAsync(StateHasChanged),

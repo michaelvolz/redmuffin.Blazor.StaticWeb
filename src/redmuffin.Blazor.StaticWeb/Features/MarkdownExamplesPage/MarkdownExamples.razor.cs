@@ -5,17 +5,18 @@ namespace redmuffin.Blazor.StaticWeb.Features.MarkdownExamplesPage;
 
 public partial class MarkdownExamples : ComponentBase
 {
+    private readonly IHttpClientFactory _httpClientFactory;
     private MarkupString _markdownText = new("n/a");
 
-    [Inject] private IHttpClientFactory HttpClientFactory { get; set; } = default!;
+    public MarkdownExamples(IHttpClientFactory httpClientFactory)
+    {
+        _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+    }
 
     protected override async Task OnInitializedAsync()
     {
-#pragma warning disable MA0015 // Not a method parameter — validating Blazor [Inject] property
-        ArgumentNullException.ThrowIfNull(HttpClientFactory);
-#pragma warning restore MA0015
         var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-        using var httpClient = HttpClientFactory.CreateClient();
+        using var httpClient = _httpClientFactory.CreateClient();
         _markdownText = new MarkupString(Markdown.ToHtml(await httpClient.GetStringAsync("Example.md").ConfigureAwait(false), pipeline));
     }
 }
