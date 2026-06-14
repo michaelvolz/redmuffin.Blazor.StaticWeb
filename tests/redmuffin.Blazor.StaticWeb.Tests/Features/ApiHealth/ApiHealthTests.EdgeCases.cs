@@ -12,14 +12,14 @@ public sealed partial class ApiHealthTests
         // Arrange
         using var scope = CreateFailingTestScope();
         var component = scope.BUnitContext.Render<global::redmuffin.Blazor.StaticWeb.Features.ApiHealth.ApiHealth>();
-        var button = component.Find("button:contains('Call ApiHealth')");
+        var button = component.Find("button.button");
 
         // Act
         await button.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
 
         // Assert
-        var errorElement = component.Find("p:contains('Error:')");
-        await Assert.That(errorElement).IsNotNull();
-        await Assert.That(errorElement.TextContent).Contains("Error calling API");
+        var errorBanner = component.Find("div.callout.alert");
+        await Assert.That(errorBanner).IsNotNull();
+        await Assert.That(errorBanner.TextContent).Contains("Simulated mediator error");
     }
 }

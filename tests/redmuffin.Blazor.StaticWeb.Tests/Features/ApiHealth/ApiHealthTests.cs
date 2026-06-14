@@ -1,6 +1,5 @@
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
-using redmuffin.Blazor.StaticWeb.Features.ApiHealth;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.ApiHealth;
 
@@ -20,11 +19,11 @@ public sealed partial class ApiHealthTests
         {
             var heading = component.Find("h1");
             await Assert.That(heading).IsNotNull();
-            await Assert.That(heading.TextContent).IsEqualTo("ApiHealth");
+            await Assert.That(heading.TextContent).Contains("API Health Check");
 
             var button = component.Find("button.button");
             await Assert.That(button).IsNotNull();
-            await Assert.That(button.TextContent).Contains("Call ApiHealth");
+            await Assert.That(button.TextContent).Contains("Run Health Check");
         }
     }
 
@@ -34,14 +33,31 @@ public sealed partial class ApiHealthTests
         // Arrange
         using var scope = CreateTestScope("Hello from handler");
         var component = scope.BUnitContext.Render<global::redmuffin.Blazor.StaticWeb.Features.ApiHealth.ApiHealth>();
-        var button = component.Find("button:contains('Call ApiHealth')");
+        var button = component.Find("button.button");
 
         // Act
         await button.ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs()).ConfigureAwait(false);
 
         // Assert
-        var responseElement = component.Find("p:contains('API Response:')");
-        await Assert.That(responseElement).IsNotNull();
-        await Assert.That(responseElement.TextContent).Contains("Hello from handler");
+        var responseBlock = component.Find("blockquote");
+        await Assert.That(responseBlock).IsNotNull();
+        await Assert.That(responseBlock.TextContent).Contains("Hello from handler");
+
+        var checkRows = component.FindAll("div.check-row");
+        await Assert.That(checkRows).Count().IsEqualTo(5);
+        await Assert.That(checkRows[0].TextContent).Contains("Endpoint Reachable");
+    }
+
+    [Test]
+    public async Task Displays_empty_state_on_initial_load()
+    {
+        // Arrange & Act
+        using var scope = CreateTestScope();
+        var component = scope.BUnitContext.Render<global::redmuffin.Blazor.StaticWeb.Features.ApiHealth.ApiHealth>();
+
+        // Assert
+        var emptyState = component.Find("div.empty-state");
+        await Assert.That(emptyState).IsNotNull();
+        await Assert.That(emptyState.TextContent).Contains("No checks have been run yet");
     }
 }
