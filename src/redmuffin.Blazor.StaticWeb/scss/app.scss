@@ -15,14 +15,14 @@
 // FOUNDATION CONFIGURATION & INCLUDES
 // =============================================================================
 $foundation-palette: (
-  "primary": abstracts.$steel-blue,
-  "secondary": abstracts.$ultra-violet,
-  "success": abstracts.$yellow-green,
-  "warning": abstracts.$sunglow,
-  "alert": abstracts.$bittersweet,
-  "burgundy": abstracts.$brand-burgundy,
-  "black": abstracts.$brand-black,
-  "white": abstracts.$brand-white,
+  primary: abstracts.$steel-blue,
+  secondary: abstracts.$ultra-violet,
+  success: abstracts.$yellow-green,
+  warning: abstracts.$sunglow,
+  alert: abstracts.$bittersweet,
+  burgundy: abstracts.$brand-burgundy,
+  black: abstracts.$brand-black,
+  white: abstracts.$brand-white,
 );
 
 // Foundation module includes — only the modules we actually use
@@ -31,6 +31,11 @@ $global-flexbox: true !global;
 @include foundation.foundation-global-styles;
 @include foundation.foundation-xy-grid-classes;
 @include foundation.foundation-typography;
+
+// Override Foundation's heading sizes with optical scale.
+// Change the argument to rescale: @include base.heading-scale(36);
+@include base.heading-scale(32);
+
 @include foundation.foundation-button;
 @include foundation.foundation-button-group;
 @include foundation.foundation-callout;
