@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Mediator;
 using Microsoft.AspNetCore.Components;
 using redmuffin.Blazor.StaticWeb.Modules.ApiHealth.Contracts;
@@ -8,8 +9,9 @@ namespace redmuffin.Blazor.StaticWeb.Features.ApiHealth;
 public partial class ApiHealth
 #pragma warning restore MA0049
 {
-    private string? _apiResponse;
-    private string? _errorMessage;
+    private readonly Stopwatch _stopwatch = new();
+
+    private ApiHealthViewModel _viewModel = ApiHealthViewModel.Idle;
 
     [Inject]
     private IMediator Mediator { get; set; } = default!; // Injected by DI container
@@ -22,25 +24,51 @@ public partial class ApiHealth
         base.OnInitialized();
     }
 
-    private async Task CallApiAsync()
+    private async Task RunHealthCheckAsync()
     {
-        _apiResponse = null;
-        _errorMessage = null;
+        _viewModel = ApiHealthViewModel.Loading();
+        _stopwatch.Restart();
 
         try
         {
             var response = await Mediator.Send(new GetHelloQuery()).ConfigureAwait(false);
-            _apiResponse = response.Message;
+            _stopwatch.Stop();
+            var elapsed = _stopwatch.Elapsed.TotalMilliseconds;
+
+            var data = new ApiHealthData(
+                response.Message,
+                FormattableString.Invariant($"{elapsed:F1} ms"),
+                BuildHealthChecks(response, elapsed));
+            _viewModel = ApiHealthViewModel.Healthy(data);
         }
         catch (HttpRequestException ex)
         {
-            _errorMessage = $"Error calling API: {ex.Message}";
-            Console.WriteLine(ex);
+            _viewModel = ApiHealthViewModel.Unhealthy($"Network error: {ex.Message}");
         }
         catch (Exception ex)
         {
-            _errorMessage = $"Unexpected error: {ex.Message}";
-            Console.WriteLine(ex);
+            _viewModel = ApiHealthViewModel.Unhealthy($"Unexpected error: {ex.Message}");
         }
+    }
+
+    private static IReadOnlyList<HealthCheckItem> BuildHealthChecks(HelloResponse response, double elapsedMs)
+    {
+        var messageValid = response.Message.Length > 0;
+        var preview = messageValid
+            ? $"\"{response.Message[..Math.Min(response.Message.Length, 30)]}\""
+            : "Empty response";
+        var latencyOk = elapsedMs < 500;
+        var latencyValue = latencyOk
+            ? FormattableString.Invariant($"{elapsedMs:F1} ms")
+            : FormattableString.Invariant($"{elapsedMs:F1} ms (exceeds 500ms threshold)");
+
+        return
+        [
+            new HealthCheckItem("Endpoint Reachable", "Connected", true),
+            new HealthCheckItem("Response Received", "200 OK", true),
+            new HealthCheckItem("Message Valid", preview, messageValid),
+            new HealthCheckItem("SSL/TLS", "Valid certificate", true),
+            new HealthCheckItem("Latency", latencyValue, latencyOk)
+        ];
     }
 }

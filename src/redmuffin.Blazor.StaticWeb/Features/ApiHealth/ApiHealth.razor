@@ -1,22 +1,48 @@
 @page "/api-health"
-@using Mediator
-@using redmuffin.Blazor.StaticWeb.Modules.ApiHealth.Contracts
 
-<PageTitle>ApiHealth</PageTitle>
+<PageTitle>API Health Check</PageTitle>
 
-<h1>ApiHealth</h1>
+<h1>🫀 API Health Check</h1>
 
-<button class="button" @onclick="CallApiAsync">Call ApiHealth</button>
+<div class="status-header">
+    <span class="status-icon">@_viewModel.StatusIcon</span>
+    <span class="status-label">@_viewModel.StatusText</span>
+</div>
+<p class="status-detail">@_viewModel.StatusDetail</p>
 
-@if (!string.IsNullOrEmpty(_apiResponse))
-{
-    <p>
-        <strong>API Response:</strong> @_apiResponse
-    </p>
-}
-@if (!string.IsNullOrEmpty(_errorMessage))
-{
-    <p style="color: red;">
-        <strong>Error:</strong> @_errorMessage
-    </p>
-}
+<button class="button primary" @onclick="RunHealthCheckAsync" disabled="@_viewModel.IsLoading">
+    @_viewModel.ButtonText
+</button>
+
+<Conditional Condition="@_viewModel.IsIdle">
+    <EmptyState Message="No checks have been run yet. Click the button above to begin." />
+</Conditional>
+
+<Conditional Condition="@_viewModel.IsLoading">
+    <div class="loading-area">
+        <Spinner />
+    </div>
+</Conditional>
+
+<Conditional Condition="@_viewModel.IsHealthy">
+    <div class="health-result">
+        <div class="callout success">
+            <h3>Response</h3>
+            <blockquote>@_viewModel.ResponseMessage</blockquote>
+            <p class="response-time">Latency: @_viewModel.ResponseTimeFormatted</p>
+        </div>
+
+        <h3>Health Checks</h3>
+        <ForEach Items="@_viewModel.Checks" Context="check">
+            <div class="check-row @check.RowCssClass">
+                <span class="check-icon">@check.StatusIcon</span>
+                <span class="check-label">@check.Label</span>
+                <span class="check-value">@check.Value</span>
+            </div>
+        </ForEach>
+    </div>
+</Conditional>
+
+<Conditional Condition="@_viewModel.IsUnhealthy">
+    <ErrorBanner Message="@_viewModel.ErrorDetail" />
+</Conditional>
