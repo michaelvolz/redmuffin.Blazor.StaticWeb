@@ -1,0 +1,30 @@
+// =============================================================================
+// Optical Heading Scale — tiered, not uniform
+// =============================================================================
+// Research: Williams & Spyridakis (1992) — 20% perception threshold.
+// Real-world: developer portfolios anchor at 32px h1 (GitHub, Josh Comeau).
+// Full basis: docs/solutions/design/typographic-scale-optical-heading-sizes-2026-06-14.md
+// =============================================================================
+
+@mixin heading-scale($h1-base-px: 32) {
+  // Per-step ratios encode the optical tiered curve:
+  //   display tier (h1→h2): tight 1.143 — close, authoritative
+  //   section tier (h2→h4): wide ~1.214 — near the 20% perception threshold
+  //   body tier   (h4→h6): converging — heading converges toward body text
+  $optical-ratios: (1.143, 1.217, 1.211, 1.118, 1.063);
+
+  @media (min-width: 40em) {
+    $cumulative: 1;
+    @for $i from 1 through 6 {
+      $level: nth(h1 h2 h3 h4 h5 h6, $i);
+      $size-px: $h1-base-px / $cumulative;
+      #{$level},
+      .#{$level} {
+        font-size: ($size-px / 16) * 1rem;
+      }
+      @if $i < 6 {
+        $cumulative: $cumulative * nth($optical-ratios, $i);
+      }
+    }
+  }
+}
