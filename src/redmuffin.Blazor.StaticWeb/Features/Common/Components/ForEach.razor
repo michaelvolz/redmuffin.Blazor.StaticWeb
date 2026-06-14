@@ -1,0 +1,7 @@
+@* ForEach.razor — infrastructure component: iteration. Replaces @foreach in page-level markup. *@
+@typeparam TItem
+
+@foreach (var item in Items)
+{
+    @ChildContent(item)
+}

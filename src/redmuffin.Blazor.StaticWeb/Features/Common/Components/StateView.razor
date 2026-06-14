@@ -1,0 +1,16 @@
+@* StateView.razor — infrastructure component: discriminated union page state rendering.
+   Replaces loading/error/data @if/@else branching in page-level markup. *@
+@typeparam T
+
+@switch (State)
+{
+    case PageState<T>.Loading:
+        @LoadingTemplate
+        break;
+    case PageState<T>.Errored(var message):
+        @ErrorTemplate(message)
+        break;
+    case PageState<T>.Data(var value):
+        @DataTemplate(value)
+        break;
+}
