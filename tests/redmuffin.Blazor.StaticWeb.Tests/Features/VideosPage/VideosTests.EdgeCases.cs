@@ -1,6 +1,7 @@
 using Bunit;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Features.VideosPage;
+using redmuffin.Blazor.StaticWeb.Features.Common.Components;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.VideosPage;
 
@@ -78,8 +79,8 @@ public sealed partial class VideosTests
         // Act
         var component = scope.BUnitContext.Render<Videos>();
 
-        // Assert
-        await Assert.That(component.Find("h3").TextContent).Contains("Programming & AI Video Hub");
-        await Assert.That(component.FindAll(".video-card")).Count().IsEqualTo(0);
+        // Assert — empty state container is visible
+        await Assert.That(
+            component.Find($"#{EmptyState.EmptyStateElementId}")).IsNotNull();
     }
 }

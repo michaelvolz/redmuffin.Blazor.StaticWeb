@@ -1,5 +1,6 @@
 using Bunit;
 using ArticlesComponent = redmuffin.Blazor.StaticWeb.Features.ArticlesPage.Articles;
+using redmuffin.Blazor.StaticWeb.Features.Common.Components;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.ArticlesPage;
 
@@ -86,16 +87,9 @@ public partial class ArticlesTests
         // Act
         var component = scope.BUnitContext.Render<ArticlesComponent>();
 
-        // Assert
-        using (Assert.Multiple())
-        {
-            await Assert.That(component).IsNotNull();
-            await Assert.That(component.Find("h3").TextContent).Contains("Article");
-
-            // Should show "No articles available" message when empty
-            var noArticlesMessage = component.FindAll(".callout.secondary, .empty-state, .no-content");
-            await Assert.That(noArticlesMessage.Count).IsGreaterThanOrEqualTo(0); // May or may not have explicit empty state
-        }
+        // Assert — empty state container is visible
+        await Assert.That(
+            component.Find($"#{EmptyState.EmptyStateElementId}")).IsNotNull();
     }
 
     [Test]
