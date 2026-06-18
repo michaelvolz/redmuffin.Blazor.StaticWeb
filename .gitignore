@@ -409,6 +409,9 @@ src/redmuffin.Blazor.StaticWeb/wwwroot/css/app.css
 # Grok Build MCP tool schema cache (auto-generated per agent session)
 mcps/
 
+# Grok Build background shell session logs (auto-generated per agent session)
+terminals/
+
 # Environment variables (secrets)
 .env
 .env.local
