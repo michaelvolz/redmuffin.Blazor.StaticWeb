@@ -1,8 +1,8 @@
 ---
-date: 2026-04-20
-title: AGENTS Project Guide (OpenCode-Optimized v2)
+date: 2026-06-18
+title: AGENTS Project Guide (v2)
 tags: [agent, rules, blazor, critical-policies, context-management, dotnet10]
-description: Project-specific rules for the redmuffin.Blazor.StaticWeb repo. System-wide rules are in ~/.claude/CLAUDE.md. Build and repo conventions are in rm-build-config. Commit rules are in rm-commit.
+description: Project-specific rules for the redmuffin.Blazor.StaticWeb repo. Cross-harness global rules are in ~/.claude/CLAUDE.md. Build and repo conventions are in rm-build-config. Commit rules are in rm-commit.
 ---
 
 # AGENTS: Project Guide
@@ -10,7 +10,7 @@ description: Project-specific rules for the redmuffin.Blazor.StaticWeb repo. Sys
 > **System-wide rules**: See `~/.claude/CLAUDE.md` for communication protocol, safety blocks, API rate limits, Git rules, PowerShell patterns, NPM policies, and global workflows.
 > **Commit rules**: See `rm-commit` skill.
 > **Build & repo conventions**: See `rm-build-config` skill.
-> **LSP tool over grep**: The `lsp` tool (`findReferences`, `goToDefinition`, `hover`, `goToImplementation`, `documentSymbol`, `workspaceSymbol`, `incomingCalls`, `outgoingCalls`) is available when `OPENCODE_EXPERIMENTAL_LSP_TOOL=true`. Never use `grep`/`glob`/`read` for a code structure question when the corresponding LSP operation handles it — semantic matching eliminates false positives, sub-second vs multi-step. See `rm-opencode` for operation usage.
+> **LSP tool over grep (OpenCode)**: The `lsp` tool (`findReferences`, `goToDefinition`, `hover`, `goToImplementation`, `documentSymbol`, `workspaceSymbol`, `incomingCalls`, `outgoingCalls`) is available when `OPENCODE_EXPERIMENTAL_LSP_TOOL=true`. Never use `grep`/`glob`/`read` for a code structure question when the corresponding LSP operation handles it — semantic matching eliminates false positives, sub-second vs multi-step. See `rm-opencode` for operation usage.
 > **Pre-commit verification**: See §PRE-COMMIT VERIFICATION below. Never commit after a code file change without running build and tests first.
 > **AGENTS.md maintenance**: See `rm-agents` skill.
 
@@ -103,7 +103,7 @@ Q2: Did the change include only Workflow files AND non-code files
 
 ## WORKFLOWS
 
-- **Chrome DevTools MCP**: Configured in `opencode.jsonc` but disabled by default (`enabled: false`). Never assume it is available — ask the user to enable it via `/mcp` when a task requires Lighthouse audits, performance tracing, screenshots, or browser-based testing. See `rm-dev-environment` for the full workflow.
+- **Chrome DevTools MCP**: Configured per harness (OpenCode: `opencode.jsonc`; Grok: `~/.grok/config.toml`). Never assume it is available — ask the user to enable it when a task requires Lighthouse audits, performance tracing, screenshots, or browser-based testing. See `rm-dev-environment` for the full workflow.
 - **Local workflow testing (`act`)**: Never push a workflow change without running the full pipeline locally first. `act push -W .github/workflows/azure-static-web-apps-lively-cliff-0945be603.yml -P ubuntu-latest=dotnet-sdk-node:10.0 --pull=false`. Full procedure in `rm-github-workflows` skill.
 - **Quality Gates — Recursive Loop**: Gates are not one-shot. Run → fix worst violations → re-run → repeat until zero violations across all gates. See `rm-cleanup-session` §0 for the full principle.
 - **Cleanup Sessions**: Load `rm-cleanup-session` to activate all 7 cleanup skills in one call.
