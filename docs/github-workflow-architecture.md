@@ -1526,8 +1526,18 @@ https://www.githubstatus.com/
 ### Scripts
 
 - `scripts/Measure-BundleSize.ps1`: Bundle size measurement
-- `scripts/test-build-fast.ps1`: Fast development builds
-- `scripts/test-build-aot.ps1`: Production parity testing
+
+### Test workflow
+
+CI and local testing use TUnit's native host:
+
+```bash
+dotnet build -c Release
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests -c Release --no-build
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Api.Tests -c Release --no-build
+```
+
+AoT for Blazor tests is toggled by csproj conditions (`GITHUB_ACTIONS` in CI; optional `$env:AOT_TESTS='true'` locally).
 
 ---
 

@@ -1,7 +1,13 @@
 ---
 title: bUnit AoT Compatibility Report
 date: 2025-07-20
+status: obsolete
+archived: 2026-03-28
 ---
+
+> **OBSOLETE (2026-03-28):** Archived. The `test-build-*` scripts documented here were removed.
+> AoT is controlled by csproj conditions; run tests with `dotnet run --project tests/...`.
+> See `docs/solutions/testing-patterns/blazor-integration-testing.md` for the current workflow.
 
 ## Overview
 

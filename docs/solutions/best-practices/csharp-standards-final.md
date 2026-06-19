@@ -1024,10 +1024,16 @@ pwsh scripts/Generate-CoverageReport.ps1
 pwsh scripts/View-CoverageReport.ps1
 ```
 
-### Development Build Scripts
+### Test Commands
 
-- `scripts/test-build-fast.ps1` - Fast dev build (~9s, AoT disabled)
-- `scripts/test-build-aot.ps1` - Production parity testing
+```powershell
+dotnet build -c Release
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests -c Release --no-build
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Api.Tests -c Release --no-build
+```
+
+Optional local AoT parity: `$env:AOT_TESTS='true'` before build, then clear with `$env:AOT_TESTS=$null`.
+
 - `scripts/DisplayWarnings.ps1` - Show all build warnings
 
 ### Package Management

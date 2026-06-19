@@ -44,7 +44,15 @@ public sealed class TestScope(string baseUri = "http://localhost:5000/") : IDisp
 
 ### Conditional AoT Configuration
 
-AoT is enabled only in CI/CD (`CI=true` or `GITHUB_ACTIONS=true`) or via `AOT_TESTS=true` override. Development builds use AoT-disabled (9.4s vs 11.1s build time). Three build scripts: `test-build-fast.ps1`, `test-build-aot.ps1`, `test-build-ci.ps1`.
+AoT is controlled by `RunAOTCompilation` conditions in `tests/redmuffin.Blazor.StaticWeb.Tests.csproj`. It is enabled in CI/CD (`CI=true` or `GITHUB_ACTIONS=true`) and disabled locally by default. Set `$env:AOT_TESTS='true'` before build for optional local AoT parity.
+
+Run tests with TUnit's native host (same as CI):
+
+```powershell
+dotnet build -c Release
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests -c Release --no-build
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Api.Tests -c Release --no-build
+```
 
 ### Test File Organization
 
