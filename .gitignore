@@ -406,6 +406,9 @@ src/redmuffin.Blazor.StaticWeb/wwwroot/css/app.css
 # OpenCode generated files — local installs (use global ~/.config/opencode/)
 .opencode/
 
+# CC Safety Net — commit rules/ only; cache regenerates on migrate
+.cc-safety-net/cache/
+
 # Grok Build MCP tool schema cache (auto-generated per agent session)
 mcps/
 
