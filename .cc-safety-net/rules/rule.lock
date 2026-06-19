@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "rulebooks": [
+    {
+      "spec": "project-rules",
+      "kind": "local-directory",
+      "path": "project-rules",
+      "name": "project-rules",
+      "version": "1.0.0",
+      "digest": "sha256:6389643929315bbc101317a3fc5e24c2bd5acf5d1a74a4aa14c2bb8fb1eee38d"
+    }
+  ]
+}

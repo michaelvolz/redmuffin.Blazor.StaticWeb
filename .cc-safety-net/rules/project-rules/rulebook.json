@@ -1,0 +1,90 @@
+{
+  "rulebook_version": 1,
+  "name": "project-rules",
+  "version": "1.0.0",
+  "description": "Migrated CC Safety Net rules.",
+  "author": "project",
+  "migrated_from": ".safety-net.json",
+  "allowed_commands": [
+    "rtk",
+    "git",
+    "dotnet"
+  ],
+  "rules": [
+    {
+      "name": "block-rtk-git-push",
+      "command": "rtk",
+      "subcommand": "git",
+      "block_args": [
+        "push"
+      ],
+      "reason": "BLOCKED by Policy: git push is restricted to the repository owner only.\n\nCommand: rtk git push\n\nReason: Only humans may push to remote repositories. Ask the user to push manually when ready."
+    },
+    {
+      "name": "block-git-reflog-expire-now",
+      "command": "git",
+      "subcommand": "reflog",
+      "block_args": [
+        "expire",
+        "--expire=now",
+        "--all"
+      ],
+      "reason": "BLOCKED: git reflog expire --expire=now --all permanently deletes reflog history and can hide malicious activity."
+    },
+    {
+      "name": "block-dotnet-ef-database-drop",
+      "command": "dotnet",
+      "subcommand": "ef",
+      "block_args": [
+        "database",
+        "drop"
+      ],
+      "reason": "BLOCKED: dotnet ef database drop permanently deletes the entire database. Only humans should do this."
+    },
+    {
+      "name": "block-rtk-xargs-rm",
+      "command": "rtk",
+      "subcommand": "xargs",
+      "block_args": [
+        "rm"
+      ],
+      "reason": "xargs rm -rf is dangerous - dynamic input makes targets unpredictable."
+    },
+    {
+      "name": "block-rtk-parallel-rm",
+      "command": "rtk",
+      "subcommand": "parallel",
+      "block_args": [
+        "rm"
+      ],
+      "reason": "parallel rm -rf is dangerous - dynamic input makes targets unpredictable."
+    }
+  ],
+  "tests": [
+    {
+      "command": "rtk git push",
+      "expect": "blocked",
+      "rule": "block-rtk-git-push"
+    },
+    {
+      "command": "git reflog expire",
+      "expect": "blocked",
+      "rule": "block-git-reflog-expire-now"
+    },
+    {
+      "command": "dotnet ef database",
+      "expect": "blocked",
+      "rule": "block-dotnet-ef-database-drop"
+    },
+    {
+      "command": "rtk xargs rm",
+      "expect": "blocked",
+      "rule": "block-rtk-xargs-rm"
+    },
+    {
+      "command": "rtk parallel rm",
+      "expect": "blocked",
+      "rule": "block-rtk-parallel-rm"
+    }
+  ]
+}
