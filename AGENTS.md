@@ -11,8 +11,8 @@ description: Project-specific rules for the redmuffin.Blazor.StaticWeb repo. Cro
 > **Commit rules**: See `rm-commit` skill.
 > **Build & repo conventions**: See `rm-build-config` skill.
 > **LSP tool over grep (OpenCode)**: The `lsp` tool (`findReferences`, `goToDefinition`, `hover`, `goToImplementation`, `documentSymbol`, `workspaceSymbol`, `incomingCalls`, `outgoingCalls`) is available when `OPENCODE_EXPERIMENTAL_LSP_TOOL=true`. Never use `grep`/`glob`/`read` for a code structure question when the corresponding LSP operation handles it — semantic matching eliminates false positives, sub-second vs multi-step. See `rm-opencode` for operation usage.
-> **Pre-commit verification**: See §PRE-COMMIT VERIFICATION below. Never commit after a code file change without running build and tests first.
-> **AGENTS.md maintenance**: See `rm-agents` skill.
+> **Pre-commit verification**: See §PRE-COMMIT VERIFICATION below. Never skip build+test when a change can break compilation or tests.
+> **AGENTS.md maintenance**: See `rm-instruction-standards` skill.
 
 ## STRUCTURAL CHANGE GATE (READ FIRST — STOP HERE)
 
@@ -28,12 +28,13 @@ If any answer is incomplete, if you are guessing about a constraint the user hol
 
 ## PRE-COMMIT VERIFICATION
 
-**Never commit after a code file change without running build and tests first.**
-This rule has no exceptions. LSP diagnostics are per-file only — they cannot
-detect cross-file reference breakage, test failures, or runtime errors. LSP is
-a fast pre-check, not a substitute for the build+test gate.
+Never commit when a change can break `dotnet build` or any test without
+running build and tests first. LSP diagnostics are per-file only — they
+cannot detect cross-file reference breakage, test failures, or runtime
+errors. LSP is a fast pre-check, not a substitute for the build+test gate.
 
-**Code files** are any file whose change can break the build or any test:
+**Impact test** — ask whether the change can affect compilation, test
+outcomes, or published output. Matching a file extension is not enough.
 
 | Category      | Extensions                                 | Rationale                                           |
 | ------------- | ------------------------------------------ | --------------------------------------------------- |
@@ -43,8 +44,10 @@ a fast pre-check, not a substitute for the build+test gate.
 | Solution      | `.slnx`                                    | Project discovery                                   |
 | SCSS          | `.scss`                                    | CSS output affects bUnit DOM assertions             |
 | NuGet         | `Directory.Packages.props`, `nuget.config` | Package resolution                                  |
-| PowerShell    | `.ps1`                                     | Build scripts, package tooling                      |
 | Workflow      | `.github/workflows/*.yml`                  | CI pipeline — validate with `act push`, never build |
+
+**Never run `dotnet build` for `scripts/**` changes.** CI and MSBuild
+never invoke `scripts/` (pipeline-neutral). Local helper scripts only.
 
 **SCSS-only changes**: CSS output affects bUnit DOM assertions. Never skip
 the full build+test chain, even when only SCSS files changed — a stale test
@@ -70,31 +73,30 @@ Never use `dotnet test` for TUnit test runs — a stale binary from
 verification cycle. Never batch-commit multiple changes without
 re-running the full build+test chain.
 
-**Verification decision tree**: Not every change needs `dotnet build`.
-Start at Q1. Stop at the first match.
+**Verification decision tree**: Start at Q1. Stop at the first match.
 
 ```
-Q1: Did the change include any file in the "Code files" table above
-    EXCEPT the Workflow row?
+Q1: Can this change break dotnet build, test outcomes, or published output?
     ├─ YES → Run `dotnet build && dotnet run --project tests/...`
-    │        (or SCSS-only: also `sass --style=compressed`).
-    └─ NO → Q2
+    │        (SCSS-only: also `sass --style=compressed`).
+    └─ NO  → Q2
 
-Q2: Did the change include only Workflow files AND non-code files
-    (docs, .md, .gitignore, pipeline-neutral)?
-    ├─ YES → Never run dotnet build — it cannot detect workflow
-    │        issues. Validate with:
+    NO examples — never run dotnet build:
+    - `scripts/**` only (add, edit, delete)
+    - docs, comments, .gitignore, pipeline-neutral paths only
+
+Q2: Did the change include workflow files?
+    ├─ YES → Never run dotnet build. Validate with:
     │        `wrkflw validate .github/workflows/<file>.yml`
-    │        (syntax gate) then `act push` (full pipeline gate).
-    │        Then commit.
-    └─ NO → This branch should not be reached. Re-trace Q1.
+    │        then `act push`. Then commit.
+    └─ NO  → Commit.
 ```
 
 ## COMMANDS
 
 | Command                                                                                       | Purpose                                         | When                                                                                    |
 | --------------------------------------------------------------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `dotnet build && dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests`                 | Verify logic & prevent regressions              | Pre-commit (mandatory — unless only workflow/non-code files changed, see decision tree) |
+| `dotnet build && dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests`                 | Verify logic & prevent regressions              | Pre-commit when Q1 is YES (see decision tree)                                             |
 | `dotnet build --verbosity quiet`                                                              | Verify C# compilation                           | Immediately after any C# edit                                                           |
 | `dotnet build && dotnet run --project tests/redmuffin.Tools.QualityGates.Tests`               | Run quality gates tool tests                    | After any tools/ code change                                                            |
 | `sass --style=compressed --no-source-map scss/app.scss:wwwroot/css/app.min.css`               | Production SCSS build (one-shot, commit output) | Pre-commit (mandatory — see §PRE-COMMIT VERIFICATION)                                   |
