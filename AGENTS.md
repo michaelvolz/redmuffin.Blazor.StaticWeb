@@ -10,7 +10,12 @@ description: Project-specific rules for the redmuffin.Blazor.StaticWeb repo. Cro
 > **System-wide rules**: See `~/.claude/CLAUDE.md` for communication protocol, safety blocks, API rate limits, Git rules, PowerShell patterns, NPM policies, and global workflows.
 > **Commit rules**: See `rm-commit` skill.
 > **Build & repo conventions**: See `rm-build-config` skill.
-> **LSP tool over grep (OpenCode)**: The `lsp` tool (`findReferences`, `goToDefinition`, `hover`, `goToImplementation`, `documentSymbol`, `workspaceSymbol`, `incomingCalls`, `outgoingCalls`) is available when `OPENCODE_EXPERIMENTAL_LSP_TOOL=true`. Never use `grep`/`glob`/`read` for a code structure question when the corresponding LSP operation handles it — semantic matching eliminates false positives, sub-second vs multi-step. See `rm-opencode` for operation usage.
+> **Code intelligence (harness-specific)**:
+> - **OpenCode**: `lsp` tool when `OPENCODE_EXPERIMENTAL_LSP_TOOL=true`. See `rm-opencode`.
+> - **Grok Build**: `lsp` tool when `[features] lsp_tools = true` and `.grok/lsp.json` configures Roslyn. Project config: `.grok/lsp.json` in this repo.
+> - **Never** use `grep`/`glob`/`read` for a semantic symbol query when the active harness exposes the matching `lsp` operation (`findReferences`, `goToDefinition`, `hover`, `goToImplementation`, `documentSymbol`, `workspaceSymbol`, `incomingCalls`, `outgoingCalls`).
+> - **Structural patterns (all harnesses)**: Load `ast-grep` and `rm-structural-search` when the query depends on syntax shape, not symbol resolution. Never use `grep` for AST-structure queries.
+> - **Semantic truth**: `dotnet build` remains mandatory for cross-file breakage LSP alone cannot catch.
 > **Pre-commit verification**: See §PRE-COMMIT VERIFICATION below. Never skip build+test when a change can break compilation or tests.
 > **AGENTS.md maintenance**: See `rm-instruction-standards` skill.
 
@@ -105,7 +110,9 @@ Q2: Did the change include workflow files?
 
 ## WORKFLOWS
 
-- **Chrome DevTools MCP**: Configured per harness (OpenCode: `opencode.jsonc`; Grok: `~/.grok/config.toml`). Never assume it is available — ask the user to enable it when a task requires Lighthouse audits, performance tracing, screenshots, or browser-based testing. See `rm-dev-environment` for the full workflow.
+- **Browser automation (primary)**: Load `rm-agent-browser` (co-loads `agent-browser`) for live-site QA, snapshots, screenshots, navigation, and a11y checks on redmuffin.net or local dev. Never use bUnit for live-app QA. See `rm-dev-environment` for site startup; `rm-dev-shutdown` for cleanup.
+- **Chrome DevTools MCP (opt-in fallback)**: Disabled in Grok by default. Never assume it is available. Ask the user to enable it only when agent-browser cannot satisfy the task (Lighthouse audits, deep performance traces). Config: OpenCode `opencode.jsonc`; Grok `~/.grok/config.toml`.
+- **Structural code search**: Load `rm-structural-search` (co-loads `ast-grep`) for syntax-shape queries across `.cs` files. Never substitute ast-grep for `lsp` symbol operations when LSP is available.
 - **Local workflow testing (`act`)**: Never push a workflow change without running the full pipeline locally first. `act push -W .github/workflows/azure-static-web-apps-lively-cliff-0945be603.yml -P ubuntu-latest=dotnet-sdk-node:10.0 --pull=false`. Full procedure in `rm-github-workflows` skill.
 - **Quality Gates — Recursive Loop**: Gates are not one-shot. Run → fix worst violations → re-run → repeat until zero violations across all gates. See `rm-cleanup-session` §0 for the full principle.
 - **Cleanup Sessions**: Load `rm-cleanup-session` to activate all 7 cleanup skills in one call.
@@ -120,4 +127,5 @@ Q2: Did the change include workflow files?
   - `src/` — Application projects (Blazor frontend, Azure Functions API)
   - `tests/` — Test project mirror
   - `docs/solutions/` — Persistent knowledge store (YAML frontmatter: `module`, `tags`, `problem_type`)
+  - `CONCEPTS.md` — Shared domain vocabulary (entities, named processes, and status concepts with project-specific meaning)
   - `tools/` — Quality Gates toolchain (CRAP, SCRAP, Architecture, Depth, Mutation, Dupes). See `tools/README.md`.
