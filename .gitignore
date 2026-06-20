@@ -410,11 +410,24 @@ src/redmuffin.Blazor.StaticWeb/wwwroot/css/app.css
 .cc-safety-net/cache/
 
 # Cursor / Grok Build harness scratch (fixed directory names; auto-generated)
-.cursor/
 mcps/
 terminals/
 agent-tools/
 agent-transcripts/
+
+# Cursor — runtime/managed under .cursor/ only (track portable: rules/, skills/, hooks, mcp.json, etc.)
+.cursor/projects/
+.cursor/chats/
+.cursor/worktrees/
+.cursor/subagents/
+.cursor/ai-tracking/
+.cursor/skills-cursor/
+.cursor/statsig-cache.json
+.cursor/agent-cli-state.json
+.cursor/cli-config.json
+.cursor/cli-config.json.bad
+.cursor/hooks/state/
+.cursor/plugins/marketplaces/
 
 # Environment variables (secrets)
 .env
