@@ -409,14 +409,12 @@ src/redmuffin.Blazor.StaticWeb/wwwroot/css/app.css
 # CC Safety Net — commit rules/ only; cache regenerates on migrate
 .cc-safety-net/cache/
 
-# Grok Build MCP tool schema cache (auto-generated per agent session)
+# Cursor / Grok Build harness scratch (fixed directory names; auto-generated)
+.cursor/
 mcps/
-
-# Grok Build background shell session logs (auto-generated per agent session)
 terminals/
-
-# Grok Build agent tool output scratch (Cursor convention; auto-generated per session)
 agent-tools/
+agent-transcripts/
 
 # Environment variables (secrets)
 .env
