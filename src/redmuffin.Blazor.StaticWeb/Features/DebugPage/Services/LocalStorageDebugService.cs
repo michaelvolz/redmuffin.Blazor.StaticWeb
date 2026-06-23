@@ -189,7 +189,7 @@ public partial class LocalStorageDebugService
         try
         {
             var allKeys = await _localStorage.KeysAsync(cancellationToken).ConfigureAwait(false);
-            return allKeys.Where(key => key.Contains("raindrop_cache_") || key.Contains("img_validation_")).ToList();
+            return allKeys.Where(key => key.Contains("raindrop_cache_", StringComparison.Ordinal) || key.Contains("img_validation_", StringComparison.Ordinal)).ToList();
         }
         catch (Exception ex)
         {
