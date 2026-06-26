@@ -1,10 +1,12 @@
-using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using redmuffin.Blazor.StaticWeb.Configuration;
 using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Models;
 using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Services;
+
+// CA1873: Log calls use [LoggerMessage] delegates from AppStartMetricsView.Logging.cs with IsEnabled guards.
+#pragma warning disable CA1873
 
 namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Components;
 
@@ -16,6 +18,7 @@ public partial class AppStartMetricsView : ComponentBase, IAsyncDisposable
 {
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
+    private bool _disposed;
     private bool _isHidden;
     private bool _isCollapsed;
     private bool _isRefreshing;
@@ -26,6 +29,9 @@ public partial class AppStartMetricsView : ComponentBase, IAsyncDisposable
 
     [Inject] private IPerformanceMetricsService PerformanceService { get; set; } = default!;
     [Inject] private NavigationManager Navigation { get; set; } = default!;
+    [Inject] private ILogger<AppStartMetricsView> Logger { get; set; } = default!;
+
+    private bool IsActive => !_disposed && !_cancellationTokenSource.IsCancellationRequested;
 
     private PerformanceCache PerformanceCache
     {
@@ -44,6 +50,9 @@ public partial class AppStartMetricsView : ComponentBase, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        if (_disposed) return;
+
+        _disposed = true;
         await _cancellationTokenSource.CancelAsync().ConfigureAwait(false);
         _cancellationTokenSource.Dispose();
         GC.SuppressFinalize(this);
@@ -51,9 +60,8 @@ public partial class AppStartMetricsView : ComponentBase, IAsyncDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var shouldDisplay = PageLoadSpeedConfig.ShouldDisplayComponent(Navigation.BaseUri);
-
-        if (!firstRender || !shouldDisplay) return;
+        if (!firstRender || !IsActive) return;
+        if (!PageLoadSpeedConfig.ShouldDisplayComponent(Navigation.BaseUri)) return;
 
         try
         {
@@ -65,24 +73,25 @@ public partial class AppStartMetricsView : ComponentBase, IAsyncDisposable
                     new SizeMetrics(0, 0, 0, "Loading...", "Loading...", "Loading..."),
                     new CalculatedMetrics(0, 0, 0),
                     DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
+
+                if (!IsActive) return;
                 await InvokeAsync(StateHasChanged).ConfigureAwait(false);
             }
 
+            if (!IsActive) return;
             await UpdateMetricsAsync().ConfigureAwait(false);
         }
-        catch (OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            // Expected during disposal
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"AppStartMetricsView initialization failed: {ex.Message}");
+            LogInitializationFailed(Logger, ex);
+            await SetFallbackMetricsAsync(ex).ConfigureAwait(false);
+            await EnsureUIUpdatesAsync().ConfigureAwait(false);
         }
     }
 
     private async Task UpdateMetricsAsync()
     {
-        if (_cancellationTokenSource.IsCancellationRequested) return;
+        if (!IsActive) return;
 
         try
         {
@@ -90,23 +99,19 @@ public partial class AppStartMetricsView : ComponentBase, IAsyncDisposable
         }
         finally
         {
-            if (!_cancellationTokenSource.IsCancellationRequested)
-                try
-                {
-                    await InvokeAsync(StateHasChanged).ConfigureAwait(false);
-                }
-                catch
-                {
-                    // Component may be disposed
-                }
+            await EnsureUIUpdatesAsync().ConfigureAwait(false);
         }
     }
 
     private async Task TryGetComprehensiveMetricsAsync()
     {
+        if (!IsActive) return;
+
         try
         {
             var metrics = await PerformanceService.GetMetricsAsync(_cancellationTokenSource.Token).ConfigureAwait(false);
+            if (!IsActive) return;
+
             if (metrics != null)
             {
                 _currentMetrics = PerformanceMetrics.FromPageLoadMetrics(
@@ -116,11 +121,7 @@ public partial class AppStartMetricsView : ComponentBase, IAsyncDisposable
 
             await TryGetLegacyMetricsAsync().ConfigureAwait(false);
         }
-        catch (OperationCanceledException)
-        {
-            // Expected during cancellation
-        }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             await SetFallbackMetricsAsync(ex).ConfigureAwait(false);
         }
@@ -128,7 +129,11 @@ public partial class AppStartMetricsView : ComponentBase, IAsyncDisposable
 
     private async Task TryGetLegacyMetricsAsync()
     {
+        if (!IsActive) return;
+
         var legacyTimings = await PerformanceService.GetLegacyTimingAsync(_cancellationTokenSource.Token).ConfigureAwait(false);
+        if (!IsActive) return;
+
         if (legacyTimings is { Length: >= 2 })
         {
             var legacyMetrics = new PageLoadMetrics
@@ -154,29 +159,46 @@ public partial class AppStartMetricsView : ComponentBase, IAsyncDisposable
         }
 
         var fallbackMetrics = await PerformanceService.GetFallbackTimingAsync().ConfigureAwait(false);
+        if (!IsActive) return;
+
         _currentMetrics = PerformanceMetrics.FromPageLoadMetrics(
             fallbackMetrics, DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
     }
 
     private async Task SetFallbackMetricsAsync(Exception originalException)
     {
+        if (!IsActive) return;
+
         try
         {
             var fallbackMetrics = await PerformanceService.GetFallbackTimingAsync().ConfigureAwait(false);
+            if (!IsActive) return;
+
             _currentMetrics = PerformanceMetrics.FromPageLoadMetrics(
                 fallbackMetrics, DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
         }
-        catch (Exception fallbackException)
+        catch (Exception fallbackException) when (fallbackException is not OperationCanceledException)
         {
-            _currentMetrics = new PerformanceMetrics(
-                new TimingMetrics(0, 0, 0, 0, 0),
-                WasmMetrics.CreateDefault(),
-                new SizeMetrics(0, 0, 0, "Unknown", "Unknown", "Unknown"),
-                new CalculatedMetrics(0, 0, 0),
-                DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
-
-            Debug.WriteLine($"Fallback metrics failed: Original={originalException.Message}, Fallback={fallbackException.Message}");
+            ApplyUnknownMetrics();
+            LogFallbackMetricsFailed(Logger, originalException.Message, fallbackException);
         }
+    }
+
+    private void ApplyUnknownMetrics()
+    {
+        _currentMetrics = new PerformanceMetrics(
+            new TimingMetrics(0, 0, 0, 0, 0),
+            WasmMetrics.CreateDefault(),
+            new SizeMetrics(0, 0, 0, "Unknown", "Unknown", "Unknown"),
+            new CalculatedMetrics(0, 0, 0),
+            DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
+    }
+
+    private async Task EnsureUIUpdatesAsync()
+    {
+        if (!IsActive) return;
+
+        await InvokeAsync(StateHasChanged).ConfigureAwait(false);
     }
 
     private void ToggleVisibility()
@@ -197,7 +219,7 @@ public partial class AppStartMetricsView : ComponentBase, IAsyncDisposable
 
     private async Task RefreshMetricsAsync()
     {
-        if (_isRefreshing) return;
+        if (_isRefreshing || !IsActive) return;
 
         _isRefreshing = true;
         await InvokeAsync(StateHasChanged).ConfigureAwait(false);
