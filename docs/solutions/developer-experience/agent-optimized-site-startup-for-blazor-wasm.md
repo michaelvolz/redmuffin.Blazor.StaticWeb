@@ -36,7 +36,7 @@ This doc captures the key decisions. See `rm-dev-environment` skill for full exe
 
 **Use launch profiles as the single source of truth.** All ports, working directories, and command-line args are defined in `src/redmuffin.Blazor.StaticWeb/Properties/launchSettings.json`. Never hardcode them in scripts.
 
-**Never run dev servers via `bash`** — the bash tool enforces a hard timeout that kills the process and all children. Always use `Start-Process powershell.exe` to launch in a separate, labeled console window. See `docs/solutions/developer-experience/bash-timeout-kills-long-running-dotnet-processes-2026-04-04.md` for the root cause analysis.
+**Never run dev servers via `bash`** — the bash tool enforces a hard timeout that kills the process and all children. Always use `Start-Process powershell.exe` to launch in a separate, labeled console window. See `~/docs/solutions/developer-experience/bash-timeout-kills-long-running-dotnet-processes.md` (dotfiles repo) for the root cause analysis.
 
 **`--non-interactive` is mandatory** — without it, `dotnet watch` prompts for user input on rude edits (adding `await`, changing parameters, etc.), hanging the agent indefinitely. The `Watch` profile includes this via `commandLineArgs: "watch --non-interactive"`.
 
@@ -75,7 +75,7 @@ Pick the right profile (launch via `Start-Process powershell.exe`, never via `ba
 
 ## Related
 
-- `docs/solutions/developer-experience/bash-timeout-kills-long-running-dotnet-processes-2026-04-04.md` — the root cause analysis for why `bash` kills dev servers
+- `~/docs/solutions/developer-experience/bash-timeout-kills-long-running-dotnet-processes.md` (dotfiles) — root cause analysis for why `bash` kills dev servers
 - `rm-dev-shutdown` — process cleanup patterns (IDE-owned process protection)
 - `AGENTS.md` — mandatory build/test rules referenced by the skill
-- [SCSS Toolchain Migration + Systemd Dev Server](/docs/solutions/tooling-decisions/dart-sass-migration-systemd-dev-server-2026-05-14.md) — Linux alternative using `systemd-run --user` with dual SCSS watchers and proper stop timeout
+- [SCSS Toolchain Migration + Systemd Dev Server](/docs/solutions/tooling-decisions/dart-sass-migration-systemd-dev-server.md) — Linux alternative using `systemd-run --user` with dual SCSS watchers and proper stop timeout

@@ -42,7 +42,7 @@ The repository has working patterns for real, behavior-focused tests, but `tests
 ### Institutional Learnings
 
 - `docs/solutions/best-practices/csharp-standards-final-2026-04-06.md`: use TUnit assertions, keep tests concrete, and avoid placeholder/dummy strategies as a substitute for coverage.
-- `docs/solutions/best-practices/csharp-standards-contradictions-2026-04-06.md`: prefer explicit assertions over vague test bodies.
+- `docs/solutions/best-practices/csharp-standards-consolidation-resolution.md`: prefer explicit assertions over vague test bodies.
 - `docs/solutions/best-practices/test-double-disposable-pattern-2026-04-06.md`: disposable helpers/doubles should be disposed explicitly when used.
 
 ### External References
