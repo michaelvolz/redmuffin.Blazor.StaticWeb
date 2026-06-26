@@ -235,7 +235,8 @@ public sealed class ConfigureAwaitFixerTests
 
         public void Dispose()
         {
-            try { Directory.Delete(Path, recursive: true); } catch { /* best effort */ }
+            if (Directory.Exists(Path))
+                Directory.Delete(Path, recursive: true);
         }
     }
 }

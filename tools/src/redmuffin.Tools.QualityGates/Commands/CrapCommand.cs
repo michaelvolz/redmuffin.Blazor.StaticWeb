@@ -220,14 +220,8 @@ public static class CrapCommand
     {
         foreach (var path in files)
         {
-            try
-            {
+            if (File.Exists(path))
                 File.Delete(path);
-            }
-            catch
-            {
-                // Best effort cleanup
-            }
         }
     }
 

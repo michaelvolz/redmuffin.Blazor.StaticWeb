@@ -541,8 +541,8 @@ public sealed class ArchCommandTests
 
         public void Dispose()
         {
-            try { Directory.Delete(Path, true); }
-            catch { /* best effort */ }
+            if (Directory.Exists(Path))
+                Directory.Delete(Path, true);
         }
     }
 }

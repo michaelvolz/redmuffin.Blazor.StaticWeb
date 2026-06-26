@@ -290,4 +290,26 @@ public static class DupesNormalizer
 
     private static NormalizedNode Node(string kind, params NormalizedNode[] children) =>
         new(kind, children);
+
+    /// <summary>
+    ///     Computes structural fingerprints for a method without throwing when normalization fails.
+    /// </summary>
+    /// <returns><see langword="true" /> when fingerprints were computed; otherwise <see langword="false" />.</returns>
+    public static bool TryComputeMethodFingerprints(
+        MethodDeclarationSyntax method,
+        out ISet<string> fingerprints)
+    {
+        fingerprints = new HashSet<string>(StringComparer.Ordinal);
+        try
+        {
+            var normalized = Normalize(method);
+            fingerprints = ComputeFingerprints(normalized);
+            return true;
+        }
+        catch (Exception)
+        {
+            fingerprints = new HashSet<string>(StringComparer.Ordinal);
+            return false;
+        }
+    }
 }

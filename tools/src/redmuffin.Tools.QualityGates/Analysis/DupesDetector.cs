@@ -107,21 +107,14 @@ public static class DupesDetector
         var endLine = method.GetLocation().GetLineSpan().EndLinePosition.Line + 1;
         if (endLine - startLine + 1 < minLines) return;
 
-        try
-        {
-            var normalized = DupesNormalizer.Normalize(method);
-            var fingerprints = DupesNormalizer.ComputeFingerprints(normalized);
+        if (!DupesNormalizer.TryComputeMethodFingerprints(method, out var fingerprints))
+            return;
 
-            if (fingerprints.Count >= minNodes)
-            {
-                entries.Add(new DupesEntry(
-                    File: filePath, StartLine: startLine, EndLine: endLine,
-                    Nodes: fingerprints.Count, Fingerprints: fingerprints));
-            }
-        }
-        catch
+        if (fingerprints.Count >= minNodes)
         {
-            // Skip methods that fail normalization
+            entries.Add(new DupesEntry(
+                File: filePath, StartLine: startLine, EndLine: endLine,
+                Nodes: fingerprints.Count, Fingerprints: fingerprints));
         }
     }
 
