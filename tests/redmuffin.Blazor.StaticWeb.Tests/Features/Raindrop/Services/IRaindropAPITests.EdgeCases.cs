@@ -149,14 +149,7 @@ public sealed partial class IRaindropAPITests
         ArgumentNullException.ThrowIfNull(api);
 
         // Act & Assert
-        try
-        {
-            await api.GetVideosAsync(CancellationToken.None).ConfigureAwait(false);
-        }
-        catch (HttpRequestException)
-        {
-            // Expected exception
-        }
+        await Assert.ThrowsAsync<HttpRequestException>(() => api.GetVideosAsync(CancellationToken.None));
 
         await Assert.That(scope.GetRealLogger().LogEntries.Any(entry =>
             entry.Message.Contains("HTTP request error in") &&

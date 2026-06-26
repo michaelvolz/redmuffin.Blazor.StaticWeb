@@ -25,14 +25,7 @@ public sealed partial class RaindropAPITests
         using var raindropApi = new RaindropAPI(scope.HttpClientFactory, scope.Logger);
 
         // Act
-        try
-        {
-            await raindropApi.GetHelloWorldAsync().ConfigureAwait(false);
-        }
-        catch (HttpRequestException)
-        {
-            // Expected exception
-        }
+        await Assert.ThrowsAsync<HttpRequestException>(() => raindropApi.GetHelloWorldAsync());
 
         // Assert - Test behavior: error is logged appropriately
         using (Assert.Multiple())
