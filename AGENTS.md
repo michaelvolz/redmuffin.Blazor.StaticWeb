@@ -7,17 +7,13 @@ description: Project-specific rules for the redmuffin.Blazor.StaticWeb repo. Cro
 
 # AGENTS: Project Guide
 
-> **System-wide rules**: See `~/.claude/CLAUDE.md` for communication protocol, safety blocks, API rate limits, Git rules, PowerShell patterns, NPM policies, and global workflows.
-> **Commit rules**: See `rm-commit` skill.
-> **Build & repo conventions**: See `rm-build-config` skill.
-> **Code intelligence (harness-specific)**:
-> - **OpenCode**: `lsp` tool when `OPENCODE_EXPERIMENTAL_LSP_TOOL=true`. See `rm-opencode`.
-> - **Grok Build**: `lsp` tool when `[features] lsp_tools = true` and `.grok/lsp.json` configures Roslyn. Project config: `.grok/lsp.json` in this repo.
-> - **Never** use `grep`/`glob`/`read` for a semantic symbol query when the active harness exposes the matching `lsp` operation (`findReferences`, `goToDefinition`, `hover`, `goToImplementation`, `documentSymbol`, `workspaceSymbol`, `incomingCalls`, `outgoingCalls`).
-> - **Structural patterns (all harnesses)**: Load `ast-grep` and `rm-structural-search` when the query depends on syntax shape, not symbol resolution. Never use `grep` for AST-structure queries.
-> - **Semantic truth**: `dotnet build` remains mandatory for cross-file breakage LSP alone cannot catch.
-> **Pre-commit verification**: See §PRE-COMMIT VERIFICATION below. Never skip build+test when a change can break compilation or tests.
-> **AGENTS.md maintenance**: See `rm-instruction-standards` skill.
+> **Universal rules:** `~/.claude/CLAUDE.md` (Karpathy, commit discipline, safety).
+> **Harness rules:** Grok `~/.grok/AGENTS.md` · OpenCode `~/.config/opencode/AGENTS.md` · Cursor `~/.cursor/AGENTS.md`.
+> **Harness skills:** `rm-grok-build` (Grok) · `rm-opencode` (OpenCode).
+> **Commit rules:** `rm-commit` skill.
+> **Build & repo conventions:** `rm-build-config` skill.
+> **Repo LSP config (Grok):** `.grok/lsp.json` when Grok Roslyn LSP is enabled.
+> **AGENTS.md maintenance:** `rm-instruction-standards` skill.
 
 ## STRUCTURAL CHANGE GATE (READ FIRST — STOP HERE)
 
@@ -110,9 +106,13 @@ Q2: Did the change include workflow files?
 
 ## WORKFLOWS
 
+- **Code intelligence:** LSP routing and harness tool names — see the active
+  harness `AGENTS.md`. Never use `grep`/`glob`/`read` for semantic symbol
+  queries when the active harness exposes `lsp`. Never use `grep` for
+  AST-structure queries — load `ast-grep` and `rm-structural-search`.
 - **Browser automation (primary)**: Load `rm-agent-browser` (co-loads `agent-browser`) for live-site QA, snapshots, screenshots, navigation, and a11y checks on redmuffin.net or local dev. Never use bUnit for live-app QA. See `rm-dev-environment` for site startup; `rm-dev-shutdown` for cleanup.
-- **Chrome DevTools MCP (opt-in fallback)**: Disabled in Grok by default. Never assume it is available. Ask the user to enable it only when agent-browser cannot satisfy the task (Lighthouse audits, deep performance traces). Config: OpenCode `opencode.jsonc`; Grok `~/.grok/config.toml`.
-- **Structural code search**: Load `rm-structural-search` (co-loads `ast-grep`) for syntax-shape queries across `.cs` files. Never substitute ast-grep for `lsp` symbol operations when LSP is available.
+- **Chrome DevTools MCP (opt-in fallback)**: Disabled by default in all harnesses. See harness `AGENTS.md` for enable path. Ask the user only when agent-browser cannot satisfy the task.
+- **Structural code search**: Load `rm-structural-search` (co-loads `ast-grep`) for syntax-shape queries across `.cs` files.
 - **Local workflow testing (`act`)**: Never push a workflow change without running the full pipeline locally first. `act push -W .github/workflows/azure-static-web-apps-lively-cliff-0945be603.yml -P ubuntu-latest=dotnet-sdk-node:10.0 --pull=false`. Full procedure in `rm-github-workflows` skill.
 - **Quality Gates — Recursive Loop**: Gates are not one-shot. Run → fix worst violations → re-run → repeat until zero violations across all gates. See `rm-cleanup-session` §0 for the full principle.
 - **Cleanup Sessions**: Load `rm-cleanup-session` to activate all 7 cleanup skills in one call.
@@ -129,3 +129,92 @@ Q2: Did the change include workflow files?
   - `docs/solutions/` — Persistent knowledge store (YAML frontmatter: `module`, `tags`, `problem_type`)
   - `CONCEPTS.md` — Shared domain vocabulary (entities, named processes, and status concepts with project-specific meaning)
   - `tools/` — Quality Gates toolchain (CRAP, SCRAP, Architecture, Depth, Mutation, Dupes). See `tools/README.md`.
+
+## DIRECTORY & NAMESPACE STRUCTURE
+
+Folder names map 1:1 to namespace segments. A file at
+`Features/Raindrop/Services/RaindropAPIFactory.cs` has namespace
+`redmuffin.Blazor.StaticWeb.Features.Raindrop.Services`.
+
+**Feature folders (top-level):** every page, domain, and shared construct
+lives under `Features/`.
+
+| Pattern                     | Example                          | Contains                                                             |
+| --------------------------- | -------------------------------- | -------------------------------------------------------------------- |
+| `Features/{FeatureName}/`   | `Features/Raindrop/`             | Domain logic: `Services/`, `Models/`, `Cache/`, `Presentation/`      |
+| `Features/{PageName}/`      | `Features/HomePage/`             | Single-page feature: `.razor` + `.razor.cs` + optional `Components/` |
+| `Features/{PageName}/`      | `Features/DebugPage/`            | Multi-page feature: sub-pages, `Services/`, `Models/`, `Components/`   |
+| `Features/Common/`          | `Features/Common/Components/`    | Shared reusable components used by 2+ features                       |
+| `Features/Common/{Domain}/` | `Features/Common/PageLoadSpeed/` | Cross-cutting domain: `Services/`, `Models/`, `Components/`          |
+
+**Core (app infrastructure):** `Core/` holds application-level infrastructure
+shared across features but not feature-specific.
+
+| Folder                   | Purpose                                                           |
+| ------------------------ | ----------------------------------------------------------------- |
+| `Core/Layout/`           | Layout components (`MainLayout`, `NavMenu`)                       |
+| `Core/Services/`         | Cross-cutting services (`WarmupService`, `BrowserStorageService`) |
+| `Core/ImagePlaceholder/` | Cross-cutting feature: `Abstractions/`, `Models/`, `Services/`    |
+| `Core/Abstractions/`     | Truly app-wide interfaces (`IDelayProvider`)                      |
+
+**Never:**
+
+- Never nest pages under `Features/Pages/` — the `Pages/` level adds zero
+  signal. Flat: `Features/HomePage/`.
+- Never create `Services/` at the project root. Services belong in
+  `Core/Services/` or `Features/{Domain}/Services/`.
+- Never create generic `Models/` folders at the root or in `Core/`. Models
+  belong with their consumer.
+- Never add block-scoped namespaces in new code. File-scoped only:
+  `namespace A.B.C;`.
+- Never let a namespace drift from the file's responsibility to match its
+  historical origin — keep namespaces predictable.
+
+## QUALITYGATES ASSET NAMING
+
+All QualityGates configuration files and generated artifacts follow a strict
+no-abbreviation convention. The filename must describe exactly what it is
+without requiring the reader to open it. No abbreviations: `architecture` not
+`arch`, `duplicates` not `dupes`. Industry-standard acronyms (CRAP, SCRAP) are
+preserved — they are more recognizable than their expanded forms.
+
+**Directory:** `quality-gates/` — all QualityGates configuration lives here,
+placed at the solution root (main: `REPO_ROOT/quality-gates/`, tools:
+`REPO_ROOT/tools/quality-gates/`). Directory name matches tool name.
+
+**Configuration files:**
+
+| File                       | Purpose                                      |
+| -------------------------- | -------------------------------------------- |
+| `architecture-rules.yml`   | Component dependency rules                   |
+| `exclusions.yml`           | (Future) Methods/files excluded from gates   |
+| `quality-gates-config.yml` | (Future) Master config: thresholds, defaults |
+
+**Generated artifacts** go to `/tmp/` and are never committed:
+
+| File                     | Purpose                                  |
+| ------------------------ | ---------------------------------------- |
+| `/tmp/coverage-data.xml` | Cobertura coverage XML for CRAP analysis |
+
+**CLI subcommands:**
+
+| Subcommand     | Purpose                                              |
+| -------------- | ---------------------------------------------------- |
+| `crap`         | Complexity Risk Analysis (kept — industry acronym)   |
+| `scrap`        | Structural Code Analysis (kept — industry acronym)   |
+| `architecture` | Dependency architecture validation                 |
+| `mutation`     | Mutation testing                                     |
+| `duplicates`   | Duplicate code detection                             |
+| `all`          | Run all gates with defaults                          |
+
+**CLI flags:**
+
+| Flag                    | Purpose                          |
+| ----------------------- | -------------------------------- |
+| `--architecture-config` | Path to `architecture-rules.yml` |
+| `--mutation-source`     | Source file for mutation testing |
+| `--mutation-scan`       | Scan-only mutation mode          |
+| `--duplicates`          | Enable duplicate detection gate  |
+
+Generated artifact names describe the data, not the tool that produced it
+(`coverage-data.xml` not `quality-gates-coverage.xml`).
