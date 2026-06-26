@@ -26,8 +26,8 @@ public partial class App
         // Mark the boundary between WASM runtime ready and Blazor initialization
         _ = JSRuntime.InvokeVoidAsync("eval", "window.pageLoadSpeed && window.pageLoadSpeed.wasmMetrics && window.pageLoadSpeed.wasmMetrics.markBlazorStart()").AsTask();
 
-        // Fire-and-forget warm-up of Azure Functions
-        _ = Task.Run(() => WarmupService.WarmupAsync());
+        // Best-effort warm-up of Azure Functions; failure does not block startup
+        _ = WarmupService.TryWarmupAsync();
 
         return base.OnInitializedAsync();
     }

@@ -4,18 +4,17 @@ public class WarmupService(IHttpClientFactory httpClientFactory) : IWarmupServic
 {
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
 
-    public async Task WarmupAsync()
+    public async Task<bool> TryWarmupAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            // Fire-and-forget call to wake up the Azure Functions
             using var httpClient = _httpClientFactory.CreateClient();
-            using var response = await httpClient.GetAsync("/api/HelloWorld").ConfigureAwait(false);
-            // Intentionally not checking response - this is just to wake up the functions
+            using var response = await httpClient.GetAsync("/api/HelloWorld", cancellationToken).ConfigureAwait(false);
+            return true;
         }
-        catch
+        catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException)
         {
-            // Silent fail - we don't want warmup issues to break the app
+            return false;
         }
     }
 }
