@@ -36,7 +36,7 @@ public partial class Home
         EventId = 6,
         Level = LogLevel.Information,
         Message = "Dummy API call status: {StatusCode}")]
-    private static partial void LogApiCallStatus(ILogger logger, string statusCode);
+    private static partial void LogApiCallStatus(ILogger logger, int statusCode);
 
     [LoggerMessage(
         EventId = 7,
@@ -53,14 +53,14 @@ public partial class Home
     [LoggerMessage(
         EventId = 9,
         Level = LogLevel.Information,
-        Message = "Cascading parameter changed: {ParameterName}")]
-    private static partial void LogCascadingParameterChanged(ILogger logger, string parameterName);
+        Message = "Cascading parameter changed: AppTheme: {AppTheme}")]
+    private static partial void LogCascadingParameterChanged(ILogger logger, string appTheme);
 
     [LoggerMessage(
         EventId = 10,
         Level = LogLevel.Information,
         Message = "Authorization state changed: {IsAuthenticated}")]
-    private static partial void LogAuthorizationStateChanged(ILogger logger, string isAuthenticated);
+    private static partial void LogAuthorizationStateChanged(ILogger logger, bool isAuthenticated);
 
     [LoggerMessage(
         EventId = 11,

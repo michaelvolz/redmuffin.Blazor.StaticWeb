@@ -4,10 +4,6 @@ using Blazored.LocalStorage;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Features.DebugPage.Models;
 
-// CA1873: All log calls in this file use [LoggerMessage] source-gen delegates
-// defined in LocalStorageDebugService.Logging.cs, which include IsEnabled guards.
-#pragma warning disable CA1873
-
 namespace redmuffin.Blazor.StaticWeb.Features.DebugPage.Services;
 
 /// <summary>
@@ -54,11 +50,12 @@ public partial class LocalStorageDebugService
             // Check existing cache keys
             diagnostics.ExistingCacheKeys = await GetExistingCacheKeysAsync(cancellationToken).ConfigureAwait(false);
 
+            var usedBytesMb = diagnostics.StorageInfo?.UsedBytes / (1024.0 * 1024.0) ?? 0;
             LogDiagnosticsCompleted(
                 _logger,
                 diagnostics.IsLocalStorageAvailable,
                 diagnostics.IsBlazoredServiceWorking,
-                (diagnostics.StorageInfo?.UsedBytes / (1024.0 * 1024.0) ?? 0).ToString(CultureInfo.InvariantCulture));
+                usedBytesMb);
         }
         catch (Exception ex)
         {

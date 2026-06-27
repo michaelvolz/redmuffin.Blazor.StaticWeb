@@ -5,8 +5,8 @@ public partial class LocalStorageDebugService
     [LoggerMessage(
         EventId = 1,
         Level = LogLevel.Information,
-        Message = "LocalStorage diagnostics completed: Available={IsAvailable}, BlazoredWorking={BlazoredWorking}, UsedStorage={UsedBytes}MB")]
-    private static partial void LogDiagnosticsCompleted(ILogger logger, bool isAvailable, bool blazoredWorking, string usedBytes);
+        Message = "LocalStorage diagnostics completed: Available={IsAvailable}, BlazoredWorking={BlazoredWorking}, UsedStorage={UsedBytesMb:F2}MB")]
+    private static partial void LogDiagnosticsCompleted(ILogger logger, bool isAvailable, bool blazoredWorking, double usedBytesMb);
 
     [LoggerMessage(
         EventId = 2,

@@ -2,11 +2,6 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using redmuffin.Blazor.StaticWeb.Core.Abstractions;
 
-// CA1873: Analyzer cannot detect [LoggerMessage] source-gen methods defined in
-// separate partial file (Home.Logging.cs). All log calls in this file use source-gen
-// delegates that already include IsEnabled guards — no wasted argument evaluation.
-#pragma warning disable CA1873
-
 namespace redmuffin.Blazor.StaticWeb.Features.HomePage;
 
 public partial class Home : ComponentBase
@@ -95,7 +90,7 @@ public partial class Home : ComponentBase
         LogOnParametersSetAsyncCalled(Logger);
 
         // Log cascading parameter changes
-        LogCascadingParameterChanged(Logger, $"AppTheme: {AppTheme}");
+        LogCascadingParameterChanged(Logger, AppTheme);
 
         // Handle authentication state changes
         if (AuthenticationState != null)
@@ -110,7 +105,7 @@ public partial class Home : ComponentBase
 #pragma warning restore VSTHRD003 // Calling method isn't async
                 IsAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
                 CurrentUserName = authState.User.Identity?.Name;
-                LogAuthorizationStateChanged(Logger, IsAuthenticated.ToString());
+                LogAuthorizationStateChanged(Logger, IsAuthenticated);
             }
             catch (Exception ex)
             {
@@ -146,7 +141,7 @@ public partial class Home : ComponentBase
         try
         {
             var response = await client.GetAsync("https://example.com").ConfigureAwait(false);
-            LogApiCallStatus(Logger, response.StatusCode.ToString());
+            LogApiCallStatus(Logger, (int)response.StatusCode);
             StatusMessage = $"API call completed with status: {response.StatusCode}";
         }
         catch (Exception ex)

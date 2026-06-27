@@ -5,9 +5,6 @@ using redmuffin.Blazor.StaticWeb.Configuration;
 using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Models;
 using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Services;
 
-// CA1873: Log calls use [LoggerMessage] delegates from AppStartMetricsView.Logging.cs with IsEnabled guards.
-#pragma warning disable CA1873
-
 namespace redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Components;
 
 /// <summary>

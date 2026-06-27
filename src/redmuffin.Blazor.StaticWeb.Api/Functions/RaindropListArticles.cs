@@ -5,8 +5,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using redmuffin.Blazor.StaticWeb.Api.Core;
 
-#pragma warning disable CA1816, SA1204
-
 namespace redmuffin.Blazor.StaticWeb.Api.Functions;
 
 public sealed partial class RaindropListArticles(ILogger<RaindropListArticles> logger, IOptions<Settings> settings, IHttpClientFactory httpClientFactory)

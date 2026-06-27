@@ -2,10 +2,6 @@ using System.Security.Cryptography;
 using System.Text;
 using Blazored.LocalStorage;
 
-// CA1873: All log calls in this file use [LoggerMessage] source-gen delegates
-// defined in BrowserStorageService.Logging.cs, which include IsEnabled guards.
-#pragma warning disable CA1873
-
 namespace redmuffin.Blazor.StaticWeb.Core.Services;
 
 public partial class BrowserStorageService(ILocalStorageService localStorage, ILogger<BrowserStorageService> logger) : IBrowserStorageService
@@ -181,7 +177,10 @@ public partial class BrowserStorageService(ILocalStorageService localStorage, IL
         }
 
         if (evictedCount > 0)
-            LogLRUEvictionCompleted(logger, evictedCount, sortedItems.Take(evictedCount).Sum(item => item.Size));
+        {
+            var freedSize = sortedItems.Take(evictedCount).Sum(item => item.Size);
+            LogLRUEvictionCompleted(logger, evictedCount, freedSize);
+        }
 
         return evictedCount;
     }
