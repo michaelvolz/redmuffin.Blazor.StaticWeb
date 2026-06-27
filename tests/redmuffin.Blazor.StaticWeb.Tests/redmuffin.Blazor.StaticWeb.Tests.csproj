@@ -21,6 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AngleSharp" VersionOverride="1.5.1" />
     <PackageReference Include="bunit" />
     <PackageReference Include="LightMock.Generator" />
     <PackageReference Include="TUnit" />
