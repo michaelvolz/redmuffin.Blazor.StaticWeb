@@ -27,7 +27,10 @@ public sealed partial class ArticlesPageCacheTests
         scope.RaindropAPI_Mock.SetupDelay(300); // Add delay to test multiple clicks
 
         var component = scope.Context.Render<Articles>();
-        await Task.Delay(200).ConfigureAwait(false); // Allow background refresh to show badge
+
+        // Await background refresh completion deterministically — the mock has SetupDelay(300)
+        if (component.Instance.BackgroundRefreshTask is { } refreshTask)
+            await refreshTask.ConfigureAwait(false);
 
         // Act
         // Wait for background refresh to show badge (data differs)
@@ -71,7 +74,6 @@ public sealed partial class ArticlesPageCacheTests
 
         // Act
         var component = scope.Context.Render<Articles>();
-        await Task.Delay(100).ConfigureAwait(false); // Allow component to load
 
         // Assert
         using (Assert.Multiple())
@@ -100,7 +102,6 @@ public sealed partial class ArticlesPageCacheTests
 
         // Act
         var component = scope.Context.Render<Articles>();
-        await Task.Delay(50).ConfigureAwait(false); // Allow component to initialize
 
         // Assert
         using (Assert.Multiple())
@@ -131,7 +132,10 @@ public sealed partial class ArticlesPageCacheTests
 
         // Act
         var component = scope.Context.Render<Articles>();
-        await Task.Delay(200).ConfigureAwait(false); // Allow background refresh to complete
+
+        // Await background refresh completion deterministically — zero polling, zero delay
+        if (component.Instance.BackgroundRefreshTask is { } refreshTask)
+            await refreshTask.ConfigureAwait(false);
 
         // Assert
         var refreshBadge = component.Find(".refresh-badge");

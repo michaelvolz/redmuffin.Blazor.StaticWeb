@@ -27,7 +27,6 @@ public partial class ArticlesPageCacheTests
 
         // Act
         var component = scope.Context.Render<Articles>();
-        await Task.Delay(200).ConfigureAwait(false); // Allow background refresh to complete
 
         // Assert
         await Assert.That(component.FindAll(".refresh-badge")).IsEmpty();

@@ -28,15 +28,9 @@ public sealed partial class ArticlesPageCacheTests
 
         var component = scope.Context.Render<Articles>();
 
-        // Wait for background refresh to show badge (different data detected)
-        for (var i = 0; i < 50; i++)
-        {
-            await Task.Delay(100).ConfigureAwait(false);
-            component.Render(); // Force re-render to pick up async state changes
-            var badges = component.FindAll(".refresh-badge");
-            if (badges.Count > 0 && badges[0].GetAttribute("class")?.Contains("refresh-badge--visible") == true)
-                break;
-        }
+        // Await background refresh completion deterministically — zero polling, zero delay
+        if (component.Instance.BackgroundRefreshTask is { } refreshTask)
+            await refreshTask.ConfigureAwait(false);
 
         // Verify refresh badge is visible
         var refreshBadge = component.Find(".refresh-badge");
@@ -44,17 +38,6 @@ public sealed partial class ArticlesPageCacheTests
 
         // Act - Click refresh badge
         await refreshBadge.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
-
-        // Wait for refresh operation to complete
-        for (var i = 0; i < 50; i++)
-        {
-            await Task.Delay(100).ConfigureAwait(false);
-            component.Render();
-            var badges = component.FindAll(".refresh-badge");
-            if (badges.Count == 0) break; // badge disappeared = Hidden (refresh complete)
-            var classes = badges[0].GetAttribute("class");
-            if (classes != null && !classes.Contains("refresh-badge--loading")) break;
-        }
 
         // Assert - Verify no error state
         await Assert.That(component.Markup).DoesNotContain("refresh-badge--error");
@@ -79,12 +62,14 @@ public sealed partial class ArticlesPageCacheTests
         scope.RaindropAPI_Mock.SetupArticles(freshArticles);
 
         var component = scope.Context.Render<Articles>();
-        await Task.Delay(200).ConfigureAwait(false); // Allow background refresh to show badge
+
+        // Await background refresh completion deterministically — zero polling, zero delay
+        if (component.Instance.BackgroundRefreshTask is { } refreshTask)
+            await refreshTask.ConfigureAwait(false);
 
         // Act
         var refreshBadge = component.Find(".refresh-badge");
         await refreshBadge.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
-        await Task.Delay(100).ConfigureAwait(false); // Allow refresh to complete
 
         // Assert
         using (Assert.Multiple())

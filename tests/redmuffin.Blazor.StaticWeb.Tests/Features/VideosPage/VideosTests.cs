@@ -26,7 +26,6 @@ public sealed partial class VideosTests
 
         // Act
         var component = scope.BUnitContext.Render<Videos>();
-        await Task.Delay(100).ConfigureAwait(false); // Allow component to update
 
         // Assert
         await Assert.That(component.Markup).Contains("...");

@@ -198,6 +198,7 @@ public partial class VideosPageCacheTests
             _delayMs = milliseconds;
         }
 
+        [Slopwatch.SlopwatchSuppress("SW004", "Intentional latency injection for race-condition testing")]
         public async Task<IEnumerable<RaindropItem>> GetVideosAsync(CancellationToken cancellationToken = default)
         {
             if (_delayMs > 0) await Task.Delay(_delayMs, cancellationToken).ConfigureAwait(false);

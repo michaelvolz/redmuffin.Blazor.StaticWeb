@@ -14,20 +14,23 @@ public sealed partial class ArticlesApiVerification_Tests
 {
     private static readonly HttpStatusCode[] TransientStatuses = [HttpStatusCode.BadGateway, HttpStatusCode.ServiceUnavailable, HttpStatusCode.GatewayTimeout];
 
+    [Slopwatch.SlopwatchSuppress("SW004", "Genuine retry backoff for live API integration test")]
     private static async Task<(HttpResponseMessage Response, string Content)> GetWithRetryAsync(
         HttpClient client, string url, CancellationToken cancellationToken, int maxRetries = 3)
     {
-        for (int i = 0; i < maxRetries; i++)
+        for (var attempt = 0; attempt < maxRetries; attempt++)
         {
             var response = await client.GetAsync(url, cancellationToken).ConfigureAwait(false);
-            var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-
-            if (response.IsSuccessStatusCode || !TransientStatuses.Contains(response.StatusCode))
+            if (!TransientStatuses.Contains(response.StatusCode))
             {
+                var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
                 return (response, content);
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
+            if (attempt < maxRetries - 1)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
+            }
         }
 
         var finalResponse = await client.GetAsync(url, cancellationToken).ConfigureAwait(false);

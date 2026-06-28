@@ -24,7 +24,6 @@ public sealed partial class VideosTests
 
         // Act
         var component = scope.BUnitContext.Render<Videos>();
-        await Task.Delay(100).ConfigureAwait(false); // Allow component to update
 
         // Assert
         await Assert.That(component.FindAll(".video-card")).Count().IsEqualTo(1);
@@ -46,7 +45,6 @@ public sealed partial class VideosTests
 
         // Act
         var component = scope.BUnitContext.Render<Videos>();
-        await Task.Delay(100).ConfigureAwait(false); // Allow component to update
 
         // Assert
         await Assert.That(component.FindAll(".video-card")).Count().IsEqualTo(2);
@@ -68,7 +66,6 @@ public sealed partial class VideosTests
 
         // Act
         var component = scope.BUnitContext.Render<Videos>();
-        await Task.Delay(100).ConfigureAwait(false); // Allow component to update
 
         var image = component.Find("img");
         await image.TriggerEventAsync("onload", EventArgs.Empty).ConfigureAwait(false);
@@ -91,7 +88,6 @@ public sealed partial class VideosTests
 
         // Act
         var component = scope.BUnitContext.Render<Videos>();
-        await Task.Delay(100).ConfigureAwait(false); // Allow component to update
 
         // Assert - Verify that the underlying services were called
         // Note: These assertions need to be updated to work with the manual mock
@@ -115,7 +111,6 @@ public sealed partial class VideosTests
 
         // Act
         var component = scope.BUnitContext.Render<Videos>();
-        await Task.Delay(100).ConfigureAwait(false); // Allow component to update
 
         // Assert
         await Assert.That(component.FindAll(".video-card")).Count().IsEqualTo(1);

@@ -23,7 +23,6 @@ public sealed partial class ArticlesPageCacheTests
 
         // Act
         var component = scope.Context.Render<Articles>();
-        await Task.Delay(100).ConfigureAwait(false); // Allow component to load
 
         // Assert
         using (Assert.Multiple())

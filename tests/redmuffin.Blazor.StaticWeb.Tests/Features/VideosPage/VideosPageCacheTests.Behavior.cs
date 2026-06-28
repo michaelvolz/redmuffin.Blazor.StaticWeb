@@ -23,7 +23,6 @@ public sealed partial class VideosPageCacheTests
 
         // Act
         var component = scope.Context.Render<Videos>();
-        await Task.Delay(50).ConfigureAwait(false); // Allow component to initialize
 
         // Assert
         using (Assert.Multiple())
@@ -54,7 +53,10 @@ public sealed partial class VideosPageCacheTests
 
         // Act
         var component = scope.Context.Render<Videos>();
-        await Task.Delay(200).ConfigureAwait(false); // Allow background refresh to complete
+
+        // Await background refresh completion deterministically — zero polling, zero delay
+        if (component.Instance.BackgroundRefreshTask is { } refreshTask)
+            await refreshTask.ConfigureAwait(false);
 
         // Assert
         var refreshBadge = component.Find(".refresh-badge");

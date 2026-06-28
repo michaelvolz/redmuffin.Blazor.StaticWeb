@@ -205,6 +205,7 @@ public partial class ArticlesPageCacheTests
             _preventDoubleRefresh = prevent;
         }
 
+        [Slopwatch.SlopwatchSuppress("SW004", "Intentional latency injection for race-condition testing")]
         public async Task<IEnumerable<RaindropItem>> GetArticlesAsync(CancellationToken cancellationToken = default)
         {
             if (_preventDoubleRefresh && _refreshInProgress) throw new InvalidOperationException("Double refresh prevented");

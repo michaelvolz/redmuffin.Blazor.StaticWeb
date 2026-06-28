@@ -265,6 +265,7 @@ public partial class HomeTests
     // ✅ OPTIMIZED: Fast timeout handler (100ms instead of 60 seconds)
     public sealed class HttpMessageHandler_FastTimeoutMock : HttpMessageHandler
     {
+        [Slopwatch.SlopwatchSuppress("SW004", "Intentional timeout simulation for fast-fail testing")]
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             // ✅ FAST: Use 100ms timeout instead of 1 minute for test performance

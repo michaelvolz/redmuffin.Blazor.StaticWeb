@@ -17,8 +17,6 @@ public sealed partial class ArticlesTests
         // Act
         var component = scope.BUnitContext.Render<ArticlesComponent>();
 
-        // Wait for initial load
-        await Task.Delay(100).ConfigureAwait(false);
         component.Render();
 
         // Trigger another fetch (if there's a refresh button or similar)
@@ -46,8 +44,6 @@ public sealed partial class ArticlesTests
         // Act
         var component = scope.BUnitContext.Render<ArticlesComponent>();
 
-        // Wait for component to finish loading
-        await Task.Delay(100).ConfigureAwait(false);
         component.Render();
 
         // Assert
@@ -74,8 +70,6 @@ public sealed partial class ArticlesTests
         // Act
         var component = scope.BUnitContext.Render<ArticlesComponent>();
 
-        // Wait for component to finish loading
-        await Task.Delay(100).ConfigureAwait(false);
         component.Render();
 
         // Assert
@@ -98,8 +92,6 @@ public sealed partial class ArticlesTests
         // Act
         var component = scope.BUnitContext.Render<ArticlesComponent>();
 
-        // Wait for component to finish loading
-        await Task.Delay(100).ConfigureAwait(false);
         component.Render();
 
         // Try to find and trigger image load events
@@ -128,8 +120,6 @@ public sealed partial class ArticlesTests
         // Act
         var component = scope.BUnitContext.Render<ArticlesComponent>();
 
-        // Wait for component to finish loading and populate cache
-        await Task.Delay(100).ConfigureAwait(false);
         component.Render();
 
         // Assert

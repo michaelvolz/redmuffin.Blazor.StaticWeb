@@ -23,7 +23,6 @@ public sealed partial class VideosPageCacheTests
 
         // Act
         var component = scope.Context.Render<Videos>();
-        await Task.Delay(100).ConfigureAwait(false); // Allow component to load
 
         // Assert
         using (Assert.Multiple())
@@ -49,7 +48,6 @@ public sealed partial class VideosPageCacheTests
 
         // Act
         var component = scope.Context.Render<Videos>();
-        await Task.Delay(100).ConfigureAwait(false); // Allow component to load
 
         // Assert
         using (Assert.Multiple())

@@ -17,8 +17,6 @@ public partial class ArticlesTests
         // Act
         var component = scope.BUnitContext.Render<ArticlesComponent>();
 
-        // Wait for component to finish loading
-        await Task.Delay(100).ConfigureAwait(false);
         component.Render();
 
         // Assert
@@ -42,8 +40,6 @@ public partial class ArticlesTests
         // Act
         var component = scope.BUnitContext.Render<ArticlesComponent>();
 
-        // Wait for component to finish loading
-        await Task.Delay(100).ConfigureAwait(false);
         component.Render();
 
         // Assert
@@ -101,8 +97,6 @@ public partial class ArticlesTests
         // Act
         var component = scope.BUnitContext.Render<ArticlesComponent>();
 
-        // Wait for component to finish loading
-        await Task.Delay(100).ConfigureAwait(false);
         component.Render();
 
         // Assert
@@ -125,8 +119,6 @@ public partial class ArticlesTests
         // Act
         var component = scope.BUnitContext.Render<ArticlesComponent>();
 
-        // Wait for component to finish loading
-        await Task.Delay(100).ConfigureAwait(false);
         component.Render();
 
         // Assert

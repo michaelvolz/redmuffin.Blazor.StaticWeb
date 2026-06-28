@@ -15,12 +15,8 @@ public sealed partial class ArticlesTests
         // Act
         var component = scope.BUnitContext.Render<ArticlesComponent>();
 
-        // Wait for initial state
-        await Task.Delay(50).ConfigureAwait(false);
         var initialMarkup = component.Markup;
 
-        // Wait for loading to complete
-        await Task.Delay(100).ConfigureAwait(false);
         component.Render();
         var finalMarkup = component.Markup;
 

@@ -16,8 +16,6 @@ public sealed partial class ArticlesTests
         // Act
         var component = scope.BUnitContext.Render<ArticlesComponent>();
 
-        // Wait for component to finish loading and handle the error
-        await Task.Delay(100).ConfigureAwait(false);
         component.Render();
 
         // Assert
