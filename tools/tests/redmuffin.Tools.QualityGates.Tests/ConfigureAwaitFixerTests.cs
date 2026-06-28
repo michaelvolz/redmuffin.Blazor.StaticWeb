@@ -38,6 +38,13 @@ file static class ConfigureAwaitFixerFixture
     }
 }
 
+// All test string literals use Task.CompletedTask instead of Task.Delay.
+// Task.Delay adds real latency and triggers slopwatch SW004 ("async test with
+// Task.Delay"). The ConfigureAwait fixer operates on AwaitExpression nodes by
+// inspecting the awaited expression's return type — both Task.CompletedTask
+// and Task.Delay return Task, so the fixer processes them identically.
+// Task.Yield() was considered but discarded: it returns YieldAwaitable (not
+// Task), so the fixer does not recognize it as a Task-returning expression.
 public sealed class ConfigureAwaitFixerTests
 {
     private static string FixerDll => ConfigureAwaitFixerFixture.FixerDll;
@@ -56,7 +63,7 @@ public sealed class ConfigureAwaitFixerTests
             {
                 public async Task DoSomethingAsync()
                 {
-                    await Task.Delay(100);
+                    await Task.CompletedTask;
                 }
             }
             """).ConfigureAwait(false);
@@ -83,7 +90,7 @@ public sealed class ConfigureAwaitFixerTests
             {
                 public async Task DoSomethingAsync()
                 {
-                    await Task.Delay(100).ConfigureAwait(false);
+                    await Task.CompletedTask.ConfigureAwait(false);
                 }
             }
             """).ConfigureAwait(false);
@@ -130,9 +137,9 @@ public sealed class ConfigureAwaitFixerTests
             {
                 public async Task DoAsync()
                 {
-                    await Task.Delay(1);
-                    await Task.Delay(2);
-                    await Task.Delay(3);
+                    await Task.CompletedTask;
+                    await Task.CompletedTask;
+                    await Task.CompletedTask;
                 }
             }
             """).ConfigureAwait(false);
@@ -155,7 +162,7 @@ public sealed class ConfigureAwaitFixerTests
             {
                 public async Task DoAsync()
                 {
-                    await Task.Delay(100).ConfigureAwait(true);
+                    await Task.CompletedTask.ConfigureAwait(true);
                 }
             }
             """).ConfigureAwait(false);

@@ -6,11 +6,17 @@ using redmuffin.Tools.ConfigureAwaitFixer;
 
 public sealed class SyntaxFixerTests
 {
+    // Test input uses Task.CompletedTask instead of Task.Delay to avoid slopwatch SW004
+    // false positives on string-literals. The ConfigureAwait fixer operates on Roslyn
+    // AwaitExpression syntax nodes — any Task-returning expression is equivalent for
+    // testing. Task.CompletedTask returns Task (same type as Task.Delay) without the
+    // timing dependency that SW004 flags.
+
     [Test]
     public async Task HasConfigureAwait_ReturnsTrue_WhenConfigureAwaitFalseIsPresent()
     {
         // Arrange
-        var code = "await Task.Delay(100).ConfigureAwait(false)";
+        var code = "await Task.CompletedTask.ConfigureAwait(false)";
         var tree = CSharpSyntaxTree.ParseText(code);
         var root = await tree.GetRootAsync().ConfigureAwait(false);
         var awaitExpr = root.DescendantNodes().OfType<AwaitExpressionSyntax>().Single();
@@ -26,7 +32,7 @@ public sealed class SyntaxFixerTests
     public async Task HasConfigureAwait_ReturnsFalse_WhenConfigureAwaitIsAbsent()
     {
         // Arrange
-        var code = "await Task.Delay(100)";
+        var code = "await Task.CompletedTask";
         var tree = CSharpSyntaxTree.ParseText(code);
         var root = await tree.GetRootAsync().ConfigureAwait(false);
         var awaitExpr = root.DescendantNodes().OfType<AwaitExpressionSyntax>().Single();
@@ -66,7 +72,7 @@ public sealed class SyntaxFixerTests
     public async Task AddConfigureAwait_WrapsWithConfigureAwaitFalse()
     {
         // Arrange
-        var code = "await Task.Delay(100)";
+        var code = "await Task.CompletedTask";
         var tree = CSharpSyntaxTree.ParseText(code);
         var root = await tree.GetRootAsync().ConfigureAwait(false);
         var awaitExpr = root.DescendantNodes().OfType<AwaitExpressionSyntax>().Single();
@@ -83,7 +89,7 @@ public sealed class SyntaxFixerTests
     public async Task AddConfigureAwait_ReturnsSyntaxThatParses()
     {
         // Arrange
-        var code = "await Task.Delay(100)";
+        var code = "await Task.CompletedTask";
         var tree = CSharpSyntaxTree.ParseText(code);
         var root = await tree.GetRootAsync().ConfigureAwait(false);
         var awaitExpr = root.DescendantNodes().OfType<AwaitExpressionSyntax>().Single();

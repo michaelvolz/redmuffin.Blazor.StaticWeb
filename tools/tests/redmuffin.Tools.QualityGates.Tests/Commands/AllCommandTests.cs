@@ -145,9 +145,12 @@ public sealed class AllCommandTests
     [Test]
     public async Task ProjectDir_should_strip_csproj_extension()
     {
-        var result = AllCommand.ProjectDir("/some/path/project.csproj");
+        var projectPath = Path.Combine("some", "path", "project.csproj");
+        var expected = Path.Combine("some", "path");
 
-        await Assert.That(result).IsEqualTo("/some/path");
+        var result = AllCommand.ProjectDir(projectPath);
+
+        await Assert.That(result).IsEqualTo(expected);
     }
 
     [Test]

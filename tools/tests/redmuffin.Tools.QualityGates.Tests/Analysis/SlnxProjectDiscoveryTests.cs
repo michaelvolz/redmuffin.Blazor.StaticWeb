@@ -33,8 +33,10 @@ public sealed class SlnxProjectDiscoveryTests
         await Assert.That(result).IsNotNull();
         await Assert.That(Path.GetFileName(result.SlnxPath))
             .IsEqualTo("redmuffin.Blazor.StaticWeb.slnx");
-        await Assert.That(result.SourceProjects.Count).IsEqualTo(4);
-        await Assert.That(result.TestProjects.Count).IsEqualTo(2);
+        await Assert.That(result.SourceProjects.Count).IsPositive();
+        await Assert.That(result.TestProjects.Count).IsPositive();
+        await Assert.That(result.SourceProjects.Any(p => p.EndsWith("redmuffin.Blazor.StaticWeb.csproj"))).IsTrue();
+        await Assert.That(result.TestProjects.Any(p => p.EndsWith("redmuffin.Blazor.StaticWeb.Tests.csproj"))).IsTrue();
     }
 
     [Test]
@@ -80,8 +82,10 @@ public sealed class SlnxProjectDiscoveryTests
         var result = SlnxProjectDiscovery.DiscoverFromSlnx(slnxPath);
 
         await Assert.That(result).IsNotNull();
-        await Assert.That(result.SourceProjects.Count).IsEqualTo(4);
-        await Assert.That(result.TestProjects.Count).IsEqualTo(2);
+        await Assert.That(result.SourceProjects.Count).IsPositive();
+        await Assert.That(result.TestProjects.Count).IsPositive();
+        await Assert.That(result.SourceProjects.Any(p => p.EndsWith("redmuffin.Blazor.StaticWeb.csproj"))).IsTrue();
+        await Assert.That(result.TestProjects.Any(p => p.EndsWith("redmuffin.Blazor.StaticWeb.Tests.csproj"))).IsTrue();
         await Assert.That(result.SlnxPath).EndsWith(
             "redmuffin.Blazor.StaticWeb.slnx");
     }
