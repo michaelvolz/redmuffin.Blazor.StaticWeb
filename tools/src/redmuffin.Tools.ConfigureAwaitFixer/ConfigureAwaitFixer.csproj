@@ -11,6 +11,7 @@
     <PackageId>redmuffin.Tools.ConfigureAwaitFixer</PackageId>
     <Version>1.0.2</Version>
     <DevelopmentDependency>true</DevelopmentDependency>
+    <!-- slopwatch-ignore: SW005 [NuGet packaging warning for development-dependency analyzer packages; nuspec structure inherently triggers NU5128] -->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <PackageReadmeFile>README.md</PackageReadmeFile>

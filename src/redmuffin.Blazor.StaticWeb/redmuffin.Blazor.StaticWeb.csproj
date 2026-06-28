@@ -13,6 +13,7 @@
     <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
     <!-- WASM0001: false positive from MSBuild framework P/Invoke in inline C# tasks.
          GetModuleFileName is in build-only assemblies, never shipped to browser. -->
+    <!-- slopwatch-ignore: SW005 [MSBuild false positive: P/Invoke in build-only inline tasks, never shipped to browser] -->
     <NoWarn>$(NoWarn);WASM0001</NoWarn>
     <!-- WASM SIMD, exception handling, and JITerpreter disabled for Safari < 16.4
          (iOS 15, macOS 12). All three must change together — same browser cutoff.

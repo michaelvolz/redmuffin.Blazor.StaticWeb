@@ -21,6 +21,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\src\SlopwatchSuppressions\SlopwatchSuppressAttribute.cs" Link="SlopwatchSuppressAttribute.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="bunit" />
     <PackageReference Include="LightMock.Generator" />
     <PackageReference Include="TUnit" />

@@ -13,7 +13,11 @@
     <!-- Code Coverage: Use TUnit native CLI (see Generate-CoverageReport.ps1) -->
     <DoesNotReturnAttribute>DoesNotReturnAttribute</DoesNotReturnAttribute>
   </PropertyGroup>
-<ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\src\SlopwatchSuppressions\SlopwatchSuppressAttribute.cs" Link="SlopwatchSuppressAttribute.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Core" />
     <!-- Microsoft.Azure.Functions.Worker.Sdk intentionally NOT referenced here.
          The SDK hijacks dotnet run to launch func start instead of the test host.

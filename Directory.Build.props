@@ -119,6 +119,7 @@
     <Watch Include="appsettings*.json" />
   </ItemGroup>
   <PropertyGroup>
+    <!-- slopwatch-ignore: SW005 [MSBuild infrastructure noise: 1701/1702 binding redirects, CA1014 CLSCompliant not targeted, AD0001 analyzer crash guard] -->
     <NoWarn>1701;1702;CA1014;AD0001</NoWarn>
     <WarningsAsErrors>Nullable</WarningsAsErrors>
     <!-- TreatWarningsAsErrors is conditionally disabled during dotnet watch
