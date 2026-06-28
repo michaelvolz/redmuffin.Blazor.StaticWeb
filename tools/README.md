@@ -12,10 +12,28 @@ insufficient — it must be paired with cyclomatic complexity (CRAP score),
 mutation kill rate, structural test analysis (SCRAP), and dependency
 architecture checks.
 
-This toolchain automates all six gates as a single, unified command:
-`dotnet run -- all`.
+This toolchain automates all seven gates as a single command sequence:
+`slopwatch analyze && dotnet run -- all`.
 
 ## Gates
+
+### Pre-Gate: Slopwatch (LLM Anti-Cheat)
+
+Runs before all other gates. A global dotnet tool that catches LLM reward-hacking
+patterns (disabled tests, warning suppression, arbitrary delays, empty catches,
+project file slop). Runs in ~0.5s on 434 files.
+
+```bash
+slopwatch analyze -d . --fail-on warning
+```
+
+| Gate         | Tool          | Description                                                                          | Exit Codes                          |
+| ------------ | ------------- | ------------------------------------------------------------------------------------ | ----------------------------------- |
+| **Slopwatch** | `slopwatch`   | LLM anti-cheat — 6 rules detecting reward-hacking patterns in code and project files | 0=pass, 1=issues≥fail-on, 2=hook fail |
+
+[Full analysis and exception policy](../docs/solutions/tooling-decisions/slopwatch-integration-analysis.md)
+
+### Main Gates (Quality Gates Toolchain)
 
 | Gate             | Subcommand     | Description                                                                                                     | Exit Codes                |
 | ---------------- | -------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------- |
@@ -25,7 +43,7 @@ This toolchain automates all six gates as a single, unified command:
 | **Depth**        | `depth`        | Structural quality — detects shallow methods, parameter bloat, wrong abstractions, and entanglement             | 0=pass, 2=fail, 1=error   |
 | **Mutation**     | `mutation`     | 6 mutation categories (19 rules). In-place source mutation via Roslyn. Differential mode via JSON manifest.     | 0=pass, 1=error           |
 | **Duplicates**   | `duplicates`   | Structural duplicate detection. Roslyn tree normalization, pairwise Jaccard similarity (threshold 0.82).        | 0=pass, 1=error, 2=breach |
-| **All**          | `all`          | Runs all gates in sequence. All gates execute regardless of failures (run-all policy). Returns worst exit code. | worst of all gates        |
+| **All**          | `all`          | Runs all 6 main gates in sequence. All gates execute regardless of failures (run-all policy). Returns worst exit code. | worst of all gates        |
 
 ## Usage
 
