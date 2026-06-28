@@ -97,11 +97,7 @@ public partial class Home : ComponentBase
             try
             {
 #pragma warning disable VSTHRD003 // Calling method isn't async
-#pragma warning disable MA0004 // Use ConfigureAwait(false)
-#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
-                var authState = await AuthenticationState;
-#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
-#pragma warning restore MA0004 // Use ConfigureAwait(false)
+                var authState = await AuthenticationState.ConfigureAwait(false);
 #pragma warning restore VSTHRD003 // Calling method isn't async
                 IsAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
                 CurrentUserName = authState.User.Identity?.Name;

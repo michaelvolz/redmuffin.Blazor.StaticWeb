@@ -32,6 +32,12 @@ public partial class Articles
         _raindropItemsCache = raindropItemsCache ?? throw new ArgumentNullException(nameof(raindropItemsCache));
     }
 
+    /// <summary>
+    ///     Exposes the background refresh task so callers (including tests) can
+    ///     await initialization completion deterministically without polling or delays.
+    /// </summary>
+    public Task? BackgroundRefreshTask { get; private set; }
+
     protected override async Task OnInitializedAsync()
     {
         // Load cached data first for immediate display
@@ -45,7 +51,7 @@ public partial class Articles
 
         StateHasChanged();
 
-        _ = Task.Run(() => RaindropPageOrchestrator.RefreshInBackgroundAsync(
+        BackgroundRefreshTask = Task.Run(() => RaindropPageOrchestrator.RefreshInBackgroundAsync(
             _context, CacheKey, ct => _raindropAPI.GetArticlesAsync(ct),
             _raindropItemsCache, PopulateImageUrlCacheAsync,
             () => InvokeAsync(StateHasChanged), _logger));

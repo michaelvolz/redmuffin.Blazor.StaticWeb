@@ -47,6 +47,7 @@ public sealed record ArchConfig
         "Design",
         "CA1812",
         Justification = "Instantiated by YamlDotNet reflection via Deserialize<ArchConfigDto>")]
+    [Slopwatch.SlopwatchSuppress("SW002", "YamlDotNet reflection-instantiated DTO per ADR-0007")]
     internal sealed class ArchConfigDto
     {
         public Dictionary<string, List<string>>? AllowedDependencies { get; set; }

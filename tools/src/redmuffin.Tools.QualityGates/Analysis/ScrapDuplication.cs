@@ -341,3 +341,4 @@ public static class ScrapDuplication
         ICollection<DuplicationChannel> AllCaseMatrix,
         ICollection<DuplicationChannel> AllSubject);
 }
+#pragma warning restore CA1859

@@ -32,6 +32,12 @@ public partial class Videos
         _raindropItemsCache = raindropItemsCache ?? throw new ArgumentNullException(nameof(raindropItemsCache));
     }
 
+    /// <summary>
+    ///     Exposes the background refresh task so callers (including tests) can
+    ///     await initialization completion deterministically without polling or delays.
+    /// </summary>
+    public Task? BackgroundRefreshTask { get; private set; }
+
     protected override async Task OnInitializedAsync()
     {
         await RaindropPageOrchestrator.LoadCachedDataAsync(
@@ -45,7 +51,7 @@ public partial class Videos
 
         StateHasChanged();
 
-        _ = Task.Run(() => RaindropPageOrchestrator.RefreshInBackgroundAsync(
+        BackgroundRefreshTask = Task.Run(() => RaindropPageOrchestrator.RefreshInBackgroundAsync(
             _context, CacheKey, ct => _raindropAPI.GetVideosAsync(ct),
             _raindropItemsCache,
             () => _imageUrlResolver.PopulateImageUrlCacheAsync(
