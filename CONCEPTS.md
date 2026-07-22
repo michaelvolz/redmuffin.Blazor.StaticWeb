@@ -34,4 +34,20 @@ Mandatory pre-mutation discipline in this repo: externalize (1) provable problem
 
 Searchable archive of past solutions, bugs, best practices, and workflow patterns. Entries use YAML frontmatter (`module`, `tags`, `problem_type`, `date`, `component`, `severity`, track-specific fields) and are organized under category subdirectories (`tooling-decisions/`, `developer-experience/`, `workflow-issues/`, etc.). Relevant when implementing features, debugging, or making decisions in areas that already have documented learnings.
 
-*(Seeded from the 2026-06-20 Grok Build CLI Roslyn LSP Windows spawn + restart learning in tooling-decisions/ + prior session memory on agent harness enablement. Core nouns limited to the agent tooling / harness config area actually investigated.)*
+## Dual TFM stack
+
+Intentional multi-target layout for this solution: the Azure Static Web Apps Functions API remains on **net9.0** until the host supports .NET 10 Functions, while the Blazor WASM app, launcher, and most tools target **net10.0**. Shared libraries used by the API stay on net9. Package *versions* (for example Microsoft.Extensions on the 10.x line) can still apply to net9 projects when packages multi-target; dual TFM alone is not a reason to leave sibling packages in the same family on mismatched patches.
+
+## Shared Microsoft version property
+
+`MicrosoftExtensionsVersion` in `Directory.Packages.props` — the MSBuild property that pins the Blazor/Components (and related Extensions) package family to one version under Central Package Management so Dependabot or manual bumps move the whole family together—including compile-time packages such as Components.Analyzers that participate in the restore graph.
+
+## Central transitive pinning
+
+CPM setting that applies central package versions to **transitive** dependencies as well as direct references. Without it, a safer direct pin (for example AngleSharp) does not override a vulnerable version pulled by a test framework such as bunit.
+
+## Agent git boundary
+
+Rule for this team’s agents: durable git writes (branch, stage, commit, push, PR) are never part of an automated skill finish unless the human separately and explicitly requests them. Skills that stock-default into branch+PR (for example ce-compound-refresh Phase 5) are overridden via vendor overlays so trunk-based workflow stays human-owned.
+
+*(Seeded from the 2026-06-20 Grok Build CLI Roslyn LSP Windows spawn + restart learning in tooling-decisions/ + prior session memory on agent harness enablement. Package-management terms accreted from the 2026-07-22 NU1605/NU1902 CPM restore learning.)*
