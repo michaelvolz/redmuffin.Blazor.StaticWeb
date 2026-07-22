@@ -2,6 +2,7 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <PropertyGroup Label="SharedVersions">
     <MicrosoftExtensionsVersion>10.0.10</MicrosoftExtensionsVersion>
@@ -41,7 +42,7 @@
     <PackageVersion Include="Mediator.SourceGenerator" Version="$(MediatorVersion)" />
   </ItemGroup>
   <ItemGroup Label="AspNetCore">
-    <PackageVersion Include="Microsoft.AspNetCore.Components.Analyzers" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.Analyzers" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="$(MicrosoftExtensionsVersion)" />
@@ -87,6 +88,5 @@
     <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="$(RoslynatorVersion)" />
     <PackageVersion Include="StyleCop.Analyzers" Version="$(StyleCopAnalyzersVersion)" />
     <PackageVersion Include="AsyncFixer" Version="$(AsyncFixerVersion)" />
-    <PackageVersion Update="Microsoft.AspNetCore.Components.Analyzers" Version="10.0.9" />
   </ItemGroup>
 </Project>
