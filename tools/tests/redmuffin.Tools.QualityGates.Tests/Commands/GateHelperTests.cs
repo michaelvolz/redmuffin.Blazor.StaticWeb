@@ -26,14 +26,16 @@ public sealed class GateHelperTests
     {
         var toolsDir = Path.GetFullPath(
             Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".."));
-        var srcProject = Path.Combine(toolsDir, "src", "redmuffin.Tools.QualityGates");
+        var srcRoot = Path.Combine(toolsDir, "src");
         var configPath = Path.Combine(toolsDir, "quality-gates", "architecture-rules.yml");
 
         if (!File.Exists(configPath)) return;
 
-        var (exitCode, result) = ArchHandler.Run(configPath, srcProject);
-        await Assert.That(exitCode is 0 or 2).IsTrue();
-        await Assert.That(result.ExitCode is 0 or 2).IsTrue();
+        var (exitCode, result) = ArchHandler.Run(configPath, srcRoot);
+        await Assert.That(exitCode).IsEqualTo(0);
+        await Assert.That(result.ExitCode).IsEqualTo(0);
+        await Assert.That(result.Violations.Count).IsEqualTo(0);
+        await Assert.That(result.ProjectsScanned).IsEqualTo(2);
     }
 
     [Test]

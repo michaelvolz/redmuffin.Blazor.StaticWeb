@@ -1,8 +1,10 @@
 component-map:
   redmuffin.Tools.QualityGates: Tools
+  ConfigureAwaitFixer: Fixer
 
 allowed-dependencies:
   Tools: []
+  Fixer: []
 
 fail-on-cycles: true
 fail-on-violations: true
