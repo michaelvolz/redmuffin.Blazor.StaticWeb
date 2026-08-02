@@ -32,9 +32,12 @@ public static class MutationApplicator
         site.Category switch
         {
             MutationCategory.Arithmetic or MutationCategory.Comparison or MutationCategory.Equality
+                or MutationCategory.Logical
                 => MutateArithmeticOrRelational(node, site),
             MutationCategory.Boolean => MutateBoolean(node, site),
             MutationCategory.Conditional => MutateConditional(node),
+            MutationCategory.Unary => MutateUnaryStrip(node),
+            MutationCategory.NullRvalue => MutateNullRvalue(node),
             _ => MutateConstant(node),
         };
 
@@ -94,6 +97,27 @@ public static class MutationApplicator
                 SyntaxKind.NumericLiteralExpression,
                 SyntaxFactory.Literal(newValue))
                 .WithTriviaFrom(literal);
+        }
+
+        return node;
+    }
+
+    private static SyntaxNode MutateUnaryStrip(SyntaxNode node)
+    {
+        if (node is PrefixUnaryExpressionSyntax prefix)
+        {
+            return prefix.Operand.WithTriviaFrom(prefix);
+        }
+
+        return node;
+    }
+
+    private static SyntaxNode MutateNullRvalue(SyntaxNode node)
+    {
+        if (node is ExpressionSyntax expression)
+        {
+            return SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression)
+                .WithTriviaFrom(expression);
         }
 
         return node;

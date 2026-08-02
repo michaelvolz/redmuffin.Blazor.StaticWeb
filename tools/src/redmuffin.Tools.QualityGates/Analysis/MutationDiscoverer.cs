@@ -1,11 +1,30 @@
 namespace redmuffin.Tools.QualityGates.Analysis;
 
+using System.Collections.Frozen;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 public static class MutationDiscoverer
 {
+    /// <summary>
+    /// Syntactic shapes mutate4java treats as reference-like for null-rvalue
+    /// (no SemanticModel). Table-driven for O(1) membership and CC 1.
+    /// </summary>
+    private static readonly FrozenSet<SyntaxKind> ReferenceLikeKinds =
+        FrozenSet.ToFrozenSet(
+        [
+            SyntaxKind.StringLiteralExpression,
+            SyntaxKind.InterpolatedStringExpression,
+            SyntaxKind.ObjectCreationExpression,
+            SyntaxKind.ImplicitObjectCreationExpression,
+            SyntaxKind.ArrayCreationExpression,
+            SyntaxKind.ImplicitArrayCreationExpression,
+            SyntaxKind.CollectionExpression,
+            SyntaxKind.AnonymousObjectCreationExpression,
+            SyntaxKind.AsExpression,
+        ]);
+
     public static IReadOnlyList<MutationSite> FindSites(string source)
     {
         var tree = CSharpSyntaxTree.ParseText(source);
@@ -42,7 +61,54 @@ public static class MutationDiscoverer
                     AddMutationSite(node, rule);
                 }
             }
+
+            TryAddNullRvalueSite(node);
         }
+
+        /// <summary>
+        /// mutate4java null-rvalue: replace reference-typed RHS of return, assignment,
+        /// and variable initializers with null. Without a semantic model, only
+        /// expressions that are syntactically reference-like are candidates.
+        /// </summary>
+        private void TryAddNullRvalueSite(SyntaxNode node)
+        {
+            var expression = ExtractNullRvalueExpression(node);
+            if (expression is null || !IsReferenceLikeExpression(expression))
+            {
+                return;
+            }
+
+            if (expression.IsKind(SyntaxKind.NullLiteralExpression))
+            {
+                return;
+            }
+
+            var location = expression.GetLocation();
+            var lineSpan = location.GetLineSpan();
+            _sites.Add(new MutationSite(
+                Index: _sites.Count,
+                Category: MutationCategory.NullRvalue,
+                Line: lineSpan.StartLinePosition.Line,
+                Column: lineSpan.StartLinePosition.Character,
+                Description: "Replace expression with null",
+                OriginalKind: expression.Kind(),
+                MutantKind: SyntaxKind.NullLiteralExpression,
+                Node: expression));
+        }
+
+        private static ExpressionSyntax? ExtractNullRvalueExpression(SyntaxNode node) =>
+            node switch
+            {
+                ReturnStatementSyntax { Expression: { } expression } => expression,
+                AssignmentExpressionSyntax assignment
+                    when assignment.IsKind(SyntaxKind.SimpleAssignmentExpression)
+                    => assignment.Right,
+                EqualsValueClauseSyntax equals => equals.Value,
+                _ => null,
+            };
+
+        private static bool IsReferenceLikeExpression(ExpressionSyntax expression) =>
+            ReferenceLikeKinds.Contains(expression.Kind());
 
         private static bool MatchesRule(SyntaxNode node, MutationRule rule)
         {

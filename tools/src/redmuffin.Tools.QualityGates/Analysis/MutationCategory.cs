@@ -8,4 +8,7 @@ public enum MutationCategory
     Boolean,
     Conditional,
     Constant,
+    Logical,
+    Unary,
+    NullRvalue,
 }

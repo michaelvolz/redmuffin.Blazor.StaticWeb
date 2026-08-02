@@ -27,10 +27,31 @@ public static class MutateHandler
         await PrintHeaderAsync(sourcePath, allSites, covered, uncovered,
             changedCount, existingManifest, output).ConfigureAwait(false);
 
+        await WarnIfSiteCountHighAsync(sites.Count, options.MutationWarning, output)
+            .ConfigureAwait(false);
+
         if (options.Scan) return 0;
 
         return await ExecuteMutationsAsync(sourcePath, testProjectPath, options,
             sites, uncovered, strippedSource, existingManifest, output).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// mutate4java --mutation-warning: print a warning when the selected
+    /// covered mutation count exceeds the threshold (default 50). Does not fail.
+    /// </summary>
+    public static async Task WarnIfSiteCountHighAsync(
+        int selectedSiteCount, int mutationWarning, TextWriter output)
+    {
+        if (selectedSiteCount <= mutationWarning)
+        {
+            return;
+        }
+
+        var message = string.Create(
+            CultureInfo.InvariantCulture,
+            $"WARNING: {selectedSiteCount} mutation sites selected exceeds --mutation-warning {mutationWarning}. Consider splitting the module.");
+        await output.WriteLineAsync(message).ConfigureAwait(false);
     }
 
     private static async Task<bool> CheckSourceFileMissingAsync(string sourcePath, TextWriter output)

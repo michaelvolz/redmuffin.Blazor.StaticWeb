@@ -136,6 +136,32 @@ public static class MutationRules
             Description: "Replace 1 with 0",
             MatchPredicate: IsLiteralOne,
             SuppressionPredicate: ShouldSuppressConstantInRandomMethod),
+
+        // Logical (mutate4java CONDITIONAL_AND / CONDITIONAL_OR)
+        new(
+            Category: MutationCategory.Logical,
+            OriginalKind: SyntaxKind.LogicalAndExpression,
+            MutantKind: SyntaxKind.LogicalOrExpression,
+            Description: "Replace && with ||"),
+
+        new(
+            Category: MutationCategory.Logical,
+            OriginalKind: SyntaxKind.LogicalOrExpression,
+            MutantKind: SyntaxKind.LogicalAndExpression,
+            Description: "Replace || with &&"),
+
+        // Unary strip (mutate4java removablePrefix for ! and -)
+        new(
+            Category: MutationCategory.Unary,
+            OriginalKind: SyntaxKind.LogicalNotExpression,
+            MutantKind: SyntaxKind.IdentifierName,
+            Description: "Strip logical not"),
+
+        new(
+            Category: MutationCategory.Unary,
+            OriginalKind: SyntaxKind.UnaryMinusExpression,
+            MutantKind: SyntaxKind.IdentifierName,
+            Description: "Strip unary minus"),
     ];
 
     public static IReadOnlyList<MutationRule> GetByCategory(MutationCategory category) =>

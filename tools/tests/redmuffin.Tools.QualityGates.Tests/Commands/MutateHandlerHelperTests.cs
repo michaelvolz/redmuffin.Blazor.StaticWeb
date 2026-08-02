@@ -73,6 +73,24 @@ public sealed class MutateHandlerHelperTests
     }
 
     [Test]
+    public async Task WarnIfSiteCountHigh_writes_when_count_exceeds_threshold()
+    {
+        using var writer = new StringWriter();
+        await MutateHandler.WarnIfSiteCountHighAsync(51, 50, writer).ConfigureAwait(false);
+        await Assert.That(writer.ToString()).Contains("WARNING");
+        await Assert.That(writer.ToString()).Contains("51");
+        await Assert.That(writer.ToString()).Contains("50");
+    }
+
+    [Test]
+    public async Task WarnIfSiteCountHigh_silent_when_at_or_below_threshold()
+    {
+        using var writer = new StringWriter();
+        await MutateHandler.WarnIfSiteCountHighAsync(50, 50, writer).ConfigureAwait(false);
+        await Assert.That(writer.ToString()).IsEmpty();
+    }
+
+    [Test]
     public async Task BuildSummaryLines_with_uncovered_shows_count()
     {
         var tree = CSharpSyntaxTree.ParseText("1 + 1");

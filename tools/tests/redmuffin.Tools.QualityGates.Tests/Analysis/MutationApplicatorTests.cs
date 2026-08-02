@@ -137,4 +137,64 @@ public sealed partial class MutationApplicatorTests
         await Assert.That(mutated).IsNotEqualTo(source);
         await Assert.That(mutated.Contains("++i")).IsTrue();
     }
+
+    [Test]
+    public async Task Should_mutate_logical_and_to_or()
+    {
+        const string source = "class C { void M() { bool x = a && b; } }";
+        var sites = MutationDiscoverer.FindSites(source);
+        var logical = sites.First(s => s.Category == MutationCategory.Logical);
+        var mutated = MutationApplicator.Apply(source, logical);
+
+        await Assert.That(mutated.Contains("||")).IsTrue();
+        await Assert.That(mutated.Contains("&&")).IsFalse();
+    }
+
+    [Test]
+    public async Task Should_strip_logical_not()
+    {
+        const string source = "class C { void M() { bool x = !flag; } }";
+        var sites = MutationDiscoverer.FindSites(source);
+        var unary = sites.First(s => s.Category == MutationCategory.Unary);
+        var mutated = MutationApplicator.Apply(source, unary);
+
+        await Assert.That(mutated.Contains("!flag")).IsFalse();
+        await Assert.That(mutated.Contains("flag")).IsTrue();
+    }
+
+    [Test]
+    public async Task Should_replace_object_creation_with_null()
+    {
+        const string source = "class C { object M() { return new object(); } }";
+        var sites = MutationDiscoverer.FindSites(source);
+        var nullSite = sites.First(s => s.Category == MutationCategory.NullRvalue);
+        var mutated = MutationApplicator.Apply(source, nullSite);
+
+        await Assert.That(mutated.Contains("return null")).IsTrue();
+        await Assert.That(mutated.Contains("new object()")).IsFalse();
+    }
+
+    [Test]
+    public async Task Should_replace_string_literal_return_with_null()
+    {
+        const string source = "class C { string M() { return \"hi\"; } }";
+        var sites = MutationDiscoverer.FindSites(source);
+        var nullSite = sites.First(s => s.Category == MutationCategory.NullRvalue);
+        var mutated = MutationApplicator.Apply(source, nullSite);
+
+        await Assert.That(mutated.Contains("return null")).IsTrue();
+        await Assert.That(mutated.Contains("\"hi\"")).IsFalse();
+    }
+
+    [Test]
+    public async Task Should_mutate_logical_or_to_and()
+    {
+        const string source = "class C { void M() { bool x = a || b; } }";
+        var sites = MutationDiscoverer.FindSites(source);
+        var logical = sites.First(s => s.Category == MutationCategory.Logical);
+        var mutated = MutationApplicator.Apply(source, logical);
+
+        await Assert.That(mutated.Contains("&&")).IsTrue();
+        await Assert.That(mutated.Contains("||")).IsFalse();
+    }
 }

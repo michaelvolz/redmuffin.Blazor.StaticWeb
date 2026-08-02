@@ -304,13 +304,14 @@ public sealed class MutationDiscovererTests
     [Test]
     public async Task Should_find_mutation_sites_when_using_System_Linq()
     {
+        // usings and empty methods must not invent operator sites
         string source = """
             namespace redmuffin.Tools.QualityGates.Analysis;
             using Microsoft.CodeAnalysis;
             using Microsoft.CodeAnalysis.CSharp;
             public static class MutationDiscoverer {
-                public static IReadOnlyList<MutationSite> FindSites(string source) {
-                    return new List<MutationSite>();
+                public static int FindSites(string source) {
+                    return 0;
                 }
             }
             """;
@@ -318,17 +319,80 @@ public sealed class MutationDiscovererTests
         var sites = MutationDiscoverer.FindSites(source);
 
         await Assert.That(sites).IsNotNull();
-        await Assert.That(sites.Count).IsEqualTo(0);
+        // Constant 0→1 is expected; no logical/unary noise from usings
+        await Assert.That(sites.All(s => s.Category == MutationCategory.Constant)).IsTrue();
     }
 
     [Test]
-    public async Task Should_find_all_six_categories_with_GetByCategory()
+    public async Task Should_find_all_rule_table_categories_with_GetByCategory()
     {
         var categories = MutationRules.All.Select(r => r.Category).Distinct().ToList();
-        foreach (MutationCategory category in System.Enum.GetValues<MutationCategory>())
+        // NullRvalue is discovered by walker context, not the rule table.
+        var ruleTableCategories = Enum.GetValues<MutationCategory>()
+            .Where(c => c != MutationCategory.NullRvalue);
+        foreach (var category in ruleTableCategories)
         {
             await Assert.That(categories).Contains(category);
         }
+    }
+
+    [Test]
+    public async Task Should_find_logical_and_site()
+    {
+        const string source = "class C { void M() { if (a && b) { } } }";
+        var sites = MutationDiscoverer.FindSites(source);
+        await Assert.That(sites.Any(s => s.Category == MutationCategory.Logical)).IsTrue();
+    }
+
+    [Test]
+    public async Task Should_find_unary_not_strip_site()
+    {
+        const string source = "class C { void M() { var x = !flag; } }";
+        var sites = MutationDiscoverer.FindSites(source);
+        await Assert.That(sites.Any(s =>
+            s.Category == MutationCategory.Unary
+            && s.OriginalKind == SyntaxKind.LogicalNotExpression)).IsTrue();
+    }
+
+    [Test]
+    public async Task Should_find_unary_minus_strip_site()
+    {
+        const string source = "class C { void M() { var x = -value; } }";
+        var sites = MutationDiscoverer.FindSites(source);
+        await Assert.That(sites.Any(s =>
+            s.Category == MutationCategory.Unary
+            && s.OriginalKind == SyntaxKind.UnaryMinusExpression)).IsTrue();
+    }
+
+    [Test]
+    public async Task Should_find_null_rvalue_on_object_creation_return()
+    {
+        const string source = "class C { object M() { return new object(); } }";
+        var sites = MutationDiscoverer.FindSites(source);
+        await Assert.That(sites.Any(s => s.Category == MutationCategory.NullRvalue)).IsTrue();
+    }
+
+    [Test]
+    public async Task Should_not_null_replace_numeric_literal_return()
+    {
+        const string source = "class C { int M() { return 42; } }";
+        var sites = MutationDiscoverer.FindSites(source);
+        await Assert.That(sites.Any(s => s.Category == MutationCategory.NullRvalue)).IsFalse();
+    }
+
+    [Test]
+    [Arguments("class C { string M() { return \"hi\"; } }", true)]
+    [Arguments("class C { object M() { return x as string; } }", true)]
+    [Arguments("class C { object[] M() { return new object[0]; } }", true)]
+    [Arguments("class C { void M() { object x; x = new object(); } }", true)]
+    [Arguments("class C { object M() { return null; } }", false)]
+    [Arguments("class C { int M() { return 1; } }", false)]
+    public async Task Should_detect_null_rvalue_only_for_reference_like_rhs(
+        string source, bool expectNullRvalue)
+    {
+        var sites = MutationDiscoverer.FindSites(source);
+        var hasNull = sites.Any(s => s.Category == MutationCategory.NullRvalue);
+        await Assert.That(hasNull).IsEqualTo(expectNullRvalue);
     }
 
     [Test]
