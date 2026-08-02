@@ -50,4 +50,48 @@ CPM setting that applies central package versions to **transitive** dependencies
 
 Rule for this team’s agents: durable git writes (branch, stage, commit, push, PR) are never part of an automated skill finish unless the human separately and explicitly requests them. Skills that stock-default into branch+PR (for example ce-compound-refresh Phase 5) are overridden via vendor overlays so trunk-based workflow stays human-owned.
 
-*(Seeded from the 2026-06-20 Grok Build CLI Roslyn LSP Windows spawn + restart learning in tooling-decisions/ + prior session memory on agent harness enablement. Package-management terms accreted from the 2026-07-22 NU1605/NU1902 CPM restore learning.)*
+## Quality Gates toolchain
+
+The local metrics suite that enforces agentic coding quality on this repo: CRAP, SCRAP, Architecture, Depth, Mutation, Duplicates, plus the Slopwatch pre-gate. Most gates are ports of Uncle Bob Martin’s public tools; Depth and Slopwatch are local. Ports are expected to stay algorithm-faithful to upstream rather than inventing repo-local thresholds.
+
+## CRAP
+
+Change-risk score for production methods: cyclomatic complexity combined with test coverage so complex under-tested code ranks highest. Used as a hard gate after significant changes; lower is better.
+
+## SCRAP
+
+Structural quality analyzer for **test** code (not production). Scores smells, fuzzy test-body duplication, and extraction pressure, then recommends STABLE, LOCAL, or SPLIT remediation and an AI actionability class. Complements CRAP the way tests complement production risk.
+
+## STABLE / LOCAL / SPLIT
+
+SCRAP remediation modes. STABLE means leave the file alone; LOCAL means clean individual examples or scaffolding in place; SPLIT means reorganize the test file by responsibility before local cleanup.
+
+## Duplicates gate (dry)
+
+Production-code structural duplicate detection using normalized AST fingerprints and Jaccard similarity. Distinct from SCRAP, which analyzes test structure. Ports the dry4* family (dry4clj / dry4java / dry4go).
+
+## Differential mutation
+
+Mutation-testing mode that reuses an embedded per-file manifest so later runs only re-test sites in changed scopes instead of re-mutating the whole file. Default workflow once a file has been mutated cleanly once.
+
+## Module-size discipline
+
+Rule of thumb that a source file with too many mutation sites should be split before further hardening. The mutation CLI exposes `--mutation-warning` (default 50) for this boundary so agents keep modules small enough for focused differential runs; treat the flag as the contract even when a given build only wires the option without emitting a hard gate.
+
+## Acceptance mutation
+
+Upstream (Acceptance-Pipeline-Specification) concept, not yet a local gate: mutating **acceptance example values** (for example Gherkin table data via an IR), not production source operators. Checks that acceptance tests actually depend on the specified data. Separate from unit-level mutation testing of production code.
+
+## Architecture zones (main sequence)
+
+Upstream dependency-checker concept, not yet implemented in the local architecture gate: classification of components into healthy, pain, or useless zones using abstractness and instability relative to the main sequence. Would extend plain cycle and allowed-edge checks with design-health metrics.
+
+## Depth gate
+
+Local structural quality gate (not an Uncle Bob port) that flags over-decomposition: shallow methods, parameter bloat, wrong abstractions, and entanglement. Peer to CRAP so “extract to fix CRAP” cannot create pointless thin methods without pushback.
+
+## Slopwatch
+
+Local LLM anti-cheat pre-gate that finds reward-hacking patterns agents introduce (disabled tests, suppressions, empty catches, arbitrary delays, project-file slop). Runs before the metric suite; not part of the unclebob/* toolchain.
+
+*(Seeded from the 2026-06-20 Grok Build CLI Roslyn LSP Windows spawn + restart learning in tooling-decisions/ + prior session memory on agent harness enablement. Package-management terms accreted from the 2026-07-22 NU1605/NU1902 CPM restore learning. Quality-gates terms accreted from the 2026-08-02 Uncle Bob upstream-sync learning.)*

@@ -2,7 +2,12 @@
 date: 2026-05-09
 topic: dupes-quality-gate
 status: superseded
-superseded_by: "Research confirmed Uncle Bob has no separate production-code duplication scanner. SCRAP handles test-code duplication internally. No separate dupes gate needed. See tools/README.md for corrected gate list."
+superseded_by: >-
+  The production structural DRY gate shipped as `duplicates` (port of dry4clj /
+  dry4java / dry4go). SCRAP still owns test-body Jaccard duplication only.
+  This brainstorm's premise that "there is no separate production-code
+  duplication scanner" is false. Canonical inventory: tools/README.md;
+  sync map: docs/solutions/tooling-decisions/uncle-bob-quality-gates-upstream-sync.md.
 ---
 
 # Duplication Quality Gate (dupes)

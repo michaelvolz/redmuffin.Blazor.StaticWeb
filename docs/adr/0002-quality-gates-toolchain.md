@@ -8,11 +8,11 @@ installable as a `dotnet tool` without publishing to NuGet.
 
 ## Decision
 
-The quality gates live in a **separate solution** (`tools/redmuffin.Tools.sln`)
+The quality gates live in a **separate solution** (`tools/redmuffin.Tools.slnx`)
 at the repo root, built as a **single monolith** project
-(`redmuffin.Tools.QualityGates`) with subcommands (`crap`, `scrap`, `dupes`,
-`arch`, `all`), installed via a **local NuGet feed** (`tools/nupkgs/`) that
-never leaves the repo.
+(`redmuffin.Tools.QualityGates`) with subcommands (`crap`, `scrap`,
+`architecture`, `depth`, `mutation`, `duplicates`, `all`), installed via a
+**local NuGet feed** (`tools/nupkgs/`) that never leaves the repo.
 
 The CRAP analyzer uses Roslyn (`Microsoft.CodeAnalysis`) for cyclomatic
 complexity and parses Cobertura XML from TUnit's native coverage for
