@@ -1,6 +1,8 @@
 namespace redmuffin.Tools.QualityGates.Commands;
 
 using System.CommandLine;
+using System.Globalization;
+using redmuffin.Tools.QualityGates.Analysis;
 
 public static class MutateCommand
 {
@@ -37,9 +39,10 @@ public static class MutateCommand
         Description = "Mutate all sites (ignore manifest)",
     };
 
-    private static readonly Option<IReadOnlySet<int>?> LinesOption = new("--lines")
+    // Bound as string: System.CommandLine cannot construct IReadOnlySet<int> without a binder.
+    private static readonly Option<string?> LinesOption = new("--lines")
     {
-        Description = "Only mutate specific line numbers (comma-separated)",
+        Description = "Only mutate specific 0-based line numbers (comma-separated, e.g. 10,20)",
     };
 
     private static readonly Option<int> MutationWarningOption = new("--mutation-warning")
@@ -92,12 +95,35 @@ public static class MutateCommand
                 TimeoutFactor: parseResult.GetValue(TimeoutFactorOption),
                 ReuseCoverage: parseResult.GetValue(ReuseCoverageOption),
                 AutoCoverage: parseResult.GetValue(AutoCoverageOption),
-                Lines: parseResult.GetValue(LinesOption),
+                Lines: ParseLines(parseResult.GetValue(LinesOption)),
                 NoTestFilter: parseResult.GetValue(NoTestFilterOption));
 
             return await MutateHandler.RunAsync(source, testProject, options).ConfigureAwait(false);
         });
 
         return command;
+    }
+
+    /// <summary>
+    /// Parses comma-separated line numbers into a set. Empty/invalid tokens are skipped.
+    /// Values match <see cref="MutationSite.Line"/> (0-based Roslyn lines).
+    /// </summary>
+    public static IReadOnlySet<int>? ParseLines(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return null;
+
+        var set = new HashSet<int>();
+        foreach (var part in raw.Split(
+                     ',',
+                     StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (int.TryParse(part, NumberStyles.Integer, CultureInfo.InvariantCulture, out var line))
+            {
+                set.Add(line);
+            }
+        }
+
+        return set.Count == 0 ? null : set;
     }
 }

@@ -104,6 +104,19 @@ Development conventions, operational rules, build commands, test patterns,
 and known issues live in the `tools-guide` skill for agents working on this
 solution.
 
+## Known Issues
+
+| Area | Status | Notes |
+| --- | --- | --- |
+| Mutation applicator ArgumentSyntax NO-OP | **Fixed in 0.1.1** | `Apply` uses `ReplaceNode` on the span+kind resolved target (no span-only rewriter). |
+| Mutation applicator post/pre inc/dec NO-OP | **Fixed in 0.1.1** | Unary arithmetic kinds map via `PostfixUnaryExpression` / `PrefixUnaryExpression`. |
+| Mutation result taxonomy | **Fixed in 0.1.2** | `MutantResultType.NoOp` when Apply leaves source unchanged; summary lists no-ops separately from survivors; kill rate excludes no-ops. |
+| `mutation --lines` binder | **Fixed in 0.1.2** | `--lines` binds as string (`10,20`); `MutateCommand.ParseLines` builds the set (0-based Roslyn lines). |
+| CoverageReader fixture `coverage-basic.xml` | **Fixed in 0.1.2** | Fixture restored under `tests/.../Fixtures/coverage-basic.xml`. |
+
+Consumer evidence (Morpheus handoff, optional):
+`redmuffin.Morpheus` `docs/solutions/developer-experience/quality-gates-mutation-tool-handoff-2026-08-02.md`.
+
 ## References
 
 - [ADR-0002: Quality Gates Toolchain][adr]

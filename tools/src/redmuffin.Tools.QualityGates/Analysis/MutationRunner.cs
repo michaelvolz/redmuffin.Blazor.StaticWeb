@@ -29,6 +29,16 @@ public static class MutationRunner
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var mutated = MutationApplicator.Apply(originalSource, site);
+                // Unchanged text: never run tests (would be a false "survived").
+                if (ClassifyAfterApply(originalSource, mutated, testsPassed: false)
+                    is MutantResultType.NoOp)
+                {
+                    results.Add(new MutantResult(
+                        site.Index, site.Category, site.Line, site.Description,
+                        MutantResultType.NoOp, DurationMs: 0));
+                    continue;
+                }
+
                 await File.WriteAllTextAsync(sourcePath, mutated, cancellationToken)
                     .ConfigureAwait(false);
 
@@ -37,7 +47,7 @@ public static class MutationRunner
                     .ConfigureAwait(false);
                 results.Add(new MutantResult(
                     site.Index, site.Category, site.Line, site.Description,
-                    testResult.Passed ? MutantResultType.Survived : MutantResultType.Killed,
+                    ClassifyAfterApply(originalSource, mutated, testResult.Passed),
                     testResult.DurationMs));
 
                 await File.WriteAllTextAsync(sourcePath, originalSource, cancellationToken)
@@ -140,6 +150,19 @@ public static class MutationRunner
         var passed = process.ExitCode == 0;
 
         return new TestRunResult(passed, sw.ElapsedMilliseconds);
+    }
+
+    /// <summary>
+    /// Maps Apply output + test outcome to a result type.
+    /// Unchanged source is always NoOp (tests never ran or would be meaningless).
+    /// </summary>
+    public static MutantResultType ClassifyAfterApply(
+        string originalSource, string mutatedSource, bool testsPassed)
+    {
+        if (string.Equals(originalSource, mutatedSource, StringComparison.Ordinal))
+            return MutantResultType.NoOp;
+
+        return testsPassed ? MutantResultType.Survived : MutantResultType.Killed;
     }
 
     private sealed record TestRunResult(bool Passed, long DurationMs);

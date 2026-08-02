@@ -20,81 +20,82 @@ public static class MutationApplicator
                     CultureInfo.InvariantCulture,
                     $"Cannot find node with span [{oldSpan.Start},{oldSpan.End}] and kind {site.OriginalKind}"));
 
-        var rewriter = new MutationRewriter(targetNode, site);
-        var newRoot = rewriter.Visit(root);
-
-        return newRoot!.ToFullString();
+        // Replace the already-resolved target node. Do not walk with a span-only
+        // rewriter: ArgumentSyntax often shares Span with its expression, and a
+        // parent match would NO-OP (cast fail) without visiting the child.
+        var mutated = ApplyMutation(targetNode, site);
+        var newRoot = root.ReplaceNode(targetNode, mutated);
+        return newRoot.ToFullString();
     }
 
-    private sealed class MutationRewriter(SyntaxNode targetNode, MutationSite site) : CSharpSyntaxRewriter
+    private static SyntaxNode ApplyMutation(SyntaxNode node, MutationSite site) =>
+        site.Category switch
+        {
+            MutationCategory.Arithmetic or MutationCategory.Comparison or MutationCategory.Equality
+                => MutateArithmeticOrRelational(node, site),
+            MutationCategory.Boolean => MutateBoolean(node, site),
+            MutationCategory.Conditional => MutateConditional(node),
+            _ => MutateConstant(node),
+        };
+
+    private static SyntaxNode MutateArithmeticOrRelational(SyntaxNode node, MutationSite site)
     {
-        private readonly SyntaxNode _targetNode = targetNode;
-        private readonly MutationSite _site = site;
-
-        public override SyntaxNode? Visit(SyntaxNode? node)
+        if (node is BinaryExpressionSyntax binary)
         {
-            return IsTargetNode(node) ? ApplyMutation(node!) : base.Visit(node);
+            return SyntaxFactory.BinaryExpression(site.MutantKind, binary.Left, binary.Right)
+                .WithTriviaFrom(binary);
         }
 
-        private bool IsTargetNode(SyntaxNode? node) =>
-            node is not null && node.Span == _targetNode.Span;
-
-        private SyntaxNode ApplyMutation(SyntaxNode node) =>
-            _site.Category switch
-            {
-                MutationCategory.Arithmetic or MutationCategory.Comparison or MutationCategory.Equality
-                    => MutateBinaryExpression(node),
-                MutationCategory.Boolean => MutateBoolean(node),
-                MutationCategory.Conditional => MutateConditional(node),
-                _ => MutateConstant(node),
-            };
-
-        private SyntaxNode MutateBinaryExpression(SyntaxNode node)
+        if (node is PostfixUnaryExpressionSyntax postfix)
         {
-            if (node is BinaryExpressionSyntax binary)
-            {
-                return SyntaxFactory.BinaryExpression(_site.MutantKind, binary.Left, binary.Right)
-                    .WithTriviaFrom(binary);
-            }
-
-            return node;
+            return SyntaxFactory.PostfixUnaryExpression(site.MutantKind, postfix.Operand)
+                .WithTriviaFrom(postfix);
         }
 
-        private SyntaxNode MutateBoolean(SyntaxNode node)
+        if (node is PrefixUnaryExpressionSyntax prefix
+            && site.OriginalKind is SyntaxKind.PreIncrementExpression or SyntaxKind.PreDecrementExpression)
         {
-            if (node is LiteralExpressionSyntax literal)
-            {
-                return SyntaxFactory.LiteralExpression(_site.MutantKind).WithTriviaFrom(literal);
-            }
-
-            return node;
+            return SyntaxFactory.PrefixUnaryExpression(site.MutantKind, prefix.Operand)
+                .WithTriviaFrom(prefix);
         }
 
-        private static SyntaxNode MutateConditional(SyntaxNode node)
-        {
-            if (node is ExpressionSyntax expression)
-            {
-                return SyntaxFactory.PrefixUnaryExpression(
-                    SyntaxKind.LogicalNotExpression,
-                    SyntaxFactory.ParenthesizedExpression(expression))
-                    .WithTriviaFrom(expression);
-            }
+        return node;
+    }
 
-            return node;
+    private static SyntaxNode MutateBoolean(SyntaxNode node, MutationSite site)
+    {
+        if (node is LiteralExpressionSyntax literal)
+        {
+            return SyntaxFactory.LiteralExpression(site.MutantKind).WithTriviaFrom(literal);
         }
 
-        private static SyntaxNode MutateConstant(SyntaxNode node)
-        {
-            if (node is LiteralExpressionSyntax literal && literal.Kind() == SyntaxKind.NumericLiteralExpression)
-            {
-                var newValue = literal.Token.Value is 0 ? 1 : 0;
-                return SyntaxFactory.LiteralExpression(
-                    SyntaxKind.NumericLiteralExpression,
-                    SyntaxFactory.Literal(newValue))
-                    .WithTriviaFrom(literal);
-            }
+        return node;
+    }
 
-            return node;
+    private static SyntaxNode MutateConditional(SyntaxNode node)
+    {
+        if (node is ExpressionSyntax expression)
+        {
+            return SyntaxFactory.PrefixUnaryExpression(
+                SyntaxKind.LogicalNotExpression,
+                SyntaxFactory.ParenthesizedExpression(expression))
+                .WithTriviaFrom(expression);
         }
+
+        return node;
+    }
+
+    private static SyntaxNode MutateConstant(SyntaxNode node)
+    {
+        if (node is LiteralExpressionSyntax literal && literal.Kind() == SyntaxKind.NumericLiteralExpression)
+        {
+            var newValue = literal.Token.Value is 0 ? 1 : 0;
+            return SyntaxFactory.LiteralExpression(
+                SyntaxKind.NumericLiteralExpression,
+                SyntaxFactory.Literal(newValue))
+                .WithTriviaFrom(literal);
+        }
+
+        return node;
     }
 }

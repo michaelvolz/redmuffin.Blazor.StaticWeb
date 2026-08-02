@@ -270,19 +270,38 @@ public static class MutateHandler
         var ci = CultureInfo.InvariantCulture;
         var killed = results.Count(r => r.Result == MutantResultType.Killed);
         var survived = results.Where(r => r.Result == MutantResultType.Survived).ToList();
+        var noOps = results.Where(r => r.Result == MutantResultType.NoOp).ToList();
+        var errors = results.Count(r => r.Result == MutantResultType.Error);
+        // Kill rate only over mutants that actually rewrote source and ran tests.
         var totalTested = killed + survived.Count;
+        var killPct = totalTested == 0
+            ? 0.0
+            : 100.0 * killed / totalTested;
 
         var lines = new List<string>
         {
             "=== Summary ===",
-            $"{killed.ToString(ci)}/{totalTested.ToString(ci)} mutants killed ({(100.0 * killed / totalTested).ToString("F1", ci)}%)",
+            $"{killed.ToString(ci)}/{totalTested.ToString(ci)} mutants killed ({killPct.ToString("F1", ci)}%)",
             $"{uncovered.Count.ToString(ci)} uncovered mutations skipped",
+            $"{noOps.Count.ToString(ci)} apply no-ops (source unchanged)",
         };
+
+        if (errors > 0)
+            lines.Add($"{errors.ToString(ci)} mutant run errors");
 
         if (survived.Count > 0)
         {
             lines.Add("Survivors:");
             foreach (var s in survived)
+            {
+                lines.Add($"  #{s.SiteIndex.ToString(ci)}  L{s.Line.ToString(ci)}   {s.Description}");
+            }
+        }
+
+        if (noOps.Count > 0)
+        {
+            lines.Add("Apply no-ops:");
+            foreach (var s in noOps)
             {
                 lines.Add($"  #{s.SiteIndex.ToString(ci)}  L{s.Line.ToString(ci)}   {s.Description}");
             }

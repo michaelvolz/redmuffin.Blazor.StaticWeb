@@ -38,6 +38,41 @@ public sealed class MutateHandlerHelperTests
     }
 
     [Test]
+    public async Task BuildSummaryLines_excludes_no_ops_from_kill_rate()
+    {
+        var results = new List<MutantResult>
+        {
+            new(0, MutationCategory.Arithmetic, 10, "add to sub", MutantResultType.Killed, 5),
+            new(1, MutationCategory.Arithmetic, 11, "i++", MutantResultType.NoOp, 0),
+            new(2, MutationCategory.Constant, 12, "1->0", MutantResultType.NoOp, 0),
+        };
+        var lines = MutateHandler.BuildSummaryLines(results, []);
+        await Assert.That(lines[1]).Contains("1/1");
+        await Assert.That(lines[1]).Contains("100.0%");
+        await Assert.That(lines.Any(l => l.Contains("2 apply no-ops"))).IsTrue();
+        await Assert.That(lines).Contains("Apply no-ops:");
+    }
+
+    [Test]
+    public async Task ParseLines_parses_comma_separated_and_skips_junk()
+    {
+        var set = MutateCommand.ParseLines("10, 20,x,30");
+        await Assert.That(set).IsNotNull();
+        await Assert.That(set!).Count().IsEqualTo(3);
+        await Assert.That(set.Contains(10)).IsTrue();
+        await Assert.That(set.Contains(20)).IsTrue();
+        await Assert.That(set.Contains(30)).IsTrue();
+    }
+
+    [Test]
+    public async Task ParseLines_returns_null_for_empty()
+    {
+        await Assert.That(MutateCommand.ParseLines(null)).IsNull();
+        await Assert.That(MutateCommand.ParseLines("  ")).IsNull();
+        await Assert.That(MutateCommand.ParseLines("a,b")).IsNull();
+    }
+
+    [Test]
     public async Task BuildSummaryLines_with_uncovered_shows_count()
     {
         var tree = CSharpSyntaxTree.ParseText("1 + 1");

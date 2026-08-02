@@ -56,4 +56,25 @@ public sealed class MutationRunnerTests
         await Assert.That(results.Count).IsEqualTo(1);
         await Assert.That(results[0].Result).IsEqualTo(MutantResultType.Survived);
     }
+
+    [Test]
+    public async Task ClassifyAfterApply_returns_no_op_when_source_unchanged()
+    {
+        const string source = "class C { int X => 1; }";
+        await Assert.That(MutationRunner.ClassifyAfterApply(source, source, testsPassed: true))
+            .IsEqualTo(MutantResultType.NoOp);
+        await Assert.That(MutationRunner.ClassifyAfterApply(source, source, testsPassed: false))
+            .IsEqualTo(MutantResultType.NoOp);
+    }
+
+    [Test]
+    public async Task ClassifyAfterApply_maps_test_outcome_when_source_changed()
+    {
+        await Assert.That(
+                MutationRunner.ClassifyAfterApply("a + b", "a - b", testsPassed: false))
+            .IsEqualTo(MutantResultType.Killed);
+        await Assert.That(
+                MutationRunner.ClassifyAfterApply("a + b", "a - b", testsPassed: true))
+            .IsEqualTo(MutantResultType.Survived);
+    }
 }

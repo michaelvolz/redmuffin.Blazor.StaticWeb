@@ -74,4 +74,67 @@ public sealed partial class MutationApplicatorTests
         var mutated = ApplyFirstMutation("class C { void M() { int x = a + b; } }");
         _ = CSharpSyntaxTree.ParseText(mutated);
     }
+
+    [Test]
+    public async Task Should_mutate_numeric_literal_inside_method_argument()
+    {
+        const string source = "class C { void M() { TryConsume(1); } void TryConsume(int n) { } }";
+        var sites = MutationDiscoverer.FindSites(source);
+        var constantSite = sites.First(s => s.Category == MutationCategory.Constant);
+        var mutated = MutationApplicator.Apply(source, constantSite);
+
+        await Assert.That(mutated).IsNotEqualTo(source);
+        await Assert.That(mutated.Contains("TryConsume(0)")).IsTrue();
+    }
+
+    [Test]
+    public async Task Should_mutate_binary_expression_inside_method_argument()
+    {
+        const string source = "class C { void M() { Skip(index + 1); } void Skip(int n) { } }";
+        var sites = MutationDiscoverer.FindSites(source);
+        var arithmeticSite = sites.First(s => s.Category == MutationCategory.Arithmetic);
+        var mutated = MutationApplicator.Apply(source, arithmeticSite);
+
+        await Assert.That(mutated).IsNotEqualTo(source);
+        await Assert.That(mutated.Contains("index - 1") || mutated.Contains("index- 1") || mutated.Contains("index -1"))
+            .IsTrue();
+    }
+
+    [Test]
+    public async Task Should_mutate_string_concatenation_inside_method_argument()
+    {
+        const string source = """class C { void M() { flags.Add("-" + token); } }""";
+        var sites = MutationDiscoverer.FindSites(source);
+        var arithmeticSite = sites.First(s => s.Category == MutationCategory.Arithmetic);
+        var mutated = MutationApplicator.Apply(source, arithmeticSite);
+
+        await Assert.That(mutated).IsNotEqualTo(source);
+        await Assert.That(mutated.Contains("\"-\" + token")).IsFalse();
+        await Assert.That(mutated.Contains("\"-\" -")).IsTrue();
+    }
+
+    [Test]
+    public async Task Should_mutate_post_increment_to_post_decrement()
+    {
+        const string source = "class C { void M() { int i = 0; i++; } }";
+        var sites = MutationDiscoverer.FindSites(source);
+        var incSite = sites.First(s => s.OriginalKind == SyntaxKind.PostIncrementExpression);
+        var mutated = MutationApplicator.Apply(source, incSite);
+
+        await Assert.That(mutated).IsNotEqualTo(source);
+        await Assert.That(mutated.Contains("i--")).IsTrue();
+        await Assert.That(mutated.Contains("i++")).IsFalse();
+    }
+
+    [Test]
+    public async Task Should_mutate_pre_decrement_to_pre_increment()
+    {
+        const string source = "class C { void M() { int i = 0; --i; } }";
+        var sites = MutationDiscoverer.FindSites(source);
+        var decSite = sites.First(s => s.OriginalKind == SyntaxKind.PreDecrementExpression);
+        var mutated = MutationApplicator.Apply(source, decSite);
+
+        await Assert.That(mutated).IsNotEqualTo(source);
+        await Assert.That(mutated.Contains("++i")).IsTrue();
+    }
 }
