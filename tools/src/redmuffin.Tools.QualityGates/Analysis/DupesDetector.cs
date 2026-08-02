@@ -61,7 +61,7 @@ public static class DupesDetector
             var fullPath = Path.GetFullPath(path);
             if (Directory.Exists(fullPath))
             {
-                foreach (var file in Directory.EnumerateFiles(fullPath, "*.cs", SearchOption.AllDirectories))
+                foreach (var file in SourcePathFilter.EnumerateCsFiles(fullPath))
                 {
                     TryAddEntries(file, entries, minLines, minNodes);
                 }

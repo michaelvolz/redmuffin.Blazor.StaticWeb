@@ -7,7 +7,9 @@ public static class TestClassDiscovery
         var sourceFileName = Path.GetFileNameWithoutExtension(sourcePath);
         var testFileName = sourceFileName + "Tests.cs";
 
-        var testFiles = Directory.GetFiles(testProjectPath, testFileName, SearchOption.AllDirectories);
+        var testFiles = Directory.EnumerateFiles(testProjectPath, testFileName, SearchOption.AllDirectories)
+            .Where(SourcePathFilter.IsSourcePath)
+            .ToArray();
 
         return testFiles.Length > 0
             ? Path.GetFileNameWithoutExtension(testFiles[0])

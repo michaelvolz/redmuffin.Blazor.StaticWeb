@@ -10,9 +10,8 @@ public static class TestMethodParser
     public static IReadOnlyList<TestMethod> FindTests(string projectPath)
     {
         var results = new List<TestMethod>();
-        var csFiles = Directory.GetFiles(projectPath, "*.cs", SearchOption.AllDirectories);
 
-        foreach (var file in csFiles)
+        foreach (var file in SourcePathFilter.EnumerateCsFiles(projectPath))
         {
             var source = File.ReadAllText(file);
             var syntaxTree = CSharpSyntaxTree.ParseText(source);

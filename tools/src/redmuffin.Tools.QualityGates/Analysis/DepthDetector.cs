@@ -15,11 +15,10 @@ public static class DepthDetector
             return Array.Empty<DepthResult>();
         }
 
-        var csFiles = Directory.GetFiles(projectPath, "*.cs", SearchOption.AllDirectories);
         var allMethods = new List<(MethodDeclarationSyntax Method, string FilePath)>();
 
         // Pass 1: collect all methods (no signal computation yet).
-        foreach (var file in csFiles)
+        foreach (var file in SourcePathFilter.EnumerateCsFiles(projectPath))
         {
             CollectMethods(file, allMethods);
         }
