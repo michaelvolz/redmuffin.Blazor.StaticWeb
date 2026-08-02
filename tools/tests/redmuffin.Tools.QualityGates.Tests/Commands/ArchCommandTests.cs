@@ -54,8 +54,183 @@ public sealed class ArchCommandTests
         await Assert.That(config.AllowedDependencies["Core"]).IsEmpty();
         await Assert.That(config.ComponentMap).IsEmpty();
         await Assert.That(config.IgnoredComponents).IsEmpty();
+        await Assert.That(config.ForbiddenDependencies).IsEmpty();
+        await Assert.That(config.AllowedExceptions).IsEmpty();
+        await Assert.That(config.HealthyThreshold).IsEqualTo(0.3);
         await Assert.That(config.FailOnCycles).IsTrue();
         await Assert.That(config.FailOnViolations).IsTrue();
+    }
+
+    [Test]
+    public async Task should_parse_zones_forbidden_and_exceptions()
+    {
+        var yaml = """
+            allowed-dependencies:
+              Web:
+                - all
+              Core: []
+            forbidden-dependencies:
+              - from: Web
+                to: Infra
+            allowed-exceptions:
+              - from: Core
+                to: Web
+            healthy-threshold: 0.25
+            component-map:
+              MyApp.Web: Web
+              MyApp.Core: Core
+            """;
+
+        var config = ArchConfig.Parse(yaml);
+
+        await Assert.That(config.AllowedDependencies["Web"]).IsEquivalentTo(["all"]);
+        await Assert.That(config.ForbiddenDependencies).IsEquivalentTo(
+            [new DependencyEdge("Web", "Infra")]);
+        await Assert.That(config.AllowedExceptions).IsEquivalentTo(
+            [new DependencyEdge("Core", "Web")]);
+        await Assert.That(config.HealthyThreshold).IsEqualTo(0.25);
+    }
+
+    [Test]
+    public async Task should_allow_all_targets_when_allowlist_is_all()
+    {
+        var config = ArchConfig.Parse("""
+            allowed-dependencies:
+              Tests:
+                - all
+            """);
+        var cg = new ComponentGraph(
+            new Dictionary<string, ISet<string>> { ["Tests"] = new HashSet<string> { "Web", "Core" } },
+            new HashSet<string>());
+
+        var violations = ArchAnalyzer.FindViolations(cg, config);
+
+        await Assert.That(violations).IsEmpty();
+    }
+
+    [Test]
+    public async Task should_forbid_explicit_edge_even_when_all_allowed()
+    {
+        var config = ArchConfig.Parse("""
+            allowed-dependencies:
+              Web:
+                - all
+            forbidden-dependencies:
+              - from: Web
+                to: Infra
+            """);
+        var cg = new ComponentGraph(
+            new Dictionary<string, ISet<string>> { ["Web"] = new HashSet<string> { "Infra" } },
+            new HashSet<string>());
+
+        var violations = ArchAnalyzer.FindViolations(cg, config);
+
+        await Assert.That(violations.Count).IsEqualTo(1);
+        await Assert.That(violations[0].SourceComponent).IsEqualTo("Web");
+        await Assert.That(violations[0].TargetComponent).IsEqualTo("Infra");
+    }
+
+    [Test]
+    public async Task should_suppress_violation_with_allowed_exception()
+    {
+        var config = ArchConfig.Parse("""
+            allowed-dependencies:
+              Core: []
+            allowed-exceptions:
+              - from: Core
+                to: Web
+            """);
+        var cg = new ComponentGraph(
+            new Dictionary<string, ISet<string>> { ["Core"] = new HashSet<string> { "Web" } },
+            new HashSet<string>());
+
+        var violations = ArchAnalyzer.FindViolations(cg, config);
+
+        await Assert.That(violations).IsEmpty();
+    }
+
+    [Test]
+    public async Task should_classify_zone_pain_when_below_main_sequence_band()
+    {
+        // A+I = 0.2 with threshold 0.3 → below 0.7 → pain
+        await Assert.That(ArchAnalyzer.ClassifyZone(0.2, 0.3)).IsEqualTo(ArchZone.Pain);
+    }
+
+    [Test]
+    public async Task should_classify_zone_useless_when_above_main_sequence_band()
+    {
+        await Assert.That(ArchAnalyzer.ClassifyZone(1.5, 0.3)).IsEqualTo(ArchZone.Useless);
+    }
+
+    [Test]
+    public async Task should_classify_zone_healthy_near_main_sequence()
+    {
+        await Assert.That(ArchAnalyzer.ClassifyZone(1.0, 0.3)).IsEqualTo(ArchZone.Healthy);
+    }
+
+    [Test]
+    public async Task should_compute_instability_from_fan_in_out()
+    {
+        var config = ArchConfig.Parse("""
+            allowed-dependencies:
+              Web:
+                - Core
+              Core: []
+            component-map:
+              MyApp.Web: Web
+              MyApp.Core: Core
+            """);
+        var cg = new ComponentGraph(
+            new Dictionary<string, ISet<string>> { ["Web"] = new HashSet<string> { "Core" } },
+            new HashSet<string>());
+
+        var metrics = ArchAnalyzer.ComputeMetrics(cg, config, projectPath: Path.GetTempPath());
+        var web = metrics.First(m => m.Component == "Web");
+        var core = metrics.First(m => m.Component == "Core");
+
+        await Assert.That(web.FanOut).IsEqualTo(1);
+        await Assert.That(web.FanIn).IsEqualTo(0);
+        await Assert.That(web.Instability).IsEqualTo(1.0);
+        await Assert.That(core.FanIn).IsEqualTo(1);
+        await Assert.That(core.FanOut).IsEqualTo(0);
+        await Assert.That(core.Instability).IsEqualTo(0.0);
+    }
+
+    [Test]
+    public async Task should_compute_abstractness_from_interfaces_and_classes()
+    {
+        using var temp = new TempDir();
+        // Per-project subdirs so each component's types are scanned only once.
+        WriteMappedProject(temp.Path, "MyApp.Web", """
+            public interface IService { }
+            public class Service : IService { }
+            """);
+        WriteMappedProject(temp.Path, "MyApp.Core", """
+            public class Entity { }
+            """);
+
+        var config = ArchConfig.Parse("""
+            allowed-dependencies:
+              Web:
+                - Core
+              Core: []
+            component-map:
+              MyApp.Web: Web
+              MyApp.Core: Core
+            """);
+        var cg = new ComponentGraph(
+            new Dictionary<string, ISet<string>> { ["Web"] = new HashSet<string> { "Core" } },
+            new HashSet<string>());
+
+        var metrics = ArchAnalyzer.ComputeMetrics(cg, config, temp.Path);
+        var web = metrics.First(m => m.Component == "Web");
+        var core = metrics.First(m => m.Component == "Core");
+
+        // Web: interface + class → A = 0.5; Core: concrete only → A = 0
+        await Assert.That(web.Abstractness).IsEqualTo(0.5);
+        await Assert.That(core.Abstractness).IsEqualTo(0.0);
+        await Assert.That(web.Distance).IsEqualTo(Math.Abs(0.5 + 1.0 - 1.0));
+        await Assert.That(core.Zone).IsEqualTo(ArchZone.Pain);
     }
 
     [Test]
@@ -486,6 +661,39 @@ public sealed class ArchCommandTests
         await Assert.That(output).Contains("\"exitCode\": 0");
         await Assert.That(output).Contains("\"violations\": []");
         await Assert.That(output).Contains("\"cycles\": []");
+    }
+
+    [Test]
+    public async Task should_format_component_metrics_with_zone()
+    {
+        var result = new ArchResult(0, [], [], 2, 1)
+        {
+            Metrics =
+            [
+                new ComponentMetric("Web", FanIn: 0, FanOut: 1, Instability: 1.0,
+                    Abstractness: 0.5, Distance: 0.5, Zone: ArchZone.Healthy),
+            ],
+        };
+
+        var output = ArchOutputFormatter.Format(result, json: false);
+
+        await Assert.That(output).Contains("Component metrics");
+        await Assert.That(output).Contains("Web:");
+        await Assert.That(output).Contains("A=0.50");
+        await Assert.That(output).Contains("I=1.00");
+        await Assert.That(output).Contains("D=0.50");
+        await Assert.That(output).Contains("zone=Healthy");
+    }
+
+    private static void WriteMappedProject(string root, string projectName, string csharpSource)
+    {
+        var dir = Path.Combine(root, projectName);
+        Directory.CreateDirectory(dir);
+        File.WriteAllText(Path.Combine(dir, $"{projectName}.csproj"), """
+            <Project Sdk="Microsoft.NET.Sdk">
+            </Project>
+            """);
+        File.WriteAllText(Path.Combine(dir, "Types.cs"), csharpSource);
     }
 
     private static ArchConfig ConfigWithMap()

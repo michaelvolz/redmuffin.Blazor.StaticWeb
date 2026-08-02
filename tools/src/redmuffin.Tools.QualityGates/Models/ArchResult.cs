@@ -5,4 +5,7 @@ public sealed record ArchResult(
     IReadOnlyList<ArchViolation> Violations,
     IReadOnlyList<ArchCycle> Cycles,
     int ProjectsScanned,
-    int ComponentsDefined);
+    int ComponentsDefined)
+{
+    public IReadOnlyList<ComponentMetric> Metrics { get; init; } = [];
+}

@@ -41,13 +41,17 @@ public static class ArchHandler
         var componentGraph = ComponentGraph.From(projectGraph, config);
         var violations = ArchAnalyzer.FindViolations(componentGraph, config);
         var cycles = ArchAnalyzer.FindCycles(componentGraph);
+        var metrics = ArchAnalyzer.ComputeMetrics(componentGraph, config, projectPath);
 
         var result = new ArchResult(
             0,
             violations,
             cycles,
             projectGraph.Dependencies.Count,
-            config.ComponentMap.Count);
+            config.ComponentMap.Count)
+        {
+            Metrics = metrics,
+        };
 
         var exitCode = ArchAnalyzer.DecideExitCode(violations, cycles, config);
         return result with { ExitCode = exitCode };

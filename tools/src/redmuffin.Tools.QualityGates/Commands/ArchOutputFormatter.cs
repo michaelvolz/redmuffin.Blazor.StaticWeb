@@ -48,6 +48,18 @@ public static class ArchOutputFormatter
             }
         }
 
+        if (result.Metrics.Count > 0)
+        {
+            lines.Add(string.Empty);
+            lines.Add("Component metrics (A abstractness, I instability, D distance):");
+            foreach (var m in result.Metrics)
+            {
+                lines.Add(string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"  {m.Component}: A={m.Abstractness:F2} I={m.Instability:F2} D={m.Distance:F2} fan-in={m.FanIn} fan-out={m.FanOut} zone={m.Zone}"));
+            }
+        }
+
         return string.Join('\n', lines);
     }
 
