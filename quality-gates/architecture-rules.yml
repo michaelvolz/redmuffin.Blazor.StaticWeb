@@ -2,9 +2,11 @@ component-map:
   redmuffin.Blazor.StaticWeb: Frontend
   redmuffin.Blazor.StaticWeb.Common: Shared
   redmuffin.Blazor.StaticWeb.Api: Backend
-  ApiHealth.Contracts: Shared
-  ApiHealth: Frontend
-  ApiHealth.Tests: Frontend
+  Components: Frontend
+  AzureHealthCheck.Contracts: Shared
+  AzureHealthCheck: Frontend
+  ApiHealth.Page: Frontend
+  AzureHealthCheck.Tests: Frontend
   Articles: Frontend
   Articles.Tests: Frontend
   Videos: Frontend

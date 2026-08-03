@@ -11,11 +11,11 @@ using redmuffin.Blazor.StaticWeb.Core.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 using redmuffin.Blazor.StaticWeb.Core.Services;
-using redmuffin.Blazor.StaticWeb.Features.ApiHealth;
+using redmuffin.Blazor.StaticWeb.Features.AzureHealthCheck;
 using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Services;
 using redmuffin.Blazor.StaticWeb.Features.DebugPage.Services;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop;
-using redmuffin.Blazor.StaticWeb.Modules.ApiHealth.Contracts;
+using redmuffin.Blazor.StaticWeb.Modules.AzureHealthCheck.Contracts;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -63,15 +63,15 @@ var useSynthetic = builder.HostEnvironment.BaseAddress.Contains(
     "localhost:5233",
     StringComparison.OrdinalIgnoreCase);
 
-// ApiHealth / Raindrop implementation assemblies are lazy-loaded (see App + catalog).
-// Do not call AddApiHealthModule / AddRaindropModule here — that would force impl DLLs at boot.
+// AzureHealthCheck / Raindrop implementation assemblies are lazy-loaded (see App + catalog).
+// Do not call AddAzureHealthCheckModule / AddRaindropModule here — that would force impl DLLs at boot.
 // PageAssemblyLoader: navigate loads + Home Articles/Videos prefetch.
 builder.Services.AddScoped<LazyAssemblyLoader>();
 builder.Services.AddScoped<IPageAssemblyLoader, PageAssemblyLoader>();
-builder.Services.AddSingleton(new ApiHealthLoadOptions(useSynthetic));
-builder.Services.AddSingleton<ApiHealthModuleGate>();
+builder.Services.AddSingleton(new AzureHealthCheckLoadOptions(useSynthetic));
+builder.Services.AddSingleton<AzureHealthCheckModuleGate>();
 builder.Services.AddScoped<IHealthCheckService>(static sp =>
-    sp.GetRequiredService<ApiHealthModuleGate>().GetRequiredService());
+    sp.GetRequiredService<AzureHealthCheckModuleGate>().GetRequiredService());
 
 builder.Services.AddSingleton(new RaindropLoadOptions(useSynthetic));
 builder.Services.AddSingleton<RaindropModuleGate>();

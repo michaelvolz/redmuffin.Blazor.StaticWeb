@@ -12,7 +12,7 @@ public sealed partial class ApiHealthTests
     {
         // Arrange & Act
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.Render<global::redmuffin.Blazor.StaticWeb.Modules.ApiHealth.ApiHealth>();
+        var component = scope.BUnitContext.Render<global::redmuffin.Blazor.StaticWeb.Pages.ApiHealth.ApiHealth>();
 
         // Assert
         using (Assert.Multiple())
@@ -32,7 +32,7 @@ public sealed partial class ApiHealthTests
     {
         // Arrange
         using var scope = CreateTestScope("Hello from handler");
-        var component = scope.BUnitContext.Render<global::redmuffin.Blazor.StaticWeb.Modules.ApiHealth.ApiHealth>();
+        var component = scope.BUnitContext.Render<global::redmuffin.Blazor.StaticWeb.Pages.ApiHealth.ApiHealth>();
         var button = component.Find("button.button");
 
         // Act
@@ -54,7 +54,7 @@ public sealed partial class ApiHealthTests
     {
         // Arrange & Act
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.Render<global::redmuffin.Blazor.StaticWeb.Modules.ApiHealth.ApiHealth>();
+        var component = scope.BUnitContext.Render<global::redmuffin.Blazor.StaticWeb.Pages.ApiHealth.ApiHealth>();
 
         // Assert
         var emptyState = component.Find("div.empty-state");

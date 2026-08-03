@@ -7,9 +7,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Core.Layout;
 using redmuffin.Blazor.StaticWeb.Core.Services;
-using redmuffin.Blazor.StaticWeb.Features.ApiHealth;
+using redmuffin.Blazor.StaticWeb.Features.AzureHealthCheck;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop;
-using redmuffin.Blazor.StaticWeb.Modules.ApiHealth.Contracts;
+using redmuffin.Blazor.StaticWeb.Modules.AzureHealthCheck.Contracts;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
 
 namespace redmuffin.Blazor.StaticWeb;
@@ -18,7 +18,7 @@ public partial class App
 {
     // Fully-qualified so the host has no compile-time type root on the lazy impl assembly.
     private const string CreateHealthCheckServiceTypeName =
-        "redmuffin.Blazor.StaticWeb.Modules.ApiHealth.ApiHealthModuleServicesExtensions, ApiHealth";
+        "redmuffin.Blazor.StaticWeb.Modules.AzureHealthCheck.AzureHealthCheckModuleServicesExtensions, AzureHealthCheck";
 
     private const string CreateHealthCheckServiceMethodName = "CreateHealthCheckService";
 
@@ -32,8 +32,8 @@ public partial class App
     [Inject] private IWarmupService WarmupService { get; set; } = default!;
     [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
     [Inject] private IPageAssemblyLoader PageAssemblyLoader { get; set; } = default!;
-    [Inject] private ApiHealthModuleGate ApiHealthModuleGate { get; set; } = default!;
-    [Inject] private ApiHealthLoadOptions ApiHealthLoadOptions { get; set; } = default!;
+    [Inject] private AzureHealthCheckModuleGate AzureHealthCheckModuleGate { get; set; } = default!;
+    [Inject] private AzureHealthCheckLoadOptions AzureHealthCheckLoadOptions { get; set; } = default!;
     [Inject] private RaindropModuleGate RaindropModuleGate { get; set; } = default!;
     [Inject] private RaindropLoadOptions RaindropLoadOptions { get; set; } = default!;
     [Inject] private IHttpClientFactory HttpClientFactory { get; set; } = default!;
@@ -56,24 +56,24 @@ public partial class App
         await PageAssemblyLoader.EnsureLoadedAsync(pageKey).ConfigureAwait(false);
 
         if (pageKey.Equals(PageAssemblyCatalog.ApiHealthPageKey, StringComparison.OrdinalIgnoreCase))
-            EnsureApiHealthServiceReady();
+            EnsureAzureHealthCheckServiceReady();
 
         if (pageKey.Equals(PageAssemblyCatalog.ArticlesPageKey, StringComparison.OrdinalIgnoreCase)
             || pageKey.Equals(PageAssemblyCatalog.VideosPageKey, StringComparison.OrdinalIgnoreCase))
             EnsureRaindropFacadeReady();
     }
 
-    private void EnsureApiHealthServiceReady()
+    private void EnsureAzureHealthCheckServiceReady()
     {
-        // Must run only after ApiHealth.dll is loaded (no static type roots to the lazy DLL).
-        if (ApiHealthModuleGate.IsReady)
+        // Must run only after AzureHealthCheck.dll is loaded (no static type roots to the lazy DLL).
+        if (AzureHealthCheckModuleGate.IsReady)
             return;
 
         var service = CreateHealthCheckServiceViaReflection(
             HttpClientFactory,
             LoggerFactory,
-            ApiHealthLoadOptions.UseSyntheticData);
-        ApiHealthModuleGate.SetService(service);
+            AzureHealthCheckLoadOptions.UseSyntheticData);
+        AzureHealthCheckModuleGate.SetService(service);
     }
 
     private void EnsureRaindropFacadeReady()
@@ -97,7 +97,7 @@ public partial class App
     {
         var extensionsType = Type.GetType(CreateHealthCheckServiceTypeName, throwOnError: true)
             ?? throw new InvalidOperationException(
-                $"Could not resolve type '{CreateHealthCheckServiceTypeName}' after loading ApiHealth.dll.");
+                $"Could not resolve type '{CreateHealthCheckServiceTypeName}' after loading AzureHealthCheck.dll.");
 
         var method = extensionsType.GetMethod(
                 CreateHealthCheckServiceMethodName,

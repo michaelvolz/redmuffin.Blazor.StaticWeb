@@ -70,7 +70,7 @@ That work codified testing conventions that remain project standards:
 
 Do not re-add Hello connectivity on Raindrop.
 
-1. New bounded features use the ApiHealth triad pattern and
+1. New bounded features use the AzureHealthCheck triad pattern and
    `docs/modular-monolith-module-guide-2026-08-03.md`.
 2. Raindrop keeps factory resolution only for articles/videos until that feature
    is extracted as a module.

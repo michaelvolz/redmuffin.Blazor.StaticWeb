@@ -11,7 +11,7 @@ public sealed partial class ApiHealthTests
     {
         // Arrange
         using var scope = CreateFailingTestScope();
-        var component = scope.BUnitContext.Render<global::redmuffin.Blazor.StaticWeb.Modules.ApiHealth.ApiHealth>();
+        var component = scope.BUnitContext.Render<global::redmuffin.Blazor.StaticWeb.Pages.ApiHealth.ApiHealth>();
         var button = component.Find("button.button");
 
         // Act

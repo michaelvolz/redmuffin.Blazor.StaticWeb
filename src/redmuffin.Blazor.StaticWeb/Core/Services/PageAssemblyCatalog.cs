@@ -1,9 +1,10 @@
 namespace redmuffin.Blazor.StaticWeb.Core.Services;
 
 /// <summary>
-///     Maps page keys to lazy assembly file names (with extension) for navigate-time load
-///     and Home prefetch. Empty lists are intentional no-ops until that page is page-lazy.
-///     Articles and Videos each load their own page module plus shared <c>Raindrop.dll</c>.
+///     Maps route page keys to the full lazy <b>need-set</b> (page + module +
+///     component implementation DLLs) for navigate-time load and Home prefetch.
+///     Product impl assemblies are lazy by default regardless of home; Contracts
+///     stay eager. Empty lists are intentional no-ops until that route is wired.
 /// </summary>
 public static class PageAssemblyCatalog
 {
@@ -23,9 +24,9 @@ public static class PageAssemblyCatalog
     private static readonly Dictionary<string, string[]> AssembliesByPageKey =
         new(StringComparer.OrdinalIgnoreCase)
         {
-            [ArticlesPageKey] = ["Articles.dll", "Raindrop.dll"],
-            [VideosPageKey] = ["Videos.dll", "Raindrop.dll"],
-            [ApiHealthPageKey] = ["ApiHealth.dll"]
+            [ArticlesPageKey] = ["Articles.dll", "Components.dll", "Raindrop.dll"],
+            [VideosPageKey] = ["Videos.dll", "Components.dll", "Raindrop.dll"],
+            [ApiHealthPageKey] = ["ApiHealth.Page.dll", "AzureHealthCheck.dll"]
         };
 
     public static bool TryGetAssemblies(string pageKey, out IReadOnlyList<string> assemblyFileNames)

@@ -42,14 +42,18 @@ Separately, modularization must never pull source out of
 factory. Preserve `Task<IEnumerable<RaindropItem>>` and exception contracts in
 this phase — Result and Mediator are a later vertical.
 
-**Host composition:** one `localhost:5233` flag for both ApiHealth and Raindrop:
+**Host composition:** one `localhost:5233` flag for both AzureHealthCheck and
+Raindrop Strategy. Eager/tests may call `AddAzureHealthCheckModule` /
+`AddRaindropModule`; the WASM host uses lazy gates instead of those calls on
+the cold `Program` path:
 
 ```csharp
 var useSynthetic = builder.HostEnvironment.BaseAddress.Contains(
     "localhost:5233",
     StringComparison.OrdinalIgnoreCase);
-builder.Services.AddApiHealthModule(useSynthetic);
-builder.Services.AddRaindropModule(useSynthetic);
+// Eager/tests example only:
+// builder.Services.AddAzureHealthCheckModule(useSynthetic);
+// builder.Services.AddRaindropModule(useSynthetic);
 ```
 
 **Azure Functions stay put:** Phase 1 moves **host client** HTTP callers only

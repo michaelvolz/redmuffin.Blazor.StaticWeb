@@ -1,6 +1,6 @@
 ---
 date: 2026-08-03
-version: 1.7.0
+version: 2.3.0
 last_updated: 2026-08-03
 title: RiverBooks modularization roadmap and Mediator use
 purpose: >
@@ -8,7 +8,7 @@ purpose: >
   anti-patterns for client modularization. Every future module PRD and
   plan must align with this spec.
 scope:
-  - End-state layout for the WASM host and Modules
+  - End-state layout for WASM host, Modules, Pages, and Components
   - Mediator as the module application API
   - Result at expected-failure boundaries
   - Azure Functions deployment boundary
@@ -59,97 +59,126 @@ Three product decisions bind every future plan:
 1. **Mediator is first-class.** Use it for its full benefit: use-case
    requests, pipeline behaviors, host decoupling, and test seams — not as
    an optional wrapper around services the page still injects.
-2. **Endgoal is full client RiverBooks modularization.** The WASM host
-   becomes composition root + shell. Feature policy and page modules live
-   under `Modules/`. Azure Functions stay a separate deploy unit
-   (HTTP only). **One capability = one module.** Never fold two
-   capabilities into one module project (for example Articles pages inside
+2. **Endgoal is full client RiverBooks modularization with three homes.**
+   The WASM host becomes composition root + shell. Azure Functions stay a
+   separate deploy unit (HTTP only). Client code splits by role:
+
+   | Home | Rule |
+   | --- | --- |
+   | **Modules** | **No `.razor`.** Class library only. Domain, services, policies, ports, handlers — code other code is meant to use. Full triad + Contracts when there is a public API. |
+   | **Pages** | **Has `.razor` and a route.** Route ⇒ page. **No Contracts.** Nothing depends on a page as an API. Pages use modules and components; they do not live inside modules. |
+   | **Components** | **Has `.razor`.** Shared / multi-consumer UI (no route required). Never a “module with markup.” |
+
+   **Razor litmus:** if the project has `.razor`, it is a component or page —
+   never a module. If it has no `.razor`, it is a module.
+
+   **Extract from a page only when something else needs that piece** — not
+   “for architecture.” Until a second consumer exists, keep it on the page.
+   **ApiHealth same rules:** route is a page; modularize reusable capability
+   only when another consumer needs it. **One capability = one module.**
+   Never fold two capabilities into one module (for example Articles inside
    Raindrop) unless the user **explicitly** authorizes that merge.
-   Modules may **reference** other modules (Articles → Raindrop); they do
-   not become subfolders of each other. **Tests always mirror `src`
-   layout** (`tests/.../Modules/{Name}.Tests` for each module). **No size
-   or demo exemptions:** tiny pages, sample pages, and debug-style demos
-   use the same triad quality bar (Contracts, handlers, Result where
-   failures exist, host thin via Mediator). “Little domain” is not a
-   reason to leave host-only feature services forever.
+   Cross-capability reuse is a **project reference**, not a nested folder.
+   **Tests always mirror `src`** for Modules, Pages, and Components.
+   **No size or demo exemptions** for Mediator/Result quality when a page
+   has real policy or IO. “Little domain” is not a reason to leave host-only
+   feature services forever.
 3. **Initial client load beats total published size.** Optimize first
    payload and time-to-interactive. Total CDN/publish size may grow within
    reason. Every feature must still work after its code is available.
    Prefer deferring page assemblies over arguing total zip size as the main
    gate (ApiHealth is the pilot pattern).
-4. **Page assemblies lazy by default (normative).** Every page/feature
-   implementation assembly is lazy-loaded. After first load in a session,
-   soft navigation to that page has no assembly tax. Modular structure
-   (triad, Mediator, Result) remains required and is **orthogonal** to
-   download timing — modularize fully, then lazy-load the page graph.
-   - **Co-load page-unique deps:** if a page needs multiple DLLs used only
-     by that page, load them **together** on first navigation (same
-     `LoadAssembliesAsync` batch; every assembly marked
-     `BlazorWebAssemblyLazyLoad`).
-   - **Shared deps stay lazy too:** an assembly used by more than one page
-     is still lazy — first page that needs it loads it; later pages reuse
-     the session-loaded assembly. Do not put shared page-impl DLLs on the
-     eager boot graph “because shared.”
+4. **Every product implementation DLL is lazy by default (normative).**
+   Home does **not** matter: **page**, **module**, and **component**
+   implementation assemblies are all deferred the same way. After first
+   load in a session, soft navigation reuses the session-loaded set with
+   no assembly tax. Structure (triad, Mediator, Result, homes) is
+   **orthogonal** to download timing — split correctly, then lazy-load
+   the whole graph.
+
+   | Assembly kind | Load rule |
+   | --- | --- |
+   | Page DLL (e.g. `Articles.dll`, `Videos.dll`, `ApiHealth.Page.dll`) | Lazy; entry of the navigate batch |
+   | Module impl DLL (e.g. `Raindrop.dll`, `AzureHealthCheck.dll`) | Lazy; co-loaded with the page that needs it |
+   | Component DLL (e.g. `Components.dll`) | Lazy; co-loaded with the page that needs it; shared across pages on first need |
+   | Contracts / Common / host shell / framework | Eager — required at DI `Build` or boot |
+
+   - **Co-load the full need-set:** if a route needs page + module +
+     component DLLs, load them **together** on first navigation (one
+     `LoadAssembliesAsync` batch). Every one of those DLLs is marked
+     `BlazorWebAssemblyLazyLoad`. Never leave a dependency of a lazy
+     assembly on the eager graph or unmarked.
+   - **Shared deps stay lazy:** a module or component used by two pages
+     is still lazy — first page loads it; later pages reuse it. Do **not**
+     eager-load shared impl DLLs “because shared,” “because module,” or
+     “because primary product.”
    - **Eager residual only:** framework/runtime; host shell (`Program`,
-     router, layout chrome); contracts and registration types required at
-     DI `Build`. Not page implementation or page-only RCLs.
-   - **Optimize later with data:** do not pre-merge pages into Home, change
-     default routes, or invent new co-location for load shape until measured
-     traffic and Network/TTI evidence justify it. Apply page-lazy uniformly
-     first; revisit boundaries only after enough data.
+     router, layout chrome); Contracts and registration types required at
+     DI `Build`. Not page, module, or component **implementation**.
+   - **New extract checklist:** when you add a Page, Module, or Component
+     project, wire (1) `BlazorWebAssemblyLazyLoad`, (2) catalog
+     co-load list for every route that needs it, (3) DI gate if the
+     assembly owns runtime factories — same bar for all three homes.
+   - **Optimize later with data:** do not pre-merge routes into Home or
+     invent new co-location for load shape until measured traffic and
+     Network/TTI evidence justify it. Uniform lazy first.
    - **Home prefetch (product choice):** when the user is on **Home**, after
      the shell is interactive, **only** prefetch the **Articles** and
-     **Videos** page assembly batches (their page-unique DLLs together). No
-     other pages. Prefer Blazor `LoadAssembliesAsync` (runtime attach + cache),
-     not static HTML `rel=prefetch` of every DLL. Gate on
+     **Videos** batches (full need-set each). No other routes. Prefer
+     Blazor `LoadAssembliesAsync` (runtime attach + cache), not static
+     HTML `rel=prefetch` of every DLL. Gate on
      `navigator.connection.saveData` when implementing. Silent on failure;
-     real navigation still loads via `OnNavigateAsync`. **Host hook is live:**
+     real navigation still loads via `OnNavigateAsync`. **Live:**
      `IPageAssemblyLoader` + `PageAssemblyCatalog` (Articles →
-     `Articles.dll` + `Raindrop.dll`; Videos → `Videos.dll` +
-     `Raindrop.dll`) + path→pageKey for `OnNavigateAsync` + Home
-     first-render prefetch. **V1 activated** page-lazy for Articles/Videos
-     as **separate modules** that reference Raindrop (catalog fill +
-     `BlazorWebAssemblyLazyLoad` + Raindrop module gate). Later pages: same
-     pattern (fill catalog + LazyLoad + gate as needed).
+     `Articles.dll` + `Components.dll` + `Raindrop.dll`; Videos →
+     `Videos.dll` + `Components.dll` + `Raindrop.dll`) + path→pageKey +
+     Home first-render prefetch + module gates.
    Procedure depth: skill `rm-blazor-lazy-loading`.
 
 Phase 1 Raindrop (IO triad + Strategy, factory gone) is the foundation.
-**P0 done:** ApiHealth implementation assembly lazy load (PRD 002; user
+**P0 done:** AzureHealthCheck implementation assembly lazy load (PRD 002; user
 confirmed). **§6.3 done:** Raindrop Mediator use cases + Result + cache policy
 in module (PRD 003). **§6.4 V1 done:** residual host Raindrop surface into
-module; **Articles** and **Videos** as separate page modules referencing
-Raindrop; page-lazy + Home prefetch real. **Immediate priority:** §6.4
-**V2 Image / placeholder policy**. Later verticals are large capability
-batches — not one micro-slice per demo page.
+module; **Articles**, **Videos**, and **ApiHealth** as separate **page**
+projects under **Pages**; shared list/badge UI under **Components**
+(`Components.dll`); domain stays `Raindrop.dll`; page-lazy + Home prefetch
+real. **Immediate priority:** §6.4 **V2 Image / placeholder policy**. Later
+verticals are large capability batches — not one micro-slice per demo page.
 
 
 ## 1 — Scope and Definitions
 
 | Term | Meaning in this program |
 | --- | --- |
-| **Triad** | `{Name}.Contracts`, `{Name}`, `{Name}.Tests` under Modules |
-| **Host** | `redmuffin.Blazor.StaticWeb` — UI pages + DI composition root |
+| **Triad** | `{Name}.Contracts`, `{Name}`, `{Name}.Tests` under Modules (capability only; **no `.razor`**) |
+| **Module** | No `.razor`. Reusable capability other code is meant to use — not a route |
+| **Page** | Has `.razor` and a route; no Contracts; uses modules and components |
+| **Component** | Has `.razor`. Shared multi-consumer UI; not a module |
+| **Host** | `redmuffin.Blazor.StaticWeb` — shell, composition root, residual host pages |
 | **Module application API** | Public Mediator requests in Contracts; handlers in the module |
 | **Port** | Contracts abstraction for IO or storage; implementations internal |
 | **Use case** | One user or application intention (load, refresh), not a private helper |
-| **Vertical slice** | One shippable change with build + module tests + host tests green |
+| **Vertical slice** | One shippable change with build + module/page tests + host tests green |
 | **Api boundary** | `src/redmuffin.Blazor.StaticWeb.Api/` — Functions deploy unit |
 
 ## 2 — End-state layout
 
 | Area | End state |
 | --- | --- |
-| **Modules** | One triad per capability that has real policy or IO |
-| **Host** | Pages and composition only; prefer no long-lived feature services |
+| **Modules** | One triad per **reusable** capability — **zero** `.razor` files; never a route |
+| **Pages** | Routed surfaces with `.razor` (Articles, Videos, demos, …); **no** Contracts; reference modules + components |
+| **Components** | Shared / multi-consumer `.razor` UI under the Components home |
+| **Host** | Shell, nav, composition; prefer no long-lived feature services |
 | **Common** | Kernel only (`Result`, pipeline behaviors, dual-consumed DTOs) |
-| **Core** | True app chrome / shared UI infrastructure — or promote to a module when it gains multi-feature policy |
+| **Core** | True app chrome / shared UI infrastructure — or promote when it gains multi-feature policy |
 | **Api / Functions** | Separate deployment; never extracted into Modules “for modularity” |
 | **Cross-boundary share** | HTTP, or deliberate dual-consumed types in Common — not shared project source across deploy units |
 
-Host owns shell layout, nav, and composition. **Default** remains pages in
-the host; **authorized exception:** rare lazy modules may own their page UI
-in a module RCL (ApiHealth pilot, §6.2b / SN-0060) so route UI rides the same
-lazy assembly boundary.
+Host owns shell layout, nav, and composition. Routed product pages belong
+under **Pages** when extracted. A lazy page RCL is still a **page**, not a
+module. Modules are razor-free capability (e.g. Raindrop IO, AzureHealthCheck
+services). Shared multi-consumer UI lives under **Components** (e.g. Raindrop
+list and badge used by Articles and Videos).
 
 ## 3 — Mediator optimality rules
 
@@ -238,20 +267,20 @@ re-scope. See ADR 0013.
 
 | Slice | Status |
 | --- | --- |
-| ApiHealth triad + Result + Mediator + Strategy | Done (template) |
+| AzureHealthCheck triad + Result + Mediator + Strategy | Done (template) |
 | Raindrop IO triad + Strategy; factory deleted; Api untouched | Done (Phase 1) |
-| ApiHealth implementation assembly lazy load | **Done** (lazyAssembly + user-confirmed) |
-| ApiHealth razor into module RCL (lazy UI pilot) | **Done** (SN-0060 / §6.2b) |
+| AzureHealthCheck implementation assembly lazy load | **Done** (lazyAssembly + user-confirmed) |
+| ApiHealth route UI under `Pages/` (not in module) | **Done** (homes: page vs capability; SN-0060 module-RCL placement superseded) |
 | Raindrop Mediator use cases + Result + cache policy in module | **Done** (PRD 003 / §6.3) |
 | **V1 Complete Raindrop** (residual + RCL pages + page-lazy + prefetch) | **Done** (§6.4 V1) |
 | **V2 Image / placeholder policy** | **Next** (§6.4 V2) |
 | V3 Debug → V4 Samples batch → V5 Home/Auth | Backlog (§6.4) |
-| Further `.razor` into modules | Prefer module RCL + lazy page graph (ApiHealth pattern) so page UI is not on the eager boot graph |
+| Further route UI | Prefer **Pages/** + lazy need-set (page DLL + module/component DLLs); modules stay razor-free capability |
 | Demo/sample/tiny pages | **In program scope** — same scorecard + same **page-lazy** rule as product features; **V4 samples batch** (not per-page PRDs); not skip |
 
 ### 6.2a ApiHealth lazy load (P0 contract) — DONE
 
-**Title intent:** defer download/load of the ApiHealth **implementation**
+**Title intent:** defer download/load of the AzureHealthCheck **implementation**
 assembly until `/api-health`; pages were still in the host for this slice.
 
 **Product metrics:** initial load and feature correctness. Total publish
@@ -268,24 +297,21 @@ Api project, total size minimization campaigns.
 `docs/plans/2026-08-03-002-feat-apihealth-assembly-lazy-load-prd.md`
 (status: **done**).
 
-### 6.2b ApiHealth razor-into-module (authorized)
+### 6.2b ApiHealth route UI home — DONE (supersedes module-RCL placement)
 
-**Title intent:** page UI lives in the ApiHealth **RCL** so the lazy assembly
-carries both services and the rare route; host keeps shell + load gate +
-eager thin handler.
+**Title intent (current):** `/api-health` route UI lives under
+`Pages/ApiHealth` (`ApiHealth.Page.dll`). Capability triad is razor-free
+`Modules/AzureHealthCheck` + `AzureHealthCheck.Contracts` + tests.
+Navigate co-loads `ApiHealth.Page.dll` + `AzureHealthCheck.dll`; host keeps
+shell + load gate + eager thin `GetHelloHandler`.
 
-**Big steps only (no micro-task list):**
+**History:** SN-0060 briefly placed the page inside the module RCL as a lazy
+UI pilot. Homes policy later split **Pages** (routes) from **Modules**
+(capability); that placement is superseded — do not re-home route UI into
+modules.
 
-1. Module → RCL; move page + ViewModels into module (no host Common component
-   references from the module).
-2. Host Router `AdditionalAssemblies` after `LoadAssembliesAsync` on
-   `/api-health`; keep gate / load options / `GetHelloHandler` on host.
-3. One prove pass: build, host ApiHealth tests, cold path vs route load.
-4. Stop. Next program vertical after §6.3 is §6.4 (remaining client feature
-   triads), not more razor moves.
-
-**Out of scope:** Raindrop/Articles/Videos UI move, Api project, shared-UI
-library extraction unless a later PRD names it.
+**Out of scope:** folding the page back into `Modules/AzureHealthCheck`,
+Api project, shared-UI library extraction unless a later PRD names it.
 
 **Normative notes:** `docs/sidenotes/SN-0060.md`
 
@@ -316,8 +342,8 @@ Raindrop module; host pages Mediator-only.
   §6.4 — not deferred forever; only out of *this* vertical)
 - Dummy → Synthetic rename (unless free and isolated)
 - New pipeline behaviors beyond existing logging
-- Moving `.razor` pages into module projects (that is §6.2b / other pilots —
-  not this vertical)
+- Moving route `.razor` into module projects (forbidden by homes; pages use
+  **Pages/** — not this Raindrop vertical)
 
 **Acceptance (met):**
 
@@ -336,7 +362,7 @@ separately. Page-lazy remains orthogonal and default for every page
 
 | Order | Vertical | Intent |
 | --- | --- | --- |
-| **V1** | **Complete Raindrop + page modules** | Residual host Raindrop into module; **Articles** and **Videos** as **separate** modules that reference Raindrop; each page’s DLL + `Raindrop.dll` lazy; catalog + Home prefetch **activate** |
+| **V1** | **Complete Raindrop + page projects** | Residual host Raindrop into module; **Articles** and **Videos** as **separate page** projects that reference Raindrop; each page’s DLL + `Raindrop.dll` lazy; catalog + Home prefetch **activate** |
 | **V2** | Image / placeholder policy | Multi-feature image policy (Core vs module decision); full ownership beyond V1 abstraction enabler |
 | **V3** | Debug island | LocalStorage debug pages + host services → triad + page-lazy |
 | **V4** | Samples batch | Counter, Weather, Foundation, Icons, MarkdownExamples (and peers) in **one** batch — same scorecard + page-lazy; not per-page PRDs |
@@ -360,26 +386,28 @@ the next). Do not modularize residue then rewire pages in a later vertical.
    (`IImageUrlResolver`, `IImagePlaceholderService`, and any other
    abstractions Raindrop RCL must inject) into `Common` so the RCL does not
    `ProjectReference` the host. Implementations remain host Core until V2.
-3. **Raindrop RCL (domain UI only).** Convert Raindrop implementation to
-   `Sdk.Razor` (net10). Raindrop-only components (`RaindropItemList`,
-   `RefreshBadge` / state, presentation helpers) live in **Raindrop**.
+3. **Raindrop domain module** (IO/cache/facade). Shared multi-consumer
+   Razor (`RaindropItemList`, `RefreshBadge`, badge state, page context
+   helpers) lives under the **Components** home, not inside Raindrop.
    **Do not** put Articles or Videos pages inside Raindrop.
-4. **Separate Articles and Videos modules.** Each is its own RCL project
-   under `Modules/Articles` and `Modules/Videos`, referencing Raindrop
-   (shared UI + domain) and `Raindrop.Contracts` (Mediator messages).
-   Tests mirror under `tests/.../Modules/Articles.Tests` and
-   `Videos.Tests`. No module → host `Features/Common` component
-   references.
+4. **Separate Articles and Videos page projects.** Each is its own RCL
+   under **Pages** (`src/.../Pages/{Name}/`). They reference
+   **Components** (shared list/badge UI) and `Raindrop.Contracts`
+   (Mediator messages); runtime co-loads `Raindrop.dll` for domain DI.
+   Tests mirror under `tests/.../Pages/{Name}.Tests/`. ApiHealth page
+   is under Pages (`ApiHealth.Page.dll`); capability triad is
+   `AzureHealthCheck.Contracts` + sibling `Modules/AzureHealthCheck` + tests.
 5. **Host-eager thin Mediator handlers.** Load/Refresh handlers stay on
    the host (ApiHealth `GetHelloHandler` pattern) so Mediator SourceGen
    does not root lazy impl DLLs at boot. Handlers depend only on Contracts
    ports; Raindrop owns use-case implementation behind a gate-resolved
    facade.
 6. **Lazy load + catalog + gate.** `BlazorWebAssemblyLazyLoad` includes
-   `Articles.dll`, `Videos.dll`, and `Raindrop.dll`. Catalog:
-   articles → `["Articles.dll", "Raindrop.dll"]`; videos →
-   `["Videos.dll", "Raindrop.dll"]`. Deferred DI gate after
-   `LoadAssembliesAsync`. Home prefetch of Articles/Videos is real.
+   `Articles.dll`, `Videos.dll`, `Components.dll`, and `Raindrop.dll`.
+   Catalog: articles →
+   `["Articles.dll", "Components.dll", "Raindrop.dll"]`; videos →
+   `["Videos.dll", "Components.dll", "Raindrop.dll"]`. Deferred DI gate
+   after `LoadAssembliesAsync`. Home prefetch of Articles/Videos is real.
 7. **Prove.** Build; Raindrop.Tests; Articles.Tests; Videos.Tests; host
    suites; Api project **untouched**.
 
@@ -400,14 +428,16 @@ without measured data (§0 item 4); merging Articles/Videos into Raindrop.
 **Demo / tiny page bar (normative — applies from V4 onward, same bar as
 product):**
 
-1. No permanent host `Features/.../Services` for a page that should be a
-   module capability — including samples.
+1. No permanent host `Features/.../Services` for reusable capability or for
+   page policy that belongs behind Mediator — including samples.
 2. Page injects `IMediator` (+ UI-only deps), not module service interfaces.
 3. Expected failures use `Result` + `Match` when the use case can fail
    expectedly; cancel stays exceptional.
-4. Module + host (or module page) tests green; scorecard in §7 applies.
-5. Same **page-lazy** rule as every other page (§0 item 4): page-unique
-   DLLs co-load; shared page deps lazy on first need.
+4. Page/module tests green (mirroring `src`); scorecard in §7 applies.
+5. Same **assembly-lazy** rule as every product extract (§0 item 4): page +
+   module + component need-set co-loads; shared deps lazy on first need.
+6. Route stays a **page**; promote reusable pieces to Modules/Components only
+   when a second consumer exists.
 
 ## 7 — Quality scorecard
 
@@ -416,13 +446,15 @@ product):**
 | Host page constructor | `IMediator` (+ UI-only deps) | Module services + cache + orchestrator |
 | Expected API failure | `Result` + `Match` | Exception-type switches in UI |
 | Cross-cutting | Pipeline behavior | Copy-paste logging per page |
-| New feature | Own module (+ Contracts/tests mirror) + requests | Folded into another module “because related”; host `Features/.../Services` |
+| New reusable capability | Own module (+ Contracts/tests mirror) + requests | Folded into another module “because related”; host `Features/.../Services` |
+| New routed surface | Page home; no Contracts; uses modules | Called a “module” only because it has a route or RCL |
+| Extract from page | When a second consumer needs the piece | “For architecture” with no second consumer |
 | Api project | Untouched except intentional HTTP contracts | Types dragged across deploy boundary |
 | Mediator | One `Send` per use case | Dozens of micro-requests |
 | Modularization | One capability per module; ports clear | Multi-capability mega-module without explicit user merge OK |
-| Page load graph | Page impl (+ page-unique deps) lazy; co-load unique set; shared deps lazy | Page impl on eager boot; unique deps split across separate navigations |
-| Demo / tiny page | Same triad + Mediator + tests; page-lazy like product | Left host-only “because sample”; eager page impl |
-| Tests layout | Mirrors `src` (`Modules/{Name}.Tests` for modules) | Page tests left under host Features after module extract |
+| Assembly load graph | Page + module + component impl DLLs lazy; co-load full need-set; shared deps lazy on first need | Any product impl DLL on eager boot; missing `BlazorWebAssemblyLazyLoad`; split co-load |
+| Demo / tiny page | Mediator + Result when policy/IO exists; same lazy bar; extract capability only if reused | Left host-only forever with feature services; eager page/module/component impl |
+| Tests layout | Mirrors `src` (Modules / Pages / Components) | Page tests left under host Features after extract |
 
 ## 8 — Anti-patterns (do not plan these)
 
@@ -433,17 +465,24 @@ product):**
    without an **explicit** user authorization to merge.
 5. Dragging concrete `IJSRuntime` / browser storage types into Contracts.
 6. Measuring success as “matches the guide checklist” without scorecard gains.
-7. Leaving module page tests under host `tests/.../Features/` after extract
+7. Leaving page or module tests under host `tests/.../Features/` after extract
    (tests must mirror project structure).
-7. Modularization that only relocates files under `Features/` with no triad.
-8. Skipping demo/sample/tiny pages permanently because they have little
+8. Modularization that only relocates files under `Features/` with no
+   capability triad where policy/IO warrants one.
+9. Skipping demo/sample/tiny pages permanently because they have little
    domain or “are not real product.”
-9. Leaving page implementation on the **eager** boot graph “because primary
-   product” or “because shared.” Page-lazy is the default (§0 item 4).
-   Modular structure still required; do not skip the triad because the
-   assembly is lazy.
-10. Loading only one of several page-unique DLLs on navigate (forgetting
-    co-load / `BlazorWebAssemblyLazyLoad` on deps).
+10. Leaving a **page, module, or component** implementation DLL on the
+    **eager** boot graph “because primary product,” “because shared,” or
+    “because it is a module not a page.” All product impl DLLs are lazy
+    (§0 item 4). Contracts stay eager.
+11. Calling a routed surface a **module** solely because it has an RCL or
+    project. Route ⇒ page; Modules = no `.razor`.
+12. Putting `.razor` (or leftover `_Imports.razor` + `Sdk.Razor`) in a
+    module project. Markup ⇒ Components or Pages; modules are class libraries.
+13. Extracting page pieces into Modules/Components with no second consumer
+    “for architecture.”
+14. Loading only one of several need-set DLLs on navigate (forgetting
+    co-load or `BlazorWebAssemblyLazyLoad` on a module/component dep).
 
 ## 9 — Document roles in this cluster
 
@@ -462,7 +501,8 @@ when they extend modularization or Mediator usage.
 
 A future plan or PR aligns with this spec when all of the following hold:
 
-1. Destination matches §2 (host thin, modules own policy, Api boundary intact).
+1. Destination matches §2 (host thin; Modules / Pages / Components homes;
+   modules own reusable policy; Api boundary intact).
 2. Mediator usage matches §3 (use cases, no double path).
 3. Result usage matches §4 where expected failures exist.
 4. Slice size matches §6 (one vertical; lazy load §6.2a; razor pilot §6.2b;

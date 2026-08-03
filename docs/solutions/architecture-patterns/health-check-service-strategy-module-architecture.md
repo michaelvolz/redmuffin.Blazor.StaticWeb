@@ -35,8 +35,8 @@ tags:
 
 Converting a Blazor WASM page into the first bounded module produced recurring
 decisions: synthetic vs real data, per-module projects, where cross-cutting
-logging belongs, and how expected API failures reach the UI. ApiHealth is the
-pattern testbed.
+logging belongs, and how expected API failures reach the UI. AzureHealthCheck
+(page: `Pages/ApiHealth`) is the pattern testbed.
 
 A later hardening pass closed the gaps that blocked copying the template:
 exception-shaped control flow for normal unreachable-API outcomes, synthetic
@@ -68,7 +68,10 @@ Registration lives in the module extension; host passes policy only:
 var useSynthetic = builder.HostEnvironment.BaseAddress.Contains(
     "localhost:5233",
     StringComparison.OrdinalIgnoreCase);
-builder.Services.AddApiHealthModule(useSynthetic);
+// Eager/tests:
+// builder.Services.AddAzureHealthCheckModule(useSynthetic);
+// WASM host: lazy AzureHealthCheck.dll + AzureHealthCheckModuleGate +
+// reflection CreateHealthCheckService (no Add* on cold Program path).
 ```
 
 Synthetic is only the pure client host `localhost:5233` (same as Raindrop).
@@ -86,7 +89,7 @@ not every `localhost`.
 - Failure strings stay infrastructure-agnostic (no hostnames, ports, or product
   environment names)
 
-HTTP service paths covered by ApiHealth:
+HTTP service paths covered by AzureHealthCheck:
 
 1. Success with body → `Result.Success`
 2. Connection failure (`HttpRequestException`) → `Result.Failure`
@@ -105,16 +108,19 @@ HTTP service paths covered by ApiHealth:
 
 ```text
 src/redmuffin.Blazor.StaticWeb.Modules/
-├── ApiHealth.Contracts/
-└── ApiHealth/
+├── AzureHealthCheck.Contracts/
+└── AzureHealthCheck/
 
 tests/redmuffin.Blazor.StaticWeb.Modules/
-└── ApiHealth.Tests/
+└── AzureHealthCheck.Tests/
+
+src/redmuffin.Blazor.StaticWeb.Pages/
+└── ApiHealth/   # route page only (ApiHealth.Page.dll)
 ```
 
 - Contracts types are public
 - Service implementations are internal
-- Extension: `AddApiHealthModule(bool useSyntheticData)`
+- Extension: `AddAzureHealthCheckModule(bool useSyntheticData)` (eager/tests)
 - Test projects live under `tests/` only — never under `src/`; one test
   project per module, never folded into host or Api tests
 - Architecture gate: Contracts map to Shared and may reference Common

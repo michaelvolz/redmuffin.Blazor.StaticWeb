@@ -82,13 +82,19 @@
   </PropertyGroup>
 
   <!--
-    Lazy-load page implementation assemblies until first navigation (or Home prefetch).
+    Lazy product implementation DLLs (page + module + component) until first
+    navigation need-set load or Home prefetch. Contracts/Common/host stay eager.
     Include name is the managed assembly file name (not the published .wasm).
   -->
   <ItemGroup>
-    <BlazorWebAssemblyLazyLoad Include="ApiHealth.dll" />
+    <!-- Pages -->
+    <BlazorWebAssemblyLazyLoad Include="ApiHealth.Page.dll" />
     <BlazorWebAssemblyLazyLoad Include="Articles.dll" />
     <BlazorWebAssemblyLazyLoad Include="Videos.dll" />
+    <!-- Components -->
+    <BlazorWebAssemblyLazyLoad Include="Components.dll" />
+    <!-- Modules -->
+    <BlazorWebAssemblyLazyLoad Include="AzureHealthCheck.dll" />
     <BlazorWebAssemblyLazyLoad Include="Raindrop.dll" />
   </ItemGroup>
 
@@ -124,10 +130,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Common\redmuffin.Blazor.StaticWeb.Common.csproj" />
-    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Modules\ApiHealth\ApiHealth.csproj" />
-    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Modules\ApiHealth.Contracts\ApiHealth.Contracts.csproj" />
-    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Modules\Articles\Articles.csproj" />
-    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Modules\Videos\Videos.csproj" />
+    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Components\Components.csproj" />
+    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Pages\ApiHealth\ApiHealth.Page.csproj" />
+    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Modules\AzureHealthCheck\AzureHealthCheck.csproj" />
+    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Modules\AzureHealthCheck.Contracts\AzureHealthCheck.Contracts.csproj" />
+    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Pages\Articles\Articles.csproj" />
+    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Pages\Videos\Videos.csproj" />
     <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Modules\Raindrop\Raindrop.csproj" />
     <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Modules\Raindrop.Contracts\Raindrop.Contracts.csproj" />
   </ItemGroup>

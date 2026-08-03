@@ -1,9 +1,7 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Components;
-
-using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Presentation;
+using redmuffin.Blazor.StaticWeb.Components.Raindrop;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Common.Components;
 

@@ -11,19 +11,23 @@ tags:
 
 # How to add a RiverBooks-shaped module
 
-Step-by-step procedure for adding the next bounded module after ApiHealth.
-Structure only — not full DDD. **Coverage:** every client capability that
-owns policy or IO — including tiny and demo/sample pages — uses this shape.
-Do not leave host-only services because the page is small. **Page
-assemblies are lazy by default** (roadmap §0 item 4; skill
-`rm-blazor-lazy-loading`): page-unique DLLs co-load; shared page deps
-lazy on first need. Eager residual is shell/framework/contracts only.
+Step-by-step procedure for adding the next **reusable capability module**.
+Structure only — not full DDD. **Homes (roadmap §0 / ADR 0013):** Modules =
+reusable capability; **Pages** = anything with a route (no Contracts);
+**Components** = shared Razor multi-consumer UI. Do not put a route under
+Modules just because it has an RCL. Do not leave host-only services for
+real policy/IO because the page is small. **Page, module, and component
+implementation DLLs are all lazy by default** (roadmap §0 item 4; skill
+`rm-blazor-lazy-loading`): co-load a route’s full need-set; shared deps
+lazy on first need. Eager residual is shell/framework/contracts only. Wire
+`BlazorWebAssemblyLazyLoad` + catalog co-load for every new extract.
 
 ## What Belongs in This File
 
-- **Viewpoint**: Implementers adding or converting a feature to a module
-- **What belongs**: Project layout, registration, Result usage, tests,
-  architecture-gate and solution wiring steps
+- **Viewpoint**: Implementers adding or converting a **capability** to a
+  module, or wiring a **page** that uses modules
+- **What belongs**: Project layout (Modules / Pages / Components),
+  registration, Result usage, tests, architecture-gate and solution wiring
 - **What does NOT belong**: Domain design of a specific feature, OTEL/validation
   pipeline expansion, NsDepCop (deferred)
 
@@ -32,12 +36,13 @@ lazy on first need. Eager residual is shell/framework/contracts only.
 - Read ADR `docs/adr/0013-riverbooks-modular-layout-and-result.md`
 - Read roadmap `docs/specs/2026-08-03-riverbooks-modularization-roadmap-spec.md`
   before writing a module PRD or choosing the next vertical (destination,
-  Mediator optimality, sequencing, anti-patterns, **full coverage including
-  demos**)
-- ApiHealth under `src/redmuffin.Blazor.StaticWeb.Modules/` is the reference
+  Mediator optimality, sequencing, anti-patterns, **homes**)
+- AzureHealthCheck **full triad** under Modules (`AzureHealthCheck.Contracts` +
+  `AzureHealthCheck` + tests) and **page** under `Pages/ApiHealth/`
+  (`ApiHealth.Page.dll`). Raindrop is the pure module triad without a same-named page
 - Host already calls `AddMediator` and `AddModulePipelineBehaviors`
-- Every page module follows the same phases and the same **page-lazy**
-  rule (roadmap §0 item 4), including demos and product features.
+- Every extracted page follows **page-lazy** (roadmap §0 item 4), including
+  demos and product features.
 
 ## Hard constraint — Azure Functions stay in Api
 
@@ -57,44 +62,75 @@ and re-scope. Client modules and the Functions app deploy independently.
 
 **Hard rules (non-negotiable):**
 
-1. **One capability = one module.** Do not place another feature’s pages or
+1. **Razor litmus.** Has `.razor` → component or page (**never** a module).
+   No `.razor` → module (`Microsoft.NET.Sdk` only — no `Sdk.Razor`, no
+   `_Imports.razor`).
+2. **Modules = reusable capability only.** Domain, services, policies, ports,
+   handlers — code other code is meant to use. **Route ⇒ page** (Pages home).
+   Pages get **no Contracts**. Shared multi-consumer Razor → Components home.
+3. **Contracts always have a sibling implementation project.**
+   `{Name}.Contracts` **must** ship with `{Name}` under Modules (and mirrored
+   `{Name}.Tests`). Never leave Contracts alone with implementations on a
+   page, host, or “later.” Implementations of Contracts types live in the
+   sibling module only.
+4. **One capability = one module.** Do not place another feature’s pages or
    policy inside an existing module (for example do not put Articles/Videos
-   under Raindrop). Cross-module reuse is a **project reference**, not a
+   under Raindrop). Cross-capability reuse is a **project reference**, not a
    nested folder. Merge only when the user explicitly says to.
-2. **Tests always mirror production layout.** Each module’s tests live under
-   `tests/redmuffin.Blazor.StaticWeb.Modules/{Name}.Tests/`, never under
-   host `tests/.../Features/` after the capability has a module project.
+5. **Extract from a page only when something else needs that piece.** Until
+   then it stays with the page. When you extract capability that needs
+   Contracts, create the **full triad** (Contracts + sibling module + tests)
+   in the same change — never Contracts-only.
+6. **Tests always mirror production layout** for Modules, Pages, and
+   Components — never leave tests under host `Features/` after extract.
 
-Create production projects under `src/redmuffin.Blazor.StaticWeb.Modules/`
-and a mirrored test project under `tests/`:
+### Capability module (triad)
+
+Create under `src/redmuffin.Blazor.StaticWeb.Modules/` and mirrored tests:
 
 ```text
-src/.../Modules/{Name}.Contracts/   # public: queries, responses, interfaces (when owned)
-src/.../Modules/{Name}/             # handlers, services, page RCL, Add{Name}Module
-tests/.../Modules/{Name}.Tests/     # unit/bUnit tests; IsTestProject=true
+src/.../Modules/{Name}.Contracts/   # public: queries, responses, interfaces
+src/.../Modules/{Name}/             # handlers, services, Add{Name}Module — NO .razor
+tests/.../Modules/{Name}.Tests/     # unit tests; IsTestProject=true
 ```
 
-**Page modules that consume another domain** (Articles → Raindrop): page
-project + tests; domain Contracts stay on the domain module. Still a
-separate module project for the page capability.
+### Page project (no Contracts)
 
-Never put `{Name}.Tests` under `src/`. Never fold module tests into the host
-or Api test projects.
+Destination home is **Pages** (not Modules). Example shape:
 
-1. Target framework: Contracts align with Common (`net9.0`). Page/impl RCL
-   modules (ApiHealth, Raindrop, Articles, Videos) target `net10.0` to match
-   the WASM host. Do not force RCLs to `net9.0`.
+```text
+src/.../Pages/{Name}/               # routed RCL; references modules it uses
+tests/.../Pages/{Name}.Tests/       # page tests; IsTestProject=true
+```
+
+Live page projects: `src/.../Pages/Articles`, `Pages/Videos`,
+`Pages/ApiHealth` (`ApiHealth.Page.dll`). Articles/Videos reference
+`Components` + `Raindrop.Contracts`. ApiHealth page references
+`AzureHealthCheck.Contracts` only; module impl co-loads as `AzureHealthCheck.dll`.
+
+Never put `{Name}.Tests` under `src/`. Never fold module/page tests into the
+host or Api test projects.
+
+1. Target framework: Contracts align with Common (`net9.0`). Page/impl RCLs
+   (Raindrop, Articles, Videos, …) target `net10.0` to match the WASM host.
+   Do not force RCLs to `net9.0`.
 2. Contracts references Common (for `Result<T>`) and Mediator.Abstractions
-3. Module references Contracts + Common; package refs as needed (Http, DI).
-   Page modules that consume a domain also `ProjectReference` that domain
-   module (Articles → Raindrop), never nest pages as subfolders of it.
-4. Tests reference Module, Contracts, Common (paths into `src/`); copy test
-   `.editorconfig` from an existing module test project; set
+3. Module references Contracts + Common; package refs as needed (Http, DI)
+4. Page projects `ProjectReference` the Contracts/components they use
+   (Articles/Videos → Components + Raindrop.Contracts); never nest pages
+   as subfolders of a module
+5. Tests reference their production project + Contracts/Common as needed;
+   copy test `.editorconfig` from an existing module test project; set
    `<IsTestProject>true</IsTestProject>`
-5. Register production + test projects in `redmuffin.Blazor.StaticWeb.slnx`
-6. Host references Module + Contracts only (never test projects)
-7. Map assemblies in `quality-gates/architecture-rules.yml`
-   (Contracts → Shared, Module + Tests → Frontend)
+6. Register production + test projects in `redmuffin.Blazor.StaticWeb.slnx`
+7. Host references Module + Contracts (and page/component projects) only —
+   never test projects
+8. Map assemblies in `quality-gates/architecture-rules.yml`
+   (Contracts → Shared, Module/Page/Component + Tests → Frontend)
+9. **Lazy load (mandatory for product impl DLLs):** add
+   `BlazorWebAssemblyLazyLoad` for the new assembly; put it on every
+   `PageAssemblyCatalog` need-set that requires it; co-load with the route’s
+   other page/module/component DLLs. Contracts stay eager.
 
 ## Phase 2 — Contracts and Result
 
@@ -134,7 +170,9 @@ return Result.Failure<string>("The API endpoint did not return a response.");
    builder.Services.Add{Name}Module(useSynthetic);
    ```
 
-2. Page lives under `Features/{Name}/` in the host project
+2. Routed UI is a **page**: host `Features/{Name}/` while still host-owned, or
+   a **Pages** project when extracted (lazy RCL). Not a module solely for
+   having a route
 3. Page sends Mediator queries; map `Result` with `Match` to an immutable
    ViewModel
 4. Do not inject module service interfaces into the page when a query exists
@@ -146,7 +184,7 @@ return Result.Failure<string>("The API endpoint did not return a response.");
 | Handler | Success and failure `Result` paths with fake service |
 | Real service | Happy path + expected failures + cancel still throws |
 | Synthetic | Exact success payload |
-| Host or module page | Renders idle/success/failure via mocked `IMediator` (ApiHealth page may live in the module RCL when lazy — SN-0060) |
+| Host or page | Renders idle/success/failure via mocked `IMediator` (route UI under `Pages/`; module impl co-loads as a separate lazy DLL) |
 
 Run:
 
@@ -164,21 +202,23 @@ dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests
 | Shared→Shared architecture fail | Contracts may reference Common; Shared is allowed to depend on Shared |
 | Relative HttpClient URI fails in tests | Set `HttpClient.BaseAddress` on fakes |
 
-## File inventory (ApiHealth reference)
+## File inventory (reference)
 
 | Path | Role |
 | --- | --- |
-| `src/.../Modules/ApiHealth.Contracts/*` | Query, response, `IHealthCheckService` |
-| `src/.../Modules/ApiHealth/*` | Services, DI extension, page RCL |
-| `tests/.../Modules/ApiHealth.Tests/*` | Module unit tests |
-| `src/.../Modules/Raindrop*` | Domain IO, cache, shared Raindrop UI components |
-| `src/.../Modules/Articles/*` | Articles page module (references Raindrop) |
-| `src/.../Modules/Videos/*` | Videos page module (references Raindrop) |
-| `tests/.../Modules/Articles.Tests/*` | Articles page tests (mirror) |
-| `tests/.../Modules/Videos.Tests/*` | Videos page tests (mirror) |
+| `src/.../Modules/AzureHealthCheck.Contracts/*` | Contracts: query, response, `IHealthCheckService` |
+| `src/.../Modules/AzureHealthCheck/*` | Sibling module: services, Strategy DI, `CreateHealthCheckService` (no razor) |
+| `tests/.../Modules/AzureHealthCheck.Tests/*` | Module unit tests |
+| `src/.../Pages/ApiHealth/*` | ApiHealth **page** only (`ApiHealth.Page.dll` — route/UI) |
+| `src/.../Modules/Raindrop*` | Domain IO, cache, facade (no razor) |
+| `src/.../Components/Raindrop/*` | Shared Raindrop UI (`RaindropItemList`, `RefreshBadge`, page context helpers) |
+| `src/.../Pages/Articles/*` | Articles **page** project |
+| `src/.../Pages/Videos/*` | Videos **page** project |
+| `tests/.../Pages/Articles.Tests/*` | Articles page tests |
+| `tests/.../Pages/Videos.Tests/*` | Videos page tests |
 | `Common/Result.cs` | Shared `Result` / `Result<T>` |
 | `Common/PipelineBehaviors/LoggingBehavior.cs` | Cross-module pipeline |
-| Host `Features/{Name}/` | Eager thin Mediator handlers + module gates only |
+| Host shell / gates | Eager thin Mediator handlers + module gates only |
 
 ## Related
 

@@ -22,7 +22,7 @@ public sealed class PageAssemblyLoaderTests
     {
         var loader = CreateLoader();
 
-        // Catalog lists Raindrop.dll for Articles/Videos. Prefetch is speculative:
+        // Catalog lists Components.dll + Raindrop.dll for Articles/Videos. Prefetch is speculative:
         // failures are swallowed; success path must also be safe when re-entered.
         await loader.PrefetchHomePrimaryJourneysAsync().ConfigureAwait(false);
         await loader.PrefetchHomePrimaryJourneysAsync().ConfigureAwait(false);

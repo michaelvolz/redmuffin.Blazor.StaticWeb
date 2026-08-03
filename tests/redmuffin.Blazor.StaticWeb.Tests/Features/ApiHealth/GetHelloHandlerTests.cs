@@ -1,6 +1,6 @@
 using redmuffin.Blazor.StaticWeb.Common;
-using redmuffin.Blazor.StaticWeb.Features.ApiHealth;
-using redmuffin.Blazor.StaticWeb.Modules.ApiHealth.Contracts;
+using redmuffin.Blazor.StaticWeb.Features.AzureHealthCheck;
+using redmuffin.Blazor.StaticWeb.Modules.AzureHealthCheck.Contracts;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.ApiHealth;
 

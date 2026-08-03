@@ -5,7 +5,7 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Core;
 public sealed class PageAssemblyCatalogTests
 {
     [Test]
-    public async Task Articles_And_Videos_List_Page_Module_And_Raindrop_Dlls()
+    public async Task Articles_And_Videos_List_Page_Components_And_Raindrop_Dlls()
     {
         using (Assert.Multiple())
         {
@@ -15,11 +15,13 @@ public sealed class PageAssemblyCatalogTests
             await Assert.That(PageAssemblyCatalog.TryGetAssemblies(PageAssemblyCatalog.ArticlesPageKey, out var articles))
                 .IsTrue();
             await Assert.That(articles).Contains("Articles.dll");
+            await Assert.That(articles).Contains("Components.dll");
             await Assert.That(articles).Contains("Raindrop.dll");
 
             await Assert.That(PageAssemblyCatalog.TryGetAssemblies(PageAssemblyCatalog.VideosPageKey, out var videos))
                 .IsTrue();
             await Assert.That(videos).Contains("Videos.dll");
+            await Assert.That(videos).Contains("Components.dll");
             await Assert.That(videos).Contains("Raindrop.dll");
         }
     }
@@ -38,12 +40,13 @@ public sealed class PageAssemblyCatalogTests
     }
 
     [Test]
-    public async Task ApiHealth_Lists_ApiHealth_Dll()
+    public async Task ApiHealth_Lists_Page_And_Module_Dlls()
     {
         await Assert.That(PageAssemblyCatalog.HasAssemblies(PageAssemblyCatalog.ApiHealthPageKey)).IsTrue();
         await Assert.That(PageAssemblyCatalog.TryGetAssemblies(PageAssemblyCatalog.ApiHealthPageKey, out var names))
             .IsTrue();
-        await Assert.That(names).Contains("ApiHealth.dll");
+        await Assert.That(names).Contains("ApiHealth.Page.dll");
+        await Assert.That(names).Contains("AzureHealthCheck.dll");
     }
 
     [Test]

@@ -96,11 +96,23 @@ Local LLM anti-cheat pre-gate that finds reward-hacking patterns agents introduc
 
 ## RiverBooks-shaped module
 
-Bounded feature package using Ardalis RiverBooks **structure** only (not full DDD): Contracts project, module implementation project, and module tests. Host owns UI and composition. See the modular layout ADR and the module addition guide.
+Bounded **reusable capability** package using Ardalis RiverBooks **structure** only (not full DDD): Contracts project, module implementation project, and module tests. **No `.razor` files** — class library only. Domain, services, policies, ports, handlers. Not a route and not UI. See ADR 0013, the module guide, and the modularization roadmap.
+
+## Page (client home)
+
+Has `.razor` **and** a route. A page is never a module. Pages get no Contracts; nothing depends on a page as an API. Pages use modules and components; they do not live inside modules. Home: `src/redmuffin.Blazor.StaticWeb.Pages/{Name}/` (Articles, Videos, ApiHealth live).
+
+## Component (client home)
+
+Has `.razor`. Shared / multi-consumer UI under `src/redmuffin.Blazor.StaticWeb.Components/`. Raindrop list/badge UI is the first package. **Razor litmus:** markup ⇒ component or page; no markup ⇒ module.
+
+## Assembly lazy load (product)
+
+Every product **implementation** DLL is lazy by default — page, module, and component. Co-load a route’s full need-set on first navigation; shared deps stay lazy until first need. Eager residual is only framework, host shell, and Contracts/types required at DI `Build`. Homes (Modules / Pages / Components) do not change this policy.
 
 ## Module Contracts
 
-Public project for a module’s cross-boundary types: Mediator queries/responses and service interfaces. Implementation types stay in the module project (services internal). Consumers reference Contracts, not internals.
+Public project for a module’s cross-boundary types: Mediator queries/responses and service interfaces. Implementation types stay in the **sibling** module project (services internal) — **Contracts can never exist without that sibling.** Consumers reference Contracts, not internals. **Pages have no Contracts.**
 
 ## Result (Result of T)
 
@@ -118,4 +130,4 @@ The isolated-worker Api app is a **separate deployment unit** from the WASM host
 
 Composition-root choice of real vs synthetic module implementation via a host-computed boolean passed into `Add{Module}Module(...)`. Replaces NavigationManager-based factories that resolved concrete services at first use.
 
-*(Seeded from the 2026-06-20 Grok Build CLI Roslyn LSP Windows spawn + restart learning in tooling-decisions/ + prior session memory on agent harness enablement. Package-management terms accreted from the 2026-07-22 NU1605/NU1902 CPM restore learning. Quality-gates terms accreted from the 2026-08-02 Uncle Bob upstream-sync learning. Modular monolith terms accreted 2026-08-03; Raindrop Phase 1 / Api boundary terms accreted 2026-08-03.)*
+*(Seeded from the 2026-06-20 Grok Build CLI Roslyn LSP Windows spawn + restart learning in tooling-decisions/ + prior session memory on agent harness enablement. Package-management terms accreted from the 2026-07-22 NU1605/NU1902 CPM restore learning. Quality-gates terms accreted from the 2026-08-02 Uncle Bob upstream-sync learning. Modular monolith terms accreted 2026-08-03; Raindrop Phase 1 / Api boundary terms accreted 2026-08-03; Modules vs Pages vs Components homes accreted 2026-08-03.)*

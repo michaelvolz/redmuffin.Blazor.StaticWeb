@@ -10,25 +10,31 @@
   <Project Path="src/redmuffin.Blazor.StaticWeb.Common/redmuffin.Blazor.StaticWeb.Common.csproj">
     <BuildType Solution="Debug-Sass|*" Project="Debug" />
   </Project>
-  <Project Path="src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Contracts/ApiHealth.Contracts.csproj">
+  <Project Path="src/redmuffin.Blazor.StaticWeb.Components/Components.csproj">
     <BuildType Solution="Debug-Sass|*" Project="Debug" />
   </Project>
-  <Project Path="src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth/ApiHealth.csproj">
+  <Project Path="src/redmuffin.Blazor.StaticWeb.Modules/AzureHealthCheck.Contracts/AzureHealthCheck.Contracts.csproj">
     <BuildType Solution="Debug-Sass|*" Project="Debug" />
   </Project>
-  <Project Path="tests/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Tests/ApiHealth.Tests.csproj">
+  <Project Path="src/redmuffin.Blazor.StaticWeb.Modules/AzureHealthCheck/AzureHealthCheck.csproj">
     <BuildType Solution="Debug-Sass|*" Project="Debug" />
   </Project>
-  <Project Path="src/redmuffin.Blazor.StaticWeb.Modules/Articles/Articles.csproj">
+  <Project Path="tests/redmuffin.Blazor.StaticWeb.Modules/AzureHealthCheck.Tests/AzureHealthCheck.Tests.csproj">
     <BuildType Solution="Debug-Sass|*" Project="Debug" />
   </Project>
-  <Project Path="tests/redmuffin.Blazor.StaticWeb.Modules/Articles.Tests/Articles.Tests.csproj">
+  <Project Path="src/redmuffin.Blazor.StaticWeb.Pages/ApiHealth/ApiHealth.Page.csproj">
     <BuildType Solution="Debug-Sass|*" Project="Debug" />
   </Project>
-  <Project Path="src/redmuffin.Blazor.StaticWeb.Modules/Videos/Videos.csproj">
+  <Project Path="src/redmuffin.Blazor.StaticWeb.Pages/Articles/Articles.csproj">
     <BuildType Solution="Debug-Sass|*" Project="Debug" />
   </Project>
-  <Project Path="tests/redmuffin.Blazor.StaticWeb.Modules/Videos.Tests/Videos.Tests.csproj">
+  <Project Path="tests/redmuffin.Blazor.StaticWeb.Pages/Articles.Tests/Articles.Tests.csproj">
+    <BuildType Solution="Debug-Sass|*" Project="Debug" />
+  </Project>
+  <Project Path="src/redmuffin.Blazor.StaticWeb.Pages/Videos/Videos.csproj">
+    <BuildType Solution="Debug-Sass|*" Project="Debug" />
+  </Project>
+  <Project Path="tests/redmuffin.Blazor.StaticWeb.Pages/Videos.Tests/Videos.Tests.csproj">
     <BuildType Solution="Debug-Sass|*" Project="Debug" />
   </Project>
   <Project Path="src/redmuffin.Blazor.StaticWeb.Modules/Raindrop.Contracts/Raindrop.Contracts.csproj">
