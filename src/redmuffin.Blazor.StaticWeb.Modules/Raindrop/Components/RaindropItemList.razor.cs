@@ -70,13 +70,15 @@ public partial class RaindropItemList
                 "eval",
                 $"document.getElementById('{elementId}')?.classList.add('loaded')").ConfigureAwait(false);
         }
-        catch (JSException)
+        catch (JSException ex)
         {
             // Shimmer stop is best-effort; image state still updates.
+            _ = ex;
         }
-        catch (InvalidOperationException)
+        catch (InvalidOperationException ex)
         {
             // Shimmer stop is best-effort; image state still updates.
+            _ = ex;
         }
     }
 

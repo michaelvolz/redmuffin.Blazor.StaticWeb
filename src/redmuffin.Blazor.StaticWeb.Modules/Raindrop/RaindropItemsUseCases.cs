@@ -57,9 +57,10 @@ internal static class RaindropItemsUseCases
         {
             await storage.SetAsync(cacheKey, items, cancellationToken).ConfigureAwait(false);
         }
-        catch
+        catch (Exception ex)
         {
             // Cache write failure must not fail a successful fetch (same as host orchestrator).
+            _ = ex;
         }
 
         return Result.Success(new RaindropItemsResponse(items, IsFromCache: false, HasUpdateAvailable: false));

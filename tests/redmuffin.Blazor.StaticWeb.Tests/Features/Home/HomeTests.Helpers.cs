@@ -118,20 +118,6 @@ public partial class HomeTests
         }
 
         /// <summary>
-        ///     Configures the test context with a fast timeout HTTP client for testing async operation timeouts.
-        /// </summary>
-        public TestScope WithTimeoutHttpClient()
-        {
-            BUnitContext.Services.AddSingleton<NavigationManager>(NavigationManager);
-            BUnitContext.Services.AddSingleton<ILogger<HomePage>>(Logger);
-            BUnitContext.Services.AddSingleton<IHttpClientFactory>(HttpClientFactory_Stub.FastTimeout);
-            BUnitContext.Services.AddSingleton<IDelayProvider>(new DelayProvider_Stub()); // ✅ FAST: No delays in tests
-            BUnitContext.Services.AddSingleton<IPageAssemblyLoader>(PageAssemblyLoader_Stub.Instance);
-            BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
-            return this;
-        }
-
-        /// <summary>
         ///     Configures JS interop mode for testing JavaScript integration scenarios.
         /// </summary>
         public TestScope WithJSInterop(JSRuntimeMode mode = JSRuntimeMode.Strict)
@@ -239,7 +225,6 @@ public partial class HomeTests
     {
         public static HttpClientFactory_Stub Mock { get; } = new(() => new HttpMessageHandler_Mock());
         public static HttpClientFactory_Stub Failing { get; } = new(() => new FailingHttpMessageHandler());
-        public static HttpClientFactory_Stub FastTimeout { get; } = new(() => new HttpMessageHandler_FastTimeoutMock()); // ✅ FAST: 100ms timeout
 
         public HttpClient CreateClient(string name = "")
         {
@@ -265,18 +250,6 @@ public partial class HomeTests
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             throw new HttpRequestException("Simulated network error");
-        }
-    }
-
-    // ✅ OPTIMIZED: Fast timeout handler (100ms instead of 60 seconds)
-    public sealed class HttpMessageHandler_FastTimeoutMock : HttpMessageHandler
-    {
-        [Slopwatch.SlopwatchSuppress("SW004", "Intentional timeout simulation for fast-fail testing")]
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            // ✅ FAST: Use 100ms timeout instead of 1 minute for test performance
-            await Task.Delay(100, cancellationToken).ConfigureAwait(false);
-            throw new TaskCanceledException("Request timed out");
         }
     }
 

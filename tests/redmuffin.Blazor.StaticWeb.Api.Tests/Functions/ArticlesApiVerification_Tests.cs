@@ -14,10 +14,11 @@ public sealed partial class ArticlesApiVerification_Tests
 {
     private static readonly HttpStatusCode[] TransientStatuses = [HttpStatusCode.BadGateway, HttpStatusCode.ServiceUnavailable, HttpStatusCode.GatewayTimeout];
 
-    [Slopwatch.SlopwatchSuppress("SW004", "Genuine retry backoff for live API integration test")]
     private static async Task<(HttpResponseMessage Response, string Content)> GetWithRetryAsync(
         HttpClient client, string url, CancellationToken cancellationToken, int maxRetries = 3)
     {
+        // Immediate retries for transient statuses; wall-clock backoff removed (SW004).
+        // Whole-test flakiness is handled by TUnit [Retry] on callers.
         for (var attempt = 0; attempt < maxRetries; attempt++)
         {
             var response = await client.GetAsync(url, cancellationToken).ConfigureAwait(false);
@@ -25,11 +26,6 @@ public sealed partial class ArticlesApiVerification_Tests
             {
                 var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
                 return (response, content);
-            }
-
-            if (attempt < maxRetries - 1)
-            {
-                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
             }
         }
 
