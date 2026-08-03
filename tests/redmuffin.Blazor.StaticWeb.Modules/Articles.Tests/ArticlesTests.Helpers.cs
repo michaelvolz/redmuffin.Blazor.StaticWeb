@@ -8,9 +8,9 @@ using redmuffin.Blazor.StaticWeb.Common;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Common.ImagePlaceholder;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
-using ArticlesComponent = redmuffin.Blazor.StaticWeb.Modules.Raindrop.ArticlesPage.Articles;
+using ArticlesComponent = redmuffin.Blazor.StaticWeb.Modules.Articles.Articles;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.Features.ArticlesPage;
+namespace redmuffin.Blazor.StaticWeb.Modules.Articles.Tests;
 
 [Category("Feature:Articles")]
 public partial class ArticlesTests
@@ -291,9 +291,6 @@ public partial class ArticlesTests
             Result.Success(new RaindropItemsResponse([], IsFromCache: false, HasUpdateAvailable: false));
 
         private string? _refreshFailure;
-        private int _delayMs;
-        private bool _preventDoubleRefresh;
-        private bool _refreshInProgress;
 
         public void SetupLoad(IReadOnlyList<RaindropItem> items, bool isFromCache = false)
         {
@@ -316,35 +313,18 @@ public partial class ArticlesTests
             _refreshFailure = error;
         }
 
-        public void SetupDelay(int milliseconds) => _delayMs = milliseconds;
-
-        public void SetupDoubleRefreshPrevention(bool prevent) => _preventDoubleRefresh = prevent;
-
-        public async ValueTask<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
+        public ValueTask<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
         {
             if (request is LoadArticlesQuery or LoadVideosQuery)
-                return (TResponse)(object)_loadResult;
+                return ValueTask.FromResult((TResponse)(object)_loadResult);
 
             if (request is RefreshArticlesCommand or RefreshVideosCommand)
             {
-                if (_preventDoubleRefresh && _refreshInProgress)
-                    return (TResponse)(object)Result.Failure<RaindropItemsResponse>("Double refresh prevented");
+                // Double-refresh is gated by the page (_context.IsRefreshing), not wall-clock delay.
+                if (_refreshFailure is not null)
+                    return ValueTask.FromResult((TResponse)(object)Result.Failure<RaindropItemsResponse>(_refreshFailure));
 
-                _refreshInProgress = true;
-                try
-                {
-                    if (_delayMs > 0)
-                        await Task.Delay(_delayMs, cancellationToken).ConfigureAwait(false);
-
-                    if (_refreshFailure is not null)
-                        return (TResponse)(object)Result.Failure<RaindropItemsResponse>(_refreshFailure);
-
-                    return (TResponse)(object)_refreshResult;
-                }
-                finally
-                {
-                    _refreshInProgress = false;
-                }
+                return ValueTask.FromResult((TResponse)(object)_refreshResult);
             }
 
             throw new InvalidOperationException($"Unexpected request type: {request.GetType().Name}");

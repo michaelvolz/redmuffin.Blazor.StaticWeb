@@ -1,7 +1,7 @@
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Modules.Raindrop.VideosPage;
+using redmuffin.Blazor.StaticWeb.Modules.Videos;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.Features.VideosPage;
+namespace redmuffin.Blazor.StaticWeb.Modules.Videos.Tests;
 
 /// <summary>
 ///     TUnit tests for Videos component.

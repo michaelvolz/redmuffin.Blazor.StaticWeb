@@ -55,21 +55,39 @@ and re-scope. Client modules and the Functions app deploy independently.
 
 ## Phase 1 — Projects
 
+**Hard rules (non-negotiable):**
+
+1. **One capability = one module.** Do not place another feature’s pages or
+   policy inside an existing module (for example do not put Articles/Videos
+   under Raindrop). Cross-module reuse is a **project reference**, not a
+   nested folder. Merge only when the user explicitly says to.
+2. **Tests always mirror production layout.** Each module’s tests live under
+   `tests/redmuffin.Blazor.StaticWeb.Modules/{Name}.Tests/`, never under
+   host `tests/.../Features/` after the capability has a module project.
+
 Create production projects under `src/redmuffin.Blazor.StaticWeb.Modules/`
 and a mirrored test project under `tests/`:
 
 ```text
-src/.../Modules/{Name}.Contracts/   # public: queries, responses, interfaces
-src/.../Modules/{Name}/             # handlers, services, Add{Name}Module
-tests/.../Modules/{Name}.Tests/     # unit tests; IsTestProject=true
+src/.../Modules/{Name}.Contracts/   # public: queries, responses, interfaces (when owned)
+src/.../Modules/{Name}/             # handlers, services, page RCL, Add{Name}Module
+tests/.../Modules/{Name}.Tests/     # unit/bUnit tests; IsTestProject=true
 ```
+
+**Page modules that consume another domain** (Articles → Raindrop): page
+project + tests; domain Contracts stay on the domain module. Still a
+separate module project for the page capability.
 
 Never put `{Name}.Tests` under `src/`. Never fold module tests into the host
 or Api test projects.
 
-1. Target `net9.0` (same as ApiHealth / Common) unless the host forces otherwise
+1. Target framework: Contracts align with Common (`net9.0`). Page/impl RCL
+   modules (ApiHealth, Raindrop, Articles, Videos) target `net10.0` to match
+   the WASM host. Do not force RCLs to `net9.0`.
 2. Contracts references Common (for `Result<T>`) and Mediator.Abstractions
-3. Module references Contracts + Common; package refs as needed (Http, DI)
+3. Module references Contracts + Common; package refs as needed (Http, DI).
+   Page modules that consume a domain also `ProjectReference` that domain
+   module (Articles → Raindrop), never nest pages as subfolders of it.
 4. Tests reference Module, Contracts, Common (paths into `src/`); copy test
    `.editorconfig` from an existing module test project; set
    `<IsTestProject>true</IsTestProject>`
@@ -151,11 +169,16 @@ dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests
 | Path | Role |
 | --- | --- |
 | `src/.../Modules/ApiHealth.Contracts/*` | Query, response, `IHealthCheckService` |
-| `src/.../Modules/ApiHealth/*` | Handler, services, DI extension |
+| `src/.../Modules/ApiHealth/*` | Services, DI extension, page RCL |
 | `tests/.../Modules/ApiHealth.Tests/*` | Module unit tests |
+| `src/.../Modules/Raindrop*` | Domain IO, cache, shared Raindrop UI components |
+| `src/.../Modules/Articles/*` | Articles page module (references Raindrop) |
+| `src/.../Modules/Videos/*` | Videos page module (references Raindrop) |
+| `tests/.../Modules/Articles.Tests/*` | Articles page tests (mirror) |
+| `tests/.../Modules/Videos.Tests/*` | Videos page tests (mirror) |
 | `Common/Result.cs` | Shared `Result` / `Result<T>` |
 | `Common/PipelineBehaviors/LoggingBehavior.cs` | Cross-module pipeline |
-| `Modules/ApiHealth/*` page + ViewModel | Lazy RCL pilot (SN-0060); host keeps gate + thin handler |
+| Host `Features/{Name}/` | Eager thin Mediator handlers + module gates only |
 
 ## Related
 

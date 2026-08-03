@@ -7,13 +7,10 @@ using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Common;
 using redmuffin.Blazor.StaticWeb.Common.ImagePlaceholder;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
-using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Models;
-using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
-using redmuffin.Blazor.StaticWeb.Modules.Raindrop.VideosPage;
+using redmuffin.Blazor.StaticWeb.Modules.Videos;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.Features.VideosPage;
+namespace redmuffin.Blazor.StaticWeb.Modules.Videos.Tests;
 
 [Category("Feature:Videos")]
 public sealed partial class VideosTests
@@ -64,13 +61,7 @@ public sealed partial class VideosTests
             Logger = new Logger_Spy<Videos>();
             Mediator_Mock = new RaindropMediator_Mock();
             ImagePlaceholderService_Mock = new ImagePlaceholderService_Mock();
-            ImageValidationService_Mock = new ImageValidationService_Mock();
-
-            // Create actual service instance with mocked dependencies
-            ImageUrlResolver = new ImageUrlResolver(
-                ImageValidationService_Mock,
-                ImagePlaceholderService_Mock,
-                new Logger_Spy<ImageUrlResolver>());
+            ImageUrlResolver = new ImageUrlResolver_Mock();
         }
 
         public BunitContext BUnitContext { get; }
@@ -78,8 +69,7 @@ public sealed partial class VideosTests
         public Logger_Spy<Videos> Logger { get; }
         public RaindropMediator_Mock Mediator_Mock { get; }
         public ImagePlaceholderService_Mock ImagePlaceholderService_Mock { get; }
-        public ImageValidationService_Mock ImageValidationService_Mock { get; }
-        public IImageUrlResolver ImageUrlResolver { get; }
+        public ImageUrlResolver_Mock ImageUrlResolver { get; }
 
         /// <summary>
         ///     Configures the test context with high-performance services for optimal test execution.
@@ -90,7 +80,7 @@ public sealed partial class VideosTests
             BUnitContext.Services.AddSingleton<ILogger<Videos>>(Logger);
             BUnitContext.Services.AddSingleton<IMediator>(Mediator_Mock);
             BUnitContext.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderService_Mock);
-            BUnitContext.Services.AddSingleton(ImageUrlResolver);
+            BUnitContext.Services.AddSingleton<IImageUrlResolver>(ImageUrlResolver);
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
 
             return this;
@@ -174,64 +164,38 @@ public sealed partial class VideosTests
     }
 
     /// <summary>
-    ///     Manual mock implementation for IImageValidator since LightMock.Generator doesn't support it.
+    ///     Manual mock for <see cref="IImageUrlResolver"/> so module tests stay free of host Core.
     /// </summary>
-    public sealed class ImageValidationService_Mock : IImageValidator
+    public sealed class ImageUrlResolver_Mock : IImageUrlResolver
     {
-        private readonly Dictionary<string, ImageValidationResult?> _cachedResults = new();
-        private readonly Dictionary<string, ImageValidationResult> _validationResults = new();
-        private readonly Dictionary<string, string> _placeholderResults = new();
-
-        /// <summary>
-        ///     Sets up a cached result for testing.
-        /// </summary>
-        public void SetupCachedResult(string imageUrl, ImageValidationResult? result)
+        public Task PopulateImageUrlCacheAsync(
+            IEnumerable<RaindropItem> items,
+            IDictionary<string, string> imageUrlCache,
+            Func<Task> stateHasChangedCallback,
+            CancellationToken cancellationToken = default)
         {
-            _cachedResults[imageUrl] = result;
+            foreach (var item in items)
+                if (!string.IsNullOrEmpty(item.Cover))
+                {
+                    var key = item.Link ?? item.Id.ToString();
+                    imageUrlCache[key] = item.Cover;
+                }
+
+            return stateHasChangedCallback();
         }
 
-        /// <summary>
-        ///     Sets up a validation result for testing.
-        /// </summary>
-        public void SetupValidationResult(string imageUrl, ImageValidationResult result)
+        public Task<string> GetCachedImageUrlAsync(RaindropItem item, CancellationToken cancellationToken = default)
         {
-            _validationResults[imageUrl] = result;
+            return Task.FromResult(item.Cover ?? "/images/placeholder.svg");
         }
 
-        /// <summary>
-        ///     Sets up a placeholder result for testing.
-        /// </summary>
-        public void SetupPlaceholderResult(string imageUrl, string placeholder)
+        public Task ValidateImageInBackgroundAsync(
+            RaindropItem item,
+            IDictionary<string, string> imageUrlCache,
+            Func<Task> stateHasChangedCallback,
+            CancellationToken cancellationToken = default)
         {
-            _placeholderResults[imageUrl] = placeholder;
-        }
-
-        /// <summary>
-        ///     Clears all setup results.
-        /// </summary>
-        public void Reset()
-        {
-            _cachedResults.Clear();
-            _validationResults.Clear();
-            _placeholderResults.Clear();
-        }
-
-        public Task<ImageValidationResult?> GetCachedResultAsync(string imageUrl, CancellationToken cancellationToken = default)
-        {
-            _cachedResults.TryGetValue(imageUrl, out var result);
-            return Task.FromResult(result);
-        }
-
-        public Task<ImageValidationResult> ValidateImageAsync(string imageUrl, CancellationToken cancellationToken = default)
-        {
-            if (_validationResults.TryGetValue(imageUrl, out var result)) return Task.FromResult(result);
-            return Task.FromResult(ImageValidationResult.Success());
-        }
-
-        public Task<string> GetImageUrlOrPlaceholderAsync(string imageUrl, CancellationToken cancellationToken = default)
-        {
-            if (_placeholderResults.TryGetValue(imageUrl, out var placeholder)) return Task.FromResult(placeholder);
-            return Task.FromResult(imageUrl); // Return original URL by default
+            return Task.CompletedTask;
         }
     }
 
@@ -335,9 +299,6 @@ public sealed partial class VideosTests
             Result.Success(new RaindropItemsResponse([], IsFromCache: false, HasUpdateAvailable: false));
 
         private string? _refreshFailure;
-        private int _delayMs;
-        private bool _preventDoubleRefresh;
-        private bool _refreshInProgress;
 
         public void SetupLoad(IReadOnlyList<RaindropItem> items, bool isFromCache = false)
         {
@@ -360,35 +321,18 @@ public sealed partial class VideosTests
             _refreshFailure = error;
         }
 
-        public void SetupDelay(int milliseconds) => _delayMs = milliseconds;
-
-        public void SetupDoubleRefreshPrevention(bool prevent) => _preventDoubleRefresh = prevent;
-
-        public async ValueTask<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
+        public ValueTask<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
         {
             if (request is LoadArticlesQuery or LoadVideosQuery)
-                return (TResponse)(object)_loadResult;
+                return ValueTask.FromResult((TResponse)(object)_loadResult);
 
             if (request is RefreshArticlesCommand or RefreshVideosCommand)
             {
-                if (_preventDoubleRefresh && _refreshInProgress)
-                    return (TResponse)(object)Result.Failure<RaindropItemsResponse>("Double refresh prevented");
+                // Double-refresh is gated by the page (_context.IsRefreshing), not wall-clock delay.
+                if (_refreshFailure is not null)
+                    return ValueTask.FromResult((TResponse)(object)Result.Failure<RaindropItemsResponse>(_refreshFailure));
 
-                _refreshInProgress = true;
-                try
-                {
-                    if (_delayMs > 0)
-                        await Task.Delay(_delayMs, cancellationToken).ConfigureAwait(false);
-
-                    if (_refreshFailure is not null)
-                        return (TResponse)(object)Result.Failure<RaindropItemsResponse>(_refreshFailure);
-
-                    return (TResponse)(object)_refreshResult;
-                }
-                finally
-                {
-                    _refreshInProgress = false;
-                }
+                return ValueTask.FromResult((TResponse)(object)_refreshResult);
             }
 
             throw new InvalidOperationException($"Unexpected request type: {request.GetType().Name}");

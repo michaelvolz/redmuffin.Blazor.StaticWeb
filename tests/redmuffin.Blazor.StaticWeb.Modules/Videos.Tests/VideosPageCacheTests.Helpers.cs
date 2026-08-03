@@ -1,20 +1,19 @@
 using Bunit;
-using LightMock.Generator;
 using Mediator;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Common.ImagePlaceholder;
-using redmuffin.Blazor.StaticWeb.Modules.Raindrop.ArticlesPage;
+using redmuffin.Blazor.StaticWeb.Modules.Videos;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.Features.ArticlesPage;
+namespace redmuffin.Blazor.StaticWeb.Modules.Videos.Tests;
 
 /// <summary>
-///     Helper methods and infrastructure for ArticlesPageCacheTests.
+///     Helper methods and infrastructure for VideosPageCacheTests.
 /// </summary>
-[Category("Feature:Articles")]
-public partial class ArticlesPageCacheTests
+[Category("Feature:Videos")]
+public partial class VideosPageCacheTests
 {
     /// <summary>
     ///     Creates a new test scope with standard configuration.
@@ -33,14 +32,14 @@ public partial class ArticlesPageCacheTests
     /// <param name="excerpt">The item excerpt.</param>
     /// <param name="link">The item link (optional).</param>
     /// <returns>A configured test RaindropItem.</returns>
-    private static RaindropItem CreateTestArticle(string id, string title, string excerpt, string? link = null)
+    private static RaindropItem CreateTestVideo(string id, string title, string excerpt, string? link = null)
     {
         return new RaindropItem
         {
             Id = long.Parse(id),
             Title = title,
             Excerpt = excerpt,
-            Link = link ?? $"https://example.com/article/{id}",
+            Link = link ?? $"https://example.com/video/{id}",
             Cover = $"https://example.com/cover/{id}.jpg",
             Created = DateTime.UtcNow.AddDays(-1)
         };
@@ -58,9 +57,9 @@ public partial class ArticlesPageCacheTests
         public BunitContext Context { get; } = new();
 
         /// <summary>
-        ///     Gets the Mediator mock used by the Articles page after Step 3 cutover.
+        ///     Gets the Mediator mock used by the Videos page after Step 3 cutover.
         /// </summary>
-        public ArticlesTests.RaindropMediator_Mock Mediator_Mock { get; } = new();
+        public VideosTests.RaindropMediator_Mock Mediator_Mock { get; } = new();
 
         /// <summary>
         ///     Gets the mock for IImagePlaceholderService.
@@ -73,9 +72,9 @@ public partial class ArticlesPageCacheTests
         public ImageUrlResolver_Mock ImageUrlResolver_Mock { get; } = new();
 
         /// <summary>
-        ///     Gets the mock logger for Articles component (external dependency - uses LightMock).
+        ///     Gets the spy logger for Videos component.
         /// </summary>
-        public Mock<ILogger<Articles>> Logger_Mock { get; } = new();
+        public VideosTests.Logger_Spy<Videos> Logger { get; } = new();
 
         /// <summary>
         ///     Configures the test scope with standard services for component testing.
@@ -86,7 +85,7 @@ public partial class ArticlesPageCacheTests
             Context.Services.AddSingleton<IMediator>(Mediator_Mock);
             Context.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderService_Mock);
             Context.Services.AddSingleton<IImageUrlResolver>(ImageUrlResolver_Mock);
-            Context.Services.AddSingleton(Logger_Mock.Object);
+            Context.Services.AddSingleton<ILogger<Videos>>(Logger);
             Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
             return this;

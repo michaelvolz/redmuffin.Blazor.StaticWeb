@@ -5,13 +5,17 @@ component-map:
   ApiHealth.Contracts: Shared
   ApiHealth: Frontend
   ApiHealth.Tests: Frontend
+  Articles: Frontend
+  Articles.Tests: Frontend
+  Videos: Frontend
+  Videos.Tests: Frontend
   Raindrop.Contracts: Shared
   Raindrop: Frontend
   Raindrop.Tests: Frontend
   SwaLauncher: Frontend
 
 allowed-dependencies:
-  Frontend: [Shared]
+  Frontend: [Shared, Frontend]
   Backend: [Shared]
   # Shared may compose shared kernel types (e.g. Contracts → Common for Result<>).
   Shared: [Shared]

@@ -5,7 +5,7 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Core;
 public sealed class PageAssemblyCatalogTests
 {
     [Test]
-    public async Task Articles_And_Videos_List_Raindrop_Dll()
+    public async Task Articles_And_Videos_List_Page_Module_And_Raindrop_Dlls()
     {
         using (Assert.Multiple())
         {
@@ -14,10 +14,12 @@ public sealed class PageAssemblyCatalogTests
 
             await Assert.That(PageAssemblyCatalog.TryGetAssemblies(PageAssemblyCatalog.ArticlesPageKey, out var articles))
                 .IsTrue();
+            await Assert.That(articles).Contains("Articles.dll");
             await Assert.That(articles).Contains("Raindrop.dll");
 
             await Assert.That(PageAssemblyCatalog.TryGetAssemblies(PageAssemblyCatalog.VideosPageKey, out var videos))
                 .IsTrue();
+            await Assert.That(videos).Contains("Videos.dll");
             await Assert.That(videos).Contains("Raindrop.dll");
         }
     }

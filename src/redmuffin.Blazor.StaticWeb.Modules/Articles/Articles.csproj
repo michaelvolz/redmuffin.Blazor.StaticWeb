@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>redmuffin.Blazor.StaticWeb.Modules.Articles</RootNamespace>
+    <AddRazorSupportForMvc>false</AddRazorSupportForMvc>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mediator.Abstractions" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Raindrop\Raindrop.csproj" />
+    <ProjectReference Include="..\Raindrop.Contracts\Raindrop.Contracts.csproj" />
+    <ProjectReference Include="..\..\redmuffin.Blazor.StaticWeb.Common\redmuffin.Blazor.StaticWeb.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Articles.Tests" />
+  </ItemGroup>
+
+</Project>

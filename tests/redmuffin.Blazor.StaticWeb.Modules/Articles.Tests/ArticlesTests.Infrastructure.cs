@@ -1,8 +1,8 @@
 using Bunit;
 using Microsoft.AspNetCore.Components.Web;
-using ArticlesComponent = redmuffin.Blazor.StaticWeb.Modules.Raindrop.ArticlesPage.Articles;
+using ArticlesComponent = redmuffin.Blazor.StaticWeb.Modules.Articles.Articles;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.Features.ArticlesPage;
+namespace redmuffin.Blazor.StaticWeb.Modules.Articles.Tests;
 
 [Category("Feature:Articles")]
 public sealed partial class ArticlesTests

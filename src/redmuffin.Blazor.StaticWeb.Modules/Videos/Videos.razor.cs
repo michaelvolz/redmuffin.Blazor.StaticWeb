@@ -4,9 +4,11 @@ using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Presentation;
 
-namespace redmuffin.Blazor.StaticWeb.Modules.Raindrop.ArticlesPage;
+namespace redmuffin.Blazor.StaticWeb.Modules.Videos;
 
-public partial class Articles
+#pragma warning disable MA0049 // Type name matches namespace — standard Blazor component pattern
+public partial class Videos
+#pragma warning restore MA0049
 {
     private const string LoadErrorMessage =
         "Unable to load items. Please check your internet connection and try refreshing the page.";
@@ -19,7 +21,7 @@ public partial class Articles
     private readonly IImageUrlResolver _imageUrlResolver;
     private readonly IMediator _mediator;
 
-    public Articles(
+    public Videos(
         IImageUrlResolver imageUrlResolver,
         IMediator mediator)
     {
@@ -45,7 +47,7 @@ public partial class Articles
     {
         try
         {
-            var result = await _mediator.Send(new LoadArticlesQuery()).ConfigureAwait(false);
+            var result = await _mediator.Send(new LoadVideosQuery()).ConfigureAwait(false);
             await result.Match(
                 async response => await ApplyItemsAsync(response.Items).ConfigureAwait(false),
                 error =>
@@ -65,7 +67,7 @@ public partial class Articles
     {
         try
         {
-            var result = await _mediator.Send(new RefreshArticlesCommand()).ConfigureAwait(false);
+            var result = await _mediator.Send(new RefreshVideosCommand()).ConfigureAwait(false);
             if (result.IsFailure)
                 return;
 
@@ -101,7 +103,7 @@ public partial class Articles
 
         try
         {
-            var result = await _mediator.Send(new RefreshArticlesCommand()).ConfigureAwait(false);
+            var result = await _mediator.Send(new RefreshVideosCommand()).ConfigureAwait(false);
             await result.Match(
                 async response =>
                 {

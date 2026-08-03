@@ -1,8 +1,8 @@
 using Bunit;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Modules.Raindrop.VideosPage;
+using redmuffin.Blazor.StaticWeb.Modules.Videos;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.Features.VideosPage;
+namespace redmuffin.Blazor.StaticWeb.Modules.Videos.Tests;
 
 [Category("Feature:Videos")]
 public sealed partial class VideosTests

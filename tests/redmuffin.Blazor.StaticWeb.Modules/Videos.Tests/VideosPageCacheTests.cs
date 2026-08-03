@@ -1,4 +1,4 @@
-﻿namespace redmuffin.Blazor.StaticWeb.Tests.Features.VideosPage;
+namespace redmuffin.Blazor.StaticWeb.Modules.Videos.Tests;
 
 /// <summary>
 ///     Integration tests for Videos page caching functionality.

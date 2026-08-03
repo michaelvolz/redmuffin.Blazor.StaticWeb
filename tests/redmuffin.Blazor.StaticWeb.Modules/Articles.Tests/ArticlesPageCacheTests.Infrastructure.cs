@@ -1,9 +1,9 @@
 using Bunit;
 using Microsoft.AspNetCore.Components.Web;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Modules.Raindrop.ArticlesPage;
+using redmuffin.Blazor.StaticWeb.Modules.Articles;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.Features.ArticlesPage;
+namespace redmuffin.Blazor.StaticWeb.Modules.Articles.Tests;
 
 [Category("Feature:Articles")]
 public sealed partial class ArticlesPageCacheTests
@@ -24,11 +24,10 @@ public sealed partial class ArticlesPageCacheTests
 
         scope.Mediator_Mock.SetupLoad(cachedArticles, isFromCache: true);
         scope.Mediator_Mock.SetupRefresh(freshArticles);
-        scope.Mediator_Mock.SetupDelay(300); // Add delay to test multiple clicks
 
         var component = scope.Context.Render<Articles>();
 
-        // Await background refresh completion deterministically — the mock has SetupDelay(300)
+        // Await background refresh completion deterministically
         if (component.Instance.BackgroundRefreshTask is { } refreshTask)
             await refreshTask.ConfigureAwait(false);
 

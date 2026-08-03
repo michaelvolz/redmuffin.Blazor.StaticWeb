@@ -1,6 +1,6 @@
 ---
 date: 2026-08-03
-version: 1.6.0
+version: 1.7.0
 last_updated: 2026-08-03
 title: RiverBooks modularization roadmap and Mediator use
 purpose: >
@@ -60,12 +60,18 @@ Three product decisions bind every future plan:
    requests, pipeline behaviors, host decoupling, and test seams — not as
    an optional wrapper around services the page still injects.
 2. **Endgoal is full client RiverBooks modularization.** The WASM host
-   becomes composition root + pages (or rare lazy RCL pages). Feature
-   policy lives in Modules. Azure Functions stay a separate deploy unit
-   (HTTP only). **No size or demo exemptions:** tiny pages, sample pages,
-   and debug-style demos use the same triad quality bar (Contracts,
-   handlers, Result where failures exist, host thin via Mediator). “Little
-   domain” is not a reason to leave host-only feature services forever.
+   becomes composition root + shell. Feature policy and page modules live
+   under `Modules/`. Azure Functions stay a separate deploy unit
+   (HTTP only). **One capability = one module.** Never fold two
+   capabilities into one module project (for example Articles pages inside
+   Raindrop) unless the user **explicitly** authorizes that merge.
+   Modules may **reference** other modules (Articles → Raindrop); they do
+   not become subfolders of each other. **Tests always mirror `src`
+   layout** (`tests/.../Modules/{Name}.Tests` for each module). **No size
+   or demo exemptions:** tiny pages, sample pages, and debug-style demos
+   use the same triad quality bar (Contracts, handlers, Result where
+   failures exist, host thin via Mediator). “Little domain” is not a
+   reason to leave host-only feature services forever.
 3. **Initial client load beats total published size.** Optimize first
    payload and time-to-interactive. Total CDN/publish size may grow within
    reason. Every feature must still work after its code is available.
@@ -98,9 +104,11 @@ Three product decisions bind every future plan:
      not static HTML `rel=prefetch` of every DLL. Gate on
      `navigator.connection.saveData` when implementing. Silent on failure;
      real navigation still loads via `OnNavigateAsync`. **Host hook is live:**
-     `IPageAssemblyLoader` + `PageAssemblyCatalog` (Articles/Videos →
-     `Raindrop.dll`) + path→pageKey for `OnNavigateAsync` + Home first-render
-     prefetch. **V1 activated** page-lazy for Articles/Videos (catalog fill +
+     `IPageAssemblyLoader` + `PageAssemblyCatalog` (Articles →
+     `Articles.dll` + `Raindrop.dll`; Videos → `Videos.dll` +
+     `Raindrop.dll`) + path→pageKey for `OnNavigateAsync` + Home
+     first-render prefetch. **V1 activated** page-lazy for Articles/Videos
+     as **separate modules** that reference Raindrop (catalog fill +
      `BlazorWebAssemblyLazyLoad` + Raindrop module gate). Later pages: same
      pattern (fill catalog + LazyLoad + gate as needed).
    Procedure depth: skill `rm-blazor-lazy-loading`.
@@ -109,9 +117,10 @@ Phase 1 Raindrop (IO triad + Strategy, factory gone) is the foundation.
 **P0 done:** ApiHealth implementation assembly lazy load (PRD 002; user
 confirmed). **§6.3 done:** Raindrop Mediator use cases + Result + cache policy
 in module (PRD 003). **§6.4 V1 done:** residual host Raindrop surface into
-module; Articles/Videos RCL pages; `Raindrop.dll` lazy + Home prefetch real.
-**Immediate priority:** §6.4 **V2 Image / placeholder policy**. Later
-verticals are large capability batches — not one micro-slice per demo page.
+module; **Articles** and **Videos** as separate page modules referencing
+Raindrop; page-lazy + Home prefetch real. **Immediate priority:** §6.4
+**V2 Image / placeholder policy**. Later verticals are large capability
+batches — not one micro-slice per demo page.
 
 
 ## 1 — Scope and Definitions
@@ -327,7 +336,7 @@ separately. Page-lazy remains orthogonal and default for every page
 
 | Order | Vertical | Intent |
 | --- | --- | --- |
-| **V1** | **Complete Raindrop** | Residual host `Features/Raindrop` into module; Articles + Videos as module RCL pages; `Raindrop.dll` lazy; catalog + Home prefetch **activate** |
+| **V1** | **Complete Raindrop + page modules** | Residual host Raindrop into module; **Articles** and **Videos** as **separate** modules that reference Raindrop; each page’s DLL + `Raindrop.dll` lazy; catalog + Home prefetch **activate** |
 | **V2** | Image / placeholder policy | Multi-feature image policy (Core vs module decision); full ownership beyond V1 abstraction enabler |
 | **V3** | Debug island | LocalStorage debug pages + host services → triad + page-lazy |
 | **V4** | Samples batch | Counter, Weather, Foundation, Icons, MarkdownExamples (and peers) in **one** batch — same scorecard + page-lazy; not per-page PRDs |
@@ -351,34 +360,39 @@ the next). Do not modularize residue then rewire pages in a later vertical.
    (`IImageUrlResolver`, `IImagePlaceholderService`, and any other
    abstractions Raindrop RCL must inject) into `Common` so the RCL does not
    `ProjectReference` the host. Implementations remain host Core until V2.
-3. **RCL + pages + Raindrop-only UI.** Convert Raindrop implementation to
-   `Sdk.Razor` (net10, ApiHealth pattern). Move Articles + Videos pages and
-   Raindrop-only components (`RaindropItemList`, `RefreshBadge` / state,
-   page presentation helpers) into the module. No module → host
-   `Features/Common` component references.
-4. **Host-eager thin Mediator handlers.** Move Load/Refresh handlers out of
-   the lazy DLL onto the host (ApiHealth `GetHelloHandler` pattern) so
-   Mediator SourceGen does not root `Raindrop.dll` at boot. Handlers depend
-   only on Contracts ports; module owns use-case implementation behind a
-   gate-resolved facade/service.
-5. **Lazy load + catalog + gate.** `BlazorWebAssemblyLazyLoad` include
-   `Raindrop.dll`; `PageAssemblyCatalog` articles + videos =
-   `["Raindrop.dll"]`; deferred DI gate after `LoadAssembliesAsync` (no
-   boot-time `AddRaindropModule` type root into the lazy DLL). Home
-   prefetch of Articles/Videos becomes a real load.
-6. **Prove.** Build; Raindrop.Tests; host Articles/Videos/Raindrop suites;
-   Api project **untouched**.
+3. **Raindrop RCL (domain UI only).** Convert Raindrop implementation to
+   `Sdk.Razor` (net10). Raindrop-only components (`RaindropItemList`,
+   `RefreshBadge` / state, presentation helpers) live in **Raindrop**.
+   **Do not** put Articles or Videos pages inside Raindrop.
+4. **Separate Articles and Videos modules.** Each is its own RCL project
+   under `Modules/Articles` and `Modules/Videos`, referencing Raindrop
+   (shared UI + domain) and `Raindrop.Contracts` (Mediator messages).
+   Tests mirror under `tests/.../Modules/Articles.Tests` and
+   `Videos.Tests`. No module → host `Features/Common` component
+   references.
+5. **Host-eager thin Mediator handlers.** Load/Refresh handlers stay on
+   the host (ApiHealth `GetHelloHandler` pattern) so Mediator SourceGen
+   does not root lazy impl DLLs at boot. Handlers depend only on Contracts
+   ports; Raindrop owns use-case implementation behind a gate-resolved
+   facade.
+6. **Lazy load + catalog + gate.** `BlazorWebAssemblyLazyLoad` includes
+   `Articles.dll`, `Videos.dll`, and `Raindrop.dll`. Catalog:
+   articles → `["Articles.dll", "Raindrop.dll"]`; videos →
+   `["Videos.dll", "Raindrop.dll"]`. Deferred DI gate after
+   `LoadAssembliesAsync`. Home prefetch of Articles/Videos is real.
+7. **Prove.** Build; Raindrop.Tests; Articles.Tests; Videos.Tests; host
+   suites; Api project **untouched**.
 
 **Out of scope for V1:** full image policy module (V2); debug; samples;
 Home/Auth; Api; HTML `rel=prefetch` of DLLs; co-locating Articles into Home
-without measured data (§0 item 4).
+without measured data (§0 item 4); merging Articles/Videos into Raindrop.
 
 **Acceptance:**
 
 - No residual policy/cache under host `Features/Raindrop` (host may keep
   thin eager handlers + gate only).
-- `/articles` and `/videos` route UI live in lazy `Raindrop.dll`; first
-  navigation (or Home prefetch) loads the assembly; session free after.
+- `/articles` lives in lazy `Articles.dll`; `/videos` in lazy
+  `Videos.dll`; both co-load shared `Raindrop.dll` on first need.
 - Pages inject `IMediator` (+ UI-only deps such as image interfaces from
   Common); not `IRaindropAPI` or cache types.
 - Scorecard §7 and page-load graph row green for Articles/Videos.
@@ -402,21 +416,25 @@ product):**
 | Host page constructor | `IMediator` (+ UI-only deps) | Module services + cache + orchestrator |
 | Expected API failure | `Result` + `Match` | Exception-type switches in UI |
 | Cross-cutting | Pipeline behavior | Copy-paste logging per page |
-| New feature | Triad + `AddXModule` + requests | New host `Features/.../Services` |
+| New feature | Own module (+ Contracts/tests mirror) + requests | Folded into another module “because related”; host `Features/.../Services` |
 | Api project | Untouched except intentional HTTP contracts | Types dragged across deploy boundary |
 | Mediator | One `Send` per use case | Dozens of micro-requests |
-| Modularization | Policy moved; ports clear | Folder move without Contracts/handlers |
+| Modularization | One capability per module; ports clear | Multi-capability mega-module without explicit user merge OK |
 | Page load graph | Page impl (+ page-unique deps) lazy; co-load unique set; shared deps lazy | Page impl on eager boot; unique deps split across separate navigations |
 | Demo / tiny page | Same triad + Mediator + tests; page-lazy like product | Left host-only “because sample”; eager page impl |
+| Tests layout | Mirrors `src` (`Modules/{Name}.Tests` for modules) | Page tests left under host Features after module extract |
 
 ## 8 — Anti-patterns (do not plan these)
 
 1. Big-bang Result + Mediator + cache move + both pages + all mocks in one PR.
 2. Mediator **and** continued page injection of the same module service.
 3. Moving Azure Functions into Modules (or the reverse).
-4. Moving pages into module projects without a new ADR for UI ownership.
+4. Putting two capabilities in one module (Articles/Videos inside Raindrop)
+   without an **explicit** user authorization to merge.
 5. Dragging concrete `IJSRuntime` / browser storage types into Contracts.
 6. Measuring success as “matches the guide checklist” without scorecard gains.
+7. Leaving module page tests under host `tests/.../Features/` after extract
+   (tests must mirror project structure).
 7. Modularization that only relocates files under `Features/` with no triad.
 8. Skipping demo/sample/tiny pages permanently because they have little
    domain or “are not real product.”

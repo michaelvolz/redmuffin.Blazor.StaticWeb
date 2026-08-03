@@ -21,10 +21,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\src\SlopwatchSuppressions\SlopwatchSuppressAttribute.cs" Link="SlopwatchSuppressAttribute.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="bunit" />
     <PackageReference Include="LightMock.Generator" />
     <PackageReference Include="TUnit" />
@@ -37,10 +33,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\redmuffin.Blazor.StaticWeb\redmuffin.Blazor.StaticWeb.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Features\Pages\ArticlesPage\Core\" />
+    <ProjectReference Include="..\..\src\redmuffin.Blazor.StaticWeb.Common\redmuffin.Blazor.StaticWeb.Common.csproj" />
   </ItemGroup>
 
 </Project>
