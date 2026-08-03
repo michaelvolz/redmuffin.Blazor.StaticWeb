@@ -3,7 +3,7 @@ using redmuffin.Blazor.StaticWeb.Common;
 using redmuffin.Blazor.StaticWeb.Features.AzureHealthCheck;
 using redmuffin.Blazor.StaticWeb.Modules.AzureHealthCheck.Contracts;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.Features.ApiHealth;
+namespace redmuffin.Blazor.StaticWeb.Tests.Features.AzureHealthCheck;
 
 [Category("Feature:ApiHealth")]
 public sealed partial class GetHelloHandlerTests

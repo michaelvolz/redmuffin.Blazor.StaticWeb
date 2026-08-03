@@ -1,7 +1,8 @@
 using Bunit;
 using Microsoft.AspNetCore.Components.Web;
+using ApiHealthPage = redmuffin.Blazor.StaticWeb.Pages.ApiHealth.ApiHealth;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.Features.ApiHealth;
+namespace redmuffin.Blazor.StaticWeb.Pages.ApiHealth.Tests;
 
 [Category("Feature:ApiHealth")]
 public sealed partial class ApiHealthTests
@@ -11,7 +12,7 @@ public sealed partial class ApiHealthTests
     {
         // Arrange
         using var scope = CreateFailingTestScope();
-        var component = scope.BUnitContext.Render<global::redmuffin.Blazor.StaticWeb.Pages.ApiHealth.ApiHealth>();
+        var component = scope.BUnitContext.Render<ApiHealthPage>();
         var button = component.Find("button.button");
 
         // Act

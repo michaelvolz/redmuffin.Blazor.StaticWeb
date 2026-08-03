@@ -6,6 +6,7 @@ component-map:
   AzureHealthCheck.Contracts: Shared
   AzureHealthCheck: Frontend
   ApiHealth.Page: Frontend
+  ApiHealth.Tests: Frontend
   AzureHealthCheck.Tests: Frontend
   Articles: Frontend
   Articles.Tests: Frontend

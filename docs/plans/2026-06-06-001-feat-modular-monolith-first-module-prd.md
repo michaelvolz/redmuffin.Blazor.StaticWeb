@@ -4,6 +4,12 @@ date: 2026-06-06
 status: implemented
 ---
 
+> **Archive note (2026-08-03):** First-module vertical that introduced the
+> health-check triad (then named ApiHealth). **Current** capability name is
+> **AzureHealthCheck**; route page is `Pages/ApiHealth` (`ApiHealth.Page.dll`).
+> Modules have no `.razor`. Do not re-create page UI inside the module.
+> Canonical homes: roadmap §0 and module guide.
+
 ## Problem
 
 Our codebase uses a flat project structure with no enforced module

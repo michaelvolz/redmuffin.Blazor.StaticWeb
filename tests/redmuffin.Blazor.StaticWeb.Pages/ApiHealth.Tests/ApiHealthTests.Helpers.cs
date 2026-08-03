@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using redmuffin.Blazor.StaticWeb.Common;
 using redmuffin.Blazor.StaticWeb.Modules.AzureHealthCheck.Contracts;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.Features.ApiHealth;
+namespace redmuffin.Blazor.StaticWeb.Pages.ApiHealth.Tests;
 
 [Category("Feature:ApiHealth")]
 public sealed partial class ApiHealthTests

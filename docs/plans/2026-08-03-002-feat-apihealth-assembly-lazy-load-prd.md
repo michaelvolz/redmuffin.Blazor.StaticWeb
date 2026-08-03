@@ -5,6 +5,14 @@ status: done
 last_updated: 2026-08-03
 ---
 
+> **Archive note (2026-08-03):** This PRD shipped lazy load for the health-check
+> **implementation** DLL. Current names and homes: lazy
+> `AzureHealthCheck.dll` + `ApiHealth.Page.dll`; Contracts
+> `AzureHealthCheck.Contracts` stay eager; route UI is under `Pages/ApiHealth`
+> (not the module). SN-0060’s module-RCL page placement is **superseded** —
+> see roadmap §6.2b. Historical body below still says `ApiHealth` for the
+> module where that was the name at ship time.
+
 ## Problem
 
 The ApiHealth **implementation** assembly ships with the host and is part of

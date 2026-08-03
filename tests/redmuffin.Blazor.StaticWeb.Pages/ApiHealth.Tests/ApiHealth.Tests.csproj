@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>redmuffin.Blazor.StaticWeb.Pages.ApiHealth.Tests</RootNamespace>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="bunit" />
+    <PackageReference Include="TUnit" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\redmuffin.Blazor.StaticWeb.Pages\ApiHealth\ApiHealth.Page.csproj" />
+    <ProjectReference Include="..\..\..\src\redmuffin.Blazor.StaticWeb.Modules\AzureHealthCheck.Contracts\AzureHealthCheck.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\src\redmuffin.Blazor.StaticWeb.Common\redmuffin.Blazor.StaticWeb.Common.csproj" />
+  </ItemGroup>
+
+</Project>

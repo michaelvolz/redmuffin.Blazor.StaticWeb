@@ -1,7 +1,8 @@
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
+using ApiHealthPage = redmuffin.Blazor.StaticWeb.Pages.ApiHealth.ApiHealth;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.Features.ApiHealth;
+namespace redmuffin.Blazor.StaticWeb.Pages.ApiHealth.Tests;
 
 [Category("Feature:ApiHealth")]
 [Category("Unit")]
@@ -12,7 +13,7 @@ public sealed partial class ApiHealthTests
     {
         // Arrange & Act
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.Render<global::redmuffin.Blazor.StaticWeb.Pages.ApiHealth.ApiHealth>();
+        var component = scope.BUnitContext.Render<ApiHealthPage>();
 
         // Assert
         using (Assert.Multiple())
@@ -32,7 +33,7 @@ public sealed partial class ApiHealthTests
     {
         // Arrange
         using var scope = CreateTestScope("Hello from handler");
-        var component = scope.BUnitContext.Render<global::redmuffin.Blazor.StaticWeb.Pages.ApiHealth.ApiHealth>();
+        var component = scope.BUnitContext.Render<ApiHealthPage>();
         var button = component.Find("button.button");
 
         // Act

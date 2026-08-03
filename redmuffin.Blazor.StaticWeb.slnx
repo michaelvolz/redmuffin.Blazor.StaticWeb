@@ -25,6 +25,9 @@
   <Project Path="src/redmuffin.Blazor.StaticWeb.Pages/ApiHealth/ApiHealth.Page.csproj">
     <BuildType Solution="Debug-Sass|*" Project="Debug" />
   </Project>
+  <Project Path="tests/redmuffin.Blazor.StaticWeb.Pages/ApiHealth.Tests/ApiHealth.Tests.csproj">
+    <BuildType Solution="Debug-Sass|*" Project="Debug" />
+  </Project>
   <Project Path="src/redmuffin.Blazor.StaticWeb.Pages/Articles/Articles.csproj">
     <BuildType Solution="Debug-Sass|*" Project="Debug" />
   </Project>
