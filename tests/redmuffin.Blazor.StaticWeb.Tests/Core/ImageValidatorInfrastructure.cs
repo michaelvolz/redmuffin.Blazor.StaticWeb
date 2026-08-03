@@ -7,7 +7,7 @@ using ImageValidator = redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.ArticlesPage.Core;
 
-public sealed class ImageValidatorInfrastructure : IDisposable
+internal sealed class ImageValidatorInfrastructure : IDisposable
 {
     private readonly ControlledHttpHandler_Fake _handler;
     private readonly BrowserStorage_Stub _browserStorage;
@@ -25,7 +25,7 @@ public sealed class ImageValidatorInfrastructure : IDisposable
             loggerFactory.CreateLogger<ImageValidator>());
     }
 
-    public ImageValidator Service => _service;
+    internal ImageValidator Service => _service;
 
     public void SetupResponse(string url, HttpStatusCode status, string content, string contentType = "image/jpeg")
     {
@@ -45,7 +45,7 @@ public sealed class ImageValidatorInfrastructure : IDisposable
     public void Dispose() => _handler.Dispose();
 
     /// <summary>Pre-populates the cache for a given image URL.</summary>
-    public void SetupCachedResult(string imageUrl, ImageValidationResult? result)
+    internal void SetupCachedResult(string imageUrl, ImageValidationResult? result)
     {
         var cacheKey = ImageValidator.GetCacheKey(imageUrl);
         _browserStorage.CachedResults[cacheKey] = result;

@@ -1,6 +1,6 @@
 namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 
-public sealed partial class ImageUrlResolver
+internal sealed partial class ImageUrlResolver
 {
     [LoggerMessage(
         EventId = 1,

@@ -1,7 +1,7 @@
 ---
 title: feat/image-placeholder-policy
 date: 2026-08-03
-status: draft
+status: done
 ---
 
 ## Problem
@@ -92,14 +92,14 @@ gate if build pulls them in.
 
 ## Acceptance Criteria
 
-- [ ] Decision recorded: image policy stays Core + Common (not Modules triad).
-- [ ] `Program.cs` registers image services only through one Core DI extension.
-- [ ] No Articles/Videos production code references
+- [x] Decision recorded: image policy stays Core + Common (not Modules triad).
+- [x] `Program.cs` registers image services only through one Core DI extension.
+- [x] No Articles/Videos production code references
       `Core.ImagePlaceholder` namespaces.
-- [ ] Core collaborators that pages must not use are not part of the public
+- [x] Core collaborators that pages must not use are not part of the public
       page-facing API (validator/generation stay Core-owned).
-- [ ] `dotnet build` clean; host image-related tests green; Articles.Tests and
+- [x] `dotnet build` clean; host image-related tests green; Articles.Tests and
       Videos.Tests green.
-- [ ] Roadmap §6.4 V2 marked done; immediate priority advances to V3 Debug
-      island (or stated next).
-- [ ] Each implementation big step verified green before the next starts.
+- [x] Roadmap §6.4 V2 marked done; V3–V5 page homes already shipped as Pages
+      RCLs (no further page-extract backlog on that table).
+- [x] Each implementation big step verified green before the next starts.

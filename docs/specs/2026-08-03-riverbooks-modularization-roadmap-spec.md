@@ -142,8 +142,11 @@ in module (PRD 003). **§6.4 V1 done:** residual host Raindrop surface into
 module; **Articles**, **Videos**, and **ApiHealth** as separate **page**
 projects under **Pages**; shared list/badge UI under **Components**
 (`Components.dll`); domain stays `Raindrop.dll`; page-lazy + Home prefetch
-real. **Immediate priority:** §6.4 **V2 Image / placeholder policy**. Later
-verticals are large capability batches — not one micro-slice per demo page.
+real. **§6.4 V2 done:** image stays Core + Common contracts; single Core DI
+extension; collaborators internal. **§6.4 V3–V5 page homes done:** Debug,
+samples, Home, Auth as Pages RCLs (lazy; Home eager). **Immediate priority:**
+none remaining on the §6.4 client sequence table — further work is new product
+scope, not backlog page extracts.
 
 
 ## 1 — Scope and Definitions
@@ -273,8 +276,8 @@ re-scope. See ADR 0013.
 | ApiHealth route UI under `Pages/` (not in module) | **Done** (homes: page vs capability; SN-0060 module-RCL placement superseded) |
 | Raindrop Mediator use cases + Result + cache policy in module | **Done** (PRD 003 / §6.3) |
 | **V1 Complete Raindrop** (residual + RCL pages + page-lazy + prefetch) | **Done** (§6.4 V1) |
-| **V2 Image / placeholder policy** | **Next** (§6.4 V2) |
-| V3 Debug → V4 Samples batch → V5 Home/Auth | Backlog (§6.4) |
+| **V2 Image / placeholder policy** | **Done** (Core + Common; single DI extension; internal collaborators; PRD 004) |
+| V3 Debug → V4 Samples batch → V5 Home/Auth | **Done** (Pages RCLs + catalog lazy need-sets; Home eager) |
 | Further route UI | Prefer **Pages/** + lazy need-set (page DLL + module/component DLLs); modules stay razor-free capability |
 | Demo/sample/tiny pages | **In program scope** — same scorecard + same **page-lazy** rule as product features; **V4 samples batch** (not per-page PRDs); not skip |
 
@@ -362,11 +365,11 @@ separately. Page-lazy remains orthogonal and default for every page
 
 | Order | Vertical | Intent |
 | --- | --- | --- |
-| **V1** | **Complete Raindrop + page projects** | Residual host Raindrop into module; **Articles** and **Videos** as **separate page** projects that reference Raindrop; each page’s DLL + `Raindrop.dll` lazy; catalog + Home prefetch **activate** |
-| **V2** | Image / placeholder policy | Multi-feature image policy (Core vs module decision); full ownership beyond V1 abstraction enabler |
-| **V3** | Debug island | LocalStorage debug pages + host services → triad + page-lazy |
-| **V4** | Samples batch | Counter, Weather, Foundation, Icons, MarkdownExamples (and peers) in **one** batch — same scorecard + page-lazy; not per-page PRDs |
-| **V5** | Home / Auth leftovers | Shell-adjacent and redirect leftovers last |
+| **V1** | **Complete Raindrop + page projects** | **Done.** Residual host Raindrop into module; **Articles** and **Videos** as **separate page** projects; page DLL + `Raindrop.dll` lazy; catalog + Home prefetch active |
+| **V2** | Image / placeholder policy | **Done.** Implementations stay host Core; page-facing contracts in Common; `AddImagePlaceholderServices`; Core collaborators internal — not a Modules triad |
+| **V3** | Debug island | **Done** as Pages RCL (`Debug.dll` lazy) — not a domain Modules triad |
+| **V4** | Samples batch | **Done.** Counter, Weather, Foundation, Icons, MarkdownExamples as Pages RCLs + page-lazy (Markdig co-lazy with MarkdownExamples) |
+| **V5** | Home / Auth leftovers | **Done.** Home eager RCL; Auth/redirect lazy RCL |
 | Never | Api Functions deploy unit | HTTP boundary only |
 
 #### V1 — Complete Raindrop (contract)

@@ -3,7 +3,7 @@ namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Models;
 /// <summary>
 ///     Configuration settings for placeholder generation.
 /// </summary>
-public sealed class PlaceholderConfiguration
+internal sealed class PlaceholderConfiguration
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="PlaceholderConfiguration" /> class with default values.

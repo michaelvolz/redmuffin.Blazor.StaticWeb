@@ -1,6 +1,6 @@
 namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 
-public sealed partial class ImageValidator
+internal sealed partial class ImageValidator
 {
     [LoggerMessage(
         EventId = 1,

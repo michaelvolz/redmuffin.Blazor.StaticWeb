@@ -1,6 +1,6 @@
 namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 
-public sealed partial class PlaceholderGenerationService
+internal sealed partial class PlaceholderGenerationService
 {
     [LoggerMessage(
         EventId = 1,

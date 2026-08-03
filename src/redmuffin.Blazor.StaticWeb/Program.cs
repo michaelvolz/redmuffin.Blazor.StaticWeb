@@ -7,9 +7,7 @@ using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb;
 using redmuffin.Blazor.StaticWeb.Common;
 using redmuffin.Blazor.StaticWeb.Common.Abstractions;
-using redmuffin.Blazor.StaticWeb.Common.ImagePlaceholder;
-using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
-using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
+using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder;
 using redmuffin.Blazor.StaticWeb.Core.Services;
 using redmuffin.Blazor.StaticWeb.Features.AzureHealthCheck;
 using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Services;
@@ -36,13 +34,8 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<IBrowserStorageService, BrowserStorageService>();
 builder.Services.AddScoped<IWarmupService, WarmupService>();
 
-builder.Services.AddScoped<IImageValidator, ImageValidator>();
 builder.Services.AddScoped<IPerformanceMetricsService, PerformanceMetricsService>();
-
-// Register image placeholder services
-builder.Services.AddScoped<IImagePlaceholderService, ImagePlaceholderService>();
-builder.Services.AddScoped<IImageUrlResolver, ImageUrlResolver>();
-builder.Services.AddScoped<PlaceholderGenerationService>();
+builder.Services.AddImagePlaceholderServices();
 
 // Register delay provider for production (real delays for UX)
 builder.Services.AddScoped<IDelayProvider, ProductionDelayProvider>();

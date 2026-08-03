@@ -4,7 +4,7 @@ namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Models;
 ///     Represents the result of an image validation operation.
 ///     Contains information about whether the image is accessible and any failure details.
 /// </summary>
-public sealed class ImageValidationResult
+internal sealed class ImageValidationResult
 {
     /// <summary>
     ///     Gets or sets a value indicating whether the image is valid and accessible.

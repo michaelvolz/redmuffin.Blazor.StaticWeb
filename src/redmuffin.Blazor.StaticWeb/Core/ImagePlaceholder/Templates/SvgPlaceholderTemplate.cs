@@ -7,7 +7,7 @@ namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Templates;
 /// <summary>
 ///     Template generator for SVG placeholders.
 /// </summary>
-public static class SvgPlaceholderTemplate
+internal static class SvgPlaceholderTemplate
 {
     /// <summary>
     ///     Generates an SVG placeholder with the specified text and configuration.

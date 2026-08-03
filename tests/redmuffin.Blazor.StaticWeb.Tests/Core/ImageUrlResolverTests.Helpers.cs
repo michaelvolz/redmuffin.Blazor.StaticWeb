@@ -45,7 +45,7 @@ public sealed partial class ImageUrlResolverTests
     /// <summary>
     ///     Test scope for ImageUrlResolver tests with dependency injection setup.
     /// </summary>
-    public sealed class TestScope : IDisposable
+    internal sealed class TestScope : IDisposable
     {
         private bool _disposed;
 
@@ -64,22 +64,22 @@ public sealed partial class ImageUrlResolverTests
         /// <summary>
         ///     Gets the mock for IImageValidator.
         /// </summary>
-        public Mock<IImageValidator> ImageValidationService_Mock { get; }
+        internal Mock<IImageValidator> ImageValidationService_Mock { get; }
 
         /// <summary>
         ///     Gets the mock for IImagePlaceholderService.
         /// </summary>
-        public Mock<IImagePlaceholderService> ImagePlaceholderService_Mock { get; }
+        internal Mock<IImagePlaceholderService> ImagePlaceholderService_Mock { get; }
 
         /// <summary>
         ///     Gets the test logger for ImageUrlResolver.
         /// </summary>
-        public Logger_Spy<ImageUrlResolver> Logger { get; }
+        internal Logger_Spy<ImageUrlResolver> Logger { get; }
 
         /// <summary>
         ///     Gets the ImageUrlResolver instance under test.
         /// </summary>
-        public ImageUrlResolver Service { get; }
+        internal ImageUrlResolver Service { get; }
 
         /// <summary>
         ///     Disposes the test scope and releases resources.

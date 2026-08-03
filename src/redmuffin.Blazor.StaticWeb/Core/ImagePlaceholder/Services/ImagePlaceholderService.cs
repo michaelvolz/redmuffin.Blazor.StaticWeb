@@ -8,7 +8,7 @@ namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 /// <summary>
 ///     Service for managing image placeholders and image URL handling.
 /// </summary>
-public sealed partial class ImagePlaceholderService : IImagePlaceholderService
+internal sealed partial class ImagePlaceholderService : IImagePlaceholderService
 {
     private readonly ILogger<ImagePlaceholderService> _logger;
 

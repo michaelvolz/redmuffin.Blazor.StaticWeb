@@ -12,7 +12,7 @@ namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 ///     (4 weeks for permanent failures, 30 minutes for transient), and manages
 ///     storage pressure through LRU eviction.
 /// </summary>
-public sealed partial class ImageValidator : IImageValidator
+internal sealed partial class ImageValidator : IImageValidator
 {
     private const string CacheKeyPrefix = "img_validation_";
     private const int DefaultTimeoutMs = 5000; // 5 seconds

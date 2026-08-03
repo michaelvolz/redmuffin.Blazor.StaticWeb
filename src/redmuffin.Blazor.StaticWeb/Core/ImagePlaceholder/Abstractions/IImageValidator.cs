@@ -6,7 +6,7 @@ namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 ///     Validates image URLs via HTTP HEAD requests and caches results in localStorage.
 ///     Provides fast cache-first resolution with differential TTL for transient vs permanent failures.
 /// </summary>
-public interface IImageValidator
+internal interface IImageValidator
 {
     /// <summary>
     ///     Validates an image URL by performing HTTP HEAD request and checking response.

@@ -12,7 +12,7 @@ namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 ///     <see cref="IImageValidator" /> and placeholder generation to
 ///     <see cref="IImagePlaceholderService" />.
 /// </summary>
-public sealed partial class ImageUrlResolver : IImageUrlResolver
+internal sealed partial class ImageUrlResolver : IImageUrlResolver
 {
     private readonly IImageValidator _imageValidator;
     private readonly IImagePlaceholderService _imagePlaceholderService;

@@ -5,7 +5,7 @@ namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 /// <summary>
 ///     Logging partial class for ImagePlaceholderService containing LoggerMessage delegates.
 /// </summary>
-public sealed partial class ImagePlaceholderService
+internal sealed partial class ImagePlaceholderService
 {
     [LoggerMessage(
         EventId = 1002,

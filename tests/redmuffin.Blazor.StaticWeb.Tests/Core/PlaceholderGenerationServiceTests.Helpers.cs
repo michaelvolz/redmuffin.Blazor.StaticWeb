@@ -22,7 +22,7 @@ public sealed partial class PlaceholderGenerationServiceTests
     /// <summary>
     ///     Test scope for PlaceholderGenerationService tests with dependency injection setup.
     /// </summary>
-    public sealed class TestScope : IDisposable
+    internal sealed class TestScope : IDisposable
     {
         private bool _disposed;
 
@@ -35,12 +35,12 @@ public sealed partial class PlaceholderGenerationServiceTests
         /// <summary>
         ///     Gets the test logger for PlaceholderGenerationService.
         /// </summary>
-        public Logger_Spy<PlaceholderGenerationService> Logger { get; }
+        internal Logger_Spy<PlaceholderGenerationService> Logger { get; }
 
         /// <summary>
         ///     Gets the PlaceholderGenerationService instance under test.
         /// </summary>
-        public PlaceholderGenerationService Service { get; }
+        internal PlaceholderGenerationService Service { get; }
 
         /// <summary>
         ///     Decodes a base64-encoded SVG data URI to its original SVG string.

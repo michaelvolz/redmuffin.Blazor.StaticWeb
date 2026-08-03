@@ -157,6 +157,10 @@
     <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Modules\Raindrop.Contracts\Raindrop.Contracts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="redmuffin.Blazor.StaticWeb.Tests" />
+  </ItemGroup>
+
   <!--
     CSS FINGERPRINTING TARGET (Release only)
     SHA-256 hashes app.min.css, renames it with content hash in filename,
