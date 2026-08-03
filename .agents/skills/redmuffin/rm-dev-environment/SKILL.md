@@ -1,96 +1,126 @@
 ---
 name: rm-dev-environment
-description: dev session startup ΓÇö ports, watchers, browser, tool selection
+description: >-
+  Dev host startup and process rules for this repo. DEFAULT is frontend-only
+  on http://localhost:5233 with synthetic data (no API) — ~99% of local QA.
+  Use when: start/stop the site, site is already up, port 5233, launch profile
+  https or Watch, background dotnet run for agent tests, kill host before
+  rebuild, Start-Process vs harness background, hot reload, SRI site broken,
+  ports/watchers, which browser tool to use. Full API stack is opt-in only
+  when the user names it. Pair with rm-agent-browser-qa for browser work and
+  rm-dev-shutdown for cleanup. Load immediately when starting or choosing a
+  host — do not invent full-site startup.
 ---
 
 # rm-dev-environment
 
 Canonical reference for development workflow on Windows. Covers process management, port handling, browser tab hygiene, and tool selection.
 
+**Default for agents:** frontend-only host on `:5233` with synthetic data (SITE STARTUP → Default mode). Full stack only when explicitly required.
+
 ## CRITICAL
 
 - This skill is a **reference**, not an execution workflow. Load it when you need guidance on how to do something in the dev environment.
 - Follow every rule in the BOUNDARIES section. No exceptions.
-- **NEVER run long-running dev servers (`dotnet watch`, `dotnet run`) via `bash`.** The bash tool enforces a hard timeout that kills the process and all children. Use `Start-Process powershell` to launch in a separate window. See `docs/solutions/developer-experience/bash-timeout-kills-long-running-dotnet-processes.md`.
+- **Default site mode is frontend-only** (see SITE STARTUP → Default mode). Use that path for ~99% of agent QA and local page checks. Do not start the API / full stack unless the user or scenario explicitly requires it.
+- **Long-running hosts must not block the agent.** A foreground shell with a hard timeout kills `dotnet run` / `dotnet watch` and children. For **default agent frontend QA**, start the host as a harness **background** task, probe readiness (a few seconds), then drive the browser. For a **human-visible** console window, use `Start-Process powershell` (Frontend Commands). Never leave a multi-minute foreground `dotnet run` waiting on the agent turn. See `docs/solutions/developer-experience/bash-timeout-kills-long-running-dotnet-processes.md`.
+- **Stop the host before assembly-touching rebuilds or edits** that lock `bin/` / `obj/`. Start again after a successful build.
 
 ## BOUNDARIES
 
 Rules are stated inline in each section. Key cross-references:
 
-- Process launch rules ΓåÆ CRITICAL
-- Session management ΓåÆ BROWSER SESSION HYGIENE
-- Safe process handling ΓåÆ PROCESS MANAGEMENT
-- Tool choice ΓåÆ TOOL SELECTION
+- Default frontend-only mode → SITE STARTUP
+- Process launch rules → CRITICAL
+- Session management → BROWSER SESSION HYGIENE
+- Safe process handling → PROCESS MANAGEMENT
+- Tool choice → TOOL SELECTION
 
 ## OUT OF SCOPE
 
 This skill does NOT cover:
 
-- Cleanup execution ΓåÆ use `rm-dev-shutdown`
-- Commit workflow ΓåÆ use `rm-commit`
-- NuGet management ΓåÆ use `rm-nuget-manager`
-- Coding standards ΓåÆ use `strict-coding-standards`
-- Tool installation and SCSS compilation ΓåÆ use `rm-dev-tools`
-- SCSS conventions ΓåÆ use `rm-scss`
+- Cleanup execution → use `rm-dev-shutdown`
+- Commit workflow → use `rm-commit`
+- NuGet management → use `rm-nuget-manager`
+- Coding standards → use `strict-coding-standards`
+- Tool installation and SCSS compilation → use `rm-dev-tools`
+- SCSS conventions → use `rm-scss`
 
 ## BROWSER SESSION HYGIENE
 
-Default browser automation on **all OS** is **agent-browser** (`rm-agent-browser`) ΓÇö bundled
-Chromium, not the userΓÇÖs Brave profile. **User browser (all OS): Brave only** ΓÇö never kill
-user Brave except via explicit MCP cleanup rules below.
+**agent-browser** (`rm-agent-browser-qa`, co-loads upstream `agent-browser`) is the
+browser automation path on all OS.
 
-Chrome DevTools MCP rules apply **only when that MCP server is explicitly enabled** (valid on
-all OS ΓÇö Windows, WSL, Linux). See `CONCEPTS.md` ┬º Browser automation vocabulary.
+Bundled Chromium from `agent-browser install` — **not** the user's Brave profile.
+**User browser (all OS): Brave only** — never kill user Brave.
 
-### agent-browser (default)
+### agent-browser
 
+- Load `rm-agent-browser-qa` before the first command — Blazor WASM boot wait is mandatory.
 - Never omit `--session <name>` on any `agent-browser` command.
 - Never issue two `agent-browser` command chains in parallel.
 - Never run `agent-browser close --all` while a human inspects a headed browser.
-- Never kill user **Brave** or non-agent-browser Chromium ΓÇö only processes under `~/.agent-browser`.
+- Never kill user **Brave** or non-agent-browser Chromium — only processes under `~/.agent-browser`.
 - End sessions with `agent-browser --session <name> close` or `rm-dev-shutdown`.
-- Load `rm-agent-browser` before the first command ΓÇö Blazor WASM boot wait is mandatory.
-
-### Chrome DevTools MCP (only when enabled ΓÇö all OS)
-
-- Never omit the `url` parameter from MCP browser tool calls.
-- Never navigate to a URL by creating a new tab when an existing tab can be reused.
-- Never use browser page-level close operations for cleanup ΓÇö use process-level identification only (see `rm-dev-shutdown`).
-- Launcher reference: `docs/solutions/tooling-decisions/cross-platform-mcp-browser-launcher-architecture-2026-06-05.md`
 
 ## SITE STARTUP
 
-### Decision Tree ΓÇö Pick the Right Command
+### Default mode (99%) — frontend-only, synthetic
 
-> **Note:** Commands below show the `dotnet` portion only. Always wrap in `Start-Process powershell.exe` as shown in Frontend Commands. Port comes from the profile's `applicationUrl` in `launchSettings.json`.
+**This is the default** for agent browser QA, route checks, lazy-load checks, and most local verification. Use it whenever the task does not explicitly require the full API / Functions stack.
 
-| Situation                                                                                             | Command                                                                                      | Profile | Why                                                                |
-| ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------- | ------------------------------------------------------------------ |
-| **Active development** ΓÇö editing `.razor` markup, `.cs` method bodies, CSS                            | `dotnet run --project src/redmuffin.Blazor.StaticWeb --launch-profile Watch`                 | `Watch` | Profile includes `watch --non-interactive`, working directory, URL |
-| **Quick verification** ΓÇö checking a page renders, live-site QA via agent-browser, no code edits expected | `dotnet run --project src/redmuffin.Blazor.StaticWeb --launch-profile https`                 | `https` | Fastest startup. No file watcher overhead.                         |
-| **After a rude edit** ΓÇö hot reload rejected the change                                                | `dotnet run --project src/redmuffin.Blazor.StaticWeb --launch-profile Watch` (auto-restarts) | `Watch` | Profile's `--non-interactive` auto-restarts without prompting.     |
+| Rule | Detail |
+| --- | --- |
+| Scope | Blazor WASM host only: `src/redmuffin.Blazor.StaticWeb`. **Never** start `src/redmuffin.Blazor.StaticWeb.Api` on this path. |
+| Data | Synthetic / mock Strategy by default. No Azure Functions needed. |
+| URL / port | `http://localhost:5233` from `Properties/launchSettings.json` (`https` / `Watch`). Never invent another base URL. |
+| Profile | **Agent QA / quick verify:** `https` (fast, no watcher). **Human coding with hot reload:** `Watch`. |
+| Host process | **Agent harness (default for tests):** `dotnet run` as a **background** task so the agent stays free. Startup is a few seconds — probe port or HTTP 200, then continue. Do not multi-minute-wait on host logs. **Human console:** `Start-Process powershell` when a visible window is wanted (below). |
+| Reuse | If port `5233` is already listening, **do not** start another host. Drive the existing origin. |
+| Stop before rebuild | Kill the host **before** any rebuild or edit that locks assemblies under `bin/` / `obj/`. Rebuild, then start again. |
+| Cleanup | Host stop + `agent-browser --session redmuffin close` when done (`rm-dev-shutdown`). |
 
-### Frontend Commands
+**Never** start a full site (API + SWA + frontend) for ordinary QA. Full-stack / real Functions HTTP is **opt-in only** when the user or scenario names it. Do not expand this default section into full-stack procedure.
 
-> **Mock data:** The frontend uses mock data by default. No backend/API is needed for development. The API project (`src/redmuffin.Blazor.StaticWeb.Api`) is only for rare final integration testing.
+### Decision Tree — Pick the Right Frontend Command
+
+> **Note:** Port comes from the profile's `applicationUrl` in `launchSettings.json`. Agent QA uses the background form; human windows use `Start-Process` as shown under Frontend Commands.
+
+| Situation | Command | Profile | Why |
+| --- | --- | --- | --- |
+| **Agent / quick verification** (default) — page renders, agent-browser QA, no code edits expected | `dotnet run --project src/redmuffin.Blazor.StaticWeb --launch-profile https` | `https` | Fastest startup. No file watcher overhead. Prefer harness **background**. |
+| **Active development** — editing `.razor`, `.cs` method bodies, CSS | `dotnet run --project src/redmuffin.Blazor.StaticWeb --launch-profile Watch` | `Watch` | Hot reload; human-visible window is fine. |
+| **After a rude edit** — hot reload rejected the change | same as Watch (auto-restarts) | `Watch` | Profile's `--non-interactive` auto-restarts without prompting. |
+
+### Frontend Commands (default path)
+
+> **Mock data:** The frontend uses mock / synthetic data by default. No backend/API is needed for this path. The API project is only for rare, explicitly requested integration testing (not described here).
 >
-> **Launch profiles are the single source of truth.** All ports, working directories, and command-line args are defined in `src/redmuffin.Blazor.StaticWeb/Properties/launchSettings.json`. Never hardcode them.
+> **Launch profiles are the single source of truth.** Ports, working directories, and args live in `src/redmuffin.Blazor.StaticWeb/Properties/launchSettings.json`. Never hardcode alternate hosts.
 
 ```powershell
-# Read the port from the active profile
-$port = 5233  # from launchSettings.json profiles.Watch.applicationUrl
+# Port from launchSettings.json profiles.https / Watch.applicationUrl
+$port = 5233
 
-# Active development with hot reload (DEFAULT for coding sessions)
-# Watch profile includes: watch --non-interactive -- -p:TreatWarningsAsErrors=false
-Start-Process powershell.exe -ArgumentList '-NoExit', '-Command', '$Host.UI.RawUI.WindowTitle = ''Frontend (''$port'')''; dotnet run --project src/redmuffin.Blazor.StaticWeb --launch-profile Watch'
+# --- Agent harness (DEFAULT for QA / tests): non-blocking background host ---
+# Run via harness background so the agent is not blocked. Example shape:
+#   $env:ASPNETCORE_ENVIRONMENT = 'Development'
+#   dotnet run --project src/redmuffin.Blazor.StaticWeb --launch-profile https
+# Then probe (few seconds), do not multi-minute-wait:
+#   Invoke-WebRequest http://localhost:5233/ -UseBasicParsing -TimeoutSec 5
 
-# Quick start, no hot reload (verification, agent-browser QA)
-Start-Process powershell.exe -ArgumentList '-NoExit', '-Command', '$Host.UI.RawUI.WindowTitle = ''Frontend (''$port'')''; dotnet run --project src/redmuffin.Blazor.StaticWeb --launch-profile https'
+# --- Human-visible console (coding sessions) ---
+# Active development with hot reload
+Start-Process powershell.exe -ArgumentList '-NoExit', '-Command', '$Host.UI.RawUI.WindowTitle = ''Frontend (5233)''; dotnet run --project src/redmuffin.Blazor.StaticWeb --launch-profile Watch'
 
-# Wait for site to be ready (30s timeout)
-$timeout = 30; $start = Get-Date
+# Quick start, no hot reload (verification if a window is preferred)
+Start-Process powershell.exe -ArgumentList '-NoExit', '-Command', '$Host.UI.RawUI.WindowTitle = ''Frontend (5233)''; dotnet run --project src/redmuffin.Blazor.StaticWeb --launch-profile https'
+
+# Ready check (short — site is up in a few seconds)
+$timeout = 15; $start = Get-Date
 while (-not (Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue) -and ((Get-Date) - $start).TotalSeconds -lt $timeout) { Start-Sleep -Milliseconds 250 }
-if (-not (Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue)) { Write-Error 'Site failed to start within 30s' }
+if (-not (Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue)) { Write-Error 'Site failed to start within 15s' }
 ```
 
 **Check if already running:**
@@ -98,13 +128,13 @@ if (-not (Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue)) 
 ```powershell
 $port = 5233  # from launchSettings.json
 if (Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue) {
-    Write-Host "Site is already running on port $port ΓÇö skip startup, reuse agent-browser session"
+    Write-Host "Site is already running on port $port — skip startup, reuse agent-browser session"
 } else {
-    Write-Host "Site is not running ΓÇö start it first"
+    Write-Host "Site is not running — start it first (default: frontend-only background host)"
 }
 ```
 
-**Stop the site:**
+**Stop the site (required before rebuild / assembly edits):**
 
 ```powershell
 $port = 5233  # from launchSettings.json
@@ -113,11 +143,11 @@ Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue | Where-Obje
 
 **Profile details** (`src/redmuffin.Blazor.StaticWeb/Properties/launchSettings.json`):
 
-| Profile       | Command                                                                         | URL                     | Hot Reload | Use Case                                |
-| ------------- | ------------------------------------------------------------------------------- | ----------------------- | ---------- | --------------------------------------- |
-| `https`       | `dotnet run` (Project)                                                          | `http://localhost:5233` | No         | Quick verification, agent-browser QA    |
-| `Watch`       | `dotnet watch --non-interactive -- -p:TreatWarningsAsErrors=false` (Executable) | `http://localhost:5233` | Yes        | Active development                      |
-| `IIS Express` | IISExpress                                                                      | dynamic                 | Yes        | Legacy ΓÇö do not use                     |
+| Profile | Command | URL | Hot Reload | Use Case |
+| --- | --- | --- | --- | --- |
+| `https` | `dotnet run` (Project) | `http://localhost:5233` | No | Default agent QA / quick verification |
+| `Watch` | `dotnet watch --non-interactive -- -p:TreatWarningsAsErrors=false` (Executable) | `http://localhost:5233` | Yes | Active development |
+| `IIS Express` | IISExpress | dynamic | Yes | Legacy — do not use |
 
 ### ConfigureAwait Fixer
 
@@ -230,10 +260,13 @@ Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue | Where-Obje
 ### Kill processes
 
 ```powershell
-# Find processes by name and command line
-Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'brave.exe' -and $_.CommandLine -like '*--remote-debugging-port*' }
-
-# Legacy (chrome-devtools MCP removed 2026-06-26): *chrome-devtools-mcp*
+# agent-browser orphans only (never user Brave)
+$ab = Join-Path $env:USERPROFILE '.agent-browser\browsers'
+Get-CimInstance Win32_Process | Where-Object {
+  ($_.Name -in 'chrome.exe','agent-browser-win32-x64.exe') -and
+  ($_.CommandLine -like "*$ab*" -or $_.Name -eq 'agent-browser-win32-x64.exe' -or
+   $_.CommandLine -like '*\.agent-browser\*')
+}
 
 # Stop by PID
 Stop-Process -Id <PID> -Force
@@ -277,8 +310,7 @@ Get-NetTCPConnection -LocalPort 5000 -ErrorAction SilentlyContinue
 
 ### Browser operations
 
-Load `rm-agent-browser` before the first command. Never use built-in browser tools or
-browser MCP when agent-browser can handle the task.
+Load `rm-agent-browser-qa` before the first command.
 
 | Task                | Tool / skill                                         |
 | ------------------- | ---------------------------------------------------- |
@@ -287,8 +319,8 @@ browser MCP when agent-browser can handle the task.
 | Screenshot          | `agent-browser --session redmuffin screenshot`       |
 | Click/fill/interact | `agent-browser find role/label/...` (see skill)      |
 | Console / errors    | `agent-browser --session redmuffin console` / `errors` |
+| Network / HAR       | `agent-browser --session redmuffin network …`        |
 | Web Vitals          | `agent-browser --session redmuffin vitals --json`    |
-| Deep perf trace     | Chrome DevTools MCP (only when user enables)         |
 
 ### Code intelligence
 

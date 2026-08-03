@@ -1,6 +1,12 @@
 ---
 name: rm-dev-shutdown
-description: dev environment cleanup ΓÇö stop watchers, browsers, dotnet processes
+description: >-
+  Dev environment cleanup — stop frontend host, agent-browser sessions, orphan
+  Chromium under ~/.agent-browser, and agent-owned dotnet (not Visual Studio).
+  Use when: cleanup, clean up, teardown, end of session, stop the site, kill
+  host before rebuild, free port 5233, close agent-browser, orphan chrome,
+  rm:cleanup. Browser cleanup is agent-browser only. Load immediately on
+  cleanup or host-stop requests.
 ---
 
 # rm-dev-shutdown (Parallel)
@@ -16,9 +22,7 @@ Run these four cleanup operations in parallel:
 
 ### Browser Cleanup
 
-Run agent-browser cleanup first, then Chrome DevTools MCP cleanup if enabled.
-
-**agent-browser (default):**
+**agent-browser only.**
 
 ```powershell
 agent-browser --session redmuffin close 2>$null
@@ -32,14 +36,6 @@ Get-CimInstance Win32_Process | Where-Object {
 
 Never kill user Chrome/Brave outside `~/.agent-browser`. Never run `close --all`
 while a human inspects a headed browser.
-
-**Chrome DevTools MCP (only when enabled):**
-
-```powershell
-Get-CimInstance Win32_Process | Where-Object {
-  $_.Name -eq 'brave.exe' -and $_.CommandLine -like '*chrome-devtools-mcp*'
-} | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
-```
 
 Stay silent on success; only report warnings or errors.
 
@@ -62,8 +58,8 @@ Stay silent on success; only report warnings or errors.
 ### Verification (background)
 
 1. Wait until the 3 cleanup operations have completed.
-2. Run one final `Get-CimInstance Win32_Process` snapshot with only the properties needed to evaluate `dotnet.exe`, `brave.exe`, `chrome.exe`, `agent-browser-win32-x64.exe`, and `devenv.exe` ownership.
-3. Filter that single snapshot in memory to determine whether any agent-owned `dotnet.exe` remains, any `~/.agent-browser` Chrome/daemon remains, or any MCP-owned Brave process remains.
+2. Run one final `Get-CimInstance Win32_Process` snapshot with only the properties needed to evaluate `dotnet.exe`, `chrome.exe`, `agent-browser-win32-x64.exe`, and `devenv.exe` ownership.
+3. Filter that single snapshot in memory to determine whether any agent-owned `dotnet.exe` remains or any `~/.agent-browser` Chromium/daemon remains.
 4. Use the `devenv.exe` PIDs from the same snapshot to protect Visual Studio-owned `dotnet.exe`.
 5. Only surface warnings or errors; do not print a success table or success summary.
 

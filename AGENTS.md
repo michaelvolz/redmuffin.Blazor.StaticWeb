@@ -126,8 +126,7 @@ Q2: Did the change include workflow files?
   harness `AGENTS.md`. Never use `grep`/`glob`/`read` for semantic symbol
   queries when the active harness exposes `lsp`. Never use `grep` for
   AST-structure queries — load `ast-grep` and `rm-structural-search`.
-- **Browser automation (primary)**: Load `rm-agent-browser` (co-loads `agent-browser`) for live-site QA, snapshots, screenshots, navigation, and a11y checks on redmuffin.net or local dev. Never use bUnit for live-app QA. See `rm-dev-environment` for site startup; `rm-dev-shutdown` for cleanup.
-- **Chrome DevTools MCP (opt-in fallback)**: Disabled by default in all harnesses. See harness `AGENTS.md` for enable path. Ask the user only when agent-browser cannot satisfy the task.
+- **Browser automation**: Load `rm-agent-browser-qa` (co-loads upstream `agent-browser`) for live-site QA, snapshots, screenshots, navigation, network, vitals, and a11y checks on redmuffin.net or local dev. Never use bUnit for live-app QA. See `rm-dev-environment` for site startup; `rm-dev-shutdown` for cleanup.
 - **Structural code search**: Load `rm-structural-search` (co-loads `ast-grep`) for syntax-shape queries across `.cs` files.
 - **Local workflow testing (`act`)**: Never push a workflow change without running the full pipeline locally first. `act push -W .github/workflows/azure-static-web-apps-lively-cliff-0945be603.yml -P ubuntu-latest=dotnet-sdk-node:10.0 --pull=false`. Full procedure in `rm-github-workflows` skill.
 - **Quality Gates — Recursive Loop**: Gates are not one-shot. Run → fix worst violations → re-run → repeat until zero violations across all gates. See `rm-cleanup-session` §0 for the full principle.
