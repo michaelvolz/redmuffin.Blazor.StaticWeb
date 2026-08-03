@@ -1,22 +1,19 @@
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
+using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
 
-namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
+namespace redmuffin.Blazor.StaticWeb.Modules.Raindrop;
 
 /// <summary>
-///     Dummy implementation of IRaindropAPI that loads data from JSON files for local development and testing.
-///     Uses static JSON files in the mockdata folder to simulate API responses.
-///     Enhanced with robust JSON parsing using multiple serialization strategies for edge cases.
+///     Dummy IRaindropAPI that loads JSON from mockdata for local development (localhost:5233).
 /// </summary>
-public sealed partial class DummyRaindropAPI(IHttpClientFactory httpClientFactory, ILogger<DummyRaindropAPI> logger) : IRaindropAPI, IDisposable
+internal sealed partial class DummyRaindropAPI(IHttpClientFactory httpClientFactory, ILogger<DummyRaindropAPI> logger) : IRaindropAPI, IDisposable
 {
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
     private readonly ILogger<DummyRaindropAPI> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private bool _disposed;
 
-    /// <summary>
-    ///     Releases all resources used by the DummyRaindropAPI.
-    /// </summary>
     public void Dispose()
     {
         if (_disposed) return;
@@ -45,7 +42,6 @@ public sealed partial class DummyRaindropAPI(IHttpClientFactory httpClientFactor
         catch (HttpRequestException ex)
         {
             LogFileLoadError(_logger, ex, "videos.json");
-            // Return empty collection for missing files (404) to support development scenarios
             return new List<RaindropItem>();
         }
         catch (JsonException ex)
@@ -85,7 +81,6 @@ public sealed partial class DummyRaindropAPI(IHttpClientFactory httpClientFactor
         catch (HttpRequestException ex)
         {
             LogFileLoadError(_logger, ex, "articles.json");
-            // Return empty collection for missing files (404) to support development scenarios
             return new List<RaindropItem>();
         }
         catch (JsonException ex)
@@ -105,14 +100,6 @@ public sealed partial class DummyRaindropAPI(IHttpClientFactory httpClientFactor
         }
     }
 
-    /// <summary>
-    ///     Loads JSON content from the specified file path.
-    /// </summary>
-    /// <param name="relativeUrlPath">The relative path to the JSON file.</param>
-    /// <param name="cancellationToken">Cancellation token for the operation.</param>
-    /// <returns>The JSON content as a string.</returns>
-    /// <exception cref="HttpRequestException">Thrown when the file cannot be loaded.</exception>
-    /// <exception cref="TaskCanceledException">Thrown when the operation is cancelled.</exception>
     private async Task<string> LoadJsonFileAsync(string relativeUrlPath, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(relativeUrlPath);
@@ -131,21 +118,11 @@ public sealed partial class DummyRaindropAPI(IHttpClientFactory httpClientFactor
         return content;
     }
 
-    /// <summary>
-    ///     Deserializes JSON content with multiple fallback strategies for robust error handling.
-    ///     Uses DefaultOptions first, then LenientOptions for malformed JSON, and finally StrictOptions as last resort.
-    /// </summary>
-    /// <typeparam name="T">The type to deserialize to.</typeparam>
-    /// <param name="jsonContent">The JSON content to deserialize.</param>
-    /// <param name="fileName">The file name for logging purposes.</param>
-    /// <param name="cancellationToken">Cancellation token for the operation.</param>
-    /// <returns>The deserialized object or null if all strategies fail.</returns>
     public static Task<T?> DeserializeWithFallbackAsync<T>(string jsonContent, string fileName, ILogger logger, CancellationToken cancellationToken) where T : class
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(jsonContent);
         ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
 
-        // Strategy 1: Try with DefaultOptions (most common case)
         try
         {
             LogAttemptingDeserialization(logger, fileName, "DefaultOptions");
@@ -161,7 +138,6 @@ public sealed partial class DummyRaindropAPI(IHttpClientFactory httpClientFactor
             LogDeserializationAttemptFailed(logger, ex, fileName, "DefaultOptions");
         }
 
-        // Strategy 2: Try with LenientOptions for malformed JSON
         try
         {
             LogAttemptingDeserialization(logger, fileName, "LenientOptions");
@@ -177,7 +153,6 @@ public sealed partial class DummyRaindropAPI(IHttpClientFactory httpClientFactor
             LogDeserializationAttemptFailed(logger, ex, fileName, "LenientOptions");
         }
 
-        // Strategy 3: Try with StrictOptions as last resort
         try
         {
             LogAttemptingDeserialization(logger, fileName, "StrictOptions");
@@ -193,7 +168,6 @@ public sealed partial class DummyRaindropAPI(IHttpClientFactory httpClientFactor
             LogDeserializationAttemptFailed(logger, ex, fileName, "StrictOptions");
         }
 
-        // All strategies failed
         LogAllDeserializationStrategiesFailed(logger, fileName);
         return Task.FromResult<T?>(null);
     }

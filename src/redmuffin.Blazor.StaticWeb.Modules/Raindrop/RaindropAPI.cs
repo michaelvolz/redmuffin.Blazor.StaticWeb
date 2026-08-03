@@ -1,21 +1,19 @@
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
+using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
 
-namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
+namespace redmuffin.Blazor.StaticWeb.Modules.Raindrop;
 
 /// <summary>
-///     Real implementation of IRaindropAPI that makes HTTP calls to Azure Functions for RaindropIO API operations.
-///     Routes all API calls through Azure Functions endpoints for production and localhost:4280 environments.
+///     Real HTTP implementation of IRaindropAPI against Azure Functions endpoints.
 /// </summary>
-public sealed partial class RaindropAPI(IHttpClientFactory httpClientFactory, ILogger<RaindropAPI> logger) : IRaindropAPI, IDisposable
+internal sealed partial class RaindropAPI(IHttpClientFactory httpClientFactory, ILogger<RaindropAPI> logger) : IRaindropAPI, IDisposable
 {
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
     private readonly ILogger<RaindropAPI> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private bool _disposed;
 
-    /// <summary>
-    ///     Releases all resources used by the RaindropAPI.
-    /// </summary>
     public void Dispose()
     {
         if (!_disposed)
@@ -136,20 +134,11 @@ public sealed partial class RaindropAPI(IHttpClientFactory httpClientFactory, IL
         }
     }
 
-    /// <summary>
-    ///     Deserializes JSON content with multiple fallback strategies for robust error handling.
-    ///     Uses DefaultOptions first, then LenientOptions for malformed JSON, and finally StrictOptions as last resort.
-    /// </summary>
-    /// <typeparam name="T">The type to deserialize to.</typeparam>
-    /// <param name="jsonContent">The JSON content to deserialize.</param>
-    /// <param name="source">The source description for logging purposes.</param>
-    /// <returns>The deserialized object or null if all strategies fail.</returns>
     private Task<T?> DeserializeWithFallbackAsync<T>(string jsonContent, string source) where T : class
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(jsonContent);
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
 
-        // Strategy 1: Try with DefaultOptions (most common case)
         try
         {
             LogAttemptingDeserialization(_logger, source, "DefaultOptions");
@@ -165,7 +154,6 @@ public sealed partial class RaindropAPI(IHttpClientFactory httpClientFactory, IL
             LogDeserializationAttemptFailed(_logger, ex, source, "DefaultOptions");
         }
 
-        // Strategy 2: Try with LenientOptions for malformed JSON
         try
         {
             LogAttemptingDeserialization(_logger, source, "LenientOptions");
@@ -181,7 +169,6 @@ public sealed partial class RaindropAPI(IHttpClientFactory httpClientFactory, IL
             LogDeserializationAttemptFailed(_logger, ex, source, "LenientOptions");
         }
 
-        // Strategy 3: Try with StrictOptions as last resort
         try
         {
             LogAttemptingDeserialization(_logger, source, "StrictOptions");
@@ -197,7 +184,6 @@ public sealed partial class RaindropAPI(IHttpClientFactory httpClientFactory, IL
             LogDeserializationAttemptFailed(_logger, ex, source, "StrictOptions");
         }
 
-        // All strategies failed
         LogAllDeserializationStrategiesFailed(_logger, source);
         return Task.FromResult<T?>(null);
     }

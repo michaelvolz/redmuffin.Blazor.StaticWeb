@@ -97,8 +97,8 @@ Services/           ← orphaned             │   ├── Cache/
 ### Namespace Convention
 
 Namespaces mirror the folder structure exactly. A file at
-`Features/Raindrop/Services/RaindropAPIFactory.cs` has namespace
-`redmuffin.Blazor.StaticWeb.Features.Raindrop.Services`.
+`Features/Raindrop/Cache/RaindropItemsCache.cs` has namespace
+`redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache`.
 
 When flattening or renaming directories, update all namespaces, `_Imports.razor`,
 and `@namespace` directives.

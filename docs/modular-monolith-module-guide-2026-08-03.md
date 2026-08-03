@@ -28,6 +28,20 @@ Structure only — not full DDD.
 - ApiHealth under `src/redmuffin.Blazor.StaticWeb.Modules/` is the reference
 - Host already calls `AddMediator` and `AddModulePipelineBehaviors`
 
+## Hard constraint — Azure Functions stay in Api
+
+`src/redmuffin.Blazor.StaticWeb.Api/` is a **deployment boundary**, not a
+module extraction candidate.
+
+| Allowed | Forbidden |
+| --- | --- |
+| Extract **client** IO from the WASM host `Features/` into `Modules/` | Move any code **from** `Api/` into `Modules/`, host, or Common “for modularity” |
+| Module services that **HTTP-call** `/api/...` endpoints | Pull Functions triggers, workers, or Api-only types into Modules |
+| Dual-consumed DTOs deliberately placed in `Common` | “Share” by relocating Api project source across the deploy boundary |
+
+If a change would touch Api project files to support a module move, **stop**
+and re-scope. Client modules and the Functions app deploy independently.
+
 ## Phase 1 — Projects
 
 Create three projects under `src/redmuffin.Blazor.StaticWeb.Modules/`:

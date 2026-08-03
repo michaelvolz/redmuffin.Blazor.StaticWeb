@@ -23,8 +23,9 @@ tags:
 
 > **Current (2026-08-03):** ApiHealth owns connectivity/health via Mediator +
 > Strategy + `Result<T>`. `IRaindropAPI.GetHelloWorldAsync` was removed.
-> Raindrop still uses `RaindropAPIFactory` for articles/videos only. New modules
-> follow `docs/modular-monolith-module-guide-2026-08-03.md`, not this historical
+> Raindrop IO lives in `Modules/Raindrop*` with `AddRaindropModule(bool)`
+> Strategy (factory deleted). New modules follow
+> `docs/modular-monolith-module-guide-2026-08-03.md`, not this historical
 > Hello World factory example.
 
 # Hello World Mock Example — historical environment-based resolution

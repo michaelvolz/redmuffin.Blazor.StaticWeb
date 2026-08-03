@@ -117,6 +117,8 @@
     <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Common\redmuffin.Blazor.StaticWeb.Common.csproj" />
     <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Modules\ApiHealth\ApiHealth.csproj" />
     <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Modules\ApiHealth.Contracts\ApiHealth.Contracts.csproj" />
+    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Modules\Raindrop\Raindrop.csproj" />
+    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Modules\Raindrop.Contracts\Raindrop.Contracts.csproj" />
   </ItemGroup>
 
   <!--

@@ -1,16 +1,14 @@
-﻿using System.Net;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.Features.Raindrop.Services;
+namespace redmuffin.Blazor.StaticWeb.Modules.Raindrop.Tests;
 
 [Category("Feature:Raindrop")]
 public partial class IRaindropAPITests
 {
-    // Factory methods for creating test scopes
     private static TestScope CreateDummyAPITestScope()
     {
         return new TestScope().WithDummyAPI();
@@ -36,7 +34,6 @@ public partial class IRaindropAPITests
         return new TestScope().WithMalformedResponseAPI();
     }
 
-    // Helper methods to create test data
     private static string CreateTestVideosJson()
     {
         var videos = new[]
@@ -99,18 +96,12 @@ public partial class IRaindropAPITests
         return JsonSerializer.Serialize(articles, RaindropJsonSerializerContext.DefaultOptions);
     }
 
-    /// <summary>
-    ///     Modern test scope that encapsulates all test resources with automatic disposal.
-    ///     Uses C# 13 primary constructor pattern for clean, professional resource management.
-    ///     Optimized for fast test execution with zero-delay providers.
-    /// </summary>
-    public sealed class TestScope : IDisposable
+    private sealed class TestScope : IDisposable
     {
         public Logger_Spy<DummyRaindropAPI> DummyLogger { get; } = new();
         public Logger_Spy<RaindropAPI> RealLogger { get; } = new();
         public DummyRaindropAPI? DummyAPI { get; private set; }
         public RaindropAPI? RealAPI { get; private set; }
-        public ILogger Logger => DummyAPI != null ? DummyLogger : RealLogger;
 
         public Logger_Spy<DummyRaindropAPI> GetDummyLogger()
         {
@@ -122,9 +113,6 @@ public partial class IRaindropAPITests
             return RealLogger;
         }
 
-        /// <summary>
-        ///     Configures the test scope with a DummyRaindropAPI instance that loads data from mock JSON files.
-        /// </summary>
         public TestScope WithDummyAPI()
         {
             DummyAPI = new DummyRaindropAPI(HttpClientFactory_Stub.Mock, DummyLogger);
@@ -132,9 +120,6 @@ public partial class IRaindropAPITests
             return this;
         }
 
-        /// <summary>
-        ///     Configures the test scope with a DummyRaindropAPI instance that simulates missing files.
-        /// </summary>
         public TestScope WithDummyAPIMissingFiles()
         {
             DummyAPI = new DummyRaindropAPI(HttpClientFactory_Stub.MissingFiles, DummyLogger);
@@ -142,27 +127,18 @@ public partial class IRaindropAPITests
             return this;
         }
 
-        /// <summary>
-        ///     Configures the test scope with a RaindropAPI instance that returns successful responses.
-        /// </summary>
         public TestScope WithRealAPI()
         {
             RealAPI = new RaindropAPI(HttpClientFactory_Stub.RealAPI, RealLogger);
             return this;
         }
 
-        /// <summary>
-        ///     Configures the test scope with a RaindropAPI instance that simulates API failures.
-        /// </summary>
         public TestScope WithFailingRealAPI()
         {
             RealAPI = new RaindropAPI(HttpClientFactory_Stub.Failing, RealLogger);
             return this;
         }
 
-        /// <summary>
-        ///     Configures the test scope with a RaindropAPI instance that returns malformed responses.
-        /// </summary>
         public TestScope WithMalformedResponseAPI()
         {
             RealAPI = new RaindropAPI(HttpClientFactory_Stub.Malformed, RealLogger);
@@ -175,8 +151,7 @@ public partial class IRaindropAPITests
             RealAPI?.Dispose();
         }
 
-        // Modern C# 12 HttpClient factory using primary constructor and static properties
-        public sealed class HttpClientFactory_Stub(Func<HttpMessageHandler> handlerFactory) : IHttpClientFactory
+        private sealed class HttpClientFactory_Stub(Func<HttpMessageHandler> handlerFactory) : IHttpClientFactory
         {
             public static HttpClientFactory_Stub Mock { get; } = new(() => new HttpMessageHandler_Stub());
             public static HttpClientFactory_Stub MissingFiles { get; } = new(() => new HttpMessageHandler_MissingFilesStub());
@@ -193,8 +168,7 @@ public partial class IRaindropAPITests
         }
     }
 
-    // Test logger to capture log messages
-    public class Logger_Spy<T> : ILogger<T>
+    private sealed class Logger_Spy<T> : ILogger<T>
     {
         public List<LogEntry> LogEntries { get; } = [];
 
@@ -219,7 +193,7 @@ public partial class IRaindropAPITests
             });
         }
 
-        public class LogEntry
+        public sealed class LogEntry
         {
             public LogLevel LogLevel { get; set; }
             public EventId EventId { get; set; }
@@ -228,16 +202,13 @@ public partial class IRaindropAPITests
         }
     }
 
-    // No-op disposable for logger scopes
     private sealed class NoOpDisposable : IDisposable
     {
         public void Dispose()
         {
-            // No operation
         }
     }
 
-    // Test HTTP message handler for DummyRaindropAPI
     private sealed class HttpMessageHandler_Stub : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -246,27 +217,16 @@ public partial class IRaindropAPITests
 
             var response = new HttpResponseMessage(HttpStatusCode.OK);
 
-            // Debug: Log the actual request URI
-            Console.WriteLine($"HttpMessageHandler_Stub received request: {request.RequestUri}");
-            Console.WriteLine($"  - AbsolutePath: {request.RequestUri?.AbsolutePath}");
-            Console.WriteLine($"  - Query: {request.RequestUri?.Query}");
-            Console.WriteLine($"  - Full URI: {request.RequestUri}");
-
             if (request.RequestUri?.AbsolutePath.Contains("/mockdata/videos.json") == true)
             {
-                Console.WriteLine("  -> Returning videos JSON");
-                var videosJson = CreateTestVideosJson();
-                response.Content = new StringContent(videosJson, Encoding.UTF8, "application/json");
+                response.Content = new StringContent(CreateTestVideosJson(), Encoding.UTF8, "application/json");
             }
             else if (request.RequestUri?.AbsolutePath.Contains("/mockdata/articles.json") == true)
             {
-                Console.WriteLine("  -> Returning articles JSON");
-                var articlesJson = CreateTestArticlesJson();
-                response.Content = new StringContent(articlesJson, Encoding.UTF8, "application/json");
+                response.Content = new StringContent(CreateTestArticlesJson(), Encoding.UTF8, "application/json");
             }
             else
             {
-                Console.WriteLine("  -> Returning 404 NotFound");
                 response.StatusCode = HttpStatusCode.NotFound;
             }
 
@@ -274,23 +234,15 @@ public partial class IRaindropAPITests
         }
     }
 
-    // Test HTTP message handler that simulates missing files
     private sealed class HttpMessageHandler_MissingFilesStub : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-
-            Console.WriteLine($"HttpMessageHandler_MissingFilesStub received request: {request.RequestUri}");
-            Console.WriteLine("  -> Returning 404 NotFound (simulating missing files)");
-
-            // Always return 404 to simulate missing files
-            var response = new HttpResponseMessage(HttpStatusCode.NotFound);
-            return Task.FromResult(response);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
         }
     }
 
-    // Test HTTP message handler for RaindropAPI
     private sealed class HttpMessageHandler_RealAPIStub : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -299,26 +251,16 @@ public partial class IRaindropAPITests
 
             var response = new HttpResponseMessage(HttpStatusCode.OK);
 
-            // Debug: Log the actual request URI
-            Console.WriteLine($"HttpMessageHandler_RealAPIStub received request: {request.RequestUri}");
-            Console.WriteLine($"  - AbsolutePath: {request.RequestUri?.AbsolutePath}");
-
-            // Fix: Check for correct API endpoints
             if (request.RequestUri?.AbsolutePath.Contains("/api/RaindropListVideos") == true)
             {
-                Console.WriteLine("  -> Returning videos JSON for RaindropAPI");
-                var videosJson = CreateTestVideosJson();
-                response.Content = new StringContent(videosJson, Encoding.UTF8, "application/json");
+                response.Content = new StringContent(CreateTestVideosJson(), Encoding.UTF8, "application/json");
             }
             else if (request.RequestUri?.AbsolutePath.Contains("/api/RaindropListArticles") == true)
             {
-                Console.WriteLine("  -> Returning articles JSON for RaindropAPI");
-                var articlesJson = CreateTestArticlesJson();
-                response.Content = new StringContent(articlesJson, Encoding.UTF8, "application/json");
+                response.Content = new StringContent(CreateTestArticlesJson(), Encoding.UTF8, "application/json");
             }
             else
             {
-                Console.WriteLine($"  -> Returning 404 NotFound for unmatched path: {request.RequestUri?.AbsolutePath}");
                 response.StatusCode = HttpStatusCode.NotFound;
             }
 
@@ -326,7 +268,6 @@ public partial class IRaindropAPITests
         }
     }
 
-    // Test HTTP message handler that simulates API failures
     private sealed class HttpMessageHandler_FailingStub : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -336,19 +277,16 @@ public partial class IRaindropAPITests
         }
     }
 
-    // Test HTTP message handler that returns malformed responses
     private sealed class HttpMessageHandler_MalformedStub : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent("{ invalid json }", Encoding.UTF8, "application/json")
-            };
-
-            return Task.FromResult(response);
+            });
         }
     }
 }

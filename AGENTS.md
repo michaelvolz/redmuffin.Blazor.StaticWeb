@@ -27,6 +27,20 @@ Before implementing ANY change that affects the build pipeline, toolchain, proje
 
 If any answer is incomplete, if you are guessing about a constraint the user holds, if you are unsure about a side effect, or if the solution might collide with something else the user is balancing — **STOP AND ASK.** Do not implement. Do not edit files. Do not run commands.
 
+### Azure Functions deployment boundary (non-negotiable)
+
+`src/redmuffin.Blazor.StaticWeb.Api/` is a **separate deployment unit**
+(Azure Functions). It is not a RiverBooks module.
+
+- **Never** move code **from** the Api project into `Modules/`, the WASM host,
+  Common, or any other project as part of modularization or cleanup.
+- **Never** move module/host client code **into** Api to “share” types across
+  the deploy boundary.
+- Frontend modules may **HTTP-call** `/api/...` only. Dual-consumed DTOs go in
+  `Common` when deliberate — not by extracting Functions source.
+- Full rule: ADR `docs/adr/0013-riverbooks-modular-layout-and-result.md` and
+  `docs/modular-monolith-module-guide-2026-08-03.md` § Hard constraint.
+
 ## PRE-COMMIT VERIFICATION
 
 Never commit when a change can break `dotnet build` or any test without
@@ -133,15 +147,16 @@ Q2: Did the change include workflow files?
 ## DIRECTORY & NAMESPACE STRUCTURE
 
 Folder names map 1:1 to namespace segments. A file at
-`Features/Raindrop/Services/RaindropAPIFactory.cs` has namespace
-`redmuffin.Blazor.StaticWeb.Features.Raindrop.Services`.
+`Features/Raindrop/Cache/RaindropItemsCache.cs` has namespace
+`redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache`. Module IO lives under
+`src/redmuffin.Blazor.StaticWeb.Modules/Raindrop*/` (not host `Features/…/Services`).
 
 **Feature folders (top-level):** every page, domain, and shared construct
 lives under `Features/`.
 
 | Pattern                     | Example                          | Contains                                                             |
 | --------------------------- | -------------------------------- | -------------------------------------------------------------------- |
-| `Features/{FeatureName}/`   | `Features/Raindrop/`             | Domain logic: `Services/`, `Models/`, `Cache/`, `Presentation/`      |
+| `Features/{FeatureName}/`   | `Features/Raindrop/`             | Host domain leftovers: `Cache/`, `Presentation/`, `Models/` (IO is `Modules/Raindrop*`) |
 | `Features/{PageName}/`      | `Features/HomePage/`             | Single-page feature: `.razor` + `.razor.cs` + optional `Components/` |
 | `Features/{PageName}/`      | `Features/DebugPage/`            | Multi-page feature: sub-pages, `Services/`, `Models/`, `Components/`   |
 | `Features/Common/`          | `Features/Common/Components/`    | Shared reusable components used by 2+ features                       |

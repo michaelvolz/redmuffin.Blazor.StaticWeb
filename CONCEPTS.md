@@ -110,4 +110,12 @@ Shared success/failure value in Common for expected module outcomes. Factories a
 
 Application implementation that returns artificially generated data instead of a live backend. Registered via the module DI extension when host policy selects synthetic (pure client host only — not every localhost). Distinct from test doubles, which live only in test projects. See also CONTEXT.md **Synthetic**.
 
-*(Seeded from the 2026-06-20 Grok Build CLI Roslyn LSP Windows spawn + restart learning in tooling-decisions/ + prior session memory on agent harness enablement. Package-management terms accreted from the 2026-07-22 NU1605/NU1902 CPM restore learning. Quality-gates terms accreted from the 2026-08-02 Uncle Bob upstream-sync learning. Modular monolith terms accreted 2026-08-03.)*
+## Azure Functions deployment boundary
+
+The isolated-worker Api app is a **separate deployment unit** from the WASM host and RiverBooks modules. Modularization extracts **client** code from the host only; it never relocates Functions triggers, workers, or Api-only types into Modules (or the reverse). Cross-boundary contact is HTTP (and deliberately dual-consumed types in Common), not shared project source.
+
+## Host-time Strategy registration
+
+Composition-root choice of real vs synthetic module implementation via a host-computed boolean passed into `Add{Module}Module(...)`. Replaces NavigationManager-based factories that resolved concrete services at first use.
+
+*(Seeded from the 2026-06-20 Grok Build CLI Roslyn LSP Windows spawn + restart learning in tooling-decisions/ + prior session memory on agent harness enablement. Package-management terms accreted from the 2026-07-22 NU1605/NU1902 CPM restore learning. Quality-gates terms accreted from the 2026-08-02 Uncle Bob upstream-sync learning. Modular monolith terms accreted 2026-08-03; Raindrop Phase 1 / Api boundary terms accreted 2026-08-03.)*

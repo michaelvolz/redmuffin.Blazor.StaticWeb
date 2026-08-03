@@ -1,9 +1,11 @@
-namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
+using Microsoft.Extensions.Logging;
+
+namespace redmuffin.Blazor.StaticWeb.Modules.Raindrop;
 
 /// <summary>
 ///     Logging partial class for RaindropAPI containing LoggerMessage delegates.
 /// </summary>
-public sealed partial class RaindropAPI
+internal sealed partial class RaindropAPI
 {
     [LoggerMessage(Level = LogLevel.Information, Message = "Calling videos API endpoint")]
     private static partial void LogCallingVideosAPI(ILogger logger);

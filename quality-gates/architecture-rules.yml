@@ -5,6 +5,9 @@ component-map:
   ApiHealth.Contracts: Shared
   ApiHealth: Frontend
   ApiHealth.Tests: Frontend
+  Raindrop.Contracts: Shared
+  Raindrop: Frontend
+  Raindrop.Tests: Frontend
   SwaLauncher: Frontend
 
 allowed-dependencies:

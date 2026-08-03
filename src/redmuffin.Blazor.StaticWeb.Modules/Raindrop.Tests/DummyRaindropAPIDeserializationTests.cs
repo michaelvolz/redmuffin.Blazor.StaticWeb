@@ -1,13 +1,12 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using DummyRaindropAPI = redmuffin.Blazor.StaticWeb.Features.Raindrop.Services.DummyRaindropAPI;
-using RaindropItem = redmuffin.Blazor.StaticWeb.Common.Raindrop.RaindropItem;
+using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 
-namespace redmuffin.Blazor.StaticWeb.Tests.Features.Raindrop.Services;
+namespace redmuffin.Blazor.StaticWeb.Modules.Raindrop.Tests;
 
 public class DummyRaindropAPIDeserializationTests
 {
-    private static readonly ILogger _logger = NullLogger.Instance;
+    private static readonly ILogger Logger = NullLogger.Instance;
 
     [Test]
     public async Task DeserializeWithFallbackAsync_ValidJson_ReturnsResult()
@@ -15,7 +14,7 @@ public class DummyRaindropAPIDeserializationTests
         var json = """[{"title":"Test Item","link":"https://example.com"}]""";
 
         var result = await DummyRaindropAPI.DeserializeWithFallbackAsync<List<RaindropItem>>(
-            json, "test.json", _logger, CancellationToken.None).ConfigureAwait(false);
+            json, "test.json", Logger, CancellationToken.None).ConfigureAwait(false);
 
         await Assert.That(result).IsNotNull();
         await Assert.That(result!.Count).IsEqualTo(1);
@@ -27,7 +26,7 @@ public class DummyRaindropAPIDeserializationTests
     {
         await Assert.ThrowsAsync<ArgumentException>(() =>
             DummyRaindropAPI.DeserializeWithFallbackAsync<List<RaindropItem>>(
-                "", "test.json", _logger, CancellationToken.None));
+                "", "test.json", Logger, CancellationToken.None));
     }
 
     [Test]
@@ -35,7 +34,7 @@ public class DummyRaindropAPIDeserializationTests
     {
         await Assert.ThrowsAsync<ArgumentException>(() =>
             DummyRaindropAPI.DeserializeWithFallbackAsync<List<RaindropItem>>(
-                "[]", " ", _logger, CancellationToken.None));
+                "[]", " ", Logger, CancellationToken.None));
     }
 
     [Test]
@@ -44,7 +43,7 @@ public class DummyRaindropAPIDeserializationTests
         var json = "NOT JSON AT ALL {{{";
 
         var result = await DummyRaindropAPI.DeserializeWithFallbackAsync<List<RaindropItem>>(
-            json, "test.json", _logger, CancellationToken.None).ConfigureAwait(false);
+            json, "test.json", Logger, CancellationToken.None).ConfigureAwait(false);
 
         await Assert.That(result).IsNull();
     }

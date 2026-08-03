@@ -2,7 +2,6 @@ using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Features.Common.Components;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
-using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Presentation;
 

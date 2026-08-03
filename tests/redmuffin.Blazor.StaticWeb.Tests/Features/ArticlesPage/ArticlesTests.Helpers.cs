@@ -1,4 +1,4 @@
-﻿using Bunit;
+using Bunit;
 using LightMock.Generator;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
-using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
+using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
 using ArticlesComponent = redmuffin.Blazor.StaticWeb.Features.ArticlesPage.Articles;
 

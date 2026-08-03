@@ -5,6 +5,12 @@ tags: [raindrop, api, development, dummy-data, di, wasm]
 problem_type: feature
 ---
 
+> **Current (2026-08-03):** Client Raindrop IO is the `Modules/Raindrop*` triad.
+> `IRaindropAPI` is in Contracts; real + dummy implementations are internal;
+> host registers `AddRaindropModule(useSynthetic)` for `localhost:5233`.
+> The factory under `Features/Raindrop/Services` is gone. Body below is
+> historical origin of dummy JSON + exception contracts.
+
 ## Problem
 
 Running the Blazor WASM app requires both the frontend (`localhost:5233`) and Azure Functions API simultaneously to see any content. This adds ~20 seconds to startup time and creates unnecessary friction for local design and UI testing.
@@ -47,4 +53,6 @@ Features/Raindrop/Services/
 
 ## Prevention
 
-Any new API integration should follow the same factory pattern — create an interface, implement real + dummy variants, and register via factory that inspects environment. This prevents tight coupling between components and the Azure Functions backend.
+Any new API integration should use the module Strategy pattern (`Add{Name}Module(bool)`),
+not a NavigationManager factory — see `docs/modular-monolith-module-guide-2026-08-03.md`.
+Keep Azure Functions in `src/redmuffin.Blazor.StaticWeb.Api/` (deployment boundary).

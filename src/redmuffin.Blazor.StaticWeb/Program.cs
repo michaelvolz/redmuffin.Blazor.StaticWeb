@@ -12,8 +12,8 @@ using redmuffin.Blazor.StaticWeb.Core.Services;
 using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Services;
 using redmuffin.Blazor.StaticWeb.Features.DebugPage.Services;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
-using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
 using redmuffin.Blazor.StaticWeb.Modules.ApiHealth;
+using redmuffin.Blazor.StaticWeb.Modules.Raindrop;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -56,21 +56,12 @@ builder.Services.AddMediator(options =>
 });
 builder.Services.AddModulePipelineBehaviors();
 
-// Synthetic data only on pure client host (localhost:5233), same policy as Raindrop.
+// Synthetic data only on pure client host (localhost:5233).
 // SWA local (localhost:4280) and production use the real HTTP implementation.
-var useSyntheticApiHealth = builder.HostEnvironment.BaseAddress.Contains(
+var useSynthetic = builder.HostEnvironment.BaseAddress.Contains(
     "localhost:5233",
     StringComparison.OrdinalIgnoreCase);
-builder.Services.AddApiHealthModule(useSyntheticApiHealth);
-
-// Register Raindrop services with factory pattern
-builder.Services.AddScoped<IRaindropAPIFactory, RaindropAPIFactory>();
-builder.Services.AddScoped<DummyRaindropAPI>();
-builder.Services.AddScoped<RaindropAPI>();
-builder.Services.AddScoped<IRaindropAPI>(serviceProvider =>
-{
-    var factory = serviceProvider.GetRequiredService<IRaindropAPIFactory>();
-    return factory.CreateRaindropAPI();
-});
+builder.Services.AddApiHealthModule(useSynthetic);
+builder.Services.AddRaindropModule(useSynthetic);
 
 await builder.Build().RunAsync().ConfigureAwait(false);

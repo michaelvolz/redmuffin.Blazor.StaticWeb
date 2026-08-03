@@ -46,6 +46,22 @@ boundaries.
 
 - Shared components may depend on Shared (Contracts → Common for `Result<T>`)
 
+### Azure Functions deployment boundary (hard constraint)
+
+- `src/redmuffin.Blazor.StaticWeb.Api/` is a **separate deployment unit**
+  (Azure Functions isolated worker). It is not a RiverBooks module and is not
+  folded into `Modules/`.
+- **Never move code out of the Api project** into Modules, the WASM host,
+  Common, or any other project as part of modularization.
+- **Never move module or host client code into the Api project** to “share”
+  handlers or DTOs across the deploy boundary.
+- Frontend modules may **call** Functions over HTTP only. Client-side ports
+  (e.g. `IRaindropAPI` implementations that hit `/api/...`) live in Modules
+  or the host; Functions implementations stay in Api.
+- Shared contracts that both sides need (e.g. JSON DTOs) belong in
+  `Common` when deliberately dual-consumed — not by extracting Functions
+  source into Modules.
+
 ## Considered options
 
 **Keep exception-driven expected failures.** Rejected for module Contracts:

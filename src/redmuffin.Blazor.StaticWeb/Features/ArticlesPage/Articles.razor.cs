@@ -3,7 +3,7 @@ using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Features.Common.Components;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Presentation;
-using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
+using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
 
 namespace redmuffin.Blazor.StaticWeb.Features.ArticlesPage;
 

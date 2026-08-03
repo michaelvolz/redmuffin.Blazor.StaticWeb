@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\redmuffin.Blazor.StaticWeb.Common\redmuffin.Blazor.StaticWeb.Common.csproj" />
+  </ItemGroup>
+
+</Project>

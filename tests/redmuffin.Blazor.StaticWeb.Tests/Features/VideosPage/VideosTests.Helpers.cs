@@ -1,4 +1,4 @@
-﻿using Bunit;
+using Bunit;
 using LightMock.Generator;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,7 +9,7 @@ using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Models;
 using redmuffin.Blazor.StaticWeb.Features.VideosPage;
-using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
+using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.VideosPage;
