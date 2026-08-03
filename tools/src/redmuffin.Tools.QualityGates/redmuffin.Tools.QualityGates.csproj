@@ -14,14 +14,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\src\SlopwatchSuppressions\SlopwatchSuppressAttribute.cs" Link="SlopwatchSuppressAttribute.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="YamlDotNet" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\redmuffin.Blazor.StaticWeb.Common\redmuffin.Blazor.StaticWeb.Common.csproj" />
   </ItemGroup>
 
 </Project>
