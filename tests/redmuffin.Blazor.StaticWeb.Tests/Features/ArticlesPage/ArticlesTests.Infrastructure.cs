@@ -92,7 +92,9 @@ public sealed partial class ArticlesTests
         // Act
         var component = scope.BUnitContext.Render<ArticlesComponent>();
 
-        component.Render();
+        // Await background refresh so re-render does not invalidate the img event handler
+        if (component.Instance.BackgroundRefreshTask is { } refreshTask)
+            await refreshTask.ConfigureAwait(false);
 
         // Try to find and trigger image load events
         var images = component.FindAll("img");

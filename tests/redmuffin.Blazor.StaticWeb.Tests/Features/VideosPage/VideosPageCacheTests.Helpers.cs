@@ -1,14 +1,12 @@
 using Bunit;
 using LightMock.Generator;
+using Mediator;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Features.VideosPage;
-using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
-using redmuffin.Blazor.StaticWeb.Features.Raindrop.Models;
-using redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.VideosPage;
 
@@ -60,14 +58,9 @@ public partial class VideosPageCacheTests
         public BunitContext Context { get; } = new();
 
         /// <summary>
-        ///     Gets the mock for IRaindropItemsCache service.
+        ///     Gets the Mediator mock used by the Videos page after Step 3 cutover.
         /// </summary>
-        public CacheService_Mock CacheService_Mock { get; } = new();
-
-        /// <summary>
-        ///     Gets the mock for IRaindropAPI service.
-        /// </summary>
-        public RaindropAPI_Mock RaindropAPI_Mock { get; } = new();
+        public VideosTests.RaindropMediator_Mock Mediator_Mock { get; } = new();
 
         /// <summary>
         ///     Gets the mock for IImagePlaceholderService.
@@ -90,12 +83,11 @@ public partial class VideosPageCacheTests
         /// <returns>The configured test scope for method chaining.</returns>
         public TestScope WithStandardServices()
         {
-            // Register mocked services
-            Context.Services.AddSingleton<IRaindropItemsCache>(CacheService_Mock);
-            Context.Services.AddSingleton<IRaindropAPI>(RaindropAPI_Mock);
+            Context.Services.AddSingleton<IMediator>(Mediator_Mock);
             Context.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderService_Mock);
             Context.Services.AddSingleton<IImageUrlResolver>(ImageUrlResolver_Mock);
             Context.Services.AddSingleton(Logger_Mock.Object);
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
             return this;
         }
@@ -106,111 +98,6 @@ public partial class VideosPageCacheTests
         public void Dispose()
         {
             Context?.Dispose();
-        }
-    }
-
-    /// <summary>
-    ///     Custom mock for IRaindropItemsCache to simulate caching behavior.
-    /// </summary>
-    public sealed class CacheService_Mock : IRaindropItemsCache
-    {
-        private readonly Dictionary<string, List<RaindropItem>> _cache = new(StringComparer.Ordinal);
-        private readonly Dictionary<string, bool> _cacheFailures = new(StringComparer.Ordinal);
-
-        public void SetupCachedData(string key, IEnumerable<RaindropItem> data)
-        {
-            _cache[key] = data.ToList();
-        }
-
-        public void SetupNoCachedData(string key)
-        {
-            _cache.Remove(key);
-        }
-
-        public void SetupCacheFailure(string key)
-        {
-            _cacheFailures[key] = true;
-        }
-
-        public Task<RaindropCacheResult<IList<RaindropItem>>> GetAsync(string cacheType, CancellationToken cancellationToken = default)
-        {
-            if (_cacheFailures.ContainsKey(cacheType)) throw new InvalidOperationException("Cache failure simulation");
-
-            if (_cache.TryGetValue(cacheType, out var data))
-                return Task.FromResult(RaindropCacheResultFactory.Success(data as IList<RaindropItem>, new RaindropCacheMetadata
-                {
-                    CreatedAt = DateTime.UtcNow,
-                    Version = "1.0",
-                    ItemCount = data.Count,
-                    CompressedSize = 1000,
-                    OriginalSize = 2000
-                }));
-
-            return Task.FromResult(RaindropCacheResultFactory.Miss<IList<RaindropItem>>());
-        }
-
-        public Task SetAsync(string cacheType, IList<RaindropItem> items, CancellationToken cancellationToken = default)
-        {
-            _cache[cacheType] = items.ToList();
-            return Task.CompletedTask;
-        }
-
-        public Task<bool> IsExpiredAsync(string cacheType, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(false);
-        }
-
-        public Task ClearAsync(string cacheType, CancellationToken cancellationToken = default)
-        {
-            _cache.Remove(cacheType);
-            return Task.CompletedTask;
-        }
-
-        public Task ClearAllAsync(CancellationToken cancellationToken = default)
-        {
-            _cache.Clear();
-            return Task.CompletedTask;
-        }
-    }
-
-    /// <summary>
-    ///     Custom mock for IRaindropAPI to simulate API behavior.
-    /// </summary>
-    public sealed class RaindropAPI_Mock : IRaindropAPI
-    {
-        private List<RaindropItem> _videos = new();
-        private string? _failureMessage;
-        private int _delayMs;
-
-        public void SetupVideos(IEnumerable<RaindropItem> videos)
-        {
-            _videos = videos.ToList();
-            _failureMessage = null;
-        }
-
-        public void SetupFailure(string message)
-        {
-            _failureMessage = message;
-        }
-
-        public void SetupDelay(int milliseconds)
-        {
-            _delayMs = milliseconds;
-        }
-
-        [Slopwatch.SlopwatchSuppress("SW004", "Intentional latency injection for race-condition testing")]
-        public async Task<IEnumerable<RaindropItem>> GetVideosAsync(CancellationToken cancellationToken = default)
-        {
-            if (_delayMs > 0) await Task.Delay(_delayMs, cancellationToken).ConfigureAwait(false);
-
-            if (_failureMessage != null) throw new HttpRequestException(_failureMessage);
-
-            return _videos;
-        }
-
-        public Task<IEnumerable<RaindropItem>> GetArticlesAsync(CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException("Articles not needed for Videos page tests");
         }
     }
 

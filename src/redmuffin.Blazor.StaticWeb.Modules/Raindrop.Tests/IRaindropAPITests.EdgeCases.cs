@@ -24,8 +24,11 @@ public sealed partial class IRaindropAPITests
 
         var result = await api.GetArticlesAsync(CancellationToken.None).ConfigureAwait(false);
 
-        await Assert.That(result).IsNotNull();
-        await Assert.That(result.Count()).IsEqualTo(0);
+        using (Assert.Multiple())
+        {
+            await Assert.That(result.IsSuccess).IsTrue();
+            await Assert.That(result.Value.Count).IsEqualTo(0);
+        }
     }
 
     [Test]
@@ -50,8 +53,11 @@ public sealed partial class IRaindropAPITests
 
         var result = await api.GetVideosAsync(CancellationToken.None).ConfigureAwait(false);
 
-        await Assert.That(result).IsNotNull();
-        await Assert.That(result.Count()).IsEqualTo(0);
+        using (Assert.Multiple())
+        {
+            await Assert.That(result.IsSuccess).IsTrue();
+            await Assert.That(result.Value.Count).IsEqualTo(0);
+        }
     }
 
     [Test]
@@ -67,23 +73,35 @@ public sealed partial class IRaindropAPITests
     }
 
     [Test]
-    public async Task RaindropAPI_GetArticlesAsync_Should_Throw_HttpRequestException_When_API_Fails()
+    public async Task RaindropAPI_GetArticlesAsync_Should_Return_Failure_When_API_Fails()
     {
         using var scope = CreateFailingAPITestScope();
         var api = scope.RealAPI;
         ArgumentNullException.ThrowIfNull(api);
 
-        await Assert.ThrowsAsync<HttpRequestException>(() => api.GetArticlesAsync(CancellationToken.None));
+        var result = await api.GetArticlesAsync(CancellationToken.None).ConfigureAwait(false);
+
+        using (Assert.Multiple())
+        {
+            await Assert.That(result.IsFailure).IsTrue();
+            await Assert.That(result.Error).IsNotEmpty();
+        }
     }
 
     [Test]
-    public async Task RaindropAPI_GetArticlesAsync_Should_Throw_InvalidOperationException_When_Response_Malformed()
+    public async Task RaindropAPI_GetArticlesAsync_Should_Return_Failure_When_Response_Malformed()
     {
         using var scope = CreateMalformedResponseAPITestScope();
         var api = scope.RealAPI;
         ArgumentNullException.ThrowIfNull(api);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => api.GetArticlesAsync(CancellationToken.None));
+        var result = await api.GetArticlesAsync(CancellationToken.None).ConfigureAwait(false);
+
+        using (Assert.Multiple())
+        {
+            await Assert.That(result.IsFailure).IsTrue();
+            await Assert.That(result.Error).IsNotEmpty();
+        }
     }
 
     [Test]
@@ -99,23 +117,35 @@ public sealed partial class IRaindropAPITests
     }
 
     [Test]
-    public async Task RaindropAPI_GetVideosAsync_Should_Throw_HttpRequestException_When_API_Fails()
+    public async Task RaindropAPI_GetVideosAsync_Should_Return_Failure_When_API_Fails()
     {
         using var scope = CreateFailingAPITestScope();
         var api = scope.RealAPI;
         ArgumentNullException.ThrowIfNull(api);
 
-        await Assert.ThrowsAsync<HttpRequestException>(() => api.GetVideosAsync(CancellationToken.None));
+        var result = await api.GetVideosAsync(CancellationToken.None).ConfigureAwait(false);
+
+        using (Assert.Multiple())
+        {
+            await Assert.That(result.IsFailure).IsTrue();
+            await Assert.That(result.Error).IsNotEmpty();
+        }
     }
 
     [Test]
-    public async Task RaindropAPI_GetVideosAsync_Should_Throw_InvalidOperationException_When_Response_Malformed()
+    public async Task RaindropAPI_GetVideosAsync_Should_Return_Failure_When_Response_Malformed()
     {
         using var scope = CreateMalformedResponseAPITestScope();
         var api = scope.RealAPI;
         ArgumentNullException.ThrowIfNull(api);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => api.GetVideosAsync(CancellationToken.None));
+        var result = await api.GetVideosAsync(CancellationToken.None).ConfigureAwait(false);
+
+        using (Assert.Multiple())
+        {
+            await Assert.That(result.IsFailure).IsTrue();
+            await Assert.That(result.Error).IsNotEmpty();
+        }
     }
 
     [Test]
@@ -125,10 +155,14 @@ public sealed partial class IRaindropAPITests
         var api = scope.RealAPI;
         ArgumentNullException.ThrowIfNull(api);
 
-        await Assert.ThrowsAsync<HttpRequestException>(() => api.GetVideosAsync(CancellationToken.None));
+        var result = await api.GetVideosAsync(CancellationToken.None).ConfigureAwait(false);
 
-        await Assert.That(scope.GetRealLogger().LogEntries.Any(entry =>
-            entry.Message.Contains("HTTP request error in") &&
-            entry.Message.Contains("GetVideosAsync"))).IsTrue();
+        using (Assert.Multiple())
+        {
+            await Assert.That(result.IsFailure).IsTrue();
+            await Assert.That(scope.GetRealLogger().LogEntries.Any(entry =>
+                entry.Message.Contains("HTTP request error in") &&
+                entry.Message.Contains("GetVideosAsync"))).IsTrue();
+        }
     }
 }

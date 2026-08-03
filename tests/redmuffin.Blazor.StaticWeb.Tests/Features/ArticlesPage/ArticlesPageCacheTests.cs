@@ -1,4 +1,4 @@
-﻿using Bunit;
+using Bunit;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Features.ArticlesPage;
 
@@ -6,7 +6,7 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Features.ArticlesPage;
 
 /// <summary>
 ///     Integration tests for Articles page caching functionality.
-///     Tests the integration between Articles component, RefreshBadge, and caching services.
+///     Tests the integration between Articles component, RefreshBadge, and Mediator load/refresh.
 /// </summary>
 [Category("Feature:Articles")]
 [Category("Integration")]
@@ -22,11 +22,14 @@ public partial class ArticlesPageCacheTests
             CreateTestArticle("1", "Same Article", "Same excerpt")
         };
 
-        scope.CacheService_Mock.SetupCachedData("Articles", identicalArticles);
-        scope.RaindropAPI_Mock.SetupArticles(identicalArticles); // Same data
+        scope.Mediator_Mock.SetupLoad(identicalArticles, isFromCache: true);
+        scope.Mediator_Mock.SetupRefresh(identicalArticles);
 
         // Act
         var component = scope.Context.Render<Articles>();
+
+        if (component.Instance.BackgroundRefreshTask is { } refreshTask)
+            await refreshTask.ConfigureAwait(false);
 
         // Assert
         await Assert.That(component.FindAll(".refresh-badge")).IsEmpty();

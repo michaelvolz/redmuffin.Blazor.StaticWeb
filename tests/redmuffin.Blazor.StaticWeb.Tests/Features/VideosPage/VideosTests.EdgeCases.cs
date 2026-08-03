@@ -14,7 +14,8 @@ public sealed partial class VideosTests
     {
         // Arrange
         using var scope = CreateTestScope();
-        scope.RaindropAPI_Mock.SetupVideosException(new HttpRequestException("API request failed"));
+        scope.Mediator_Mock.SetupLoadFailure("API request failed");
+        scope.Mediator_Mock.SetupRefreshFailure("API request failed");
 
         // Act
         var component = scope.BUnitContext.Render<Videos>();
@@ -35,7 +36,8 @@ public sealed partial class VideosTests
             CreateTestVideo("2", "Test Video 2", null!, "https://example.com/video2")
         };
 
-        scope.RaindropAPI_Mock.SetupVideos(testVideos);
+        scope.Mediator_Mock.SetupLoad(testVideos);
+        scope.Mediator_Mock.SetupRefresh(testVideos);
 
         // Act
         var component = scope.BUnitContext.Render<Videos>();
@@ -56,7 +58,8 @@ public sealed partial class VideosTests
             CreateTestVideo("2", null!, "Test excerpt", "https://example.com/video2")
         };
 
-        scope.RaindropAPI_Mock.SetupVideos(testVideos);
+        scope.Mediator_Mock.SetupLoad(testVideos);
+        scope.Mediator_Mock.SetupRefresh(testVideos);
 
         // Act
         var component = scope.BUnitContext.Render<Videos>();
@@ -71,7 +74,8 @@ public sealed partial class VideosTests
     {
         // Arrange
         using var scope = CreateTestScope();
-        scope.RaindropAPI_Mock.SetupVideos(new List<RaindropItem>());
+        scope.Mediator_Mock.SetupLoad([]);
+        scope.Mediator_Mock.SetupRefresh([]);
 
         // Act
         var component = scope.BUnitContext.Render<Videos>();

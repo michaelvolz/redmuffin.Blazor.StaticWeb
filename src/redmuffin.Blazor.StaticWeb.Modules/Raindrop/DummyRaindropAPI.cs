@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using redmuffin.Blazor.StaticWeb.Common;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
 
@@ -23,7 +24,7 @@ internal sealed partial class DummyRaindropAPI(IHttpClientFactory httpClientFact
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<RaindropItem>> GetVideosAsync(CancellationToken cancellationToken = default)
+    public async Task<Result<IReadOnlyList<RaindropItem>>> GetVideosAsync(CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
@@ -34,20 +35,21 @@ internal sealed partial class DummyRaindropAPI(IHttpClientFactory httpClientFact
             var jsonContent = await LoadJsonFileAsync("mockdata/videos.json", cancellationToken).ConfigureAwait(false);
             var videos = await DeserializeWithFallbackAsync<List<RaindropItem>>(jsonContent, "videos.json", _logger, cancellationToken).ConfigureAwait(false);
 
-            if (videos == null) throw new InvalidOperationException("Failed to deserialize videos JSON data - all deserialization strategies failed.");
+            if (videos is null)
+                return Result.Failure<IReadOnlyList<RaindropItem>>("The Raindrop mock data could not be processed.");
 
             LogVideosLoaded(_logger, videos.Count);
-            return videos;
+            return Result.Success<IReadOnlyList<RaindropItem>>(videos);
         }
         catch (HttpRequestException ex)
         {
             LogFileLoadError(_logger, ex, "videos.json");
-            return new List<RaindropItem>();
+            return Result.Success<IReadOnlyList<RaindropItem>>([]);
         }
         catch (JsonException ex)
         {
             LogJsonParseError(_logger, ex, "videos.json");
-            throw new InvalidOperationException("Failed to parse videos JSON data.", ex);
+            return Result.Failure<IReadOnlyList<RaindropItem>>("The Raindrop mock data could not be processed.");
         }
         catch (OperationCanceledException ex)
         {
@@ -57,12 +59,12 @@ internal sealed partial class DummyRaindropAPI(IHttpClientFactory httpClientFact
         catch (Exception ex)
         {
             LogUnexpectedError(_logger, ex, "GetVideosAsync");
-            throw new InvalidOperationException("An unexpected error occurred while loading videos.", ex);
+            return Result.Failure<IReadOnlyList<RaindropItem>>("An unexpected error occurred while loading videos.");
         }
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<RaindropItem>> GetArticlesAsync(CancellationToken cancellationToken = default)
+    public async Task<Result<IReadOnlyList<RaindropItem>>> GetArticlesAsync(CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
@@ -73,20 +75,21 @@ internal sealed partial class DummyRaindropAPI(IHttpClientFactory httpClientFact
             var jsonContent = await LoadJsonFileAsync("mockdata/articles.json", cancellationToken).ConfigureAwait(false);
             var articles = await DeserializeWithFallbackAsync<List<RaindropItem>>(jsonContent, "articles.json", _logger, cancellationToken).ConfigureAwait(false);
 
-            if (articles == null) throw new InvalidOperationException("Failed to deserialize articles JSON data - all deserialization strategies failed.");
+            if (articles is null)
+                return Result.Failure<IReadOnlyList<RaindropItem>>("The Raindrop mock data could not be processed.");
 
             LogArticlesLoaded(_logger, articles.Count);
-            return articles;
+            return Result.Success<IReadOnlyList<RaindropItem>>(articles);
         }
         catch (HttpRequestException ex)
         {
             LogFileLoadError(_logger, ex, "articles.json");
-            return new List<RaindropItem>();
+            return Result.Success<IReadOnlyList<RaindropItem>>([]);
         }
         catch (JsonException ex)
         {
             LogJsonParseError(_logger, ex, "articles.json");
-            throw new InvalidOperationException("Failed to parse articles JSON data.", ex);
+            return Result.Failure<IReadOnlyList<RaindropItem>>("The Raindrop mock data could not be processed.");
         }
         catch (OperationCanceledException ex)
         {
@@ -96,7 +99,7 @@ internal sealed partial class DummyRaindropAPI(IHttpClientFactory httpClientFact
         catch (Exception ex)
         {
             LogUnexpectedError(_logger, ex, "GetArticlesAsync");
-            throw new InvalidOperationException("An unexpected error occurred while loading articles.", ex);
+            return Result.Failure<IReadOnlyList<RaindropItem>>("An unexpected error occurred while loading articles.");
         }
     }
 

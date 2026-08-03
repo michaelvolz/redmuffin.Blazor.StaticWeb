@@ -1,13 +1,13 @@
 using Bunit;
-using LightMock.Generator;
+using Mediator;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using redmuffin.Blazor.StaticWeb.Common;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
-using redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
 using ArticlesComponent = redmuffin.Blazor.StaticWeb.Features.ArticlesPage.Articles;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.ArticlesPage;
@@ -38,7 +38,7 @@ public partial class ArticlesTests
 
     private static TestScope CreateFailingAPITestScope(string baseUri = "http://localhost:5000/")
     {
-        return new TestScope(baseUri).WithFailingRaindropAPI();
+        return new TestScope(baseUri).WithFailingMediator();
     }
 
     private static TestScope CreateEmptyArticlesTestScope(string baseUri = "http://localhost:5000/")
@@ -58,37 +58,27 @@ public partial class ArticlesTests
         public Logger_Spy<ArticlesComponent> Logger { get; } = new();
         public ImagePlaceholderService_Mock ImagePlaceholderService { get; } = new();
         public ImageUrlResolver_Mock ImageUrlResolver { get; } = new();
-        public RaindropAPI_Mock RaindropAPI { get; } = new();
-        public Mock<IRaindropItemsCache> RaindropItemsCache_Mock { get; } = new();
+        public RaindropMediator_Mock Mediator_Mock { get; } = new();
 
         /// <summary>
         ///     Configures the test context with high-performance services for optimal test execution.
         /// </summary>
         public TestScope WithStandardServices()
         {
-            BUnitContext.Services.AddSingleton<NavigationManager>(NavigationManager);
-            BUnitContext.Services.AddSingleton<ILogger<ArticlesComponent>>(Logger);
-            BUnitContext.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderService);
-            BUnitContext.Services.AddSingleton<IImageUrlResolver>(ImageUrlResolver);
-            BUnitContext.Services.AddSingleton<IRaindropAPI>(RaindropAPI);
-            BUnitContext.Services.AddSingleton<IRaindropItemsCache>(RaindropItemsCache_Mock.Object);
-            BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
+            Mediator_Mock.SetupLoad(DefaultArticles());
+            Mediator_Mock.SetupRefresh(DefaultArticles());
+            RegisterCoreServices();
             return this;
         }
 
         /// <summary>
-        ///     Configures the test context with a failing Raindrop API for error testing scenarios.
+        ///     Configures the test context with a failing Raindrop Mediator for error testing scenarios.
         /// </summary>
-        public TestScope WithFailingRaindropAPI()
+        public TestScope WithFailingMediator()
         {
-            var failingAPI = new RaindropAPI_FailingMock();
-            BUnitContext.Services.AddSingleton<NavigationManager>(NavigationManager);
-            BUnitContext.Services.AddSingleton<ILogger<ArticlesComponent>>(Logger);
-            BUnitContext.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderService);
-            BUnitContext.Services.AddSingleton<IImageUrlResolver>(ImageUrlResolver);
-            BUnitContext.Services.AddSingleton<IRaindropAPI>(failingAPI);
-            BUnitContext.Services.AddSingleton<IRaindropItemsCache>(RaindropItemsCache_Mock.Object);
-            BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
+            Mediator_Mock.SetupLoadFailure();
+            Mediator_Mock.SetupRefreshFailure();
+            RegisterCoreServices();
             return this;
         }
 
@@ -97,16 +87,44 @@ public partial class ArticlesTests
         /// </summary>
         public TestScope WithEmptyArticles()
         {
-            var emptyAPI = new RaindropAPI_EmptyMock();
+            Mediator_Mock.SetupLoad([]);
+            Mediator_Mock.SetupRefresh([]);
+            RegisterCoreServices();
+            return this;
+        }
+
+        private void RegisterCoreServices()
+        {
             BUnitContext.Services.AddSingleton<NavigationManager>(NavigationManager);
             BUnitContext.Services.AddSingleton<ILogger<ArticlesComponent>>(Logger);
             BUnitContext.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderService);
             BUnitContext.Services.AddSingleton<IImageUrlResolver>(ImageUrlResolver);
-            BUnitContext.Services.AddSingleton<IRaindropAPI>(emptyAPI);
-            BUnitContext.Services.AddSingleton<IRaindropItemsCache>(RaindropItemsCache_Mock.Object);
+            BUnitContext.Services.AddSingleton<IMediator>(Mediator_Mock);
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
-            return this;
         }
+
+        private static IReadOnlyList<RaindropItem> DefaultArticles() =>
+        [
+            new()
+            {
+                Id = 1,
+                Title = "Test Article 1",
+                Excerpt = "This is a test article excerpt",
+                Link = "https://example.com/article1",
+                Cover = "https://example.com/cover1.jpg",
+                Type = "article"
+            },
+            new()
+            {
+                Id = 2,
+                Title = "Test Article 2",
+                Excerpt =
+                    "This is another test article with a longer excerpt that should be truncated when it exceeds the maximum length limit of 250 characters. This text is intentionally long to test the truncation functionality in the Articles component.",
+                Link = "https://example.com/article2",
+                Cover = "https://example.com/cover2.jpg",
+                Type = "article"
+            }
+        ];
 
         /// <summary>
         ///     Configures JS interop mode for testing JavaScript integration scenarios.
@@ -259,67 +277,101 @@ public partial class ArticlesTests
         }
     }
 
-    // Mock RaindropAPI for testing
-    public class RaindropAPI_Mock : IRaindropAPI
+    public sealed class RaindropMediator_Mock : IMediator
     {
-        public Task<IEnumerable<RaindropItem>> GetArticlesAsync(CancellationToken cancellationToken = default)
+        private Result<RaindropItemsResponse> _loadResult =
+            Result.Success(new RaindropItemsResponse([], IsFromCache: false, HasUpdateAvailable: false));
+
+        private Result<RaindropItemsResponse> _refreshResult =
+            Result.Success(new RaindropItemsResponse([], IsFromCache: false, HasUpdateAvailable: false));
+
+        private string? _refreshFailure;
+        private int _delayMs;
+        private bool _preventDoubleRefresh;
+        private bool _refreshInProgress;
+
+        public void SetupLoad(IReadOnlyList<RaindropItem> items, bool isFromCache = false)
         {
-            var articles = new List<RaindropItem>
+            _loadResult = Result.Success(new RaindropItemsResponse(items.ToList(), isFromCache, HasUpdateAvailable: false));
+        }
+
+        public void SetupLoadFailure(string error = "Simulated API failure")
+        {
+            _loadResult = Result.Failure<RaindropItemsResponse>(error);
+        }
+
+        public void SetupRefresh(IReadOnlyList<RaindropItem> items)
+        {
+            _refreshFailure = null;
+            _refreshResult = Result.Success(new RaindropItemsResponse(items.ToList(), IsFromCache: false, HasUpdateAvailable: false));
+        }
+
+        public void SetupRefreshFailure(string error = "Simulated API failure")
+        {
+            _refreshFailure = error;
+        }
+
+        public void SetupDelay(int milliseconds) => _delayMs = milliseconds;
+
+        public void SetupDoubleRefreshPrevention(bool prevent) => _preventDoubleRefresh = prevent;
+
+        public async ValueTask<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
+        {
+            if (request is LoadArticlesQuery or LoadVideosQuery)
+                return (TResponse)(object)_loadResult;
+
+            if (request is RefreshArticlesCommand or RefreshVideosCommand)
             {
-                new()
+                if (_preventDoubleRefresh && _refreshInProgress)
+                    return (TResponse)(object)Result.Failure<RaindropItemsResponse>("Double refresh prevented");
+
+                _refreshInProgress = true;
+                try
                 {
-                    Id = 1,
-                    Title = "Test Article 1",
-                    Excerpt = "This is a test article excerpt",
-                    Link = "https://example.com/article1",
-                    Cover = "https://example.com/cover1.jpg",
-                    Type = "article"
-                },
-                new()
-                {
-                    Id = 2,
-                    Title = "Test Article 2",
-                    Excerpt =
-                        "This is another test article with a longer excerpt that should be truncated when it exceeds the maximum length limit of 250 characters. This text is intentionally long to test the truncation functionality in the Articles component.",
-                    Link = "https://example.com/article2",
-                    Cover = "https://example.com/cover2.jpg",
-                    Type = "article"
+                    if (_delayMs > 0)
+                        await Task.Delay(_delayMs, cancellationToken).ConfigureAwait(false);
+
+                    if (_refreshFailure is not null)
+                        return (TResponse)(object)Result.Failure<RaindropItemsResponse>(_refreshFailure);
+
+                    return (TResponse)(object)_refreshResult;
                 }
-            };
-            return Task.FromResult<IEnumerable<RaindropItem>>(articles);
+                finally
+                {
+                    _refreshInProgress = false;
+                }
+            }
+
+            throw new InvalidOperationException($"Unexpected request type: {request.GetType().Name}");
         }
 
-        public Task<IEnumerable<RaindropItem>> GetVideosAsync(CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult<IEnumerable<RaindropItem>>(new List<RaindropItem>());
-        }
-    }
+        public ValueTask<TResponse> Send<TResponse>(ICommand<TResponse> command, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
 
-    // Failing RaindropAPI mock for error testing
-    public class RaindropAPI_FailingMock : IRaindropAPI
-    {
-        public Task<IEnumerable<RaindropItem>> GetArticlesAsync(CancellationToken cancellationToken = default)
-        {
-            throw new HttpRequestException("Simulated API failure");
-        }
+        public ValueTask<TResponse> Send<TResponse>(IQuery<TResponse> query, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
 
-        public Task<IEnumerable<RaindropItem>> GetVideosAsync(CancellationToken cancellationToken = default)
-        {
-            throw new HttpRequestException("Simulated API failure");
-        }
-    }
+        public ValueTask<object?> Send(object message, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
 
-    // Empty RaindropAPI mock for empty state testing
-    public class RaindropAPI_EmptyMock : IRaindropAPI
-    {
-        public Task<IEnumerable<RaindropItem>> GetArticlesAsync(CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult<IEnumerable<RaindropItem>>(new List<RaindropItem>());
-        }
+        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamRequest<TResponse> request, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
 
-        public Task<IEnumerable<RaindropItem>> GetVideosAsync(CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult<IEnumerable<RaindropItem>>(new List<RaindropItem>());
-        }
+        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamCommand<TResponse> command, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+
+        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamQuery<TResponse> query, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+
+        public IAsyncEnumerable<object?> CreateStream(object message, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+
+        public ValueTask Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default)
+            where TNotification : INotification
+            => throw new NotSupportedException();
+
+        public ValueTask Publish(object notification, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
     }
 }
+

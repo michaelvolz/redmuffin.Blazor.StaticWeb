@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using redmuffin.Blazor.StaticWeb.Common;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
 
@@ -24,7 +25,7 @@ internal sealed partial class RaindropAPI(IHttpClientFactory httpClientFactory, 
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<RaindropItem>> GetVideosAsync(CancellationToken cancellationToken = default)
+    public async Task<Result<IReadOnlyList<RaindropItem>>> GetVideosAsync(CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
@@ -38,7 +39,7 @@ internal sealed partial class RaindropAPI(IHttpClientFactory httpClientFactory, 
             if (!response.IsSuccessStatusCode)
             {
                 LogAPICallFailed(_logger, "GetVideosAsync", (int)response.StatusCode, response.ReasonPhrase ?? "Unknown error");
-                response.EnsureSuccessStatusCode();
+                return Result.Failure<IReadOnlyList<RaindropItem>>("The Raindrop endpoint returned an error response.");
             }
 
             var jsonContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -46,20 +47,21 @@ internal sealed partial class RaindropAPI(IHttpClientFactory httpClientFactory, 
             if (string.IsNullOrWhiteSpace(jsonContent))
             {
                 LogEmptyAPIResponse(_logger, "GetVideosAsync");
-                return new List<RaindropItem>();
+                return Result.Success<IReadOnlyList<RaindropItem>>([]);
             }
 
             var videos = await DeserializeWithFallbackAsync<List<RaindropItem>>(jsonContent, "videos API response").ConfigureAwait(false);
 
-            if (videos == null) throw new InvalidOperationException("Failed to deserialize videos API response - all deserialization strategies failed.");
+            if (videos is null)
+                return Result.Failure<IReadOnlyList<RaindropItem>>("The Raindrop response could not be processed.");
 
             LogVideosLoaded(_logger, videos.Count);
-            return videos;
+            return Result.Success<IReadOnlyList<RaindropItem>>(videos);
         }
         catch (HttpRequestException ex)
         {
             LogAPIRequestError(_logger, ex, "GetVideosAsync");
-            throw;
+            return Result.Failure<IReadOnlyList<RaindropItem>>("The Raindrop endpoint did not return a response.");
         }
         catch (OperationCanceledException ex)
         {
@@ -69,17 +71,17 @@ internal sealed partial class RaindropAPI(IHttpClientFactory httpClientFactory, 
         catch (JsonException ex)
         {
             LogJsonParseError(_logger, ex, "GetVideosAsync");
-            throw new InvalidOperationException("Failed to parse videos API response.", ex);
+            return Result.Failure<IReadOnlyList<RaindropItem>>("The Raindrop response could not be processed.");
         }
         catch (Exception ex)
         {
             LogUnexpectedError(_logger, ex, "GetVideosAsync");
-            throw new InvalidOperationException("An unexpected error occurred while retrieving videos.", ex);
+            return Result.Failure<IReadOnlyList<RaindropItem>>("An unexpected error occurred while retrieving videos.");
         }
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<RaindropItem>> GetArticlesAsync(CancellationToken cancellationToken = default)
+    public async Task<Result<IReadOnlyList<RaindropItem>>> GetArticlesAsync(CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
@@ -93,7 +95,7 @@ internal sealed partial class RaindropAPI(IHttpClientFactory httpClientFactory, 
             if (!response.IsSuccessStatusCode)
             {
                 LogAPICallFailed(_logger, "GetArticlesAsync", (int)response.StatusCode, response.ReasonPhrase ?? "Unknown error");
-                response.EnsureSuccessStatusCode();
+                return Result.Failure<IReadOnlyList<RaindropItem>>("The Raindrop endpoint returned an error response.");
             }
 
             var jsonContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -101,21 +103,22 @@ internal sealed partial class RaindropAPI(IHttpClientFactory httpClientFactory, 
             if (string.IsNullOrWhiteSpace(jsonContent))
             {
                 LogEmptyAPIResponse(_logger, "GetArticlesAsync");
-                return new List<RaindropItem>();
+                return Result.Success<IReadOnlyList<RaindropItem>>([]);
             }
 
             var articles = await DeserializeWithFallbackAsync<List<RaindropItem>>(jsonContent, "articles API response")
                 .ConfigureAwait(false);
 
-            if (articles == null) throw new InvalidOperationException("Failed to deserialize articles API response - all deserialization strategies failed.");
+            if (articles is null)
+                return Result.Failure<IReadOnlyList<RaindropItem>>("The Raindrop response could not be processed.");
 
             LogArticlesLoaded(_logger, articles.Count);
-            return articles;
+            return Result.Success<IReadOnlyList<RaindropItem>>(articles);
         }
         catch (HttpRequestException ex)
         {
             LogAPIRequestError(_logger, ex, "GetArticlesAsync");
-            throw;
+            return Result.Failure<IReadOnlyList<RaindropItem>>("The Raindrop endpoint did not return a response.");
         }
         catch (OperationCanceledException ex)
         {
@@ -125,12 +128,12 @@ internal sealed partial class RaindropAPI(IHttpClientFactory httpClientFactory, 
         catch (JsonException ex)
         {
             LogJsonParseError(_logger, ex, "GetArticlesAsync");
-            throw new InvalidOperationException("Failed to parse articles API response.", ex);
+            return Result.Failure<IReadOnlyList<RaindropItem>>("The Raindrop response could not be processed.");
         }
         catch (Exception ex)
         {
             LogUnexpectedError(_logger, ex, "GetArticlesAsync");
-            throw new InvalidOperationException("An unexpected error occurred while retrieving articles.", ex);
+            return Result.Failure<IReadOnlyList<RaindropItem>>("An unexpected error occurred while retrieving articles.");
         }
     }
 

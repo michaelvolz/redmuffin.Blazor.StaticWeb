@@ -68,9 +68,10 @@ Three product decisions bind every future plan:
 
 Phase 1 Raindrop (IO triad + Strategy, factory gone) is the foundation.
 **P0 done:** ApiHealth implementation assembly lazy load (PRD 002; user
-confirmed). **Immediate priority:** ApiHealth **razor-into-module** pilot
-(§6.2b / SN-0060). After that, Raindrop Mediator use cases (§6.3) are the
-next modularization vertical — do not cascade razor moves.
+confirmed). **§6.3 done:** Raindrop Mediator use cases + Result + cache policy
+in module (PRD 003). ApiHealth lazy load + razor pilot (§6.2a–b) are done —
+do not cascade more razor moves. **Immediate priority:** next remaining client
+feature triad after Raindrop application layer (§6.4).
 
 ## 1 — Scope and Definitions
 
@@ -190,9 +191,9 @@ re-scope. See ADR 0013.
 | ApiHealth triad + Result + Mediator + Strategy | Done (template) |
 | Raindrop IO triad + Strategy; factory deleted; Api untouched | Done (Phase 1) |
 | ApiHealth implementation assembly lazy load | **Done** (lazyAssembly + user-confirmed) |
-| **ApiHealth razor into module RCL (lazy UI pilot)** | **In progress** (SN-0060 / §6.2b — RCL + Router wired) |
-| Raindrop Mediator use cases + Result + cache policy in module | After §6.2b |
-| Remaining client features → triads | After Raindrop application layer |
+| ApiHealth razor into module RCL (lazy UI pilot) | **Done** (SN-0060 / §6.2b) |
+| Raindrop Mediator use cases + Result + cache policy in module | **Done** (PRD 003 / §6.3) |
+| Remaining client features → triads | **Next** (§6.4) |
 | Further `.razor` into modules | Only when that feature is deliberately lazy |
 | Demo/sample pages | Last or never if pure samples |
 
@@ -228,19 +229,24 @@ eager thin handler.
 2. Host Router `AdditionalAssemblies` after `LoadAssembliesAsync` on
    `/api-health`; keep gate / load options / `GetHelloHandler` on host.
 3. One prove pass: build, host ApiHealth tests, cold path vs route load.
-4. Stop. Next program vertical = §6.3 Raindrop, not more razor moves.
+4. Stop. Next program vertical after §6.3 is §6.4 (remaining client feature
+   triads), not more razor moves.
 
 **Out of scope:** Raindrop/Articles/Videos UI move, Api project, shared-UI
 library extraction unless a later PRD names it.
 
 **Normative notes:** `docs/sidenotes/SN-0060.md`
 
-### 6.3 Raindrop next vertical (mandatory contract)
+### 6.3 Raindrop next vertical (mandatory contract) — DONE
 
 **Title intent:** Mediator use cases + Result + cache policy into the
 Raindrop module; host pages Mediator-only.
 
-**In scope:**
+**Status:** **Done** (2026-08-03). Normative plan:
+`docs/plans/2026-08-03-003-feat-raindrop-mediator-use-cases-prd.md`
+(status: **done**).
+
+**In scope (completed):**
 
 1. IO methods return `Result` for expected failures; cancel exceptional.
 2. Contracts queries/commands for load and refresh (progressive-capable).
@@ -260,7 +266,7 @@ Raindrop module; host pages Mediator-only.
 - Moving `.razor` pages into module projects (that is §6.2b / other pilots —
   not this vertical)
 
-**Acceptance sketch (future PRD must refine):**
+**Acceptance (met):**
 
 - Pages inject `IMediator` (plus UI-only services such as image helpers if
   still host-bound), not `IRaindropAPI` or `IRaindropItemsCache`.

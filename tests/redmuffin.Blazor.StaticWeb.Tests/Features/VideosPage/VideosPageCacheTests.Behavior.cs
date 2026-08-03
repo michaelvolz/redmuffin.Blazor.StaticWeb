@@ -18,8 +18,8 @@ public sealed partial class VideosPageCacheTests
             CreateTestVideo("2", "Cached Video 2", "Cached excerpt 2")
         };
 
-        scope.CacheService_Mock.SetupCachedData("Videos", cachedVideos);
-        scope.RaindropAPI_Mock.SetupVideos(new List<RaindropItem>());
+        scope.Mediator_Mock.SetupLoad(cachedVideos, isFromCache: true);
+        scope.Mediator_Mock.SetupRefresh([]);
 
         // Act
         var component = scope.Context.Render<Videos>();
@@ -48,8 +48,8 @@ public sealed partial class VideosPageCacheTests
             CreateTestVideo("2", "New Video", "New excerpt")
         };
 
-        scope.CacheService_Mock.SetupCachedData("Videos", cachedVideos);
-        scope.RaindropAPI_Mock.SetupVideos(freshVideos);
+        scope.Mediator_Mock.SetupLoad(cachedVideos, isFromCache: true);
+        scope.Mediator_Mock.SetupRefresh(freshVideos);
 
         // Act
         var component = scope.Context.Render<Videos>();

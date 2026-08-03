@@ -17,7 +17,8 @@ public sealed partial class VideosTests
             CreateTestVideo("1", "Test Video", "Test excerpt", "https://example.com/video1")
         };
 
-        scope.RaindropAPI_Mock.SetupVideos(testVideos);
+        scope.Mediator_Mock.SetupLoad(testVideos);
+        scope.Mediator_Mock.SetupRefresh(testVideos);
 
         scope.ImagePlaceholderService_Mock.SetupFallbackStatus(testVideos[0].Link, true);
         scope.ImagePlaceholderService_Mock.SetupFallbackReason(testVideos[0].Link, "Image failed to load");
@@ -41,7 +42,8 @@ public sealed partial class VideosTests
             CreateTestVideo("2", "Test Video 2", "Test excerpt 2", "https://example.com/video2")
         };
 
-        scope.RaindropAPI_Mock.SetupVideos(testVideos);
+        scope.Mediator_Mock.SetupLoad(testVideos);
+        scope.Mediator_Mock.SetupRefresh(testVideos);
 
         // Act
         var component = scope.BUnitContext.Render<Videos>();
@@ -62,10 +64,15 @@ public sealed partial class VideosTests
             CreateTestVideo("1", "Test Video", "Test excerpt", "https://example.com/video1")
         };
 
-        scope.RaindropAPI_Mock.SetupVideos(testVideos);
+        scope.Mediator_Mock.SetupLoad(testVideos);
+        scope.Mediator_Mock.SetupRefresh(testVideos);
 
         // Act
         var component = scope.BUnitContext.Render<Videos>();
+
+        // Await background refresh so re-render does not invalidate the img event handler
+        if (component.Instance.BackgroundRefreshTask is { } refreshTask)
+            await refreshTask.ConfigureAwait(false);
 
         var image = component.Find("img");
         await image.TriggerEventAsync("onload", EventArgs.Empty).ConfigureAwait(false);
@@ -84,7 +91,8 @@ public sealed partial class VideosTests
             CreateTestVideo("1", "Test Video", "Test excerpt", "https://example.com/video1")
         };
 
-        scope.RaindropAPI_Mock.SetupVideos(testVideos);
+        scope.Mediator_Mock.SetupLoad(testVideos);
+        scope.Mediator_Mock.SetupRefresh(testVideos);
 
         // Act
         var component = scope.BUnitContext.Render<Videos>();
@@ -105,7 +113,8 @@ public sealed partial class VideosTests
             CreateTestVideo("1", "Test Video", "Test excerpt", "https://example.com/video1")
         };
 
-        scope.RaindropAPI_Mock.SetupVideos(testVideos);
+        scope.Mediator_Mock.SetupLoad(testVideos);
+        scope.Mediator_Mock.SetupRefresh(testVideos);
 
         scope.ImagePlaceholderService_Mock.SetupImageUrl(testVideos[0].Link, "data:image/svg+xml;base64,test");
 

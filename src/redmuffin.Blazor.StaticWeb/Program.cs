@@ -16,6 +16,7 @@ using redmuffin.Blazor.StaticWeb.Features.DebugPage.Services;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
 using redmuffin.Blazor.StaticWeb.Modules.ApiHealth.Contracts;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop;
+using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -46,6 +47,7 @@ builder.Services.AddScoped<PlaceholderGenerationService>();
 
 // Register cache services
 builder.Services.AddScoped<IRaindropItemsCache, RaindropItemsCache>();
+builder.Services.AddScoped<IRaindropItemsStorage, RaindropItemsStorageAdapter>();
 builder.Services.AddScoped<LocalStorageDebugService>();
 
 // Register delay provider for production (real delays for UX)

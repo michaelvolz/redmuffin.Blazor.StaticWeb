@@ -22,9 +22,8 @@ public sealed partial class ArticlesPageCacheTests
             CreateTestArticle("2", "New Article", "New excerpt")
         };
 
-        scope.CacheService_Mock.SetupCachedData("Articles", cachedArticles);
-        scope.RaindropAPI_Mock.SetupArticles(freshArticles);
-        // No artificial delay - let the component handle its own timing
+        scope.Mediator_Mock.SetupLoad(cachedArticles, isFromCache: true);
+        scope.Mediator_Mock.SetupRefresh(freshArticles);
 
         var component = scope.Context.Render<Articles>();
 
@@ -58,8 +57,8 @@ public sealed partial class ArticlesPageCacheTests
             CreateTestArticle("2", "New Article", "New excerpt")
         };
 
-        scope.CacheService_Mock.SetupCachedData("Articles", cachedArticles);
-        scope.RaindropAPI_Mock.SetupArticles(freshArticles);
+        scope.Mediator_Mock.SetupLoad(cachedArticles, isFromCache: true);
+        scope.Mediator_Mock.SetupRefresh(freshArticles);
 
         var component = scope.Context.Render<Articles>();
 

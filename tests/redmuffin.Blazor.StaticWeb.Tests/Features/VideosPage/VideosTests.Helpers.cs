@@ -1,16 +1,16 @@
 using Bunit;
-using LightMock.Generator;
+using Mediator;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using redmuffin.Blazor.StaticWeb.Common;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Models;
 using redmuffin.Blazor.StaticWeb.Features.VideosPage;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
-using redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.VideosPage;
 
@@ -61,10 +61,9 @@ public sealed partial class VideosTests
             BUnitContext = new BunitContext();
             NavigationManager = new NavigationManager_Mock(baseUri);
             Logger = new Logger_Spy<Videos>();
-            RaindropAPI_Mock = new RaindropAPI_Mock();
+            Mediator_Mock = new RaindropMediator_Mock();
             ImagePlaceholderService_Mock = new ImagePlaceholderService_Mock();
             ImageValidationService_Mock = new ImageValidationService_Mock();
-            RaindropItemsCache_Mock = new Mock<IRaindropItemsCache>();
 
             // Create actual service instance with mocked dependencies
             ImageUrlResolver = new ImageUrlResolver(
@@ -76,21 +75,10 @@ public sealed partial class VideosTests
         public BunitContext BUnitContext { get; }
         public NavigationManager_Mock NavigationManager { get; }
         public Logger_Spy<Videos> Logger { get; }
-        public RaindropAPI_Mock RaindropAPI_Mock { get; }
+        public RaindropMediator_Mock Mediator_Mock { get; }
         public ImagePlaceholderService_Mock ImagePlaceholderService_Mock { get; }
         public ImageValidationService_Mock ImageValidationService_Mock { get; }
         public IImageUrlResolver ImageUrlResolver { get; }
-        public Mock<IRaindropItemsCache> RaindropItemsCache_Mock { get; }
-
-        /// <summary>
-        ///     Sets up default behaviors for mocks to ensure tests run smoothly.
-        /// </summary>
-        private static void SetupDefaultMockBehaviors()
-        {
-            // Default RaindropAPI behavior - no setup needed for manual mock
-
-            // Default ImagePlaceholderService behaviors - no setup needed for manual mock
-        }
 
         /// <summary>
         ///     Configures the test context with high-performance services for optimal test execution.
@@ -99,14 +87,10 @@ public sealed partial class VideosTests
         {
             BUnitContext.Services.AddSingleton<NavigationManager>(NavigationManager);
             BUnitContext.Services.AddSingleton<ILogger<Videos>>(Logger);
-            BUnitContext.Services.AddSingleton<IRaindropAPI>(RaindropAPI_Mock);
+            BUnitContext.Services.AddSingleton<IMediator>(Mediator_Mock);
             BUnitContext.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderService_Mock);
             BUnitContext.Services.AddSingleton(ImageUrlResolver);
-            BUnitContext.Services.AddSingleton<IRaindropItemsCache>(RaindropItemsCache_Mock.Object);
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
-
-            // Set up default mock behaviors
-            SetupDefaultMockBehaviors();
 
             return this;
         }
@@ -339,61 +323,102 @@ public sealed partial class VideosTests
     }
 
     /// <summary>
-    ///     Manual mock implementation for IRaindropAPI since LightMock.Generator doesn't support it.
+    ///     Manual IMediator mock for Videos page load/refresh use cases.
     /// </summary>
-    public sealed class RaindropAPI_Mock : IRaindropAPI
+    public sealed class RaindropMediator_Mock : IMediator
     {
-        private readonly List<RaindropItem> _videos = new();
-        private readonly List<RaindropItem> _articles = new();
-        private Exception? _videosException;
-        private Exception? _articlesException;
+        private Result<RaindropItemsResponse> _loadResult =
+            Result.Success(new RaindropItemsResponse([], IsFromCache: false, HasUpdateAvailable: false));
 
-        public void SetupVideos(IEnumerable<RaindropItem> videos)
+        private Result<RaindropItemsResponse> _refreshResult =
+            Result.Success(new RaindropItemsResponse([], IsFromCache: false, HasUpdateAvailable: false));
+
+        private string? _refreshFailure;
+        private int _delayMs;
+        private bool _preventDoubleRefresh;
+        private bool _refreshInProgress;
+
+        public void SetupLoad(IReadOnlyList<RaindropItem> items, bool isFromCache = false)
         {
-            _videos.Clear();
-            _videos.AddRange(videos);
+            _loadResult = Result.Success(new RaindropItemsResponse(items.ToList(), isFromCache, HasUpdateAvailable: false));
         }
 
-        public void SetupArticles(IEnumerable<RaindropItem> articles)
+        public void SetupLoadFailure(string error = "Simulated API failure")
         {
-            _articles.Clear();
-            _articles.AddRange(articles);
+            _loadResult = Result.Failure<RaindropItemsResponse>(error);
         }
 
-        public void SetupVideosException(Exception exception)
+        public void SetupRefresh(IReadOnlyList<RaindropItem> items)
         {
-            _videosException = exception;
+            _refreshFailure = null;
+            _refreshResult = Result.Success(new RaindropItemsResponse(items.ToList(), IsFromCache: false, HasUpdateAvailable: false));
         }
 
-        public void SetupArticlesException(Exception exception)
+        public void SetupRefreshFailure(string error = "Simulated API failure")
         {
-            _articlesException = exception;
+            _refreshFailure = error;
         }
 
-        public void Reset()
+        public void SetupDelay(int milliseconds) => _delayMs = milliseconds;
+
+        public void SetupDoubleRefreshPrevention(bool prevent) => _preventDoubleRefresh = prevent;
+
+        public async ValueTask<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
         {
-            _videos.Clear();
-            _articles.Clear();
-            _videosException = null;
-            _articlesException = null;
+            if (request is LoadArticlesQuery or LoadVideosQuery)
+                return (TResponse)(object)_loadResult;
+
+            if (request is RefreshArticlesCommand or RefreshVideosCommand)
+            {
+                if (_preventDoubleRefresh && _refreshInProgress)
+                    return (TResponse)(object)Result.Failure<RaindropItemsResponse>("Double refresh prevented");
+
+                _refreshInProgress = true;
+                try
+                {
+                    if (_delayMs > 0)
+                        await Task.Delay(_delayMs, cancellationToken).ConfigureAwait(false);
+
+                    if (_refreshFailure is not null)
+                        return (TResponse)(object)Result.Failure<RaindropItemsResponse>(_refreshFailure);
+
+                    return (TResponse)(object)_refreshResult;
+                }
+                finally
+                {
+                    _refreshInProgress = false;
+                }
+            }
+
+            throw new InvalidOperationException($"Unexpected request type: {request.GetType().Name}");
         }
 
-        public Task<IEnumerable<RaindropItem>> GetVideosAsync(CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
+        public ValueTask<TResponse> Send<TResponse>(ICommand<TResponse> command, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
 
-            if (_videosException != null) throw _videosException;
+        public ValueTask<TResponse> Send<TResponse>(IQuery<TResponse> query, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
 
-            return Task.FromResult<IEnumerable<RaindropItem>>(_videos);
-        }
+        public ValueTask<object?> Send(object message, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
 
-        public Task<IEnumerable<RaindropItem>> GetArticlesAsync(CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
+        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamRequest<TResponse> request, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
 
-            if (_articlesException != null) throw _articlesException;
+        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamCommand<TResponse> command, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
 
-            return Task.FromResult<IEnumerable<RaindropItem>>(_articles);
-        }
+        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamQuery<TResponse> query, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+
+        public IAsyncEnumerable<object?> CreateStream(object message, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+
+        public ValueTask Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default)
+            where TNotification : INotification
+            => throw new NotSupportedException();
+
+        public ValueTask Publish(object notification, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
     }
 }

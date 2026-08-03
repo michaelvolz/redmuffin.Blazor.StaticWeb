@@ -1,5 +1,4 @@
 using Bunit;
-using Microsoft.AspNetCore.Components.Web;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Features.VideosPage;
 
@@ -11,15 +10,15 @@ public sealed partial class VideosPageCacheTests
     [Test]
     public async Task VideosPage_CacheFailure_FallsBackToFreshData()
     {
-        // Arrange
+        // Arrange — Load handler falls back to API on cache failure; page only sees successful Load.
         using var scope = CreateTestScope();
         var freshVideos = new List<RaindropItem>
         {
             CreateTestVideo("1", "Fallback Video", "Fallback excerpt")
         };
 
-        scope.CacheService_Mock.SetupCacheFailure("Videos");
-        scope.RaindropAPI_Mock.SetupVideos(freshVideos);
+        scope.Mediator_Mock.SetupLoad(freshVideos, isFromCache: false);
+        scope.Mediator_Mock.SetupRefresh(freshVideos);
 
         // Act
         var component = scope.Context.Render<Videos>();
@@ -43,11 +42,14 @@ public sealed partial class VideosPageCacheTests
             CreateTestVideo("2", "Fresh Video 2", "Fresh excerpt 2")
         };
 
-        scope.CacheService_Mock.SetupNoCachedData("Videos");
-        scope.RaindropAPI_Mock.SetupVideos(freshVideos);
+        scope.Mediator_Mock.SetupLoad(freshVideos, isFromCache: false);
+        scope.Mediator_Mock.SetupRefresh(freshVideos);
 
         // Act
         var component = scope.Context.Render<Videos>();
+
+        if (component.Instance.BackgroundRefreshTask is { } refreshTask)
+            await refreshTask.ConfigureAwait(false);
 
         // Assert
         using (Assert.Multiple())

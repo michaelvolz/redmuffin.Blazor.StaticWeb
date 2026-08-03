@@ -18,11 +18,14 @@ public sealed partial class VideosPageCacheTests
             CreateTestVideo("1", "Same Video", "Same excerpt")
         };
 
-        scope.CacheService_Mock.SetupCachedData("Videos", identicalVideos);
-        scope.RaindropAPI_Mock.SetupVideos(identicalVideos); // Same data
+        scope.Mediator_Mock.SetupLoad(identicalVideos, isFromCache: true);
+        scope.Mediator_Mock.SetupRefresh(identicalVideos);
 
         // Act
         var component = scope.Context.Render<Videos>();
+
+        if (component.Instance.BackgroundRefreshTask is { } refreshTask)
+            await refreshTask.ConfigureAwait(false);
 
         // Assert
         await Assert.That(component.FindAll(".refresh-badge")).IsEmpty();
@@ -42,9 +45,8 @@ public sealed partial class VideosPageCacheTests
             CreateTestVideo("2", "New Video", "New excerpt")
         };
 
-        scope.CacheService_Mock.SetupCachedData("Videos", cachedVideos);
-        scope.RaindropAPI_Mock.SetupVideos(freshVideos);
-        // No artificial delay - let the component handle its own timing
+        scope.Mediator_Mock.SetupLoad(cachedVideos, isFromCache: true);
+        scope.Mediator_Mock.SetupRefresh(freshVideos);
 
         var component = scope.Context.Render<Videos>();
 
@@ -78,8 +80,8 @@ public sealed partial class VideosPageCacheTests
             CreateTestVideo("2", "New Video", "New excerpt")
         };
 
-        scope.CacheService_Mock.SetupCachedData("Videos", cachedVideos);
-        scope.RaindropAPI_Mock.SetupVideos(freshVideos);
+        scope.Mediator_Mock.SetupLoad(cachedVideos, isFromCache: true);
+        scope.Mediator_Mock.SetupRefresh(freshVideos);
 
         var component = scope.Context.Render<Videos>();
 

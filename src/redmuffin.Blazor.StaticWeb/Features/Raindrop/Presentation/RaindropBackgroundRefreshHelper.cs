@@ -1,18 +1,19 @@
-using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 
 namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Presentation;
 
 /// <summary>
-///     Shared background refresh logic used by Videos and Articles pages.
-///     Encapsulates the fetch-cache-compare pipeline so components only
-///     handle UI decisions (show badge vs update immediately).
+///     Shared helpers for Raindrop progressive refresh UI decisions.
+///     Fetch/cache policy lives in Mediator handlers; pages only compare lists for the badge.
 /// </summary>
 public static class RaindropBackgroundRefreshHelper
 {
     /// <summary>
     ///     Determines whether two lists of raindrop items have different data.
     /// </summary>
+    /// <param name="currentData">Items currently shown on the page.</param>
+    /// <param name="newData">Fresh items from a refresh use case.</param>
+    /// <returns>True when count, link, or title differs.</returns>
     public static bool HasDataChanged(IReadOnlyList<RaindropItem> currentData, IReadOnlyList<RaindropItem> newData)
     {
         if (currentData.Count != newData.Count) return true;
@@ -23,24 +24,5 @@ public static class RaindropBackgroundRefreshHelper
                 return true;
 
         return false;
-    }
-
-    /// <summary>
-    ///     Fetches fresh data from the API and caches it if changed.
-    ///     Returns the fresh data list, or null if nothing changed.
-    /// </summary>
-    public static async Task<ICollection<RaindropItem>?> TryFetchFreshDataAsync(
-        Func<Task<IEnumerable<RaindropItem>>> fetchAsync,
-        IReadOnlyList<RaindropItem>? currentItems,
-        Func<IReadOnlyList<RaindropItem>, CancellationToken, Task> cacheAsync,
-        CancellationToken cancellationToken)
-    {
-        var freshItems = (await fetchAsync().ConfigureAwait(false)).ToList();
-
-        if (currentItems != null && !HasDataChanged(currentItems, freshItems))
-            return null;
-
-        await cacheAsync(freshItems, cancellationToken).ConfigureAwait(false);
-        return freshItems;
     }
 }

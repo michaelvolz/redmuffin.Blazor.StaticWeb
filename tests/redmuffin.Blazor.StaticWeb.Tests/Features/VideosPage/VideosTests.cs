@@ -22,7 +22,8 @@ public sealed partial class VideosTests
             CreateTestVideo("1", "Test Video", longExcerpt, "https://example.com/video1")
         };
 
-        scope.RaindropAPI_Mock.SetupVideos(testVideos);
+        scope.Mediator_Mock.SetupLoad(testVideos);
+        scope.Mediator_Mock.SetupRefresh(testVideos);
 
         // Act
         var component = scope.BUnitContext.Render<Videos>();

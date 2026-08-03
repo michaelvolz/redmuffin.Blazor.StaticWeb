@@ -1,7 +1,7 @@
-using Microsoft.AspNetCore.Components;
+using Mediator;
+using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Features.Common.Components;
-using redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Presentation;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
 
@@ -9,72 +9,156 @@ namespace redmuffin.Blazor.StaticWeb.Features.ArticlesPage;
 
 public partial class Articles
 {
-    private const string CacheKey = "Articles";
+    private const string LoadErrorMessage =
+        "Unable to load items. Please check your internet connection and try refreshing the page.";
+
+    private const string RefreshErrorMessage =
+        "Unable to refresh. Please check your internet connection and try again.";
+
     private readonly RaindropPageContext _context = new();
 
-    private readonly ILogger<Articles> _logger;
-    private readonly NavigationManager _navigation;
     private readonly IImageUrlResolver _imageUrlResolver;
-    private readonly IRaindropAPI _raindropAPI;
-    private readonly IRaindropItemsCache _raindropItemsCache;
+    private readonly IMediator _mediator;
 
     public Articles(
-        ILogger<Articles> logger,
-        NavigationManager navigation,
         IImageUrlResolver imageUrlResolver,
-        IRaindropAPI raindropAPI,
-        IRaindropItemsCache raindropItemsCache)
+        IMediator mediator)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
         _imageUrlResolver = imageUrlResolver ?? throw new ArgumentNullException(nameof(imageUrlResolver));
-        _raindropAPI = raindropAPI ?? throw new ArgumentNullException(nameof(raindropAPI));
-        _raindropItemsCache = raindropItemsCache ?? throw new ArgumentNullException(nameof(raindropItemsCache));
+        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
     }
 
     /// <summary>
-    ///     Exposes the background refresh task so callers (including tests) can
+    ///     Gets the background refresh task so callers (including tests) can
     ///     await initialization completion deterministically without polling or delays.
     /// </summary>
     public Task? BackgroundRefreshTask { get; private set; }
 
     protected override async Task OnInitializedAsync()
     {
-        // Load cached data first for immediate display
-        await RaindropPageOrchestrator.LoadCachedDataAsync(
-            _context,
-            CacheKey,
-            _raindropItemsCache,
-            ct => _raindropAPI.GetArticlesAsync(ct),
-            PopulateImageUrlCacheAsync,
-            _logger).ConfigureAwait(false);
-
+        await LoadItemsAsync().ConfigureAwait(false);
         StateHasChanged();
 
-        BackgroundRefreshTask = Task.Run(() => RaindropPageOrchestrator.RefreshInBackgroundAsync(
-            _context, CacheKey, ct => _raindropAPI.GetArticlesAsync(ct),
-            _raindropItemsCache, PopulateImageUrlCacheAsync,
-            () => InvokeAsync(StateHasChanged), _logger));
+        BackgroundRefreshTask = Task.Run(RefreshInBackgroundAsync);
     }
 
-    private Task HandleRefreshClickAsync()
+    private async Task LoadItemsAsync()
     {
-        return RaindropPageOrchestrator.HandleRefreshClickAsync(
-            _context,
-            CacheKey,
-            ct => _raindropAPI.GetArticlesAsync(ct),
-            _raindropItemsCache,
-            PopulateImageUrlCacheAsync,
-            () => InvokeAsync(StateHasChanged),
-            _logger);
+        try
+        {
+            var result = await _mediator.Send(new LoadArticlesQuery()).ConfigureAwait(false);
+            await result.Match(
+                async response => await ApplyItemsAsync(response.Items).ConfigureAwait(false),
+                error =>
+                {
+                    _ = error;
+                    _context.ErrorMessage = LoadErrorMessage;
+                    return Task.CompletedTask;
+                }).ConfigureAwait(false);
+        }
+        catch (Exception)
+        {
+            _context.ErrorMessage = LoadErrorMessage;
+        }
     }
 
-    private Task PopulateImageUrlCacheAsync()
+    private async Task RefreshInBackgroundAsync()
     {
-        return _imageUrlResolver.PopulateImageUrlCacheAsync(
-            _context.Items!,
-            _context.ImageUrlCache,
-            () => InvokeAsync(StateHasChanged),
-            CancellationToken.None);
+        try
+        {
+            var result = await _mediator.Send(new RefreshArticlesCommand()).ConfigureAwait(false);
+            if (result.IsFailure)
+                return;
+
+            var freshItems = result.Value.Items;
+            if (_context.Items is { Count: > 0 })
+            {
+                if (RaindropBackgroundRefreshHelper.HasDataChanged(_context.Items, freshItems))
+                    _context.BadgeState = RefreshBadgeState.Visible;
+            }
+            else
+            {
+                await ApplyItemsAsync(freshItems).ConfigureAwait(false);
+            }
+
+            await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Background refresh failures are silent (same as prior orchestrator).
+            _ = ex;
+        }
+    }
+
+    private async Task HandleRefreshClickAsync()
+    {
+        if (_context.IsRefreshing)
+            return;
+
+        _context.IsRefreshing = true;
+        _context.BadgeState = RefreshBadgeState.Loading;
+        _context.ErrorMessage = null;
+        await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+
+        try
+        {
+            var result = await _mediator.Send(new RefreshArticlesCommand()).ConfigureAwait(false);
+            await result.Match(
+                async response =>
+                {
+                    await ApplyItemsAsync(response.Items).ConfigureAwait(false);
+                    _context.BadgeState = RefreshBadgeState.Hidden;
+                },
+                error =>
+                {
+                    _ = error;
+                    _context.ErrorMessage = RefreshErrorMessage;
+                    _context.BadgeState = RefreshBadgeState.Error;
+                    return Task.CompletedTask;
+                }).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            _context.ErrorMessage = "Request timed out. Please try again.";
+            _context.BadgeState = RefreshBadgeState.Error;
+        }
+        catch (Exception)
+        {
+            _context.ErrorMessage = "An unexpected error occurred while refreshing. Please try again.";
+            _context.BadgeState = RefreshBadgeState.Error;
+        }
+        finally
+        {
+            _context.IsRefreshing = false;
+            await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+        }
+    }
+
+    private Task ApplyItemsAsync(IReadOnlyList<RaindropItem> items)
+    {
+        _context.ErrorMessage = null;
+        _context.Items = items.ToList();
+        _context.ImageUrlCache.Clear();
+        return PopulateImagesIfNeededAsync();
+    }
+
+    private async Task PopulateImagesIfNeededAsync()
+    {
+        if (_context.Items is not { Count: > 0 })
+            return;
+
+        try
+        {
+            await _imageUrlResolver.PopulateImageUrlCacheAsync(
+                _context.Items,
+                _context.ImageUrlCache,
+                () => InvokeAsync(StateHasChanged),
+                CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Image population is best-effort; list still renders with placeholders.
+            _ = ex;
+        }
     }
 }

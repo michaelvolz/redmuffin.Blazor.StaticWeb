@@ -1,3 +1,5 @@
+using redmuffin.Blazor.StaticWeb.Common;
+
 namespace redmuffin.Blazor.StaticWeb.Modules.Raindrop.Tests;
 
 [Category("Feature:Raindrop")]
@@ -15,10 +17,10 @@ public partial class IRaindropAPITests
 
         using (Assert.Multiple())
         {
-            await Assert.That(result).IsNotNull();
-            await Assert.That(result.Count()).IsGreaterThan(0);
+            await Assert.That(result.IsSuccess).IsTrue();
+            await Assert.That(result.Value.Count).IsGreaterThan(0);
 
-            var firstArticle = result.First();
+            var firstArticle = result.Value[0];
             await Assert.That(firstArticle.Id).IsGreaterThan(0);
             await Assert.That(firstArticle.Title).IsNotEmpty();
             await Assert.That(firstArticle.Link).IsNotEmpty();
@@ -38,10 +40,10 @@ public partial class IRaindropAPITests
 
         using (Assert.Multiple())
         {
-            await Assert.That(result).IsNotNull();
-            await Assert.That(result.Count()).IsGreaterThan(0);
+            await Assert.That(result.IsSuccess).IsTrue();
+            await Assert.That(result.Value.Count).IsGreaterThan(0);
 
-            var firstVideo = result.First();
+            var firstVideo = result.Value[0];
             await Assert.That(firstVideo.Id).IsGreaterThan(0);
             await Assert.That(firstVideo.Title).IsNotEmpty();
             await Assert.That(firstVideo.Link).IsNotEmpty();
@@ -74,10 +76,10 @@ public partial class IRaindropAPITests
 
         using (Assert.Multiple())
         {
-            await Assert.That(result).IsNotNull();
-            await Assert.That(result.Count()).IsGreaterThan(0);
+            await Assert.That(result.IsSuccess).IsTrue();
+            await Assert.That(result.Value.Count).IsGreaterThan(0);
 
-            var firstArticle = result.First();
+            var firstArticle = result.Value[0];
             await Assert.That(firstArticle.Id).IsGreaterThan(0);
             await Assert.That(firstArticle.Title).IsNotEmpty();
             await Assert.That(firstArticle.Link).IsNotEmpty();
@@ -96,10 +98,10 @@ public partial class IRaindropAPITests
 
         using (Assert.Multiple())
         {
-            await Assert.That(result).IsNotNull();
-            await Assert.That(result.Count()).IsGreaterThan(0);
+            await Assert.That(result.IsSuccess).IsTrue();
+            await Assert.That(result.Value.Count).IsGreaterThan(0);
 
-            var firstVideo = result.First();
+            var firstVideo = result.Value[0];
             await Assert.That(firstVideo.Id).IsGreaterThan(0);
             await Assert.That(firstVideo.Title).IsNotEmpty();
             await Assert.That(firstVideo.Link).IsNotEmpty();

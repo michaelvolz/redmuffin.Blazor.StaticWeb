@@ -22,9 +22,9 @@ public sealed partial class ArticlesPageCacheTests
             CreateTestArticle("1", "Updated Article", "Updated excerpt")
         };
 
-        scope.CacheService_Mock.SetupCachedData("Articles", cachedArticles);
-        scope.RaindropAPI_Mock.SetupArticles(freshArticles);
-        scope.RaindropAPI_Mock.SetupDelay(300); // Add delay to test multiple clicks
+        scope.Mediator_Mock.SetupLoad(cachedArticles, isFromCache: true);
+        scope.Mediator_Mock.SetupRefresh(freshArticles);
+        scope.Mediator_Mock.SetupDelay(300); // Add delay to test multiple clicks
 
         var component = scope.Context.Render<Articles>();
 
@@ -69,11 +69,14 @@ public sealed partial class ArticlesPageCacheTests
             CreateTestArticle("2", "Fresh Article 2", "Fresh excerpt 2")
         };
 
-        scope.CacheService_Mock.SetupNoCachedData("Articles");
-        scope.RaindropAPI_Mock.SetupArticles(freshArticles);
+        scope.Mediator_Mock.SetupLoad(freshArticles, isFromCache: false);
+        scope.Mediator_Mock.SetupRefresh(freshArticles);
 
         // Act
         var component = scope.Context.Render<Articles>();
+
+        if (component.Instance.BackgroundRefreshTask is { } refreshTask)
+            await refreshTask.ConfigureAwait(false);
 
         // Assert
         using (Assert.Multiple())
@@ -97,8 +100,9 @@ public sealed partial class ArticlesPageCacheTests
             CreateTestArticle("2", "Cached Article 2", "Cached excerpt 2")
         };
 
-        scope.CacheService_Mock.SetupCachedData("Articles", cachedArticles);
-        scope.RaindropAPI_Mock.SetupArticles(new List<RaindropItem>());
+        scope.Mediator_Mock.SetupLoad(cachedArticles, isFromCache: true);
+        // Empty refresh keeps cached items on screen (badge may show — not under test here)
+        scope.Mediator_Mock.SetupRefresh([]);
 
         // Act
         var component = scope.Context.Render<Articles>();
@@ -127,8 +131,8 @@ public sealed partial class ArticlesPageCacheTests
             CreateTestArticle("2", "New Article", "New excerpt")
         };
 
-        scope.CacheService_Mock.SetupCachedData("Articles", cachedArticles);
-        scope.RaindropAPI_Mock.SetupArticles(freshArticles);
+        scope.Mediator_Mock.SetupLoad(cachedArticles, isFromCache: true);
+        scope.Mediator_Mock.SetupRefresh(freshArticles);
 
         // Act
         var component = scope.Context.Render<Articles>();
