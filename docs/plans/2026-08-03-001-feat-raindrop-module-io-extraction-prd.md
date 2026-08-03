@@ -76,6 +76,11 @@ Contracts; internal real and dummy implementations plus
   only call `/api/...` over HTTP. See ADR 0013 and the module guide hard
   constraint.
 
+Later verticals (Mediator use cases, Result, cache policy in module, full
+client modularization) are governed by
+`docs/specs/2026-08-03-riverbooks-modularization-roadmap-spec.md` — not by
+expanding this Phase 1 PRD.
+
 ## Assumptions
 
 - Unnamed `HttpClient` registration remains sufficient for both APIs.

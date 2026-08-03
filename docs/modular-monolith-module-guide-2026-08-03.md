@@ -25,6 +25,9 @@ Structure only — not full DDD.
 ## Prerequisites
 
 - Read ADR `docs/adr/0013-riverbooks-modular-layout-and-result.md`
+- Read roadmap `docs/specs/2026-08-03-riverbooks-modularization-roadmap-spec.md`
+  before writing a module PRD or choosing the next vertical (destination,
+  Mediator optimality, sequencing, anti-patterns)
 - ApiHealth under `src/redmuffin.Blazor.StaticWeb.Modules/` is the reference
 - Host already calls `AddMediator` and `AddModulePipelineBehaviors`
 
@@ -143,6 +146,7 @@ dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests
 
 ## Related
 
+- `docs/specs/2026-08-03-riverbooks-modularization-roadmap-spec.md`
 - `docs/adr/0013-riverbooks-modular-layout-and-result.md`
 - `docs/plans/2026-06-06-001-feat-modular-monolith-first-module-prd.md`
 - `docs/solutions/architecture-patterns/health-check-service-strategy-module-architecture.md`

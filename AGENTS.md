@@ -40,6 +40,8 @@ If any answer is incomplete, if you are guessing about a constraint the user hol
   `Common` when deliberate — not by extracting Functions source.
 - Full rule: ADR `docs/adr/0013-riverbooks-modular-layout-and-result.md` and
   `docs/modular-monolith-module-guide-2026-08-03.md` § Hard constraint.
+- Modularization roadmap (destination, Mediator, sequencing): 
+  `docs/specs/2026-08-03-riverbooks-modularization-roadmap-spec.md`
 
 ## PRE-COMMIT VERIFICATION
 

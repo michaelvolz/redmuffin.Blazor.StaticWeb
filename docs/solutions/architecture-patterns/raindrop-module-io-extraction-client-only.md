@@ -112,10 +112,9 @@ Api project tree was not edited for this extraction (deployment boundary).
 
 ## Related
 
-- `docs/adr/0013-riverbooks-modular-layout-and-result.md` (deploy boundary section)
-- `docs/modular-monolith-module-guide-2026-08-03.md` (hard constraint + procedure)
+- `docs/specs/2026-08-03-riverbooks-modularization-roadmap-spec.md`
+  (canonical next verticals, Mediator optimality, full modularization)
+- `docs/adr/0013-riverbooks-modular-layout-and-result.md` (deploy boundary)
+- `docs/modular-monolith-module-guide-2026-08-03.md` (scaffold procedure)
 - `docs/plans/2026-08-03-001-feat-raindrop-module-io-extraction-prd.md`
 - `docs/solutions/architecture-patterns/health-check-service-strategy-module-architecture.md`
-  (first module; Result + Mediator full shape)
-- `docs/solutions/architecture-patterns/hello-world-mock-environment-service-resolution.md`
-  (historical factory — superseded for Raindrop IO)

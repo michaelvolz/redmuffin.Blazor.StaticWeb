@@ -83,6 +83,7 @@ for new modules by Strategy registration inside `Add{Module}Module(bool)`.
 
 ## Related
 
+- `docs/specs/2026-08-03-riverbooks-modularization-roadmap-spec.md`
 - `docs/modular-monolith-module-guide-2026-08-03.md`
 - `docs/plans/2026-06-06-001-feat-modular-monolith-first-module-prd.md`
 - `docs/solutions/architecture-patterns/health-check-service-strategy-module-architecture.md`
