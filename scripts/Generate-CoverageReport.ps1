@@ -99,17 +99,36 @@ function Invoke-TUnitCoverage {
     return $false
 }
 
+# Product test projects from redmuffin.Blazor.StaticWeb.slnx (same matrix as CI).
+$coverageProjects = @(
+    @{ Path = 'tests/redmuffin.Blazor.StaticWeb.Tests'; Prefix = 'host' }
+    @{ Path = 'tests/redmuffin.Blazor.StaticWeb.Api.Tests'; Prefix = 'api' }
+    @{ Path = 'tests/redmuffin.Blazor.StaticWeb.Modules/AzureHealthCheck.Tests'; Prefix = 'azurehealthcheck' }
+    @{ Path = 'tests/redmuffin.Blazor.StaticWeb.Modules/Raindrop.Tests'; Prefix = 'raindrop' }
+    @{ Path = 'tests/redmuffin.Blazor.StaticWeb.Pages/ApiHealth.Tests'; Prefix = 'apihealth-page' }
+    @{ Path = 'tests/redmuffin.Blazor.StaticWeb.Pages/Articles.Tests'; Prefix = 'articles-page' }
+    @{ Path = 'tests/redmuffin.Blazor.StaticWeb.Pages/Videos.Tests'; Prefix = 'videos-page' }
+)
+
 if ($View) {
-    $blazorXml = "coverage/blazor-cobertura.xml"
-    $apiXml = "coverage/api-cobertura.xml"
-    
-    if (Test-Path $blazorXml) {
-        Get-CoverageSummary -XmlPath $blazorXml
+    $any = $false
+    foreach ($project in $coverageProjects) {
+        $xmlPath = "coverage/$($project.Prefix)-cobertura.xml"
+        if (Test-Path $xmlPath) {
+            Write-Host "Report: $($project.Prefix)" -ForegroundColor Cyan
+            Get-CoverageSummary -XmlPath $xmlPath
+            $any = $true
+        }
     }
-    elseif (Test-Path $apiXml) {
-        Get-CoverageSummary -XmlPath $apiXml
+    # Legacy names from older script runs
+    foreach ($legacy in @('coverage/blazor-cobertura.xml')) {
+        if (Test-Path $legacy) {
+            Write-Host "Report: blazor (legacy)" -ForegroundColor Cyan
+            Get-CoverageSummary -XmlPath $legacy
+            $any = $true
+        }
     }
-    else {
+    if (-not $any) {
         Write-Host "No coverage reports found. Run .\scripts\Generate-CoverageReport.ps1 first." -ForegroundColor Red
     }
     exit
@@ -125,16 +144,25 @@ Write-Host "══════════════════════�
 Write-Host "      Running tests with TUnit Coverage" -ForegroundColor Cyan
 Write-Host "═══════════════════════════════════════════`n" -ForegroundColor Cyan
 
-$blazorSuccess = Invoke-TUnitCoverage -ProjectPath 'tests/redmuffin.Blazor.StaticWeb.Tests' -OutputPrefix 'blazor'
-$apiSuccess = Invoke-TUnitCoverage -ProjectPath 'tests/redmuffin.Blazor.StaticWeb.Api.Tests' -OutputPrefix 'api'
+$anySuccess = $false
+foreach ($project in $coverageProjects) {
+    $ok = Invoke-TUnitCoverage -ProjectPath $project.Path -OutputPrefix $project.Prefix
+    if ($ok) { $anySuccess = $true }
+}
 
 Write-Host ""
 Write-Host "═══════════════════════════════════════════" -ForegroundColor Green
 Write-Host "      Coverage report generation complete!" -ForegroundColor Green
 Write-Host "═══════════════════════════════════════════" -ForegroundColor Green
 
-if ($blazorSuccess) {
-    Get-CoverageSummary -XmlPath "coverage/blazor-cobertura.xml"
+if ($anySuccess) {
+    foreach ($project in $coverageProjects) {
+        $xmlPath = "coverage/$($project.Prefix)-cobertura.xml"
+        if (Test-Path $xmlPath) {
+            Write-Host "Report: $($project.Prefix)" -ForegroundColor Cyan
+            Get-CoverageSummary -XmlPath $xmlPath
+        }
+    }
 }
 
 Write-Host "View again: .\scripts\Generate-CoverageReport.ps1 -View`n" -ForegroundColor Yellow

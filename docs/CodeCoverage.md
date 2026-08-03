@@ -48,15 +48,22 @@ This guide explains how to use code coverage in the redmuffin.Blazor.StaticWeb p
 
 #### Running Tests with Coverage
 
+Prefer `.\scripts\Generate-CoverageReport.ps1` (full product matrix). Manual
+TUnit coverage example:
+
 ```bash
-# Blazor tests
-dotnet test tests/redmuffin.Blazor.StaticWeb.Tests
+# Host (Blazor) tests
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests --coverage
 
 # API tests
-dotnet test tests/redmuffin.Blazor.StaticWeb.Api.Tests
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Api.Tests --coverage
 
-# All tests
-dotnet test
+# Module and page suites (same paths as CI)
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Modules/AzureHealthCheck.Tests --coverage
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Modules/Raindrop.Tests --coverage
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Pages/ApiHealth.Tests --coverage
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Pages/Articles.Tests --coverage
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Pages/Videos.Tests --coverage
 ```
 
 #### Generate HTML Reports Manually
@@ -76,10 +83,16 @@ reportgenerator -reports:"coverage/*.opencover.xml" -targetdir:"coverage" -repor
 
 ### Project Configuration
 
-Coverage is configured in the test project files:
+Coverage is configured in the product test project files (see
+`redmuffin.Blazor.StaticWeb.slnx`):
 
 - `tests/redmuffin.Blazor.StaticWeb.Tests/redmuffin.Blazor.StaticWeb.Tests.csproj`
 - `tests/redmuffin.Blazor.StaticWeb.Api.Tests/redmuffin.Blazor.StaticWeb.Api.Tests.csproj`
+- `tests/redmuffin.Blazor.StaticWeb.Modules/AzureHealthCheck.Tests/AzureHealthCheck.Tests.csproj`
+- `tests/redmuffin.Blazor.StaticWeb.Modules/Raindrop.Tests/Raindrop.Tests.csproj`
+- `tests/redmuffin.Blazor.StaticWeb.Pages/ApiHealth.Tests/ApiHealth.Tests.csproj`
+- `tests/redmuffin.Blazor.StaticWeb.Pages/Articles.Tests/Articles.Tests.csproj`
+- `tests/redmuffin.Blazor.StaticWeb.Pages/Videos.Tests/Videos.Tests.csproj`
 
 ### Global Exclusions
 

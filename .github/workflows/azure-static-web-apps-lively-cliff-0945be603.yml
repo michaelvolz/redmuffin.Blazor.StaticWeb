@@ -152,22 +152,29 @@ jobs:
       - name: Run tests
         run: |
           echo "::group::Tests"
+          # All product test projects from redmuffin.Blazor.StaticWeb.slnx (parallel).
           dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests -c Release --no-build &
           PID1=$!
           dotnet run --project tests/redmuffin.Blazor.StaticWeb.Api.Tests -c Release --no-build &
           PID2=$!
           dotnet run --project tests/redmuffin.Blazor.StaticWeb.Modules/AzureHealthCheck.Tests -c Release --no-build &
           PID3=$!
-          dotnet run --project tests/redmuffin.Blazor.StaticWeb.Pages/ApiHealth.Tests -c Release --no-build &
-          PID4=$!
           dotnet run --project tests/redmuffin.Blazor.StaticWeb.Modules/Raindrop.Tests -c Release --no-build &
+          PID4=$!
+          dotnet run --project tests/redmuffin.Blazor.StaticWeb.Pages/ApiHealth.Tests -c Release --no-build &
           PID5=$!
+          dotnet run --project tests/redmuffin.Blazor.StaticWeb.Pages/Articles.Tests -c Release --no-build &
+          PID6=$!
+          dotnet run --project tests/redmuffin.Blazor.StaticWeb.Pages/Videos.Tests -c Release --no-build &
+          PID7=$!
           fail=0
-          wait $PID1 || { echo "FAIL: blazor_tests exit_code=$?"; fail=1; }
+          wait $PID1 || { echo "FAIL: host_tests exit_code=$?"; fail=1; }
           wait $PID2 || { echo "FAIL: api_tests exit_code=$?"; fail=1; }
           wait $PID3 || { echo "FAIL: azurehealthcheck_module_tests exit_code=$?"; fail=1; }
-          wait $PID4 || { echo "FAIL: apihealth_page_tests exit_code=$?"; fail=1; }
-          wait $PID5 || { echo "FAIL: raindrop_module_tests exit_code=$?"; fail=1; }
+          wait $PID4 || { echo "FAIL: raindrop_module_tests exit_code=$?"; fail=1; }
+          wait $PID5 || { echo "FAIL: apihealth_page_tests exit_code=$?"; fail=1; }
+          wait $PID6 || { echo "FAIL: articles_page_tests exit_code=$?"; fail=1; }
+          wait $PID7 || { echo "FAIL: videos_page_tests exit_code=$?"; fail=1; }
           if [ "$fail" -ne 0 ]; then exit 1; fi
           echo "result=pass"
           echo "::endgroup::"

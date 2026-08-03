@@ -1529,12 +1529,19 @@ https://www.githubstatus.com/
 
 ### Test workflow
 
-CI and local testing use TUnit's native host:
+CI and local testing use TUnit's native host. The SWA workflow runs **all**
+product test projects from `redmuffin.Blazor.StaticWeb.slnx` in parallel
+(after one `dotnet build -c Release`):
 
 ```bash
 dotnet build -c Release
 dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests -c Release --no-build
 dotnet run --project tests/redmuffin.Blazor.StaticWeb.Api.Tests -c Release --no-build
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Modules/AzureHealthCheck.Tests -c Release --no-build
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Modules/Raindrop.Tests -c Release --no-build
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Pages/ApiHealth.Tests -c Release --no-build
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Pages/Articles.Tests -c Release --no-build
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Pages/Videos.Tests -c Release --no-build
 ```
 
 AoT for Blazor tests is toggled by csproj conditions (`GITHUB_ACTIONS` in CI; optional `$env:AOT_TESTS='true'` locally).

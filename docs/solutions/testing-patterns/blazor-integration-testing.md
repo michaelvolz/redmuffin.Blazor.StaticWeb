@@ -46,12 +46,17 @@ public sealed class TestScope(string baseUri = "http://localhost:5000/") : IDisp
 
 AoT is controlled by `RunAOTCompilation` conditions in `tests/redmuffin.Blazor.StaticWeb.Tests.csproj`. It is enabled in CI/CD (`CI=true` or `GITHUB_ACTIONS=true`) and disabled locally by default. Set `$env:AOT_TESTS='true'` before build for optional local AoT parity.
 
-Run tests with TUnit's native host (same as CI):
+Run tests with TUnit's native host (same product matrix as CI):
 
 ```powershell
 dotnet build -c Release
 dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests -c Release --no-build
 dotnet run --project tests/redmuffin.Blazor.StaticWeb.Api.Tests -c Release --no-build
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Modules/AzureHealthCheck.Tests -c Release --no-build
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Modules/Raindrop.Tests -c Release --no-build
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Pages/ApiHealth.Tests -c Release --no-build
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Pages/Articles.Tests -c Release --no-build
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Pages/Videos.Tests -c Release --no-build
 ```
 
 ### Test File Organization
