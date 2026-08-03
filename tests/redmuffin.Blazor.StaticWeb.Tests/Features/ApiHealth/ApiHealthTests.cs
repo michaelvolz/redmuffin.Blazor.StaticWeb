@@ -44,8 +44,9 @@ public sealed partial class ApiHealthTests
         await Assert.That(responseBlock.TextContent).Contains("Hello from handler");
 
         var checkRows = component.FindAll("div.check-row");
-        await Assert.That(checkRows).Count().IsEqualTo(5);
-        await Assert.That(checkRows[0].TextContent).Contains("Endpoint Reachable");
+        await Assert.That(checkRows).Count().IsEqualTo(2);
+        await Assert.That(checkRows[0].TextContent).Contains("Message Valid");
+        await Assert.That(checkRows[1].TextContent).Contains("Latency");
     }
 
     [Test]

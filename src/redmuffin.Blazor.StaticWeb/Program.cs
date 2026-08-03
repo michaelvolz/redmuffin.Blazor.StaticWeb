@@ -14,7 +14,6 @@ using redmuffin.Blazor.StaticWeb.Features.DebugPage.Services;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Services;
 using redmuffin.Blazor.StaticWeb.Modules.ApiHealth;
-using redmuffin.Blazor.StaticWeb.Modules.ApiHealth.Contracts;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -56,19 +55,13 @@ builder.Services.AddMediator(options =>
     options.ServiceLifetime = ServiceLifetime.Scoped;
 });
 builder.Services.AddModulePipelineBehaviors();
-builder.Services.AddApiHealthModule();
 
-// Register IHealthCheckService: synthetic in dev (no real API backend), real HTTP otherwise
-builder.Services.AddScoped<IHealthCheckService>(serviceProvider =>
-{
-    var hostEnv = serviceProvider.GetRequiredService<IWebAssemblyHostEnvironment>();
-    if (hostEnv.BaseAddress.Contains("localhost", StringComparison.OrdinalIgnoreCase))
-    {
-        return serviceProvider.GetRequiredService<SyntheticHealthCheckService>();
-    }
-
-    return serviceProvider.GetRequiredService<HealthCheckService>();
-});
+// Synthetic data only on pure client host (localhost:5233), same policy as Raindrop.
+// SWA local (localhost:4280) and production use the real HTTP implementation.
+var useSyntheticApiHealth = builder.HostEnvironment.BaseAddress.Contains(
+    "localhost:5233",
+    StringComparison.OrdinalIgnoreCase);
+builder.Services.AddApiHealthModule(useSyntheticApiHealth);
 
 // Register Raindrop services with factory pattern
 builder.Services.AddScoped<IRaindropAPIFactory, RaindropAPIFactory>();

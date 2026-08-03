@@ -1,6 +1,8 @@
+using redmuffin.Blazor.StaticWeb.Common;
+
 namespace redmuffin.Blazor.StaticWeb.Modules.ApiHealth.Contracts;
 
 public interface IHealthCheckService
 {
-    Task<string> GetHelloAsync(CancellationToken cancellationToken = default);
+    Task<Result<string>> GetHelloAsync(CancellationToken cancellationToken = default);
 }

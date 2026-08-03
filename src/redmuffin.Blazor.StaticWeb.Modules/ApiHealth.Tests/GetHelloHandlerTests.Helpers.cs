@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using redmuffin.Blazor.StaticWeb.Common;
 using redmuffin.Blazor.StaticWeb.Modules.ApiHealth.Contracts;
 
 namespace redmuffin.Blazor.StaticWeb.Modules.ApiHealth.Tests;
@@ -42,16 +43,16 @@ public sealed partial class GetHelloHandlerTests
             _response = response;
         }
 
-        public Exception? Exception { get; set; }
+        public string? FailureError { get; set; }
 
-        public Task<string> GetHelloAsync(CancellationToken cancellationToken = default)
+        public Task<Result<string>> GetHelloAsync(CancellationToken cancellationToken = default)
         {
-            if (Exception is not null)
+            if (FailureError is not null)
             {
-                return Task.FromException<string>(Exception);
+                return Task.FromResult(Result.Failure<string>(FailureError));
             }
 
-            return Task.FromResult(_response);
+            return Task.FromResult(Result.Success(_response));
         }
     }
 }

@@ -21,55 +21,56 @@ tags:
   - testing-patterns
 ---
 
-> **Current (2026-06-08):** The factory pattern (`RaindropAPIFactory`) still
-> exists in the Raindrop module. Newer modules (ApiHealth) use the Strategy
-> pattern via Contracts — the factory approach documented here represents the
-> older architectural layer. Both patterns coexist.
+> **Current (2026-08-03):** ApiHealth owns connectivity/health via Mediator +
+> Strategy + `Result<T>`. `IRaindropAPI.GetHelloWorldAsync` was removed.
+> Raindrop still uses `RaindropAPIFactory` for articles/videos only. New modules
+> follow `docs/modular-monolith-module-guide-2026-08-03.md`, not this historical
+> Hello World factory example.
 
-# Hello World Mock Example &mdash; Environment-Based Service Resolution Pattern
+# Hello World Mock Example — historical environment-based resolution
 
 ## Problem
 
-The project uses a factory pattern (`RaindropAPIFactory`) to resolve between a mock service (`DummyRaindropAPI`) and a real service (`RaindropAPI`) based on the host environment (localhost:5233 = mock, localhost:4280 = real). No simple, self-contained example existed to demonstrate this pattern to developers.
+The project used a factory pattern (`RaindropAPIFactory`) to resolve between a mock service (`DummyRaindropAPI`) and a real service (`RaindropAPI`) based on the host environment (localhost:5233 = mock, localhost:4280 = real). No simple, self-contained example existed to demonstrate that pattern to developers.
 
 ## Root Cause
 
-The existing service methods (`GetVideosAsync`, `GetArticlesAsync`) were full-featured implementations. A minimal "Hello World" example was needed &mdash; one that extends the existing interface without creating new infrastructure, so developers could see the mock/real resolution behavior instantly.
+The existing service methods (`GetVideosAsync`, `GetArticlesAsync`) were full-featured implementations. A minimal "Hello World" example was added on `IRaindropAPI` so developers could see mock/real resolution without new infrastructure.
 
-## Solution
+## Historical solution (removed 2026-08-03)
 
-Extended the existing `IRaindropAPI` interface with a single method:
+`IRaindropAPI` once exposed:
 
 ```csharp
 Task<string> GetHelloWorldAsync(CancellationToken cancellationToken = default);
 ```
 
-Two implementations:
+Two implementations existed:
 
-- **`DummyRaindropAPI`**: Returns a hardcoded string via `Task.FromResult()`, with a LoggerMessage delegate for mock response logging.
-- **`RaindropAPI`**: Calls the existing `/api/HelloWorld` Azure Function endpoint using the standard HttpClient pattern, with success and error LoggerMessage delegates.
+- **`DummyRaindropAPI`**: Hardcoded string via `Task.FromResult()`, with a LoggerMessage delegate for mock response logging.
+- **`RaindropAPI`**: Called `/api/HelloWorld` via HttpClient, with success and error LoggerMessage delegates.
 
-The `CallApiExample` component was updated to inject `IRaindropAPI` and call `GetHelloWorldAsync()` instead of using a direct HttpClient. No new infrastructure, no new Azure Functions, no new interfaces &mdash; just a method addition to the existing abstraction.
+`CallApiExample` injected `IRaindropAPI` and called `GetHelloWorldAsync()`. That method and its dedicated tests are gone; connectivity lives in the ApiHealth module.
 
-### Testing Conventions Established
+### Testing conventions established (still current)
 
-This PRD's tasklist codified several testing conventions that became project standards:
+That work codified testing conventions that remain project standards:
 
-- **Test behavior, not implementation** &mdash; focus on public contracts and input/output, never internal async details.
+- **Test behavior, not implementation** — public contracts and input/output, never internal async details.
 - **Custom mocks for internal services, LightMock.Generator for 3rd party dependencies** (e.g., HttpClient).
 - **TestScope pattern** with fluent configuration methods (`WithStandardServices()`, etc.).
-- **`ConfigureAwait(false)` on service calls only** &mdash; never on Assert statements.
+- **`ConfigureAwait(false)` on service calls only** — never on Assert statements.
 - **Custom mock naming**: `Mock` suffix (e.g., `HttpHandlerMock`, `HttpResultMock`).
 - **TUnit fluent chaining** for related assertions: `await Assert.That(result).IsNotNull().And.Contains("expected")`.
 - **`Assert.Multiple()`** for unrelated concerns (DOM structure vs logging).
-- **Test naming convention**: `Should_Return_HelloWorld_Response_When_Called` (describes expected behavior).
+- **Test naming convention**: behavior-describing names (e.g. `Should_Return_…_When_…`).
 
 ## Prevention
 
-The Hello World method serves as a living reference implementation. When adding new service methods:
+Do not re-add Hello connectivity on Raindrop.
 
-1. Add the method signature to `IRaindropAPI` (use default interface implementation for zero-breakage).
-2. Implement in both `DummyRaindropAPI` (hardcoded, synchronous) and `RaindropAPI` (HttpClient, async).
-3. Add LoggerMessage delegates for both implementations.
-4. Write behavior-focused tests following the conventions above.
-5. The existing `RaindropAPIFactory` handles environment resolution automatically &mdash; no Program.cs changes needed.
+1. New bounded features use the ApiHealth triad pattern and
+   `docs/modular-monolith-module-guide-2026-08-03.md`.
+2. Raindrop keeps factory resolution only for articles/videos until that feature
+   is extracted as a module.
+3. Keep the testing conventions above for service and page tests.

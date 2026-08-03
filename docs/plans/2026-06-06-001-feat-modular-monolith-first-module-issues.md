@@ -2,7 +2,7 @@
 title: feat/modular-monolith-first-module
 prd: docs/plans/2026-06-06-001-feat-modular-monolith-first-module-prd.md
 date: 2026-06-07
-status: active
+status: complete
 ---
 
 # Issues — Modular Monolith First Module

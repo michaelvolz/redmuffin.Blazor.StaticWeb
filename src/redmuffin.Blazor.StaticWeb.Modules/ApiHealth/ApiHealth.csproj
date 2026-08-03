@@ -15,6 +15,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ApiHealth.Contracts\ApiHealth.Contracts.csproj" />
+    <ProjectReference Include="..\..\redmuffin.Blazor.StaticWeb.Common\redmuffin.Blazor.StaticWeb.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ApiHealth.Tests" />
   </ItemGroup>
 
 </Project>

@@ -94,4 +94,20 @@ Local structural quality gate (not an Uncle Bob port) that flags over-decomposit
 
 Local LLM anti-cheat pre-gate that finds reward-hacking patterns agents introduce (disabled tests, suppressions, empty catches, arbitrary delays, project-file slop). Runs before the metric suite; not part of the unclebob/* toolchain.
 
-*(Seeded from the 2026-06-20 Grok Build CLI Roslyn LSP Windows spawn + restart learning in tooling-decisions/ + prior session memory on agent harness enablement. Package-management terms accreted from the 2026-07-22 NU1605/NU1902 CPM restore learning. Quality-gates terms accreted from the 2026-08-02 Uncle Bob upstream-sync learning.)*
+## RiverBooks-shaped module
+
+Bounded feature package using Ardalis RiverBooks **structure** only (not full DDD): three projects under `src/redmuffin.Blazor.StaticWeb.Modules/` — Contracts, module implementation, module tests. Host owns UI and composition. Procedure: `docs/modular-monolith-module-guide-2026-08-03.md`. ADR: `docs/adr/0013-riverbooks-modular-layout-and-result.md`.
+
+## Module Contracts
+
+Public project for a module’s cross-boundary types: Mediator queries/responses and service interfaces. Implementation types stay in the module project (services internal). Consumers reference Contracts, not internals.
+
+## Result (Result of T)
+
+Shared success/failure value in Common (`Result.Success` / `Result.Failure`) for expected module outcomes. Cancellation and programmer bugs remain exceptions. Used at service and Mediator response boundaries so pages map failures without exception-driven control flow for normal API errors.
+
+## Synthetic (module strategy)
+
+Application implementation that returns artificially generated data instead of a live backend. Registered via module DI extension when host policy selects synthetic (ApiHealth/Raindrop: pure client host `localhost:5233`). Distinct from test doubles, which live only in test projects. See also CONTEXT.md **Synthetic**.
+
+*(Seeded from the 2026-06-20 Grok Build CLI Roslyn LSP Windows spawn + restart learning in tooling-decisions/ + prior session memory on agent harness enablement. Package-management terms accreted from the 2026-07-22 NU1605/NU1902 CPM restore learning. Quality-gates terms accreted from the 2026-08-02 Uncle Bob upstream-sync learning. Modular monolith terms accreted 2026-08-03.)*

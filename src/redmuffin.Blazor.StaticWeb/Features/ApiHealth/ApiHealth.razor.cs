@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using Mediator;
-using Microsoft.AspNetCore.Components;
+using redmuffin.Blazor.StaticWeb.Common;
 using redmuffin.Blazor.StaticWeb.Modules.ApiHealth.Contracts;
 
 namespace redmuffin.Blazor.StaticWeb.Features.ApiHealth;
@@ -31,19 +31,24 @@ public partial class ApiHealth
 
         try
         {
-            var response = await _mediator.Send(new GetHelloQuery()).ConfigureAwait(false);
+            var result = await _mediator.Send(new GetHelloQuery()).ConfigureAwait(false);
             _stopwatch.Stop();
             var elapsed = _stopwatch.Elapsed.TotalMilliseconds;
 
-            var data = new ApiHealthData(
-                response.Message,
-                FormattableString.Invariant($"{elapsed:F1} ms"),
-                BuildHealthChecks(response, elapsed));
-            _viewModel = ApiHealthViewModel.Healthy(data);
+            _viewModel = result.Match(
+                response =>
+                {
+                    var data = new ApiHealthData(
+                        response.Message,
+                        FormattableString.Invariant($"{elapsed:F1} ms"),
+                        BuildHealthChecks(response, elapsed));
+                    return ApiHealthViewModel.Healthy(data);
+                },
+                error => ApiHealthViewModel.Unhealthy(error));
         }
-        catch (HttpRequestException ex)
+        catch (OperationCanceledException)
         {
-            _viewModel = ApiHealthViewModel.Unhealthy($"Network error: {ex.Message}");
+            _viewModel = ApiHealthViewModel.Unhealthy("The health check was cancelled.");
         }
         catch (Exception ex)
         {
@@ -64,10 +69,7 @@ public partial class ApiHealth
 
         return
         [
-            new HealthCheckItem("Endpoint Reachable", "Connected", true),
-            new HealthCheckItem("Response Received", "200 OK", true),
             new HealthCheckItem("Message Valid", preview, messageValid),
-            new HealthCheckItem("SSL/TLS", "Valid certificate", true),
             new HealthCheckItem("Latency", latencyValue, latencyOk)
         ];
     }

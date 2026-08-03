@@ -10,7 +10,8 @@ component-map:
 allowed-dependencies:
   Frontend: [Shared]
   Backend: [Shared]
-  Shared: []
+  # Shared may compose shared kernel types (e.g. Contracts → Common for Result<>).
+  Shared: [Shared]
 
 fail-on-cycles: true
 fail-on-violations: true

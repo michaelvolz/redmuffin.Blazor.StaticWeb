@@ -136,52 +136,6 @@ public sealed partial class RaindropAPI(IHttpClientFactory httpClientFactory, IL
         }
     }
 
-    /// <inheritdoc />
-    public async Task<string> GetHelloWorldAsync(CancellationToken cancellationToken = default)
-    {
-        ObjectDisposedException.ThrowIf(_disposed, this);
-
-        try
-        {
-            LogCallingHelloWorldAPI(_logger);
-
-            using var httpClient = _httpClientFactory.CreateClient();
-            var response = await httpClient.GetAsync("/api/HelloWorld", cancellationToken).ConfigureAwait(false);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                LogAPICallFailed(_logger, "GetHelloWorldAsync", (int)response.StatusCode, response.ReasonPhrase ?? "Unknown error");
-                response.EnsureSuccessStatusCode();
-            }
-
-            var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-
-            if (string.IsNullOrWhiteSpace(content))
-            {
-                LogEmptyAPIResponse(_logger, "GetHelloWorldAsync");
-                return "Hello World (empty response)";
-            }
-
-            LogHelloWorldAPISuccess(_logger);
-            return content;
-        }
-        catch (HttpRequestException ex)
-        {
-            LogHelloWorldAPIError(_logger, ex);
-            throw;
-        }
-        catch (OperationCanceledException ex)
-        {
-            LogOperationCancelled(_logger, ex, "GetHelloWorldAsync");
-            throw;
-        }
-        catch (Exception ex)
-        {
-            LogUnexpectedError(_logger, ex, "GetHelloWorldAsync");
-            throw new InvalidOperationException("An unexpected error occurred while retrieving Hello World message.", ex);
-        }
-    }
-
     /// <summary>
     ///     Deserializes JSON content with multiple fallback strategies for robust error handling.
     ///     Uses DefaultOptions first, then LenientOptions for malformed JSON, and finally StrictOptions as last resort.

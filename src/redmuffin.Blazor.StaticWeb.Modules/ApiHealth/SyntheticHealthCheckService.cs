@@ -1,11 +1,12 @@
+using redmuffin.Blazor.StaticWeb.Common;
 using redmuffin.Blazor.StaticWeb.Modules.ApiHealth.Contracts;
 
 namespace redmuffin.Blazor.StaticWeb.Modules.ApiHealth;
 
-public sealed class SyntheticHealthCheckService : IHealthCheckService
+internal sealed class SyntheticHealthCheckService : IHealthCheckService
 {
-    public Task<string> GetHelloAsync(CancellationToken cancellationToken = default)
+    public Task<Result<string>> GetHelloAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult("Hello from the ApiHealth module! (synthetic data)");
+        return Task.FromResult(Result.Success("Hello from the ApiHealth module! (synthetic data)"));
     }
 }

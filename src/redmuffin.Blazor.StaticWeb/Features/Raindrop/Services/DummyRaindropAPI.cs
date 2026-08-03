@@ -105,16 +105,6 @@ public sealed partial class DummyRaindropAPI(IHttpClientFactory httpClientFactor
         }
     }
 
-    /// <inheritdoc />
-    public Task<string> GetHelloWorldAsync(CancellationToken cancellationToken = default)
-    {
-        ObjectDisposedException.ThrowIf(_disposed, this);
-
-        const string response = "Hello World from Mock Data - Not from Azure Functions";
-        LogHelloWorldMockResponse(_logger);
-        return Task.FromResult(response);
-    }
-
     /// <summary>
     ///     Loads JSON content from the specified file path.
     /// </summary>

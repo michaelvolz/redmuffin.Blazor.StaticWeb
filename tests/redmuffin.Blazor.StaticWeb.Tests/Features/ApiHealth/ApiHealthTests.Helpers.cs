@@ -2,6 +2,7 @@ using Bunit;
 using Mediator;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using redmuffin.Blazor.StaticWeb.Common;
 using redmuffin.Blazor.StaticWeb.Modules.ApiHealth.Contracts;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.ApiHealth;
@@ -75,7 +76,7 @@ public sealed partial class ApiHealthTests
             SendCount++;
             if (request is GetHelloQuery)
             {
-                return new ValueTask<TResponse>((TResponse)(object)new HelloResponse(_response));
+                return new ValueTask<TResponse>((TResponse)(object)Result.Success(new HelloResponse(_response)));
             }
 
             throw new InvalidOperationException($"Unexpected request type: {request.GetType().Name}");
@@ -87,7 +88,7 @@ public sealed partial class ApiHealthTests
         public ValueTask<TResponse> Send<TResponse>(IQuery<TResponse> query, CancellationToken cancellationToken = default)
         {
             SendCount++;
-            return new ValueTask<TResponse>((TResponse)(object)new HelloResponse(_response));
+            return new ValueTask<TResponse>((TResponse)(object)Result.Success(new HelloResponse(_response)));
         }
 
         public ValueTask<object?> Send(object message, CancellationToken cancellationToken = default)
@@ -116,13 +117,13 @@ public sealed partial class ApiHealthTests
     public sealed class IMediator_FailingMock : IMediator
     {
         public ValueTask<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
-            => throw new HttpRequestException("Simulated mediator error");
+            => new((TResponse)(object)Result.Failure<HelloResponse>("Simulated mediator error"));
 
         public ValueTask<TResponse> Send<TResponse>(ICommand<TResponse> command, CancellationToken cancellationToken = default)
             => throw new NotSupportedException();
 
         public ValueTask<TResponse> Send<TResponse>(IQuery<TResponse> query, CancellationToken cancellationToken = default)
-            => throw new HttpRequestException("Simulated mediator error");
+            => new((TResponse)(object)Result.Failure<HelloResponse>("Simulated mediator error"));
 
         public ValueTask<object?> Send(object message, CancellationToken cancellationToken = default)
             => throw new NotSupportedException();

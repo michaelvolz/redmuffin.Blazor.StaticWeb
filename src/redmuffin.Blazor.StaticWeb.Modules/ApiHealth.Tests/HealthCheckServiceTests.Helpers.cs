@@ -31,7 +31,7 @@ public sealed partial class HealthCheckServiceTests
 
         public IReadOnlyList<LogEntry> LogEntries => _logger.LogEntries;
 
-        public HealthCheckService Service => _serviceProvider.GetRequiredService<HealthCheckService>();
+        internal HealthCheckService Service => _serviceProvider.GetRequiredService<HealthCheckService>();
 
         public void Dispose() => _serviceProvider.Dispose();
     }
