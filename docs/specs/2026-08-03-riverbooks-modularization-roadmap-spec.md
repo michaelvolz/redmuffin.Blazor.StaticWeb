@@ -1,6 +1,6 @@
 ---
 date: 2026-08-03
-version: 1.0.0
+version: 1.2.0
 last_updated: 2026-08-03
 title: RiverBooks modularization roadmap and Mediator use
 purpose: >
@@ -13,6 +13,7 @@ scope:
   - Result at expected-failure boundaries
   - Azure Functions deployment boundary
   - Phased sequencing (especially Raindrop after IO extraction)
+  - Client initial-load priority and assembly lazy-load pilots
   - Quality scorecard and forbidden moves
 exclude:
   - Step-by-step how to scaffold a triad (module guide)
@@ -29,6 +30,7 @@ tags:
   - result
   - raindrop
   - architecture
+  - lazy-load
 ---
 
 # RiverBooks modularization roadmap and Mediator use
@@ -42,14 +44,15 @@ tags:
 - **Viewpoint**: Planners and implementers writing the next module PRD or
   vertical slice; assumes ADR 0013 and the module guide are known
 - **What belongs**: End-state map, Mediator/Result rules, phase order,
-  Raindrop next-vertical contract, repo-wide priority hints, quality
-  scorecard, explicit non-goals and anti-patterns
+  Raindrop next-vertical contract, initial-load / lazy-assembly priority,
+  repo-wide priority hints, quality scorecard, explicit non-goals and
+  anti-patterns
 - **What does NOT belong**: Copy-paste project scaffolding steps, ApiHealth
   code tutorials, per-file edit lists, commit messages, session notes
 
 ## 0 — Critical Viewpoint (READ FIRST)
 
-Two product decisions bind every future plan:
+Three product decisions bind every future plan:
 
 1. **Mediator is first-class.** Use it for its full benefit: use-case
    requests, pipeline behaviors, host decoupling, and test seams — not as
@@ -57,10 +60,17 @@ Two product decisions bind every future plan:
 2. **Endgoal is full client RiverBooks modularization.** The WASM host
    becomes composition root + pages. Feature policy lives in Modules.
    Azure Functions stay a separate deploy unit (HTTP only).
+3. **Initial client load beats total published size.** Optimize first
+   payload and time-to-interactive. Total CDN/publish size may grow within
+   reason. Every feature must still work after its code is available.
+   Prefer Blazor assembly lazy loading for rare capabilities (ApiHealth
+   pilot first) over arguing total zip size as the main gate.
 
 Phase 1 Raindrop (IO triad + Strategy, factory gone) is the foundation.
-Later slices finish Raindrop application use cases, then modularize the
-rest of the client by capability — never as one big-bang rewrite.
+**P0 done:** ApiHealth implementation assembly lazy load (PRD 002; user
+confirmed). **Immediate priority:** ApiHealth **razor-into-module** pilot
+(§6.2b / SN-0060). After that, Raindrop Mediator use cases (§6.3) are the
+next modularization vertical — do not cascade razor moves.
 
 ## 1 — Scope and Definitions
 
@@ -85,8 +95,10 @@ rest of the client by capability — never as one big-bang rewrite.
 | **Api / Functions** | Separate deployment; never extracted into Modules “for modularity” |
 | **Cross-boundary share** | HTTP, or deliberate dual-consumed types in Common — not shared project source across deploy units |
 
-Pages stay in the host Blazor project. Modules own use cases, not `.razor`
-files, unless a future ADR revises UI ownership.
+Host owns shell layout, nav, and composition. **Default** remains pages in
+the host; **authorized exception:** rare lazy modules may own their page UI
+in a module RCL (ApiHealth pilot, §6.2b / SN-0060) so route UI rides the same
+lazy assembly boundary.
 
 ## 3 — Mediator optimality rules
 
@@ -177,9 +189,51 @@ re-scope. See ADR 0013.
 | --- | --- |
 | ApiHealth triad + Result + Mediator + Strategy | Done (template) |
 | Raindrop IO triad + Strategy; factory deleted; Api untouched | Done (Phase 1) |
-| Raindrop Mediator use cases + Result + cache policy in module | **Next** |
+| ApiHealth implementation assembly lazy load | **Done** (lazyAssembly + user-confirmed) |
+| **ApiHealth razor into module RCL (lazy UI pilot)** | **In progress** (SN-0060 / §6.2b — RCL + Router wired) |
+| Raindrop Mediator use cases + Result + cache policy in module | After §6.2b |
 | Remaining client features → triads | After Raindrop application layer |
+| Further `.razor` into modules | Only when that feature is deliberately lazy |
 | Demo/sample pages | Last or never if pure samples |
+
+### 6.2a ApiHealth lazy load (P0 contract) — DONE
+
+**Title intent:** defer download/load of the ApiHealth **implementation**
+assembly until `/api-health`; pages were still in the host for this slice.
+
+**Product metrics:** initial load and feature correctness. Total publish
+size may increase within reason.
+
+**In scope:** host lazy-load item, deferred module DI gate, navigate-time
+`LoadAssembliesAsync`, Mediator-compatible registration without boot-time
+type roots into the lazy DLL, Release proof (boot resources / network).
+
+**Out of scope for P0:** razor-into-module (now §6.2b), Raindrop lazy load,
+Api project, total size minimization campaigns.
+
+**Normative plan:**
+`docs/plans/2026-08-03-002-feat-apihealth-assembly-lazy-load-prd.md`
+(status: **done**).
+
+### 6.2b ApiHealth razor-into-module (authorized)
+
+**Title intent:** page UI lives in the ApiHealth **RCL** so the lazy assembly
+carries both services and the rare route; host keeps shell + load gate +
+eager thin handler.
+
+**Big steps only (no micro-task list):**
+
+1. Module → RCL; move page + ViewModels into module (no host Common component
+   references from the module).
+2. Host Router `AdditionalAssemblies` after `LoadAssembliesAsync` on
+   `/api-health`; keep gate / load options / `GetHelloHandler` on host.
+3. One prove pass: build, host ApiHealth tests, cold path vs route load.
+4. Stop. Next program vertical = §6.3 Raindrop, not more razor moves.
+
+**Out of scope:** Raindrop/Articles/Videos UI move, Api project, shared-UI
+library extraction unless a later PRD names it.
+
+**Normative notes:** `docs/sidenotes/SN-0060.md`
 
 ### 6.3 Raindrop next vertical (mandatory contract)
 
@@ -203,7 +257,8 @@ Raindrop module; host pages Mediator-only.
 - Demo-page modularization
 - Dummy → Synthetic rename (unless free and isolated)
 - New pipeline behaviors beyond existing logging
-- Moving `.razor` pages into module projects
+- Moving `.razor` pages into module projects (that is §6.2b / other pilots —
+  not this vertical)
 
 **Acceptance sketch (future PRD must refine):**
 
@@ -265,14 +320,14 @@ A future plan or PR aligns with this spec when all of the following hold:
 1. Destination matches §2 (host thin, modules own policy, Api boundary intact).
 2. Mediator usage matches §3 (use cases, no double path).
 3. Result usage matches §4 where expected failures exist.
-4. Slice size matches §6 (one vertical; Raindrop next vertical matches §6.3
-   if it claims to be that work).
+4. Slice size matches §6 (one vertical; lazy load §6.2a; razor pilot §6.2b;
+   Raindrop next vertical matches §6.3 if claimed).
 5. None of §8 anti-patterns appear as in-scope work.
 
 ## Related
 
+- `docs/plans/2026-08-03-002-feat-apihealth-assembly-lazy-load-prd.md`
 - `docs/adr/0013-riverbooks-modular-layout-and-result.md`
 - `docs/modular-monolith-module-guide-2026-08-03.md`
 - `docs/plans/2026-08-03-001-feat-raindrop-module-io-extraction-prd.md`
-- `docs/solutions/architecture-patterns/raindrop-module-io-extraction-client-only.md`
-- `docs/solutions/architecture-patterns/health-check-service-strategy-module-architecture.md`
+- `docs/sidenotes/SN-0060.md`

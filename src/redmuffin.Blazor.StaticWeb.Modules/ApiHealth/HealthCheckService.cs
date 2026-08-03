@@ -19,6 +19,8 @@ internal sealed partial class HealthCheckService : IHealthCheckService
     {
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var client = _httpClientFactory.CreateClient(string.Empty);
             var response = await client.GetAsync("api/HelloWorld", cancellationToken).ConfigureAwait(false);
 

@@ -1,7 +1,9 @@
 <ErrorBoundary @ref="ComponentErrorBoundary">
     <ChildContent>
 
-        <Router AppAssembly="@typeof(App).Assembly" OnNavigateAsync="HandleNavigationAsync">
+        <Router AppAssembly="@typeof(App).Assembly"
+                AdditionalAssemblies="_lazyLoadedAssemblies"
+                OnNavigateAsync="HandleNavigationAsync">
             <Found Context="routeData">
                 <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
                 <FocusOnNavigate RouteData="@routeData" Selector="h1"/>

@@ -14,17 +14,22 @@
     @_viewModel.ButtonText
 </button>
 
-<Conditional Condition="@_viewModel.IsIdle">
-    <EmptyState Message="No checks have been run yet. Click the button above to begin." />
-</Conditional>
-
-<Conditional Condition="@_viewModel.IsLoading">
-    <div class="loading-area">
-        <Spinner />
+@if (_viewModel.IsIdle)
+{
+    <div id="empty-state" class="empty-state">
+        <p>No checks have been run yet. Click the button above to begin.</p>
     </div>
-</Conditional>
+}
 
-<Conditional Condition="@_viewModel.IsHealthy">
+@if (_viewModel.IsLoading)
+{
+    <div class="loading-area">
+        <div class="spinner" role="status" aria-label="Loading"></div>
+    </div>
+}
+
+@if (_viewModel.IsHealthy)
+{
     <div class="health-result">
         <div class="callout success">
             <h3>Response</h3>
@@ -33,16 +38,20 @@
         </div>
 
         <h3>Health Checks</h3>
-        <ForEach Items="@_viewModel.Checks" Context="check">
+        @foreach (var check in _viewModel.Checks)
+        {
             <div class="check-row @check.RowCssClass">
                 <span class="check-icon">@check.StatusIcon</span>
                 <span class="check-label">@check.Label</span>
                 <span class="check-value">@check.Value</span>
             </div>
-        </ForEach>
+        }
     </div>
-</Conditional>
+}
 
-<Conditional Condition="@_viewModel.IsUnhealthy">
-    <ErrorBanner Message="@_viewModel.ErrorDetail" />
-</Conditional>
+@if (_viewModel.IsUnhealthy)
+{
+    <div class="callout alert" role="alert">
+        <p>@_viewModel.ErrorDetail</p>
+    </div>
+}

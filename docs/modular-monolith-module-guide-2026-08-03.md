@@ -115,7 +115,7 @@ return Result.Failure<string>("The API endpoint did not return a response.");
 | Handler | Success and failure `Result` paths with fake service |
 | Real service | Happy path + expected failures + cancel still throws |
 | Synthetic | Exact success payload |
-| Host page | Renders idle/success/failure via mocked `IMediator` |
+| Host or module page | Renders idle/success/failure via mocked `IMediator` (ApiHealth page may live in the module RCL when lazy — SN-0060) |
 
 Run:
 
@@ -142,7 +142,7 @@ dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests
 | `Modules/ApiHealth.Tests/*` | Module unit tests |
 | `Common/Result.cs` | Shared `Result` / `Result<T>` |
 | `Common/PipelineBehaviors/LoggingBehavior.cs` | Cross-module pipeline |
-| `Features/ApiHealth/*` | Host page + ViewModel |
+| `Modules/ApiHealth/*` page + ViewModel | Lazy RCL pilot (SN-0060); host keeps gate + thin handler |
 
 ## Related
 

@@ -1,8 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using redmuffin.Blazor.StaticWeb.Common;
+using redmuffin.Blazor.StaticWeb.Features.ApiHealth;
 using redmuffin.Blazor.StaticWeb.Modules.ApiHealth.Contracts;
 
-namespace redmuffin.Blazor.StaticWeb.Modules.ApiHealth.Tests;
+namespace redmuffin.Blazor.StaticWeb.Tests.Features.ApiHealth;
 
 [Category("Feature:ApiHealth")]
 public sealed partial class GetHelloHandlerTests

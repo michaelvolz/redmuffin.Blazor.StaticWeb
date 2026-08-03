@@ -2,6 +2,7 @@ using Blazored.LocalStorage;
 using Mediator;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb;
 using redmuffin.Blazor.StaticWeb.Common;
@@ -9,10 +10,11 @@ using redmuffin.Blazor.StaticWeb.Core.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 using redmuffin.Blazor.StaticWeb.Core.Services;
+using redmuffin.Blazor.StaticWeb.Features.ApiHealth;
 using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Services;
 using redmuffin.Blazor.StaticWeb.Features.DebugPage.Services;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
-using redmuffin.Blazor.StaticWeb.Modules.ApiHealth;
+using redmuffin.Blazor.StaticWeb.Modules.ApiHealth.Contracts;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -61,7 +63,15 @@ builder.Services.AddModulePipelineBehaviors();
 var useSynthetic = builder.HostEnvironment.BaseAddress.Contains(
     "localhost:5233",
     StringComparison.OrdinalIgnoreCase);
-builder.Services.AddApiHealthModule(useSynthetic);
+
+// ApiHealth implementation assembly is lazy-loaded on /api-health (see App).
+// Do not call AddApiHealthModule here — that would force the impl DLL at boot.
+builder.Services.AddScoped<LazyAssemblyLoader>();
+builder.Services.AddSingleton(new ApiHealthLoadOptions(useSynthetic));
+builder.Services.AddSingleton<ApiHealthModuleGate>();
+builder.Services.AddScoped<IHealthCheckService>(static sp =>
+    sp.GetRequiredService<ApiHealthModuleGate>().GetRequiredService());
+
 builder.Services.AddRaindropModule(useSynthetic);
 
 await builder.Build().RunAsync().ConfigureAwait(false);

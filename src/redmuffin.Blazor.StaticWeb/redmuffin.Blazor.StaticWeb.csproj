@@ -77,11 +77,18 @@
     <RunAOTCompilation>false</RunAOTCompilation>
     <!-- Enable trimming (partial mode — Blazor SDK default, safe for WASM) -->
     <PublishTrimmed>true</PublishTrimmed>
-      <!-- Specify trimmer descriptor to preserve essential types -->
-      <TrimmerRootDescriptor>$(MSBuildProjectDirectory)/TrimmerRoots.xml</TrimmerRootDescriptor>
-      <!-- Enable lazy loading for non-critical assemblies -->
-      <BlazorWebAssemblyLazyLoad>true</BlazorWebAssemblyLazyLoad>
+    <!-- Specify trimmer descriptor to preserve essential types -->
+    <TrimmerRootDescriptor>$(MSBuildProjectDirectory)/TrimmerRoots.xml</TrimmerRootDescriptor>
   </PropertyGroup>
+
+  <!--
+    Lazy-load ApiHealth implementation assembly until /api-health navigation.
+    Include name is the managed assembly file name (not the published .wasm).
+    See docs/plans/2026-08-03-002-feat-apihealth-assembly-lazy-load-prd.md
+  -->
+  <ItemGroup>
+    <BlazorWebAssemblyLazyLoad Include="ApiHealth.dll" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" />

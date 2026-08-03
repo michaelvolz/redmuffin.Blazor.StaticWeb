@@ -3,7 +3,7 @@ using Mediator;
 using redmuffin.Blazor.StaticWeb.Common;
 using redmuffin.Blazor.StaticWeb.Modules.ApiHealth.Contracts;
 
-namespace redmuffin.Blazor.StaticWeb.Features.ApiHealth;
+namespace redmuffin.Blazor.StaticWeb.Modules.ApiHealth;
 
 #pragma warning disable MA0049 // Type name matches namespace — standard Blazor component pattern
 public partial class ApiHealth
@@ -17,11 +17,6 @@ public partial class ApiHealth
     public ApiHealth(IMediator mediator)
     {
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-    }
-
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
     }
 
     private async Task RunHealthCheckAsync()

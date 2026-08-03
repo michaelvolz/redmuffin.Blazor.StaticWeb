@@ -1,4 +1,4 @@
-namespace redmuffin.Blazor.StaticWeb.Features.ApiHealth;
+namespace redmuffin.Blazor.StaticWeb.Modules.ApiHealth;
 
 public sealed record ApiHealthData(
     string Message,
