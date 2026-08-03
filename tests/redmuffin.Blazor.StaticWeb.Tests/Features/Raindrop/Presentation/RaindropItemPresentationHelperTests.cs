@@ -1,7 +1,7 @@
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Features.Raindrop.Presentation;
+using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Presentation;
 
-namespace redmuffin.Blazor.StaticWeb.Features.Raindrop.Presentation;
+namespace redmuffin.Blazor.StaticWeb.Tests.Features.Raindrop.Presentation;
 
 public class RaindropItemPresentationHelperTests
 {

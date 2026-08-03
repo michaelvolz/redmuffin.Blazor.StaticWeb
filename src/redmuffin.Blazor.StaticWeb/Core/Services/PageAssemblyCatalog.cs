@@ -3,6 +3,7 @@ namespace redmuffin.Blazor.StaticWeb.Core.Services;
 /// <summary>
 ///     Maps page keys to lazy assembly file names (with extension) for navigate-time load
 ///     and Home prefetch. Empty lists are intentional no-ops until that page is page-lazy.
+///     Articles and Videos co-load <c>Raindrop.dll</c> (Home prefetch + first navigate).
 /// </summary>
 public static class PageAssemblyCatalog
 {
@@ -22,10 +23,8 @@ public static class PageAssemblyCatalog
     private static readonly Dictionary<string, string[]> AssembliesByPageKey =
         new(StringComparer.OrdinalIgnoreCase)
         {
-            // Filled when Articles becomes a page-lazy assembly batch.
-            [ArticlesPageKey] = [],
-            // Filled when Videos becomes a page-lazy assembly batch.
-            [VideosPageKey] = [],
+            [ArticlesPageKey] = ["Raindrop.dll"],
+            [VideosPageKey] = ["Raindrop.dll"],
             [ApiHealthPageKey] = ["ApiHealth.dll"]
         };
 

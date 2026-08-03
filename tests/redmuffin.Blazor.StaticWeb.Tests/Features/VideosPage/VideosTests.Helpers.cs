@@ -5,11 +5,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Common;
+using redmuffin.Blazor.StaticWeb.Common.ImagePlaceholder;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
-using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Models;
-using redmuffin.Blazor.StaticWeb.Features.VideosPage;
+using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
+using redmuffin.Blazor.StaticWeb.Modules.Raindrop.VideosPage;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.VideosPage;
@@ -303,7 +304,7 @@ public sealed partial class VideosTests
             string itemLink,
             bool loadSuccess,
             IDictionary<string, string> imageUrlCache,
-            IJSRuntime jsRuntime,
+            Func<string, Task> stopShimmerAsync,
             Func<Task> stateHasChangedCallback)
         {
             return Task.CompletedTask;

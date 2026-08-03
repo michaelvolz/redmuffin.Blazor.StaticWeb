@@ -1,6 +1,6 @@
 ---
 date: 2026-08-03
-version: 1.4.2
+version: 1.6.0
 last_updated: 2026-08-03
 title: RiverBooks modularization roadmap and Mediator use
 purpose: >
@@ -97,21 +97,22 @@ Three product decisions bind every future plan:
      other pages. Prefer Blazor `LoadAssembliesAsync` (runtime attach + cache),
      not static HTML `rel=prefetch` of every DLL. Gate on
      `navigator.connection.saveData` when implementing. Silent on failure;
-     real navigation still loads via `OnNavigateAsync`. **Host hook is live
-     and dormant:** `IPageAssemblyLoader` + `PageAssemblyCatalog` (empty
-     Articles/Videos lists) + path→pageKey for `OnNavigateAsync` + Home
-     first-render prefetch. **Activation when page-lazy:** (1) fill catalog
-     DLL lists, (2) `BlazorWebAssemblyLazyLoad` items; no App/Home rewrite for
-     load/prefetch (module gate/DI still as needed, e.g. ApiHealth pattern).
+     real navigation still loads via `OnNavigateAsync`. **Host hook is live:**
+     `IPageAssemblyLoader` + `PageAssemblyCatalog` (Articles/Videos →
+     `Raindrop.dll`) + path→pageKey for `OnNavigateAsync` + Home first-render
+     prefetch. **V1 activated** page-lazy for Articles/Videos (catalog fill +
+     `BlazorWebAssemblyLazyLoad` + Raindrop module gate). Later pages: same
+     pattern (fill catalog + LazyLoad + gate as needed).
    Procedure depth: skill `rm-blazor-lazy-loading`.
 
 Phase 1 Raindrop (IO triad + Strategy, factory gone) is the foundation.
 **P0 done:** ApiHealth implementation assembly lazy load (PRD 002; user
 confirmed). **§6.3 done:** Raindrop Mediator use cases + Result + cache policy
-in module (PRD 003). ApiHealth lazy load + razor pilot (§6.2a–b) are done —
-do not cascade more razor moves. **Immediate priority:** next remaining client
-feature triad after Raindrop application layer (§6.4), under full coverage
-rules (including demos when their turn comes — not “never”).
+in module (PRD 003). **§6.4 V1 done:** residual host Raindrop surface into
+module; Articles/Videos RCL pages; `Raindrop.dll` lazy + Home prefetch real.
+**Immediate priority:** §6.4 **V2 Image / placeholder policy**. Later
+verticals are large capability batches — not one micro-slice per demo page.
+
 
 ## 1 — Scope and Definitions
 
@@ -233,9 +234,11 @@ re-scope. See ADR 0013.
 | ApiHealth implementation assembly lazy load | **Done** (lazyAssembly + user-confirmed) |
 | ApiHealth razor into module RCL (lazy UI pilot) | **Done** (SN-0060 / §6.2b) |
 | Raindrop Mediator use cases + Result + cache policy in module | **Done** (PRD 003 / §6.3) |
-| Remaining client features → triads | **Next** (§6.4) |
+| **V1 Complete Raindrop** (residual + RCL pages + page-lazy + prefetch) | **Done** (§6.4 V1) |
+| **V2 Image / placeholder policy** | **Next** (§6.4 V2) |
+| V3 Debug → V4 Samples batch → V5 Home/Auth | Backlog (§6.4) |
 | Further `.razor` into modules | Prefer module RCL + lazy page graph (ApiHealth pattern) so page UI is not on the eager boot graph |
-| Demo/sample/tiny pages | **In program scope** — same scorecard + same **page-lazy** rule as product features; sequence after higher blast-radius work, not skip |
+| Demo/sample/tiny pages | **In program scope** — same scorecard + same **page-lazy** rule as product features; **V4 samples batch** (not per-page PRDs); not skip |
 
 ### 6.2a ApiHealth lazy load (P0 contract) — DONE
 
@@ -315,17 +318,73 @@ Raindrop module; host pages Mediator-only.
   failures.
 - Module and host test suites green; product suites zero skips.
 
-### 6.4 After Raindrop application layer
+### 6.4 Client vertical sequence (after Raindrop application layer)
 
-| Priority | Candidate | Notes |
+**Sizing rule:** large verticals only. Do not open one PRD per toy page.
+Demos and samples ship as **one batch** (V4), not Counter → Weather → …
+separately. Page-lazy remains orthogonal and default for every page
+(§0 item 4). Api Functions are **never** a module extract (§5).
+
+| Order | Vertical | Intent |
 | --- | --- | --- |
-| High | Finish Raindrop (presentation ports, residual host `Features/Raindrop`) | Second real module complete |
-| High | Image / placeholder policy if multi-feature | Core vs module decision |
-| Medium | Debug, Home, Auth slices with real services | Same triad bar as product features |
-| Required backlog | Counter, Weather, Foundation, and any other demo/sample/tiny pages still on host services | **Do not skip.** Little domain still gets Contracts + handlers (or thin use cases) + Mediator-only pages + tests. Same **page-lazy** rule as all pages (§0 item 4). Sequence after higher blast-radius slices, still on the roadmap to **done**. |
-| Never as module extract | Api Functions deploy unit | HTTP boundary only |
+| **V1** | **Complete Raindrop** | Residual host `Features/Raindrop` into module; Articles + Videos as module RCL pages; `Raindrop.dll` lazy; catalog + Home prefetch **activate** |
+| **V2** | Image / placeholder policy | Multi-feature image policy (Core vs module decision); full ownership beyond V1 abstraction enabler |
+| **V3** | Debug island | LocalStorage debug pages + host services → triad + page-lazy |
+| **V4** | Samples batch | Counter, Weather, Foundation, Icons, MarkdownExamples (and peers) in **one** batch — same scorecard + page-lazy; not per-page PRDs |
+| **V5** | Home / Auth leftovers | Shell-adjacent and redirect leftovers last |
+| Never | Api Functions deploy unit | HTTP boundary only |
 
-**Demo / tiny page bar (normative):**
+#### V1 — Complete Raindrop (contract)
+
+**Title intent:** finish Raindrop as the second real product module **and**
+activate Articles/Videos page-lazy so Home prefetch is real (not dormant).
+One vertical with **gated internal steps** (verify each step green before
+the next). Do not modularize residue then rewire pages in a later vertical.
+
+**In scope (gated steps):**
+
+1. **Residual into module.** Move host `Features/Raindrop` cache, models,
+   extensions, and presentation helpers into `Modules/Raindrop`. Storage
+   port fully module-owned; browser LocalStorage stays behind the port /
+   module factory (no concrete browser types in Contracts).
+2. **Image abstraction enabler only.** Promote image *interfaces*
+   (`IImageUrlResolver`, `IImagePlaceholderService`, and any other
+   abstractions Raindrop RCL must inject) into `Common` so the RCL does not
+   `ProjectReference` the host. Implementations remain host Core until V2.
+3. **RCL + pages + Raindrop-only UI.** Convert Raindrop implementation to
+   `Sdk.Razor` (net10, ApiHealth pattern). Move Articles + Videos pages and
+   Raindrop-only components (`RaindropItemList`, `RefreshBadge` / state,
+   page presentation helpers) into the module. No module → host
+   `Features/Common` component references.
+4. **Host-eager thin Mediator handlers.** Move Load/Refresh handlers out of
+   the lazy DLL onto the host (ApiHealth `GetHelloHandler` pattern) so
+   Mediator SourceGen does not root `Raindrop.dll` at boot. Handlers depend
+   only on Contracts ports; module owns use-case implementation behind a
+   gate-resolved facade/service.
+5. **Lazy load + catalog + gate.** `BlazorWebAssemblyLazyLoad` include
+   `Raindrop.dll`; `PageAssemblyCatalog` articles + videos =
+   `["Raindrop.dll"]`; deferred DI gate after `LoadAssembliesAsync` (no
+   boot-time `AddRaindropModule` type root into the lazy DLL). Home
+   prefetch of Articles/Videos becomes a real load.
+6. **Prove.** Build; Raindrop.Tests; host Articles/Videos/Raindrop suites;
+   Api project **untouched**.
+
+**Out of scope for V1:** full image policy module (V2); debug; samples;
+Home/Auth; Api; HTML `rel=prefetch` of DLLs; co-locating Articles into Home
+without measured data (§0 item 4).
+
+**Acceptance:**
+
+- No residual policy/cache under host `Features/Raindrop` (host may keep
+  thin eager handlers + gate only).
+- `/articles` and `/videos` route UI live in lazy `Raindrop.dll`; first
+  navigation (or Home prefetch) loads the assembly; session free after.
+- Pages inject `IMediator` (+ UI-only deps such as image interfaces from
+  Common); not `IRaindropAPI` or cache types.
+- Scorecard §7 and page-load graph row green for Articles/Videos.
+
+**Demo / tiny page bar (normative — applies from V4 onward, same bar as
+product):**
 
 1. No permanent host `Features/.../Services` for a page that should be a
    module capability — including samples.

@@ -1,5 +1,7 @@
 using Bunit;
 
+using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Presentation;
+
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Common.Components;
 
 /// <summary>

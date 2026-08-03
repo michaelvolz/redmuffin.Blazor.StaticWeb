@@ -1,6 +1,6 @@
 using Bunit;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Features.ArticlesPage;
+using redmuffin.Blazor.StaticWeb.Modules.Raindrop.ArticlesPage;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.ArticlesPage;
 

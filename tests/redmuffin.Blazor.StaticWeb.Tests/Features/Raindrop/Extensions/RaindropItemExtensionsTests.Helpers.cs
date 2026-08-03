@@ -1,5 +1,5 @@
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Features.Raindrop.Models;
+using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Models;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Raindrop.Extensions;
 

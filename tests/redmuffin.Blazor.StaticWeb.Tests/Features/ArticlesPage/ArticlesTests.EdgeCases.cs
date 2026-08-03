@@ -1,5 +1,5 @@
 using Bunit;
-using ArticlesComponent = redmuffin.Blazor.StaticWeb.Features.ArticlesPage.Articles;
+using ArticlesComponent = redmuffin.Blazor.StaticWeb.Modules.Raindrop.ArticlesPage.Articles;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.ArticlesPage;
 

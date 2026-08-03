@@ -1,6 +1,6 @@
 using Bunit;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Features.VideosPage;
+using redmuffin.Blazor.StaticWeb.Modules.Raindrop.VideosPage;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.VideosPage;
 

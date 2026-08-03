@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb;
 using redmuffin.Blazor.StaticWeb.Common;
+using redmuffin.Blazor.StaticWeb.Common.ImagePlaceholder;
 using redmuffin.Blazor.StaticWeb.Core.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
@@ -13,9 +14,8 @@ using redmuffin.Blazor.StaticWeb.Core.Services;
 using redmuffin.Blazor.StaticWeb.Features.ApiHealth;
 using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Services;
 using redmuffin.Blazor.StaticWeb.Features.DebugPage.Services;
-using redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache;
+using redmuffin.Blazor.StaticWeb.Features.Raindrop;
 using redmuffin.Blazor.StaticWeb.Modules.ApiHealth.Contracts;
-using redmuffin.Blazor.StaticWeb.Modules.Raindrop;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -45,9 +45,6 @@ builder.Services.AddScoped<IImagePlaceholderService, ImagePlaceholderService>();
 builder.Services.AddScoped<IImageUrlResolver, ImageUrlResolver>();
 builder.Services.AddScoped<PlaceholderGenerationService>();
 
-// Register cache services
-builder.Services.AddScoped<IRaindropItemsCache, RaindropItemsCache>();
-builder.Services.AddScoped<IRaindropItemsStorage, RaindropItemsStorageAdapter>();
 builder.Services.AddScoped<LocalStorageDebugService>();
 
 // Register delay provider for production (real delays for UX)
@@ -66,9 +63,9 @@ var useSynthetic = builder.HostEnvironment.BaseAddress.Contains(
     "localhost:5233",
     StringComparison.OrdinalIgnoreCase);
 
-// ApiHealth implementation assembly is lazy-loaded on /api-health (see App).
-// Do not call AddApiHealthModule here — that would force the impl DLL at boot.
-// PageAssemblyLoader: navigate loads + Home Articles/Videos prefetch (catalog no-op until page-lazy).
+// ApiHealth / Raindrop implementation assemblies are lazy-loaded (see App + catalog).
+// Do not call AddApiHealthModule / AddRaindropModule here — that would force impl DLLs at boot.
+// PageAssemblyLoader: navigate loads + Home Articles/Videos prefetch.
 builder.Services.AddScoped<LazyAssemblyLoader>();
 builder.Services.AddScoped<IPageAssemblyLoader, PageAssemblyLoader>();
 builder.Services.AddSingleton(new ApiHealthLoadOptions(useSynthetic));
@@ -76,6 +73,9 @@ builder.Services.AddSingleton<ApiHealthModuleGate>();
 builder.Services.AddScoped<IHealthCheckService>(static sp =>
     sp.GetRequiredService<ApiHealthModuleGate>().GetRequiredService());
 
-builder.Services.AddRaindropModule(useSynthetic);
+builder.Services.AddSingleton(new RaindropLoadOptions(useSynthetic));
+builder.Services.AddSingleton<RaindropModuleGate>();
+builder.Services.AddScoped<IRaindropItemsFacade>(static sp =>
+    sp.GetRequiredService<RaindropModuleGate>().GetRequiredFacade());
 
 await builder.Build().RunAsync().ConfigureAwait(false);

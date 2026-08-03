@@ -8,30 +8,29 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Core;
 public sealed class PageAssemblyLoaderTests
 {
     [Test]
-    public async Task EnsureLoadedAsync_For_Empty_Catalog_Entries_Completes_Without_Throwing()
+    public async Task EnsureLoadedAsync_For_Unknown_PageKey_Completes_Without_Throwing()
     {
         var loader = CreateLoader();
 
-        await loader.EnsureLoadedAsync(PageAssemblyCatalog.ArticlesPageKey).ConfigureAwait(false);
-        await loader.EnsureLoadedAsync(PageAssemblyCatalog.VideosPageKey).ConfigureAwait(false);
+        await loader.EnsureLoadedAsync("counter").ConfigureAwait(false);
 
         await Assert.That(loader.LoadedAssemblies.Count).IsEqualTo(0);
     }
 
     [Test]
-    public async Task PrefetchHomePrimaryJourneysAsync_With_Empty_Catalog_Completes_Without_Throwing()
+    public async Task PrefetchHomePrimaryJourneysAsync_Completes_Without_Throwing()
     {
         var loader = CreateLoader();
 
+        // Catalog lists Raindrop.dll for Articles/Videos. Prefetch is speculative:
+        // failures are swallowed; success path must also be safe when re-entered.
         await loader.PrefetchHomePrimaryJourneysAsync().ConfigureAwait(false);
-
-        await Assert.That(loader.LoadedAssemblies.Count).IsEqualTo(0);
+        await loader.PrefetchHomePrimaryJourneysAsync().ConfigureAwait(false);
     }
 
     private static PageAssemblyLoader CreateLoader()
     {
         var jsRuntime = new JSRuntime_Stub();
-        // LazyAssemblyLoader is never invoked for empty catalog keys.
         return new PageAssemblyLoader(
             new LazyAssemblyLoader(jsRuntime),
             jsRuntime,

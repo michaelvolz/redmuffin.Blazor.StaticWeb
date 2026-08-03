@@ -1,7 +1,7 @@
 using Bunit;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Features.VideosPage;
-using redmuffin.Blazor.StaticWeb.Features.Common.Components;
+using redmuffin.Blazor.StaticWeb.Modules.Raindrop.VideosPage;
+using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Components;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.VideosPage;
 
@@ -82,6 +82,6 @@ public sealed partial class VideosTests
 
         // Assert — empty state container is visible
         await Assert.That(
-            component.Find($"#{EmptyState.EmptyStateElementId}")).IsNotNull();
+            component.Find($"#{RaindropItemList.EmptyStateElementId}")).IsNotNull();
     }
 }

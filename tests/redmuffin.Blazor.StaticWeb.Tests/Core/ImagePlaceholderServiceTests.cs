@@ -48,10 +48,10 @@ public partial class ImagePlaceholderServiceTests
         // Arrange
         using var scope = CreateTestScope();
         var service = scope.ServiceProvider.GetRequiredService<ImagePlaceholderService>();
-        var jsRuntime = scope.ServiceProvider.GetRequiredService<IJSRuntime>();
         var elementId = "test-element";
         var itemLink = "https://example.com/test";
         var imageUrlCache = new Dictionary<string, string>();
+        var stopShimmerAsync = static (string _) => Task.CompletedTask;
         var stateChangedCalled = false;
 
         Task StateChangedCallback()
@@ -66,7 +66,7 @@ public partial class ImagePlaceholderServiceTests
             itemLink,
             true,
             imageUrlCache,
-            jsRuntime,
+            stopShimmerAsync,
             StateChangedCallback).ConfigureAwait(false);
 
         // Assert

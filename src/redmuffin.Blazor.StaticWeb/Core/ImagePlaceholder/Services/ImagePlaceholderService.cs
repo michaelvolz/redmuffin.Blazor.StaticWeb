@@ -1,7 +1,6 @@
 using System.Globalization;
-using Microsoft.JSInterop;
+using redmuffin.Blazor.StaticWeb.Common.ImagePlaceholder;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Templates;
 
 namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
@@ -65,20 +64,20 @@ public sealed partial class ImagePlaceholderService : IImagePlaceholderService
         string itemLink,
         bool loadSuccess,
         IDictionary<string, string> imageUrlCache,
-        IJSRuntime jsRuntime,
+        Func<string, Task> stopShimmerAsync,
         Func<Task> stateHasChangedCallback)
     {
         ArgumentNullException.ThrowIfNull(elementId);
         ArgumentNullException.ThrowIfNull(itemLink);
         ArgumentNullException.ThrowIfNull(imageUrlCache);
-        ArgumentNullException.ThrowIfNull(jsRuntime);
+        ArgumentNullException.ThrowIfNull(stopShimmerAsync);
         ArgumentNullException.ThrowIfNull(stateHasChangedCallback);
 
         try
         {
             if (!loadSuccess) imageUrlCache[itemLink] = "FAILED";
 
-            await StopShimmerAsync(elementId, jsRuntime).ConfigureAwait(false);
+            await stopShimmerAsync(elementId).ConfigureAwait(false);
             await stateHasChangedCallback().ConfigureAwait(false);
         }
         catch (Exception ex)
@@ -115,23 +114,5 @@ public sealed partial class ImagePlaceholderService : IImagePlaceholderService
             return SvgPlaceholderTemplate.MapFailureReasonToDisplayText("LOAD_FAILED");
 
         return string.Empty;
-    }
-
-    /// <summary>
-    ///     Stops the shimmer effect for the specified element.
-    /// </summary>
-    /// <param name="elementId">The DOM element ID</param>
-    /// <param name="jsRuntime">JavaScript runtime for DOM manipulation</param>
-    /// <returns>A task representing the asynchronous operation</returns>
-    private async Task StopShimmerAsync(string elementId, IJSRuntime jsRuntime)
-    {
-        try
-        {
-            await jsRuntime.InvokeVoidAsync("eval", $"document.getElementById('{elementId}')?.classList.add('loaded')").ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            LogShimmerError(_logger, elementId, ex.Message, ex);
-        }
     }
 }

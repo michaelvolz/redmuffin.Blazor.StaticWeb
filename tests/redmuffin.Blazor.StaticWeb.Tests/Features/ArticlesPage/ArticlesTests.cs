@@ -1,6 +1,6 @@
 using Bunit;
-using ArticlesComponent = redmuffin.Blazor.StaticWeb.Features.ArticlesPage.Articles;
-using redmuffin.Blazor.StaticWeb.Features.Common.Components;
+using ArticlesComponent = redmuffin.Blazor.StaticWeb.Modules.Raindrop.ArticlesPage.Articles;
+using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Components;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.ArticlesPage;
 
@@ -85,7 +85,7 @@ public partial class ArticlesTests
 
         // Assert — empty state container is visible
         await Assert.That(
-            component.Find($"#{EmptyState.EmptyStateElementId}")).IsNotNull();
+            component.Find($"#{RaindropItemList.EmptyStateElementId}")).IsNotNull();
     }
 
     [Test]

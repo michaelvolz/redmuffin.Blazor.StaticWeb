@@ -5,8 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
-using redmuffin.Blazor.StaticWeb.Features.ArticlesPage;
+using redmuffin.Blazor.StaticWeb.Common.ImagePlaceholder;
+using redmuffin.Blazor.StaticWeb.Modules.Raindrop.ArticlesPage;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.ArticlesPage;
 
@@ -123,7 +123,12 @@ public partial class ArticlesPageCacheTests
             return item.Cover ?? "default-placeholder.svg";
         }
 
-        public Task HandleImageLoadAsync(string elementId, string itemLink, bool loadSuccess, IDictionary<string, string> imageUrlCache, IJSRuntime jsRuntime,
+        public Task HandleImageLoadAsync(
+            string elementId,
+            string itemLink,
+            bool loadSuccess,
+            IDictionary<string, string> imageUrlCache,
+            Func<string, Task> stopShimmerAsync,
             Func<Task> stateHasChangedCallback)
         {
             return Task.CompletedTask;

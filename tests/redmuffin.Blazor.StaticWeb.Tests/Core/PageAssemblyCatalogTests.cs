@@ -5,20 +5,20 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Core;
 public sealed class PageAssemblyCatalogTests
 {
     [Test]
-    public async Task Articles_And_Videos_Have_Empty_Assembly_Lists_Until_Page_Lazy()
+    public async Task Articles_And_Videos_List_Raindrop_Dll()
     {
         using (Assert.Multiple())
         {
-            await Assert.That(PageAssemblyCatalog.HasAssemblies(PageAssemblyCatalog.ArticlesPageKey)).IsFalse();
-            await Assert.That(PageAssemblyCatalog.HasAssemblies(PageAssemblyCatalog.VideosPageKey)).IsFalse();
+            await Assert.That(PageAssemblyCatalog.HasAssemblies(PageAssemblyCatalog.ArticlesPageKey)).IsTrue();
+            await Assert.That(PageAssemblyCatalog.HasAssemblies(PageAssemblyCatalog.VideosPageKey)).IsTrue();
 
             await Assert.That(PageAssemblyCatalog.TryGetAssemblies(PageAssemblyCatalog.ArticlesPageKey, out var articles))
                 .IsTrue();
-            await Assert.That(articles.Count).IsEqualTo(0);
+            await Assert.That(articles).Contains("Raindrop.dll");
 
             await Assert.That(PageAssemblyCatalog.TryGetAssemblies(PageAssemblyCatalog.VideosPageKey, out var videos))
                 .IsTrue();
-            await Assert.That(videos.Count).IsEqualTo(0);
+            await Assert.That(videos).Contains("Raindrop.dll");
         }
     }
 

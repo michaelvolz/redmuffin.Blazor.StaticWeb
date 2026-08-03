@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 
 /// <summary>
@@ -5,12 +7,6 @@ namespace redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 /// </summary>
 public sealed partial class ImagePlaceholderService
 {
-    [LoggerMessage(
-        EventId = 1001,
-        Level = LogLevel.Error,
-        Message = "Failed to stop shimmer for element {ElementId}: {ErrorMessage}")]
-    private static partial void LogShimmerError(ILogger logger, string elementId, string errorMessage, Exception exception);
-
     [LoggerMessage(
         EventId = 1002,
         Level = LogLevel.Error,

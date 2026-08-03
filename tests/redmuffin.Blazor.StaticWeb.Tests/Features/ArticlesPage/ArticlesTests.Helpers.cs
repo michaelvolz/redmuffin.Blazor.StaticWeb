@@ -6,9 +6,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Common;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
+using redmuffin.Blazor.StaticWeb.Common.ImagePlaceholder;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
-using ArticlesComponent = redmuffin.Blazor.StaticWeb.Features.ArticlesPage.Articles;
+using ArticlesComponent = redmuffin.Blazor.StaticWeb.Modules.Raindrop.ArticlesPage.Articles;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.ArticlesPage;
 
@@ -241,7 +241,12 @@ public partial class ArticlesTests
             return !imageUrlCache.ContainsKey(key);
         }
 
-        public Task HandleImageLoadAsync(string elementId, string itemLink, bool loadSuccess, IDictionary<string, string> imageUrlCache, IJSRuntime jsRuntime,
+        public Task HandleImageLoadAsync(
+            string elementId,
+            string itemLink,
+            bool loadSuccess,
+            IDictionary<string, string> imageUrlCache,
+            Func<string, Task> stopShimmerAsync,
             Func<Task> stateHasChangedCallback)
         {
             if (loadSuccess) imageUrlCache[itemLink] = "https://example.com/loaded-image.jpg";
