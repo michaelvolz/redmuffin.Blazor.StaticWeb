@@ -1,6 +1,7 @@
 ---
 title: Raindrop module Phase 1 — client IO extraction without touching Api
 date: 2026-08-03
+last_updated: 2026-08-03
 category: architecture-patterns
 module: raindrop-module
 problem_type: architecture_pattern
@@ -10,6 +11,7 @@ applies_when:
   - Extracting the second (or later) feature into a RiverBooks-shaped module
   - Replacing a NavigationManager factory with host-time Strategy DI
   - Tempted to "modularize" by moving Azure Functions code into Modules
+  - Module tests construct internal implementations via InternalsVisibleTo
 tags:
   - raindrop
   - modular-monolith
@@ -18,6 +20,7 @@ tags:
   - azure-functions
   - blazor-wasm
   - phased-extraction
+  - internals-visible-to
 ---
 
 # Raindrop module Phase 1 — client IO extraction without touching Api
@@ -57,6 +60,19 @@ deliberate. Hard rule in ADR 0013, module guide, and AGENTS.md structural gate.
 **Tests:** unit-test IO in `Raindrop.Tests` with InternalsVisibleTo; host page
 tests keep mocking the public Contracts interface only.
 
+**Accessibility trap (CS0053):** when helpers expose a nested `TestScope` that
+holds **internal** module types (real/dummy APIs), the scope type and factory
+methods must stay **private** (or internal). A `public` nested scope whose
+public members return internal types fails to compile. Prefer
+`private static TestScope Create…()` factories and `private sealed class
+TestScope` so only the test assembly touches internals.
+
+**QualityGates tests live under tools:** the suite is
+`tools/tests/redmuffin.Tools.QualityGates.Tests/` — not under `tests/`. Full
+matrix after Phase 1: product suites (Raindrop, ApiHealth, Host, Api) had
+zero skips; tools had one intentional skip (real coverage generation, slow
+in CI).
+
 ## Why This Matters
 
 - Proves the second module without rewriting UI error handling and all mocks.
@@ -81,8 +97,18 @@ tests keep mocking the public Contracts interface only.
 | `IRaindropAPIFactory` + factory class | Deleted; host `AddRaindropModule(bool)` |
 | `src/redmuffin.Blazor.StaticWeb.Api/` | Unchanged (deployment boundary) |
 
-Verified this session: solution build zero warnings; Raindrop.Tests 21/21; host
-tests 312/312; Api tree clean of extraction edits.
+Verified this session (full matrix, zero product skips):
+
+| Suite | Result |
+| --- | --- |
+| Raindrop.Module | 21 succeeded, 0 skipped |
+| ApiHealth | 12 succeeded, 0 skipped |
+| Host | 312 succeeded, 0 skipped |
+| Api | 31 succeeded, 0 skipped |
+| Tools.QualityGates | 476 succeeded, 1 intentional skip |
+| **Grand** | **852 succeeded, 0 failed, 1 skip (tools only)** |
+
+Api project tree was not edited for this extraction (deployment boundary).
 
 ## Related
 
