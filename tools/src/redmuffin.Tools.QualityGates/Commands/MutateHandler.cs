@@ -27,18 +27,36 @@ public static class MutateHandler
         await PrintHeaderAsync(sourcePath, allSites, covered, uncovered,
             changedCount, existingManifest, output).ConfigureAwait(false);
 
-        await WarnIfSiteCountHighAsync(sites.Count, options.MutationWarning, output)
+        // Strong split signal uses total discoverable sites (module size), not the
+        // differential subset — a large proven module is still too big to own.
+        await WarnIfSiteCountHighAsync(allSites.Count, options.MutationWarning, output)
             .ConfigureAwait(false);
 
         if (options.Scan) return 0;
+
+        if (options.UpdateManifest)
+        {
+            WriteManifest(sourcePath, strippedSource);
+            await output.WriteLineAsync("Manifest updated (no mutants run).").ConfigureAwait(false);
+            return 0;
+        }
+
+        if (sites.Count == 0)
+        {
+            await output.WriteLineAsync(
+                    "No mutation sites to run (unchanged forms proven by manifest, or none selected).")
+                .ConfigureAwait(false);
+            return 0;
+        }
 
         return await ExecuteMutationsAsync(sourcePath, testProjectPath, options,
             sites, uncovered, strippedSource, existingManifest, output).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// mutate4java --mutation-warning: print a warning when the selected
-    /// covered mutation count exceeds the threshold (default 50). Does not fail.
+    /// Module-size discipline: when total mutation sites exceed the threshold
+    /// (default 100), emit STRONG SIGNAL. Exit code stays 0 (warn-only), but the
+    /// action is mandatory: split the module by real seams now — no deferral.
     /// </summary>
     public static async Task WarnIfSiteCountHighAsync(
         int selectedSiteCount, int mutationWarning, TextWriter output)
@@ -50,7 +68,7 @@ public static class MutateHandler
 
         var message = string.Create(
             CultureInfo.InvariantCulture,
-            $"WARNING: {selectedSiteCount} mutation sites selected exceeds --mutation-warning {mutationWarning}. Consider splitting the module.");
+            $"STRONG SIGNAL: {selectedSiteCount} mutation sites exceeds --mutation-warning {mutationWarning}. Split this module now by real seams — mandatory, not optional. Too large for reliable mutation and agent context.");
         await output.WriteLineAsync(message).ConfigureAwait(false);
     }
 
@@ -194,6 +212,9 @@ public static class MutateHandler
         IList<MutationSite> sites, string strippedSource, Manifest? existingManifest,
         MutateOptions options)
     {
+        // Differential is the default when a footer manifest exists: only re-test
+        // forms whose hashes changed. --mutate-all forces a full re-run.
+        // --since-last-run is accepted for clj-mutate CLI parity (same path).
         if (existingManifest is null || options.MutateAll)
         {
             return sites.Count;
@@ -209,7 +230,9 @@ public static class MutateHandler
         var changedIndices = MutationManifest.ChangedFormIndices(existingManifest, currentManifest);
         if (changedIndices.Count == 0)
         {
-            return sites.Count;
+            // All form hashes match the last proven run — skip every site.
+            sites.Clear();
+            return 0;
         }
 
         var changedLines = CollectChangedLines(changedIndices, currentManifest);

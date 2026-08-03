@@ -58,7 +58,7 @@ before every gates change.
 | CRAP | `crap` | [crap4clj](https://github.com/unclebob/crap4clj) / [crap4java](https://github.com/unclebob/crap4java) | Aligned — formula + ≤8 |
 | SCRAP | `scrap` | [scrap](https://github.com/unclebob/scrap) | Thresholds aligned; Phase A fidelity audit (no code change; no invented bands) |
 | Architecture | `architecture` | [dependency-checker](https://github.com/unclebob/dependency-checker) | Zone metrics + richer config (2026-08 Phase A) |
-| Mutation | `mutation` | [clj-mutate](https://github.com/unclebob/clj-mutate) / [mutate4java](https://github.com/unclebob/mutate4java) | Operators + `--mutation-warning` (2026-08 Phase A); `--update-manifest` still deferred |
+| Mutation | `mutation` | [clj-mutate](https://github.com/unclebob/clj-mutate) / [mutate4java](https://github.com/unclebob/mutate4java) | Operators; differential manifest skip for proven forms; `--update-manifest`; `--mutation-warning` default 100 (STRONG SIGNAL → mandatory seam split) |
 | Duplicates | `duplicates` | [dry4clj](https://github.com/unclebob/dry4clj) / [dry4java](https://github.com/unclebob/dry4java) | Defaults aligned (0.82 / 4 / 20) |
 | Depth | `depth` | **Local only** (Ousterhout / Fowler / Metz peer to CRAP) | Keep; not an unclebob repo |
 | Slopwatch | external | **Local only** (LLM anti-cheat) | Keep; not an unclebob repo |
@@ -83,17 +83,19 @@ config keys: `component-map`, `allowed-dependencies` (supports `all` /
   test-body fuzzy match.
 - **Duplicates:** `DupesOptions` defaults threshold `0.82`, min-lines `4`,
   min-nodes `20` — same as dry4clj / dry4java / dry4go.
-- **Mutation workflow shape:** differential manifest, `--scan`,
-  `--mutation-warning` default 50, max-workers — same discipline as
-  clj-mutate / mutate4java.
+- **Mutation workflow shape:** differential manifest (skip proven forms),
+  `--scan`, `--update-manifest`, `--mutation-warning` default 100 (STRONG
+  SIGNAL → mandatory seam split; Uncle Bob often cites ~50 as soft size
+  target), max-workers.
 
 ### Phase A complete (2026-08) — remaining drift
 
 1. **Mutation operators — done for mutate4java parity targets.**  
    Local now includes logical `&&`/`||`, unary strip (`!` / `-`), and
    null-rvalue discovery on reference-like return/assignment/equals values,
-   plus wired `--mutation-warning` (default 50). Remaining UX gap:
-   `--update-manifest` (local still uses `--mutate-all`).
+   plus wired `--mutation-warning` (default 100, STRONG SIGNAL → mandatory
+   seam split) and `--update-manifest`. Differential skip of proven forms is
+   default when a footer manifest exists (`--mutate-all` forces full re-run).
 
 2. **Architecture zones — done.**  
    Local reports abstractness, instability, main-sequence distance, and
@@ -137,16 +139,20 @@ config keys: `component-map`, `allowed-dependencies` (supports `all` /
    null-rvalue) + tests.
 2. Architecture zone metrics and richer config (forbidden edges, exceptions,
    ignored components, healthy-threshold, `all` allowlists).
-3. Module-size discipline: `--mutation-warning` wired (default 50, warn-only).
+3. Module-size discipline: `--mutation-warning` default 100 (STRONG SIGNAL).
+   Warn-only for exit code; **mandatory split by real seams when the signal
+   fires** — no deferral, no residual leave, no kill-rate chase on the monolith
+   first. Soft Uncle Bob ~50 remains a human size target.
 4. SCRAP fidelity audit against `policy.clj` / extraction pressure (no invented
    thresholds; bands 55/35 not ported as decision inputs).
 5. Skill/docs that denied dry4* production DRY scanners corrected.
+6. mutate4java-style `--update-manifest` + default differential skip of proven
+   forms when the footer manifest is present.
 
 **Still open (not Phase A):**
 
-6. Acceptance pipeline (if product wants Gherkin ATDD + acceptance mutation).
-7. Optional advisory deintroverter-for-C#.
-8. mutate4java-style `--update-manifest` (local still has `--mutate-all`).
+7. Acceptance pipeline (if product wants Gherkin ATDD + acceptance mutation).
+8. Optional advisory deintroverter-for-C#.
 9. **Do not** hard-gate swarm-forge or deintroverter.
 
 ### Operating philosophy (public 2026 stance)

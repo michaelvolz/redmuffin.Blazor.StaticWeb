@@ -76,7 +76,7 @@ Mutation-testing mode that reuses an embedded per-file manifest so later runs on
 
 ## Module-size discipline
 
-Rule of thumb that a source file with too many mutation sites should be split before further hardening. The mutation CLI exposes `--mutation-warning` (default 50) for this boundary so agents keep modules small enough for focused differential runs; treat the flag as the contract even when a given build only wires the option without emitting a hard gate.
+When a source file's total mutation sites exceed `--mutation-warning` (default **100**), the mutation gate prints **STRONG SIGNAL**. That is not advisory and not residual: **split the module by real seams immediately** — no deferral, no "document and leave," no kill-rate chase on the monolith first. Soft human target remains ~50 sites; the gate signal at 100 is mandatory action. Warn-only for exit code (does not fail the gate) does **not** mean optional work.
 
 ## Acceptance mutation
 

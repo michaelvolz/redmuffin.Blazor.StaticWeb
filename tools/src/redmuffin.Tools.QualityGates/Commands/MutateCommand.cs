@@ -39,6 +39,11 @@ public static class MutateCommand
         Description = "Mutate all sites (ignore manifest)",
     };
 
+    private static readonly Option<bool> UpdateManifestOption = new("--update-manifest")
+    {
+        Description = "Rewrite embedded clj-mutate-style manifest without running mutants",
+    };
+
     // Bound as string: System.CommandLine cannot construct IReadOnlySet<int> without a binder.
     private static readonly Option<string?> LinesOption = new("--lines")
     {
@@ -47,8 +52,8 @@ public static class MutateCommand
 
     private static readonly Option<int> MutationWarningOption = new("--mutation-warning")
     {
-        Description = "Warning threshold for mutation site count",
-        DefaultValueFactory = _ => 50,
+        Description = "STRONG SIGNAL (mandatory split by real seams) when total mutation sites exceed this count (default 100)",
+        DefaultValueFactory = _ => 100,
     };
 
     private static readonly Option<int> TimeoutFactorOption = new("--timeout-factor")
@@ -77,7 +82,7 @@ public static class MutateCommand
         var command = new Command("mutation", "Run mutation testing on a source file")
         {
             SourceOption, TestProjectOption, ScanOption, MaxWorkersOption,
-            SinceLastRunOption, MutateAllOption, LinesOption,
+            SinceLastRunOption, MutateAllOption, UpdateManifestOption, LinesOption,
             MutationWarningOption, TimeoutFactorOption, ReuseCoverageOption,
             AutoCoverageOption, NoTestFilterOption,
         };
@@ -90,6 +95,7 @@ public static class MutateCommand
                 Scan: parseResult.GetValue(ScanOption),
                 MutateAll: parseResult.GetValue(MutateAllOption),
                 SinceLastRun: parseResult.GetValue(SinceLastRunOption),
+                UpdateManifest: parseResult.GetValue(UpdateManifestOption),
                 MaxWorkers: parseResult.GetValue(MaxWorkersOption),
                 MutationWarning: parseResult.GetValue(MutationWarningOption),
                 TimeoutFactor: parseResult.GetValue(TimeoutFactorOption),
