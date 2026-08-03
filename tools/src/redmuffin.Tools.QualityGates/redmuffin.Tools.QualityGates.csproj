@@ -10,7 +10,7 @@
     <ToolCommandName>quality-gates</ToolCommandName>
 
     <IsPackable>true</IsPackable>
-    <Version>0.1.5</Version>
+    <Version>0.1.7</Version>
   </PropertyGroup>
 
   <ItemGroup>
