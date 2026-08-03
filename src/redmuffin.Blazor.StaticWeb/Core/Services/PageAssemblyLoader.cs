@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.JSInterop;
+using redmuffin.Blazor.StaticWeb.Common.Abstractions;
 
 namespace redmuffin.Blazor.StaticWeb.Core.Services;
 

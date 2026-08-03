@@ -21,6 +21,9 @@ mono_crash.*
 
 # Build results
 [Dd]ebug/
+# Product page RCL lives at Pages/Debug — not a build-output folder.
+!src/redmuffin.Blazor.StaticWeb.Pages/Debug/
+!src/redmuffin.Blazor.StaticWeb.Pages/Debug/**
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/

@@ -1,5 +1,5 @@
 using TUnit.Core;
-using P = redmuffin.Blazor.StaticWeb.Features.AuthPage;
+using P = redmuffin.Blazor.StaticWeb.Pages.Auth;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.AuthPage;
 

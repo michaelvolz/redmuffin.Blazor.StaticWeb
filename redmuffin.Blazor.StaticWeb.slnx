@@ -40,6 +40,30 @@
   <Project Path="tests/redmuffin.Blazor.StaticWeb.Pages/Videos.Tests/Videos.Tests.csproj">
     <BuildType Solution="Debug-Sass|*" Project="Debug" />
   </Project>
+  <Project Path="src/redmuffin.Blazor.StaticWeb.Pages/Counter/Counter.csproj">
+    <BuildType Solution="Debug-Sass|*" Project="Debug" />
+  </Project>
+  <Project Path="src/redmuffin.Blazor.StaticWeb.Pages/Weather/Weather.csproj">
+    <BuildType Solution="Debug-Sass|*" Project="Debug" />
+  </Project>
+  <Project Path="src/redmuffin.Blazor.StaticWeb.Pages/FoundationExamples/FoundationExamples.csproj">
+    <BuildType Solution="Debug-Sass|*" Project="Debug" />
+  </Project>
+  <Project Path="src/redmuffin.Blazor.StaticWeb.Pages/Icons/Icons.csproj">
+    <BuildType Solution="Debug-Sass|*" Project="Debug" />
+  </Project>
+  <Project Path="src/redmuffin.Blazor.StaticWeb.Pages/MarkdownExamples/MarkdownExamples.csproj">
+    <BuildType Solution="Debug-Sass|*" Project="Debug" />
+  </Project>
+  <Project Path="src/redmuffin.Blazor.StaticWeb.Pages/Debug/Debug.csproj">
+    <BuildType Solution="Debug-Sass|*" Project="Debug" />
+  </Project>
+  <Project Path="src/redmuffin.Blazor.StaticWeb.Pages/Home/Home.csproj">
+    <BuildType Solution="Debug-Sass|*" Project="Debug" />
+  </Project>
+  <Project Path="src/redmuffin.Blazor.StaticWeb.Pages/Auth/Auth.csproj">
+    <BuildType Solution="Debug-Sass|*" Project="Debug" />
+  </Project>
   <Project Path="src/redmuffin.Blazor.StaticWeb.Modules/Raindrop.Contracts/Raindrop.Contracts.csproj">
     <BuildType Solution="Debug-Sass|*" Project="Debug" />
   </Project>

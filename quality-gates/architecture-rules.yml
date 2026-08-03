@@ -12,6 +12,14 @@ component-map:
   Articles.Tests: Frontend
   Videos: Frontend
   Videos.Tests: Frontend
+  Counter: Frontend
+  Weather: Frontend
+  FoundationExamples: Frontend
+  Icons: Frontend
+  MarkdownExamples: Frontend
+  Debug: Frontend
+  Home: Frontend
+  Auth: Frontend
   Raindrop.Contracts: Shared
   Raindrop: Frontend
   Raindrop.Tests: Frontend

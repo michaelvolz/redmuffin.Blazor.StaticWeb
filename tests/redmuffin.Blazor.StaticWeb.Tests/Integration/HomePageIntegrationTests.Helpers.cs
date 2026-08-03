@@ -2,7 +2,7 @@ using System.Reflection;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
-using redmuffin.Blazor.StaticWeb.Core.Abstractions;
+using redmuffin.Blazor.StaticWeb.Common.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Integration;

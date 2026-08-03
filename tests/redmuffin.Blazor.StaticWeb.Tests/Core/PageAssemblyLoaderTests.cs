@@ -12,7 +12,8 @@ public sealed class PageAssemblyLoaderTests
     {
         var loader = CreateLoader();
 
-        await loader.EnsureLoadedAsync("counter").ConfigureAwait(false);
+        // Key must stay outside PageAssemblyCatalog (sample/demo keys are now wired).
+        await loader.EnsureLoadedAsync("unknown-route").ConfigureAwait(false);
 
         await Assert.That(loader.LoadedAssemblies.Count).IsEqualTo(0);
     }

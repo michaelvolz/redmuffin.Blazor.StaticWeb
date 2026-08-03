@@ -90,7 +90,17 @@
     <!-- Pages -->
     <BlazorWebAssemblyLazyLoad Include="ApiHealth.Page.dll" />
     <BlazorWebAssemblyLazyLoad Include="Articles.dll" />
+    <BlazorWebAssemblyLazyLoad Include="Auth.dll" />
+    <BlazorWebAssemblyLazyLoad Include="Counter.dll" />
+    <BlazorWebAssemblyLazyLoad Include="Debug.dll" />
+    <BlazorWebAssemblyLazyLoad Include="FoundationExamples.dll" />
+    <BlazorWebAssemblyLazyLoad Include="Icons.dll" />
+    <BlazorWebAssemblyLazyLoad Include="MarkdownExamples.dll" />
+    <!-- MarkdownExamples-only package dep — must lazy with its page need-set -->
+    <BlazorWebAssemblyLazyLoad Include="Markdig.dll" />
     <BlazorWebAssemblyLazyLoad Include="Videos.dll" />
+    <BlazorWebAssemblyLazyLoad Include="Weather.dll" />
+    <!-- Home.dll is eager (landing route) — not listed here -->
     <!-- Components -->
     <BlazorWebAssemblyLazyLoad Include="Components.dll" />
     <!-- Modules -->
@@ -101,7 +111,6 @@
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" />
     <PackageReference Include="LZStringCSharp" />
-    <PackageReference Include="Markdig" />
     <PackageReference Include="Mediator.SourceGenerator" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
@@ -135,7 +144,15 @@
     <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Modules\AzureHealthCheck\AzureHealthCheck.csproj" />
     <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Modules\AzureHealthCheck.Contracts\AzureHealthCheck.Contracts.csproj" />
     <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Pages\Articles\Articles.csproj" />
+    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Pages\Auth\Auth.csproj" />
+    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Pages\Counter\Counter.csproj" />
+    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Pages\Debug\Debug.csproj" />
+    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Pages\FoundationExamples\FoundationExamples.csproj" />
+    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Pages\Home\Home.csproj" />
+    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Pages\Icons\Icons.csproj" />
+    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Pages\MarkdownExamples\MarkdownExamples.csproj" />
     <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Pages\Videos\Videos.csproj" />
+    <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Pages\Weather\Weather.csproj" />
     <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Modules\Raindrop\Raindrop.csproj" />
     <ProjectReference Include="..\redmuffin.Blazor.StaticWeb.Modules\Raindrop.Contracts\Raindrop.Contracts.csproj" />
   </ItemGroup>

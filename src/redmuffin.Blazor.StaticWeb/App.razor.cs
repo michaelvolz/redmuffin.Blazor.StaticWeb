@@ -5,12 +5,14 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using redmuffin.Blazor.StaticWeb.Common.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.Layout;
 using redmuffin.Blazor.StaticWeb.Core.Services;
 using redmuffin.Blazor.StaticWeb.Features.AzureHealthCheck;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop;
 using redmuffin.Blazor.StaticWeb.Modules.AzureHealthCheck.Contracts;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
+using redmuffin.Blazor.StaticWeb.Pages.Home;
 
 namespace redmuffin.Blazor.StaticWeb;
 
@@ -27,6 +29,10 @@ public partial class App
 
     private const string CreateRaindropItemsFacadeMethodName = "CreateRaindropItemsFacade";
 
+    // Eager Home RCL: type root is intentional so Home.dll is not BlazorWebAssemblyLazyLoad.
+    // Router still needs the assembly in AdditionalAssemblies for @page discovery.
+    private static readonly Assembly[] EagerRouteAssemblies = [typeof(Home).Assembly];
+
     public ErrorBoundary ComponentErrorBoundary { get; set; } = null!;
 
     [Inject] private IWarmupService WarmupService { get; set; } = default!;
@@ -41,9 +47,23 @@ public partial class App
     [Inject] private ILocalStorageService LocalStorage { get; set; } = default!;
 
     /// <summary>
-    ///     Gets the lazy page assemblies for <c>Router.AdditionalAssemblies</c>.
+    ///     Gets the eager page assemblies plus lazy need-sets for <c>Router.AdditionalAssemblies</c>.
     /// </summary>
-    private IReadOnlyList<Assembly> LazyLoadedAssemblies => PageAssemblyLoader.LoadedAssemblies;
+    private IReadOnlyList<Assembly> AdditionalRouteAssemblies
+    {
+        get
+        {
+            var lazy = PageAssemblyLoader.LoadedAssemblies;
+            if (lazy.Count == 0)
+                return EagerRouteAssemblies;
+
+            var combined = new Assembly[EagerRouteAssemblies.Length + lazy.Count];
+            EagerRouteAssemblies.CopyTo(combined, 0);
+            for (var i = 0; i < lazy.Count; i++)
+                combined[EagerRouteAssemblies.Length + i] = lazy[i];
+            return combined;
+        }
+    }
 
     private async Task HandleNavigationAsync(NavigationContext args)
     {

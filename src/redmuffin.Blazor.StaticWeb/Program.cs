@@ -6,14 +6,13 @@ using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb;
 using redmuffin.Blazor.StaticWeb.Common;
+using redmuffin.Blazor.StaticWeb.Common.Abstractions;
 using redmuffin.Blazor.StaticWeb.Common.ImagePlaceholder;
-using redmuffin.Blazor.StaticWeb.Core.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 using redmuffin.Blazor.StaticWeb.Core.Services;
 using redmuffin.Blazor.StaticWeb.Features.AzureHealthCheck;
 using redmuffin.Blazor.StaticWeb.Features.Common.PageLoadSpeed.Services;
-using redmuffin.Blazor.StaticWeb.Features.DebugPage.Services;
 using redmuffin.Blazor.StaticWeb.Features.Raindrop;
 using redmuffin.Blazor.StaticWeb.Modules.AzureHealthCheck.Contracts;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
@@ -44,8 +43,6 @@ builder.Services.AddScoped<IPerformanceMetricsService, PerformanceMetricsService
 builder.Services.AddScoped<IImagePlaceholderService, ImagePlaceholderService>();
 builder.Services.AddScoped<IImageUrlResolver, ImageUrlResolver>();
 builder.Services.AddScoped<PlaceholderGenerationService>();
-
-builder.Services.AddScoped<LocalStorageDebugService>();
 
 // Register delay provider for production (real delays for UX)
 builder.Services.AddScoped<IDelayProvider, ProductionDelayProvider>();

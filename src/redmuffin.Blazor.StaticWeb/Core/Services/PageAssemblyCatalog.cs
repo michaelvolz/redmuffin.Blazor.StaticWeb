@@ -11,6 +11,13 @@ public static class PageAssemblyCatalog
     public const string ArticlesPageKey = "articles";
     public const string VideosPageKey = "videos";
     public const string ApiHealthPageKey = "api-health";
+    public const string CounterPageKey = "counter";
+    public const string WeatherPageKey = "weather";
+    public const string FoundationExamplesPageKey = "foundationexamples";
+    public const string IconsPageKey = "icons";
+    public const string MarkdownExamplesPageKey = "markdownexamples";
+    public const string DebugPageKey = "debug";
+    public const string AuthPageKey = "redirect";
 
     /// <summary>
     ///     Page keys Home may prefetch after interactive — Articles and Videos only.
@@ -26,7 +33,32 @@ public static class PageAssemblyCatalog
         {
             [ArticlesPageKey] = ["Articles.dll", "Components.dll", "Raindrop.dll"],
             [VideosPageKey] = ["Videos.dll", "Components.dll", "Raindrop.dll"],
-            [ApiHealthPageKey] = ["ApiHealth.Page.dll", "AzureHealthCheck.dll"]
+            [ApiHealthPageKey] = ["ApiHealth.Page.dll", "AzureHealthCheck.dll"],
+            [CounterPageKey] = ["Counter.dll"],
+            [WeatherPageKey] = ["Weather.dll"],
+            [FoundationExamplesPageKey] = ["FoundationExamples.dll"],
+            [IconsPageKey] = ["Icons.dll"],
+            [MarkdownExamplesPageKey] = ["MarkdownExamples.dll", "Markdig.dll"],
+            [DebugPageKey] = ["Debug.dll"],
+            [AuthPageKey] = ["Auth.dll"]
+        };
+
+    /// <summary>
+    ///     Exact route segments that map 1:1 to catalog page keys.
+    /// </summary>
+    private static readonly Dictionary<string, string> PageKeyByExactPath =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["articles"] = ArticlesPageKey,
+            ["videos"] = VideosPageKey,
+            ["api-health"] = ApiHealthPageKey,
+            ["counter"] = CounterPageKey,
+            ["weather"] = WeatherPageKey,
+            ["foundationexamples"] = FoundationExamplesPageKey,
+            ["icons"] = IconsPageKey,
+            ["markdownexamples"] = MarkdownExamplesPageKey,
+            ["debug"] = DebugPageKey,
+            ["redirect"] = AuthPageKey
         };
 
     public static bool TryGetAssemblies(string pageKey, out IReadOnlyList<string> assemblyFileNames)
@@ -65,21 +97,13 @@ public static class PageAssemblyCatalog
         if (queryIndex >= 0)
             trimmed = trimmed[..queryIndex];
 
-        if (trimmed.Equals("articles", StringComparison.OrdinalIgnoreCase))
-        {
-            pageKey = ArticlesPageKey;
+        if (PageKeyByExactPath.TryGetValue(trimmed, out pageKey!))
             return true;
-        }
 
-        if (trimmed.Equals("videos", StringComparison.OrdinalIgnoreCase))
+        // Nested debug routes share one lazy Debug.dll need-set.
+        if (trimmed.StartsWith("debug/", StringComparison.OrdinalIgnoreCase))
         {
-            pageKey = VideosPageKey;
-            return true;
-        }
-
-        if (trimmed.Equals("api-health", StringComparison.OrdinalIgnoreCase))
-        {
-            pageKey = ApiHealthPageKey;
+            pageKey = DebugPageKey;
             return true;
         }
 

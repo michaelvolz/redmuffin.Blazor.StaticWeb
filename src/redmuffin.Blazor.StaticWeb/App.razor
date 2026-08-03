@@ -2,7 +2,7 @@
     <ChildContent>
 
         <Router AppAssembly="@typeof(App).Assembly"
-                AdditionalAssemblies="LazyLoadedAssemblies"
+                AdditionalAssemblies="AdditionalRouteAssemblies"
                 OnNavigateAsync="HandleNavigationAsync">
             <Found Context="routeData">
                 <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>

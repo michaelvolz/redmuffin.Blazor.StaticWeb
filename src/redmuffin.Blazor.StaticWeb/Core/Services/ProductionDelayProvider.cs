@@ -1,4 +1,4 @@
-using redmuffin.Blazor.StaticWeb.Core.Abstractions;
+using redmuffin.Blazor.StaticWeb.Common.Abstractions;
 
 namespace redmuffin.Blazor.StaticWeb.Core.Services;
 
