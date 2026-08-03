@@ -110,6 +110,12 @@ Has `.razor`. Shared / multi-consumer UI under `src/redmuffin.Blazor.StaticWeb.C
 
 Every product **implementation** DLL is lazy by default — page, module, and component. Co-load a route’s full need-set on first navigation; shared deps stay lazy until first need. Eager residual is only framework, host shell, and Contracts/types required at DI `Build`. Homes (Modules / Pages / Components) do not change this policy.
 
+**Modular and lazy are independent axes:** a surface can be modular without being lazy (landing route / critical path) or modular and lazy (demos, rare routes). Homes decide ownership; load policy decides when the DLL downloads.
+
+## Need-set
+
+The ordered set of assemblies a routed page must load before it can render and before module readiness runs. One route key maps to page DLL plus any module, Components, or package DLLs that page requires. Home may prefetch selected need-sets after first paint without changing which assemblies stay off the cold boot graph.
+
 ## Module Contracts
 
 Public project for a module’s cross-boundary types: Mediator queries/responses and service interfaces. Implementation types stay in the **sibling** module project (services internal) — **Contracts can never exist without that sibling.** Consumers reference Contracts, not internals. **Pages have no Contracts.**
@@ -130,4 +136,4 @@ The isolated-worker Api app is a **separate deployment unit** from the WASM host
 
 Composition-root choice of real vs synthetic module implementation via a host-computed boolean passed into `Add{Module}Module(...)`. Replaces NavigationManager-based factories that resolved concrete services at first use.
 
-*(Seeded from the 2026-06-20 Grok Build CLI Roslyn LSP Windows spawn + restart learning in tooling-decisions/ + prior session memory on agent harness enablement. Package-management terms accreted from the 2026-07-22 NU1605/NU1902 CPM restore learning. Quality-gates terms accreted from the 2026-08-02 Uncle Bob upstream-sync learning. Modular monolith terms accreted 2026-08-03; Raindrop Phase 1 / Api boundary terms accreted 2026-08-03; Modules vs Pages vs Components homes accreted 2026-08-03.)*
+*(Seeded from the 2026-06-20 Grok Build CLI Roslyn LSP Windows spawn + restart learning in tooling-decisions/ + prior session memory on agent harness enablement. Package-management terms accreted from the 2026-07-22 NU1605/NU1902 CPM restore learning. Quality-gates terms accreted from the 2026-08-02 Uncle Bob upstream-sync learning. Modular monolith terms accreted 2026-08-03; Raindrop Phase 1 / Api boundary terms accreted 2026-08-03; Modules vs Pages vs Components homes accreted 2026-08-03; need-set + modular/lazy axes refined 2026-08-03 with end-to-end client modularization learning.)*
