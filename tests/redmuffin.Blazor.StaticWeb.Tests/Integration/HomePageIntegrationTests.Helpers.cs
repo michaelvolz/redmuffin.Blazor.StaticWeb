@@ -1,7 +1,9 @@
+using System.Reflection;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using redmuffin.Blazor.StaticWeb.Core.Abstractions;
+using redmuffin.Blazor.StaticWeb.Core.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Integration;
 
@@ -47,6 +49,7 @@ public sealed partial class HomePageIntegrationTests
             Context.Services.AddLogging();
             Context.Services.AddHttpClient();
             Context.Services.AddSingleton<IDelayProvider>(new DelayProvider_Stub()); // ✅ FAST: No delays in integration tests
+            Context.Services.AddSingleton<IPageAssemblyLoader>(PageAssemblyLoader_Stub.Instance);
             return this;
         }
 
@@ -77,6 +80,22 @@ public sealed class DelayProvider_Stub : IDelayProvider
         // No delay in test scenarios for optimal performance
         return Task.CompletedTask;
     }
+}
+
+/// <summary>
+///     No-op page assembly loader for Home integration tests.
+/// </summary>
+public sealed class PageAssemblyLoader_Stub : IPageAssemblyLoader
+{
+    public static PageAssemblyLoader_Stub Instance { get; } = new();
+
+    public IReadOnlyList<Assembly> LoadedAssemblies { get; } = [];
+
+    public Task EnsureLoadedAsync(string pageKey, CancellationToken cancellationToken = default) =>
+        Task.CompletedTask;
+
+    public Task PrefetchHomePrimaryJourneysAsync(CancellationToken cancellationToken = default) =>
+        Task.CompletedTask;
 }
 
 /// <summary>

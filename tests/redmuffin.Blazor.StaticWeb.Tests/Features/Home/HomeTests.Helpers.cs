@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb.Core.Abstractions;
+using redmuffin.Blazor.StaticWeb.Core.Services;
 using HomePage = redmuffin.Blazor.StaticWeb.Features.HomePage.Home;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Home;
@@ -67,6 +68,7 @@ public partial class HomeTests
             BUnitContext.Services.AddSingleton<ILogger<HomePage>>(Logger);
             BUnitContext.Services.AddSingleton<IHttpClientFactory>(HttpClientFactory_Stub.Mock);
             BUnitContext.Services.AddSingleton<IDelayProvider>(new DelayProvider_Stub()); // ✅ FAST: No delays in tests
+            BUnitContext.Services.AddSingleton<IPageAssemblyLoader>(PageAssemblyLoader_Stub.Instance);
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
@@ -80,6 +82,7 @@ public partial class HomeTests
             BUnitContext.Services.AddSingleton<ILogger<HomePage>>(Logger);
             BUnitContext.Services.AddSingleton<IHttpClientFactory>(HttpClientFactory_Stub.Failing);
             BUnitContext.Services.AddSingleton<IDelayProvider>(new DelayProvider_Stub()); // ✅ FAST: No delays in tests
+            BUnitContext.Services.AddSingleton<IPageAssemblyLoader>(PageAssemblyLoader_Stub.Instance);
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
@@ -94,6 +97,7 @@ public partial class HomeTests
             BUnitContext.Services.AddSingleton<ILogger<HomePage>>(Logger);
             BUnitContext.Services.AddSingleton<IHttpClientFactory>(HttpClientFactory_Stub.Mock);
             BUnitContext.Services.AddSingleton<IDelayProvider>(new DelayProvider_Stub()); // ✅ FAST: No delays in tests
+            BUnitContext.Services.AddSingleton<IPageAssemblyLoader>(PageAssemblyLoader_Stub.Instance);
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
@@ -108,6 +112,7 @@ public partial class HomeTests
             BUnitContext.Services.AddSingleton<ILogger<HomePage>>(Logger);
             BUnitContext.Services.AddSingleton<IHttpClientFactory>(HttpClientFactory_Stub.Mock);
             BUnitContext.Services.AddSingleton<IDelayProvider>(new DelayProvider_Stub()); // ✅ FAST: No delays in tests
+            BUnitContext.Services.AddSingleton<IPageAssemblyLoader>(PageAssemblyLoader_Stub.Instance);
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
@@ -121,6 +126,7 @@ public partial class HomeTests
             BUnitContext.Services.AddSingleton<ILogger<HomePage>>(Logger);
             BUnitContext.Services.AddSingleton<IHttpClientFactory>(HttpClientFactory_Stub.FastTimeout);
             BUnitContext.Services.AddSingleton<IDelayProvider>(new DelayProvider_Stub()); // ✅ FAST: No delays in tests
+            BUnitContext.Services.AddSingleton<IPageAssemblyLoader>(PageAssemblyLoader_Stub.Instance);
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
@@ -300,6 +306,22 @@ public partial class HomeTests
     /// <summary>
     ///     Stub implementation of IDelayProvider that provides no delays for fast test execution.
     /// </summary>
+    /// <summary>
+    ///     No-op page assembly loader for Home bUnit tests (dormant catalog path).
+    /// </summary>
+    public sealed class PageAssemblyLoader_Stub : IPageAssemblyLoader
+    {
+        public static PageAssemblyLoader_Stub Instance { get; } = new();
+
+        public IReadOnlyList<System.Reflection.Assembly> LoadedAssemblies { get; } = [];
+
+        public Task EnsureLoadedAsync(string pageKey, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+
+        public Task PrefetchHomePrimaryJourneysAsync(CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+    }
+
     public sealed class DelayProvider_Stub : IDelayProvider
     {
         /// <inheritdoc />

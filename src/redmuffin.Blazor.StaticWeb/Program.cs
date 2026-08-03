@@ -68,7 +68,9 @@ var useSynthetic = builder.HostEnvironment.BaseAddress.Contains(
 
 // ApiHealth implementation assembly is lazy-loaded on /api-health (see App).
 // Do not call AddApiHealthModule here — that would force the impl DLL at boot.
+// PageAssemblyLoader: navigate loads + Home Articles/Videos prefetch (catalog no-op until page-lazy).
 builder.Services.AddScoped<LazyAssemblyLoader>();
+builder.Services.AddScoped<IPageAssemblyLoader, PageAssemblyLoader>();
 builder.Services.AddSingleton(new ApiHealthLoadOptions(useSynthetic));
 builder.Services.AddSingleton<ApiHealthModuleGate>();
 builder.Services.AddScoped<IHealthCheckService>(static sp =>

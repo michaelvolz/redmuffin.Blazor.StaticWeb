@@ -2,7 +2,6 @@ using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Core.Layout;
@@ -20,46 +19,41 @@ public partial class App
 
     private const string CreateHealthCheckServiceMethodName = "CreateHealthCheckService";
 
-    private readonly List<Assembly> _lazyLoadedAssemblies = [];
-
     public ErrorBoundary ComponentErrorBoundary { get; set; } = null!;
 
     [Inject] private IWarmupService WarmupService { get; set; } = default!;
     [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
-    [Inject] private LazyAssemblyLoader AssemblyLoader { get; set; } = default!;
+    [Inject] private IPageAssemblyLoader PageAssemblyLoader { get; set; } = default!;
     [Inject] private ApiHealthModuleGate ApiHealthModuleGate { get; set; } = default!;
     [Inject] private ApiHealthLoadOptions ApiHealthLoadOptions { get; set; } = default!;
     [Inject] private IHttpClientFactory HttpClientFactory { get; set; } = default!;
     [Inject] private ILoggerFactory LoggerFactory { get; set; } = default!;
+
+    /// <summary>
+    ///     Gets the lazy page assemblies for <c>Router.AdditionalAssemblies</c>.
+    /// </summary>
+    private IReadOnlyList<Assembly> LazyLoadedAssemblies => PageAssemblyLoader.LoadedAssemblies;
 
     private async Task HandleNavigationAsync(NavigationContext args)
     {
         // Ensure the layout type is preserved for trimming
         _ = typeof(MainLayout);
 
-        if (IsApiHealthRoute(args.Path))
-            await EnsureApiHealthModuleLoadedAsync().ConfigureAwait(false);
-    }
-
-    private static bool IsApiHealthRoute(string path)
-    {
-        var trimmed = path.Trim('/');
-        return trimmed.Equals("api-health", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private async Task EnsureApiHealthModuleLoadedAsync()
-    {
-        if (ApiHealthModuleGate.IsReady)
+        if (!PageAssemblyCatalog.TryGetPageKeyFromPath(args.Path, out var pageKey))
             return;
 
-        // Must load before any type from the ApiHealth implementation assembly is used.
-        // No static type refs to ApiHealth — those force a FileNotFoundException before this runs.
-        var assemblies = await AssemblyLoader.LoadAssembliesAsync(["ApiHealth.dll"]).ConfigureAwait(false);
-        foreach (var assembly in assemblies)
-        {
-            if (!_lazyLoadedAssemblies.Contains(assembly))
-                _lazyLoadedAssemblies.Add(assembly);
-        }
+        // Catalog empty for a page key → EnsureLoadedAsync no-ops (dormant Articles/Videos).
+        await PageAssemblyLoader.EnsureLoadedAsync(pageKey).ConfigureAwait(false);
+
+        if (pageKey.Equals(PageAssemblyCatalog.ApiHealthPageKey, StringComparison.OrdinalIgnoreCase))
+            EnsureApiHealthServiceReady();
+    }
+
+    private void EnsureApiHealthServiceReady()
+    {
+        // Must run only after ApiHealth.dll is loaded (no static type roots to the lazy DLL).
+        if (ApiHealthModuleGate.IsReady)
+            return;
 
         var service = CreateHealthCheckServiceViaReflection(
             HttpClientFactory,

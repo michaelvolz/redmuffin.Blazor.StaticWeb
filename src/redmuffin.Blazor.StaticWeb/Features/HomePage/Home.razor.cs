@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using redmuffin.Blazor.StaticWeb.Core.Abstractions;
+using redmuffin.Blazor.StaticWeb.Core.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Features.HomePage;
 
@@ -10,6 +11,7 @@ public partial class Home : ComponentBase
     [Inject] public required ILogger<Home> Logger { get; set; }
     [Inject] public required IHttpClientFactory HttpClientFactory { get; set; }
     [Inject] public required IDelayProvider DelayProvider { get; set; }
+    [Inject] public required IPageAssemblyLoader PageAssemblyLoader { get; set; }
 
     /// <summary>
     ///     Gets or sets the cascading parameter for theme configuration. Demonstrates cascading parameter functionality.
@@ -119,9 +121,16 @@ public partial class Home : ComponentBase
     {
         await base.OnAfterRenderAsync(firstRender).ConfigureAwait(false);
         if (firstRender)
+        {
             LogFirstRenderCalled(Logger);
+            // Dormant until Articles/Videos catalog entries list page-lazy DLLs.
+            // Fire-and-forget: must not block Home paint or surface prefetch errors.
+            _ = PageAssemblyLoader.PrefetchHomePrimaryJourneysAsync();
+        }
         else
+        {
             LogSubsequentRenderCalled(Logger);
+        }
     }
 
     /// <summary>

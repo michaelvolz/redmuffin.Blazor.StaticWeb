@@ -12,7 +12,12 @@ tags:
 # How to add a RiverBooks-shaped module
 
 Step-by-step procedure for adding the next bounded module after ApiHealth.
-Structure only — not full DDD.
+Structure only — not full DDD. **Coverage:** every client capability that
+owns policy or IO — including tiny and demo/sample pages — uses this shape.
+Do not leave host-only services because the page is small. **Page
+assemblies are lazy by default** (roadmap §0 item 4; skill
+`rm-blazor-lazy-loading`): page-unique DLLs co-load; shared page deps
+lazy on first need. Eager residual is shell/framework/contracts only.
 
 ## What Belongs in This File
 
@@ -27,9 +32,12 @@ Structure only — not full DDD.
 - Read ADR `docs/adr/0013-riverbooks-modular-layout-and-result.md`
 - Read roadmap `docs/specs/2026-08-03-riverbooks-modularization-roadmap-spec.md`
   before writing a module PRD or choosing the next vertical (destination,
-  Mediator optimality, sequencing, anti-patterns)
+  Mediator optimality, sequencing, anti-patterns, **full coverage including
+  demos**)
 - ApiHealth under `src/redmuffin.Blazor.StaticWeb.Modules/` is the reference
 - Host already calls `AddMediator` and `AddModulePipelineBehaviors`
+- Every page module follows the same phases and the same **page-lazy**
+  rule (roadmap §0 item 4), including demos and product features.
 
 ## Hard constraint — Azure Functions stay in Api
 
