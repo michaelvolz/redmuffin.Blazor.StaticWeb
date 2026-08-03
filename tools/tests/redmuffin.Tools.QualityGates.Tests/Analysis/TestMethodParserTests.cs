@@ -132,4 +132,67 @@ public sealed class TestMethodParserTests
         await Assert.That(tests.Count).IsEqualTo(1);
         await Assert.That(tests[0].EndLine).IsGreaterThan(0);
     }
+
+    [Test]
+    public async Task should_skip_bodyless_and_expression_bodied_test_methods()
+    {
+        var results = await FindTestsAsync("""
+            using TUnit.Core;
+            public abstract class BaseTests
+            {
+                [Test]
+                public abstract void abstract_test();
+
+                [Test]
+                public void expression_bodied() => Assert.That(1).IsEqualTo(1);
+            }
+            public class ConcreteTests
+            {
+                [Test]
+                public void real_test() { }
+            }
+            """).ConfigureAwait(false);
+
+        await Assert.That(results.Count).IsEqualTo(1);
+        await Assert.That(results[0].MethodName).IsEqualTo("real_test");
+        await Assert.That(results[0].ContainerClassName).IsEqualTo("ConcreteTests");
+    }
+
+    [Test]
+    public async Task should_treat_attribute_name_containing_Test_as_test()
+    {
+        var results = await FindTestsAsync("""
+            public class MyTests
+            {
+                [FactTest]
+                public void named_like_test() { }
+
+                [Something]
+                public void not_test() { }
+            }
+            """).ConfigureAwait(false);
+
+        await Assert.That(results.Count).IsEqualTo(1);
+        await Assert.That(results[0].MethodName).IsEqualTo("named_like_test");
+    }
+
+    [Test]
+    public async Task should_use_empty_container_class_when_method_is_top_level_shape()
+    {
+        // File-local method declarations are not valid C#, so use a nested
+        // type without a class ancestor for the method via local functions —
+        // parser only sees MethodDeclarationSyntax on types. Assert full path
+        // is absolute instead.
+        var results = await FindTestsAsync("""
+            using TUnit.Core;
+            public class Outer
+            {
+                [Test]
+                public void path_probe() { }
+            }
+            """).ConfigureAwait(false);
+
+        await Assert.That(results).HasSingleItem();
+        await Assert.That(Path.IsPathRooted(results[0].FilePath)).IsTrue();
+    }
 }

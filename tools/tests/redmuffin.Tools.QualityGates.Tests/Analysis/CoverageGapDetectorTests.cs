@@ -91,6 +91,47 @@ public sealed class CoverageGapDetectorTests
     }
 
     [Test]
+    public async Task should_return_true_when_nested_block_is_only_delegation()
+    {
+        // Kills strip-not on BlockSyntax: nested pure block must stay a coverage gap.
+        var source = """
+            public static class C
+            {
+                public static int Run(string input)
+                {
+                    {
+                        return SomeHandler.Process(input);
+                    }
+                }
+            }
+            """;
+        var result = CoverageGapDetector.IsCoverageGap(source, "Run", cyclomaticComplexity: 1);
+        await Assert.That(result).IsTrue();
+    }
+
+    [Test]
+    public async Task should_return_false_when_try_is_simple_but_catch_has_loop()
+    {
+        // Kills || → && in try/catch complexity: complex catch alone is enough.
+        var source = """
+            public static class C
+            {
+                public static int Parse(string input)
+                {
+                    try { return int.Parse(input); }
+                    catch
+                    {
+                        for (int i = 0; i < 3; i++) { Log(i); }
+                        return 0;
+                    }
+                }
+            }
+            """;
+        var result = CoverageGapDetector.IsCoverageGap(source, "Parse", cyclomaticComplexity: 3);
+        await Assert.That(result).IsFalse();
+    }
+
+    [Test]
     public async Task should_return_false_when_guard_has_else_branch()
     {
         var source = """

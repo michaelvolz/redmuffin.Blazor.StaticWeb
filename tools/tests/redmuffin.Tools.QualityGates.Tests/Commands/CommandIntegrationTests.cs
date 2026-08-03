@@ -105,6 +105,73 @@ public sealed partial class CommandIntegrationTests
     }
 
     [Test]
+    public async Task ApplyDifferentialFilter_unchanged_forms_clears_existing_sites()
+    {
+        const string source = "class C { int Add(int a, int b) => a + b; int Mul(int a, int b) => a * b; }";
+        var manifest = redmuffin.Tools.QualityGates.Analysis.MutationManifest.Build(source, DateTime.UtcNow);
+        var discovered = redmuffin.Tools.QualityGates.Analysis.MutationDiscoverer.FindSites(source);
+        var sites = new List<redmuffin.Tools.QualityGates.Analysis.MutationSite>(discovered);
+        await Assert.That(sites.Count).IsGreaterThan(0);
+
+        var count = redmuffin.Tools.QualityGates.Commands.MutateHandler.ApplyDifferentialFilter(
+            sites, strippedSource: source, existingManifest: manifest,
+            new redmuffin.Tools.QualityGates.Commands.MutateOptions());
+
+        await Assert.That(count).IsEqualTo(0);
+        await Assert.That(sites.Count).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task ApplyDifferentialFilter_changed_form_keeps_only_changed_lines()
+    {
+        // Multi-line so Add and Mul occupy distinct line ranges for form filtering.
+        const string prior = """
+            class C
+            {
+                int Add(int a, int b) => a + b;
+                int Mul(int a, int b) => a * b;
+            }
+            """;
+        const string current = """
+            class C
+            {
+                int Add(int a, int b) => a - b;
+                int Mul(int a, int b) => a * b;
+            }
+            """;
+        var manifest = redmuffin.Tools.QualityGates.Analysis.MutationManifest.Build(prior, DateTime.UtcNow);
+        var discovered = redmuffin.Tools.QualityGates.Analysis.MutationDiscoverer.FindSites(current);
+        var sites = new List<redmuffin.Tools.QualityGates.Analysis.MutationSite>(discovered);
+        var fullCount = sites.Count;
+        await Assert.That(fullCount).IsGreaterThan(1);
+
+        var count = redmuffin.Tools.QualityGates.Commands.MutateHandler.ApplyDifferentialFilter(
+            sites, strippedSource: current, existingManifest: manifest,
+            new redmuffin.Tools.QualityGates.Commands.MutateOptions());
+
+        await Assert.That(count).IsGreaterThan(0);
+        await Assert.That(count).IsLessThan(fullCount);
+        await Assert.That(sites.Count).IsEqualTo(count);
+    }
+
+    [Test]
+    public async Task ApplyDifferentialFilter_mutate_all_ignores_manifest()
+    {
+        const string source = "class C { int Add(int a, int b) => a + b; }";
+        var manifest = redmuffin.Tools.QualityGates.Analysis.MutationManifest.Build(source, DateTime.UtcNow);
+        var discovered = redmuffin.Tools.QualityGates.Analysis.MutationDiscoverer.FindSites(source);
+        var sites = new List<redmuffin.Tools.QualityGates.Analysis.MutationSite>(discovered);
+        var fullCount = sites.Count;
+
+        var count = redmuffin.Tools.QualityGates.Commands.MutateHandler.ApplyDifferentialFilter(
+            sites, strippedSource: source, existingManifest: manifest,
+            new redmuffin.Tools.QualityGates.Commands.MutateOptions(MutateAll: true));
+
+        await Assert.That(count).IsEqualTo(fullCount);
+        await Assert.That(sites.Count).IsEqualTo(fullCount);
+    }
+
+    [Test]
     public async Task RunArchitectureCheck_with_existing_config_returns_result()
     {
         var configPath = ArchitectureConfig;

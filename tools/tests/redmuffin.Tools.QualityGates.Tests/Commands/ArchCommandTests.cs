@@ -62,6 +62,17 @@ public sealed class ArchCommandTests
     }
 
     [Test]
+    public async Task should_default_fail_flags_and_threshold_on_new_instance()
+    {
+        // Property initializers (not only Parse) must stay fail-closed.
+        var config = new ArchConfig();
+
+        await Assert.That(config.FailOnCycles).IsTrue();
+        await Assert.That(config.FailOnViolations).IsTrue();
+        await Assert.That(config.HealthyThreshold).IsEqualTo(0.3);
+    }
+
+    [Test]
     public async Task should_parse_zones_forbidden_and_exceptions()
     {
         var yaml = """
@@ -683,6 +694,150 @@ public sealed class ArchCommandTests
         await Assert.That(output).Contains("I=1.00");
         await Assert.That(output).Contains("D=0.50");
         await Assert.That(output).Contains("zone=Healthy");
+    }
+
+    [Test]
+    public async Task should_format_result_with_cycles()
+    {
+        var cycles = new List<ArchCycle>
+        {
+            new(["Web", "Core", "Web"], 2),
+        };
+        var result = new ArchResult(2, [], cycles, 4, 2);
+        var output = ArchOutputFormatter.Format(result, json: false);
+
+        await Assert.That(output).Contains("1 cycles found");
+        await Assert.That(output).Contains("Cycles:");
+        await Assert.That(output).Contains("Web → Core → Web");
+    }
+
+    [Test]
+    public async Task should_format_result_with_violations_cycles_and_metrics()
+    {
+        var result = new ArchResult(
+            2,
+            [new ArchViolation("A", "B", "Web", "Infra", "not allowed")],
+            [new ArchCycle(["Web", "Core", "Web"], 2)],
+            3,
+            2)
+        {
+            Metrics =
+            [
+                new ComponentMetric("Web", FanIn: 1, FanOut: 1, Instability: 0.5,
+                    Abstractness: 0.0, Distance: 0.5, Zone: ArchZone.Pain),
+            ],
+        };
+
+        var output = ArchOutputFormatter.Format(result, json: false);
+
+        await Assert.That(output).Contains("Violations:");
+        await Assert.That(output).Contains("Web → Infra");
+        await Assert.That(output).Contains("Cycles:");
+        await Assert.That(output).Contains("Web → Core → Web");
+        await Assert.That(output).Contains("fan-in=1");
+        await Assert.That(output).Contains("fan-out=1");
+        await Assert.That(output).Contains("zone=Pain");
+    }
+
+    [Test]
+    public async Task should_normalize_colon_all_allowlist_entry()
+    {
+        var config = ArchConfig.Parse("""
+            allowed-dependencies:
+              Tests:
+                - :all
+            """);
+
+        await Assert.That(config.AllowedDependencies["Tests"]).IsEquivalentTo(["all"]);
+    }
+
+    [Test]
+    public async Task should_drop_blank_dependency_edges()
+    {
+        var config = ArchConfig.Parse("""
+            allowed-dependencies:
+              Core: []
+            forbidden-dependencies:
+              - from: ""
+                to: Infra
+              - from: Web
+                to: "  "
+              - from: Web
+                to: Infra
+            allowed-exceptions:
+              - from: "  Core  "
+                to: "  Web  "
+            """);
+
+        await Assert.That(config.ForbiddenDependencies).IsEquivalentTo(
+            [new DependencyEdge("Web", "Infra")]);
+        await Assert.That(config.AllowedExceptions).IsEquivalentTo(
+            [new DependencyEdge("Core", "Web")]);
+    }
+
+    [Test]
+    public async Task should_return_zero_abstractness_when_project_path_missing()
+    {
+        var config = ConfigWithMap();
+        var cg = new ComponentGraph(
+            new Dictionary<string, ISet<string>> { ["Web"] = new HashSet<string> { "Core" } },
+            new HashSet<string>());
+
+        var metrics = ArchAnalyzer.ComputeMetrics(cg, config, projectPath: Path.Combine(Path.GetTempPath(), $"no-arch-{Guid.NewGuid():N}"));
+
+        await Assert.That(metrics.All(m => m.Abstractness == 0.0)).IsTrue();
+    }
+
+    [Test]
+    public async Task should_count_abstract_class_toward_abstractness()
+    {
+        using var temp = new TempDir();
+        WriteMappedProject(temp.Path, "MyApp.Web", """
+            public abstract class BaseService { }
+            public class ConcreteService { }
+            """);
+        WriteMappedProject(temp.Path, "MyApp.Core", """
+            public class Entity { }
+            """);
+
+        var metrics = ArchAnalyzer.ComputeMetrics(
+            new ComponentGraph(
+                new Dictionary<string, ISet<string>> { ["Web"] = new HashSet<string> { "Core" } },
+                new HashSet<string>()),
+            ConfigWithMap(),
+            temp.Path);
+        var web = metrics.First(m => m.Component == "Web");
+
+        await Assert.That(web.Abstractness).IsEqualTo(0.5);
+    }
+
+    [Test]
+    public async Task should_skip_bin_obj_when_computing_abstractness()
+    {
+        using var temp = new TempDir();
+        WriteMappedProject(temp.Path, "MyApp.Web", """
+            public class Service { }
+            """);
+        WriteMappedProject(temp.Path, "MyApp.Core", """
+            public class Entity { }
+            """);
+
+        // Poison bin/ with an interface that must not inflate abstractness.
+        var binDir = Path.Combine(temp.Path, "MyApp.Web", "bin", "Debug");
+        Directory.CreateDirectory(binDir);
+        await File.WriteAllTextAsync(Path.Combine(binDir, "Generated.cs"), """
+            public interface IPoison { }
+            """).ConfigureAwait(false);
+
+        var metrics = ArchAnalyzer.ComputeMetrics(
+            new ComponentGraph(
+                new Dictionary<string, ISet<string>> { ["Web"] = new HashSet<string> { "Core" } },
+                new HashSet<string>()),
+            ConfigWithMap(),
+            temp.Path);
+        var web = metrics.First(m => m.Component == "Web");
+
+        await Assert.That(web.Abstractness).IsEqualTo(0.0);
     }
 
     private static void WriteMappedProject(string root, string projectName, string csharpSource)

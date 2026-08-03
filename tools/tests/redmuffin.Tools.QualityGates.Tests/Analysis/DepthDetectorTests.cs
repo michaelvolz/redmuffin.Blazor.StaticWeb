@@ -321,4 +321,108 @@ public sealed class DepthDetectorTests
 
         await Assert.That(result.IsEntangled).IsFalse();
     }
+
+    [Test]
+    [Category("Feature:Depth")]
+    public async Task AnalyzeMethod_suppresses_shallow_when_caller_count_is_three_or_more()
+    {
+        var code = """
+            class X {
+                private int Helper(int x) { return x + 1; }
+            }
+            """;
+        var method = await FirstMethodAsync(code, "Helper").ConfigureAwait(false);
+
+        var result = DepthDetector.AnalyzeMethod(method, "/test/MultiCaller.cs", callerCount: 3);
+
+        await Assert.That(result.IsShallow).IsFalse();
+        await Assert.That(result.CompositeScore).IsEqualTo(0);
+    }
+
+    [Test]
+    [Category("Feature:Depth")]
+    public async Task AnalyzeMethod_flags_param_bloat_for_public_method()
+    {
+        var code = """
+            class X {
+                public void Configure(int a, int b, int c, int d, int e) {
+                    var total = a + b + c + d + e;
+                    if (total > 0) { Use(total); }
+                }
+            }
+            """;
+        var method = await FirstMethodAsync(code, "Configure").ConfigureAwait(false);
+
+        var result = DepthDetector.AnalyzeMethod(method, "/test/ParamBloat.cs");
+
+        await Assert.That(result.ParameterCount).IsEqualTo(5);
+        await Assert.That(result.IsShallow).IsFalse();
+        await Assert.That(result.CompositeScore).IsEqualTo(1);
+        await Assert.That(result.Signals).Contains("params(1)");
+    }
+
+    [Test]
+    [Category("Feature:Depth")]
+    public async Task AnalyzeMethod_flags_private_entangled_with_side_effects()
+    {
+        var code = """
+            class X {
+                private int _field;
+                private void Mutate(int a, int b, int c) {
+                    _field = a + b + c;
+                    Helper(a);
+                }
+            }
+            """;
+        var method = await FirstMethodAsync(code, "Mutate").ConfigureAwait(false);
+
+        var result = DepthDetector.AnalyzeMethod(method, "/test/Entangled.cs");
+
+        await Assert.That(result.IsEntangled).IsTrue();
+        await Assert.That(result.Signals).Contains("entangled(2)");
+    }
+
+    [Test]
+    [Category("Feature:Depth")]
+    public async Task IsWrongAbstraction_returns_false_for_expression_bodied_method()
+    {
+        var code = """
+            class X {
+                private string F(string mode) => mode;
+            }
+            """;
+        var method = await FirstMethodAsync(code, "F").ConfigureAwait(false);
+
+        await Assert.That(DepthDetector.IsWrongAbstraction(method)).IsFalse();
+    }
+
+    [Test]
+    [Category("Feature:Depth")]
+    public async Task IsWrongAbstraction_detects_switch_on_formal_parameter()
+    {
+        var code = """
+            class X {
+                private int F(int mode) {
+                    switch (mode) {
+                        case 1: return 10;
+                        default: return 0;
+                    }
+                }
+            }
+            """;
+        var method = await FirstMethodAsync(code, "F").ConfigureAwait(false);
+
+        await Assert.That(DepthDetector.IsWrongAbstraction(method)).IsTrue();
+    }
+
+    private static async Task<Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax> FirstMethodAsync(
+        string code, string name)
+    {
+        var tree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(code);
+        var root = (Microsoft.CodeAnalysis.CSharp.Syntax.CompilationUnitSyntax)await tree
+            .GetRootAsync(CancellationToken.None).ConfigureAwait(false);
+        return root.DescendantNodes()
+            .OfType<Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax>()
+            .First(m => m.Identifier.Text == name);
+    }
 }
