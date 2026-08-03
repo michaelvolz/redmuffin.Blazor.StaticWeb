@@ -57,8 +57,10 @@ builder.Services.AddRaindropModule(useSynthetic);
 or Api-only types into Modules. Dual-consumed DTOs belong in Common when
 deliberate. Hard rule in ADR 0013, module guide, and AGENTS.md structural gate.
 
-**Tests:** unit-test IO in `Raindrop.Tests` with InternalsVisibleTo; host page
-tests keep mocking the public Contracts interface only.
+**Tests:** unit-test IO in
+`tests/redmuffin.Blazor.StaticWeb.Modules/Raindrop.Tests` with
+InternalsVisibleTo; host page tests keep mocking the public Contracts
+interface only. Never place module tests under `src/`.
 
 **Accessibility trap (CS0053):** when helpers expose a nested `TestScope` that
 holds **internal** module types (real/dummy APIs), the scope type and factory

@@ -106,13 +106,17 @@ HTTP service paths covered by ApiHealth:
 ```text
 src/redmuffin.Blazor.StaticWeb.Modules/
 ├── ApiHealth.Contracts/
-├── ApiHealth/
+└── ApiHealth/
+
+tests/redmuffin.Blazor.StaticWeb.Modules/
 └── ApiHealth.Tests/
 ```
 
 - Contracts types are public
 - Service implementations are internal
 - Extension: `AddApiHealthModule(bool useSyntheticData)`
+- Test projects live under `tests/` only — never under `src/`; one test
+  project per module, never folded into host or Api tests
 - Architecture gate: Contracts map to Shared and may reference Common
   (`Shared: [Shared]` in `quality-gates/architecture-rules.yml`) so
   Contracts can take `Result<T>` without a Frontend edge

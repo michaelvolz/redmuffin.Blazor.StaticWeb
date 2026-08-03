@@ -145,7 +145,7 @@ jobs:
       # TUnit runs via dotnet run (native, no VSTest dependency)
       # Note: Tests automatically use environment variables set in the job environment
       # No local.settings.json file needed as TestBase class uses AddEnvironmentVariables()
-      # Build once, run both test projects in parallel (--no-build avoids duplicate compilation)
+      # Build once, run all test projects in parallel (--no-build avoids duplicate compilation)
       - name: Build solution
         run: dotnet build -c Release
 
@@ -156,8 +156,16 @@ jobs:
           PID1=$!
           dotnet run --project tests/redmuffin.Blazor.StaticWeb.Api.Tests -c Release --no-build &
           PID2=$!
-          wait $PID1 || { echo "FAIL: blazor_tests exit_code=$?"; kill $PID2 2>/dev/null; exit 1; }
-          wait $PID2 || { echo "FAIL: api_tests exit_code=$?"; exit 1; }
+          dotnet run --project tests/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Tests -c Release --no-build &
+          PID3=$!
+          dotnet run --project tests/redmuffin.Blazor.StaticWeb.Modules/Raindrop.Tests -c Release --no-build &
+          PID4=$!
+          fail=0
+          wait $PID1 || { echo "FAIL: blazor_tests exit_code=$?"; fail=1; }
+          wait $PID2 || { echo "FAIL: api_tests exit_code=$?"; fail=1; }
+          wait $PID3 || { echo "FAIL: apihealth_module_tests exit_code=$?"; fail=1; }
+          wait $PID4 || { echo "FAIL: raindrop_module_tests exit_code=$?"; fail=1; }
+          if [ "$fail" -ne 0 ]; then exit 1; fi
           echo "result=pass"
           echo "::endgroup::"
 

@@ -55,21 +55,26 @@ and re-scope. Client modules and the Functions app deploy independently.
 
 ## Phase 1 — Projects
 
-Create three projects under `src/redmuffin.Blazor.StaticWeb.Modules/`:
+Create production projects under `src/redmuffin.Blazor.StaticWeb.Modules/`
+and a mirrored test project under `tests/`:
 
 ```text
-{Name}.Contracts/   # public: queries, responses, interfaces
-{Name}/             # handlers, services, Add{Name}Module
-{Name}.Tests/       # unit tests; IsTestProject=true
+src/.../Modules/{Name}.Contracts/   # public: queries, responses, interfaces
+src/.../Modules/{Name}/             # handlers, services, Add{Name}Module
+tests/.../Modules/{Name}.Tests/     # unit tests; IsTestProject=true
 ```
+
+Never put `{Name}.Tests` under `src/`. Never fold module tests into the host
+or Api test projects.
 
 1. Target `net9.0` (same as ApiHealth / Common) unless the host forces otherwise
 2. Contracts references Common (for `Result<T>`) and Mediator.Abstractions
 3. Module references Contracts + Common; package refs as needed (Http, DI)
-4. Tests reference Module, Contracts, Common; copy test `.editorconfig` from an
-   existing test project; set `<IsTestProject>true</IsTestProject>`
-5. Register all three in `redmuffin.Blazor.StaticWeb.slnx`
-6. Host references Module + Contracts
+4. Tests reference Module, Contracts, Common (paths into `src/`); copy test
+   `.editorconfig` from an existing module test project; set
+   `<IsTestProject>true</IsTestProject>`
+5. Register production + test projects in `redmuffin.Blazor.StaticWeb.slnx`
+6. Host references Module + Contracts only (never test projects)
 7. Map assemblies in `quality-gates/architecture-rules.yml`
    (Contracts → Shared, Module + Tests → Frontend)
 
@@ -128,7 +133,7 @@ return Result.Failure<string>("The API endpoint did not return a response.");
 Run:
 
 ```text
-dotnet run --project src/.../Modules/{Name}.Tests
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Modules/{Name}.Tests
 dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests
 ```
 
@@ -145,9 +150,9 @@ dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests
 
 | Path | Role |
 | --- | --- |
-| `Modules/ApiHealth.Contracts/*` | Query, response, `IHealthCheckService` |
-| `Modules/ApiHealth/*` | Handler, services, DI extension |
-| `Modules/ApiHealth.Tests/*` | Module unit tests |
+| `src/.../Modules/ApiHealth.Contracts/*` | Query, response, `IHealthCheckService` |
+| `src/.../Modules/ApiHealth/*` | Handler, services, DI extension |
+| `tests/.../Modules/ApiHealth.Tests/*` | Module unit tests |
 | `Common/Result.cs` | Shared `Result` / `Result<T>` |
 | `Common/PipelineBehaviors/LoggingBehavior.cs` | Cross-module pipeline |
 | `Modules/ApiHealth/*` page + ViewModel | Lazy RCL pilot (SN-0060); host keeps gate + thin handler |

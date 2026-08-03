@@ -14,10 +14,13 @@ boundaries.
 
 ### Module shape
 
-- Three projects per module under `src/redmuffin.Blazor.StaticWeb.Modules/`:
+- Production projects under `src/redmuffin.Blazor.StaticWeb.Modules/`:
   - `{Module}.Contracts` — public queries, responses, service interfaces
   - `{Module}` — handlers, services, DI extension
-  - `{Module}.Tests` — unit tests for that module
+- Matching unit-test project under
+  `tests/redmuffin.Blazor.StaticWeb.Modules/{Module}.Tests/` — one test
+  project per module, structure mirrored; never fold into host or Api tests;
+  never place test projects under `src/`
 - Host (`redmuffin.Blazor.StaticWeb`) owns pages/UI and composition root only
 - Common holds cross-module kernel types and pipeline behaviors
 - Service implementations are `internal`; Contracts types are `public`
@@ -25,6 +28,7 @@ boundaries.
   (MA0182 rejects unused internal handlers)
 - Module registration: `Add{Module}Module(...)` wires abstractions; host
   passes environment policy flags only
+- Production projects never `ProjectReference` test projects (deploy isolation)
 
 ### Synthetic vs real
 
@@ -76,7 +80,8 @@ for new modules by Strategy registration inside `Add{Module}Module(bool)`.
 
 ## Consequences
 
-- New modules copy ApiHealth triad + guide, not flat `Features/.../Services`
+- New modules copy ApiHealth production pair under `src/` plus a mirrored
+  test project under `tests/`, not flat `Features/.../Services`
 - Hello connectivity lives only in ApiHealth; Raindrop does not expose
   `GetHelloWorldAsync`
 - Deferred still deferred: NsDepCop, validation/OTEL pipeline behaviors

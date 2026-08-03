@@ -16,7 +16,7 @@
   <Project Path="src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth/ApiHealth.csproj">
     <BuildType Solution="Debug-Sass|*" Project="Debug" />
   </Project>
-  <Project Path="src/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Tests/ApiHealth.Tests.csproj">
+  <Project Path="tests/redmuffin.Blazor.StaticWeb.Modules/ApiHealth.Tests/ApiHealth.Tests.csproj">
     <BuildType Solution="Debug-Sass|*" Project="Debug" />
   </Project>
   <Project Path="src/redmuffin.Blazor.StaticWeb.Modules/Raindrop.Contracts/Raindrop.Contracts.csproj">
@@ -25,7 +25,7 @@
   <Project Path="src/redmuffin.Blazor.StaticWeb.Modules/Raindrop/Raindrop.csproj">
     <BuildType Solution="Debug-Sass|*" Project="Debug" />
   </Project>
-  <Project Path="src/redmuffin.Blazor.StaticWeb.Modules/Raindrop.Tests/Raindrop.Tests.csproj">
+  <Project Path="tests/redmuffin.Blazor.StaticWeb.Modules/Raindrop.Tests/Raindrop.Tests.csproj">
     <BuildType Solution="Debug-Sass|*" Project="Debug" />
   </Project>
   <Project Path="src/redmuffin.Blazor.StaticWeb/redmuffin.Blazor.StaticWeb.csproj" />
