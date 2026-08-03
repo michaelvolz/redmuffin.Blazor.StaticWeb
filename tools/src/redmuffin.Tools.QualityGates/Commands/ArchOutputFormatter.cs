@@ -68,3 +68,7 @@ public static class ArchOutputFormatter
         return JsonSerializer.Serialize(result, JsonOptions);
     }
 }
+
+// clj-mutate-manifest-begin
+// {"version":1,"testedAt":"2026-08-03T12:25:33.8966161Z","moduleHash":"092c6739d9dc247223efa004742809f7639a6a872c6b62060cf8f010f4e37d69","forms":[{"id":"Format","line":14,"endLine":17,"hash":"4b0ec19e6f94af008fbc073adac55833ee9b6745734c94dc0fea03a4b6a38416"},{"id":"FormatText","line":19,"endLine":63,"hash":"28bb0511e82ef1d2a73e3f6b6c88ab7274f5dd38d754abce2571f9724c88c71e"},{"id":"FormatJson","line":65,"endLine":68,"hash":"51a6bf57c6823cb8212e6b4974dca332ce5633d14518224a537d641c585609fc"}]}
+// clj-mutate-manifest-end

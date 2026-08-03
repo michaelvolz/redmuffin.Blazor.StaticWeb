@@ -132,3 +132,7 @@ public static class DupesDetector
         int Nodes,
         ISet<string> Fingerprints);
 }
+
+// clj-mutate-manifest-begin
+// {"version":1,"testedAt":"2026-08-03T13:14:22.1887729Z","moduleHash":"e3ffbf5561200c1d4d94d8783bc9c6d852a08557bfb564ab8094756aa6eeb0bc","forms":[{"id":"FindDuplicates","line":17,"endLine":39,"hash":"d828cdad6bae69767fd83e519cfbea86ba4f29cb96cf0b34d76b54f13c4254c7"},{"id":"TryAddCandidate","line":41,"endLine":52,"hash":"df3c6722f43c535bb5b121819dc67e1cb962d15496b82884c65be6b610641188"},{"id":"ScanFiles","line":54,"endLine":75,"hash":"fd95c3c526065b8128d29028991ee0b9e7a96dc49a40da59ee5d6eb4ff292687"},{"id":"TryAddEntries","line":77,"endLine":96,"hash":"6d283b72cb94c9b32c333ba2ae113a37afe43d01608c827d515b63c03096a50c"},{"id":"TryAddMethodEntry","line":98,"endLine":118,"hash":"9795e3c71060567c573015e9ec6cd6eb9f1ae691f1665296aeea30420953c5e1"},{"id":"JaccardSimilarity","line":120,"endLine":125,"hash":"ca49a7c465b05e26c530fa646cb187af553268ce3684333deba8d2b7d91cfacb"}]}
+// clj-mutate-manifest-end

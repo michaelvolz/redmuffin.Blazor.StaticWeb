@@ -109,3 +109,7 @@ public sealed record ArchConfig
         public string? To { get; set; }
     }
 }
+
+// clj-mutate-manifest-begin
+// {"version":1,"testedAt":"2026-08-03T13:00:55.8689027Z","moduleHash":"341f0074f1281fdb82e481086d659584d0f8da51d8b6ed1368a6fbfb1be7d89b","forms":[{"id":"Parse","line":19,"endLine":49,"hash":"86583396e643d8d7ab7995a21ed1d7f7dc6efda627bf0e1c12689d9d4675391a"},{"id":"NormalizeAllowedList","line":55,"endLine":68,"hash":"352f134abf26dd0760db3e985e805774d85636f1a1912f0a79db4f9a74eab6d3"},{"id":"ParseEdges","line":70,"endLine":81,"hash":"a89face365e144cc6497b403bc9eed04ac0ff2cc90726f17a76d9043af783904"}]}
+// clj-mutate-manifest-end

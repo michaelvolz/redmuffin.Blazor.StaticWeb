@@ -149,3 +149,7 @@ public static class CyclomaticComplexity
         }
     }
 }
+
+// clj-mutate-manifest-begin
+// {"version":1,"testedAt":"2026-08-03T12:27:13.276927Z","moduleHash":"0fd359a0c6d529b5cee9b4898eacd31a6757316ee713a5d9eee0965dad7a33ac","forms":[{"id":"Analyze","line":9,"endLine":34,"hash":"7faa5b85fba1a53a646a0879122056d99a1b74b024a2c845b6fb8dabb92050c7"},{"id":"ComputeCyclomaticComplexity","line":36,"endLine":41,"hash":"232b265b3adc05ceb20e9152ef3463c97aa580ac1fbe9a9c1551a5debdaaccdf"}]}
+// clj-mutate-manifest-end

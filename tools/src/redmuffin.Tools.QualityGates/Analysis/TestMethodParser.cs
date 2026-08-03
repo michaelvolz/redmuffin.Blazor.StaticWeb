@@ -54,3 +54,7 @@ public static class TestMethodParser
             .Any(a => a.Name.ToString().Contains("Test", StringComparison.Ordinal));
     }
 }
+
+// clj-mutate-manifest-begin
+// {"version":1,"testedAt":"2026-08-03T12:26:05.4332416Z","moduleHash":"14c5c93357ade6d7a9d721e94a12f98217bd14de2804115e3c96bdd1c2b5cab7","forms":[{"id":"FindTests","line":9,"endLine":47,"hash":"da652dd79b1aac183bec29ddd2f8dff0b5fcab35cad52bd35d3bc91909f0e707"},{"id":"HasTestAttribute","line":49,"endLine":54,"hash":"3c3029d1a18e6d61ff0fad8b5d5dec2af6f30f02be5ffa47d09ee0a1df421c1c"}]}
+// clj-mutate-manifest-end

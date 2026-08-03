@@ -122,3 +122,7 @@ public static class ScrapScorer
         return scrapScore;
     }
 }
+
+// clj-mutate-manifest-begin
+// {"version":1,"testedAt":"2026-08-03T13:13:02.0234277Z","moduleHash":"8fbfb885d4cf8308e363e08b4d7fdfc6241643cfdc0a56aaf75de0e11a26dc04","forms":[{"id":"ScoreMethod","line":12,"endLine":34,"hash":"e244937dedb92e5717a5d342af39f8e620e9aa771031641ec266734c581cf653"},{"id":"ScoreFile","line":36,"endLine":75,"hash":"36ef3d031fe8aa2b046c5e04f677fba0d32c1ed0faff8528da6cc2d00ec88c70"},{"id":"CollectSmells","line":77,"endLine":100,"hash":"c128b392cf100d01994b214163a45897fff19e9393448de7cca8b74ca5178ae2"},{"id":"ComputeScore","line":102,"endLine":122,"hash":"d69e751730f7ebd23d9eecf78d25aaa0dbdaf7e67f85866a5806b5d09d84f729"}]}
+// clj-mutate-manifest-end
