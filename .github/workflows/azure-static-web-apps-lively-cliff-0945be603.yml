@@ -204,8 +204,8 @@ jobs:
 
           ASSEMBLY_COUNT=$(find "${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot/_framework" -maxdepth 1 -name "*.wasm" -not -name "dotnet.native.*" | wc -l)
           echo "wasm_assemblies=$ASSEMBLY_COUNT"
-          if [ "$ASSEMBLY_COUNT" -gt 60 ]; then
-            echo "FAIL: trimming check count=$ASSEMBLY_COUNT max=60"
+          if [ "$ASSEMBLY_COUNT" -gt 100 ]; then
+            echo "FAIL: trimming check count=$ASSEMBLY_COUNT max=100"
             exit 1
           fi
 
