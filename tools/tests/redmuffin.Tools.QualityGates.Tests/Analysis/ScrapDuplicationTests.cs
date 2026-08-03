@@ -13,7 +13,7 @@ public sealed class ScrapDuplicationTests
         var setA = new HashSet<string> { "a", "b", "c" };
         var setB = new HashSet<string> { "a", "b", "c" };
 
-        var similarity = ScrapDuplication.JaccardSimilarity(setA, setB);
+        var similarity = JaccardClustering.Similarity(setA, setB);
 
         await Assert.That(similarity).IsEqualTo(1.0);
     }
@@ -24,7 +24,7 @@ public sealed class ScrapDuplicationTests
         var setA = new HashSet<string> { "a", "b" };
         var setB = new HashSet<string> { "c", "d" };
 
-        var similarity = ScrapDuplication.JaccardSimilarity(setA, setB);
+        var similarity = JaccardClustering.Similarity(setA, setB);
 
         await Assert.That(similarity).IsEqualTo(0.0);
     }
@@ -35,7 +35,7 @@ public sealed class ScrapDuplicationTests
         var setA = new HashSet<string> { "a", "b" };
         var setB = new HashSet<string> { "b" };
 
-        var similarity = ScrapDuplication.JaccardSimilarity(setA, setB);
+        var similarity = JaccardClustering.Similarity(setA, setB);
 
         await Assert.That(similarity).IsEqualTo(0.5);
     }
@@ -46,7 +46,7 @@ public sealed class ScrapDuplicationTests
         var setA = new HashSet<string>();
         var setB = new HashSet<string>();
 
-        var similarity = ScrapDuplication.JaccardSimilarity(setA, setB);
+        var similarity = JaccardClustering.Similarity(setA, setB);
 
         await Assert.That(similarity).IsEqualTo(0.0);
     }
@@ -57,7 +57,7 @@ public sealed class ScrapDuplicationTests
         var setA = new HashSet<string> { "a" };
         var setB = new HashSet<string>();
 
-        var similarity = ScrapDuplication.JaccardSimilarity(setA, setB);
+        var similarity = JaccardClustering.Similarity(setA, setB);
 
         await Assert.That(similarity).IsEqualTo(0.0);
     }
@@ -133,6 +133,53 @@ public sealed class ScrapDuplicationTests
         await Assert.That(results.HarmfulDuplication).IsEmpty();
         await Assert.That(results.SubjectRepetition).IsEmpty();
         await Assert.That(results.CaseMatrixRepetition).IsEmpty();
+        await Assert.That(results.EffectiveDuplicationScore).IsEqualTo(0.0);
+    }
+
+    [Test]
+    public async Task Analyze_effective_duplication_score_is_always_zero()
+    {
+        var methods = ParseMethodsFromSource("""
+            using TUnit.Core;
+            public class MyTests
+            {
+                [Test]
+                public void test_a() { var x = 1; Assert.That(x).IsNotNull(); }
+
+                [Test]
+                public void test_b() { var y = 2; Assert.That(y).IsNotNull(); }
+            }
+            """);
+
+        var results = ScrapDuplication.Analyze(methods);
+
+        await Assert.That(results.EffectiveDuplicationScore).IsEqualTo(0.0);
+    }
+
+    [Test]
+    public async Task Analyze_assigns_positive_increasing_cluster_ids()
+    {
+        var methods = ParseMethodsFromSource("""
+            using TUnit.Core;
+            public class MyTests
+            {
+                [Test]
+                public void test_a() { var x = 1; Assert.That(x).IsNotNull(); }
+
+                [Test]
+                public void test_b() { var y = 2; Assert.That(y).IsNotNull(); }
+            }
+            """);
+
+        var results = ScrapDuplication.Analyze(methods);
+        var channels = results.HarmfulDuplication
+            .Concat(results.CaseMatrixRepetition)
+            .Concat(results.SubjectRepetition)
+            .ToList();
+
+        await Assert.That(channels.Count).IsGreaterThan(0);
+        await Assert.That(channels[0].ClusterId).IsEqualTo(1);
+        await Assert.That(channels.All(c => c.ClusterId >= 1)).IsTrue();
     }
 
     // --- Channel classification: subject repetition ---
@@ -174,6 +221,9 @@ public sealed class ScrapDuplicationTests
 
         // Four genuinely different test structures in same class → subject repetition cluster
         await Assert.That(results.SubjectRepetition.Count).IsGreaterThan(0);
+        await Assert.That(results.SubjectRepetition[0].SharedForms).IsEqualTo(0);
+        await Assert.That(results.SubjectRepetition[0].VariablePoints).IsEqualTo(0);
+        await Assert.That(results.SubjectRepetition[0].ClusterId).IsGreaterThan(0);
     }
 
     /// <summary>
@@ -209,7 +259,7 @@ public sealed class ScrapDuplicationTests
         var subject = new List<DuplicationChannel>();
         var channel = new DuplicationChannel(1, [], 3, 2, 2, ChannelType.Harmful);
 
-        ScrapDuplication.RouteToChannel(
+        DuplicationChannelClassifier.RouteToChannel(
             ChannelType.Harmful, channel, harmful, caseMatrix, subject);
 
         await Assert.That(harmful.Count).IsEqualTo(1);
@@ -225,7 +275,7 @@ public sealed class ScrapDuplicationTests
         var subject = new List<DuplicationChannel>();
         var channel = new DuplicationChannel(2, [], 1, 5, 3, ChannelType.CaseMatrix);
 
-        ScrapDuplication.RouteToChannel(
+        DuplicationChannelClassifier.RouteToChannel(
             ChannelType.CaseMatrix, channel, harmful, caseMatrix, subject);
 
         await Assert.That(harmful.Count).IsEqualTo(0);
@@ -241,7 +291,7 @@ public sealed class ScrapDuplicationTests
         var subject = new List<DuplicationChannel>();
         var channel = new DuplicationChannel(3, [], 0, 0, 2, ChannelType.Subject);
 
-        ScrapDuplication.RouteToChannel(
+        DuplicationChannelClassifier.RouteToChannel(
             ChannelType.Subject, channel, harmful, caseMatrix, subject);
 
         await Assert.That(harmful.Count).IsEqualTo(0);

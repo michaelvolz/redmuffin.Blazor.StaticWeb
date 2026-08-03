@@ -101,25 +101,25 @@ public sealed class CrapBoostTests
     [Test]
     public async Task AllLowComplexity_empty_returns_true()
     {
-        var actual = redmuffin.Tools.QualityGates.Analysis.ScrapDuplication.AllLowComplexity([]);
+        var actual = redmuffin.Tools.QualityGates.Analysis.DuplicationChannelClassifier.AllLowComplexity([]);
         await Assert.That(actual).IsTrue();
     }
 
     [Test]
     public async Task AllLowComplexity_high_lines_returns_false()
     {
-        var m = new redmuffin.Tools.QualityGates.Analysis.ScrapDuplication.SimpleMethodMetrics(
+        var m = new redmuffin.Tools.QualityGates.Analysis.DuplicationChannelClassifier.SimpleMethodMetrics(
             LineCount: 20, AssertionCount: 0, BranchCount: 0, SetupDepth: 0);
-        var actual = redmuffin.Tools.QualityGates.Analysis.ScrapDuplication.AllLowComplexity([m]);
+        var actual = redmuffin.Tools.QualityGates.Analysis.DuplicationChannelClassifier.AllLowComplexity([m]);
         await Assert.That(actual).IsFalse();
     }
 
     [Test]
     public async Task AllLowComplexity_valid_returns_true()
     {
-        var m = new redmuffin.Tools.QualityGates.Analysis.ScrapDuplication.SimpleMethodMetrics(
+        var m = new redmuffin.Tools.QualityGates.Analysis.DuplicationChannelClassifier.SimpleMethodMetrics(
             LineCount: 5, AssertionCount: 1, BranchCount: 0, SetupDepth: 1);
-        var actual = redmuffin.Tools.QualityGates.Analysis.ScrapDuplication.AllLowComplexity([m]);
+        var actual = redmuffin.Tools.QualityGates.Analysis.DuplicationChannelClassifier.AllLowComplexity([m]);
         await Assert.That(actual).IsTrue();
     }
 
@@ -196,7 +196,7 @@ public sealed class CrapBoostTests
     [Test]
     public async Task ClassifyChannel_harmful_with_many_shared_forms()
     {
-        var result = redmuffin.Tools.QualityGates.Analysis.ScrapDuplication.ClassifyChannel(
+        var result = redmuffin.Tools.QualityGates.Analysis.DuplicationChannelClassifier.ClassifyChannel(
             methods: [],
             sharedForms: 3,
             variablePoints: 1,
@@ -208,9 +208,9 @@ public sealed class CrapBoostTests
     [Test]
     public async Task ClassifyChannel_case_matrix_with_low_complexity()
     {
-        var m = new redmuffin.Tools.QualityGates.Analysis.ScrapDuplication.SimpleMethodMetrics(
+        var m = new redmuffin.Tools.QualityGates.Analysis.DuplicationChannelClassifier.SimpleMethodMetrics(
             LineCount: 5, AssertionCount: 1, BranchCount: 0, SetupDepth: 1);
-        var result = redmuffin.Tools.QualityGates.Analysis.ScrapDuplication.ClassifyChannel(
+        var result = redmuffin.Tools.QualityGates.Analysis.DuplicationChannelClassifier.ClassifyChannel(
             methods: [],
             sharedForms: 1,
             variablePoints: 10,

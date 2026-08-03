@@ -41,7 +41,7 @@ slopwatch analyze -d . --fail-on warning
 | **SCRAP**        | `scrap`        | Test structural analyzer. Jaccard similarity on Roslyn-normalized test bodies. Outputs STABLE/LOCAL/SPLIT.      | 0=pass, 1=error, 2=breach |
 | **Architecture** | `architecture` | Dependency graph, cycles, zone metrics (A/I/D; healthy/pain/useless). YAML: allowed-dependencies (`all`), component-map, forbidden-dependencies, allowed-exceptions, ignored-components, healthy-threshold (0.3), fail-on-cycles. | 0=pass, 1=error, 2=breach |
 | **Depth**        | `depth`        | Structural quality — detects shallow methods, parameter bloat, wrong abstractions, and entanglement             | 0=pass, 2=fail, 1=error   |
-| **Mutation**     | `mutation`     | 9 mutation categories (22 rules + null-rvalue discovery). In-place Roslyn mutation; differential JSON manifest; `--mutation-warning` default 50. | 0=pass, 1=error           |
+| **Mutation**     | `mutation`     | 9 mutation categories (22 rules + null-rvalue discovery). In-place Roslyn mutation; embedded differential manifest (skip proven forms); `--mutation-warning` default 100 (**STRONG SIGNAL → split now**, mandatory); `--update-manifest`. | 0=pass, 1=error           |
 | **Duplicates**   | `duplicates`   | Production structural DRY (dry4clj/dry4java port). Roslyn normalization, pairwise Jaccard (threshold 0.82).     | 0=pass, 1=error, 2=breach |
 | **All**          | `all`          | Runs all 6 main gates in sequence. All gates execute regardless of failures (run-all policy). Returns worst exit code. | worst of all gates        |
 
@@ -113,6 +113,29 @@ solution.
 | Mutation result taxonomy | **Fixed in 0.1.2** | `MutantResultType.NoOp` when Apply leaves source unchanged; summary lists no-ops separately from survivors; kill rate excludes no-ops. |
 | `mutation --lines` binder | **Fixed in 0.1.2** | `--lines` binds as string (`10,20`); `MutateCommand.ParseLines` builds the set (0-based Roslyn lines). |
 | CoverageReader fixture `coverage-basic.xml` | **Fixed in 0.1.2** | Fixture restored under `tests/.../Fixtures/coverage-basic.xml`. |
+
+## Cleanup residual (tools dogfood, 2026-08-03)
+
+Level-1 classification after characterization + P0 mutation. **Do not thrash** open residual rows for score-only greens.
+
+### Closed this session (not residual)
+
+| Class | Items | Action |
+| --- | --- | --- |
+| **CRAP fixed** | `FormatText`, `FindTests`, `FindDuplicates` | Characterization raised coverage past threshold. |
+| **Mutation P0 (100% kill)** | `ArchOutputFormatter`, `TestMethodParser`, `CyclomaticComplexity`, `ArchConfig`, `CoverageGapDetector` | Manifest footers written; differential skip proven forms. |
+| **Mutation STRONG SIGNAL** | Was `ScrapDuplication.cs` (102 sites) | Split by real seams: `JaccardClustering` (39), `DuplicationChannelClassifier` (45), `SubjectRepetition` (4), `ScrapDuplication.Analyze` orchestrator (14). All under 100 — signal cleared. |
+| **Mutation kill-rate (post-split)** | Split modules above | Boundary tests added. Kill rates: SubjectRepetition **100%**; ScrapDuplication **92.9%** (1 equivalent: `Count == 0`→`1` early-exit); DuplicationChannelClassifier **84.4%** (loop-start `1`→`0` and dead complexity-score band under `BranchCount <= 0`); JaccardClustering **79.5%** (both-empty guard `&&`/`==0` equivalents; `InitUnionFind` start `0`→`1` with default zero array; `j = i+1`→`i` self-union no-op). No production thrash. |
+
+### Open residual (leave)
+
+| Class | Items | Action |
+| --- | --- | --- |
+| **CRAP formula-bound (CC ≥ 8)** | `ArchConfig.Parse`, `ComputeAbstractnessByComponent`, `AnalyzeMethod`, `NormalizeNode`, `ApplyMutation` | Accept residual; more coverage cannot green CC ≥ 8. |
+| **CRAP harness / I/O** | `AllCommand.ExecuteAsync` / `ResolveProjectPath`, `MutateHandler.RunMutationCoreAsync`, `MutationRunner.RunAsync` / `RunTestsAsync` | Cobertura theater on CLI/process harness — leave. |
+| **SCRAP** | Local AutoRefactor only (0 SPLIT) | **Leave Local.** Inline arrange/data *is* the test; factories would be metric gaming. |
+| **Depth** | Shallow pattern helpers; wrong-abstraction/entangled algorithm methods | KEEP per Depth decision tree (visitor/pattern, algorithm branching). No shallow thrash reverse. |
+| **Mutation P0 (hardened, residual OK)** | `ScrapScorer` (~93%), `DupesDetector` (~76%) | Boundary tests raised kill rates. Remaining: `* 1.0` / `>2` vs `>=2` **equivalent** on ScrapScorer; Dupes sort/line/Jaccard edges. No production thrash. |
 
 Consumer evidence (Morpheus handoff, optional):
 `redmuffin.Morpheus` `docs/solutions/developer-experience/quality-gates-mutation-tool-handoff-2026-08-02.md`.
