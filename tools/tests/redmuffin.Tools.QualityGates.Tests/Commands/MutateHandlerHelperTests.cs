@@ -73,20 +73,21 @@ public sealed class MutateHandlerHelperTests
     }
 
     [Test]
-    public async Task WarnIfSiteCountHigh_writes_when_count_exceeds_threshold()
+    public async Task WarnIfSiteCountHigh_writes_strong_signal_when_count_exceeds_threshold()
     {
         using var writer = new StringWriter();
-        await MutateHandler.WarnIfSiteCountHighAsync(51, 50, writer).ConfigureAwait(false);
-        await Assert.That(writer.ToString()).Contains("WARNING");
-        await Assert.That(writer.ToString()).Contains("51");
-        await Assert.That(writer.ToString()).Contains("50");
+        await MutateHandler.WarnIfSiteCountHighAsync(101, 100, writer).ConfigureAwait(false);
+        await Assert.That(writer.ToString()).Contains("STRONG SIGNAL");
+        await Assert.That(writer.ToString()).Contains("101");
+        await Assert.That(writer.ToString()).Contains("100");
+        await Assert.That(writer.ToString()).Contains("Split");
     }
 
     [Test]
     public async Task WarnIfSiteCountHigh_silent_when_at_or_below_threshold()
     {
         using var writer = new StringWriter();
-        await MutateHandler.WarnIfSiteCountHighAsync(50, 50, writer).ConfigureAwait(false);
+        await MutateHandler.WarnIfSiteCountHighAsync(100, 100, writer).ConfigureAwait(false);
         await Assert.That(writer.ToString()).IsEmpty();
     }
 
