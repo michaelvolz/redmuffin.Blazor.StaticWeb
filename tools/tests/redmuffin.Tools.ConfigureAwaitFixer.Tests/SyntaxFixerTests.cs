@@ -1,4 +1,4 @@
-namespace redmuffin.Tools.QualityGates.Tests.ConfigureAwaitFixer;
+namespace redmuffin.Tools.ConfigureAwaitFixer.Tests;
 
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;

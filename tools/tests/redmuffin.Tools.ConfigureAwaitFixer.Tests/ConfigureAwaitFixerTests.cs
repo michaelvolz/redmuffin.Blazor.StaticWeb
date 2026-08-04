@@ -1,4 +1,4 @@
-namespace redmuffin.Tools.QualityGates.Tests;
+namespace redmuffin.Tools.ConfigureAwaitFixer.Tests;
 
 using System.Diagnostics;
 

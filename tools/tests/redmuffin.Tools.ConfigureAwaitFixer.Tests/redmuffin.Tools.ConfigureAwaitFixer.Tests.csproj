@@ -11,11 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Fixtures\**\*" />
-    <Content Include="Fixtures\**\*" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="coverlet.collector">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -26,13 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\redmuffin.Tools.QualityGates\redmuffin.Tools.QualityGates.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Fixtures\**\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <ProjectReference Include="..\..\src\redmuffin.Tools.ConfigureAwaitFixer\ConfigureAwaitFixer.csproj" />
   </ItemGroup>
 
 </Project>

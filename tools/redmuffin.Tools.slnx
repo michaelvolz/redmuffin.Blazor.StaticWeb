@@ -5,5 +5,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/redmuffin.Tools.QualityGates.Tests/redmuffin.Tools.QualityGates.Tests.csproj" />
+    <Project Path="tests/redmuffin.Tools.ConfigureAwaitFixer.Tests/redmuffin.Tools.ConfigureAwaitFixer.Tests.csproj" />
   </Folder>
 </Solution>
+

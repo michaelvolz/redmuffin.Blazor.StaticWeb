@@ -16,11 +16,15 @@ public sealed class SlnxProjectDiscoveryTests
         await Assert.That(Path.GetFileName(result.SlnxPath))
             .IsEqualTo("redmuffin.Tools.slnx");
         await Assert.That(result.SourceProjects.Count).IsEqualTo(2);
-        await Assert.That(result.TestProjects.Count).IsEqualTo(1);
-        await Assert.That(result.SourceProjects[0])
-            .EndsWith("redmuffin.Tools.QualityGates.csproj");
-        await Assert.That(result.TestProjects[0])
-            .EndsWith("redmuffin.Tools.QualityGates.Tests.csproj");
+        await Assert.That(result.TestProjects.Count).IsEqualTo(2);
+        await Assert.That(result.SourceProjects.Any(p =>
+            p.EndsWith("redmuffin.Tools.QualityGates.csproj", StringComparison.Ordinal))).IsTrue();
+        await Assert.That(result.SourceProjects.Any(p =>
+            p.EndsWith("ConfigureAwaitFixer.csproj", StringComparison.Ordinal))).IsTrue();
+        await Assert.That(result.TestProjects.Any(p =>
+            p.EndsWith("redmuffin.Tools.QualityGates.Tests.csproj", StringComparison.Ordinal))).IsTrue();
+        await Assert.That(result.TestProjects.Any(p =>
+            p.EndsWith("redmuffin.Tools.ConfigureAwaitFixer.Tests.csproj", StringComparison.Ordinal))).IsTrue();
     }
 
     [Test]
@@ -126,9 +130,13 @@ public sealed class SlnxProjectDiscoveryTests
 
         await Assert.That(result).IsNotNull();
         await Assert.That(result.SourceProjects.Count).IsEqualTo(2);
-        await Assert.That(result.TestProjects.Count).IsEqualTo(1);
-        await Assert.That(result.SourceProjects[0])
-            .EndsWith("redmuffin.Tools.QualityGates.csproj");
+        await Assert.That(result.TestProjects.Count).IsEqualTo(2);
+        await Assert.That(result.SourceProjects.Any(p =>
+            p.EndsWith("redmuffin.Tools.QualityGates.csproj", StringComparison.Ordinal))).IsTrue();
+        await Assert.That(result.TestProjects.Any(p =>
+            p.EndsWith("redmuffin.Tools.QualityGates.Tests.csproj", StringComparison.Ordinal))).IsTrue();
+        await Assert.That(result.TestProjects.Any(p =>
+            p.EndsWith("redmuffin.Tools.ConfigureAwaitFixer.Tests.csproj", StringComparison.Ordinal))).IsTrue();
     }
 
     private static string GetRepoRoot()
