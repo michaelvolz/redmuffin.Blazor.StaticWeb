@@ -12,7 +12,6 @@
     <AzureFunctionsWorkerExtensionsHttpVersion>3.3.0</AzureFunctionsWorkerExtensionsHttpVersion>
     <AzureFunctionsWorkerExtensionsHttpAspNetCoreVersion>2.1.1</AzureFunctionsWorkerExtensionsHttpAspNetCoreVersion>
     <AzureFunctionsWorkerSdkVersion>2.0.7</AzureFunctionsWorkerSdkVersion>
-    <CoverletVersion>8.0.1</CoverletVersion>
     <BunitVersion>2.7.2</BunitVersion>
     <MicrosoftTestingPlatformVersion>2.2.3</MicrosoftTestingPlatformVersion>
     <AngleSharpVersion>1.5.2</AngleSharpVersion>
@@ -30,10 +29,6 @@
     <MediatorVersion>3.0.2</MediatorVersion>
   </PropertyGroup>
   <ItemGroup Label="MicrosoftExtensions">
-    <PackageVersion Include="coverlet.collector" Version="10.0.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageVersion>
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsVersion)" />
@@ -60,7 +55,6 @@
     <PackageVersion Include="TUnit" Version="$(TUnitVersion)" />
     <PackageVersion Include="TUnit.Assertions" Version="$(TUnitVersion)" />
     <PackageVersion Include="bunit" Version="$(BunitVersion)" />
-    <PackageVersion Include="coverlet.msbuild" Version="$(CoverletVersion)" />
     <PackageVersion Include="LightMock.Generator" Version="1.2.3" />
     <PackageVersion Include="Microsoft.Testing.Platform" Version="$(MicrosoftTestingPlatformVersion)" />
   </ItemGroup>
