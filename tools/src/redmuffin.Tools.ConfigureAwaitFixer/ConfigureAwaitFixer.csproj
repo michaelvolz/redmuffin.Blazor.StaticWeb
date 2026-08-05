@@ -7,15 +7,7 @@
     <Nullable>enable</Nullable>
     <AssemblyName>ConfigureAwaitFixer</AssemblyName>
     <RootNamespace>redmuffin.Tools.ConfigureAwaitFixer</RootNamespace>
-    <IsPackable>true</IsPackable>
-    <PackageId>redmuffin.Tools.ConfigureAwaitFixer</PackageId>
-    <Version>1.0.2</Version>
-    <DevelopmentDependency>true</DevelopmentDependency>
-    <!-- slopwatch-ignore: SW005 [NuGet packaging warning for development-dependency analyzer packages; nuspec structure inherently triggers NU5128] -->
-    <NoWarn>$(NoWarn);NU5128</NoWarn>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <IsConfigureAwaitFixerProject>true</IsConfigureAwaitFixerProject>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,7 +24,7 @@
     <Error Text="PkgMicrosoft_CodeAnalysis_NetAnalyzers is not set. Verify the PackageReference resolves and dotnet restore has run."
            Condition="'$(PkgMicrosoft_CodeAnalysis_NetAnalyzers)' == ''" />
 
-    <!-- Ensure publish directory exists for dotnet pack -->
+    <!-- Ensure publish directory exists for deployment staging -->
     <MakeDir Directories="$(ProjectDir)publish" />
 
     <!-- Analyzer DLLs: copy from NuGet cache to build output (for runtime Assembly.LoadFrom) -->
@@ -41,7 +33,7 @@
     <Copy SourceFiles="$(PkgMicrosoft_CodeAnalysis_NetAnalyzers)\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll"
           DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
 
-    <!-- Analyzer DLLs: copy from output to publish (for NuGet packaging) -->
+    <!-- Analyzer DLLs: copy from output to publish (for deployment staging) -->
     <Copy SourceFiles="$(OutputPath)Microsoft.CodeAnalysis.NetAnalyzers.dll;$(OutputPath)Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll"
           DestinationFolder="$(ProjectDir)publish" SkipUnchangedFiles="true" />
 
@@ -61,25 +53,5 @@
     <Copy SourceFiles="@(_FixerOutput)"
           DestinationFolder="$(ProjectDir)publish" SkipUnchangedFiles="true" />
   </Target>
-
-  <!-- README (packed as PackageReadmeFile) -->
-  <ItemGroup>
-    <None Include="README.md"
-          Pack="true"
-          PackagePath="\"
-          Visible="false" />
-  </ItemGroup>
-
-  <!-- Pre-built publish output, committed to repo -->
-  <ItemGroup>
-    <None Include="publish/*"
-          Pack="true"
-          PackagePath="tools/net10.0/any"
-          Visible="false" />
-    <None Include="publish/BuildHost-netcore/*"
-          Pack="true"
-          PackagePath="tools/net10.0/any/BuildHost-netcore"
-          Visible="false" />
-  </ItemGroup>
 
 </Project>

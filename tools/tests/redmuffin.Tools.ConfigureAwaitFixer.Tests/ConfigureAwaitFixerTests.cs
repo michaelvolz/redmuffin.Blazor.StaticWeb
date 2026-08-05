@@ -2,7 +2,7 @@ namespace redmuffin.Tools.ConfigureAwaitFixer.Tests;
 
 using System.Diagnostics;
 
-file static class ConfigureAwaitFixerFixture
+internal static class ConfigureAwaitFixerFixture
 {
     static ConfigureAwaitFixerFixture()
     {

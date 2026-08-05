@@ -58,3 +58,7 @@ public static class SyntaxFixer
         return awaitExpr.WithExpression(newExpr);
     }
 }
+
+// clj-mutate-manifest-begin
+// {"version":1,"testedAt":"2026-08-04T19:44:29.5419476Z","moduleHash":"09908328fa98b39c5baa6f00cad69ab0cf9f9994f803e53933b5bf3ec8d5f7bf","forms":[{"id":"IsSourceFile","line":15,"endLine":26,"hash":"831a6b1e3e6fdc7b6ab6df1e190574a52a15f86487c8c3d8b07dd64d125d661a"},{"id":"HasConfigureAwait","line":31,"endLine":39,"hash":"6fad4179120115960ca67c66223def407f5288260d85f622a48dbda0d1aa7876"},{"id":"AddConfigureAwait","line":44,"endLine":58,"hash":"6125249d4271a3789b238a7a70502f9ddec5f0079ec161ff76b44a4b7a76a2a1"}]}
+// clj-mutate-manifest-end

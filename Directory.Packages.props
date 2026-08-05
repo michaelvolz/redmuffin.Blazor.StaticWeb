@@ -77,7 +77,6 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.300" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="$(MicrosoftCodeAnalysisVersion)" />
-    <PackageVersion Include="redmuffin.Tools.ConfigureAwaitFixer" Version="1.0.2" />
     <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
   </ItemGroup>
   <ItemGroup Label="Analyzers">

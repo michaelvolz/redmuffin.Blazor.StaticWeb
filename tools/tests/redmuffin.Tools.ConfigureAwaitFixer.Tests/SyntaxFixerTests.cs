@@ -16,32 +16,28 @@ public sealed class SyntaxFixerTests
     public async Task HasConfigureAwait_ReturnsTrue_WhenConfigureAwaitFalseIsPresent()
     {
         // Arrange
-        var code = "await Task.CompletedTask.ConfigureAwait(false)";
-        var tree = CSharpSyntaxTree.ParseText(code);
-        var root = await tree.GetRootAsync().ConfigureAwait(false);
-        var awaitExpr = root.DescendantNodes().OfType<AwaitExpressionSyntax>().Single();
+        var awaitExpr = await ParseAwaitAsync("await Task.CompletedTask.ConfigureAwait(false)").ConfigureAwait(false);
 
         // Act
         var result = SyntaxFixer.HasConfigureAwait(awaitExpr);
 
         // Assert
         await Assert.That(result).IsTrue();
+        await Assert.That(awaitExpr.Expression).IsTypeOf<InvocationExpressionSyntax>();
     }
 
     [Test]
     public async Task HasConfigureAwait_ReturnsFalse_WhenConfigureAwaitIsAbsent()
     {
         // Arrange
-        var code = "await Task.CompletedTask";
-        var tree = CSharpSyntaxTree.ParseText(code);
-        var root = await tree.GetRootAsync().ConfigureAwait(false);
-        var awaitExpr = root.DescendantNodes().OfType<AwaitExpressionSyntax>().Single();
+        var awaitExpr = await ParseAwaitAsync("await Task.CompletedTask").ConfigureAwait(false);
 
         // Act
         var result = SyntaxFixer.HasConfigureAwait(awaitExpr);
 
         // Assert
         await Assert.That(result).IsFalse();
+        await Assert.That(awaitExpr.Expression).IsTypeOf<MemberAccessExpressionSyntax>();
     }
 
     [Test]
@@ -57,42 +53,36 @@ public sealed class SyntaxFixerTests
                 }
             }
             """;
-        var tree = CSharpSyntaxTree.ParseText(code);
-        var root = await tree.GetRootAsync().ConfigureAwait(false);
-        var awaitExpr = root.DescendantNodes().OfType<AwaitExpressionSyntax>().Single();
+        var awaitExpr = await ParseAwaitAsync(code).ConfigureAwait(false);
 
         // Act
         var result = SyntaxFixer.HasConfigureAwait(awaitExpr);
 
         // Assert
         await Assert.That(result).IsFalse();
+        await Assert.That(awaitExpr.Expression).IsTypeOf<IdentifierNameSyntax>();
     }
 
     [Test]
     public async Task AddConfigureAwait_WrapsWithConfigureAwaitFalse()
     {
         // Arrange
-        var code = "await Task.CompletedTask";
-        var tree = CSharpSyntaxTree.ParseText(code);
-        var root = await tree.GetRootAsync().ConfigureAwait(false);
-        var awaitExpr = root.DescendantNodes().OfType<AwaitExpressionSyntax>().Single();
+        var awaitExpr = await ParseAwaitAsync("await Task.CompletedTask").ConfigureAwait(false);
 
         // Act
         var result = SyntaxFixer.AddConfigureAwait(awaitExpr);
 
-        // Assert
+        // Assert — the original expression is preserved inside the new call
         var text = result.ToFullString();
         await Assert.That(text).Contains(".ConfigureAwait(false)");
+        await Assert.That(text).Contains("Task.CompletedTask");
     }
 
     [Test]
     public async Task AddConfigureAwait_ReturnsSyntaxThatParses()
     {
         // Arrange
-        var code = "await Task.CompletedTask";
-        var tree = CSharpSyntaxTree.ParseText(code);
-        var root = await tree.GetRootAsync().ConfigureAwait(false);
-        var awaitExpr = root.DescendantNodes().OfType<AwaitExpressionSyntax>().Single();
+        var awaitExpr = await ParseAwaitAsync("await Task.CompletedTask").ConfigureAwait(false);
 
         // Act
         var result = SyntaxFixer.AddConfigureAwait(awaitExpr);
@@ -102,6 +92,8 @@ public sealed class SyntaxFixerTests
         var parsed = CSharpSyntaxTree.ParseText(wrapped);
         var errors = parsed.GetDiagnostics().Where(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).ToList();
         await Assert.That(errors).IsEmpty();
+        var parsedRoot = await parsed.GetRootAsync().ConfigureAwait(false);
+        await Assert.That(parsedRoot.ToFullString()).Contains(".ConfigureAwait(false)");
     }
 
     [Test]
@@ -140,5 +132,11 @@ public sealed class SyntaxFixerTests
         yield return "/src/Foo.cs";
         yield return "/src/Services/Bar.cs";
         yield return "/src/Components/Baz.razor.cs";
+    }
+
+    private static async Task<AwaitExpressionSyntax> ParseAwaitAsync(string code)
+    {
+        var root = await CSharpSyntaxTree.ParseText(code).GetRootAsync().ConfigureAwait(false);
+        return root.DescendantNodes().OfType<AwaitExpressionSyntax>().Single();
     }
 }
