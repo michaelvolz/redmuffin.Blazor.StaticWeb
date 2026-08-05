@@ -34,9 +34,17 @@ Mandatory pre-mutation discipline in this repo: externalize (1) provable problem
 
 Searchable archive of past solutions, bugs, best practices, and workflow patterns. Entries use YAML frontmatter (`module`, `tags`, `problem_type`, `date`, `component`, `severity`, track-specific fields) and are organized under category subdirectories (`tooling-decisions/`, `developer-experience/`, `workflow-issues/`, etc.). Relevant when implementing features, debugging, or making decisions in areas that already have documented learnings.
 
+## ConfigureAwaitFixer daemon
+
+A long-lived local process that keeps MSBuildWorkspace and the official CA2007 analyzer warm and serves per-file fix requests over a named pipe. Clients use a short-lived `--fix` path; the daemon is not a fixed OS service and idle-exits after a period without requests.
+
+## Detached daemon spawn
+
+Starting the ConfigureAwaitFixer daemon outside the agent harness Job Object so the warm process survives when the hook or terminal command that first needed it ends. On Windows this is demand-started via Task Scheduler rather than as a child of the client process; instance, log, and idle options cross that boundary as command-line arguments, not environment variables alone.
+
 ## Dual TFM stack
 
-Intentional multi-target layout for this solution: the Azure Static Web Apps Functions API remains on **net9.0** until the host supports .NET 10 Functions, while the Blazor WASM app, launcher, and most tools target **net10.0**. Shared libraries used by the API stay on net9. Package *versions* (for example Microsoft.Extensions on the 10.x line) can still apply to net9 projects when packages multi-target; dual TFM alone is not a reason to leave sibling packages in the same family on mismatched patches.
+Intentional multi-target layout for this solution: the Azure Static Web Apps Functions API remains on **net9.0** until the host supports .NET 10 Functions, while the Blazor WASM app, launcher, and most tools target **net10.0**. Shared libraries used by the API stay on net9. Package _versions_ (for example Microsoft.Extensions on the 10.x line) can still apply to net9 projects when packages multi-target; dual TFM alone is not a reason to leave sibling packages in the same family on mismatched patches.
 
 ## Shared Microsoft version property
 
@@ -136,4 +144,4 @@ The isolated-worker Api app is a **separate deployment unit** from the WASM host
 
 Composition-root choice of real vs synthetic module implementation via a host-computed boolean passed into `Add{Module}Module(...)`. Replaces NavigationManager-based factories that resolved concrete services at first use.
 
-*(Seeded from the 2026-06-20 Grok Build CLI Roslyn LSP Windows spawn + restart learning in tooling-decisions/ + prior session memory on agent harness enablement. Package-management terms accreted from the 2026-07-22 NU1605/NU1902 CPM restore learning. Quality-gates terms accreted from the 2026-08-02 Uncle Bob upstream-sync learning. Modular monolith terms accreted 2026-08-03; Raindrop Phase 1 / Api boundary terms accreted 2026-08-03; Modules vs Pages vs Components homes accreted 2026-08-03; need-set + modular/lazy axes refined 2026-08-03 with end-to-end client modularization learning.)*
+_(Seeded from the 2026-06-20 Grok Build CLI Roslyn LSP Windows spawn + restart learning in tooling-decisions/ + prior session memory on agent harness enablement. Package-management terms accreted from the 2026-07-22 NU1605/NU1902 CPM restore learning. Quality-gates terms accreted from the 2026-08-02 Uncle Bob upstream-sync learning. Modular monolith terms accreted 2026-08-03; Raindrop Phase 1 / Api boundary terms accreted 2026-08-03; Modules vs Pages vs Components homes accreted 2026-08-03; need-set + modular/lazy axes refined 2026-08-03 with end-to-end client modularization learning.)_
