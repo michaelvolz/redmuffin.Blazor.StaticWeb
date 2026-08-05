@@ -28,8 +28,12 @@ public sealed class Daemon : IAsyncDisposable
 
     private readonly MSBuildWorkspace _workspace = MSBuildWorkspace.Create();
     private readonly SemaphoreSlim _workspaceLock = new(1, 1);
-    private readonly Dictionary<string, string> _syncedTexts = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<string, ProjectId> _projectIds = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, string> _syncedTexts = new(
+        StringComparer.OrdinalIgnoreCase
+    );
+    private readonly Dictionary<string, ProjectId> _projectIds = new(
+        StringComparer.OrdinalIgnoreCase
+    );
     private readonly ImmutableArray<DiagnosticAnalyzer> _analyzers;
     private readonly CancellationTokenSource _shutdownCts = new();
     private readonly WorkspaceEventRegistration _workspaceFailedRegistration;
@@ -38,8 +42,9 @@ public sealed class Daemon : IAsyncDisposable
     private Daemon(ImmutableArray<DiagnosticAnalyzer> analyzers)
     {
         _analyzers = analyzers;
-        _workspaceFailedRegistration =
-            _workspace.RegisterWorkspaceFailedHandler(e => DaemonLog.Error($"Workspace: {e.Diagnostic.Message}"));
+        _workspaceFailedRegistration = _workspace.RegisterWorkspaceFailedHandler(e =>
+            DaemonLog.Error($"Workspace: {e.Diagnostic.Message}")
+        );
     }
 
     /// <summary>
@@ -52,7 +57,9 @@ public sealed class Daemon : IAsyncDisposable
     public static async Task<int> RunAsync(Arguments args)
     {
         ApplyEnvironmentOverrides(args);
-        DaemonLog.Info($"Daemon starting (pid {Environment.ProcessId.ToString(CultureInfo.InvariantCulture)})");
+        DaemonLog.Info(
+            $"Daemon starting (pid {Environment.ProcessId.ToString(CultureInfo.InvariantCulture)})"
+        );
         var analyzers = AnalyzerLoader.Load(DaemonLog.Error);
         if (analyzers.IsEmpty)
         {
@@ -90,7 +97,9 @@ public sealed class Daemon : IAsyncDisposable
     {
         _lastActivityUtc = DateTime.UtcNow;
         var idleTimeout = GetIdleTimeout();
-        DaemonLog.Info($"Listening on pipe {Protocol.PipeName} (idle exit after {idleTimeout.ToString("c", CultureInfo.InvariantCulture)})");
+        DaemonLog.Info(
+            $"Listening on pipe {Protocol.PipeName} (idle exit after {idleTimeout.ToString("c", CultureInfo.InvariantCulture)})"
+        );
 
         var acceptLoop = AcceptLoopAsync();
 
@@ -125,7 +134,8 @@ public sealed class Daemon : IAsyncDisposable
                 PipeTransmissionMode.Byte,
                 PipeOptions.Asynchronous,
                 0,
-                0);
+                0
+            );
 
             try
             {
@@ -159,14 +169,24 @@ public sealed class Daemon : IAsyncDisposable
             cts.CancelAfter(RequestTimeout);
 
             var json = await Protocol.ReadAsync(client, cts.Token).ConfigureAwait(false);
-            var request = JsonSerializer.Deserialize<Protocol.FixRequest>(json, Protocol.JsonOptions)
+            var request =
+                JsonSerializer.Deserialize<Protocol.FixRequest>(json, Protocol.JsonOptions)
                 ?? throw new InvalidDataException("Malformed daemon request.");
 
             DaemonLog.Info($"Request: {request.File}");
             var response = await HandleRequestAsync(request.File, cts.Token).ConfigureAwait(false);
-            DaemonLog.Info(response.Ok ? $"Responded: {response.Message}" : $"Failure response: {response.Message}");
+            DaemonLog.Info(
+                response.Ok
+                    ? $"Responded: {response.Message}"
+                    : $"Failure response: {response.Message}"
+            );
 
-            await Protocol.WriteAsync(client, JsonSerializer.Serialize(response, Protocol.JsonOptions), cts.Token)
+            await Protocol
+                .WriteAsync(
+                    client,
+                    JsonSerializer.Serialize(response, Protocol.JsonOptions),
+                    cts.Token
+                )
                 .ConfigureAwait(false);
         }
         catch (OperationCanceledException)
@@ -176,7 +196,8 @@ public sealed class Daemon : IAsyncDisposable
         catch (Exception ex)
         {
             DaemonLog.Error($"FATAL: {ex}");
-            await TryRespondFailureAsync(client, $"Daemon error: {ex.Message}").ConfigureAwait(false);
+            await TryRespondFailureAsync(client, $"Daemon error: {ex.Message}")
+                .ConfigureAwait(false);
         }
         finally
         {
@@ -188,10 +209,12 @@ public sealed class Daemon : IAsyncDisposable
     {
         try
         {
-            await Protocol.WriteAsync(
+            await Protocol
+                .WriteAsync(
                     client,
                     JsonSerializer.Serialize(Protocol.Failure(message), Protocol.JsonOptions),
-                    CancellationToken.None)
+                    CancellationToken.None
+                )
                 .ConfigureAwait(false);
         }
         catch (Exception ex)
@@ -200,7 +223,10 @@ public sealed class Daemon : IAsyncDisposable
         }
     }
 
-    private async Task<Protocol.FixResponse> HandleRequestAsync(string filePath, CancellationToken cancellationToken)
+    private async Task<Protocol.FixResponse> HandleRequestAsync(
+        string filePath,
+        CancellationToken cancellationToken
+    )
     {
         var fullPath = Path.GetFullPath(filePath);
 
@@ -216,53 +242,77 @@ public sealed class Daemon : IAsyncDisposable
 
         for (var attempt = 0; attempt < 3; attempt++)
         {
-            var originalText = await File.ReadAllTextAsync(fullPath, cancellationToken).ConfigureAwait(false);
-            var diagnostics = await GetDiagnosticsAsync(projectPath, fullPath, originalText, cancellationToken)
+            var originalText = await File.ReadAllTextAsync(fullPath, cancellationToken)
+                .ConfigureAwait(false);
+            var diagnostics = await GetDiagnosticsAsync(
+                    projectPath,
+                    fullPath,
+                    originalText,
+                    cancellationToken
+                )
                 .ConfigureAwait(false);
             var outcome = FixRunner.ApplyFixes(diagnostics, fullPath, originalText);
 
             if (outcome.ParseError is not null)
-                return Protocol.Failure($"Parse error after fix in {fullPath}: {outcome.ParseError}");
+                return Protocol.Failure(
+                    $"Parse error after fix in {fullPath}: {outcome.ParseError}"
+                );
 
             if (outcome.NewText is null)
                 return Protocol.Success(0, string.Empty);
 
             // Pre-write re-check: the file may have changed while we analyzed.
             // Retry against the new content; never clobber concurrent edits.
-            var currentText = await File.ReadAllTextAsync(fullPath, cancellationToken).ConfigureAwait(false);
+            var currentText = await File.ReadAllTextAsync(fullPath, cancellationToken)
+                .ConfigureAwait(false);
             if (!string.Equals(currentText, originalText, StringComparison.Ordinal))
                 continue;
 
-            await File.WriteAllTextAsync(fullPath, outcome.NewText, cancellationToken).ConfigureAwait(false);
-            var fixedMessage = $"Fixed {outcome.FixedAwaits.ToString(CultureInfo.InvariantCulture)} await(s) in {fullPath}";
+            await File.WriteAllTextAsync(fullPath, outcome.NewText, cancellationToken)
+                .ConfigureAwait(false);
+            var fixedMessage =
+                $"Fixed {outcome.FixedAwaits.ToString(CultureInfo.InvariantCulture)} await(s) in {fullPath}";
             DaemonLog.Info(fixedMessage);
             return Protocol.Success(outcome.FixedAwaits, fixedMessage);
         }
 
-        return Protocol.Failure($"File {fullPath} kept changing while it was analyzed; retry the edit.");
+        return Protocol.Failure(
+            $"File {fullPath} kept changing while it was analyzed; retry the edit."
+        );
     }
 
     private async Task<ImmutableArray<Diagnostic>> GetDiagnosticsAsync(
         string projectPath,
         string filePath,
         string originalText,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         await _workspaceLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         ProjectId projectId;
         try
         {
-            projectId = await EnsureProjectOpenAsync(projectPath, cancellationToken).ConfigureAwait(false);
-            await SyncDocumentAsync(projectId, projectPath, filePath, originalText, cancellationToken).ConfigureAwait(false);
+            projectId = await EnsureProjectOpenAsync(projectPath, cancellationToken)
+                .ConfigureAwait(false);
+            await SyncDocumentAsync(
+                    projectId,
+                    projectPath,
+                    filePath,
+                    originalText,
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
         }
         finally
         {
             _workspaceLock.Release();
         }
 
-        var project = _workspace.CurrentSolution.GetProject(projectId)
+        var project =
+            _workspace.CurrentSolution.GetProject(projectId)
             ?? throw new InvalidOperationException($"Workspace lost project {projectPath}.");
-        var compilation = await project.GetCompilationAsync(cancellationToken).ConfigureAwait(false)
+        var compilation =
+            await project.GetCompilationAsync(cancellationToken).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Failed to get compilation for {projectPath}.");
 
         var diagnostics = await compilation
@@ -271,55 +321,104 @@ public sealed class Daemon : IAsyncDisposable
             .ConfigureAwait(false);
 
         return diagnostics
-            .Where(d => string.Equals(d.Id, "CA2007", StringComparison.Ordinal)
+            .Where(d =>
+                string.Equals(d.Id, "CA2007", StringComparison.Ordinal)
                 && d.Location.SourceTree is not null
-                && string.Equals(d.Location.SourceTree.FilePath, filePath, StringComparison.OrdinalIgnoreCase))
+                && string.Equals(
+                    d.Location.SourceTree.FilePath,
+                    filePath,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
             .ToImmutableArray();
     }
 
-    private async Task<ProjectId> EnsureProjectOpenAsync(string projectPath, CancellationToken cancellationToken)
+    private async Task<ProjectId> EnsureProjectOpenAsync(
+        string projectPath,
+        CancellationToken cancellationToken
+    )
     {
-        if (_projectIds.TryGetValue(projectPath, out var cached)
-            && _workspace.CurrentSolution.GetProject(cached) is not null)
+        if (
+            _projectIds.TryGetValue(projectPath, out var cached)
+            && _workspace.CurrentSolution.GetProject(cached) is not null
+        )
         {
             return cached;
         }
 
+        // MSBuildWorkspace opens the whole project graph, so a project we have
+        // only seen as a reference (e.g. a library pulled in by an opened tests
+        // project) is already part of the workspace solution. Re-opening it
+        // throws "'<project>' is already part of the workspace" — reuse the
+        // already-open project instead.
+        var existing = FindOpenProject(projectPath);
+        if (existing is not null)
+        {
+            _projectIds[projectPath] = existing.Id;
+            return existing.Id;
+        }
+
         DaemonLog.Info($"Opening project {projectPath}");
-        var project = await _workspace.OpenProjectAsync(projectPath, cancellationToken: cancellationToken)
+        var project = await _workspace
+            .OpenProjectAsync(projectPath, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
         _projectIds[projectPath] = project.Id;
         return project.Id;
     }
+
+    /// <summary>
+    ///     Returns the project already part of the workspace solution whose
+    ///     csproj path matches <paramref name="projectPath"/>, or null. The
+    ///     workspace loads whole project graphs, so a project we have only seen
+    ///     as a reference is present here even though we never opened it
+    ///     explicitly; re-opening it throws "'&lt;project&gt;' is already part
+    ///     of the workspace".
+    /// </summary>
+    private Project? FindOpenProject(string projectPath) =>
+        _workspace.CurrentSolution.Projects.FirstOrDefault(p =>
+            !string.IsNullOrEmpty(p.FilePath)
+            && string.Equals(p.FilePath, projectPath, StringComparison.OrdinalIgnoreCase)
+        );
 
     private async Task SyncDocumentAsync(
         ProjectId projectId,
         string projectPath,
         string filePath,
         string originalText,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
-        if (_syncedTexts.TryGetValue(filePath, out var synced)
-            && string.Equals(synced, originalText, StringComparison.Ordinal))
+        if (
+            _syncedTexts.TryGetValue(filePath, out var synced)
+            && string.Equals(synced, originalText, StringComparison.Ordinal)
+        )
         {
             return;
         }
 
         var solution = _workspace.CurrentSolution;
-        var project = solution.GetProject(projectId)
+        var project =
+            solution.GetProject(projectId)
             ?? throw new InvalidOperationException($"Workspace lost project {projectId}.");
         var document = project.Documents.FirstOrDefault(d =>
-            string.Equals(d.FilePath, filePath, StringComparison.OrdinalIgnoreCase));
+            string.Equals(d.FilePath, filePath, StringComparison.OrdinalIgnoreCase)
+        );
 
         var newSolution = document is not null
             ? solution.WithDocumentText(document.Id, SourceText.From(originalText, Encoding.UTF8))
-            : solution.AddDocument(DocumentInfo.Create(
-                DocumentId.CreateNewId(projectId),
-                Path.GetFileName(filePath),
-                filePath: filePath,
-                loader: TextLoader.From(TextAndVersion.Create(
-                    SourceText.From(originalText, Encoding.UTF8),
-                    VersionStamp.Create()))));
+            : solution.AddDocument(
+                DocumentInfo.Create(
+                    DocumentId.CreateNewId(projectId),
+                    Path.GetFileName(filePath),
+                    filePath: filePath,
+                    loader: TextLoader.From(
+                        TextAndVersion.Create(
+                            SourceText.From(originalText, Encoding.UTF8),
+                            VersionStamp.Create()
+                        )
+                    )
+                )
+            );
 
         if (_workspace.TryApplyChanges(newSolution))
         {
@@ -327,26 +426,49 @@ public sealed class Daemon : IAsyncDisposable
             return;
         }
 
-        // MSBuildWorkspace rejected the in-memory change (typically a brand-new
-        // file that is not yet part of the evaluated project). Reload the
-        // project from disk so the file is visible, then record the text the
-        // workspace actually holds.
+        var reloadedText = await ReloadProjectAsync(
+                projectId,
+                projectPath,
+                filePath,
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+        _syncedTexts[filePath] = reloadedText;
+    }
+
+    /// <summary>
+    ///     MSBuildWorkspace rejected the in-memory change (typically a
+    ///     brand-new file that is not yet part of the evaluated project).
+    ///     Reload the project from disk so the file is visible, and return
+    ///     the text the workspace actually holds.
+    /// </summary>
+    private async Task<string> ReloadProjectAsync(
+        ProjectId projectId,
+        string projectPath,
+        string filePath,
+        CancellationToken cancellationToken
+    )
+    {
         DaemonLog.Info($"Workspace rejected sync for {filePath}; reloading {projectPath}");
         _workspace.TryApplyChanges(_workspace.CurrentSolution.RemoveProject(projectId));
         _projectIds.Remove(projectPath);
 
-        var reopened = await _workspace.OpenProjectAsync(projectPath, cancellationToken: cancellationToken)
+        var reopened = await _workspace
+            .OpenProjectAsync(projectPath, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
         var reopenedDocument = reopened.Documents.FirstOrDefault(d =>
-            string.Equals(d.FilePath, filePath, StringComparison.OrdinalIgnoreCase));
+            string.Equals(d.FilePath, filePath, StringComparison.OrdinalIgnoreCase)
+        );
         if (reopenedDocument is null)
         {
             throw new InvalidOperationException(
-                $"File {filePath} is not part of project {projectPath}; add it to the project before fixing.");
+                $"File {filePath} is not part of project {projectPath}; add it to the project before fixing."
+            );
         }
 
-        var reopenedText = (await reopenedDocument.GetTextAsync(cancellationToken).ConfigureAwait(false)).ToString();
-        _syncedTexts[filePath] = reopenedText;
+        return (
+            await reopenedDocument.GetTextAsync(cancellationToken).ConfigureAwait(false)
+        ).ToString();
     }
 
     private async Task IdleWatcherAsync(TimeSpan idleTimeout)
@@ -358,7 +480,8 @@ public sealed class Daemon : IAsyncDisposable
 
             try
             {
-                await Task.Delay(TimeSpan.FromSeconds(IdlePollIntervalSeconds), _shutdownCts.Token).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromSeconds(IdlePollIntervalSeconds), _shutdownCts.Token)
+                    .ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -370,7 +493,10 @@ public sealed class Daemon : IAsyncDisposable
     private static TimeSpan GetIdleTimeout()
     {
         var raw = Environment.GetEnvironmentVariable("CONFIGUREAWAITFIXER_IDLE_SECONDS");
-        if (int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var seconds) && seconds > 0)
+        if (
+            int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var seconds)
+            && seconds > 0
+        )
             return TimeSpan.FromSeconds(seconds);
         return TimeSpan.FromMinutes(15);
     }

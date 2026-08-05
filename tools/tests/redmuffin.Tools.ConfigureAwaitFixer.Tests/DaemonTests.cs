@@ -1,7 +1,6 @@
 ﻿namespace redmuffin.Tools.ConfigureAwaitFixer.Tests;
 
 using System.Diagnostics;
-
 using redmuffin.Tools.ConfigureAwaitFixer;
 
 [Category("Daemon")]
@@ -32,14 +31,51 @@ public sealed class DaemonTests
     {
         using var env = new TestEnv();
         await CreateTestProjectAsync(env.ProjectDir).ConfigureAwait(false);
-        var first = await CreateFileWithBareAwaitAsync(env.ProjectDir, "First.cs").ConfigureAwait(false);
-        var second = await CreateFileWithBareAwaitAsync(env.ProjectDir, "Second.cs").ConfigureAwait(false);
+        var first = await CreateFileWithBareAwaitAsync(env.ProjectDir, "First.cs")
+            .ConfigureAwait(false);
+        var second = await CreateFileWithBareAwaitAsync(env.ProjectDir, "Second.cs")
+            .ConfigureAwait(false);
 
-        await Assert.That((await RunFixClientAsync(first, env).ConfigureAwait(false)).ExitCode).IsEqualTo(0);
-        await Assert.That((await RunFixClientAsync(second, env).ConfigureAwait(false)).ExitCode).IsEqualTo(0);
+        await Assert
+            .That((await RunFixClientAsync(first, env).ConfigureAwait(false)).ExitCode)
+            .IsEqualTo(0);
+        await Assert
+            .That((await RunFixClientAsync(second, env).ConfigureAwait(false)).ExitCode)
+            .IsEqualTo(0);
 
         var log = await File.ReadAllTextAsync(env.LogPath).ConfigureAwait(false);
         await Assert.That(CountOccurrences(log, "Daemon starting")).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task should_reuse_referenced_project_already_in_workspace()
+    {
+        using var env = new TestEnv();
+        var libDir = Path.Combine(env.ProjectDir, "lib");
+        Directory.CreateDirectory(libDir);
+
+        // Opening the tests project pulls the referenced library into the
+        // MSBuildWorkspace solution, but the daemon only caches the csproj it
+        // opened explicitly. A request for a library file must reuse the
+        // already-open project instead of re-opening it — Roslyn rejects the
+        // duplicate with "'<project>' is already part of the workspace".
+        await CreateTestProjectAsync(env.ProjectDir, Path.Combine(libDir, "Lib.csproj"))
+            .ConfigureAwait(false);
+        var appFile = await CreateFileWithBareAwaitAsync(env.ProjectDir, "AppCode.cs")
+            .ConfigureAwait(false);
+        var libFile = await CreateFileWithBareAwaitAsync(libDir, "LibCode.cs")
+            .ConfigureAwait(false);
+
+        var (firstExit, _) = await RunFixClientAsync(appFile, env).ConfigureAwait(false);
+        await Assert.That(firstExit).IsEqualTo(0);
+
+        var (secondExit, secondStderr) = await RunFixClientAsync(libFile, env)
+            .ConfigureAwait(false);
+        await Assert.That(secondExit).IsEqualTo(0);
+        await Assert.That(secondStderr).DoesNotContain("already part of the workspace");
+        await Assert
+            .That(await File.ReadAllTextAsync(libFile).ConfigureAwait(false))
+            .Contains(".ConfigureAwait(false)");
     }
 
     [Test]
@@ -55,12 +91,15 @@ public sealed class DaemonTests
             files.Add(file);
         }
 
-        var results = await Task.WhenAll(files.Select(f => RunFixClientAsync(f, env))).ConfigureAwait(false);
+        var results = await Task.WhenAll(files.Select(f => RunFixClientAsync(f, env)))
+            .ConfigureAwait(false);
 
         foreach (var (exitCode, _) in results)
             await Assert.That(exitCode).IsEqualTo(0);
         foreach (var file in files)
-            await Assert.That(await File.ReadAllTextAsync(file).ConfigureAwait(false)).Contains(".ConfigureAwait(false)");
+            await Assert
+                .That(await File.ReadAllTextAsync(file).ConfigureAwait(false))
+                .Contains(".ConfigureAwait(false)");
     }
 
     [Test]
@@ -82,8 +121,10 @@ public sealed class DaemonTests
     {
         using var env = new TestEnv();
         await CreateTestProjectAsync(env.ProjectDir).ConfigureAwait(false);
-        var first = await CreateFileWithBareAwaitAsync(env.ProjectDir, "First.cs").ConfigureAwait(false);
-        var second = await CreateFileWithBareAwaitAsync(env.ProjectDir, "Second.cs").ConfigureAwait(false);
+        var first = await CreateFileWithBareAwaitAsync(env.ProjectDir, "First.cs")
+            .ConfigureAwait(false);
+        var second = await CreateFileWithBareAwaitAsync(env.ProjectDir, "Second.cs")
+            .ConfigureAwait(false);
 
         var daemon = await StartDaemonAsync(env, idleSeconds: "30").ConfigureAwait(false);
         try
@@ -92,13 +133,19 @@ public sealed class DaemonTests
             _ = daemon.StandardOutput.ReadToEndAsync();
             daemon.StandardInput.Close();
 
-            await Assert.That((await RunFixClientAsync(first, env).ConfigureAwait(false)).ExitCode).IsEqualTo(0);
+            await Assert
+                .That((await RunFixClientAsync(first, env).ConfigureAwait(false)).ExitCode)
+                .IsEqualTo(0);
 
             daemon.Kill(entireProcessTree: true);
             await daemon.WaitForExitAsync().ConfigureAwait(false);
 
-            await Assert.That((await RunFixClientAsync(second, env).ConfigureAwait(false)).ExitCode).IsEqualTo(0);
-            await Assert.That(await File.ReadAllTextAsync(second).ConfigureAwait(false)).Contains(".ConfigureAwait(false)");
+            await Assert
+                .That((await RunFixClientAsync(second, env).ConfigureAwait(false)).ExitCode)
+                .IsEqualTo(0);
+            await Assert
+                .That(await File.ReadAllTextAsync(second).ConfigureAwait(false))
+                .Contains(".ConfigureAwait(false)");
 
             var log = await File.ReadAllTextAsync(env.LogPath).ConfigureAwait(false);
             await Assert.That(CountOccurrences(log, "Daemon starting")).IsEqualTo(2);
@@ -125,7 +172,9 @@ public sealed class DaemonTests
             await daemon.WaitForExitAsync(cts.Token).ConfigureAwait(false);
 
             await Assert.That(daemon.ExitCode).IsEqualTo(0);
-            await Assert.That(await File.ReadAllTextAsync(env.LogPath).ConfigureAwait(false)).Contains("Idle timeout");
+            await Assert
+                .That(await File.ReadAllTextAsync(env.LogPath).ConfigureAwait(false))
+                .Contains("Idle timeout");
         }
         finally
         {
@@ -146,7 +195,9 @@ public sealed class DaemonTests
 
         await Assert.That(exitCode).IsEqualTo(0);
         await Assert.That(stderr).DoesNotContain("FATAL");
-        await Assert.That(await File.ReadAllTextAsync(testFile).ConfigureAwait(false)).IsEqualTo("public class Clean { }");
+        await Assert
+            .That(await File.ReadAllTextAsync(testFile).ConfigureAwait(false))
+            .IsEqualTo("public class Clean { }");
     }
 
     [Test]
@@ -173,7 +224,10 @@ public sealed class DaemonTests
         await Assert.That(result).IsNull();
     }
 
-    private static async Task<(int ExitCode, string Stderr)> RunFixClientAsync(string file, TestEnv env)
+    private static async Task<(int ExitCode, string Stderr)> RunFixClientAsync(
+        string file,
+        TestEnv env
+    )
     {
         var psi = new ProcessStartInfo
         {
@@ -220,43 +274,65 @@ public sealed class DaemonTests
         return Process.Start(psi)!;
     }
 
-    private static async Task<string> CreateFileWithBareAwaitAsync(string dir, string name = "TestClass.cs")
+    private static async Task<string> CreateFileWithBareAwaitAsync(
+        string dir,
+        string name = "TestClass.cs"
+    )
     {
         var path = Path.Combine(dir, name);
-        await File.WriteAllTextAsync(path, BareAwaitClass(Path.GetFileNameWithoutExtension(name))).ConfigureAwait(false);
+        await File.WriteAllTextAsync(path, BareAwaitClass(Path.GetFileNameWithoutExtension(name)))
+            .ConfigureAwait(false);
         return path;
     }
 
-    private static string BareAwaitClass(string className) => $$"""
-        using System.Threading.Tasks;
+    private static string BareAwaitClass(string className) =>
+        $$"""
+            using System.Threading.Tasks;
 
-        public class {{className}}
-        {
-            public async Task DoAsync()
+            public class {{className}}
             {
-                await Task.CompletedTask;
+                public async Task DoAsync()
+                {
+                    await Task.CompletedTask;
+                }
             }
-        }
-        """;
+            """;
 
-    private static async Task CreateTestProjectAsync(string dir)
+    private static async Task CreateTestProjectAsync(string dir, string? projectReference = null)
     {
         var csproj = Path.Combine(dir, "TestProject.csproj");
-        await File.WriteAllTextAsync(csproj, """
-            <Project Sdk="Microsoft.NET.Sdk">
-              <PropertyGroup>
-                <TargetFramework>net10.0</TargetFramework>
-                <OutputType>Library</OutputType>
-              </PropertyGroup>
-            </Project>
-            """).ConfigureAwait(false);
+        var csprojText = projectReference is null
+            ? """
+                <Project Sdk="Microsoft.NET.Sdk">
+                  <PropertyGroup>
+                    <TargetFramework>net10.0</TargetFramework>
+                    <OutputType>Library</OutputType>
+                  </PropertyGroup>
+                </Project>
+                """
+            : $$"""
+                <Project Sdk="Microsoft.NET.Sdk">
+                  <PropertyGroup>
+                    <TargetFramework>net10.0</TargetFramework>
+                    <OutputType>Library</OutputType>
+                  </PropertyGroup>
+                  <ItemGroup>
+                    <ProjectReference Include="{{projectReference}}" />
+                  </ItemGroup>
+                </Project>
+                """;
+        await File.WriteAllTextAsync(csproj, csprojText).ConfigureAwait(false);
 
         // CA2007 is disabled by default in .NET 10 — explicitly enable it
         var editorconfig = Path.Combine(dir, ".editorconfig");
-        await File.WriteAllTextAsync(editorconfig, """
-            [*.cs]
-            dotnet_diagnostic.CA2007.severity = warning
-            """).ConfigureAwait(false);
+        await File.WriteAllTextAsync(
+                editorconfig,
+                """
+                [*.cs]
+                dotnet_diagnostic.CA2007.severity = warning
+                """
+            )
+            .ConfigureAwait(false);
     }
 
     private static int CountOccurrences(string text, string substring)
@@ -285,7 +361,10 @@ public sealed class DaemonTests
         {
             var pidStart = index + marker.Length;
             var pidEnd = log.IndexOf(')', pidStart);
-            if (pidEnd > pidStart && int.TryParse(log.AsSpan(pidStart, pidEnd - pidStart), out var pid))
+            if (
+                pidEnd > pidStart
+                && int.TryParse(log.AsSpan(pidStart, pidEnd - pidStart), out var pid)
+            )
             {
                 var daemon = Process.GetProcesses().FirstOrDefault(p => p.Id == pid);
                 if (daemon is not null)
@@ -342,7 +421,8 @@ public sealed class DaemonTests
         {
             Path = System.IO.Path.Combine(
                 System.IO.Path.GetTempPath(),
-                $"caf-args-test-{Guid.NewGuid():N}");
+                $"caf-args-test-{Guid.NewGuid():N}"
+            );
             Directory.CreateDirectory(Path);
         }
 
