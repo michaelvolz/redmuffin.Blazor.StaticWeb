@@ -2,7 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <OutputType>Exe</OutputType>
+    <!-- WinExe: Windows subsystem — no console allocation. Console Exe would be
+         hosted by Windows Terminal Preview (default terminal) even when spawned
+         hidden/no-activate via VBS, which steals focus and never returns it. -->
+    <OutputType>WinExe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblyName>ConfigureAwaitFixer</AssemblyName>

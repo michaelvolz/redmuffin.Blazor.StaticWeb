@@ -157,11 +157,14 @@ public static class FixClient
     }
 
     /// <summary>
-    ///     Starts the daemon outside the current process tree / Job Object.
-    ///     Windows Task Scheduler parents the process to the Task Scheduler
-    ///     service, so a harness Job Object kill of this client does not kill
-    ///     the warm daemon. Instance, log path, and idle timeout are passed as
-    ///     explicit CLI args (env vars do not cross the scheduler boundary).
+    ///     Starts the daemon outside the harness Job Object with no console.
+    ///     Task Scheduler parents the process outside the job. The binary is
+    ///     <c>WinExe</c> (Windows subsystem), so Windows does not allocate a
+    ///     console and Windows Terminal Preview (default terminal) never opens
+    ///     a window that steals focus. Console-subsystem hide tricks
+    ///     (<c>WshShell.Run</c> style 0/4, <c>-WindowStyle Hidden</c>) fail when
+    ///     WT is the default terminal — the window still appears and focus
+    ///     never returns.
     /// </summary>
     private static void SpawnDaemonDetached()
     {
@@ -191,9 +194,19 @@ public static class FixClient
         var args = new StringBuilder();
         if (isDotnetHost)
         {
-            args.Append('"');
-            args.Append(Path.Combine(AppContext.BaseDirectory, "ConfigureAwaitFixer.dll"));
-            args.Append("\" ");
+            // Test / dotnet-host path: console host still gets a window under WT.
+            // Prefer the built WinExe when present next to the DLL.
+            var siblingExe = Path.Combine(AppContext.BaseDirectory, "ConfigureAwaitFixer.exe");
+            if (File.Exists(siblingExe))
+            {
+                executable = siblingExe;
+            }
+            else
+            {
+                args.Append('"');
+                args.Append(Path.Combine(AppContext.BaseDirectory, "ConfigureAwaitFixer.dll"));
+                args.Append("\" ");
+            }
         }
 
         args.Append("--daemon");
