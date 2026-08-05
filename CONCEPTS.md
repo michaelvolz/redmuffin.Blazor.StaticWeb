@@ -46,13 +46,15 @@ A whitespace/style tool in the post-edit pipeline (for example csharpier, `dotne
 
 A long-lived local process that keeps MSBuildWorkspace and the official CA2007 analyzer warm and serves per-file fix requests over a named pipe. Clients use a short-lived `--fix` path; the daemon is not a fixed OS service and idle-exits after a period without requests. Built as WinExe (no console); health is the log file and process list, not a terminal window.
 
+The daemon opens a project once and reuses it for the process lifetime: later fix requests look the project up by csproj path and use the already-open instance, including projects only ever pulled in as references — re-opening a project already part of the workspace is an error. The workspace only re-reads a project from disk after removing it, when it rejects an in-memory change such as a brand-new file that is not yet part of the evaluated project.
+
 ## Detached daemon spawn
 
 Starting the ConfigureAwaitFixer daemon outside the agent harness Job Object so the warm process survives when the hook or terminal command that first needed it ends. On Windows this is demand-started via Task Scheduler rather than as a child of the client process; instance, log, and idle options cross that boundary as command-line arguments, not environment variables alone.
 
 ## Headless daemon observability
 
-For ConfigureAwaitFixer after WinExe: there is no daemon console. Primary signal is `~/.grok/logs/configureawait-daemon.log` (lifecycle, requests, FATAL), plus process list (surviving `--daemon` under `svchost`), Morpheus hook failure JSONL for Host timeouts, and wall-clock cold (~6 s) vs warm (~150 ms) `--fix`. A missing window is not a missing daemon.
+For ConfigureAwaitFixer after WinExe there is no daemon console: health is read from the daemon's lifecycle log (starts, requests, FATAL lines), the process list (a surviving `--daemon` process), the hook failure log for host-side timeouts, and the wall-clock gap between a cold and a warm `--fix` call. A missing console window is not a missing daemon.
 
 ## Hook-owned fixer delivery
 
