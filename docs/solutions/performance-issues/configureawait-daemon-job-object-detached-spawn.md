@@ -8,7 +8,7 @@ problem_type: performance_issue
 component: tooling
 severity: high
 symptoms:
-  - "Grok PostToolUse formatter hangs until the ~30 s orchestrator kill"
+  - "Grok PostToolUse ConfigureAwaitFixer (fixer) hangs until the ~30 s orchestrator kill"
   - "Cold --fix works once, then every later edit pays cold MSBuild cost again"
   - "Daemon process disappears when the spawning hook or terminal command ends"
   - "morpheus-hook-failures.jsonl shows START without a matching FAIL (external kill)"
@@ -44,7 +44,7 @@ The warm ConfigureAwaitFixer daemon is required so per-edit CA2007 fixes stay un
 
 ## Symptoms
 
-- PostToolUse / formatter path stalls near the orchestrator limit (~30 s), then fails or is killed.
+- PostToolUse / ConfigureAwaitFixer path stalls near the orchestrator limit (~30 s), then fails or is killed.
 - First `--fix` after a manual start can look fine; the next edit after the spawner exits is cold again (~6 s).
 - Process list shows no surviving `--daemon` after the client returns (Job Object path).
 - Daemon log may show `Daemon starting` and even `Responded`, while the hook still times out if the client is stuck on stdio or a dead pipe.
@@ -165,7 +165,7 @@ If those five cannot explain a failure, the missing pieces are usually **(a)** p
 
 ## Prevention
 
-- Never spawn long-lived formatter daemons with plain `Process.Start` from a Grok/Morpheus/OpenCode hook path on Windows without proving Job Object breakaway.
+- Never spawn long-lived ConfigureAwaitFixer (or similar) daemons with plain `Process.Start` from a Grok/Morpheus/OpenCode hook path on Windows without proving Job Object breakaway.
 - Prefer Task Scheduler (or another proven break-out) for detached spawn; do not add a permanent service to paper over lifecycle.
 - Keep the production binary as **WinExe** while Windows Terminal (or any DefTerm) may host console apps. Do not "fix focus" by re-adding VBS hide scripts against a console PE.
 - Keep client wall time strictly under the harness timeout; treat orchestrator kill as non-extendable.
@@ -176,9 +176,11 @@ If those five cannot explain a failure, the missing pieces are usually **(a)** p
 
 ## Related Issues
 
-- `docs/solutions/developer-experience/automated-configureawait-fixer.md` — fixer purpose and history (MSBuild / plugin delivery); does not cover Job Object lifecycle.
+- `docs/solutions/conventions/fixer-vs-formatter-terminology.md` — CAF is a Roslyn CodeFixer, not a whitespace formatter; hang misdiagnosis.
+- `docs/solutions/tooling-decisions/configureawait-fixer-nuget-targets-removal.md` — hooks + published WinExe own delivery; NuGet/`.targets` removed.
+- `docs/solutions/developer-experience/automated-configureawait-fixer.md` — fixer purpose and history (journey log); does not cover Job Object lifecycle.
 - `docs/solutions/tooling-decisions/configureawait-auto-fix-research.md` — official CA2007 + MSBuildWorkspace engine choice.
 - `docs/solutions/tooling-decisions/configureawait-msbuild-hook-incompatibility.md` — why save-time / external hooks replaced build-time `.targets` deadlocks.
 - `docs/configureawait-fixer-status-guide-2026-06-08.md` — dated status snapshot; prefer this learning for daemon spawn lifecycle and WinExe.
-- Morpheus Host (separate repo) bounds formatter wait; it cannot extend the harness 30 s kill — the daemon lifecycle fix lives in the fixer client.
+- Morpheus Host (separate repo) bounds hook wait; it cannot extend the harness 30 s kill — the daemon lifecycle fix lives in the fixer client.
 - External: [microsoft/terminal#12464](https://github.com/microsoft/terminal/issues/12464) — hide/no-activate ignored when Windows Terminal is the default terminal.

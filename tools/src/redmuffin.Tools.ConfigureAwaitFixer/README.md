@@ -1,40 +1,82 @@
 # redmuffin.Tools.ConfigureAwaitFixer
 
-A development-only MSBuild-integrated tool that automatically adds
-`.ConfigureAwait(false)` to `await` expressions before compilation.
-Eliminates the most common Roslyn analyzer error (CA2007) from the
-edit-build-fix loop.
+Roslyn-based CA2007 **fixer** (not a whitespace formatter). On each `.cs`
+post-edit hook it rewrites awaits that need `.ConfigureAwait(false)`, using
+the official Microsoft CA2007 analyzer and `MSBuildWorkspace`. TUnit
+`Assert.*` chains are left alone.
 
-## What it does
-
-Runs before the compiler inspects source files (`BeforeTargets="CoreCompile"`).
-For every `await` expression not already followed by `.ConfigureAwait(false)`,
-the fixer adds it. Skips TUnit `Assert.*` chains to avoid corrupting test code.
+Delivery is **hooks + published WinExe only**. There is no NuGet
+`PackageReference`, no local-feed install, and no MSBuild `.targets` safety
+net (removed in `c3c141b1`). See
+`docs/solutions/tooling-decisions/configureawait-fixer-nuget-targets-removal.md`.
 
 ## Requirements
 
 - .NET 10 SDK
-- `Microsoft.CodeAnalysis.CSharp` (resolved via Central Package Management)
+- Deployed binary under `~/.local/bin/ConfigureAwaitFixer/` (see Deploy)
+- Harness post-edit hook wiring for `.cs` files
 
-## Installation
+## Deploy
 
-This package is distributed from a local NuGet feed (`tools/nupkgs/`). Add it
-as a `PackageReference` in your `Directory.Build.props`:
+1. Build the project (the `CopyAnalyzerDll` target stages analyzer DLLs,
+   BuildHost, and outputs into `publish/`):
 
-```xml
-<PackageReference Include="redmuffin.Tools.ConfigureAwaitFixer"
-                  Version="1.0.1" />
+   ```powershell
+   dotnet build tools/src/redmuffin.Tools.ConfigureAwaitFixer/ConfigureAwaitFixer.csproj
+   ```
+
+2. Copy the staging directory to the user-local bin (create the destination
+   if needed):
+
+   ```powershell
+   Copy-Item -Recurse -Force `
+     tools/src/redmuffin.Tools.ConfigureAwaitFixer/publish/* `
+     $HOME/.local/bin/ConfigureAwaitFixer/
+   ```
+
+3. Wire the harness to run the **exe** with `--fix` on `.cs` writes, for
+   example Grok `~/.grok/hooks/bin/code-formatters.json`:
+
+   ```text
+   ConfigureAwaitFixer.exe --fix {{file}}
+   ```
+
+   Then csharpier (or your style tool). CAF is first; it is still a **fixer**.
+
+The production PE is **WinExe** (subsystem 2) so a warm daemon can detach
+without opening a console. After deploy, confirm subsystem 2 and that a
+`--daemon` process can survive the hook Job Object (Task Scheduler path).
+Details: `docs/solutions/performance-issues/configureawait-daemon-job-object-detached-spawn.md`.
+
+## Manual run
+
+```powershell
+& "$HOME/.local/bin/ConfigureAwaitFixer/ConfigureAwaitFixer.exe" --fix path\to\File.cs
 ```
 
-The package is excluded from CI via environment variable guard:
+Cold open is multi-second; warm (daemon up) is ~sub-second. Logs:
+`~/.grok/logs/configureawait-daemon.log`.
 
-```xml
-<Condition="'$(CI)' != 'true' AND '$(GITHUB_ACTIONS)' != 'true'" />
-```
+## What it does not do
 
-## Configuration
+- Does **not** run during `dotnet build` (MSBuildWorkspace + `.targets` deadlocks).
+- Does **not** replace NetAnalyzers or `TreatWarningsAsErrors` — those still
+  enforce CA2007 at commit/build time.
+- Does **not** run on `.razor` (hooks use `dotnet format` there only).
+- Is **not** a PackageReference consumer dependency — do not re-add one.
 
-No configuration needed. The fixer applies to every `await` expression in every
-`.cs` file. To exclude a specific project, add the property
-`<IsConfigureAwaitFixerProject>true</IsConfigureAwaitFixerProject>` to its
-`.csproj` — the root `Directory.Build.props` skips any project with this flag.
+## Project layout
+
+| Path                         | Role                                               |
+| ---------------------------- | -------------------------------------------------- |
+| `Program.cs` / fix pipeline  | CLI modes (`--fix`, daemon, one-shot)              |
+| `publish/`                   | Deploy staging (committed or regenerated on build) |
+| `ConfigureAwaitFixer.csproj` | `IsPackable=false`, `OutputType=WinExe`            |
+
+## Related
+
+- `docs/solutions/tooling-decisions/configureawait-fixer-nuget-targets-removal.md`
+- `docs/solutions/conventions/fixer-vs-formatter-terminology.md`
+- `docs/solutions/performance-issues/configureawait-daemon-job-object-detached-spawn.md`
+- `docs/solutions/tooling-decisions/configureawait-msbuild-hook-incompatibility.md`
+- `CONCEPTS.md` — ConfigureAwaitFixer (fixer), hook-owned fixer delivery

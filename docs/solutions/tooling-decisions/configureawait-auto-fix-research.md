@@ -1,6 +1,7 @@
 ---
 title: "Build-Time CA2007 Auto-Fix — Official Analyzer + MSBuildWorkspace"
 date: 2026-05-17
+last_updated: 2026-08-05
 module: build-tooling
 problem_type: tooling_decision
 component: tooling
@@ -24,14 +25,16 @@ tags:
 
 # Build-Time CA2007 Auto-Fix: Official Analyzer + MSBuildWorkspace
 
-> **Current (2026-06-08):** This research correctly predicted the architecture.
-> The fixer at `tools/src/redmuffin.Tools.ConfigureAwaitFixer/Program.cs` uses
-> `MSBuildWorkspace.OpenProjectAsync()` with the official CA2007 analyzer exactly
-> as recommended. The "separate script" path is implemented by the OpenCode
-> plugin (`~/.config/opencode/plugins/configureawait-fixer.ts`, `tool.execute.after`
-> hook). The MSBuild `.targets` hook still exists as a secondary safety net
-> (using `AfterTargets="ResolveReferences" BeforeTargets="CoreCompile"`).
-> `TreatWarningsAsErrors` is conditionally gated on `DotNetWatchBuild`.
+> **Current (2026-08-05):** This research correctly predicted the engine:
+> `tools/src/redmuffin.Tools.ConfigureAwaitFixer/Program.cs` uses
+> `MSBuildWorkspace.OpenProjectAsync()` with the official CA2007 analyzer.
+> The "separate script" path is the only delivery path — harness post-edit hooks
+> run the published `ConfigureAwaitFixer.exe --fix` (Grok:
+> `~/.grok/hooks/bin/code-formatters.json`; earlier OpenCode
+> `tool.execute.after`). The MSBuild `.targets` / PackageReference “secondary
+> safety net” was **removed in `c3c141b1`** (never a working import). See
+> `configureawait-fixer-nuget-targets-removal.md`. `TreatWarningsAsErrors`
+> remains conditionally gated on `DotNetWatchBuild`.
 
 ## Context
 
@@ -263,17 +266,22 @@ ApplyFixes(project, ca2007Diagnostics);
 (CA2007 correctly identifies `ThrowsAssertion<T>` as non-Task). Build passes
 on next compilation. ~3-9 seconds per project.
 
-The OpenCode plugin (`~/.config/opencode/plugins/configureawait-fixer.ts`)
-now implements this pattern as the primary delivery path: the fixer runs on
-every `.cs` file write (outside MSBuild), with an `isBuildActive()` guard to
-prevent deadlock. The MSBuild `.targets` hook coexists as a secondary safety
-net for files modified outside an agent session.
+Harness post-edit hooks now implement this pattern as the **only** delivery
+path: the fixer runs on every `.cs` file write (outside MSBuild). OpenCode-era
+plugins used an `isBuildActive()` guard so the fixer would not open
+`MSBuildWorkspace` during a live build. There is no coexisting MSBuild
+`.targets` secondary net after `c3c141b1`.
 
 ## Related
 
-- `automated-configureawait-fixer-2026-05-16.md` — Full journey log of the
-  custom Roslyn fixer build (MSBuild targets, NuGet packaging, semantic type
-  checking, `dotnet format` dead end)
+- `docs/solutions/tooling-decisions/configureawait-fixer-nuget-targets-removal.md`
+  — hooks own delivery; NuGet/`.targets` removal
+- `docs/solutions/conventions/fixer-vs-formatter-terminology.md` — CAF is a
+  fixer, not a formatter
+- `docs/solutions/developer-experience/automated-configureawait-fixer.md` —
+  full journey log (historical NuGet/targets rows marked retired)
+- `docs/solutions/tooling-decisions/configureawait-msbuild-hook-incompatibility.md`
+  — why `.targets` + MSBuildWorkspace deadlocks
 - `csharp-standards-final-2026-04-06.md` — Authoritative `ConfigureAwait(false)`
   policy and `.editorconfig` analyzer configuration
 - `quality-gates-tool-operational-gotchas-2026-05-09.md` — Roslyn patterns

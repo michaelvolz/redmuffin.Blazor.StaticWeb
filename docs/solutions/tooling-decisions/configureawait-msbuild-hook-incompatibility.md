@@ -13,20 +13,24 @@ tags:
   ]
 problem_type: architecture
 date: 2026-05-17
+last_updated: 2026-08-05
 status: resolved
 ---
 
 # The `.targets` Hook Is Fundamentally Incompatible With MSBuildWorkspace
 
-> **Resolution (2026-06-08):** Path A was implemented via an OpenCode plugin
-> (`~/.config/opencode/plugins/configureawait-fixer.ts`, `tool.execute.after` hook)
-> that runs the fixer on every `.cs` file write — outside MSBuild entirely, zero
-> deadlock risk. The `.targets` hook still exists in the codebase as a secondary
-> safety net using `AfterTargets="ResolveReferences" BeforeTargets="CoreCompile"`.
-> `TreatWarningsAsErrors` is conditionally gated on `DotNetWatchBuild` so CA2007
-> is a hard error during `dotnet build` but a warning during `dotnet watch`. The
-> deadlock analysis below remains the authoritative reference for why `.targets` +
-> MSBuildWorkspace is architecturally impossible.
+> **Resolution (2026-06-08, refreshed 2026-08-05):** Path A is the only delivery
+> path: post-edit harness hooks run the published
+> `ConfigureAwaitFixer.exe --fix` (Grok: `~/.grok/hooks/bin/code-formatters.json`;
+> earlier OpenCode: `tool.execute.after`). That path is outside MSBuild entirely
+> and has zero deadlock risk. The repo `.targets` file and PackageReference that
+> once looked like a secondary safety net were **removed in `c3c141b1`** — they
+> never packed a working MSBuild import and are not a live net. See
+> `configureawait-fixer-nuget-targets-removal.md`. `TreatWarningsAsErrors` remains
+> gated on `DotNetWatchBuild` so CA2007 is a hard error during `dotnet build` but
+> a warning during `dotnet watch`. The deadlock analysis below remains the
+> authoritative reference for why `.targets` + MSBuildWorkspace is architecturally
+> impossible.
 
 ## Problem
 
@@ -269,23 +273,26 @@ Path A was implemented as an OpenCode plugin that runs on every `.cs`
 file write/edit via `tool.execute.after` hook — no developer action
 needed, no manual `dotnet fix` step. Key design:
 
-- **Outside MSBuild:** The plugin invokes the fixer DLL directly
-  (`dotnet ~/.local/bin/ConfigureAwaitFixer/ConfigureAwaitFixer.dll`),
+- **Outside MSBuild:** Hooks invoke the published binary
+  (`~/.local/bin/ConfigureAwaitFixer/ConfigureAwaitFixer.exe --fix`),
   completely avoiding the MSBuild process tree and deadlock.
-- **`isBuildActive()` guard:** If a `dotnet` build is in progress, the
-  plugin skips the fixer invocation — the build's `.targets` hook will
-  catch it.
+- **`isBuildActive()` guard (OpenCode-era):** If a `dotnet` build was in
+  progress, the plugin skipped the fixer so it would not open
+  `MSBuildWorkspace` against a live build. There is no build-time `.targets`
+  catch-up path after `c3c141b1` — pre-commit `dotnet build` with
+  `TreatWarningsAsErrors` is the gate for any miss.
 - **Dual-hook pattern:** `tool.execute.after` (agent writes, no debounce)
-  and `file.edited` (external saves, 300ms debounce).
+  and `file.edited` (external saves, 300ms debounce). Grok uses the
+  PostToolUse pipeline entry (generic formatters list) that calls the same WinExe.
 - **`TreatWarningsAsErrors` gating:** `Directory.Build.props` disables
   `TreatWarningsAsErrors` during `dotnet watch` (via `DotNetWatchBuild`
-  property). Rare plugin misses produce warnings during watch, not
+  property). Rare hook misses produce warnings during watch, not
   broken hot-reload loops. Pre-commit `dotnet build` remains strict.
 
-The MSBuild `.targets` hook remains deployed as a secondary safety net
-for files modified outside an agent session. It uses
-`AfterTargets="ResolveReferences" BeforeTargets="CoreCompile"` — the
-least-deadlock-prone timing among the three approaches analyzed.
+**Do not resurrect** a repo `.targets` + `MSBuildWorkspace` path as a
+"secondary safety net." The timing experiments below show why every
+in-build timing failed; packaging removal is documented in
+`configureawait-fixer-nuget-targets-removal.md`.
 
 ## Key Decisions Documented
 

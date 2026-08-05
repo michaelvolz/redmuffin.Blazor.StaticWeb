@@ -34,6 +34,14 @@ Mandatory pre-mutation discipline in this repo: externalize (1) provable problem
 
 Searchable archive of past solutions, bugs, best practices, and workflow patterns. Entries use YAML frontmatter (`module`, `tags`, `problem_type`, `date`, `component`, `severity`, track-specific fields) and are organized under category subdirectories (`tooling-decisions/`, `developer-experience/`, `workflow-issues/`, etc.). Relevant when implementing features, debugging, or making decisions in areas that already have documented learnings.
 
+## ConfigureAwaitFixer (fixer)
+
+The Roslyn-based CA2007 code fixer for this repo: rewrites awaits to add `.ConfigureAwait(false)` using the official analyzer’s CodeFix. Not a whitespace formatter. Prefer “fixer,” “CAF,” or “ConfigureAwaitFixer” over “formatter,” even when the harness routes it through a generic post-edit formatters list.
+
+## Formatter (post-edit)
+
+A whitespace/style tool in the post-edit pipeline (for example csharpier, `dotnet format`, prettier). Changes layout only; does not apply Roslyn CodeFixProviders. Distinct from ConfigureAwaitFixer. When diagnosing hangs, name the executable (fixer vs which formatter), not a generic “formatter hung.”
+
 ## ConfigureAwaitFixer daemon
 
 A long-lived local process that keeps MSBuildWorkspace and the official CA2007 analyzer warm and serves per-file fix requests over a named pipe. Clients use a short-lived `--fix` path; the daemon is not a fixed OS service and idle-exits after a period without requests. Built as WinExe (no console); health is the log file and process list, not a terminal window.
@@ -45,6 +53,10 @@ Starting the ConfigureAwaitFixer daemon outside the agent harness Job Object so 
 ## Headless daemon observability
 
 For ConfigureAwaitFixer after WinExe: there is no daemon console. Primary signal is `~/.grok/logs/configureawait-daemon.log` (lifecycle, requests, FATAL), plus process list (surviving `--daemon` under `svchost`), Morpheus hook failure JSONL for Host timeouts, and wall-clock cold (~6 s) vs warm (~150 ms) `--fix`. A missing window is not a missing daemon.
+
+## Hook-owned fixer delivery
+
+Delivery model for ConfigureAwaitFixer: harness post-edit hooks invoke a published binary staged under the user’s local bin, not a NuGet `PackageReference` or MSBuild `.targets` import. Pack surface is off; restore for the main solution must not depend on the fixer existing in any package cache. Build-time targets are not a second safety net for this tool.
 
 ## Dual TFM stack
 

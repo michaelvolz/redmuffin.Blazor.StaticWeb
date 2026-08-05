@@ -1,6 +1,6 @@
 ---
 date: 2026-06-08
-last_updated: 2026-08-04T00:00:00
+last_updated: 2026-08-05
 tags:
   - configureawait
   - ca2007
@@ -16,11 +16,18 @@ tags:
 
 # ConfigureAwait Fixer — Current Status & Proven Facts
 
+> **Delivery (2026-08-05 / `c3c141b1`):** Hooks + published
+> `ConfigureAwaitFixer.exe --fix` only. NuGet `PackageReference`, CPM pin,
+> pack surface, and repo `.targets` are **gone**. Prefer solutions learnings
+> for current truth: `configureawait-fixer-nuget-targets-removal.md`,
+> daemon Job Object doc, `fixer-vs-formatter-terminology.md`. Sections below
+> retain session-proven facts; deployment tables and §9.3 are refreshed.
+
 ## What Belongs in This File
 
 - **Viewpoint**: Developer/agent maintaining or extending the
   ConfigureAwait fixer automation. Assumes familiarity with the fixer
-  architecture (MSBuildWorkspace, official CA2007 analyzer, formatter
+  architecture (MSBuildWorkspace, official CA2007 analyzer, post-edit hook
   pipeline).
 - **What belongs**: Proven facts verified via tool execution this
   session, confirmed dead ends with root causes, current deployment
@@ -153,8 +160,10 @@ references.
 
 ### 2.3 Fixer runs outside MSBuild — no `.targets` hook
 
-Decision: The `.targets` hook was removed from the NuGet package
-(`1.0.2`). The fixer must never run during an active `dotnet build`.
+Decision: Never run the fixer during an active `dotnet build`. The repo
+`.targets` file and PackageReference surface were fully removed in
+`c3c141b1` (they were never a working secondary net; the 1.0.2 nupkg
+also never packed `build/` assets).
 
 **Rationale**: MSBuildWorkspace spawns a child MSBuild process
 (BuildHost) to evaluate projects. When called from a `.targets` hook
@@ -165,10 +174,12 @@ MSBuildWorkspace behavior — it was designed for IDE tools
 
 ### 2.4 Fixer deployed to `~/.local/bin/ConfigureAwaitFixer/`
 
-The fixer DLL and all dependencies (analyzer DLLs, BuildHost, Roslyn
-assemblies) are deployed to a fixed path in the user's home directory.
-This is separate from the NuGet package cache. The formatter pipeline
-references this path.
+The WinExe, analyzer DLLs, BuildHost, and Roslyn assemblies are staged
+from `tools/src/redmuffin.Tools.ConfigureAwaitFixer/publish/` into a
+fixed path under the user's home directory. Harness post-edit hooks
+invoke `ConfigureAwaitFixer.exe --fix {{file}}` — not a NuGet package
+cache path and not `dotnet …ConfigureAwaitFixer.dll` as the primary
+entry.
 
 ---
 
@@ -190,18 +201,17 @@ references this path.
 
 ## 4 — Current Deployment State
 
-| Component                     | Version | Location                                                                   | Status                                  |
-| ----------------------------- | ------- | -------------------------------------------------------------------------- | --------------------------------------- |
-| Fixer DLL                     | 1.0.2   | `~/.local/bin/ConfigureAwaitFixer/ConfigureAwaitFixer.dll`                 | Deployed                                |
-| Analyzer DLLs (NetAnalyzers)  | 10.0.0  | `~/.local/bin/ConfigureAwaitFixer/Microsoft.CodeAnalysis.NetAnalyzers.dll` | Deployed                                |
-| MSBuildWorkspace BuildHost    | 5.3.0   | `~/.local/bin/ConfigureAwaitFixer/BuildHost-netcore/`                      | Deployed                                |
-| Formatter entry (Grok)        | —       | `~/.grok/hooks/bin/code-formatters.json`                                   | Active — `.cs` after `dotnet format`    |
-| Formatter entry (OpenCode)    | —       | removed from `opencode.jsonc` (was line 526, §1.4)                         | Removed — plugin handles fixes (§9.2)   |
-| NuGet package                 | 1.0.2   | DevDrive global packages folder — not in `tools/nupkgs/`                   | Packaged (no `.targets`); restore risk  |
-| Source code                   | 1.0.2   | `tools/src/redmuffin.Tools.ConfigureAwaitFixer/`                           | Complete                                |
-| `.targets` file               | —       | `tools/src/redmuffin.Tools.ConfigureAwaitFixer/build/`                     | Exists in repo but NOT in NuGet package |
-| Roslyn Language Server        | 5.9.0   | `~/.local/bin/windows/roslyn-language-server.cmd`                          | Active in OpenCode                      |
-| Plugin (configureawait-fixer) | 1.0.0   | `~/.config/opencode/plugins/configureawait-fixer.ts`                       | Deployed 2026-06-08                     |
+| Component                    | Location                                                                   | Status (2026-08-05)                               |
+| ---------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------- |
+| Fixer WinExe                 | `~/.local/bin/ConfigureAwaitFixer/ConfigureAwaitFixer.exe`                 | Deployed — primary hook entry (`--fix`)           |
+| Analyzer DLLs (NetAnalyzers) | `~/.local/bin/ConfigureAwaitFixer/Microsoft.CodeAnalysis.NetAnalyzers.dll` | Deployed with publish staging                     |
+| MSBuildWorkspace BuildHost   | `~/.local/bin/ConfigureAwaitFixer/BuildHost-netcore/`                      | Deployed with publish staging                     |
+| Publish staging              | `tools/src/redmuffin.Tools.ConfigureAwaitFixer/publish/`                   | Build `CopyAnalyzerDll` target                    |
+| Hook entry (Grok)            | `~/.grok/hooks/bin/code-formatters.json`                                   | Active — CAF `--fix` then csharpier on `.cs`      |
+| NuGet package / PackageRef   | —                                                                          | **Removed** `c3c141b1` — no restore coupling      |
+| `.targets` file              | —                                                                          | **Removed** `c3c141b1`                            |
+| Source                       | `tools/src/redmuffin.Tools.ConfigureAwaitFixer/`                           | `IsPackable=false`, `OutputType=WinExe`           |
+| OpenCode plugin (historical) | `~/.config/opencode/plugins/configureawait-fixer.ts`                       | Earlier hook path; Grok uses code-formatters.json |
 
 ---
 
@@ -408,62 +418,52 @@ run the Roslyn language server for diagnostics and code actions
 only: CA2007 appears there from the SDK's built-in NetAnalyzers,
 and the code fix is never auto-applied.
 
-| Harness | LSP configuration | Fixer involvement |
-| --- | --- | --- |
-| Grok | `~/.grok/lsp.json` — `roslyn-language-server.cmd --stdio --autoLoadProjects` (`.cs` → csharp, `.razor` → razor) | None — passive diagnostics only |
-| OpenCode | Roslyn language server 5.9.0 (`"lsp": true` in `opencode.jsonc`) | None — passive diagnostics only |
+| Harness  | LSP configuration                                                                                               | Fixer involvement               |
+| -------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| Grok     | `~/.grok/lsp.json` — `roslyn-language-server.cmd --stdio --autoLoadProjects` (`.cs` → csharp, `.razor` → razor) | None — passive diagnostics only |
+| OpenCode | Roslyn language server 5.9.0 (`"lsp": true` in `opencode.jsonc`)                                                | None — passive diagnostics only |
 
-The package ships no `analyzers/` assets, so it cannot feed the LSP
-even where the PackageReference is present.
+There is no fixer NuGet package and no PackageReference on the main
+solution, so the fixer cannot feed the LSP as analyzer assets either.
+LSP remains passive NetAnalyzers diagnostics only.
 
-### 9.2 Harness formatter pipelines
+### 9.2 Harness post-edit pipelines
 
-| Harness | Mechanism | State (2026-08-04) |
-| --- | --- | --- |
-| Grok | `~/.grok/hooks/bin/code-formatters.json` — `.cs` files run `dotnet format --include {{file}}`, then `C:\Users\flynn\.local\bin\ConfigureAwaitFixer\ConfigureAwaitFixer.exe --file {{file}}` | Active — absolute path, no tilde issue |
-| OpenCode | Formatter entry from §1.4 (`opencode.jsonc` line 526) | Removed — no `configureawait` entries remain in `opencode.jsonc` |
-| OpenCode | Plugin `~/.config/opencode/plugins/configureawait-fixer.ts` | Active — `tool.execute.after` (write/edit tools) primary, `file.edited` fallback, 300 ms debounce per file, skips while `dotnet build` runs, logs to `~/.config/opencode/logs/configureawait-plugin.log` |
+| Harness  | Mechanism                                                                                                                                                                             | State (2026-08-05)                                                                    |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Grok     | `~/.grok/hooks/bin/code-formatters.json` — `.cs` runs `ConfigureAwaitFixer.exe --fix {{file}}`, then `csharpier format {{file}}`; `.razor` is `dotnet format --include {{file}}` only | Active — CAF is a **fixer** in a generic formatters list                              |
+| OpenCode | Former `opencode.jsonc` formatter entry (§1.4)                                                                                                                                        | Removed                                                                               |
+| OpenCode | Plugin `~/.config/opencode/plugins/configureawait-fixer.ts` (historical / alternate harness)                                                                                          | `tool.execute.after` primary, `file.edited` fallback, skips while `dotnet build` runs |
 
-The plugin's current hook layout supersedes §7, which documented
-`file.edited` as the primary hook.
+CAF is not a whitespace formatter — see
+`docs/solutions/conventions/fixer-vs-formatter-terminology.md`.
 
 ### 9.3 Solution and build consumption
 
-The main solution references the fixer as a dev-machine-only
-package. Root `Directory.Build.props` (lines 169–175) adds:
+**No solution PackageReference** after `c3c141b1`. Root
+`Directory.Build.props` and `Directory.Packages.props` do not list
+`redmuffin.Tools.ConfigureAwaitFixer`. `ConfigureAwaitFixer.csproj`
+sets `IsPackable=false` and `OutputType=WinExe`. `tools/nuget.config`
+maps only `redmuffin.Tools.QualityGates` to `local-tools`
+(`tools/nupkgs/`).
 
-```xml
-<PackageReference Include="redmuffin.Tools.ConfigureAwaitFixer">
-  <PrivateAssets>all</PrivateAssets>
-  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-</PackageReference>
-```
+A build never runs the fixer. CA2007 stays enforced by NetAnalyzers
+plus `TreatWarningsAsErrors` at commit time (§8). Misses after a hook
+skip surface as normal analyzer errors — there is no MSBuild secondary
+net.
 
-gated on `'$(CI)' == '' AND '$(GITHUB_ACTIONS)' == ''` (never
-restored in CI) and `'$(IsConfigureAwaitFixerProject)' != 'true'`
-(the fixer project itself sets the property — `ConfigureAwaitFixer.csproj`
-line 18). Version 1.0.2 is pinned in `Directory.Packages.props`
-line 80.
-
-The reference is inert at build time: the 1.0.2 package ships only
-`tools/net10.0/any/*` (no `build/`, no `analyzers/`), and the
-repo's `build/redmuffin.Tools.ConfigureAwaitFixer.targets` is
-deliberately not packed (§2.3). A build never runs the fixer;
-CA2007 stays a warning enforced by `TreatWarningsAsErrors` at
-commit time (§8).
-
-**Restore risk:** the package is not in `tools/nupkgs/` (that
-folder holds only QualityGates packages) and not on nuget.org. It
-resolves only from the local global-packages folder
-(`C:\Users\flynn\Projects\.DevDrive-Packages\.nuget\packages\redmuffin.tools.configureawaitfixer\1.0.2`).
-Clearing that cache breaks `dotnet restore` for the main solution
-until the package is repacked into `tools/nupkgs/`.
+**Deploy residual risk:** a stale `~/.local/bin/ConfigureAwaitFixer/`
+copy (wrong subsystem, old bits) is the usual false “still broken”
+cause — rebuild, restage `publish/`, re-copy, then cold/warm `--fix`.
 
 ## 10 — Related
 
-- `docs/solutions/developer-experience/automated-configureawait-fixer.md` — full fixer journey log (6 dead ends, architecture, MSBuild integration)
-- `docs/solutions/tooling-decisions/configureawait-auto-fix-research.md` — official-analyzer + MSBuildWorkspace architecture research
-- `docs/solutions/tooling-decisions/configureawait-msbuild-hook-incompatibility.md` — `.targets` deadlock analysis and save-time architecture decision
-- `docs/plans/2026-05-17-002-refactor-configureawait-fixer-official-analyzer-plan.md` — implementation plan (U1-U3, appears code-complete)
-- `tools/CONTEXT.md` — domain language glossary (ConfigureAwait Fixer section)
-- `tools/src/redmuffin.Tools.ConfigureAwaitFixer/` — current fixer source code
+- `docs/solutions/tooling-decisions/configureawait-fixer-nuget-targets-removal.md` — hooks own delivery; NuGet/`.targets` removal
+- `docs/solutions/conventions/fixer-vs-formatter-terminology.md` — CAF is a fixer, not a formatter
+- `docs/solutions/performance-issues/configureawait-daemon-job-object-detached-spawn.md` — warm daemon / WinExe / Job Object
+- `docs/solutions/developer-experience/automated-configureawait-fixer.md` — full fixer journey log
+- `docs/solutions/tooling-decisions/configureawait-auto-fix-research.md` — official-analyzer + MSBuildWorkspace research
+- `docs/solutions/tooling-decisions/configureawait-msbuild-hook-incompatibility.md` — `.targets` deadlock analysis
+- `docs/plans/2026-05-17-002-refactor-configureawait-fixer-official-analyzer-plan.md` — historical implementation plan
+- `tools/src/redmuffin.Tools.ConfigureAwaitFixer/README.md` — deploy and manual run
+- `CONCEPTS.md` — ConfigureAwaitFixer (fixer), hook-owned fixer delivery

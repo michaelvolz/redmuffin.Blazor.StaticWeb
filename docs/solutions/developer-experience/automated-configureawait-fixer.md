@@ -1,6 +1,7 @@
 ---
 title: "Automated ConfigureAwait(false) Fixer via MSBuild CoreCompileDependsOn"
 date: 2026-05-16
+last_updated: 2026-08-05
 category: developer-experience
 module: tools
 problem_type: developer_experience
@@ -33,15 +34,17 @@ tags:
 
 # Automated ConfigureAwait(false) Fixer
 
-> **Current (2026-06-08):** The fixer now uses `MSBuildWorkspace.OpenProjectAsync()` with
-> the official Microsoft CA2007 analyzer instead of the 3-assembly semantic model
-> (sections 2-3 describe the V1 approach, retained as archival reference). The primary
-> delivery mechanism is an OpenCode plugin (`~/.config/opencode/plugins/configureawait-fixer.ts`,
-> `tool.execute.after` hook) that runs outside MSBuild on every `.cs` write — the MSBuild
-> `.targets` hook remains as a secondary path. `TreatWarningsAsErrors` is conditionally
-> gated on `DotNetWatchBuild` in `Directory.Build.props`; the Watch launch profile passes
-> `-p:TreatWarningsAsErrors=false` to tolerate transient CA2007 warnings during hot reload.
-> See §9 (plugin architecture) and §10 (TreatWarningsAsErrors gating).
+> **Current (2026-08-05):** The fixer still uses `MSBuildWorkspace.OpenProjectAsync()` with
+> the official Microsoft CA2007 analyzer (sections 2–3 describe the V1 semantic-model
+> approach, retained as archival reference). **Delivery is hooks + published WinExe only:**
+> harness post-edit hooks run `~/.local/bin/ConfigureAwaitFixer/ConfigureAwaitFixer.exe --fix`
+> on `.cs` writes (Grok: `~/.grok/hooks/bin/code-formatters.json`). The NuGet
+> `PackageReference`, CPM pin, pack surface, and repo `.targets` file were **removed in
+> `c3c141b1`** — they were never a working secondary safety net. See
+> `docs/solutions/tooling-decisions/configureawait-fixer-nuget-targets-removal.md`.
+> Architecture rows below for MSBuild targets / NuGet package / local feed are **historical**.
+> `TreatWarningsAsErrors` remains gated on `DotNetWatchBuild`; the Watch profile still
+> passes `-p:TreatWarningsAsErrors=false` for hot reload. See §9 (hook delivery) and §10.
 
 ## Context
 
@@ -57,14 +60,21 @@ The gap was clear: no standard mechanism existed to auto-apply `ConfigureAwait(f
 
 ### 1. Architecture overview
 
-Four components work together:
+**Live (after `c3c141b1`):**
 
-| Component       | File                                                                                              | Purpose                                              |
-| --------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| Roslyn fixer    | `tools/src/redmuffin.Tools.ConfigureAwaitFixer/Program.cs`                                        | Finds missing `.ConfigureAwait(false)` and adds them |
-| MSBuild targets | `tools/src/redmuffin.Tools.ConfigureAwaitFixer/build/redmuffin.Tools.ConfigureAwaitFixer.targets` | Wires fixer into `CoreCompileDependsOn`              |
-| NuGet package   | `tools/nupkgs/redmuffin.Tools.ConfigureAwaitFixer.1.0.2.nupkg`                                    | Distributes fixer + targets to consuming projects    |
-| Local feed      | `tools/nupkgs/` + `tools/nuget.config`                                                            | Serves the package during restore                    |
+| Component        | Location                                                                | Purpose                                              |
+| ---------------- | ----------------------------------------------------------------------- | ---------------------------------------------------- |
+| Roslyn fixer     | `tools/src/redmuffin.Tools.ConfigureAwaitFixer/Program.cs`              | Finds missing `.ConfigureAwait(false)` and adds them |
+| Published binary | `publish/` → `~/.local/bin/ConfigureAwaitFixer/ConfigureAwaitFixer.exe` | WinExe client + warm daemon for post-edit hooks      |
+| Harness hooks    | e.g. `~/.grok/hooks/bin/code-formatters.json`                           | Runs `--fix` on `.cs` writes (outside MSBuild)       |
+
+**Historical only (removed — do not restore as a safety net):**
+
+| Component       | Former path                                                                                       | Why retired                                           |
+| --------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| MSBuild targets | `tools/src/redmuffin.Tools.ConfigureAwaitFixer/build/redmuffin.Tools.ConfigureAwaitFixer.targets` | Deadlock with `MSBuildWorkspace`; never a live net    |
+| NuGet package   | `tools/nupkgs/redmuffin.Tools.ConfigureAwaitFixer.*.nupkg`                                        | Packed tools only; PackageReference was restore-inert |
+| Local feed pin  | CPM `PackageReference` + `tools/nuget.config` pattern                                             | Coupled restore without delivering a build fix        |
 
 ### 2. The semantic check (critical — never use pure syntax)
 
@@ -138,6 +148,10 @@ The rewrite uses `awaitExpr.WithExpression()` to replace the existing awaited ex
 
 ### 5. MSBuild integration — CoreCompileDependsOn, not AfterTargets
 
+> **Historical (pre-`c3c141b1`).** The repo no longer ships a `.targets` file or
+> PackageReference for this tool. Keep the timing lessons; do not re-add this path
+> as a “secondary safety net.” See `configureawait-fixer-nuget-targets-removal.md`.
+
 `AfterTargets="CoreCompile"` and `AfterTargets="Build"` were both tested and silently fail: when the parent target is skipped during incremental builds, `AfterTargets` followers do not fire.
 
 The reliable hook is `CoreCompileDependsOn` property injection:
@@ -164,6 +178,10 @@ Key design decisions:
 - **`StandardErrorImportance="low"`**: Suppresses fixer output from normal build output. Only visible with `-v:normal` or higher.
 
 ### 6. NuGet packaging for a tool-only package
+
+> **Historical.** Pack surface and `IsPackable` are off for ConfigureAwaitFixer;
+> delivery is publish + hooks. Lessons below apply only if packaging a _different_
+> tools-only package.
 
 The `.csproj` must declare:
 
@@ -224,8 +242,9 @@ involvement, no deadlock risk.
 
 This eliminates the build-time fix cycle entirely: `.ConfigureAwait(false)`
 annotations land in the file at write time, before `dotnet build` ever sees
-the code. The MSBuild `.targets` hook (§5) remains as a secondary safety net
-for files modified outside an agent session.
+the code. There is **no** MSBuild `.targets` secondary safety net after
+`c3c141b1` — hooks + the published binary are the only fix path; pre-commit
+`dotnet build` with `TreatWarningsAsErrors` catches misses.
 
 ### 10. TreatWarningsAsErrors gating during dotnet watch
 
@@ -290,9 +309,9 @@ Without semantic analysis, the fixer corrupts test files. `await Assert.That(res
 - When LLMs (or developers) repeatedly produce CA2007/MA0004 violations
 - When building any Roslyn-based automated code fixer
 - When `dotnet format` has been confirmed incapable of applying the desired CodeFixProvider
-- When the fixer must run outside MSBuild to avoid deadlock (see §9 for plugin architecture)
-- When the fixer must run inside MSBuild as a secondary safety net (see §5 for `.targets` hook)
-- When the consumer project can reference a NuGet package from a local feed
+- When the fixer must run outside MSBuild to avoid deadlock (hooks + published WinExe; see §9)
+- Do **not** reintroduce a PackageReference / repo `.targets` “secondary net” — see
+  `configureawait-fixer-nuget-targets-removal.md`
 
 ## Examples
 
@@ -338,25 +357,31 @@ await Assert.That(result).IsTrue();
 await Task.WhenAll(tasks);
 ```
 
-### Project integration
+### Project integration (historical — removed)
+
+The former PackageReference install is **retired**. Do not re-add:
 
 ```xml
-<!-- tools/src/redmuffin.Tools.QualityGates/redmuffin.Tools.QualityGates.csproj -->
+<!-- REMOVED in c3c141b1 — historical only -->
 <ItemGroup>
     <PackageReference Include="redmuffin.Tools.ConfigureAwaitFixer" Version="1.0.2" />
 </ItemGroup>
 ```
 
-No other configuration needed. The `.targets` auto-import hooks the fixer into every build.
+**Current deploy:** build/publish the fixer project, copy `publish/` to
+`~/.local/bin/ConfigureAwaitFixer/`, wire harness hooks to
+`ConfigureAwaitFixer.exe --fix {{file}}` on `.cs` writes.
 
 ## Related
 
+- `docs/solutions/tooling-decisions/configureawait-fixer-nuget-targets-removal.md` — why hooks own delivery; NuGet/`.targets` removal
+- `docs/solutions/conventions/fixer-vs-formatter-terminology.md` — CAF is a fixer, not a formatter
+- `docs/solutions/performance-issues/configureawait-daemon-job-object-detached-spawn.md` — warm daemon Job Object / WinExe
 - `docs/solutions/best-practices/csharp-standards-final-2026-04-06.md` — authoritative ConfigureAwait(false) policy documentation
 - `docs/solutions/tooling-decisions/crap-quality-gates-pipeline-2026-05-09.md` — separate-solution + local NuGet feed architecture pattern
 - `docs/adr/0002-quality-gates-toolchain.md` — architectural decision record for the tools solution structure
 - `docs/solutions/developer-experience/quality-gates-tool-operational-gotchas-2026-05-09.md` — Roslyn patterns, `dotnet pack` workflow, SDK coexistence
-- `tools/src/redmuffin.Tools.ConfigureAwaitFixer/Program.cs` — fixer implementation (138 lines)
-- `tools/src/redmuffin.Tools.ConfigureAwaitFixer/build/redmuffin.Tools.ConfigureAwaitFixer.targets` — MSBuild integration target
+- `tools/src/redmuffin.Tools.ConfigureAwaitFixer/Program.cs` — fixer implementation
 - `rm-async` — async methods, cancellation flows, and Task-based API conventions
 - `rm-cleanup-session` — quality gates cleanup orchestrator
 
