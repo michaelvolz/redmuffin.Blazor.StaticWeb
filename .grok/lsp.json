@@ -1,0 +1,11 @@
+{
+  "roslyn": {
+    "command": "C:\\Users\\flynn\\.local\\bin\\windows\\roslyn-language-server.cmd",
+    "args": ["--stdio", "--autoLoadProjects"],
+    "extensionToLanguage": {
+      ".cs": "csharp",
+      ".razor": "razor"
+    },
+    "startupTimeout": 60000
+  }
+}
