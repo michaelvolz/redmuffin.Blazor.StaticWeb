@@ -16,7 +16,7 @@ canonical_for:
 # agent-browser Guide for redmuffin.Blazor.StaticWeb
 
 > **Human reference** for browser automation on this project. Agents load
-> **`rm-agent-browser-qa`** at runtime (co-loads upstream `agent-browser`).
+> **`rm-agent-browser-companion`** at runtime (co-loads upstream `agent-browser`).
 > Keep this guide aligned with that skill when rules change.
 >
 > Official upstream docs: [agent-browser.dev](https://agent-browser.dev/)
@@ -54,14 +54,14 @@ work without the Blazor wait below.
 
 ### Evaluation verdict (2026-06-20)
 
-| Dimension | Rating | Summary |
-| --- | --- | --- |
-| Core value for AI agents | Excellent | `snapshot -i` is token-efficient and a11y-rich |
-| redmuffin.net compatibility | Good | Works after Blazor WASM boot wait |
-| Windows / PowerShell ergonomics | Fair | Prefer `find` locators; sequential commands only |
-| Reliability under stress | Fair | Parallel calls kill the daemon |
-| Observability | Excellent | Annotated screenshots, vitals, console, network |
-| Upstream docs | Excellent | [agent-browser.dev](https://agent-browser.dev/) + `skills get core` |
+| Dimension                       | Rating    | Summary                                                             |
+| ------------------------------- | --------- | ------------------------------------------------------------------- |
+| Core value for AI agents        | Excellent | `snapshot -i` is token-efficient and a11y-rich                      |
+| redmuffin.net compatibility     | Good      | Works after Blazor WASM boot wait                                   |
+| Windows / PowerShell ergonomics | Fair      | Prefer `find` locators; sequential commands only                    |
+| Reliability under stress        | Fair      | Parallel calls kill the daemon                                      |
+| Observability                   | Excellent | Annotated screenshots, vitals, console, network                     |
+| Upstream docs                   | Excellent | [agent-browser.dev](https://agent-browser.dev/) + `skills get core` |
 
 ---
 
@@ -155,10 +155,10 @@ agent-browser --session redmuffin find role button click --name "Click me"
 
 ### 2.6 Headed vs headless
 
-| Mode | Flag | When |
-| --- | --- | --- |
-| Headless | (default) | CI, unattended loops |
-| Headed | `--headed` | Human watching locally |
+| Mode     | Flag       | When                   |
+| -------- | ---------- | ---------------------- |
+| Headless | (default)  | CI, unattended loops   |
+| Headed   | `--headed` | Human watching locally |
 
 - Headless may flash a small black window on Windows — normal.
 - Never change `--headed` on a running daemon — `close` the session first.
@@ -202,13 +202,13 @@ form).
 **This is the default** for agent browser work on this app unless the task
 explicitly names production, real Functions HTTP, or another full stack.
 
-| Rule | Detail |
-| --- | --- |
-| Host | Frontend only: `http://localhost:5233` (`rm-dev-environment` **Default mode**). Synthetic / mock data. **No API project.** |
-| Start | Reuse if port is up. Otherwise start frontend-only as a harness **background** host — do not multi-minute-wait on startup logs; site is ready in a few seconds. |
-| Stop before rebuild | Kill the host before assembly-touching rebuilds; restart after build. |
-| Browser | Sequential `agent-browser` with `--session redmuffin` (§2). |
-| Full stack | Opt-in only when explicitly required. Do not invent API + SWA startup for ordinary QA. |
+| Rule                | Detail                                                                                                                                                          |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Host                | Frontend only: `http://localhost:5233` (`rm-dev-environment` **Default mode**). Synthetic / mock data. **No API project.**                                      |
+| Start               | Reuse if port is up. Otherwise start frontend-only as a harness **background** host — do not multi-minute-wait on startup logs; site is ready in a few seconds. |
+| Stop before rebuild | Kill the host before assembly-touching rebuilds; restart after build.                                                                                           |
+| Browser             | Sequential `agent-browser` with `--session redmuffin` (§2).                                                                                                     |
+| Full stack          | Opt-in only when explicitly required. Do not invent API + SWA startup for ordinary QA.                                                                          |
 
 ```powershell
 # Confirm / start frontend-only host first (rm-dev-environment Default mode).
@@ -268,43 +268,43 @@ agent-browser --session redmuffin close
 
 ### Reliable (with workflow rules)
 
-| Feature | Notes |
-| --- | --- |
-| `open <url>` | Headed and headless |
-| `wait --load networkidle` | Required, not sufficient alone |
-| `wait --fn "<js>"` | Best Blazor boot detector |
-| `wait --url "**/route**"` | SPA route changes |
-| `get url` / `get title` | Sanity checks |
-| `snapshot -i` | ~33 refs: nav, regions, form, perf widget |
-| `snapshot -i --json` | Machine-readable |
-| `eval "<js>"` | e.g. main h1 text |
-| `get text '@eN'` | Quoted refs + live session |
-| `find role/text/label/placeholder` | **Recommended on PowerShell** |
-| `screenshot` / `--full` / `--annotate` | Annotate maps `[N]` → `@eN` |
-| `scroll`, `is visible` | Basic interaction |
-| `tab new --label <name>` | Labeled tabs |
-| `back` / `reload` | When session healthy |
-| `console`, `errors`, `network requests` | After page load |
-| `state save` / `state load` | Persist auth state |
-| `skills list` / `skills get core` | Version-synced CLI docs |
-| `doctor --offline --quick` | Fast health check |
+| Feature                                 | Notes                                     |
+| --------------------------------------- | ----------------------------------------- |
+| `open <url>`                            | Headed and headless                       |
+| `wait --load networkidle`               | Required, not sufficient alone            |
+| `wait --fn "<js>"`                      | Best Blazor boot detector                 |
+| `wait --url "**/route**"`               | SPA route changes                         |
+| `get url` / `get title`                 | Sanity checks                             |
+| `snapshot -i`                           | ~33 refs: nav, regions, form, perf widget |
+| `snapshot -i --json`                    | Machine-readable                          |
+| `eval "<js>"`                           | e.g. main h1 text                         |
+| `get text '@eN'`                        | Quoted refs + live session                |
+| `find role/text/label/placeholder`      | **Recommended on PowerShell**             |
+| `screenshot` / `--full` / `--annotate`  | Annotate maps `[N]` → `@eN`               |
+| `scroll`, `is visible`                  | Basic interaction                         |
+| `tab new --label <name>`                | Labeled tabs                              |
+| `back` / `reload`                       | When session healthy                      |
+| `console`, `errors`, `network requests` | After page load                           |
+| `state save` / `state load`             | Persist auth state                        |
+| `skills list` / `skills get core`       | Version-synced CLI docs                   |
+| `doctor --offline --quick`              | Fast health check                         |
 
 ### Flaky / context-dependent
 
-| Feature | Notes |
-| ------- | ----- |
-| `click '@eN'` | Needs fresh snapshot; fails on `about:blank` |
-| `vitals --json` | Zeros when page not loaded |
-| `batch --json` | Session must be alive |
-| `wait --text "..."` | Timed out; prefer `--fn` for Blazor |
+| Feature             | Notes                                        |
+| ------------------- | -------------------------------------------- |
+| `click '@eN'`       | Needs fresh snapshot; fails on `about:blank` |
+| `vitals --json`     | Zeros when page not loaded                   |
+| `batch --json`      | Session must be alive                        |
+| `wait --text "..."` | Timed out; prefer `--fn` for Blazor          |
 
 ### Failed / not recommended
 
-| Feature | Notes |
-| ------- | ----- |
-| Parallel commands | Kills daemon |
-| Full `doctor` | Hangs >60s on Windows |
-| `--% click @eN` | Does not pass through |
+| Feature           | Notes                 |
+| ----------------- | --------------------- |
+| Parallel commands | Kills daemon          |
+| Full `doctor`     | Hangs >60s on Windows |
+| `--% click @eN`   | Does not pass through |
 
 ### Deferred (upstream docs; not verified here)
 
@@ -352,24 +352,24 @@ When WASM is loaded, `snapshot -i` includes:
 
 ## 7 — Risks and mitigations
 
-| Risk | Mitigation |
-| ---- | ---------- |
-| Daemon corruption | Sequential commands; `doctor --offline --quick` |
-| Orphan Chrome | §2.7 cleanup |
-| PowerShell `@ref` | Default to `find` (§2.5) |
-| Blazor boot race | `--fn` wait on `main` (§2.3) |
-| Accidental `close --all` | Close named session only |
+| Risk                     | Mitigation                                      |
+| ------------------------ | ----------------------------------------------- |
+| Daemon corruption        | Sequential commands; `doctor --offline --quick` |
+| Orphan Chrome            | §2.7 cleanup                                    |
+| PowerShell `@ref`        | Default to `find` (§2.5)                        |
+| Blazor boot race         | `--fn` wait on `main` (§2.3)                    |
+| Accidental `close --all` | Close named session only                        |
 
 ---
 
 ## 8 — Relationship to other tools
 
-| Tool | Role |
-| ---- | ---- |
-| bUnit | Component tests in isolation |
-| agent-browser + `rm-agent-browser-qa` | Live-app QA — snapshots, screenshots, console, network, vitals |
-| `rm-dev-environment` / `rm-dev-shutdown` | Start/stop frontend-only host; process cleanup |
-| ce-test-browser | Disabled in Grok; use §3 workflow when enabled elsewhere |
+| Tool                                         | Role                                                           |
+| -------------------------------------------- | -------------------------------------------------------------- |
+| bUnit                                        | Component tests in isolation                                   |
+| agent-browser + `rm-agent-browser-companion` | Live-app QA — snapshots, screenshots, console, network, vitals |
+| `rm-dev-environment` / `rm-dev-shutdown`     | Start/stop frontend-only host; process cleanup                 |
+| ce-test-browser                              | Disabled in Grok; use §3 workflow when enabled elsewhere       |
 
 Chrome DevTools MCP is not the project default for browser QA. Prefer
 agent-browser. Enable DevTools MCP only when the user opts in and
@@ -379,7 +379,7 @@ agent-browser cannot satisfy the task.
 
 ## Related
 
-- Skill (agent runtime twin): `rm-agent-browser-qa`
+- Skill (agent runtime twin): `rm-agent-browser-companion`
 - Host startup: `rm-dev-environment` (default frontend-only `:5233`)
 - [agent-browser.dev](https://agent-browser.dev/)
 - [GitHub: vercel-labs/agent-browser](https://github.com/vercel-labs/agent-browser)

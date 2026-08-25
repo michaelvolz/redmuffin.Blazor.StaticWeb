@@ -40,7 +40,7 @@ If any answer is incomplete, if you are guessing about a constraint the user hol
   `Common` when deliberate — not by extracting Functions source.
 - Full rule: ADR `docs/adr/0013-riverbooks-modular-layout-and-result.md` and
   `docs/modular-monolith-module-guide-2026-08-03.md` § Hard constraint.
-- Modularization roadmap (destination, Mediator, sequencing): 
+- Modularization roadmap (destination, Mediator, sequencing):
   `docs/specs/2026-08-03-riverbooks-modularization-roadmap-spec.md`
 
 ## PRE-COMMIT VERIFICATION
@@ -111,14 +111,14 @@ Q2: Did the change include workflow files?
 
 ## COMMANDS
 
-| Command                                                                                       | Purpose                                         | When                                                                                    |
-| --------------------------------------------------------------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `dotnet build && dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests`                 | Verify logic & prevent regressions              | Pre-commit when Q1 is YES (see decision tree)                                             |
-| `dotnet build --verbosity quiet`                                                              | Verify C# compilation                           | Immediately after any C# edit                                                           |
-| `dotnet build && dotnet run --project tests/redmuffin.Tools.QualityGates.Tests`               | Run quality gates tool tests                    | After any tools/ code change                                                            |
-| `sass --style=compressed --no-source-map scss/app.scss:wwwroot/css/app.min.css`               | Production SCSS build (one-shot, commit output) | Pre-commit (mandatory — see §PRE-COMMIT VERIFICATION)                                   |
-| `dotnet format [<solution-path>]`                                                             | Auto-fix ~75% of StyleCop/Roslyn violations     | Before manually fixing analyzer warnings                                                |
-| `dotnet clean && dotnet build && dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests` | Full verification cycle                         | After NuGet updates or repeated failures                                                |
+| Command                                                                                       | Purpose                                         | When                                                  |
+| --------------------------------------------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------- |
+| `dotnet build && dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests`                 | Verify logic & prevent regressions              | Pre-commit when Q1 is YES (see decision tree)         |
+| `dotnet build --verbosity quiet`                                                              | Verify C# compilation                           | Immediately after any C# edit                         |
+| `dotnet build && dotnet run --project tests/redmuffin.Tools.QualityGates.Tests`               | Run quality gates tool tests                    | After any tools/ code change                          |
+| `sass --style=compressed --no-source-map scss/app.scss:wwwroot/css/app.min.css`               | Production SCSS build (one-shot, commit output) | Pre-commit (mandatory — see §PRE-COMMIT VERIFICATION) |
+| `dotnet format [<solution-path>]`                                                             | Auto-fix ~75% of StyleCop/Roslyn violations     | Before manually fixing analyzer warnings              |
+| `dotnet clean && dotnet build && dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests` | Full verification cycle                         | After NuGet updates or repeated failures              |
 
 ## WORKFLOWS
 
@@ -126,7 +126,7 @@ Q2: Did the change include workflow files?
   harness `AGENTS.md`. Never use `grep`/`glob`/`read` for semantic symbol
   queries when the active harness exposes `lsp`. Never use `grep` for
   AST-structure queries — load `ast-grep` and `rm-structural-search`.
-- **Browser automation**: Load `rm-agent-browser-qa` (co-loads upstream `agent-browser`) for live-site QA, snapshots, screenshots, navigation, network, vitals, and a11y checks on redmuffin.net or local dev. Never use bUnit for live-app QA. See `rm-dev-environment` for site startup; `rm-dev-shutdown` for cleanup.
+- **Browser automation**: Load `rm-agent-browser-companion` (co-loads upstream `agent-browser`) for live-site QA, snapshots, screenshots, navigation, network, vitals, and a11y checks on redmuffin.net or local dev. Never use bUnit for live-app QA. See `rm-dev-environment` for site startup; `rm-dev-shutdown` for cleanup.
 - **Structural code search**: Load `rm-structural-search` (co-loads `ast-grep`) for syntax-shape queries across `.cs` files.
 - **Local workflow testing (`act`)**: Never push a workflow change without running the full pipeline locally first. `act push -W .github/workflows/azure-static-web-apps-lively-cliff-0945be603.yml -P ubuntu-latest=dotnet-sdk-node:10.0 --pull=false`. Full procedure in `rm-github-workflows` skill.
 - **Quality Gates — Recursive Loop**: Gates are not one-shot. Run → fix worst violations → re-run → repeat until zero violations across all gates. See `rm-cleanup-session` §0 for the full principle.
@@ -155,13 +155,13 @@ Folder names map 1:1 to namespace segments. A file at
 **Feature folders (top-level):** every page, domain, and shared construct
 lives under `Features/`.
 
-| Pattern                     | Example                          | Contains                                                             |
-| --------------------------- | -------------------------------- | -------------------------------------------------------------------- |
+| Pattern                     | Example                          | Contains                                                                                |
+| --------------------------- | -------------------------------- | --------------------------------------------------------------------------------------- |
 | `Features/{FeatureName}/`   | `Features/Raindrop/`             | Host domain leftovers: `Cache/`, `Presentation/`, `Models/` (IO is `Modules/Raindrop*`) |
-| `Features/{PageName}/`      | `Features/HomePage/`             | Single-page feature: `.razor` + `.razor.cs` + optional `Components/` |
-| `Features/{PageName}/`      | `Features/DebugPage/`            | Multi-page feature: sub-pages, `Services/`, `Models/`, `Components/`   |
-| `Features/Common/`          | `Features/Common/Components/`    | Shared reusable components used by 2+ features                       |
-| `Features/Common/{Domain}/` | `Features/Common/PageLoadSpeed/` | Cross-cutting domain: `Services/`, `Models/`, `Components/`          |
+| `Features/{PageName}/`      | `Features/HomePage/`             | Single-page feature: `.razor` + `.razor.cs` + optional `Components/`                    |
+| `Features/{PageName}/`      | `Features/DebugPage/`            | Multi-page feature: sub-pages, `Services/`, `Models/`, `Components/`                    |
+| `Features/Common/`          | `Features/Common/Components/`    | Shared reusable components used by 2+ features                                          |
+| `Features/Common/{Domain}/` | `Features/Common/PageLoadSpeed/` | Cross-cutting domain: `Services/`, `Models/`, `Components/`                             |
 
 **Core (app infrastructure):** `Core/` holds application-level infrastructure
 shared across features but not feature-specific.
@@ -214,14 +214,14 @@ placed at the solution root (main: `REPO_ROOT/quality-gates/`, tools:
 
 **CLI subcommands:**
 
-| Subcommand     | Purpose                                              |
-| -------------- | ---------------------------------------------------- |
-| `crap`         | Complexity Risk Analysis (kept — industry acronym)   |
-| `scrap`        | Structural Code Analysis (kept — industry acronym)   |
+| Subcommand     | Purpose                                            |
+| -------------- | -------------------------------------------------- |
+| `crap`         | Complexity Risk Analysis (kept — industry acronym) |
+| `scrap`        | Structural Code Analysis (kept — industry acronym) |
 | `architecture` | Dependency architecture validation                 |
-| `mutation`     | Mutation testing                                     |
-| `duplicates`   | Duplicate code detection                             |
-| `all`          | Run all gates with defaults                          |
+| `mutation`     | Mutation testing                                   |
+| `duplicates`   | Duplicate code detection                           |
+| `all`          | Run all gates with defaults                        |
 
 **CLI flags:**
 

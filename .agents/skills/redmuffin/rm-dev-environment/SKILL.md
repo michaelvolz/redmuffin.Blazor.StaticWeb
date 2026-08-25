@@ -7,7 +7,7 @@ description: >-
   https or Watch, background dotnet run for agent tests, kill host before
   rebuild, Start-Process vs harness background, hot reload, SRI site broken,
   ports/watchers, which browser tool to use. Full API stack is opt-in only
-  when the user names it. Pair with rm-agent-browser-qa for browser work and
+  when the user names it. Pair with rm-agent-browser-companion for browser work and
   rm-dev-shutdown for cleanup. Load immediately when starting or choosing a
   host — do not invent full-site startup.
 ---
@@ -49,7 +49,7 @@ This skill does NOT cover:
 
 ## BROWSER SESSION HYGIENE
 
-**agent-browser** (`rm-agent-browser-qa`, co-loads upstream `agent-browser`) is the
+**agent-browser** (`rm-agent-browser-companion`, co-loads upstream `agent-browser`) is the
 browser automation path on all OS.
 
 Bundled Chromium from `agent-browser install` — **not** the user's Brave profile.
@@ -57,7 +57,7 @@ Bundled Chromium from `agent-browser install` — **not** the user's Brave profi
 
 ### agent-browser
 
-- Load `rm-agent-browser-qa` before the first command — Blazor WASM boot wait is mandatory.
+- Load `rm-agent-browser-companion` before the first command — Blazor WASM boot wait is mandatory.
 - Never omit `--session <name>` on any `agent-browser` command.
 - Never issue two `agent-browser` command chains in parallel.
 - Never run `agent-browser close --all` while a human inspects a headed browser.
@@ -70,16 +70,16 @@ Bundled Chromium from `agent-browser install` — **not** the user's Brave profi
 
 **This is the default** for agent browser QA, route checks, lazy-load checks, and most local verification. Use it whenever the task does not explicitly require the full API / Functions stack.
 
-| Rule | Detail |
-| --- | --- |
-| Scope | Blazor WASM host only: `src/redmuffin.Blazor.StaticWeb`. **Never** start `src/redmuffin.Blazor.StaticWeb.Api` on this path. |
-| Data | Synthetic / mock Strategy by default. No Azure Functions needed. |
-| URL / port | `http://localhost:5233` from `Properties/launchSettings.json` (`https` / `Watch`). Never invent another base URL. |
-| Profile | **Agent QA / quick verify:** `https` (fast, no watcher). **Human coding with hot reload:** `Watch`. |
-| Host process | **Agent harness (default for tests):** `dotnet run` as a **background** task so the agent stays free. Startup is a few seconds — probe port or HTTP 200, then continue. Do not multi-minute-wait on host logs. **Human console:** `Start-Process powershell` when a visible window is wanted (below). |
-| Reuse | If port `5233` is already listening, **do not** start another host. Drive the existing origin. |
-| Stop before rebuild | Kill the host **before** any rebuild or edit that locks assemblies under `bin/` / `obj/`. Rebuild, then start again. |
-| Cleanup | Host stop + `agent-browser --session redmuffin close` when done (`rm-dev-shutdown`). |
+| Rule                | Detail                                                                                                                                                                                                                                                                                                |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Scope               | Blazor WASM host only: `src/redmuffin.Blazor.StaticWeb`. **Never** start `src/redmuffin.Blazor.StaticWeb.Api` on this path.                                                                                                                                                                           |
+| Data                | Synthetic / mock Strategy by default. No Azure Functions needed.                                                                                                                                                                                                                                      |
+| URL / port          | `http://localhost:5233` from `Properties/launchSettings.json` (`https` / `Watch`). Never invent another base URL.                                                                                                                                                                                     |
+| Profile             | **Agent QA / quick verify:** `https` (fast, no watcher). **Human coding with hot reload:** `Watch`.                                                                                                                                                                                                   |
+| Host process        | **Agent harness (default for tests):** `dotnet run` as a **background** task so the agent stays free. Startup is a few seconds — probe port or HTTP 200, then continue. Do not multi-minute-wait on host logs. **Human console:** `Start-Process powershell` when a visible window is wanted (below). |
+| Reuse               | If port `5233` is already listening, **do not** start another host. Drive the existing origin.                                                                                                                                                                                                        |
+| Stop before rebuild | Kill the host **before** any rebuild or edit that locks assemblies under `bin/` / `obj/`. Rebuild, then start again.                                                                                                                                                                                  |
+| Cleanup             | Host stop + `agent-browser --session redmuffin close` when done (`rm-dev-shutdown`).                                                                                                                                                                                                                  |
 
 **Never** start a full site (API + SWA + frontend) for ordinary QA. Full-stack / real Functions HTTP is **opt-in only** when the user or scenario names it. Do not expand this default section into full-stack procedure.
 
@@ -87,11 +87,11 @@ Bundled Chromium from `agent-browser install` — **not** the user's Brave profi
 
 > **Note:** Port comes from the profile's `applicationUrl` in `launchSettings.json`. Agent QA uses the background form; human windows use `Start-Process` as shown under Frontend Commands.
 
-| Situation | Command | Profile | Why |
-| --- | --- | --- | --- |
+| Situation                                                                                         | Command                                                                      | Profile | Why                                                                       |
+| ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------- |
 | **Agent / quick verification** (default) — page renders, agent-browser QA, no code edits expected | `dotnet run --project src/redmuffin.Blazor.StaticWeb --launch-profile https` | `https` | Fastest startup. No file watcher overhead. Prefer harness **background**. |
-| **Active development** — editing `.razor`, `.cs` method bodies, CSS | `dotnet run --project src/redmuffin.Blazor.StaticWeb --launch-profile Watch` | `Watch` | Hot reload; human-visible window is fine. |
-| **After a rude edit** — hot reload rejected the change | same as Watch (auto-restarts) | `Watch` | Profile's `--non-interactive` auto-restarts without prompting. |
+| **Active development** — editing `.razor`, `.cs` method bodies, CSS                               | `dotnet run --project src/redmuffin.Blazor.StaticWeb --launch-profile Watch` | `Watch` | Hot reload; human-visible window is fine.                                 |
+| **After a rude edit** — hot reload rejected the change                                            | same as Watch (auto-restarts)                                                | `Watch` | Profile's `--non-interactive` auto-restarts without prompting.            |
 
 ### Frontend Commands (default path)
 
@@ -143,11 +143,11 @@ Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue | Where-Obje
 
 **Profile details** (`src/redmuffin.Blazor.StaticWeb/Properties/launchSettings.json`):
 
-| Profile | Command | URL | Hot Reload | Use Case |
-| --- | --- | --- | --- | --- |
-| `https` | `dotnet run` (Project) | `http://localhost:5233` | No | Default agent QA / quick verification |
-| `Watch` | `dotnet watch --non-interactive -- -p:TreatWarningsAsErrors=false` (Executable) | `http://localhost:5233` | Yes | Active development |
-| `IIS Express` | IISExpress | dynamic | Yes | Legacy — do not use |
+| Profile       | Command                                                                         | URL                     | Hot Reload | Use Case                              |
+| ------------- | ------------------------------------------------------------------------------- | ----------------------- | ---------- | ------------------------------------- |
+| `https`       | `dotnet run` (Project)                                                          | `http://localhost:5233` | No         | Default agent QA / quick verification |
+| `Watch`       | `dotnet watch --non-interactive -- -p:TreatWarningsAsErrors=false` (Executable) | `http://localhost:5233` | Yes        | Active development                    |
+| `IIS Express` | IISExpress                                                                      | dynamic                 | Yes        | Legacy — do not use                   |
 
 ### ConfigureAwait Fixer
 
@@ -310,26 +310,26 @@ Get-NetTCPConnection -LocalPort 5000 -ErrorAction SilentlyContinue
 
 ### Browser operations
 
-Load `rm-agent-browser-qa` before the first command.
+Load `rm-agent-browser-companion` before the first command.
 
-| Task                | Tool / skill                                         |
-| ------------------- | ---------------------------------------------------- |
-| Navigate to URL     | `agent-browser --session redmuffin open <url>`       |
-| Take snapshot       | `agent-browser --session redmuffin snapshot -i`      |
-| Screenshot          | `agent-browser --session redmuffin screenshot`       |
-| Click/fill/interact | `agent-browser find role/label/...` (see skill)      |
+| Task                | Tool / skill                                           |
+| ------------------- | ------------------------------------------------------ |
+| Navigate to URL     | `agent-browser --session redmuffin open <url>`         |
+| Take snapshot       | `agent-browser --session redmuffin snapshot -i`        |
+| Screenshot          | `agent-browser --session redmuffin screenshot`         |
+| Click/fill/interact | `agent-browser find role/label/...` (see skill)        |
 | Console / errors    | `agent-browser --session redmuffin console` / `errors` |
-| Network / HAR       | `agent-browser --session redmuffin network …`        |
-| Web Vitals          | `agent-browser --session redmuffin vitals --json`    |
+| Network / HAR       | `agent-browser --session redmuffin network …`          |
+| Web Vitals          | `agent-browser --session redmuffin vitals --json`      |
 
 ### Code intelligence
 
-| Task                         | Tool / skill                    |
-| ---------------------------- | ------------------------------- |
-| Symbol refs, definitions     | Harness `lsp` tool (when enabled) |
-| Syntax-shape search          | `rm-structural-search` + ast-grep |
-| Text / name search           | `grep` (builtin)                |
-| Compilation truth            | `dotnet build`                  |
+| Task                     | Tool / skill                      |
+| ------------------------ | --------------------------------- |
+| Symbol refs, definitions | Harness `lsp` tool (when enabled) |
+| Syntax-shape search      | `rm-structural-search` + ast-grep |
+| Text / name search       | `grep` (builtin)                  |
+| Compilation truth        | `dotnet build`                    |
 
 ### Dev Tools
 
