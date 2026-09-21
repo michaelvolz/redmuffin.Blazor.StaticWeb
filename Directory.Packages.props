@@ -21,7 +21,7 @@
     <NewtonsoftJsonVersion>13.0.4</NewtonsoftJsonVersion>
     <MeziantouAnalyzerVersion>3.0.235</MeziantouAnalyzerVersion>
     <VSThreadingAnalyzersVersion>18.7.23</VSThreadingAnalyzersVersion>
-    <RoslynatorVersion>4.16.1</RoslynatorVersion>
+    <RoslynatorVersion>5.0.0</RoslynatorVersion>
     <StyleCopAnalyzersVersion>1.2.0-beta.556</StyleCopAnalyzersVersion>
     <AsyncFixerVersion>2.1.0</AsyncFixerVersion>
     <SystemCommandLineVersion>2.0.7</SystemCommandLineVersion>
