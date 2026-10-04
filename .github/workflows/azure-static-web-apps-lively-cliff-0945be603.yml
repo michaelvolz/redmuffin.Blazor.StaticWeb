@@ -300,6 +300,13 @@ jobs:
     runs-on: ubuntu-latest
     name: Health Check
     steps:
+      # The boot-digest probe needs scripts/verify-boot-digests.ps1 from the repo.
+      - name: Check out code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          show-progress: false
+
       - name: Verify deployment health
         run: |
           set -e
@@ -338,6 +345,12 @@ jobs:
           wait $A_PID || { echo "FAIL: api_check exit_code=$?"; exit 1; }
           echo "result=pass"
           echo "::endgroup::"
+
+      # Gate: the deployed boot manifest (inlined in dotnet.js) must match the
+      # served assemblies. A mismatch is the stale-cache SRI failure that
+      # kills Blazor boot for returning visitors after a deploy.
+      - name: Verify boot manifest digests
+        run: pwsh -NoProfile -File scripts/verify-boot-digests.ps1 -BaseUrl https://redmuffin.net
 
   # JOB: Handle pipeline-neutral changes (skipped deployment)
   pipeline_neutral_changed_job:
