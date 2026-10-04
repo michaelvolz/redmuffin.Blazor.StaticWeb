@@ -114,7 +114,7 @@ The design changes produced real improvements; mechanical extraction would not h
   — Concrete case study applying this philosophy to domain model validation
 - [Superfluous Code Principles](/docs/solutions/superfluous-code-principles.md)
   — WHAT to remove (sibling doc); this doc covers WHEN and WHY to intervene
-- [I/O Injection Pattern](/docs/solutions/design-patterns/io-injection-optional-func-parameter-2026-05-16.md)
+- [I/O Injection Pattern](/docs/solutions/design-patterns/io-injection-optional-func-parameter.md)
   — First design change enabled by this philosophy
-- [FrozenDictionary Switch Replacement](/docs/solutions/design-patterns/frozendictionary-switch-expression-replacement-2026-05-16.md)
+- [FrozenDictionary Switch Replacement](/docs/solutions/design-patterns/frozendictionary-switch-expression-replacement.md)
   — Second design change enabled by this philosophy
