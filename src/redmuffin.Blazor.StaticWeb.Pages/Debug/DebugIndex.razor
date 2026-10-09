@@ -1,0 +1,48 @@
+@page "/debug"
+@namespace redmuffin.Blazor.StaticWeb.Pages.Debug
+
+<PageTitle>Debug Tools - Programming & AI Article Hub</PageTitle>
+
+<DebugNavigation/>
+
+<div class="grid-container">
+    <div class="grid-x grid-margin-x">
+        <div class="cell">
+            <h1>Debug Tools</h1>
+            <p>
+                Browser-storage diagnostics and recovery for this site. These tools stay outside
+                the main navigation and load only when you reach them by URL.
+            </p>
+
+            <div class="grid-x grid-margin-x">
+                <div class="cell medium-6">
+                    <div class="callout secondary">
+                        <h5><i class="fas fa-database" aria-hidden="true"></i> localStorage Diagnostics</h5>
+                        <p>
+                            Reads browser storage without changing it: storage availability, the
+                            Blazored.LocalStorage service health, JSON serialization, quota, and
+                            the application's cached keys.
+                        </p>
+                        <a href="/debug/localstorage" class="button">
+                            <i class="fas fa-arrow-right" aria-hidden="true"></i> Open Diagnostics
+                        </a>
+                    </div>
+                </div>
+
+                <div class="cell medium-6">
+                    <div class="callout secondary">
+                        <h5><i class="fas fa-trash" aria-hidden="true"></i> Cache Reset</h5>
+                        <p>
+                            Removes all cached application data from localStorage, including the
+                            article and video cache and your Raindrop sign-in tokens, then rebuilds
+                            everything on the next page visit.
+                        </p>
+                        <a href="/debug/resetcache" class="button">
+                            <i class="fas fa-arrow-right" aria-hidden="true"></i> Open Cache Reset
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

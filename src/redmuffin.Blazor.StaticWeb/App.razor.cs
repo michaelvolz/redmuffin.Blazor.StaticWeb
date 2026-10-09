@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
@@ -35,16 +35,38 @@ public partial class App
 
     public ErrorBoundary ComponentErrorBoundary { get; set; } = null!;
 
-    [Inject] private IWarmupService WarmupService { get; set; } = default!;
-    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
-    [Inject] private IPageAssemblyLoader PageAssemblyLoader { get; set; } = default!;
-    [Inject] private AzureHealthCheckModuleGate AzureHealthCheckModuleGate { get; set; } = default!;
-    [Inject] private AzureHealthCheckLoadOptions AzureHealthCheckLoadOptions { get; set; } = default!;
-    [Inject] private RaindropModuleGate RaindropModuleGate { get; set; } = default!;
-    [Inject] private RaindropLoadOptions RaindropLoadOptions { get; set; } = default!;
-    [Inject] private IHttpClientFactory HttpClientFactory { get; set; } = default!;
-    [Inject] private ILoggerFactory LoggerFactory { get; set; } = default!;
-    [Inject] private ILocalStorageService LocalStorage { get; set; } = default!;
+    [Inject]
+    private NavigationManager NavigationManager { get; set; } = default!;
+
+    [Inject]
+    private IWarmupService WarmupService { get; set; } = default!;
+
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; } = default!;
+
+    [Inject]
+    private IPageAssemblyLoader PageAssemblyLoader { get; set; } = default!;
+
+    [Inject]
+    private AzureHealthCheckModuleGate AzureHealthCheckModuleGate { get; set; } = default!;
+
+    [Inject]
+    private AzureHealthCheckLoadOptions AzureHealthCheckLoadOptions { get; set; } = default!;
+
+    [Inject]
+    private RaindropModuleGate RaindropModuleGate { get; set; } = default!;
+
+    [Inject]
+    private RaindropLoadOptions RaindropLoadOptions { get; set; } = default!;
+
+    [Inject]
+    private IHttpClientFactory HttpClientFactory { get; set; } = default!;
+
+    [Inject]
+    private ILoggerFactory LoggerFactory { get; set; } = default!;
+
+    [Inject]
+    private ILocalStorageService LocalStorage { get; set; } = default!;
 
     /// <summary>
     ///     Gets the eager page assemblies plus lazy need-sets for <c>Router.AdditionalAssemblies</c>.
@@ -75,11 +97,15 @@ public partial class App
 
         await PageAssemblyLoader.EnsureLoadedAsync(pageKey).ConfigureAwait(false);
 
-        if (pageKey.Equals(PageAssemblyCatalog.ApiHealthPageKey, StringComparison.OrdinalIgnoreCase))
+        if (
+            pageKey.Equals(PageAssemblyCatalog.ApiHealthPageKey, StringComparison.OrdinalIgnoreCase)
+        )
             EnsureAzureHealthCheckServiceReady();
 
-        if (pageKey.Equals(PageAssemblyCatalog.ArticlesPageKey, StringComparison.OrdinalIgnoreCase)
-            || pageKey.Equals(PageAssemblyCatalog.VideosPageKey, StringComparison.OrdinalIgnoreCase))
+        if (
+            pageKey.Equals(PageAssemblyCatalog.ArticlesPageKey, StringComparison.OrdinalIgnoreCase)
+            || pageKey.Equals(PageAssemblyCatalog.VideosPageKey, StringComparison.OrdinalIgnoreCase)
+        )
             EnsureRaindropFacadeReady();
     }
 
@@ -92,7 +118,8 @@ public partial class App
         var service = CreateHealthCheckServiceViaReflection(
             HttpClientFactory,
             LoggerFactory,
-            AzureHealthCheckLoadOptions.UseSyntheticData);
+            AzureHealthCheckLoadOptions.UseSyntheticData
+        );
         AzureHealthCheckModuleGate.SetService(service);
     }
 
@@ -106,45 +133,57 @@ public partial class App
             HttpClientFactory,
             LoggerFactory,
             LocalStorage,
-            RaindropLoadOptions.UseSyntheticData);
+            RaindropLoadOptions.UseSyntheticData
+        );
         RaindropModuleGate.SetFacade(facade);
     }
 
     private static IHealthCheckService CreateHealthCheckServiceViaReflection(
         IHttpClientFactory httpClientFactory,
         ILoggerFactory loggerFactory,
-        bool useSyntheticData)
+        bool useSyntheticData
+    )
     {
-        var extensionsType = Type.GetType(CreateHealthCheckServiceTypeName, throwOnError: true)
+        var extensionsType =
+            Type.GetType(CreateHealthCheckServiceTypeName, throwOnError: true)
             ?? throw new InvalidOperationException(
-                $"Could not resolve type '{CreateHealthCheckServiceTypeName}' after loading AzureHealthCheck.dll.");
+                $"Could not resolve type '{CreateHealthCheckServiceTypeName}' after loading AzureHealthCheck.dll."
+            );
 
-        var method = extensionsType.GetMethod(
+        var method =
+            extensionsType.GetMethod(
                 CreateHealthCheckServiceMethodName,
                 BindingFlags.Public | BindingFlags.Static,
                 binder: null,
                 types: [typeof(IHttpClientFactory), typeof(ILoggerFactory), typeof(bool)],
-                modifiers: null)
+                modifiers: null
+            )
             ?? throw new InvalidOperationException(
-                $"Could not find {CreateHealthCheckServiceMethodName} on {extensionsType.FullName}.");
+                $"Could not find {CreateHealthCheckServiceMethodName} on {extensionsType.FullName}."
+            );
 
         var result = method.Invoke(null, [httpClientFactory, loggerFactory, useSyntheticData]);
         return result as IHealthCheckService
             ?? throw new InvalidOperationException(
-                $"{CreateHealthCheckServiceMethodName} did not return IHealthCheckService.");
+                $"{CreateHealthCheckServiceMethodName} did not return IHealthCheckService."
+            );
     }
 
     private static IRaindropItemsFacade CreateRaindropItemsFacadeViaReflection(
         IHttpClientFactory httpClientFactory,
         ILoggerFactory loggerFactory,
         ILocalStorageService localStorage,
-        bool useSyntheticData)
+        bool useSyntheticData
+    )
     {
-        var extensionsType = Type.GetType(CreateRaindropItemsFacadeTypeName, throwOnError: true)
+        var extensionsType =
+            Type.GetType(CreateRaindropItemsFacadeTypeName, throwOnError: true)
             ?? throw new InvalidOperationException(
-                $"Could not resolve type '{CreateRaindropItemsFacadeTypeName}' after loading Raindrop.dll.");
+                $"Could not resolve type '{CreateRaindropItemsFacadeTypeName}' after loading Raindrop.dll."
+            );
 
-        var method = extensionsType.GetMethod(
+        var method =
+            extensionsType.GetMethod(
                 CreateRaindropItemsFacadeMethodName,
                 BindingFlags.Public | BindingFlags.Static,
                 binder: null,
@@ -153,26 +192,47 @@ public partial class App
                     typeof(IHttpClientFactory),
                     typeof(ILoggerFactory),
                     typeof(ILocalStorageService),
-                    typeof(bool)
+                    typeof(bool),
                 ],
-                modifiers: null)
+                modifiers: null
+            )
             ?? throw new InvalidOperationException(
-                $"Could not find {CreateRaindropItemsFacadeMethodName} on {extensionsType.FullName}.");
+                $"Could not find {CreateRaindropItemsFacadeMethodName} on {extensionsType.FullName}."
+            );
 
-        var result = method.Invoke(null, [httpClientFactory, loggerFactory, localStorage, useSyntheticData]);
+        var result = method.Invoke(
+            null,
+            [httpClientFactory, loggerFactory, localStorage, useSyntheticData]
+        );
         return result as IRaindropItemsFacade
             ?? throw new InvalidOperationException(
-                $"{CreateRaindropItemsFacadeMethodName} did not return IRaindropItemsFacade.");
+                $"{CreateRaindropItemsFacadeMethodName} did not return IRaindropItemsFacade."
+            );
     }
 
     protected override Task OnInitializedAsync()
     {
         // Mark the boundary between WASM runtime ready and Blazor initialization
-        _ = JSRuntime.InvokeVoidAsync("eval", "window.pageLoadSpeed && window.pageLoadSpeed.wasmMetrics && window.pageLoadSpeed.wasmMetrics.markBlazorStart()").AsTask();
+        _ = JSRuntime
+            .InvokeVoidAsync(
+                "eval",
+                "window.pageLoadSpeed && window.pageLoadSpeed.wasmMetrics && window.pageLoadSpeed.wasmMetrics.markBlazorStart()"
+            )
+            .AsTask();
 
         // Best-effort warm-up of Azure Functions; failure does not block startup
         _ = WarmupService.TryWarmupAsync();
 
         return base.OnInitializedAsync();
+    }
+
+    /// <summary>
+    ///     Reboot into the cache-reset recovery page.
+    /// </summary>
+    private void NavigateToCacheReset()
+    {
+        // Full document reload escapes the error-boundary state; a soft route
+        // re-enters the crashed render instead of rebooting the app.
+        NavigationManager.NavigateTo("/debug", forceLoad: true);
     }
 }

@@ -23,6 +23,7 @@
             <pre>Boom! @errorException.ToString()</pre>
             <button @onclick="_ => ComponentErrorBoundary.Recover()">Continue</button>
             <a href="http://redmuffin.net" class="reload">Reload</a>
+            <button @onclick="NavigateToCacheReset" class="reload">Cache Reset</button>
         </div>
 
     </ErrorContent>
