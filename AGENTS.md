@@ -1,19 +1,19 @@
 ---
-date: 2026-06-18
+date: 2026-10-09
 title: AGENTS Project Guide (v2)
 tags: [agent, rules, blazor, critical-policies, context-management, dotnet10]
-description: Project-specific rules for the redmuffin.Blazor.StaticWeb repo. Cross-harness global rules are in ~/.claude/CLAUDE.md. Build and repo conventions are in rm-build-config. Commit rules are in rm-commit.
+description: Project-specific rules for the redmuffin.Blazor.StaticWeb repo. Cross-harness global rules are in ~/.claude/CLAUDE.md. Build and repo conventions are in rm-coding-build-repo-config-companion. Commit rules are in rm-git-commit.
 ---
 
 # AGENTS: Project Guide
 
 > **Universal rules:** `~/.claude/CLAUDE.md` (Karpathy, commit discipline, safety).
 > **Harness rules:** Grok `~/.grok/AGENTS.md` · OpenCode `~/.config/opencode/AGENTS.md` · Cursor `~/.cursor/AGENTS.md`.
-> **Harness skills:** `rm-grok-build` (Grok) · `rm-opencode` (OpenCode).
-> **Commit rules:** `rm-commit` skill.
-> **Build & repo conventions:** `rm-build-config` skill.
+> **Harness skills:** `rm-grok-build-harness` (Grok) · `rm-opencode-harness` (OpenCode).
+> **Commit rules:** `rm-git-commit` skill.
+> **Build & repo conventions:** `rm-coding-build-repo-config-companion` skill.
 > **Repo LSP config (Grok):** `.grok/lsp.json` when Grok Roslyn LSP is enabled.
-> **AGENTS.md maintenance:** `rm-instruction-standards` skill.
+> **AGENTS.md maintenance:** `rm-agent-instructions` skill.
 
 ## STRUCTURAL CHANGE GATE (READ FIRST — STOP HERE)
 
@@ -125,13 +125,13 @@ Q2: Did the change include workflow files?
 - **Code intelligence:** LSP routing and harness tool names — see the active
   harness `AGENTS.md`. Never use `grep`/`glob`/`read` for semantic symbol
   queries when the active harness exposes `lsp`. Never use `grep` for
-  AST-structure queries — load `ast-grep` and `rm-structural-search`.
+  AST-structure queries — load `ast-grep` and `rm-coding-ast-grep-lsp-companion`.
 - **Browser automation**: Load `rm-agent-browser-companion` (co-loads upstream `agent-browser`) for live-site QA, snapshots, screenshots, navigation, network, vitals, and a11y checks on redmuffin.net or local dev. Never use bUnit for live-app QA. See `rm-dev-environment` for site startup; `rm-dev-shutdown` for cleanup.
-- **Structural code search**: Load `rm-structural-search` (co-loads `ast-grep`) for syntax-shape queries across `.cs` files.
-- **Local workflow testing (`act`)**: Never push a workflow change without running the full pipeline locally first. `act push -W .github/workflows/azure-static-web-apps-lively-cliff-0945be603.yml -P ubuntu-latest=dotnet-sdk-node:10.0 --pull=false`. Full procedure in `rm-github-workflows` skill.
-- **Quality Gates — Recursive Loop**: Gates are not one-shot. Run → fix worst violations → re-run → repeat until zero violations across all gates. See `rm-cleanup-session` §0 for the full principle.
-- **Cleanup Sessions**: Load `rm-cleanup-session` to activate all 7 cleanup skills in one call.
-- **Code Knowledge Graph (better-code-review-graph)**: Use for `file_summary`, `children_of`, and `large_functions` queries only. Never rely on `callers_of`, `callees_of`, `tests_for`, `inheritors_of`, `importers_of`, `impact`, or `security scan` for C# — the Tree-sitter C# parser produces incomplete semantic edges (no IMPLEMENTS, no TESTED_BY, no reliable cross-file calls). Use LSP tools for call graphs and references, quality gates for security, and `dotnet test` for test discovery.
+- **Structural code search**: Load `rm-coding-ast-grep-lsp-companion` (co-loads `ast-grep`) for syntax-shape queries across `.cs` files.
+- **Local workflow testing (`act`)**: Never push a workflow change without running the full pipeline locally first. `act push -W .github/workflows/azure-static-web-apps-lively-cliff-0945be603.yml -P ubuntu-latest=dotnet-sdk-node:10.0 --pull=false`. Full procedure in `rm-coding-ci-github-actions-companion` skill.
+- **Quality Gates — Recursive Loop**: Gates are not one-shot. Run → fix worst violations → re-run → repeat until zero violations across all gates. See `rm-coding-code-cleanup-orchestrator` for the full principle.
+- **Cleanup Sessions**: Load `rm-coding-code-cleanup-orchestrator` to activate the cleanup skills in one call.
+- **Code Knowledge Graph (code-review-graph)**: Use for `file_summary`, `children_of`, and `large_functions` queries only. Never rely on `callers_of`, `callees_of`, `tests_for`, `inheritors_of`, `importers_of`, `impact`, or `security scan` for C# — the Tree-sitter C# parser produces incomplete semantic edges (no IMPLEMENTS, no TESTED_BY, no reliable cross-file calls). Use LSP tools for call graphs and references, quality gates for security, and `dotnet test` for test discovery.
 
 ## STACK & STRUCTURE
 
@@ -148,35 +148,40 @@ Q2: Did the change include workflow files?
 ## DIRECTORY & NAMESPACE STRUCTURE
 
 Folder names map 1:1 to namespace segments. A file at
-`Features/Raindrop/Cache/RaindropItemsCache.cs` has namespace
-`redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache`. Module IO lives under
-`src/redmuffin.Blazor.StaticWeb.Modules/Raindrop*/` (not host `Features/…/Services`).
+`src/redmuffin.Blazor.StaticWeb.Modules/Raindrop/Cache/RaindropItemsCache.cs`
+has namespace `redmuffin.Blazor.StaticWeb.Modules.Raindrop.Cache`. Module IO
+lives under `src/redmuffin.Blazor.StaticWeb.Modules/Raindrop*/` (not host
+`Features/…/Services`).
 
-**Feature folders (top-level):** every page, domain, and shared construct
-lives under `Features/`.
+**Homes:** routable pages live in per-page projects under
+`src/redmuffin.Blazor.StaticWeb.Pages/<PageName>/`. Each page family owns
+its own `.csproj`. Shared Razor components live in
+`src/redmuffin.Blazor.StaticWeb.Components/`. The host project keeps domain
+leftovers and cross-cutting constructs under `Features/` and `Core/`.
 
-| Pattern                     | Example                          | Contains                                                                                |
-| --------------------------- | -------------------------------- | --------------------------------------------------------------------------------------- |
-| `Features/{FeatureName}/`   | `Features/Raindrop/`             | Host domain leftovers: `Cache/`, `Presentation/`, `Models/` (IO is `Modules/Raindrop*`) |
-| `Features/{PageName}/`      | `Features/HomePage/`             | Single-page feature: `.razor` + `.razor.cs` + optional `Components/`                    |
-| `Features/{PageName}/`      | `Features/DebugPage/`            | Multi-page feature: sub-pages, `Services/`, `Models/`, `Components/`                    |
-| `Features/Common/`          | `Features/Common/Components/`    | Shared reusable components used by 2+ features                                          |
-| `Features/Common/{Domain}/` | `Features/Common/PageLoadSpeed/` | Cross-cutting domain: `Services/`, `Models/`, `Components/`                             |
+| Where                              | Example                          | Contains                                                                 |
+| ---------------------------------- | -------------------------------- | ------------------------------------------------------------------------ |
+| `Pages/{PageName}/` (own project)  | `Pages/Home/`                    | Single page: `.razor` + `.razor.cs`, optional `Components/`              |
+| `Pages/{PageName}/` (own project)  | `Pages/Debug/`                   | Page family with sub-routes: `Services/`, `Models/`, `Components/`       |
+| `Components/` (own project)        | `Components/Raindrop/`           | Shared Razor components used by 2+ pages                                 |
+| `Features/{Domain}/` (host)        | `Features/Raindrop/`             | Host-side Mediator handlers and module gates (IO is `Modules/Raindrop*`) |
+| `Features/Common/` (host)          | `Features/Common/Components/`    | Host-shared components used by 2+ host features                          |
+| `Features/Common/{Domain}/` (host) | `Features/Common/PageLoadSpeed/` | Cross-cutting domain: `Services/`, `Models/`, `Components/`              |
 
 **Core (app infrastructure):** `Core/` holds application-level infrastructure
 shared across features but not feature-specific.
 
-| Folder                   | Purpose                                                           |
-| ------------------------ | ----------------------------------------------------------------- |
-| `Core/Layout/`           | Layout components (`MainLayout`, `NavMenu`)                       |
-| `Core/Services/`         | Cross-cutting services (`WarmupService`, `BrowserStorageService`) |
-| `Core/ImagePlaceholder/` | Cross-cutting feature: `Abstractions/`, `Models/`, `Services/`    |
-| `Core/Abstractions/`     | Truly app-wide interfaces (`IDelayProvider`)                      |
+| Folder                   | Purpose                                                                              |
+| ------------------------ | ------------------------------------------------------------------------------------ |
+| `Core/Layout/`           | Layout components (`MainLayout`, `NavMenu`)                                          |
+| `Core/Services/`         | Cross-cutting services (`WarmupService`, `PageAssemblyLoader`)                       |
+| `Core/ImagePlaceholder/` | Cross-cutting feature: `Models/`, `Services/`, `Templates/` (interfaces in `Common`) |
 
 **Never:**
 
-- Never nest pages under `Features/Pages/` — the `Pages/` level adds zero
-  signal. Flat: `Features/HomePage/`.
+- Never nest a page family under an extra `Pages/` folder level inside
+  another project — the extra level adds zero signal. One page family per
+  project, flat.
 - Never create `Services/` at the project root. Services belong in
   `Core/Services/` or `Features/{Domain}/Services/`.
 - Never create generic `Models/` folders at the root or in `Core/`. Models
