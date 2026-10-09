@@ -25,13 +25,14 @@
                     <h4><i class="fas fa-check-circle" aria-hidden="true"></i> Cache Reset Successful</h4>
                     <p>
                         Successfully cleared <strong>@_itemsCleared</strong> items from localStorage.
-                        All cached data including image validation results and other cached content has been removed.
+                        All cached application data, including the article and video cache and your
+                        Raindrop sign-in tokens, has been removed.
                     </p>
                     <p>
                         <strong>Next steps:</strong>
                     </p>
                     <ul>
-                        <li>When you visit the articles page again, images will be re-validated</li>
+                        <li>Data re-fetches from the server when you visit the articles and videos pages again</li>
 
                         <li>Page load times may be slightly longer on first visit as caches rebuild</li>
                     </ul>
@@ -70,17 +71,22 @@
                         This action will completely clear all localStorage data, including:
                     </p>
                     <ul>
-                        <li><strong>Image validation cache</strong> - All validated image URLs and results</li>
-
-                        <li><strong>Performance metrics cache</strong> - Page load timing data</li>
+                        <li>
+                            <strong>Raindrop article and video cache</strong> - compressed items
+                            plus cache metadata
+                        </li>
+                        <li>
+                            <strong>Raindrop sign-in tokens</strong> - you will need to sign in
+                            again after this
+                        </li>
                         <li>
                             <strong>All other cached application data</strong>
                         </li>
                     </ul>
                     <p>
                         <strong>Warning:</strong> This action cannot be undone. After clearing the cache,
-                        the application will need to re-fetch and re-validate all data, which may result in
-                        slower initial page loads.
+                        the application will need to re-fetch all data and rebuild its caches, which
+                        may result in slower initial page loads.
                     </p>
                     <div class="button-group">
                         <button @onclick="ConfirmResetAsync" class="button alert">

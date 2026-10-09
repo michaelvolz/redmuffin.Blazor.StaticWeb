@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.Json;
 using Blazored.LocalStorage;
 using Microsoft.Extensions.Logging;
@@ -19,7 +19,8 @@ public partial class LocalStorageDebugService
     public LocalStorageDebugService(
         ILocalStorageService localStorage,
         IJSRuntime jsRuntime,
-        ILogger<LocalStorageDebugService> logger)
+        ILogger<LocalStorageDebugService> logger
+    )
     {
         _localStorage = localStorage;
         _jsRuntime = jsRuntime;
@@ -30,33 +31,40 @@ public partial class LocalStorageDebugService
     ///     Performs comprehensive localStorage diagnostics.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    public async Task<LocalStorageDiagnostics> DiagnoseLocalStorageAsync(CancellationToken cancellationToken = default)
+    public async Task<LocalStorageDiagnostics> DiagnoseLocalStorageAsync(
+        CancellationToken cancellationToken = default
+    )
     {
         var diagnostics = new LocalStorageDiagnostics();
 
         try
         {
             // Test basic localStorage availability
-            diagnostics.IsLocalStorageAvailable = await TestLocalStorageAvailabilityAsync().ConfigureAwait(false);
+            diagnostics.IsLocalStorageAvailable = await TestLocalStorageAvailabilityAsync()
+                .ConfigureAwait(false);
 
             // Test Blazored.LocalStorage service
-            diagnostics.IsBlazoredServiceWorking = await TestBlazoredServiceAsync(cancellationToken).ConfigureAwait(false);
+            diagnostics.IsBlazoredServiceWorking = await TestBlazoredServiceAsync(cancellationToken)
+                .ConfigureAwait(false);
 
             // Get storage info
             diagnostics.StorageInfo = await GetStorageInfoAsync().ConfigureAwait(false);
 
             // Test JSON serialization
-            diagnostics.JsonSerializationWorks = await TestJsonSerializationAsync(cancellationToken).ConfigureAwait(false);
+            diagnostics.JsonSerializationWorks = await TestJsonSerializationAsync(cancellationToken)
+                .ConfigureAwait(false);
 
             // Check existing cache keys
-            diagnostics.ExistingCacheKeys = await GetExistingCacheKeysAsync(cancellationToken).ConfigureAwait(false);
+            diagnostics.ExistingCacheKeys = await GetExistingCacheKeysAsync(cancellationToken)
+                .ConfigureAwait(false);
 
             var usedBytesMb = diagnostics.StorageInfo?.UsedBytes / (1024.0 * 1024.0) ?? 0;
             LogDiagnosticsCompleted(
                 _logger,
                 diagnostics.IsLocalStorageAvailable,
                 diagnostics.IsBlazoredServiceWorking,
-                usedBytesMb);
+                usedBytesMb
+            );
         }
         catch (Exception ex)
         {
@@ -72,7 +80,8 @@ public partial class LocalStorageDebugService
         try
         {
             // Direct JavaScript localStorage test
-            var jsCode = @"(() => {
+            var jsCode =
+                @"(() => {
                     try {
                         const testKey = '__test_localStorage_' + Date.now();
                         localStorage.setItem(testKey, 'test');
@@ -97,21 +106,28 @@ public partial class LocalStorageDebugService
     {
         try
         {
-            var testKey = "__blazored_test_" + DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
-            var testValue = "test_value_" + DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
+            var testKey =
+                "__blazored_test_" + DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
+            var testValue =
+                "test_value_" + DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
 
             // Test set
-            await _localStorage.SetItemAsync(testKey, testValue, cancellationToken).ConfigureAwait(false);
+            await _localStorage
+                .SetItemAsync(testKey, testValue, cancellationToken)
+                .ConfigureAwait(false);
 
             // Test get
-            var retrieved = await _localStorage.GetItemAsync<string>(testKey, cancellationToken).ConfigureAwait(false);
+            var retrieved = await _localStorage
+                .GetItemAsync<string>(testKey, cancellationToken)
+                .ConfigureAwait(false);
 
             // Test remove
             await _localStorage.RemoveItemAsync(testKey, cancellationToken).ConfigureAwait(false);
 
             var success = string.Equals(testValue, retrieved, StringComparison.Ordinal);
 
-            if (!success) LogBlazoredTestFailed(_logger, testValue, retrieved);
+            if (!success)
+                LogBlazoredTestFailed(_logger, testValue, retrieved);
 
             return success;
         }
@@ -126,7 +142,8 @@ public partial class LocalStorageDebugService
     {
         try
         {
-            var jsCode = @"(() => {
+            var jsCode =
+                @"(() => {
                     try {
                         const estimate = navigator.storage && navigator.storage.estimate 
                             ? navigator.storage.estimate() 
@@ -148,7 +165,9 @@ public partial class LocalStorageDebugService
                         };
                     }
                 })()";
-            var storageInfo = await _jsRuntime.InvokeAsync<StorageInfo>("eval", jsCode).ConfigureAwait(false);
+            var storageInfo = await _jsRuntime
+                .InvokeAsync<StorageInfo>("eval", jsCode)
+                .ConfigureAwait(false);
 
             return storageInfo;
         }
@@ -163,14 +182,25 @@ public partial class LocalStorageDebugService
     {
         try
         {
-            var testKey = "__json_test_" + DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
-            var testObject = new { Name = "Test", Value = 123, Date = DateTime.UtcNow };
+            var testKey =
+                "__json_test_" + DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
+            var testObject = new
+            {
+                Name = "Test",
+                Value = 123,
+                Date = DateTime.UtcNow,
+            };
 
-            await _localStorage.SetItemAsStringAsync(
-                testKey,
-                JsonSerializer.Serialize(testObject),
-                cancellationToken).ConfigureAwait(false);
-            var retrieved = await _localStorage.GetItemAsStringAsync(testKey, cancellationToken).ConfigureAwait(false);
+            await _localStorage
+                .SetItemAsStringAsync(
+                    testKey,
+                    JsonSerializer.Serialize(testObject),
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
+            var retrieved = await _localStorage
+                .GetItemAsStringAsync(testKey, cancellationToken)
+                .ConfigureAwait(false);
             await _localStorage.RemoveItemAsync(testKey, cancellationToken).ConfigureAwait(false);
 
             return !string.IsNullOrEmpty(retrieved);
@@ -187,7 +217,11 @@ public partial class LocalStorageDebugService
         try
         {
             var allKeys = await _localStorage.KeysAsync(cancellationToken).ConfigureAwait(false);
-            return allKeys.Where(key => key.Contains("raindrop_cache_", StringComparison.Ordinal) || key.Contains("img_validation_", StringComparison.Ordinal)).ToList();
+            // Show every key. Legacy validator-era entries were written under
+            // hashed keys, so no prefix filter can match them. Cache Reset
+            // (/debug/resetcache) clears the whole origin store, which is what
+            // removes legacy entries.
+            return allKeys.ToList();
         }
         catch (Exception ex)
         {

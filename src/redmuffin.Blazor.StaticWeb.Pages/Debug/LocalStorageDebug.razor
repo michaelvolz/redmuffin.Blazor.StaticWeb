@@ -64,7 +64,7 @@
                     {
                         <div class="cell">
                             <div class="callout success">
-                                <h5>Existing Cache Keys (@_diagnostics.ExistingCacheKeys.Count)</h5>
+                                <h5>Existing Keys (@_diagnostics.ExistingCacheKeys.Count)</h5>
                                 <ul>
                                     @foreach (var key in _diagnostics.ExistingCacheKeys)
                                     {
@@ -80,8 +80,8 @@
                     {
                         <div class="cell">
                             <div class="callout warning">
-                                <h5>No Cache Keys Found</h5>
-                                <p>No existing raindrop or image validation cache keys were found in localStorage.</p>
+                                <h5>No Keys Found</h5>
+                                <p>No keys were found in localStorage.</p>
                             </div>
                         </div>
                     }
@@ -138,7 +138,7 @@
                         else if (_diagnostics.ExistingCacheKeys.Any())
                         {
                             <p>
-                                <strong>✅ Cache keys found - caching appears to be working!</strong>
+                                <strong>✅ Keys found.</strong>
                             </p>
                             <p>If you're not seeing data on your live server, the issue might be:</p>
                             <ul>
@@ -150,12 +150,11 @@
                         else
                         {
                             <p>
-                                <strong>⚠️ No cache keys found:</strong>
+                                <strong>⚠️ No keys found:</strong>
                             </p>
                             <ul>
-                                <li>Cache writing might be failing</li>
-                                <li>Data might not be reaching the cache layer</li>
-                                <li>Check application logs for cache-related errors</li>
+                                <li>The app has not written any localStorage data in this browser yet.</li>
+                                <li>Check application logs for cache-related errors.</li>
                             </ul>
                         }
                     </div>
