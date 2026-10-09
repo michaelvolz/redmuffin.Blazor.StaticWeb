@@ -25,6 +25,17 @@ tags:
 
 # Static Orchestrator Pattern — Composition Over ComponentBase Inheritance
 
+> **Current (2026-10-09):** The pattern's implementation is gone.
+> `RaindropPageOrchestrator` and its tests were deleted once the pages cut
+> over to Mediator use cases (load and refresh now travel as queries and
+> commands through `IMediator`; see
+> [RiverBooks client end-to-end modularization](riverbooks-client-end-to-end-modularization.md)).
+> What survives: `RaindropPageContext` moved to
+> `src/redmuffin.Blazor.StaticWeb.Components/Raindrop/`, and the pages live in
+> the per-page projects `src/redmuffin.Blazor.StaticWeb.Pages/{Videos,Articles}/`.
+> The composition-over-inheritance reasoning below is the durable part; the
+> code snippets and line counts are the 2026-05 state.
+
 ## Context
 
 `Features/VideosPage/Videos.razor.cs` (271 lines) and
@@ -230,16 +241,16 @@ characterization tests for the orchestrator.
 
 ## Related
 
-- PRD-019 (`tasks/PRD-019-Refactor-Videos-Articles-Shared-Components.md`) —
-  the rejected inheritance approach
-- `docs/solutions/design-patterns/raindrop-presentation-helper-extraction-2026-05-14.md` —
+- PRD-019 — the rejected inheritance approach; the `tasks/` folder it lived
+  in was deleted in 2026-05 and its PRDs were rewritten into `docs/solutions/`
+- [Raindrop presentation helper extraction](../design-patterns/raindrop-presentation-helper-extraction.md) —
   prior Feathers extraction from same files (DisplayTitle/DisplayExcerpt);
   "What Was NOT Extracted" section superseded by this pattern
-- `docs/solutions/architecture-patterns/architecture-deepening-dead-code-consolidation-2026-05-23.md` —
+- [Architecture deepening: dead code consolidation](architecture-deepening-dead-code-consolidation.md) —
   architecture survey that deferred this work as SN-0046
-- `docs/sidenotes/SN-0046.md` — the deferred intent, now fulfilled
-- `rm-guide-blazor` — component granularity and lifecycle conventions
-- `rm-guide-testing` — test double patterns (RaindropItemsCache_Fake,
+- [SN-0046](../../sidenotes/SN-0046.md) — the deferred intent, now fulfilled
+- `rm-coding-ui-blazor` SKILL.md — component granularity and lifecycle conventions
+- `rm-coding-test-mechanics` SKILL.md — test double patterns (RaindropItemsCache_Fake,
   Logger_Spy, Func<> callback fakes)
-- `rm-guide-csharp-features` — functional C# patterns (pure static methods,
+- `rm-coding-lang-csharp` SKILL.md — functional C# patterns (pure static methods,
   Func<> delegates, context records)

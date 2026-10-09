@@ -5,7 +5,15 @@ tags: [image, video, placeholder, architecture, refactor, wasm]
 problem_type: feature
 ---
 
-> **Current (2026-06-08):** IImageValidationCacheService no longer exists. The architecture split into IImageValidator + IImageUrlResolver in Core/ImagePlaceholder/. PlaceholderGenerationService exists but interfaces changed.
+> **Current (2026-10-09):** The validation half is gone: IImageValidator,
+> IImageValidationCacheService, and ImageValidationResult were removed, and
+> covers resolve through
+> [Render-and-observe image URL resolution](../architecture-patterns/render-and-observe-image-url-resolution.md)
+> — the resolver fills the URL cache with no network access, and the `<img>`
+> load/error events decide renderability. What survives:
+> IImagePlaceholderService (Common/ImagePlaceholder/), PlaceholderGenerationService
+> and SvgPlaceholderTemplate (Core/ImagePlaceholder/). The body below records
+> the 2025 extraction.
 
 ## Problem
 

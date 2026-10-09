@@ -5,10 +5,14 @@ tags: [image, validation, cache, performance, refactor, wasm]
 problem_type: feature
 ---
 
-> **Current (2026-06-08):** The simplification was planned but never implemented.
-> The over-engineered system described below still exists in the codebase.
-> This doc is preserved as architectural intent — the WHY behind the planned
-> refactor remains valid and may be executed in a future cleanup pass.
+> **Current (2026-10-09):** The over-engineered system was removed entirely —
+> no simplification pass carried this design out. Covers render straight from
+> each item's cover URL, and the component's image load-error event swaps in
+> the placeholder. See
+> [Render-and-observe image URL resolution](../architecture-patterns/render-and-observe-image-url-resolution.md).
+> This doc is preserved as architectural intent — the WHY behind removing the
+> complexity holds, and the planned single-service design it describes was
+> never built.
 
 ## Problem
 

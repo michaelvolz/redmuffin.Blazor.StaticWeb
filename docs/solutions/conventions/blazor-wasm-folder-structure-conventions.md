@@ -25,6 +25,21 @@ tags:
 
 # Blazor WASM Feature Folder Structure Conventions
 
+> **Current (2026-10-09):** The page layout evolved past this doc's tree.
+> Routable pages no longer live in the host web project's `Features/` tree:
+> each page family is a standalone project under
+> `src/redmuffin.Blazor.StaticWeb.Pages/<PageName>/` (Home, Articles, Videos,
+> Debug, Weather, ApiHealth, Auth, and more), with namespaces
+> `redmuffin.Blazor.StaticWeb.Pages.*`, and shared Razor components live in
+> `src/redmuffin.Blazor.StaticWeb.Components/`. The host web project keeps
+> `Features/{AzureHealthCheck,Common,Raindrop}` and `Core/` for layout and
+> cross-cutting components, and `StorageStats.cs`, `StoredItemMetadata.cs`,
+> and `BrowserStorageService` — all shown in the tree below — were deleted
+> from `Core/Services/` in 2026-10. The placement rules below apply to the
+> host project; the page rows and the interface row name the current homes; see
+> [RiverBooks client end-to-end modularization](../architecture-patterns/riverbooks-client-end-to-end-modularization.md)
+> for the Pages/Components/Modules home split.
+
 ## Context
 
 A .NET 9 Blazor WASM solution accumulated organizational drift over
@@ -58,7 +73,7 @@ Core/                                      │   └── Services/
 │   └── BatchPerformanceMetrics.cs †       ├── Raindrop/
 │                                          │   ├── Api/
 Services/           ← orphaned             │   ├── Cache/
-│   ├── BrowserStorageService*.cs          │   ├── Models/
+│   ├── BrowserStorageService.cs †          │   ├── Models/
 │   ├── PerformanceMetricsService*.cs      │   ├── Presentation/
 │   ├── CacheStats.cs †                    │   ├── Services/
 │   ├── CacheHealthMetrics.cs †            │   └── Enums/
@@ -72,33 +87,34 @@ Services/           ← orphaned             │   ├── Cache/
                                           ├── ImagePlaceholder/
                                           ├── Layout/
                                           └── Services/
-                                              ├── BrowserStorageService*.cs
-                                              ├── StorageStats.cs
-                                              └── StoredItemMetadata.cs
+                                              ├── BrowserStorageService.cs †
+                                              ├── StorageStats.cs †
+                                              └── StoredItemMetadata.cs †
 ```
 
 † = deleted (dead code, zero consumers)
 
 ### Placement Rules
 
-| What                               | Where                                   | Rationale                                           |
-| ---------------------------------- | --------------------------------------- | --------------------------------------------------- |
-| Single page `.razor` + code-behind | `Features/<PageName>/`                  | One folder per page. No `Pages/` nesting            |
-| Page-specific components           | `Features/<PageName>/Components/`       | Colocated with their page                           |
-| Feature-scoped services            | `Features/<Feature>/Services/`          | Service stays with its consumer                     |
-| Feature-scoped models              | `Features/<Feature>/Models/`            | Same as above                                       |
-| Cross-cutting shared services      | `Core/Services/`                        | Infrastructure used by 2+ features                  |
-| Cross-cutting domain features      | `Core/<Domain>/`                        | ImagePlaceholder with Abstractions/Models/Services/ |
-| Shared reusable components         | `Features/Common/Components/`           | Truly generic UI (RefreshBadge)                     |
-| Layout components                  | `Core/Layout/`                          | MainLayout, NavMenu                                 |
-| App-wide interfaces                | `Core/Abstractions/`                    | IDelayProvider                                      |
-| Logging partials                   | Same directory as class, `*.Logging.cs` | Partial class convention                            |
+| What                               | Where                                   | Rationale                                                                |
+| ---------------------------------- | --------------------------------------- | ------------------------------------------------------------------------ |
+| Single page `.razor` + code-behind | `Pages/<PageName>/` (own project)       | One project per page family                                              |
+| Page-specific components           | `Pages/<PageName>/Components/`          | Colocated with their page                                                |
+| Feature-scoped services            | `Features/<Feature>/Services/`          | Service stays with its consumer                                          |
+| Feature-scoped models              | `Features/<Feature>/Models/`            | Same as above                                                            |
+| Cross-cutting shared services      | `Core/Services/`                        | Infrastructure used by 2+ features                                       |
+| Cross-cutting domain features      | `Core/<Domain>/`                        | ImagePlaceholder with Models/Services/Templates (interfaces in `Common`) |
+| Shared reusable components         | `Features/Common/Components/`           | Truly generic UI (RefreshBadge)                                          |
+| Layout components                  | `Core/Layout/`                          | MainLayout, NavMenu                                                      |
+| App-wide interfaces                | `Common/Abstractions/`                  | IDelayProvider                                                           |
+| Logging partials                   | Same directory as class, `*.Logging.cs` | Partial class convention                                                 |
 
 ### Namespace Convention
 
 Namespaces mirror the folder structure exactly. A file at
-`Features/Raindrop/Cache/RaindropItemsCache.cs` has namespace
-`redmuffin.Blazor.StaticWeb.Features.Raindrop.Cache`.
+`src/redmuffin.Blazor.StaticWeb.Modules/Raindrop/Cache/RaindropItemsCache.cs`
+has namespace
+`redmuffin.Blazor.StaticWeb.Modules.Raindrop.Cache`.
 
 When flattening or renaming directories, update all namespaces, `_Imports.razor`,
 and `@namespace` directives.
@@ -188,10 +204,10 @@ similarly dead. Never relocate dead code — delete it.
 
 ## Related
 
-- [Architecture Deepening Case Study](../architecture-patterns/architecture-deepening-dead-code-consolidation-2026-05-23.md) — proof of these conventions working in practice
-- [Superfluous Code Principles](superfluous-code-principles.md) — dead code taxonomy and deletion protocol
-- [Design Changes Are The Point](../conventions/design-changes-are-the-point-cleanup-philosophy-2026-05-16.md) — why structural design changes matter
-- [C# Standards Final](../best-practices/csharp-standards-final-2026-04-06.md) §Feature-based structure — file-scoped namespace rules
-- [Composition over Inheritance Orchestrator Pattern](../architecture-patterns/composition-over-inheritance-orchestrator-pattern-2026-05-23.md) — service placement example
-- `rm-guide-naming` SKILL.md — "Directory & Namespace Structure" section
-- `rm-guide-architecture` SKILL.md — "Feature Folder Structure" section
+- [Architecture Deepening Case Study](../architecture-patterns/architecture-deepening-dead-code-consolidation.md) — proof of these conventions working in practice
+- [Superfluous Code Principles](../superfluous-code-principles.md) — dead code taxonomy and deletion protocol
+- [Design Changes Are The Point](../conventions/design-changes-are-the-point-cleanup-philosophy.md) — why structural design changes matter
+- [C# Standards Final](../best-practices/csharp-standards-final.md) §Feature-based structure — file-scoped namespace rules
+- [Composition over Inheritance Orchestrator Pattern](../architecture-patterns/composition-over-inheritance-orchestrator-pattern.md) — service placement example
+- `rm-coding-edit-naming` SKILL.md §Directory & Namespace Structure
+- `rm-coding-design-architecture` SKILL.md §Feature Folder Structure

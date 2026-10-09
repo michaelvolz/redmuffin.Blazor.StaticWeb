@@ -19,7 +19,7 @@ date: 2026-05-28
 ## Context
 
 The project runs on Azure Static Web Apps (free tier) with Blazor WebAssembly
-(.NET 9) frontend and Azure Functions isolated worker (.NET 9) backend. No
+(.NET 10) frontend and Azure Functions isolated worker (.NET 9) backend. No
 dedicated server infrastructure exists. The goal is to add distributed tracing,
 metrics, and error tracking without introducing GDPR/ePrivacy compliance burden.
 
@@ -29,7 +29,8 @@ metrics, and error tracking without introducing GDPR/ePrivacy compliance burden.
 - Blazor WASM runs entirely in the browser — traditional OTel SDK does not work
 - Azure Functions isolated worker (.NET 9) is the only server-side component
 - No cookies, no Google Analytics, no tracking — intentionally banner-free
-- localStorage usage is strictly functional (image validation cache, test OAuth tokens)
+- localStorage usage is strictly functional (Raindrop item caches, Raindrop
+  sign-in tokens, debug-page diagnostics probes)
 
 ## Free Tier Landscape (May 2026)
 
@@ -96,18 +97,21 @@ Browser → /api/Telemetry (own API) → Grafana Cloud (OTLP)
 
 First-party API calls to your own backend do not trigger ePrivacy Article 5(3).
 No third-party scripts are loaded. No storage is written to the user's device
-beyond the existing functional localStorage (image cache).
+beyond the existing functional localStorage (Raindrop item caches).
 
 ## GDPR/ePrivacy Analysis
 
 ### localStorage Usage Audit
 
-| Key pattern              | Purpose                    | GDPR impact                          |
-| ------------------------ | -------------------------- | ------------------------------------ |
-| `img:*` / `img_meta:*`   | Image URL validation cache | Functional — strictly necessary      |
-| `__browserstorage_index` | LRU eviction index         | Internal cache management            |
-| `raindrop_auth_code`     | Test OAuth flow (unused)   | Test artifact only, never production |
-| `raindrop_access_token`  | Test OAuth flow (unused)   | Test artifact only, never production |
+**Key inventory re-snapshotted 2026-10-09** against the tree. The `/debug/localstorage`
+inspector lists the actual keys of the browsing session at any time.
+
+| Key pattern                                                   | Purpose                                                                                                                                              | GDPR impact                       |
+| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| `raindrop_cache_*`, `raindrop_cache_*_metadata`               | Raindrop items cache (Videos, Articles)                                                                                                              | Functional — strictly necessary   |
+| `raindrop_auth_code`, `raindrop_access_token`                 | Raindrop sign-in flow (`/redirect` page); written but never read back in this repo                                                                   | Functional — strictly necessary   |
+| `__test_localStorage_*`, `__blazored_test_*`, `__json_test_*` | Debug-page diagnostics, written and removed within the same call                                                                                     | Ephemeral first-party diagnostics |
+| `img_validation_*` (hashed)                                   | Legacy entries of the removed image validation layer; no writer since 2026-10-09; the whole-origin clear on `/debug/resetcache` is what removes them | Legacy residue                    |
 
 **Verdict: No consent banner required.** All localStorage usage is first-party
 functional storage. The ePrivacy Directive "strictly necessary" exemption

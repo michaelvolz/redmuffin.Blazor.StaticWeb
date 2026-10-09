@@ -5,6 +5,17 @@ tags: [testing, tunit, lightmock, nsubstitute, mocking, migration]
 problem_type: testing
 ---
 
+> **Current (2026-10-09):** The migration is complete and NSubstitute is fully
+> absent — `Directory.Packages.props` carries only LightMock.Generator 1.2.3,
+> with no NSubstitute package, using, or `Substitute.For` call anywhere. The
+> named test files and the `IBrowserStorageService` example below are gone
+> from the tree (the interface was deleted with the storage wrapper it
+> served). Mocking today is minimal: two LightMock `Mock<T>` instances remain
+> in the Core test project, and hand-written doubles carry most external
+> dependencies per the test-double hierarchy in
+> [ADR 0006](../../adr/0006-test-double-hierarchy.md). The body is the
+> migration record.
+
 ## Problem
 
 The test suite used NSubstitute for mocking, but the project had standardized on LightMock.Generator for its compile-time generation, zero runtime overhead, and AOT compatibility. NSubstitute instances were scattered across multiple test files with varying levels of usage, including skipped tests that had never been migrated. Two frameworks coexisted, creating confusion and inconsistency.
