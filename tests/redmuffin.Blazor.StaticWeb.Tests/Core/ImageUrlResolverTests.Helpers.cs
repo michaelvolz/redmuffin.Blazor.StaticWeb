@@ -1,8 +1,6 @@
-using LightMock.Generator;
-using Microsoft.Extensions.Logging;
-using redmuffin.Blazor.StaticWeb.Common.Raindrop;
+﻿using LightMock.Generator;
 using redmuffin.Blazor.StaticWeb.Common.ImagePlaceholder;
-using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Abstractions;
+using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Core;
@@ -38,7 +36,7 @@ public sealed partial class ImageUrlResolverTests
             Excerpt = "Test excerpt",
             Domain = "example.com",
             Created = DateTime.UtcNow,
-            Type = "link"
+            Type = "link",
         };
     }
 
@@ -51,30 +49,15 @@ public sealed partial class ImageUrlResolverTests
 
         public TestScope()
         {
-            ImageValidationService_Mock = new Mock<IImageValidator>();
             ImagePlaceholderService_Mock = new Mock<IImagePlaceholderService>();
-            Logger = new Logger_Spy<ImageUrlResolver>();
 
-            Service = new ImageUrlResolver(
-                ImageValidationService_Mock.Object,
-                ImagePlaceholderService_Mock.Object,
-                Logger);
+            Service = new ImageUrlResolver(ImagePlaceholderService_Mock.Object);
         }
-
-        /// <summary>
-        ///     Gets the mock for IImageValidator.
-        /// </summary>
-        internal Mock<IImageValidator> ImageValidationService_Mock { get; }
 
         /// <summary>
         ///     Gets the mock for IImagePlaceholderService.
         /// </summary>
         internal Mock<IImagePlaceholderService> ImagePlaceholderService_Mock { get; }
-
-        /// <summary>
-        ///     Gets the test logger for ImageUrlResolver.
-        /// </summary>
-        internal Logger_Spy<ImageUrlResolver> Logger { get; }
 
         /// <summary>
         ///     Gets the ImageUrlResolver instance under test.
@@ -86,85 +69,9 @@ public sealed partial class ImageUrlResolverTests
         /// </summary>
         public void Dispose()
         {
-            if (_disposed) return;
+            if (_disposed)
+                return;
             _disposed = true;
         }
-    }
-
-    /// <summary>
-    ///     Test logger implementation for capturing log messages during tests.
-    /// </summary>
-    /// <typeparam name="T">The category type for the logger.</typeparam>
-    public sealed class Logger_Spy<T> : ILogger<T>
-    {
-        private readonly List<LogEntry> _logs = [];
-
-        /// <summary>
-        ///     Gets the captured log entries.
-        /// </summary>
-        public IReadOnlyList<LogEntry> Logs => _logs.AsReadOnly();
-
-        /// <summary>
-        ///     Clears all captured log entries.
-        /// </summary>
-        public void Clear()
-        {
-            _logs.Clear();
-        }
-
-        /// <inheritdoc />
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull
-        {
-            return null;
-        }
-
-        /// <inheritdoc />
-        public bool IsEnabled(LogLevel logLevel)
-        {
-            return true;
-        }
-
-        /// <inheritdoc />
-        public void Log<TState>(
-            LogLevel logLevel,
-            EventId eventId,
-            TState state,
-            Exception? exception,
-            Func<TState, Exception?, string> formatter)
-        {
-            _logs.Add(new LogEntry
-            {
-                LogLevel = logLevel,
-                EventId = eventId,
-                Message = formatter(state, exception),
-                Exception = exception
-            });
-        }
-    }
-
-    /// <summary>
-    ///     Represents a captured log entry for testing.
-    /// </summary>
-    public sealed class LogEntry
-    {
-        /// <summary>
-        ///     Gets or sets the log level.
-        /// </summary>
-        public LogLevel LogLevel { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the event ID.
-        /// </summary>
-        public EventId EventId { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the log message.
-        /// </summary>
-        public string Message { get; set; } = string.Empty;
-
-        /// <summary>
-        ///     Gets or sets the exception, if any.
-        /// </summary>
-        public Exception? Exception { get; set; }
     }
 }

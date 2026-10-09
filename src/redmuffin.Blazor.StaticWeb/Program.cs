@@ -1,4 +1,4 @@
-using Blazored.LocalStorage;
+﻿using Blazored.LocalStorage;
 using Mediator;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -22,16 +22,19 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 // Set minimum log level to Warning in production to reduce browser console noise
 // Users who need verbose logs can use browser DevTools directly
 builder.Logging.SetMinimumLevel(
-    builder.HostEnvironment.IsProduction() ? LogLevel.Warning : LogLevel.Information);
+    builder.HostEnvironment.IsProduction() ? LogLevel.Warning : LogLevel.Information
+);
 
-builder.Services.AddHttpClient(string.Empty, client =>
-{
-    client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
-    client.Timeout = TimeSpan.FromSeconds(30);
-});
+builder.Services.AddHttpClient(
+    string.Empty,
+    client =>
+    {
+        client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
+        client.Timeout = TimeSpan.FromSeconds(30);
+    }
+);
 
 builder.Services.AddBlazoredLocalStorage();
-builder.Services.AddScoped<IBrowserStorageService, BrowserStorageService>();
 builder.Services.AddScoped<IWarmupService, WarmupService>();
 
 builder.Services.AddScoped<IPerformanceMetricsService, PerformanceMetricsService>();
@@ -51,7 +54,8 @@ builder.Services.AddModulePipelineBehaviors();
 // SWA local (localhost:4280) and production use the real HTTP implementation.
 var useSynthetic = builder.HostEnvironment.BaseAddress.Contains(
     "localhost:5233",
-    StringComparison.OrdinalIgnoreCase);
+    StringComparison.OrdinalIgnoreCase
+);
 
 // AzureHealthCheck / Raindrop implementation assemblies are lazy-loaded (see App + catalog).
 // Do not call AddAzureHealthCheckModule / AddRaindropModule here — that would force impl DLLs at boot.
@@ -61,11 +65,13 @@ builder.Services.AddScoped<IPageAssemblyLoader, PageAssemblyLoader>();
 builder.Services.AddSingleton(new AzureHealthCheckLoadOptions(useSynthetic));
 builder.Services.AddSingleton<AzureHealthCheckModuleGate>();
 builder.Services.AddScoped<IHealthCheckService>(static sp =>
-    sp.GetRequiredService<AzureHealthCheckModuleGate>().GetRequiredService());
+    sp.GetRequiredService<AzureHealthCheckModuleGate>().GetRequiredService()
+);
 
 builder.Services.AddSingleton(new RaindropLoadOptions(useSynthetic));
 builder.Services.AddSingleton<RaindropModuleGate>();
 builder.Services.AddScoped<IRaindropItemsFacade>(static sp =>
-    sp.GetRequiredService<RaindropModuleGate>().GetRequiredFacade());
+    sp.GetRequiredService<RaindropModuleGate>().GetRequiredFacade()
+);
 
 await builder.Build().RunAsync().ConfigureAwait(false);

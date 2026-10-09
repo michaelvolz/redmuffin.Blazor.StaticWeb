@@ -1,10 +1,10 @@
-using Bunit;
+﻿using Bunit;
 using Mediator;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
-using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Common.ImagePlaceholder;
+using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Pages.Videos;
 
 namespace redmuffin.Blazor.StaticWeb.Pages.Videos.Tests;
@@ -32,7 +32,12 @@ public partial class VideosPageCacheTests
     /// <param name="excerpt">The item excerpt.</param>
     /// <param name="link">The item link (optional).</param>
     /// <returns>A configured test RaindropItem.</returns>
-    private static RaindropItem CreateTestVideo(string id, string title, string excerpt, string? link = null)
+    private static RaindropItem CreateTestVideo(
+        string id,
+        string title,
+        string excerpt,
+        string? link = null
+    )
     {
         return new RaindropItem
         {
@@ -41,7 +46,7 @@ public partial class VideosPageCacheTests
             Excerpt = excerpt,
             Link = link ?? $"https://example.com/video/{id}",
             Cover = $"https://example.com/cover/{id}.jpg",
-            Created = DateTime.UtcNow.AddDays(-1)
+            Created = DateTime.UtcNow.AddDays(-1),
         };
     }
 
@@ -107,14 +112,12 @@ public partial class VideosPageCacheTests
     {
         public string GetDefaultPlaceholder()
         {
-            return
-                "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+UGxhY2Vob2xkZXI8L3RleHQ+PC9zdmc+";
+            return "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+UGxhY2Vob2xkZXI8L3RleHQ+PC9zdmc+";
         }
 
         public string GenerateSimplePlaceholder(string reason)
         {
-            return
-                "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI>{reason}</dGV4dD48L3N2Zz4=";
+            return "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI>{reason}</dGV4dD48L3N2Zz4=";
         }
 
         public string GetImageUrl(RaindropItem item, IDictionary<string, string> imageUrlCache)
@@ -128,17 +131,24 @@ public partial class VideosPageCacheTests
             bool loadSuccess,
             IDictionary<string, string> imageUrlCache,
             Func<string, Task> stopShimmerAsync,
-            Func<Task> stateHasChangedCallback)
+            Func<Task> stateHasChangedCallback
+        )
         {
             return Task.CompletedTask;
         }
 
-        public bool HasFallbackPlaceholder(RaindropItem item, IDictionary<string, string> imageUrlCache)
+        public bool HasFallbackPlaceholder(
+            RaindropItem item,
+            IDictionary<string, string> imageUrlCache
+        )
         {
             return false;
         }
 
-        public string GetFallbackReason(RaindropItem item, IDictionary<string, string> imageUrlCache)
+        public string GetFallbackReason(
+            RaindropItem item,
+            IDictionary<string, string> imageUrlCache
+        )
         {
             return string.Empty;
         }
@@ -149,19 +159,12 @@ public partial class VideosPageCacheTests
     /// </summary>
     public sealed class ImageUrlResolver_Mock : IImageUrlResolver
     {
-        public Task PopulateImageUrlCacheAsync(IEnumerable<RaindropItem> items, IDictionary<string, string> imageUrlCache, Func<Task> stateHasChangedCallback,
-            CancellationToken cancellationToken = default)
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task<string> GetCachedImageUrlAsync(RaindropItem item, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(item.Cover ?? "default-placeholder.svg");
-        }
-
-        public Task ValidateImageInBackgroundAsync(RaindropItem item, IDictionary<string, string> imageUrlCache, Func<Task> stateHasChangedCallback,
-            CancellationToken cancellationToken = default)
+        public Task PopulateImageUrlCacheAsync(
+            IEnumerable<RaindropItem> items,
+            IDictionary<string, string> imageUrlCache,
+            Func<Task> stateHasChangedCallback,
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.CompletedTask;
         }

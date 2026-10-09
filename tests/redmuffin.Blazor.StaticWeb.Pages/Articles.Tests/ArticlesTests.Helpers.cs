@@ -1,12 +1,12 @@
-using Bunit;
+﻿using Bunit;
 using Mediator;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Common;
-using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Common.ImagePlaceholder;
+using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
 using ArticlesComponent = redmuffin.Blazor.StaticWeb.Pages.Articles.Articles;
 
@@ -16,8 +16,13 @@ namespace redmuffin.Blazor.StaticWeb.Pages.Articles.Tests;
 public partial class ArticlesTests
 {
     // Helper method to create test RaindropItem
-    public static RaindropItem CreateTestItem(int id = 1, string title = "Test Article", string excerpt = "Test excerpt",
-        string link = "https://example.com/test", string cover = "https://example.com/cover.jpg")
+    public static RaindropItem CreateTestItem(
+        int id = 1,
+        string title = "Test Article",
+        string excerpt = "Test excerpt",
+        string link = "https://example.com/test",
+        string cover = "https://example.com/cover.jpg"
+    )
     {
         return new RaindropItem
         {
@@ -26,7 +31,7 @@ public partial class ArticlesTests
             Excerpt = excerpt,
             Link = link,
             Cover = cover,
-            Type = "article"
+            Type = "article",
         };
     }
 
@@ -104,27 +109,27 @@ public partial class ArticlesTests
         }
 
         private static IReadOnlyList<RaindropItem> DefaultArticles() =>
-        [
-            new()
-            {
-                Id = 1,
-                Title = "Test Article 1",
-                Excerpt = "This is a test article excerpt",
-                Link = "https://example.com/article1",
-                Cover = "https://example.com/cover1.jpg",
-                Type = "article"
-            },
-            new()
-            {
-                Id = 2,
-                Title = "Test Article 2",
-                Excerpt =
-                    "This is another test article with a longer excerpt that should be truncated when it exceeds the maximum length limit of 250 characters. This text is intentionally long to test the truncation functionality in the Articles component.",
-                Link = "https://example.com/article2",
-                Cover = "https://example.com/cover2.jpg",
-                Type = "article"
-            }
-        ];
+            [
+                new()
+                {
+                    Id = 1,
+                    Title = "Test Article 1",
+                    Excerpt = "This is a test article excerpt",
+                    Link = "https://example.com/article1",
+                    Cover = "https://example.com/cover1.jpg",
+                    Type = "article",
+                },
+                new()
+                {
+                    Id = 2,
+                    Title = "Test Article 2",
+                    Excerpt =
+                        "This is another test article with a longer excerpt that should be truncated when it exceeds the maximum length limit of 250 characters. This text is intentionally long to test the truncation functionality in the Articles component.",
+                    Link = "https://example.com/article2",
+                    Cover = "https://example.com/cover2.jpg",
+                    Type = "article",
+                },
+            ];
 
         /// <summary>
         ///     Configures JS interop mode for testing JavaScript integration scenarios.
@@ -173,7 +178,8 @@ public partial class ArticlesTests
     {
         public List<LogEntry> LogEntries { get; } = [];
 
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull
+        public IDisposable? BeginScope<TState>(TState state)
+            where TState : notnull
         {
             return new NoOpDisposable();
         }
@@ -183,15 +189,23 @@ public partial class ArticlesTests
             return true;
         }
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception?, string> formatter
+        )
         {
-            LogEntries.Add(new LogEntry
-            {
-                LogLevel = logLevel,
-                EventId = eventId,
-                Message = formatter(state, exception),
-                Exception = exception
-            });
+            LogEntries.Add(
+                new LogEntry
+                {
+                    LogLevel = logLevel,
+                    EventId = eventId,
+                    Message = formatter(state, exception),
+                    Exception = exception,
+                }
+            );
         }
 
         public class LogEntry
@@ -204,9 +218,7 @@ public partial class ArticlesTests
 
         private sealed class NoOpDisposable : IDisposable
         {
-            public void Dispose()
-            {
-            }
+            public void Dispose() { }
         }
     }
 
@@ -226,16 +238,23 @@ public partial class ArticlesTests
         public string GetImageUrl(RaindropItem item, IDictionary<string, string> imageUrlCache)
         {
             var key = item.Link ?? item.Id.ToString();
-            if (imageUrlCache.TryGetValue(key, out var cachedUrl)) return cachedUrl;
+            if (imageUrlCache.TryGetValue(key, out var cachedUrl))
+                return cachedUrl;
             return "/images/placeholder.svg";
         }
 
-        public string GetFallbackReason(RaindropItem item, IDictionary<string, string> imageUrlCache)
+        public string GetFallbackReason(
+            RaindropItem item,
+            IDictionary<string, string> imageUrlCache
+        )
         {
             return "Test fallback reason";
         }
 
-        public bool HasFallbackPlaceholder(RaindropItem item, IDictionary<string, string> imageUrlCache)
+        public bool HasFallbackPlaceholder(
+            RaindropItem item,
+            IDictionary<string, string> imageUrlCache
+        )
         {
             var key = item.Link ?? item.Id.ToString();
             return !imageUrlCache.ContainsKey(key);
@@ -247,9 +266,11 @@ public partial class ArticlesTests
             bool loadSuccess,
             IDictionary<string, string> imageUrlCache,
             Func<string, Task> stopShimmerAsync,
-            Func<Task> stateHasChangedCallback)
+            Func<Task> stateHasChangedCallback
+        )
         {
-            if (loadSuccess) imageUrlCache[itemLink] = "https://example.com/loaded-image.jpg";
+            if (loadSuccess)
+                imageUrlCache[itemLink] = "https://example.com/loaded-image.jpg";
             return stateHasChangedCallback();
         }
     }
@@ -257,8 +278,12 @@ public partial class ArticlesTests
     // Mock ImageUrlResolver for testing
     public class ImageUrlResolver_Mock : IImageUrlResolver
     {
-        public Task PopulateImageUrlCacheAsync(IEnumerable<RaindropItem> items, IDictionary<string, string> imageUrlCache, Func<Task> stateHasChangedCallback,
-            CancellationToken cancellationToken = default)
+        public Task PopulateImageUrlCacheAsync(
+            IEnumerable<RaindropItem> items,
+            IDictionary<string, string> imageUrlCache,
+            Func<Task> stateHasChangedCallback,
+            CancellationToken cancellationToken = default
+        )
         {
             foreach (var item in items)
                 if (!string.IsNullOrEmpty(item.Cover))
@@ -269,32 +294,25 @@ public partial class ArticlesTests
 
             return stateHasChangedCallback();
         }
-
-        public Task<string> GetCachedImageUrlAsync(RaindropItem item, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(item.Cover ?? "/images/placeholder.svg");
-        }
-
-        public Task ValidateImageInBackgroundAsync(RaindropItem item, IDictionary<string, string> imageUrlCache, Func<Task> stateHasChangedCallback,
-            CancellationToken cancellationToken = default)
-        {
-            return Task.CompletedTask;
-        }
     }
 
     public sealed class RaindropMediator_Mock : IMediator
     {
-        private Result<RaindropItemsResponse> _loadResult =
-            Result.Success(new RaindropItemsResponse([], IsFromCache: false, HasUpdateAvailable: false));
+        private Result<RaindropItemsResponse> _loadResult = Result.Success(
+            new RaindropItemsResponse([], IsFromCache: false, HasUpdateAvailable: false)
+        );
 
-        private Result<RaindropItemsResponse> _refreshResult =
-            Result.Success(new RaindropItemsResponse([], IsFromCache: false, HasUpdateAvailable: false));
+        private Result<RaindropItemsResponse> _refreshResult = Result.Success(
+            new RaindropItemsResponse([], IsFromCache: false, HasUpdateAvailable: false)
+        );
 
         private string? _refreshFailure;
 
         public void SetupLoad(IReadOnlyList<RaindropItem> items, bool isFromCache = false)
         {
-            _loadResult = Result.Success(new RaindropItemsResponse(items.ToList(), isFromCache, HasUpdateAvailable: false));
+            _loadResult = Result.Success(
+                new RaindropItemsResponse(items.ToList(), isFromCache, HasUpdateAvailable: false)
+            );
         }
 
         public void SetupLoadFailure(string error = "Simulated API failure")
@@ -305,7 +323,13 @@ public partial class ArticlesTests
         public void SetupRefresh(IReadOnlyList<RaindropItem> items)
         {
             _refreshFailure = null;
-            _refreshResult = Result.Success(new RaindropItemsResponse(items.ToList(), IsFromCache: false, HasUpdateAvailable: false));
+            _refreshResult = Result.Success(
+                new RaindropItemsResponse(
+                    items.ToList(),
+                    IsFromCache: false,
+                    HasUpdateAvailable: false
+                )
+            );
         }
 
         public void SetupRefreshFailure(string error = "Simulated API failure")
@@ -313,7 +337,10 @@ public partial class ArticlesTests
             _refreshFailure = error;
         }
 
-        public ValueTask<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
+        public ValueTask<TResponse> Send<TResponse>(
+            IRequest<TResponse> request,
+            CancellationToken cancellationToken = default
+        )
         {
             if (request is LoadArticlesQuery or LoadVideosQuery)
                 return ValueTask.FromResult((TResponse)(object)_loadResult);
@@ -322,41 +349,62 @@ public partial class ArticlesTests
             {
                 // Double-refresh is gated by the page (_context.IsRefreshing), not wall-clock delay.
                 if (_refreshFailure is not null)
-                    return ValueTask.FromResult((TResponse)(object)Result.Failure<RaindropItemsResponse>(_refreshFailure));
+                    return ValueTask.FromResult(
+                        (TResponse)(object)Result.Failure<RaindropItemsResponse>(_refreshFailure)
+                    );
 
                 return ValueTask.FromResult((TResponse)(object)_refreshResult);
             }
 
-            throw new InvalidOperationException($"Unexpected request type: {request.GetType().Name}");
+            throw new InvalidOperationException(
+                $"Unexpected request type: {request.GetType().Name}"
+            );
         }
 
-        public ValueTask<TResponse> Send<TResponse>(ICommand<TResponse> command, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
+        public ValueTask<TResponse> Send<TResponse>(
+            ICommand<TResponse> command,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
-        public ValueTask<TResponse> Send<TResponse>(IQuery<TResponse> query, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
+        public ValueTask<TResponse> Send<TResponse>(
+            IQuery<TResponse> query,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
-        public ValueTask<object?> Send(object message, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
+        public ValueTask<object?> Send(
+            object message,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
-        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamRequest<TResponse> request, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
+        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(
+            IStreamRequest<TResponse> request,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
-        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamCommand<TResponse> command, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
+        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(
+            IStreamCommand<TResponse> command,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
-        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamQuery<TResponse> query, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
+        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(
+            IStreamQuery<TResponse> query,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
-        public IAsyncEnumerable<object?> CreateStream(object message, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
+        public IAsyncEnumerable<object?> CreateStream(
+            object message,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
-        public ValueTask Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default)
-            where TNotification : INotification
-            => throw new NotSupportedException();
+        public ValueTask Publish<TNotification>(
+            TNotification notification,
+            CancellationToken cancellationToken = default
+        )
+            where TNotification : INotification => throw new NotSupportedException();
 
-        public ValueTask Publish(object notification, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
+        public ValueTask Publish(
+            object notification,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
     }
 }
-

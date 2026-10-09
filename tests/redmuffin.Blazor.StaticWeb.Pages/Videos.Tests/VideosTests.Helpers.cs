@@ -1,4 +1,4 @@
-using Bunit;
+﻿using Bunit;
 using Mediator;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,8 +7,8 @@ using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Common;
 using redmuffin.Blazor.StaticWeb.Common.ImagePlaceholder;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
-using redmuffin.Blazor.StaticWeb.Pages.Videos;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
+using redmuffin.Blazor.StaticWeb.Pages.Videos;
 
 namespace redmuffin.Blazor.StaticWeb.Pages.Videos.Tests;
 
@@ -32,7 +32,12 @@ public sealed partial class VideosTests
     /// <param name="excerpt">The video excerpt</param>
     /// <param name="link">The video link</param>
     /// <returns>A configured RaindropItem for testing</returns>
-    private static RaindropItem CreateTestVideo(string id, string title, string excerpt, string link)
+    private static RaindropItem CreateTestVideo(
+        string id,
+        string title,
+        string excerpt,
+        string link
+    )
     {
         return new RaindropItem
         {
@@ -43,7 +48,7 @@ public sealed partial class VideosTests
             Cover = $"https://example.com/cover{id}.jpg",
             Created = DateTime.UtcNow,
             Type = "video",
-            Domain = "example.com"
+            Domain = "example.com",
         };
     }
 
@@ -79,7 +84,9 @@ public sealed partial class VideosTests
             BUnitContext.Services.AddSingleton<NavigationManager>(NavigationManager);
             BUnitContext.Services.AddSingleton<ILogger<Videos>>(Logger);
             BUnitContext.Services.AddSingleton<IMediator>(Mediator_Mock);
-            BUnitContext.Services.AddSingleton<IImagePlaceholderService>(ImagePlaceholderService_Mock);
+            BUnitContext.Services.AddSingleton<IImagePlaceholderService>(
+                ImagePlaceholderService_Mock
+            );
             BUnitContext.Services.AddSingleton<IImageUrlResolver>(ImageUrlResolver);
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
 
@@ -99,7 +106,8 @@ public sealed partial class VideosTests
     {
         public List<LogEntry> LogEntries { get; } = new();
 
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull
+        public IDisposable? BeginScope<TState>(TState state)
+            where TState : notnull
         {
             return null;
         }
@@ -114,15 +122,18 @@ public sealed partial class VideosTests
             EventId eventId,
             TState state,
             Exception? exception,
-            Func<TState, Exception?, string> formatter)
+            Func<TState, Exception?, string> formatter
+        )
         {
-            LogEntries.Add(new LogEntry
-            {
-                LogLevel = logLevel,
-                EventId = eventId,
-                Message = formatter(state, exception),
-                Exception = exception
-            });
+            LogEntries.Add(
+                new LogEntry
+                {
+                    LogLevel = logLevel,
+                    EventId = eventId,
+                    Message = formatter(state, exception),
+                    Exception = exception,
+                }
+            );
         }
     }
 
@@ -172,7 +183,8 @@ public sealed partial class VideosTests
             IEnumerable<RaindropItem> items,
             IDictionary<string, string> imageUrlCache,
             Func<Task> stateHasChangedCallback,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             foreach (var item in items)
                 if (!string.IsNullOrEmpty(item.Cover))
@@ -182,20 +194,6 @@ public sealed partial class VideosTests
                 }
 
             return stateHasChangedCallback();
-        }
-
-        public Task<string> GetCachedImageUrlAsync(RaindropItem item, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(item.Cover ?? "/images/placeholder.svg");
-        }
-
-        public Task ValidateImageInBackgroundAsync(
-            RaindropItem item,
-            IDictionary<string, string> imageUrlCache,
-            Func<Task> stateHasChangedCallback,
-            CancellationToken cancellationToken = default)
-        {
-            return Task.CompletedTask;
         }
     }
 
@@ -208,7 +206,8 @@ public sealed partial class VideosTests
         private readonly Dictionary<string, bool> _fallbackStatuses = new();
         private readonly Dictionary<string, string> _fallbackReasons = new();
         private readonly Dictionary<string, string> _simplePlaceholders = new();
-        private string _defaultPlaceholder = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCI+PC9zdmc+";
+        private string _defaultPlaceholder =
+            "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCI+PC9zdmc+";
 
         public void SetupDefaultPlaceholder(string placeholder)
         {
@@ -244,7 +243,8 @@ public sealed partial class VideosTests
             _fallbackStatuses.Clear();
             _fallbackReasons.Clear();
             _simplePlaceholders.Clear();
-            _defaultPlaceholder = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCI+PC9zdmc+";
+            _defaultPlaceholder =
+                "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCI+PC9zdmc+";
         }
 
         public string GetDefaultPlaceholder()
@@ -254,13 +254,17 @@ public sealed partial class VideosTests
 
         public string GenerateSimplePlaceholder(string reason)
         {
-            return _simplePlaceholders.TryGetValue(reason, out var placeholder) ? placeholder : $"data:image/svg+xml;base64,placeholder-{reason}";
+            return _simplePlaceholders.TryGetValue(reason, out var placeholder)
+                ? placeholder
+                : $"data:image/svg+xml;base64,placeholder-{reason}";
         }
 
         public string GetImageUrl(RaindropItem item, IDictionary<string, string> imageUrlCache)
         {
             var key = item.Link ?? item.Id.ToString();
-            return _imageUrls.TryGetValue(key, out var url) ? url : imageUrlCache.TryGetValue(key, out var cachedUrl) ? cachedUrl : _defaultPlaceholder;
+            return _imageUrls.TryGetValue(key, out var url) ? url
+                : imageUrlCache.TryGetValue(key, out var cachedUrl) ? cachedUrl
+                : _defaultPlaceholder;
         }
 
         public Task HandleImageLoadAsync(
@@ -269,18 +273,25 @@ public sealed partial class VideosTests
             bool loadSuccess,
             IDictionary<string, string> imageUrlCache,
             Func<string, Task> stopShimmerAsync,
-            Func<Task> stateHasChangedCallback)
+            Func<Task> stateHasChangedCallback
+        )
         {
             return Task.CompletedTask;
         }
 
-        public bool HasFallbackPlaceholder(RaindropItem item, IDictionary<string, string> imageUrlCache)
+        public bool HasFallbackPlaceholder(
+            RaindropItem item,
+            IDictionary<string, string> imageUrlCache
+        )
         {
             var key = item.Link ?? item.Id.ToString();
             return _fallbackStatuses.TryGetValue(key, out var status) && status;
         }
 
-        public string GetFallbackReason(RaindropItem item, IDictionary<string, string> imageUrlCache)
+        public string GetFallbackReason(
+            RaindropItem item,
+            IDictionary<string, string> imageUrlCache
+        )
         {
             var key = item.Link ?? item.Id.ToString();
             return _fallbackReasons.TryGetValue(key, out var reason) ? reason : string.Empty;
@@ -292,17 +303,21 @@ public sealed partial class VideosTests
     /// </summary>
     public sealed class RaindropMediator_Mock : IMediator
     {
-        private Result<RaindropItemsResponse> _loadResult =
-            Result.Success(new RaindropItemsResponse([], IsFromCache: false, HasUpdateAvailable: false));
+        private Result<RaindropItemsResponse> _loadResult = Result.Success(
+            new RaindropItemsResponse([], IsFromCache: false, HasUpdateAvailable: false)
+        );
 
-        private Result<RaindropItemsResponse> _refreshResult =
-            Result.Success(new RaindropItemsResponse([], IsFromCache: false, HasUpdateAvailable: false));
+        private Result<RaindropItemsResponse> _refreshResult = Result.Success(
+            new RaindropItemsResponse([], IsFromCache: false, HasUpdateAvailable: false)
+        );
 
         private string? _refreshFailure;
 
         public void SetupLoad(IReadOnlyList<RaindropItem> items, bool isFromCache = false)
         {
-            _loadResult = Result.Success(new RaindropItemsResponse(items.ToList(), isFromCache, HasUpdateAvailable: false));
+            _loadResult = Result.Success(
+                new RaindropItemsResponse(items.ToList(), isFromCache, HasUpdateAvailable: false)
+            );
         }
 
         public void SetupLoadFailure(string error = "Simulated API failure")
@@ -313,7 +328,13 @@ public sealed partial class VideosTests
         public void SetupRefresh(IReadOnlyList<RaindropItem> items)
         {
             _refreshFailure = null;
-            _refreshResult = Result.Success(new RaindropItemsResponse(items.ToList(), IsFromCache: false, HasUpdateAvailable: false));
+            _refreshResult = Result.Success(
+                new RaindropItemsResponse(
+                    items.ToList(),
+                    IsFromCache: false,
+                    HasUpdateAvailable: false
+                )
+            );
         }
 
         public void SetupRefreshFailure(string error = "Simulated API failure")
@@ -321,7 +342,10 @@ public sealed partial class VideosTests
             _refreshFailure = error;
         }
 
-        public ValueTask<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
+        public ValueTask<TResponse> Send<TResponse>(
+            IRequest<TResponse> request,
+            CancellationToken cancellationToken = default
+        )
         {
             if (request is LoadArticlesQuery or LoadVideosQuery)
                 return ValueTask.FromResult((TResponse)(object)_loadResult);
@@ -330,40 +354,62 @@ public sealed partial class VideosTests
             {
                 // Double-refresh is gated by the page (_context.IsRefreshing), not wall-clock delay.
                 if (_refreshFailure is not null)
-                    return ValueTask.FromResult((TResponse)(object)Result.Failure<RaindropItemsResponse>(_refreshFailure));
+                    return ValueTask.FromResult(
+                        (TResponse)(object)Result.Failure<RaindropItemsResponse>(_refreshFailure)
+                    );
 
                 return ValueTask.FromResult((TResponse)(object)_refreshResult);
             }
 
-            throw new InvalidOperationException($"Unexpected request type: {request.GetType().Name}");
+            throw new InvalidOperationException(
+                $"Unexpected request type: {request.GetType().Name}"
+            );
         }
 
-        public ValueTask<TResponse> Send<TResponse>(ICommand<TResponse> command, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
+        public ValueTask<TResponse> Send<TResponse>(
+            ICommand<TResponse> command,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
-        public ValueTask<TResponse> Send<TResponse>(IQuery<TResponse> query, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
+        public ValueTask<TResponse> Send<TResponse>(
+            IQuery<TResponse> query,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
-        public ValueTask<object?> Send(object message, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
+        public ValueTask<object?> Send(
+            object message,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
-        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamRequest<TResponse> request, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
+        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(
+            IStreamRequest<TResponse> request,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
-        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamCommand<TResponse> command, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
+        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(
+            IStreamCommand<TResponse> command,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
-        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamQuery<TResponse> query, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
+        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(
+            IStreamQuery<TResponse> query,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
-        public IAsyncEnumerable<object?> CreateStream(object message, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
+        public IAsyncEnumerable<object?> CreateStream(
+            object message,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
-        public ValueTask Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default)
-            where TNotification : INotification
-            => throw new NotSupportedException();
+        public ValueTask Publish<TNotification>(
+            TNotification notification,
+            CancellationToken cancellationToken = default
+        )
+            where TNotification : INotification => throw new NotSupportedException();
 
-        public ValueTask Publish(object notification, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
+        public ValueTask Publish(
+            object notification,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
     }
 }
