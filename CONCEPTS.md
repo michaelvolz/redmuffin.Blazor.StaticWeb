@@ -68,7 +68,7 @@ Delivery model for ConfigureAwaitFixer: harness post-edit hooks invoke a publish
 
 ## Dual TFM stack
 
-Intentional multi-target layout for this solution: the Azure Static Web Apps Functions API remains on **net9.0** until the host supports .NET 10 Functions, while the Blazor WASM app, launcher, and most tools target **net10.0**. Shared libraries used by the API stay on net9. Package _versions_ (for example Microsoft.Extensions on the 10.x line) can still apply to net9 projects when packages multi-target; dual TFM alone is not a reason to leave sibling packages in the same family on mismatched patches.
+Intentional multi-target layout for this solution: the Azure Static Web Apps Functions API remains on **net9.0** until the host supports .NET 10 Functions, while the Blazor WASM app, launcher, and most tools target **net10.0**. Shared libraries used by the API stay on net9. Package *versions* (for example Microsoft.Extensions on the 10.x line) can still apply to net9 projects when packages multi-target; dual TFM alone is not a reason to leave sibling packages in the same family on mismatched patches.
 
 ## Shared Microsoft version property
 
@@ -81,6 +81,12 @@ CPM setting that applies central package versions to **transitive** dependencies
 ## Agent git boundary
 
 Rule for this team’s agents: durable git writes (branch, stage, commit, push, PR) are never part of an automated skill finish unless the human separately and explicitly requests them. Skills that stock-default into branch+PR (for example ce-compound-refresh Phase 5) are overridden via vendor overlays so trunk-based workflow stays human-owned.
+
+## Cache Reset
+
+The destructive recovery flow for the app's client state: one call clears the whole origin's browser storage, including the Raindrop item caches and the sign-in tokens, so completing it signs the user out. *Avoid: support page, cache busting — those were the remembered names for the same flow before the `/debug` index made it discoverable.*
+
+The Cache Reset lives next to a read-only storage inspector on the same hidden `/debug` section, outside the main navigation, and the global error fragment links to that section. A missing or corrupt local cache rebuilds from the server lazily after the reset.
 
 ## Quality Gates toolchain
 
@@ -168,4 +174,16 @@ The isolated-worker Api app is a **separate deployment unit** from the WASM host
 
 Composition-root choice of real vs synthetic module implementation via a host-computed boolean passed into `Add{Module}Module(...)`. Replaces NavigationManager-based factories that resolved concrete services at first use.
 
-_(Seeded from the 2026-06-20 Grok Build CLI Roslyn LSP Windows spawn + restart learning in tooling-decisions/ + prior session memory on agent harness enablement. Package-management terms accreted from the 2026-07-22 NU1605/NU1902 CPM restore learning. Quality-gates terms accreted from the 2026-08-02 Uncle Bob upstream-sync learning. Modular monolith terms accreted 2026-08-03; Raindrop Phase 1 / Api boundary terms accreted 2026-08-03; Modules vs Pages vs Components homes accreted 2026-08-03; need-set + modular/lazy axes refined 2026-08-03 with end-to-end client modularization learning. Manual daemon attach accreted 2026-10-09 from the agent-browser daemon learning.)_
+## Render-and-observe resolution
+
+Image strategy for content pages: a resolver fills URL state synchronously from content metadata with no network access, and the rendered `<img>` element's load event is the sole authority on renderability. *Avoid: image validation, HEAD validation, background validation — those named the removed probe layer.*
+
+A failed load moves the URL to placeholder state in the in-memory cache for the page session. Verdicts are never persisted; localStorage stays for the Raindrop item caches, and image URL state never lives there.
+
+*(Seeded from the 2026-06-20 Grok Build CLI Roslyn LSP Windows spawn + restart learning in tooling-decisions/ + prior session memory on agent harness enablement. Package-management terms accreted from the 2026-07-22 NU1605/NU1902 CPM restore learning. Quality-gates terms accreted from the 2026-08-02 Uncle Bob upstream-sync learning. Modular monolith terms accreted 2026-08-03; Raindrop Phase 1 / Api boundary terms accreted 2026-08-03; Modules vs Pages vs Components homes accreted 2026-08-03; need-set + modular/lazy axes refined 2026-08-03 with end-to-end client modularization learning. Render-and-observe resolution accreted 2026-10-09 from the image-pipeline learning. Manual daemon attach accreted 2026-10-09 from the agent-browser daemon learning. Cache Reset entry and Image validation retirement accreted 2026-10-09 from the storage blast-radius learning.)*
+
+## Retired
+
+### Image validation
+
+Pre-2026-10 concept in the image pipeline: a service layered HTTP probes over cover URLs and persisted per-URL verdicts under `img_validation_*` logical keys. Render-and-observe resolution replaced the probe layer as the architecture and removed it; the `img_validation_*` logical keys are legacy data, and legacy localStorage entries sit under hashed keys of those logical keys. Older solution docs still carry the term.
