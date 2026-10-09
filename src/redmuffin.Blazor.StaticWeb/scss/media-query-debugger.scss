@@ -29,6 +29,8 @@ body:after {
   background-color: hsla(0, 60%, 40%, 0.3); /* Base color */
   color: #fff;
   z-index: 9999; /* Ensure it's on top */
+  /* The bar must not intercept clicks — it paints over page content. */
+  pointer-events: none;
   line-height: 1.2; /* Added to help control line height */
   box-sizing: border-box; /* Added to ensure padding/border don't add to width/height issues */
   padding: 0.1em 0;
