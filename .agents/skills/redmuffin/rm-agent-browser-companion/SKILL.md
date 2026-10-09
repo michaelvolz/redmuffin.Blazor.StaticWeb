@@ -60,19 +60,20 @@ synthetic data) — ~99% of tasks. Production and full-stack API are opt-in when
 named. Host rules: `rm-dev-environment` Default mode.
 
 **Never use for:** bUnit component tests, parallel command bursts from the
-harness (daemon corruption on Windows), or assuming upstream examples work
-without the Blazor wait below.
+harness (daemon restarts on Windows), or assuming upstream examples work
+without the Blazor wait below. Silent mid-session daemon death has a
+separate root cause — see §2.8.
 
 ### Evaluation verdict (2026-06-20)
 
-| Dimension | Rating | Summary |
-| --------- | ------ | ------- |
-| Core value for AI agents | Excellent | `snapshot -i` is token-efficient and a11y-rich |
-| redmuffin.net compatibility | Good | Works after Blazor WASM boot wait |
-| Windows / PowerShell ergonomics | Fair | Prefer `find` locators; sequential commands only |
-| Reliability under stress | Fair | Parallel calls kill the daemon |
-| Observability | Excellent | Annotated screenshots, vitals, console, network |
-| Upstream docs | Excellent | [agent-browser.dev](https://agent-browser.dev/) + `skills get core` |
+| Dimension                       | Rating    | Summary                                                             |
+| ------------------------------- | --------- | ------------------------------------------------------------------- |
+| Core value for AI agents        | Excellent | `snapshot -i` is token-efficient and a11y-rich                      |
+| redmuffin.net compatibility     | Good      | Works after Blazor WASM boot wait                                   |
+| Windows / PowerShell ergonomics | Fair      | Prefer `find` locators; sequential commands only                    |
+| Reliability under stress        | Fair      | Parallel calls kill the daemon                                      |
+| Observability                   | Excellent | Annotated screenshots, vitals, console, network                     |
+| Upstream docs                   | Excellent | [agent-browser.dev](https://agent-browser.dev/) + `skills get core` |
 
 ---
 
@@ -157,10 +158,10 @@ agent-browser --session redmuffin find role button click --name "Click me"
 
 ### 2.6 Headed vs headless
 
-| Mode | Flag | When |
-| ---- | ---- | ---- |
-| Headless | (default) | CI, unattended loops |
-| Headed | `--headed` | Human watching locally |
+| Mode     | Flag       | When                   |
+| -------- | ---------- | ---------------------- |
+| Headless | (default)  | CI, unattended loops   |
+| Headed   | `--headed` | Human watching locally |
 
 - Headless may flash a small black window on Windows — normal.
 - Never change `--headed` on a running daemon — `close` session first.
@@ -189,6 +190,43 @@ agent-browser close --all
 Never run `close --all` while a human inspects a headed browser.
 Never kill user **Brave** — only `~/.agent-browser` bundled-Chromium processes (`chrome.exe` in agent-browser context = Chromium, not user Chrome).
 
+### 2.8 Daemon dies silently mid-session (Windows, ≤ 0.38.2)
+
+Cause: upstream [vercel-labs/agent-browser#1993](https://github.com/vercel-labs/agent-browser/issues/1993).
+On Windows the daemon keeps the launching CLI's piped stderr. That CLI exits at
+once, so the next daemon warning write hits a closed pipe and panics the
+daemon. The daemon dies without output; the next command then starts a fresh
+daemon and browser, and `get url` answers `about:blank` with exit code 0. Page
+state is lost. Blazor dev pages emit the trigger warnings routinely. Fix is
+pending in PR #2051 — for earlier releases, attach every session to a manually
+started daemon whose stderr is redirected to a file:
+
+```powershell
+# 1. Probe. "active": true with a numeric pid means a live daemon — attach to it.
+agent-browser --session redmuffin session info --json
+
+# 2. When inactive: let one normal launch write the launch fingerprint, then
+#    stop that daemon (its stderr pipe is the one that panics).
+agent-browser --session redmuffin open http://localhost:5233/ 2>&1
+Stop-Process -Id (Get-Content $env:USERPROFILE\.agent-browser\redmuffin.pid) -Force
+
+# 3. Start the daemon with stderr on a file. Run this as a harness background
+#    task (block 0): the launcher stays alive for the daemon's lifetime.
+cmd /c "set AGENT_BROWSER_DAEMON=1&& set AGENT_BROWSER_SESSION=redmuffin&& $env:APPDATA\npm\node_modules\agent-browser\bin\agent-browser-win32-x64.exe 2>$env:TEMP\ab-daemon.log 1>$env:TEMP\ab-daemon-stdout.log"
+
+# 4. Attach and confirm session info reports the pid from
+#    ~\.agent-browser\redmuffin.pid (written by step 3's launcher).
+agent-browser --session redmuffin session info --json
+```
+
+Verified 2026-10-09 on 0.38.2: the manually attached daemon survived 8 minutes
+of idle with the page and preset localStorage intact; normal daemons died
+within minutes of their launching CLI exiting. Do not change launch flags
+between commands (`--headed`, `--idle-timeout`, `AGENT_BROWSER_*` env): a value
+change still restarts the daemon silently (upstream #1742/#1835/#1939).
+After a close-then-open, redirect CLI output to files rather than letting
+PowerShell capture it — captured output can hang the CLI (upstream #1407).
+
 ---
 
 ## 3 — Standard agent workflow
@@ -201,13 +239,13 @@ Operational procedure for any browser task (QA, screenshot, nav check, form).
 scenario explicitly names production, real Functions HTTP, or another full
 stack.
 
-| Rule | Detail |
-| --- | --- |
-| Host | Frontend only: `http://localhost:5233` (see `rm-dev-environment` **Default mode**). Synthetic / mock data. **No API project.** |
-| Start | Reuse if port is up. Otherwise start frontend-only as a harness **background** host — do not block multi-minute on startup logs; site is ready in a few seconds. |
-| Stop before rebuild | Kill the host before assembly-touching rebuilds; restart after build. |
-| Browser | Sequential `agent-browser` with `--session redmuffin` (§2). |
-| Full stack | Opt-in only when explicitly required. Do not invent API + SWA startup for ordinary QA. |
+| Rule                | Detail                                                                                                                                                           |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Host                | Frontend only: `http://localhost:5233` (see `rm-dev-environment` **Default mode**). Synthetic / mock data. **No API project.**                                   |
+| Start               | Reuse if port is up. Otherwise start frontend-only as a harness **background** host — do not block multi-minute on startup logs; site is ready in a few seconds. |
+| Stop before rebuild | Kill the host before assembly-touching rebuilds; restart after build.                                                                                            |
+| Browser             | Sequential `agent-browser` with `--session redmuffin` (§2).                                                                                                      |
+| Full stack          | Opt-in only when explicitly required. Do not invent API + SWA startup for ordinary QA.                                                                           |
 
 ```powershell
 # Confirm / start frontend-only host first (rm-dev-environment Default mode).
@@ -267,43 +305,43 @@ agent-browser --session redmuffin close
 
 ### Reliable (with workflow rules)
 
-| Feature | Notes |
-| ------- | ----- |
-| `open <url>` | Headed and headless |
-| `wait --load networkidle` | Required, not sufficient alone |
-| `wait --fn "<js>"` | Best Blazor boot detector |
-| `wait --url "**/route**"` | SPA route changes |
-| `get url` / `get title` | Sanity checks |
-| `snapshot -i` | ~33 refs: nav, regions, form, perf widget |
-| `snapshot -i --json` | Machine-readable |
-| `eval "<js>"` | e.g. main h1 text |
-| `get text '@eN'` | Quoted refs + live session |
-| `find role/text/label/placeholder` | **Recommended on PowerShell** |
-| `screenshot` / `--full` / `--annotate` | Annotate maps `[N]` → `@eN` |
-| `scroll`, `is visible` | Basic interaction |
-| `tab new --label <name>` | Labeled tabs |
-| `back` / `reload` | When session healthy |
-| `console`, `errors`, `network requests` | After page load |
-| `state save` / `state load` | Persist auth state |
-| `skills list` / `skills get core` | Version-synced CLI docs |
-| `doctor --offline --quick` | Fast health check |
+| Feature                                 | Notes                                     |
+| --------------------------------------- | ----------------------------------------- |
+| `open <url>`                            | Headed and headless                       |
+| `wait --load networkidle`               | Required, not sufficient alone            |
+| `wait --fn "<js>"`                      | Best Blazor boot detector                 |
+| `wait --url "**/route**"`               | SPA route changes                         |
+| `get url` / `get title`                 | Sanity checks                             |
+| `snapshot -i`                           | ~33 refs: nav, regions, form, perf widget |
+| `snapshot -i --json`                    | Machine-readable                          |
+| `eval "<js>"`                           | e.g. main h1 text                         |
+| `get text '@eN'`                        | Quoted refs + live session                |
+| `find role/text/label/placeholder`      | **Recommended on PowerShell**             |
+| `screenshot` / `--full` / `--annotate`  | Annotate maps `[N]` → `@eN`               |
+| `scroll`, `is visible`                  | Basic interaction                         |
+| `tab new --label <name>`                | Labeled tabs                              |
+| `back` / `reload`                       | When session healthy                      |
+| `console`, `errors`, `network requests` | After page load                           |
+| `state save` / `state load`             | Persist auth state                        |
+| `skills list` / `skills get core`       | Version-synced CLI docs                   |
+| `doctor --offline --quick`              | Fast health check                         |
 
 ### Flaky / context-dependent
 
-| Feature | Notes |
-| ------- | ----- |
-| `click '@eN'` | Needs fresh snapshot; fails on `about:blank` |
-| `vitals --json` | Zeros when page not loaded |
-| `batch --json` | Session must be alive |
-| `wait --text "..."` | Timed out; prefer `--fn` for Blazor |
+| Feature             | Notes                                        |
+| ------------------- | -------------------------------------------- |
+| `click '@eN'`       | Needs fresh snapshot; fails on `about:blank` |
+| `vitals --json`     | Zeros when page not loaded                   |
+| `batch --json`      | Session must be alive                        |
+| `wait --text "..."` | Timed out; prefer `--fn` for Blazor          |
 
 ### Failed / not recommended
 
-| Feature | Notes |
-| ------- | ----- |
-| Parallel commands | Kills daemon |
-| Full `doctor` | Hangs >60s on Windows |
-| `--% click @eN` | Does not pass through |
+| Feature           | Notes                 |
+| ----------------- | --------------------- |
+| Parallel commands | Kills daemon          |
+| Full `doctor`     | Hangs >60s on Windows |
+| `--% click @eN`   | Does not pass through |
 
 ### Deferred (upstream docs; not verified here)
 
@@ -349,23 +387,23 @@ When WASM is loaded, `snapshot -i` includes:
 
 ## 7 — Risks and mitigations
 
-| Risk | Mitigation |
-| ---- | ---------- |
-| Daemon corruption | Sequential commands; `doctor --offline --quick` |
-| Orphan Chrome | §2.7 cleanup |
-| PowerShell `@ref` | Default to `find` (§2.5) |
-| Blazor boot race | `--fn` wait on `main` (§2.3) |
-| Accidental `close --all` | Close named session only |
+| Risk                     | Mitigation                                     |
+| ------------------------ | ---------------------------------------------- |
+| Silent daemon death      | §2.8 manual-daemon attach; sequential commands |
+| Orphan Chrome            | §2.7 cleanup                                   |
+| PowerShell `@ref`        | Default to `find` (§2.5)                       |
+| Blazor boot race         | `--fn` wait on `main` (§2.3)                   |
+| Accidental `close --all` | Close named session only                       |
 
 ---
 
 ## 8 — Relationship to other tools
 
-| Tool | Role |
-| ---- | ---- |
-| bUnit | Component tests in isolation |
+| Tool                       | Role                                                           |
+| -------------------------- | -------------------------------------------------------------- |
+| bUnit                      | Component tests in isolation                                   |
 | agent-browser + this skill | Live-app QA — snapshots, screenshots, console, network, vitals |
-| ce-test-browser | Disabled in Grok; use §3 workflow when enabled elsewhere |
+| ce-test-browser            | Disabled in Grok; use §3 workflow when enabled elsewhere       |
 
 ---
 
@@ -379,6 +417,7 @@ component architecture docs (`rm-ui-blazor` / `rm-design-architecture`).
 ## Related
 
 - Human doc (aligned twin): `docs/agent-browser-guide-2026-06-20.md`
+- Learning: `docs/solutions/tooling-decisions/agent-browser-daemon-silent-death-windows.md`
 - Upstream stub: `~/.agents/skills/agent-browser/SKILL.md`
 - [agent-browser.dev](https://agent-browser.dev/)
 - [GitHub: vercel-labs/agent-browser](https://github.com/vercel-labs/agent-browser)

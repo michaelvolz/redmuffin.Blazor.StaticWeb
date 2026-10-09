@@ -1,6 +1,6 @@
 ---
 date: 2026-06-20
-last_updated: 2026-08-03
+last_updated: 2026-10-09
 tags:
   - agent-browser
   - browser-automation
@@ -49,8 +49,9 @@ synthetic data) — ~99% of tasks. Production and full-stack API are opt-in
 when named. Host rules: `rm-dev-environment` Default mode.
 
 **Never use for:** bUnit component tests, parallel command bursts from the
-agent harness (daemon corruption on Windows), or assuming upstream examples
-work without the Blazor wait below.
+agent harness (daemon restarts on Windows), or assuming upstream examples
+work without the Blazor wait below. Silent mid-session daemon death has a
+separate root cause — see §7.1.
 
 ### Evaluation verdict (2026-06-20)
 
@@ -59,7 +60,7 @@ work without the Blazor wait below.
 | Core value for AI agents        | Excellent | `snapshot -i` is token-efficient and a11y-rich                      |
 | redmuffin.net compatibility     | Good      | Works after Blazor WASM boot wait                                   |
 | Windows / PowerShell ergonomics | Fair      | Prefer `find` locators; sequential commands only                    |
-| Reliability under stress        | Fair      | Parallel calls kill the daemon                                      |
+| Reliability under stress        | Fair      | Daemon dies silently (§7.1); parallel calls restart it              |
 | Observability                   | Excellent | Annotated screenshots, vitals, console, network                     |
 | Upstream docs                   | Excellent | [agent-browser.dev](https://agent-browser.dev/) + `skills get core` |
 
@@ -352,13 +353,29 @@ When WASM is loaded, `snapshot -i` includes:
 
 ## 7 — Risks and mitigations
 
-| Risk                     | Mitigation                                      |
-| ------------------------ | ----------------------------------------------- |
-| Daemon corruption        | Sequential commands; `doctor --offline --quick` |
-| Orphan Chrome            | §2.7 cleanup                                    |
-| PowerShell `@ref`        | Default to `find` (§2.5)                        |
-| Blazor boot race         | `--fn` wait on `main` (§2.3)                    |
-| Accidental `close --all` | Close named session only                        |
+| Risk                     | Mitigation                               |
+| ------------------------ | ---------------------------------------- |
+| Silent daemon death      | Root cause + recovery: §7.1 (skill §2.8) |
+| Orphan Chrome            | §2.7 cleanup                             |
+| PowerShell `@ref`        | Default to `find` (§2.5)                 |
+| Blazor boot race         | `--fn` wait on `main` (§2.3)             |
+| Accidental `close --all` | Close named session only                 |
+
+### 7.1 Silent daemon death (Windows, agent-browser ≤ 0.38.2)
+
+Upstream
+[vercel-labs/agent-browser#1993](https://github.com/vercel-labs/agent-browser/issues/1993)
+is the root cause: on Windows the daemon inherits the launching CLI's piped
+stderr; the CLI exits at once; the next daemon warning write hits a closed
+pipe and panics the daemon. The daemon dies with no output, and the next
+command relaunches a fresh daemon plus Chromium on `about:blank` with exit
+code 0. Sequential commands reduce the trigger warnings but do not prevent
+the death.
+
+The recovery procedure lives in `rm-agent-browser-companion` SKILL.md §2.8:
+attach every session to a manually started daemon whose stderr is redirected
+to a file. Verified 2026-10-09 on 0.38.2. Background learning:
+`docs/solutions/tooling-decisions/agent-browser-daemon-silent-death-windows.md`.
 
 ---
 
@@ -380,6 +397,7 @@ agent-browser cannot satisfy the task.
 ## Related
 
 - Skill (agent runtime twin): `rm-agent-browser-companion`
+- Learning: `docs/solutions/tooling-decisions/agent-browser-daemon-silent-death-windows.md`
 - Host startup: `rm-dev-environment` (default frontend-only `:5233`)
 - [agent-browser.dev](https://agent-browser.dev/)
 - [GitHub: vercel-labs/agent-browser](https://github.com/vercel-labs/agent-browser)

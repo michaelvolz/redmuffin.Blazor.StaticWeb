@@ -39,6 +39,7 @@ revise this file explicitly with a dated note. Do not leave silent divergence.
 
 | Date       | Change                                                                                         |
 | ---------- | ---------------------------------------------------------------------------------------------- |
+| 2026-10-09 | Added §2.8: silent daemon death root cause (#1993) + manual-daemon attach workaround.          |
 | 2026-08-03 | Frontmatter triggers expanded for instant load (QA, HAR, 5233, browser errors).                |
 | 2026-08-03 | Default local path = frontend-only `:5233` synthetic (99%); production/full stack opt-in only. |
 | 2026-08-03 | State the current browser path only; no retired-tool footnotes.                                |

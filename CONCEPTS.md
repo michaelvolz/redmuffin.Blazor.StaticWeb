@@ -26,6 +26,12 @@ The non-shell process launch mechanism used by the Grok Build CLI host for stdio
 
 Requirement after changes to `.grok/lsp.json`, `[features]`, or `[models]` that affect tool surfaces or child servers. `grok inspect` re-reads from disk live and shows the current state, but the running host binds `lsp` (and similar) child processes only at TUI/session launch time.
 
+## Manual daemon attach (agent-browser)
+
+Start the agent-browser daemon detached from the agent harness with its stderr redirected to a file, then attach every session to that one daemon. The detach keeps the daemon alive after the command that started it exits, and the file redirect removes the closed-pipe write that would kill the daemon silently.
+
+Reuse an already-attached daemon and launch it with the same flags and environment every time; a changed launch value restarts the daemon and loses the page. *Avoid: detached daemon spawn — that entry names the ConfigureAwaitFixer daemon, and the two processes live under different toolchains.*
+
 ## Karpathy Change Gate
 
 Mandatory pre-mutation discipline in this repo: externalize (1) provable problem with cited data, (2) hypothesis, (3) test command via tool call; apply one bounded mutation; run the test; return to INVESTIGATE. Enforced via `rm-karpathy` skill before edits/writes/installs/config changes (git staging/commits during COMMIT_BATCH are exempt).
@@ -162,4 +168,4 @@ The isolated-worker Api app is a **separate deployment unit** from the WASM host
 
 Composition-root choice of real vs synthetic module implementation via a host-computed boolean passed into `Add{Module}Module(...)`. Replaces NavigationManager-based factories that resolved concrete services at first use.
 
-_(Seeded from the 2026-06-20 Grok Build CLI Roslyn LSP Windows spawn + restart learning in tooling-decisions/ + prior session memory on agent harness enablement. Package-management terms accreted from the 2026-07-22 NU1605/NU1902 CPM restore learning. Quality-gates terms accreted from the 2026-08-02 Uncle Bob upstream-sync learning. Modular monolith terms accreted 2026-08-03; Raindrop Phase 1 / Api boundary terms accreted 2026-08-03; Modules vs Pages vs Components homes accreted 2026-08-03; need-set + modular/lazy axes refined 2026-08-03 with end-to-end client modularization learning.)_
+_(Seeded from the 2026-06-20 Grok Build CLI Roslyn LSP Windows spawn + restart learning in tooling-decisions/ + prior session memory on agent harness enablement. Package-management terms accreted from the 2026-07-22 NU1605/NU1902 CPM restore learning. Quality-gates terms accreted from the 2026-08-02 Uncle Bob upstream-sync learning. Modular monolith terms accreted 2026-08-03; Raindrop Phase 1 / Api boundary terms accreted 2026-08-03; Modules vs Pages vs Components homes accreted 2026-08-03; need-set + modular/lazy axes refined 2026-08-03 with end-to-end client modularization learning. Manual daemon attach accreted 2026-10-09 from the agent-browser daemon learning.)_
