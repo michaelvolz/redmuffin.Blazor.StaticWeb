@@ -1,8 +1,9 @@
-using System.Net;
+﻿using System.Net;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb.Api.Core;
 using redmuffin.Blazor.StaticWeb.Api.Tests.Functions;
+using redmuffin.Blazor.StaticWeb.Tests.Support.Http;
 
 namespace redmuffin.Blazor.StaticWeb.Api.Tests.Core;
 
@@ -22,24 +23,34 @@ public sealed class RaindropListFetcher_Tests
         var apiJson = """{"items": [{"id": 1, "title": "Test Article"}], "count": 1}""";
 
         using var handler = new ControlledHttpHandler_Fake(_ =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(apiJson)
-            }));
-        var factory = new HttpClientFactory_Fake(handler);
+            Task.FromResult(
+                new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(apiJson) }
+            )
+        );
+        using var factory = new HttpClientFactory_Fake(handler);
 
-        var functionContext = RaindropListArticles_Tests.TestScope.CreateFunctionContext("TestFunction");
+        var functionContext = RaindropListArticles_Tests.TestScope.CreateFunctionContext(
+            "TestFunction"
+        );
         var request = RaindropListArticles_Tests.TestScope.CreateHttpRequestData(functionContext);
 
         string? capturedLogUrl = null;
         using var loggerFactory = LoggerFactory.Create(b => b.SetMinimumLevel(LogLevel.Trace));
 
         // Act
-        using var response = (RaindropListArticles_Tests.HttpResponseData_Mock)await RaindropListFetcher.FetchAsync(
-            request, collectionId, bearerToken, factory, loggerFactory.CreateLogger("Test"),
-            logFetch: (_, url) => capturedLogUrl = url,
-            logError: (_, _) => { },
-            cancellationToken: CancellationToken.None).ConfigureAwait(false);
+        using var response = (RaindropListArticles_Tests.HttpResponseData_Mock)
+            await RaindropListFetcher
+                .FetchAsync(
+                    request,
+                    collectionId,
+                    bearerToken,
+                    factory,
+                    loggerFactory.CreateLogger("Test"),
+                    logFetch: (_, url) => capturedLogUrl = url,
+                    logError: (_, _) => { },
+                    cancellationToken: CancellationToken.None
+                )
+                .ConfigureAwait(false);
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.OK);
@@ -48,7 +59,9 @@ public sealed class RaindropListFetcher_Tests
         using var doc = JsonDocument.Parse(body);
         await Assert.That(doc.RootElement.GetArrayLength()).IsEqualTo(1);
         await Assert.That(doc.RootElement[0].GetProperty("id").GetInt32()).IsEqualTo(1);
-        await Assert.That(doc.RootElement[0].GetProperty("title").GetString()).IsEqualTo("Test Article");
+        await Assert
+            .That(doc.RootElement[0].GetProperty("title").GetString())
+            .IsEqualTo("Test Article");
     }
 
     /// <summary>
@@ -62,22 +75,32 @@ public sealed class RaindropListFetcher_Tests
         // Arrange
         var apiJson = """{"not_items": "something_else"}""";
         using var handler = new ControlledHttpHandler_Fake(_ =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(apiJson)
-            }));
-        var factory = new HttpClientFactory_Fake(handler);
+            Task.FromResult(
+                new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(apiJson) }
+            )
+        );
+        using var factory = new HttpClientFactory_Fake(handler);
         using var loggerFactory = LoggerFactory.Create(b => b.SetMinimumLevel(LogLevel.Trace));
 
-        var functionContext = RaindropListArticles_Tests.TestScope.CreateFunctionContext("TestFunction");
+        var functionContext = RaindropListArticles_Tests.TestScope.CreateFunctionContext(
+            "TestFunction"
+        );
         var request = RaindropListArticles_Tests.TestScope.CreateHttpRequestData(functionContext);
 
         // Act
-        using var response = (RaindropListArticles_Tests.HttpResponseData_Mock)await RaindropListFetcher.FetchAsync(
-            request, "cid", "token", factory, loggerFactory.CreateLogger("Test"),
-            logFetch: (_, _) => { },
-            logError: (_, _) => { },
-            cancellationToken: CancellationToken.None).ConfigureAwait(false);
+        using var response = (RaindropListArticles_Tests.HttpResponseData_Mock)
+            await RaindropListFetcher
+                .FetchAsync(
+                    request,
+                    "cid",
+                    "token",
+                    factory,
+                    loggerFactory.CreateLogger("Test"),
+                    logFetch: (_, _) => { },
+                    logError: (_, _) => { },
+                    cancellationToken: CancellationToken.None
+                )
+                .ConfigureAwait(false);
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.OK);
@@ -94,22 +117,35 @@ public sealed class RaindropListFetcher_Tests
     {
         // Arrange
         using var handler = new ControlledHttpHandler_Fake(_ =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.Unauthorized)
-            {
-                Content = new StringContent("""{"error": "invalid_token"}""")
-            }));
-        var factory = new HttpClientFactory_Fake(handler);
+            Task.FromResult(
+                new HttpResponseMessage(HttpStatusCode.Unauthorized)
+                {
+                    Content = new StringContent("""{"error": "invalid_token"}"""),
+                }
+            )
+        );
+        using var factory = new HttpClientFactory_Fake(handler);
         using var loggerFactory = LoggerFactory.Create(b => b.SetMinimumLevel(LogLevel.Trace));
 
-        var functionContext = RaindropListArticles_Tests.TestScope.CreateFunctionContext("TestFunction");
+        var functionContext = RaindropListArticles_Tests.TestScope.CreateFunctionContext(
+            "TestFunction"
+        );
         var request = RaindropListArticles_Tests.TestScope.CreateHttpRequestData(functionContext);
 
         // Act
-        using var response = (RaindropListArticles_Tests.HttpResponseData_Mock)await RaindropListFetcher.FetchAsync(
-            request, "cid", "token", factory, loggerFactory.CreateLogger("Test"),
-            logFetch: (_, _) => { },
-            logError: (_, _) => { },
-            cancellationToken: CancellationToken.None).ConfigureAwait(false);
+        using var response = (RaindropListArticles_Tests.HttpResponseData_Mock)
+            await RaindropListFetcher
+                .FetchAsync(
+                    request,
+                    "cid",
+                    "token",
+                    factory,
+                    loggerFactory.CreateLogger("Test"),
+                    logFetch: (_, _) => { },
+                    logError: (_, _) => { },
+                    cancellationToken: CancellationToken.None
+                )
+                .ConfigureAwait(false);
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadGateway);
@@ -127,20 +163,31 @@ public sealed class RaindropListFetcher_Tests
     {
         // Arrange
         using var handler = new ControlledHttpHandler_Fake(_ =>
-            throw new OperationCanceledException("Request canceled"));
-        var factory = new HttpClientFactory_Fake(handler);
+            throw new OperationCanceledException("Request canceled")
+        );
+        using var factory = new HttpClientFactory_Fake(handler);
         using var loggerFactory = LoggerFactory.Create(b => b.SetMinimumLevel(LogLevel.Trace));
 
-        var functionContext = RaindropListArticles_Tests.TestScope.CreateFunctionContext("TestFunction");
+        var functionContext = RaindropListArticles_Tests.TestScope.CreateFunctionContext(
+            "TestFunction"
+        );
         var request = RaindropListArticles_Tests.TestScope.CreateHttpRequestData(functionContext);
 
         // Act & Assert
-        await Assert.ThrowsAsync<OperationCanceledException>(
-            async () => await RaindropListFetcher.FetchAsync(
-                request, "cid", "token", factory, loggerFactory.CreateLogger("Test"),
-                logFetch: (_, _) => { },
-                logError: (_, _) => { },
-                cancellationToken: CancellationToken.None).ConfigureAwait(false));
+        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+            await RaindropListFetcher
+                .FetchAsync(
+                    request,
+                    "cid",
+                    "token",
+                    factory,
+                    loggerFactory.CreateLogger("Test"),
+                    logFetch: (_, _) => { },
+                    logError: (_, _) => { },
+                    cancellationToken: CancellationToken.None
+                )
+                .ConfigureAwait(false)
+        );
     }
 
     /// <summary>
@@ -155,21 +202,32 @@ public sealed class RaindropListFetcher_Tests
     {
         // Arrange
         using var handler = new ControlledHttpHandler_Fake(_ =>
-            throw new HttpRequestException(errorMessage));
-        var factory = new HttpClientFactory_Fake(handler);
+            throw new HttpRequestException(errorMessage)
+        );
+        using var factory = new HttpClientFactory_Fake(handler);
         using var loggerFactory = LoggerFactory.Create(b => b.SetMinimumLevel(LogLevel.Trace));
 
-        var functionContext = RaindropListArticles_Tests.TestScope.CreateFunctionContext("TestFunction");
+        var functionContext = RaindropListArticles_Tests.TestScope.CreateFunctionContext(
+            "TestFunction"
+        );
         var request = RaindropListArticles_Tests.TestScope.CreateHttpRequestData(functionContext);
 
         Exception? capturedException = null;
 
         // Act
-        using var response = (RaindropListArticles_Tests.HttpResponseData_Mock)await RaindropListFetcher.FetchAsync(
-            request, "cid", "token", factory, loggerFactory.CreateLogger("Test"),
-            logFetch: (_, _) => { },
-            logError: (_, ex) => capturedException = ex,
-            cancellationToken: CancellationToken.None).ConfigureAwait(false);
+        using var response = (RaindropListArticles_Tests.HttpResponseData_Mock)
+            await RaindropListFetcher
+                .FetchAsync(
+                    request,
+                    "cid",
+                    "token",
+                    factory,
+                    loggerFactory.CreateLogger("Test"),
+                    logFetch: (_, _) => { },
+                    logError: (_, ex) => capturedException = ex,
+                    cancellationToken: CancellationToken.None
+                )
+                .ConfigureAwait(false);
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.InternalServerError);
@@ -177,28 +235,5 @@ public sealed class RaindropListFetcher_Tests
         var body = response.GetBodyAsString();
         await Assert.That(body).Contains(errorMessage);
         JsonDocument.Parse(body); // Verify response is valid JSON even in error state
-    }
-
-    // ── Test infrastructure ────────────────────────────────────────
-
-    private sealed class HttpClientFactory_Fake(HttpMessageHandler handler) : IHttpClientFactory
-    {
-        public HttpClient CreateClient(string name) => new(handler, disposeHandler: false);
-    }
-
-    private sealed class ControlledHttpHandler_Fake : HttpMessageHandler
-    {
-        private readonly Func<HttpRequestMessage, Task<HttpResponseMessage>> _handler;
-
-        public ControlledHttpHandler_Fake(Func<HttpRequestMessage, Task<HttpResponseMessage>> handler)
-        {
-            _handler = handler;
-        }
-
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            return _handler(request);
-        }
     }
 }

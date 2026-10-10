@@ -1,4 +1,4 @@
-using redmuffin.Blazor.StaticWeb.Core;
+﻿using redmuffin.Blazor.StaticWeb.Core;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Core;
 
@@ -15,11 +15,7 @@ public sealed partial class StringExtensionsTests
         var result = emptyString.ReverseString();
 
         // Assert
-        using (Assert.Multiple())
-        {
-            await Assert.That(result).IsEqualTo(string.Empty);
-            await Assert.That(result).IsNotNull();
-        }
+        await Assert.That(result).IsEqualTo(string.Empty);
     }
 
     [Test]

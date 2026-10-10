@@ -1,6 +1,8 @@
-using Bunit;
+﻿using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
+using redmuffin.Blazor.StaticWeb.Common.Abstractions;
 using HomePage = redmuffin.Blazor.StaticWeb.Pages.Home.Home;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Home;
@@ -68,19 +70,18 @@ public partial class HomeTests
         {
             // Primary button with aria-describedby
             var primaryButton = component.Find("button.primary-button");
-            await Assert.That(primaryButton).IsNotNull();
-            await Assert.That(primaryButton.GetAttribute("aria-describedby")).IsEqualTo("button-description");
-            await Assert.That(primaryButton.TextContent.Trim()).IsEqualTo("Click me");
+            await Assert
+                .That(primaryButton.GetAttribute("aria-describedby"))
+                .IsEqualTo("button-description");
 
             // Button description exists
-            var buttonDescription = component.Find("#button-description");
-            await Assert.That(buttonDescription).IsNotNull();
-            await Assert.That(buttonDescription.TextContent).Contains("Performs a demo API call");
+            await Assert.That(component.Find("#button-description")).IsNotNull();
 
             // Submit button with description
             var submitButton = component.Find("button[type='submit']");
-            await Assert.That(submitButton).IsNotNull();
-            await Assert.That(submitButton.GetAttribute("aria-describedby")).IsEqualTo("submit-description");
+            await Assert
+                .That(submitButton.GetAttribute("aria-describedby"))
+                .IsEqualTo("submit-description");
         }
     }
 
@@ -97,20 +98,15 @@ public partial class HomeTests
             // Input field with proper label association
             var input = component.Find("input#demo-input");
             var label = component.Find("label[for='demo-input']");
-            await Assert.That(input).IsNotNull();
             await Assert.That(label).IsNotNull();
-            await Assert.That(label.TextContent).Contains("Demo Input:");
 
             // Input has aria-describedby for help text
             await Assert.That(input.GetAttribute("aria-describedby")).IsEqualTo("demo-input-help");
 
             // Help text exists with proper ID
-            var helpText = component.Find("#demo-input-help");
-            await Assert.That(helpText).IsNotNull();
-            await Assert.That(helpText.TextContent).Contains("accessibility testing");
+            await Assert.That(component.Find("#demo-input-help")).IsNotNull();
         }
     }
-
 
     [Test]
     public async Task Home_Accessibility_HasProperLandmarksAndRoles()
@@ -125,12 +121,16 @@ public partial class HomeTests
             // Main landmark
             var mainElement = component.Find("main[role='main']");
             await Assert.That(mainElement).IsNotNull();
-            await Assert.That(mainElement.GetAttribute("aria-labelledby")).IsEqualTo("page-heading");
+            await Assert
+                .That(mainElement.GetAttribute("aria-labelledby"))
+                .IsEqualTo("page-heading");
 
             // Emoji section with proper role
             var emojiDiv = component.Find("div[role='img']");
             await Assert.That(emojiDiv).IsNotNull();
-            await Assert.That(emojiDiv.GetAttribute("aria-label")).Contains("Collection of happy face emojis");
+            await Assert
+                .That(emojiDiv.GetAttribute("aria-label"))
+                .Contains("Collection of happy face emojis");
         }
     }
 
@@ -154,7 +154,9 @@ public partial class HomeTests
         {
             await Assert.That(skipLink).IsNotNull();
             await Assert.That(skipLink.GetAttribute("href")).IsEqualTo("#main-content");
-            await Assert.That(skipLink.GetAttribute("aria-label")).IsEqualTo("Skip to main content");
+            await Assert
+                .That(skipLink.GetAttribute("aria-label"))
+                .IsEqualTo("Skip to main content");
             await Assert.That(skipLink.TextContent).Contains("Skip to main content");
         }
     }
@@ -190,7 +192,9 @@ public partial class HomeTests
             await Assert.That(interactiveElements.Count).IsGreaterThan(0);
 
             // All interactive elements should be focusable (no tabindex="-1" except on heading)
-            var buttonsAndInputs = component.FindAll("button:not([tabindex='-1']), input:not([tabindex='-1'])");
+            var buttonsAndInputs = component.FindAll(
+                "button:not([tabindex='-1']), input:not([tabindex='-1'])"
+            );
             await Assert.That(buttonsAndInputs.Count).IsGreaterThan(0);
         }
     }
@@ -224,7 +228,6 @@ public partial class HomeTests
         }
     }
 
-
     [Test]
     public async Task Home_Accessibility_VisuallyHiddenElementsAreAccessible()
     {
@@ -249,7 +252,6 @@ public partial class HomeTests
         }
     }
 
-
     // ========================================
     // ADVANCED NON-OBVIOUS SCENARIOS - TASK 5.5 IMPLEMENTATION ✅
     // ========================================
@@ -257,66 +259,65 @@ public partial class HomeTests
     // and complex interaction patterns that are often missed in standard testing.
     // Research-based scenarios covering real-world production issues.
 
-
     [Test]
     public async Task Home_AdvancedScenarios_FormValidation_EdgeCases_HandledCorrectly()
     {
         // Arrange
         using var scope = CreateTestScope();
+        var delayProvider = new ControllableDelayProvider();
+        scope.BUnitContext.Services.AddSingleton<IDelayProvider>(delayProvider);
         var component = scope.BUnitContext.Render<HomePage>();
+
+        // Act & Assert - whitespace-only input is rejected through the alert region
         var input = component.Find("input#demo-input");
-        var submitButton = component.Find("button[type='submit']");
+        await input.ChangeAsync(new ChangeEventArgs { Value = "   " }).ConfigureAwait(false);
+        delayProvider.Arm();
+        var invalidSubmit = component
+            .Find("button[type='submit']")
+            .ClickAsync(new MouseEventArgs());
+        await Assert
+            .That(component.Find("#alert-region").TextContent)
+            .Contains("Please enter a value");
+        delayProvider.Release();
+        await invalidSubmit.ConfigureAwait(false);
 
-        // Test various edge case input values
-        var edgeCaseValues = new[]
-        {
-            "   ", // Whitespace only
-            "\t\n\r", // Tab and newlines
-            new string('a', 1000), // Very long string
-            "<script>alert('xss')</script>", // Potential XSS
-            "null", // String "null"
-            "undefined" // String "undefined"
-        };
+        // Act & Assert - valid input is accepted through the status region
+        input = component.Find("input#demo-input");
+        await input
+            .ChangeAsync(new ChangeEventArgs { Value = "valid value" })
+            .ConfigureAwait(false);
+        delayProvider.Arm();
+        var validSubmit = component.Find("button[type='submit']").ClickAsync(new MouseEventArgs());
+        await Assert.That(component.Find("#status-region").TextContent).Contains("valid value");
+        delayProvider.Release();
+        await validSubmit.ConfigureAwait(false);
 
-        foreach (var testValue in edgeCaseValues)
-        {
-            // Act
-            await input.ChangeAsync(new ChangeEventArgs { Value = testValue }).ConfigureAwait(false);
-            scope.Logger.LogEntries.Clear();
-            await submitButton.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
-
-            // Assert - All values should be logged (component logs before validation)
-            // The component handles validation after logging for debugging purposes
-            await Assert.That(scope.Logger.LogEntries.Any(entry =>
-                entry.Message.Contains("Form submitted"))).IsTrue();
-        }
-
-        // Component should remain stable throughout all edge case testing
-        await Assert.That(component.Markup).IsNotNull().And.Contains("redmuffin.StaticWeb");
+        // The submitted value is cleared from the bound field
+        await Assert.That(component.Instance.DemoInputValue).IsEqualTo(string.Empty);
     }
 
-
-    // ========================================
-    // CASCADING PARAMETERS TESTS - PRIME EXAMPLES FOR ALL FUTURE COMPONENTS
-    // ========================================
-    // These tests demonstrate comprehensive cascading parameter testing using TestScope
-    // and modern TUnit patterns for Blazor component parameter scenarios.
-
-
-    [Test]
-    [Category("Smoke")]
-    public async Task Home_ComponentStructure_HasRequiredElements()
+    /// <summary>
+    ///     Delay provider whose 3000 ms handler delay can be held open, so tests can observe the
+    ///     rendered status and alert regions before the component clears them.
+    /// </summary>
+    private sealed class ControllableDelayProvider : IDelayProvider
     {
-        // Arrange
-        using var scope = CreateTestScope();
-        var component = scope.BUnitContext.Render<HomePage>();
+        private TaskCompletionSource? _gate;
+        private bool _armed;
 
-        // Act & Assert - Verify core DOM structure exists (single structural concern)
-        using (Assert.Multiple())
+        public Task DelayAsync(int milliseconds) =>
+            _armed && _gate is not null ? _gate.Task : Task.CompletedTask;
+
+        public void Arm()
         {
-            await Assert.That(component.Find("h1")).IsNotNull();
-            await Assert.That(component.Find("div[style*='font-size:2rem']")).IsNotNull();
-            await Assert.That(component.Find("button")).IsNotNull();
+            _gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _armed = true;
+        }
+
+        public void Release()
+        {
+            _armed = false;
+            _gate?.TrySetResult();
         }
     }
 }

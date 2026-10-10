@@ -1,4 +1,4 @@
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text.Json;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 
@@ -19,12 +19,17 @@ public sealed partial class ArticlesApiVerification_Tests
 
         if (string.IsNullOrWhiteSpace(testToken))
         {
-            Assert.Fail("RainDropTestToken is null or whitespace. Cannot test actual API response.");
+            Assert.Fail(
+                "RainDropTestToken is null or whitespace. Cannot test actual API response."
+            );
             return;
         }
 
         using var httpClient = TestScope.CreateHttpClient();
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", testToken);
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            testToken
+        );
 
         var articlesUrl = "https://api.raindrop.io/rest/v1/raindrops/56658122?sort=-created";
 
@@ -35,7 +40,10 @@ public sealed partial class ArticlesApiVerification_Tests
         using var jsonDoc = JsonDocument.Parse(json);
         jsonDoc.RootElement.TryGetProperty("items", out var itemsElement);
 
-        var articles = JsonSerializer.Deserialize<List<RaindropItem>>(itemsElement.GetRawText(), RaindropJsonSerializerContext.DefaultOptions);
+        var articles = JsonSerializer.Deserialize<List<RaindropItem>>(
+            itemsElement.GetRawText(),
+            RaindropJsonSerializerContext.DefaultOptions
+        );
 
         // Assert
         await Assert.That(articles).IsNotNull();
@@ -59,12 +67,17 @@ public sealed partial class ArticlesApiVerification_Tests
 
         if (string.IsNullOrWhiteSpace(testToken))
         {
-            Assert.Fail("RainDropTestToken is null or whitespace. Cannot test actual API response.");
+            Assert.Fail(
+                "RainDropTestToken is null or whitespace. Cannot test actual API response."
+            );
             return;
         }
 
         using var httpClient = TestScope.CreateHttpClient();
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", testToken);
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            testToken
+        );
 
         var videosUrl = "https://api.raindrop.io/rest/v1/raindrops/56109697?sort=-created";
         var articlesUrl = "https://api.raindrop.io/rest/v1/raindrops/56658122?sort=-created";
@@ -83,12 +96,20 @@ public sealed partial class ArticlesApiVerification_Tests
         articlesDoc.RootElement.TryGetProperty("items", out var articlesItems);
 
         // Assert
-        var videos = JsonSerializer.Deserialize<List<RaindropItem>>(videosItems.GetRawText(), RaindropJsonSerializerContext.DefaultOptions);
-        var articles = JsonSerializer.Deserialize<List<RaindropItem>>(articlesItems.GetRawText(), RaindropJsonSerializerContext.DefaultOptions);
+        var videos = JsonSerializer.Deserialize<List<RaindropItem>>(
+            videosItems.GetRawText(),
+            RaindropJsonSerializerContext.DefaultOptions
+        );
+        var articles = JsonSerializer.Deserialize<List<RaindropItem>>(
+            articlesItems.GetRawText(),
+            RaindropJsonSerializerContext.DefaultOptions
+        );
 
         await Assert.That(videos).IsNotNull();
         await Assert.That(articles).IsNotNull();
         await Assert.That(videos!.Count).IsGreaterThan(0);
         await Assert.That(articles!.Count).IsGreaterThan(0);
+        await Assert.That(videos!.All(item => item.Id > 0)).IsTrue();
+        await Assert.That(articles!.All(item => item.Id > 0)).IsTrue();
     }
 }

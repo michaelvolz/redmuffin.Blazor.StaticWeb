@@ -84,4 +84,7 @@
     <BuildDependency Project="src/redmuffin.Blazor.StaticWeb.Common/redmuffin.Blazor.StaticWeb.Common.csproj" />
     <BuildType Solution="Debug-Sass|*" Project="Debug" />
   </Project>
+  <Project Path="tests/redmuffin.Blazor.StaticWeb.Tests.Support/redmuffin.Blazor.StaticWeb.Tests.Support.csproj">
+    <BuildType Solution="Debug-Sass|*" Project="Debug" />
+  </Project>
 </Solution>

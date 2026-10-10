@@ -1,6 +1,9 @@
-using Bunit;
+﻿using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using redmuffin.Blazor.StaticWeb.Common.Abstractions;
 using HomePage = redmuffin.Blazor.StaticWeb.Pages.Home.Home;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Home;
@@ -13,20 +16,27 @@ public sealed partial class HomeTests
     {
         // Arrange
         using var scope = CreateTestScope();
+        var delayProvider = new ControllableDelayProvider();
+        scope.BUnitContext.Services.AddSingleton<IDelayProvider>(delayProvider);
         var component = scope.BUnitContext.Render<HomePage>();
-        var submitButton = component.Find("button[type='submit']");
-
-        // Ensure input is empty for validation test
         var input = component.Find("input#demo-input");
         await input.ChangeAsync(new ChangeEventArgs { Value = "" }).ConfigureAwait(false);
 
-        // Act - Submit form with empty input which demonstrates form validation flow
-        await submitButton.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
+        // Act
+        delayProvider.Arm();
+        var submitTask = component.Find("button[type='submit']").ClickAsync(new MouseEventArgs());
 
-        // Assert - Verify that form submission was processed and logged (indicates alert update flow worked)
-        // This validates the accessibility pattern without relying on timing-dependent alert messages
-        await Assert.That(scope.Logger.LogEntries.Any(entry =>
-            entry.Message.Contains("Form submitted"))).IsTrue();
+        // Assert - the alert region carries the validation message while the handler is in flight
+        var alertRegion = component.Find("#alert-region");
+        using (Assert.Multiple())
+        {
+            await Assert.That(alertRegion.TextContent).Contains("Please enter a value");
+            await Assert.That(alertRegion.GetAttribute("aria-live")).IsEqualTo("assertive");
+            await Assert.That(alertRegion.GetAttribute("aria-atomic")).IsEqualTo("true");
+        }
+
+        delayProvider.Release();
+        await submitTask.ConfigureAwait(false);
     }
 
     [Test]
@@ -34,51 +44,28 @@ public sealed partial class HomeTests
     {
         // Arrange
         using var scope = CreateTestScope();
+        var delayProvider = new ControllableDelayProvider();
+        scope.BUnitContext.Services.AddSingleton<IDelayProvider>(delayProvider);
         var component = scope.BUnitContext.Render<HomePage>();
-        var button = component.Find("button.primary-button");
 
-        // Act - Trigger button click which demonstrates ARIA live region functionality
-        await button.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
+        var statusRegionBeforeClick = component.Find("#status-region").TextContent;
 
-        // Assert - Verify that button click was processed and logged (indicates status update flow worked)
-        // This validates the accessibility pattern without relying on timing-dependent status messages
-        await Assert.That(scope.Logger.LogEntries.Any(entry =>
-            entry.Message.Contains("Button clicked"))).IsTrue();
-    }
+        // Act
+        delayProvider.Arm();
+        var clickTask = component.Find("button.primary-button").ClickAsync(new MouseEventArgs());
 
-    [Test]
-    public async Task Home_AdvancedScenarios_LongRunningOperations_ComponentRemainsFunctional()
-    {
-        // Arrange
-        using var scope = CreateTestScope();
-        var component = scope.BUnitContext.Render<HomePage>();
-        var button = component.Find("button.primary-button");
-
-        // Act - Trigger operation and immediately interact with component again
-        var longRunningTask = button.ClickAsync(new MouseEventArgs());
-
-        // While the first operation is running, try other operations
-        var input = component.Find("input#demo-input");
-        await input.ChangeAsync(new ChangeEventArgs { Value = "while-busy" }).ConfigureAwait(false);
-
-        var submitButton = component.Find("button[type='submit']");
-        await submitButton.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
-
-        // Wait for the long-running operation to complete
-        await longRunningTask.ConfigureAwait(false);
-
-        // Assert - Component should handle overlapping operations gracefully
+        // Assert - the status region changes to the API result while the handler is in flight
+        var statusRegion = component.Find("#status-region");
         using (Assert.Multiple())
         {
-            // Both operations should have been logged
-            await Assert.That(scope.Logger.LogEntries.Any(entry =>
-                entry.Message.Contains("Button clicked"))).IsTrue();
-            await Assert.That(scope.Logger.LogEntries.Any(entry =>
-                entry.Message.Contains("Form submitted") && entry.Message.Contains("while-busy"))).IsTrue();
-
-            // Component should remain stable and functional
-            await Assert.That(component.Markup).IsNotNull().And.Contains("redmuffin.StaticWeb");
+            await Assert.That(statusRegionBeforeClick.Trim()).IsEmpty();
+            await Assert.That(statusRegion.TextContent).Contains("API call completed");
+            await Assert.That(statusRegion.GetAttribute("aria-live")).IsEqualTo("polite");
+            await Assert.That(statusRegion.GetAttribute("aria-atomic")).IsEqualTo("true");
         }
+
+        delayProvider.Release();
+        await clickTask.ConfigureAwait(false);
     }
 
     [Test]
@@ -100,35 +87,45 @@ public sealed partial class HomeTests
         using (Assert.Multiple())
         {
             await Assert.That(component.Instance.DemoInputValue).IsEqualTo(string.Empty); // Cleared after submit
-            await Assert.That(scope.Logger.LogEntries.Any(entry =>
-                entry.Message.Contains("Form submitted") && entry.Message.Contains("final"))).IsTrue();
+            await Assert
+                .That(
+                    scope.Logger.LogEntries.Any(entry =>
+                        entry.Message.Contains("Form submitted") && entry.Message.Contains("final")
+                    )
+                )
+                .IsTrue();
         }
     }
 
     [Test]
-    public async Task Home_ConcurrentOperations_HandlesMultipleRequests()
+    public async Task Home_ConcurrentClicks_Complete_And_Component_Stays_Interactive()
     {
         // Arrange
         using var scope = CreateTestScope();
+        var delayProvider = new ControllableDelayProvider();
+        scope.BUnitContext.Services.AddSingleton<IDelayProvider>(delayProvider);
         var component = scope.BUnitContext.Render<HomePage>();
-        var button = component.Find("button");
 
-        // Act - Trigger concurrent operations
+        // Act - fire several clicks without awaiting, then await completion
+        var button = component.Find("button.primary-button");
         var tasks = new List<Task>();
-        for (var i = 0; i < 3; i++) tasks.Add(button.ClickAsync(new MouseEventArgs()));
+        for (var i = 0; i < 3; i++)
+            tasks.Add(button.ClickAsync(new MouseEventArgs()));
         await Task.WhenAll(tasks).ConfigureAwait(false);
 
-        // Assert - Component should handle concurrent operations gracefully
-        using (Assert.Multiple())
-        {
-            // ✅ OPTIMIZED: Chain related assertions on same object
-            await Assert.That(component.Markup).IsNotNull().And.Contains("redmuffin.StaticWeb");
+        // A further click still renders the status message
+        button = component.Find("button.primary-button");
+        delayProvider.Arm();
+        var followUpClick = button.ClickAsync(new MouseEventArgs());
+        await Assert
+            .That(component.Find("#status-region").TextContent)
+            .Contains("API call completed");
+        delayProvider.Release();
+        await followUpClick.ConfigureAwait(false);
 
-            // Verify multiple button clicks were logged
-            var buttonClickLogs = scope.Logger.LogEntries
-                .Where(entry => entry.Message.Contains("Button clicked"))
-                .ToList();
-            await Assert.That(buttonClickLogs.Count).IsGreaterThanOrEqualTo(3);
-        }
+        // Assert - concurrent handling left no error-level entries behind
+        await Assert
+            .That(scope.Logger.LogEntries.Any(entry => entry.Level == LogLevel.Error))
+            .IsFalse();
     }
 }

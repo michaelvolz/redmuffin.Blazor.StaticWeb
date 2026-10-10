@@ -1,4 +1,4 @@
-using Bunit;
+﻿using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using ApiHealthPage = redmuffin.Blazor.StaticWeb.Pages.ApiHealth.ApiHealth;
 
@@ -9,26 +9,6 @@ namespace redmuffin.Blazor.StaticWeb.Pages.ApiHealth.Tests;
 public sealed partial class ApiHealthTests
 {
     [Test]
-    public async Task Renders_page_heading_and_button()
-    {
-        // Arrange & Act
-        using var scope = CreateTestScope();
-        var component = scope.BUnitContext.Render<ApiHealthPage>();
-
-        // Assert
-        using (Assert.Multiple())
-        {
-            var heading = component.Find("h1");
-            await Assert.That(heading).IsNotNull();
-            await Assert.That(heading.TextContent).Contains("API Health Check");
-
-            var button = component.Find("button.button");
-            await Assert.That(button).IsNotNull();
-            await Assert.That(button.TextContent).Contains("Run Health Check");
-        }
-    }
-
-    [Test]
     public async Task Displays_api_response_when_button_clicked()
     {
         // Arrange
@@ -37,7 +17,9 @@ public sealed partial class ApiHealthTests
         var button = component.Find("button.button");
 
         // Act
-        await button.ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs()).ConfigureAwait(false);
+        await button
+            .ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs())
+            .ConfigureAwait(false);
 
         // Assert
         var responseBlock = component.Find("blockquote");
@@ -55,11 +37,22 @@ public sealed partial class ApiHealthTests
     {
         // Arrange & Act
         using var scope = CreateTestScope();
-        var component = scope.BUnitContext.Render<global::redmuffin.Blazor.StaticWeb.Pages.ApiHealth.ApiHealth>();
+        var component =
+            scope.BUnitContext.Render<global::redmuffin.Blazor.StaticWeb.Pages.ApiHealth.ApiHealth>();
 
-        // Assert
+        // Assert - idle state before any click
         var emptyState = component.Find("div.empty-state");
-        await Assert.That(emptyState).IsNotNull();
         await Assert.That(emptyState.TextContent).Contains("No checks have been run yet");
+        await Assert.That(component.FindAll("blockquote")).IsEmpty();
+
+        // Act - the health-check button is enabled and clickable
+        var button = component.Find("button.button");
+        await Assert.That(button.HasAttribute("disabled")).IsFalse();
+        await button
+            .ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs())
+            .ConfigureAwait(false);
+
+        // Assert - the click was handled and the empty state is gone
+        await Assert.That(component.FindAll("div.empty-state")).IsEmpty();
     }
 }

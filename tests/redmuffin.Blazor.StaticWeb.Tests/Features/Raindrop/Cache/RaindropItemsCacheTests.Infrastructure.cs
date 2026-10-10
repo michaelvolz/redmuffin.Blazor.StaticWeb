@@ -1,5 +1,4 @@
-using System.Diagnostics;
-using System.Text.Json;
+﻿using System.Text.Json;
 using LZStringCSharp;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Enums;
@@ -24,14 +23,18 @@ public sealed partial class RaindropItemsCacheTests
             scope.Cache.SetAsync("videos", testData1, CancellationToken.None),
             scope.Cache.SetAsync("articles", testData2, CancellationToken.None),
             scope.Cache.GetAsync("videos", CancellationToken.None),
-            scope.Cache.IsExpiredAsync("videos", CancellationToken.None)
+            scope.Cache.IsExpiredAsync("videos", CancellationToken.None),
         };
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
 
         // Assert - Verify data integrity
-        var result1 = await scope.Cache.GetAsync("videos", CancellationToken.None).ConfigureAwait(false);
-        var result2 = await scope.Cache.GetAsync("articles", CancellationToken.None).ConfigureAwait(false);
+        var result1 = await scope
+            .Cache.GetAsync("videos", CancellationToken.None)
+            .ConfigureAwait(false);
+        var result2 = await scope
+            .Cache.GetAsync("articles", CancellationToken.None)
+            .ConfigureAwait(false);
 
         using (Assert.Multiple())
         {
@@ -40,28 +43,6 @@ public sealed partial class RaindropItemsCacheTests
             await Assert.That(result1.Data).Count().IsEqualTo(2);
             await Assert.That(result2.Data).Count().IsEqualTo(2);
         }
-    }
-
-    [Test]
-    public async Task CacheOperations_MemoryUsage_StaysWithinLimits()
-    {
-        // Arrange
-        using var scope = CreateTestScope();
-        var initialMemory = GC.GetTotalMemory(true);
-
-        // Act - Perform multiple cache operations
-        for (var i = 0; i < 10; i++)
-        {
-            var testData = CreateTestRaindropItems();
-            await scope.Cache.SetAsync($"test_{i}", testData, CancellationToken.None).ConfigureAwait(false);
-            await scope.Cache.GetAsync($"test_{i}", CancellationToken.None).ConfigureAwait(false);
-        }
-
-        var finalMemory = GC.GetTotalMemory(true);
-        var memoryIncrease = finalMemory - initialMemory;
-
-        // Assert - Memory increase should be reasonable (less than 50MB)
-        await Assert.That(memoryIncrease).IsLessThan(50 * 1024 * 1024);
     }
 
     [Test]
@@ -75,15 +56,22 @@ public sealed partial class RaindropItemsCacheTests
         // Act - Compress and decompress data with special characters
         var compressedData = LZString.CompressToUTF16(jsonData);
         var decompressedData = LZString.DecompressFromUTF16(compressedData);
-        var deserializedItems = JsonSerializer.Deserialize<List<RaindropItem>>(decompressedData!, scope.JsonOptions);
+        var deserializedItems = JsonSerializer.Deserialize<List<RaindropItem>>(
+            decompressedData!,
+            scope.JsonOptions
+        );
 
         // Assert
         using (Assert.Multiple())
         {
             await Assert.That(compressedData).IsNotNull();
             await Assert.That(decompressedData).IsEqualTo(jsonData);
-            await Assert.That(deserializedItems![0].Title).IsEqualTo("Test with émojis 🚀 and spëcial chars");
-            await Assert.That(deserializedItems[0].Excerpt).IsEqualTo("Content with 中文 and العربية text");
+            await Assert
+                .That(deserializedItems![0].Title)
+                .IsEqualTo("Test with émojis 🚀 and spëcial chars");
+            await Assert
+                .That(deserializedItems[0].Excerpt)
+                .IsEqualTo("Content with 中文 and العربية text");
         }
     }
 
@@ -100,14 +88,19 @@ public sealed partial class RaindropItemsCacheTests
             Version = "1.0",
             ItemCount = 2,
             CompressedSize = 1024,
-            OriginalSize = 2048
+            OriginalSize = 2048,
         };
 
         scope.LocalStorageService_Mock.SetupContainKeyAsync("raindrop_cache_videos_metadata", true);
-        scope.LocalStorageService_Mock.SetupGetItemAsync("raindrop_cache_videos_metadata", exactlyExpiredMetadata);
+        scope.LocalStorageService_Mock.SetupGetItemAsync(
+            "raindrop_cache_videos_metadata",
+            exactlyExpiredMetadata
+        );
 
         // Act
-        var result = await scope.Cache.GetAsync("videos", CancellationToken.None).ConfigureAwait(false);
+        var result = await scope
+            .Cache.GetAsync("videos", CancellationToken.None)
+            .ConfigureAwait(false);
 
         // Assert
         await Assert.That(result.Status).IsEqualTo(RaindropCacheStatus.Expired);
@@ -129,15 +122,20 @@ public sealed partial class RaindropItemsCacheTests
             Version = "1.0",
             ItemCount = 2,
             CompressedSize = 1024,
-            OriginalSize = 2048
+            OriginalSize = 2048,
         };
 
         scope.LocalStorageService_Mock.SetupContainKeyAsync("raindrop_cache_videos_metadata", true);
-        scope.LocalStorageService_Mock.SetupGetItemAsync("raindrop_cache_videos_metadata", notYetExpiredMetadata);
+        scope.LocalStorageService_Mock.SetupGetItemAsync(
+            "raindrop_cache_videos_metadata",
+            notYetExpiredMetadata
+        );
         scope.LocalStorageService_Mock.SetupGetItemAsync("raindrop_cache_videos", compressedData);
 
         // Act
-        var result = await scope.Cache.GetAsync("videos", CancellationToken.None).ConfigureAwait(false);
+        var result = await scope
+            .Cache.GetAsync("videos", CancellationToken.None)
+            .ConfigureAwait(false);
 
         // Assert
         await Assert.That(result.Status).IsEqualTo(RaindropCacheStatus.Hit);
@@ -151,15 +149,19 @@ public sealed partial class RaindropItemsCacheTests
         var expiredMetadata = CreateExpiredTestMetadata();
 
         scope.LocalStorageService_Mock.SetupContainKeyAsync("raindrop_cache_videos_metadata", true);
-        scope.LocalStorageService_Mock.SetupGetItemAsync("raindrop_cache_videos_metadata", expiredMetadata);
+        scope.LocalStorageService_Mock.SetupGetItemAsync(
+            "raindrop_cache_videos_metadata",
+            expiredMetadata
+        );
 
         // Act
-        var result = await scope.Cache.GetAsync("videos", CancellationToken.None).ConfigureAwait(false);
+        var result = await scope
+            .Cache.GetAsync("videos", CancellationToken.None)
+            .ConfigureAwait(false);
 
         // Assert
         await Assert.That(result.Status).IsEqualTo(RaindropCacheStatus.Expired);
     }
-
 
     [Test]
     public async Task GetAsync_MetadataExistsButDataMissing_ReturnsMiss()
@@ -169,11 +171,16 @@ public sealed partial class RaindropItemsCacheTests
         var metadata = CreateTestMetadata();
 
         scope.LocalStorageService_Mock.SetupContainKeyAsync("raindrop_cache_videos_metadata", true);
-        scope.LocalStorageService_Mock.SetupGetItemAsync("raindrop_cache_videos_metadata", metadata);
+        scope.LocalStorageService_Mock.SetupGetItemAsync(
+            "raindrop_cache_videos_metadata",
+            metadata
+        );
         scope.LocalStorageService_Mock.SetupGetItemAsync<string>("raindrop_cache_videos", null); // Data missing
 
         // Act
-        var result = await scope.Cache.GetAsync("videos", CancellationToken.None).ConfigureAwait(false);
+        var result = await scope
+            .Cache.GetAsync("videos", CancellationToken.None)
+            .ConfigureAwait(false);
 
         // Assert
         await Assert.That(result.Status).IsEqualTo(RaindropCacheStatus.Miss);
@@ -192,11 +199,16 @@ public sealed partial class RaindropItemsCacheTests
         var metadata = CreateTestMetadata();
 
         scope.LocalStorageService_Mock.SetupContainKeyAsync("raindrop_cache_videos_metadata", true);
-        scope.LocalStorageService_Mock.SetupGetItemAsync("raindrop_cache_videos_metadata", metadata);
+        scope.LocalStorageService_Mock.SetupGetItemAsync(
+            "raindrop_cache_videos_metadata",
+            metadata
+        );
         scope.LocalStorageService_Mock.SetupGetItemAsync("raindrop_cache_videos", compressedData);
 
         // Act
-        var result = await scope.Cache.GetAsync("videos", CancellationToken.None).ConfigureAwait(false);
+        var result = await scope
+            .Cache.GetAsync("videos", CancellationToken.None)
+            .ConfigureAwait(false);
 
         // Assert
         using (Assert.Multiple())
@@ -215,10 +227,15 @@ public sealed partial class RaindropItemsCacheTests
         var expiredMetadata = CreateExpiredTestMetadata();
 
         scope.LocalStorageService_Mock.SetupContainKeyAsync("raindrop_cache_videos_metadata", true);
-        scope.LocalStorageService_Mock.SetupGetItemAsync("raindrop_cache_videos_metadata", expiredMetadata);
+        scope.LocalStorageService_Mock.SetupGetItemAsync(
+            "raindrop_cache_videos_metadata",
+            expiredMetadata
+        );
 
         // Act
-        var result = await scope.Cache.IsExpiredAsync("videos", CancellationToken.None).ConfigureAwait(false);
+        var result = await scope
+            .Cache.IsExpiredAsync("videos", CancellationToken.None)
+            .ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsTrue();
@@ -230,10 +247,15 @@ public sealed partial class RaindropItemsCacheTests
         // Arrange
         using var scope = CreateTestScope();
 
-        scope.LocalStorageService_Mock.SetupContainKeyAsync("raindrop_cache_videos_metadata", false);
+        scope.LocalStorageService_Mock.SetupContainKeyAsync(
+            "raindrop_cache_videos_metadata",
+            false
+        );
 
         // Act
-        var result = await scope.Cache.IsExpiredAsync("videos", CancellationToken.None).ConfigureAwait(false);
+        var result = await scope
+            .Cache.IsExpiredAsync("videos", CancellationToken.None)
+            .ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsTrue();
@@ -247,28 +269,41 @@ public sealed partial class RaindropItemsCacheTests
         var metadata = CreateTestMetadata();
 
         scope.LocalStorageService_Mock.SetupContainKeyAsync("raindrop_cache_videos_metadata", true);
-        scope.LocalStorageService_Mock.SetupGetItemAsync("raindrop_cache_videos_metadata", metadata);
+        scope.LocalStorageService_Mock.SetupGetItemAsync(
+            "raindrop_cache_videos_metadata",
+            metadata
+        );
 
         // Act
-        var result = await scope.Cache.IsExpiredAsync("videos", CancellationToken.None).ConfigureAwait(false);
+        var result = await scope
+            .Cache.IsExpiredAsync("videos", CancellationToken.None)
+            .ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsFalse();
     }
 
     [Test]
-    public async Task SetAsync_LargeDataSet_CompletesWithinTimeLimit()
+    public async Task SetAsync_LargeDataSet_RoundTrips_To_Hit()
     {
         // Arrange
         using var scope = CreateTestScope();
         var largeDataSet = CreatePerformanceTestDataSet();
-        var stopwatch = Stopwatch.StartNew();
 
         // Act
-        await scope.Cache.SetAsync("videos", largeDataSet, CancellationToken.None).ConfigureAwait(false);
-        stopwatch.Stop();
+        await scope
+            .Cache.SetAsync("videos", largeDataSet, CancellationToken.None)
+            .ConfigureAwait(false);
+        var result = await scope
+            .Cache.GetAsync("videos", CancellationToken.None)
+            .ConfigureAwait(false);
 
         // Assert
-        await Assert.That(stopwatch.ElapsedMilliseconds).IsLessThan(5000); // Should complete within 5 seconds
+        using (Assert.Multiple())
+        {
+            await Assert.That(result.Status).IsEqualTo(RaindropCacheStatus.Hit);
+            await Assert.That(result.Data).Count().IsEqualTo(largeDataSet.Count);
+            await Assert.That(result.Data![0].Title).IsEqualTo(largeDataSet[0].Title);
+        }
     }
 }

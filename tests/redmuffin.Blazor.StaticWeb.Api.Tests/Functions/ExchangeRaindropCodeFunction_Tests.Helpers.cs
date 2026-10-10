@@ -1,4 +1,4 @@
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Net;
 using System.Security.Claims;
 using System.Text;
@@ -9,6 +9,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using redmuffin.Blazor.StaticWeb.Tests.Support.Http;
 
 namespace redmuffin.Blazor.StaticWeb.Api.Tests.Functions;
 
@@ -52,7 +53,10 @@ public sealed partial class ExchangeRaindropCodeFunction_Tests
         /// <summary>
         ///     Creates a mock HTTP request data with JSON body for Azure Functions testing.
         /// </summary>
-        public static HttpRequestData_Mock CreateHttpRequestData(FunctionContext_Mock functionContext, object? body = null)
+        public static HttpRequestData_Mock CreateHttpRequestData(
+            FunctionContext_Mock functionContext,
+            object? body = null
+        )
         {
             return new HttpRequestData_Mock(functionContext, body);
         }
@@ -75,13 +79,15 @@ public sealed partial class ExchangeRaindropCodeFunction_Tests
             var jsonSerializerOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                WriteIndented = true
+                WriteIndented = true,
             };
 
             var workerOptions = new WorkerOptions { Serializer = new JsonObjectSerializer() };
 
             var serviceCollection = new ServiceCollection()
-                .AddSingleton<IOptions<WorkerOptions>>(new OptionsWrapper<WorkerOptions>(workerOptions))
+                .AddSingleton<IOptions<WorkerOptions>>(
+                    new OptionsWrapper<WorkerOptions>(workerOptions)
+                )
                 .AddSingleton(jsonSerializerOptions)
                 .AddHttpClient();
 
@@ -94,8 +100,10 @@ public sealed partial class ExchangeRaindropCodeFunction_Tests
 
         public override IServiceProvider InstanceServices { get; set; }
 
-        public override FunctionDefinition FunctionDefinition => new FunctionDefinition_Mock(FunctionId);
-        public override IDictionary<object, object> Items { get; set; } = new Dictionary<object, object>();
+        public override FunctionDefinition FunctionDefinition =>
+            new FunctionDefinition_Mock(FunctionId);
+        public override IDictionary<object, object> Items { get; set; } =
+            new Dictionary<object, object>();
         public override IInvocationFeatures Features { get; } = null!;
         public override string InvocationId => Guid.NewGuid().ToString();
         public override string FunctionId { get; }
@@ -106,7 +114,9 @@ public sealed partial class ExchangeRaindropCodeFunction_Tests
         private static ObjectSerializer CheckObjectSerializer(IServiceProvider instanceServices)
         {
             return instanceServices.GetService<IOptions<WorkerOptions>>()?.Value?.Serializer
-                   ?? throw new InvalidOperationException("A serializer is not configured for the worker.");
+                ?? throw new InvalidOperationException(
+                    "A serializer is not configured for the worker."
+                );
         }
     }
 
@@ -117,7 +127,8 @@ public sealed partial class ExchangeRaindropCodeFunction_Tests
     {
         private readonly MemoryStream _bodyStream;
 
-        public HttpRequestData_Mock(FunctionContext functionContext, object? body = null) : base(functionContext)
+        public HttpRequestData_Mock(FunctionContext functionContext, object? body = null)
+            : base(functionContext)
         {
             if (body != null)
             {
@@ -155,9 +166,8 @@ public sealed partial class ExchangeRaindropCodeFunction_Tests
     {
         private readonly MemoryStream _bodyStream = new();
 
-        public HttpResponseData_Mock(FunctionContext functionContext) : base(functionContext)
-        {
-        }
+        public HttpResponseData_Mock(FunctionContext functionContext)
+            : base(functionContext) { }
 
         public override HttpStatusCode StatusCode { get; set; }
         public override HttpHeadersCollection Headers { get; set; } = [];
@@ -198,8 +208,10 @@ public sealed partial class ExchangeRaindropCodeFunction_Tests
         public override string EntryPoint => "ExchangeRaindropCodeFunction";
         public override string Id => functionId;
         public override string Name => functionId;
-        public override IImmutableDictionary<string, BindingMetadata> InputBindings { get; } = ImmutableDictionary<string, BindingMetadata>.Empty;
-        public override IImmutableDictionary<string, BindingMetadata> OutputBindings { get; } = ImmutableDictionary<string, BindingMetadata>.Empty;
+        public override IImmutableDictionary<string, BindingMetadata> InputBindings { get; } =
+            ImmutableDictionary<string, BindingMetadata>.Empty;
+        public override IImmutableDictionary<string, BindingMetadata> OutputBindings { get; } =
+            ImmutableDictionary<string, BindingMetadata>.Empty;
     }
 
     /// <summary>
@@ -216,6 +228,7 @@ public sealed partial class ExchangeRaindropCodeFunction_Tests
     /// </summary>
     public sealed class BindingContext_Mock : BindingContext
     {
-        public override IReadOnlyDictionary<string, object?> BindingData { get; } = new Dictionary<string, object?>();
+        public override IReadOnlyDictionary<string, object?> BindingData { get; } =
+            new Dictionary<string, object?>();
     }
 }

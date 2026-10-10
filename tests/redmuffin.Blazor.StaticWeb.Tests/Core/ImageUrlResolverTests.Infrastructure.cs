@@ -48,9 +48,7 @@ public sealed partial class ImageUrlResolverTests
         const string expectedPlaceholder = "data:image/svg+xml;base64,placeholder";
         var imageUrlCache = new Dictionary<string, string>();
 
-        scope
-            .ImagePlaceholderService_Mock.Arrange(s => s.GetDefaultPlaceholder())
-            .Returns(expectedPlaceholder);
+        scope.ImagePlaceholderService_Mock.SetupDefaultPlaceholder(expectedPlaceholder);
 
         // Act
         await scope

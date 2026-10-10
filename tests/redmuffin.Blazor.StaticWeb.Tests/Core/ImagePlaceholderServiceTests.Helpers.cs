@@ -1,9 +1,10 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
-using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Common.ImagePlaceholder;
+using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
+using redmuffin.Blazor.StaticWeb.Tests.Support.Logging;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Core;
 
@@ -21,7 +22,10 @@ public partial class ImagePlaceholderServiceTests
     /// <summary>
     ///     Creates a test RaindropItem with configurable properties.
     /// </summary>
-    private static RaindropItem CreateTestItem(int id = 123, string? cover = "https://example.com/image.jpg")
+    private static RaindropItem CreateTestItem(
+        int id = 123,
+        string? cover = "https://example.com/image.jpg"
+    )
     {
         return new RaindropItem
         {
@@ -29,7 +33,7 @@ public partial class ImagePlaceholderServiceTests
             Link = $"https://example.com/test-{id}",
             Cover = cover ?? string.Empty,
             Title = $"Test Item {id}",
-            Excerpt = $"Test excerpt for item {id}"
+            Excerpt = $"Test excerpt for item {id}",
         };
     }
 
@@ -38,21 +42,18 @@ public partial class ImagePlaceholderServiceTests
     /// </summary>
     private static Dictionary<string, string> CreateCacheWithFailedItem(string itemLink)
     {
-        return new Dictionary<string, string>
-        {
-            { itemLink, "FAILED" }
-        };
+        return new Dictionary<string, string> { { itemLink, "FAILED" } };
     }
 
     /// <summary>
     ///     Creates a cache dictionary with a valid cached URL.
     /// </summary>
-    private static Dictionary<string, string> CreateCacheWithValidItem(string itemLink, string cachedUrl)
+    private static Dictionary<string, string> CreateCacheWithValidItem(
+        string itemLink,
+        string cachedUrl
+    )
     {
-        return new Dictionary<string, string>
-        {
-            { itemLink, cachedUrl }
-        };
+        return new Dictionary<string, string> { { itemLink, cachedUrl } };
     }
 
     /// <summary>
@@ -79,7 +80,9 @@ public partial class ImagePlaceholderServiceTests
         public TestScope WithImagePlaceholderServices()
         {
             // Register core services
-            _services.AddSingleton<ILogger<ImagePlaceholderService>>(new Logger_Spy<ImagePlaceholderService>());
+            _services.AddSingleton<ILogger<ImagePlaceholderService>>(
+                new Logger_Spy<ImagePlaceholderService>()
+            );
             _services.AddSingleton<IJSRuntime>(new JSRuntime_Stub());
 
             // Register ImagePlaceholder services
@@ -97,30 +100,6 @@ public partial class ImagePlaceholderServiceTests
     }
 
     /// <summary>
-    ///     Test logger implementation for capturing log entries.
-    /// </summary>
-    public class Logger_Spy<T> : ILogger<T>
-    {
-        public List<LogEntry> LogEntries { get; } = [];
-
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull
-        {
-            return new NoOpDisposable();
-        }
-
-        public bool IsEnabled(LogLevel logLevel)
-        {
-            return true;
-        }
-
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
-        {
-            var message = formatter(state, exception);
-            LogEntries.Add(new LogEntry(logLevel, eventId, message, exception));
-        }
-    }
-
-    /// <summary>
     ///     Test JSRuntime implementation for testing JavaScript interop.
     /// </summary>
     public class JSRuntime_Stub : IJSRuntime
@@ -130,24 +109,13 @@ public partial class ImagePlaceholderServiceTests
             return ValueTask.FromResult(default(TValue)!);
         }
 
-        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+        public ValueTask<TValue> InvokeAsync<TValue>(
+            string identifier,
+            CancellationToken cancellationToken,
+            object?[]? args
+        )
         {
             return ValueTask.FromResult(default(TValue)!);
         }
     }
-
-    /// <summary>
-    ///     No-op disposable for test scopes.
-    /// </summary>
-    private sealed class NoOpDisposable : IDisposable
-    {
-        public void Dispose()
-        {
-        }
-    }
-
-    /// <summary>
-    ///     Log entry record for test logging.
-    /// </summary>
-    public record LogEntry(LogLevel Level, EventId EventId, string Message, Exception? Exception);
 }

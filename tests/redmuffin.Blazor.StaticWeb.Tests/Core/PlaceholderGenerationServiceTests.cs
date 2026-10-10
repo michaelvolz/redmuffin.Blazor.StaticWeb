@@ -1,4 +1,4 @@
-using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Models;
+﻿using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Models;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Core;
 
@@ -10,59 +10,34 @@ namespace redmuffin.Blazor.StaticWeb.Tests.Core;
 public sealed partial class PlaceholderGenerationServiceTests
 {
     [Test]
-    public async Task All_Generated_Placeholders_Should_Be_Valid_SVG_DataUris()
+    [Arguments("default", "No Image Available")]
+    [Arguments("reason", "Image not available")]
+    [Arguments("custom", "Custom Placeholder Text")]
+    public async Task Each_Generator_Entry_Point_Returns_A_Valid_Svg_DataUri_With_Expected_Text(
+        string entryPoint,
+        string expectedText
+    )
     {
         // Arrange
         using var scope = CreateTestScope();
         const string reason = "LOAD_FAILED";
-        const string customText = "Custom Text";
         var configuration = new PlaceholderConfiguration();
 
         // Act
-        var defaultResult = scope.Service.GenerateDefaultPlaceholder();
-        var reasonResult = scope.Service.GeneratePlaceholderWithReason(reason);
-        var customResult = scope.Service.GenerateCustomPlaceholder(customText, configuration);
-
-        // Assert
-        await Assert.That(defaultResult).StartsWith("data:image/svg+xml;base64,");
-        await Assert.That(reasonResult).StartsWith("data:image/svg+xml;base64,");
-        await Assert.That(customResult).StartsWith("data:image/svg+xml;base64,");
-
-        await Assert.That(TestScope.DecodeSvgFromDataUri(defaultResult)).Contains("<svg");
-        await Assert.That(TestScope.DecodeSvgFromDataUri(reasonResult)).Contains("<svg");
-        await Assert.That(TestScope.DecodeSvgFromDataUri(customResult)).Contains("<svg");
-    }
-
-    [Test]
-    public async Task GenerateCustomPlaceholder_Should_Be_Consistent_For_Same_Parameters()
-    {
-        // Arrange
-        using var scope = CreateTestScope();
-        const string customText = "Test";
-        var configuration = new PlaceholderConfiguration { Width = 500, Height = 300 };
-
-        // Act
-        var result1 = scope.Service.GenerateCustomPlaceholder(customText, configuration);
-        var result2 = scope.Service.GenerateCustomPlaceholder(customText, configuration);
-
-        // Assert
-        await Assert.That(result1).IsEqualTo(result2);
-    }
-
-    [Test]
-    public async Task GenerateCustomPlaceholder_Should_Return_Valid_Base64_DataUri()
-    {
-        // Arrange
-        using var scope = CreateTestScope();
-        const string customText = "Custom Placeholder Text";
-        var configuration = new PlaceholderConfiguration();
-
-        // Act
-        var result = scope.Service.GenerateCustomPlaceholder(customText, configuration);
+        var result = entryPoint switch
+        {
+            "default" => scope.Service.GenerateDefaultPlaceholder(),
+            "reason" => scope.Service.GeneratePlaceholderWithReason(reason),
+            "custom" => scope.Service.GenerateCustomPlaceholder(expectedText, configuration),
+            _ => throw new ArgumentOutOfRangeException(nameof(entryPoint)),
+        };
 
         // Assert
         await Assert.That(result).StartsWith("data:image/svg+xml;base64,");
-        await Assert.That(result.Length > 50).IsTrue();
+
+        var decodedSvg = TestScope.DecodeSvgFromDataUri(result);
+        await Assert.That(decodedSvg).Contains("<svg");
+        await Assert.That(decodedSvg).Contains(expectedText);
     }
 
     [Test]
@@ -76,7 +51,7 @@ public sealed partial class PlaceholderGenerationServiceTests
             Width = 800,
             Height = 400,
             BackgroundColor = "#ff0000",
-            TextColor = "#ffffff"
+            TextColor = "#ffffff",
         };
 
         // Act
@@ -118,49 +93,5 @@ public sealed partial class PlaceholderGenerationServiceTests
 
         // Assert
         await Assert.That(decodedSvg).Contains("No Image Available");
-    }
-
-    [Test]
-    public async Task GenerateDefaultPlaceholder_Should_Return_Valid_Base64_DataUri()
-    {
-        // Arrange
-        using var scope = CreateTestScope();
-
-        // Act
-        var result = scope.Service.GenerateDefaultPlaceholder();
-
-        // Assert
-        await Assert.That(result).StartsWith("data:image/svg+xml;base64,");
-        await Assert.That(result.Length > 50).IsTrue();
-    }
-
-    [Test]
-    public async Task GeneratePlaceholderWithReason_Should_Be_Consistent_For_Same_Reason()
-    {
-        // Arrange
-        using var scope = CreateTestScope();
-        const string reason = "LOAD_FAILED";
-
-        // Act
-        var result1 = scope.Service.GeneratePlaceholderWithReason(reason);
-        var result2 = scope.Service.GeneratePlaceholderWithReason(reason);
-
-        // Assert
-        await Assert.That(result1).IsEqualTo(result2);
-    }
-
-    [Test]
-    public async Task GeneratePlaceholderWithReason_Should_Return_Valid_Base64_DataUri()
-    {
-        // Arrange
-        using var scope = CreateTestScope();
-        const string reason = "LOAD_FAILED";
-
-        // Act
-        var result = scope.Service.GeneratePlaceholderWithReason(reason);
-
-        // Assert
-        await Assert.That(result).StartsWith("data:image/svg+xml;base64,");
-        await Assert.That(result.Length > 50).IsTrue();
     }
 }

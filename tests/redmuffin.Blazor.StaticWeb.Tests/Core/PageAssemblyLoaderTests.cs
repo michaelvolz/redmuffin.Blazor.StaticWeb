@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components.WebAssembly.Services;
+﻿using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.JSInterop;
 using redmuffin.Blazor.StaticWeb.Core.Services;
@@ -19,14 +19,30 @@ public sealed class PageAssemblyLoaderTests
     }
 
     [Test]
-    public async Task PrefetchHomePrimaryJourneysAsync_Completes_Without_Throwing()
+    public async Task PrefetchHomePrimaryJourneysAsync_Loads_Home_Assemblies_And_Is_Idempotent()
     {
         var loader = CreateLoader();
 
-        // Catalog lists Components.dll + Raindrop.dll for Articles/Videos. Prefetch is speculative:
-        // failures are swallowed; success path must also be safe when re-entered.
         await loader.PrefetchHomePrimaryJourneysAsync().ConfigureAwait(false);
+
+        // Non-browser hosts resolve catalog DLL names through Assembly.Load, so the loaded set is observable here.
+        var loadedNames = loader
+            .LoadedAssemblies.Select(assembly => assembly.GetName().Name)
+            .ToList();
+        using (Assert.Multiple())
+        {
+            await Assert.That(loadedNames).Contains("Articles");
+            await Assert.That(loadedNames).Contains("Videos");
+            await Assert.That(loadedNames).Contains("Components");
+            await Assert.That(loadedNames).Contains("Raindrop");
+            await Assert.That(loadedNames.Distinct().Count()).IsEqualTo(loadedNames.Count);
+        }
+
+        var countAfterFirstPrefetch = loader.LoadedAssemblies.Count;
+
         await loader.PrefetchHomePrimaryJourneysAsync().ConfigureAwait(false);
+
+        await Assert.That(loader.LoadedAssemblies.Count).IsEqualTo(countAfterFirstPrefetch);
     }
 
     private static PageAssemblyLoader CreateLoader()
@@ -35,7 +51,8 @@ public sealed class PageAssemblyLoaderTests
         return new PageAssemblyLoader(
             new LazyAssemblyLoader(jsRuntime),
             jsRuntime,
-            NullLogger<PageAssemblyLoader>.Instance);
+            NullLogger<PageAssemblyLoader>.Instance
+        );
     }
 
     private sealed class JSRuntime_Stub : IJSRuntime
@@ -45,7 +62,11 @@ public sealed class PageAssemblyLoaderTests
             return ValueTask.FromResult(default(TValue)!);
         }
 
-        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+        public ValueTask<TValue> InvokeAsync<TValue>(
+            string identifier,
+            CancellationToken cancellationToken,
+            object?[]? args
+        )
         {
             return ValueTask.FromResult(default(TValue)!);
         }

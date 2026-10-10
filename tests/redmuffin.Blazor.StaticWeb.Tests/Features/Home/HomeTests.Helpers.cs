@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Security.Claims;
 using System.Text;
 using Bunit;
@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb.Common.Abstractions;
 using redmuffin.Blazor.StaticWeb.Core.Services;
+using redmuffin.Blazor.StaticWeb.Tests.Support.Logging;
 using HomePage = redmuffin.Blazor.StaticWeb.Pages.Home.Home;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Home;
@@ -36,7 +37,10 @@ public partial class HomeTests
     /// <param name="isAuthenticated">Whether the user should be authenticated.</param>
     /// <param name="userName">The username for authenticated users.</param>
     /// <returns>A Task containing the mock AuthenticationState.</returns>
-    private static Task<AuthenticationState> CreateMockAuthenticationState(bool isAuthenticated, string? userName = null)
+    private static Task<AuthenticationState> CreateMockAuthenticationState(
+        bool isAuthenticated,
+        string? userName = null
+    )
     {
         var identity = isAuthenticated
             ? new ClaimsIdentity_Mock(userName ?? "testuser@example.com", "mock")
@@ -68,7 +72,9 @@ public partial class HomeTests
             BUnitContext.Services.AddSingleton<ILogger<HomePage>>(Logger);
             BUnitContext.Services.AddSingleton<IHttpClientFactory>(HttpClientFactory_Stub.Mock);
             BUnitContext.Services.AddSingleton<IDelayProvider>(new DelayProvider_Stub()); // ✅ FAST: No delays in tests
-            BUnitContext.Services.AddSingleton<IPageAssemblyLoader>(PageAssemblyLoader_Stub.Instance);
+            BUnitContext.Services.AddSingleton<IPageAssemblyLoader>(
+                PageAssemblyLoader_Stub.Instance
+            );
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
@@ -82,7 +88,9 @@ public partial class HomeTests
             BUnitContext.Services.AddSingleton<ILogger<HomePage>>(Logger);
             BUnitContext.Services.AddSingleton<IHttpClientFactory>(HttpClientFactory_Stub.Failing);
             BUnitContext.Services.AddSingleton<IDelayProvider>(new DelayProvider_Stub()); // ✅ FAST: No delays in tests
-            BUnitContext.Services.AddSingleton<IPageAssemblyLoader>(PageAssemblyLoader_Stub.Instance);
+            BUnitContext.Services.AddSingleton<IPageAssemblyLoader>(
+                PageAssemblyLoader_Stub.Instance
+            );
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
@@ -97,7 +105,9 @@ public partial class HomeTests
             BUnitContext.Services.AddSingleton<ILogger<HomePage>>(Logger);
             BUnitContext.Services.AddSingleton<IHttpClientFactory>(HttpClientFactory_Stub.Mock);
             BUnitContext.Services.AddSingleton<IDelayProvider>(new DelayProvider_Stub()); // ✅ FAST: No delays in tests
-            BUnitContext.Services.AddSingleton<IPageAssemblyLoader>(PageAssemblyLoader_Stub.Instance);
+            BUnitContext.Services.AddSingleton<IPageAssemblyLoader>(
+                PageAssemblyLoader_Stub.Instance
+            );
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
@@ -112,7 +122,9 @@ public partial class HomeTests
             BUnitContext.Services.AddSingleton<ILogger<HomePage>>(Logger);
             BUnitContext.Services.AddSingleton<IHttpClientFactory>(HttpClientFactory_Stub.Mock);
             BUnitContext.Services.AddSingleton<IDelayProvider>(new DelayProvider_Stub()); // ✅ FAST: No delays in tests
-            BUnitContext.Services.AddSingleton<IPageAssemblyLoader>(PageAssemblyLoader_Stub.Instance);
+            BUnitContext.Services.AddSingleton<IPageAssemblyLoader>(
+                PageAssemblyLoader_Stub.Instance
+            );
             BUnitContext.JSInterop.Mode = JSRuntimeMode.Loose;
             return this;
         }
@@ -160,7 +172,9 @@ public partial class HomeTests
             // Debug logging
             Console.WriteLine("NavigationManager_Mock.NavigateToCore called:");
             Console.WriteLine($"  - URI: {uri}");
-            Console.WriteLine($"  - Options: ForceLoad={options.ForceLoad}, ReplaceHistoryEntry={options.ReplaceHistoryEntry}");
+            Console.WriteLine(
+                $"  - Options: ForceLoad={options.ForceLoad}, ReplaceHistoryEntry={options.ReplaceHistoryEntry}"
+            );
         }
     }
 
@@ -178,53 +192,14 @@ public partial class HomeTests
         }
     }
 
-    // Test logger to capture log messages
-    public class Logger_Spy<T> : ILogger<T>
-    {
-        public List<LogEntry> LogEntries { get; } = [];
-
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull
-        {
-            return new NoOpDisposable();
-        }
-
-        public bool IsEnabled(LogLevel logLevel)
-        {
-            return true;
-        }
-
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
-        {
-            LogEntries.Add(new LogEntry
-            {
-                LogLevel = logLevel,
-                EventId = eventId,
-                Message = formatter(state, exception),
-                Exception = exception
-            });
-        }
-
-        public class LogEntry
-        {
-            public LogLevel LogLevel { get; set; }
-            public EventId EventId { get; set; }
-            public string Message { get; set; } = string.Empty;
-            public Exception? Exception { get; set; }
-        }
-
-        private sealed class NoOpDisposable : IDisposable
-        {
-            public void Dispose()
-            {
-            }
-        }
-    }
-
     // Modern C# 12 HttpClient factory using primary constructor and static properties
-    public sealed class HttpClientFactory_Stub(Func<HttpMessageHandler> handlerFactory) : IHttpClientFactory
+    public sealed class HttpClientFactory_Stub(Func<HttpMessageHandler> handlerFactory)
+        : IHttpClientFactory
     {
-        public static HttpClientFactory_Stub Mock { get; } = new(() => new HttpMessageHandler_Mock());
-        public static HttpClientFactory_Stub Failing { get; } = new(() => new FailingHttpMessageHandler());
+        public static HttpClientFactory_Stub Mock { get; } =
+            new(() => new HttpMessageHandler_Mock());
+        public static HttpClientFactory_Stub Failing { get; } =
+            new(() => new FailingHttpMessageHandler());
 
         public HttpClient CreateClient(string name = "")
         {
@@ -235,11 +210,14 @@ public partial class HomeTests
     // Mock HttpMessageHandler that returns a successful response without making real network calls
     public sealed class HttpMessageHandler_Mock : HttpMessageHandler
     {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
         {
             var response = new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new StringContent("Mock response", Encoding.UTF8, "application/json")
+                Content = new StringContent("Mock response", Encoding.UTF8, "application/json"),
             };
             return Task.FromResult(response);
         }
@@ -247,7 +225,10 @@ public partial class HomeTests
 
     public sealed class FailingHttpMessageHandler : HttpMessageHandler
     {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
         {
             throw new HttpRequestException("Simulated network error");
         }
@@ -288,11 +269,14 @@ public partial class HomeTests
 
         public IReadOnlyList<System.Reflection.Assembly> LoadedAssemblies { get; } = [];
 
-        public Task EnsureLoadedAsync(string pageKey, CancellationToken cancellationToken = default) =>
-            Task.CompletedTask;
+        public Task EnsureLoadedAsync(
+            string pageKey,
+            CancellationToken cancellationToken = default
+        ) => Task.CompletedTask;
 
-        public Task PrefetchHomePrimaryJourneysAsync(CancellationToken cancellationToken = default) =>
-            Task.CompletedTask;
+        public Task PrefetchHomePrimaryJourneysAsync(
+            CancellationToken cancellationToken = default
+        ) => Task.CompletedTask;
     }
 
     public sealed class DelayProvider_Stub : IDelayProvider
@@ -308,7 +292,8 @@ public partial class HomeTests
     /// <summary>
     ///     Mock ClaimsIdentity for testing authorization scenarios.
     /// </summary>
-    public sealed class ClaimsIdentity_Mock(string? name = null, string? authenticationType = null) : ClaimsIdentity(CreateClaims(name), authenticationType)
+    public sealed class ClaimsIdentity_Mock(string? name = null, string? authenticationType = null)
+        : ClaimsIdentity(CreateClaims(name), authenticationType)
     {
         public override bool IsAuthenticated => !string.IsNullOrEmpty(AuthenticationType);
 

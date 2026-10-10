@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 
 namespace redmuffin.Blazor.StaticWeb.Api.Tests.Api;
@@ -6,48 +6,42 @@ namespace redmuffin.Blazor.StaticWeb.Api.Tests.Api;
 public sealed partial class TestDeserialization
 {
     /// <summary>
-    ///     Validates that video data deserializes correctly from JSON with proper object structure.
+    ///     Validates that the recorded video payload deserializes with the production
+    ///     source-generated serializer context and preserves the item data.
     /// </summary>
     [Test]
     public async Task Should_Deserialize_Video_Data_When_Valid_Json_Provided()
     {
         // Arrange
-        using var scope = CreateTestScope();
-        var jsonFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Data", "Videos.json");
+        var jsonFilePath = Path.Combine(AppContext.BaseDirectory, "Data", "Videos.json");
 
         // Act
         var jsonData = await File.ReadAllTextAsync(jsonFilePath).ConfigureAwait(false);
-        var videoItems = JsonSerializer.Deserialize<List<RaindropItem>>(jsonData, scope.JsonSerializerOptions);
+        var videoItems = JsonSerializer.Deserialize<List<RaindropItem>>(
+            jsonData,
+            RaindropJsonSerializerContext.DefaultOptions
+        );
 
         // Assert
         await Assert.That(videoItems).IsNotNull();
-        await Assert.That(videoItems!.Count).IsGreaterThan(0);
-    }
+        var items = videoItems!;
 
-    /// <summary>
-    ///     Validates that deserialized video items maintain required properties and data integrity.
-    /// </summary>
-    [Test]
-    public async Task Should_Maintain_Data_Integrity_When_Video_Items_Deserialized()
-    {
-        // Arrange
-        using var scope = CreateTestScope();
-        var jsonFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Data", "Videos.json");
+        await Assert.That(items.Count).IsGreaterThan(0);
 
-        // Act
-        var jsonData = await File.ReadAllTextAsync(jsonFilePath).ConfigureAwait(false);
-        var videoItems = JsonSerializer.Deserialize<List<RaindropItem>>(jsonData, scope.JsonSerializerOptions);
-
-        // Assert
-        await Assert.That(videoItems).IsNotNull();
-
-        foreach (var item in videoItems!)
-        {
+        foreach (var item in items)
             await Assert.That(item.Title).IsNotNull();
 
-            foreach (var highlight in item.Highlights)
-                if (highlight.CreatorRef?.Name is { Length: > 0 })
-                    await Assert.That(highlight.CreatorRef.Name.Length).IsGreaterThan(0);
-        }
+        var firstItem = items[0];
+        await Assert.That(firstItem.Id).IsEqualTo(1180248514L);
+        await Assert
+            .That(firstItem.Title)
+            .IsEqualTo(
+                "The Breakthroughs Needed for AGI Have Already Been Made: OpenAI Former Research Head Bob McGrew"
+            );
+        await Assert.That(firstItem.Link).IsEqualTo("https://www.youtube.com/watch?v=z_-nLK4Ps1Q");
+
+        await Assert.That(firstItem.Highlights.Count).IsGreaterThan(0);
+        await Assert.That(firstItem.Highlights[0].CreatorRef).IsNotNull();
+        await Assert.That(firstItem.Highlights[0].CreatorRef!.Id).IsEqualTo(4134988L);
     }
 }

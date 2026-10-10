@@ -1,11 +1,9 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using Blazored.LocalStorage;
-using LightMock.Generator;
-using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Cache;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Models;
-using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Contracts;
+using redmuffin.Blazor.StaticWeb.Tests.Support.Logging;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Features.Raindrop.Cache;
 
@@ -20,17 +18,20 @@ public partial class RaindropItemsCacheTests
     {
         var items = new List<RaindropItem>();
         for (var i = 0; i < 1000; i++)
-            items.Add(new RaindropItem
-            {
-                Id = i,
-                Link = $"https://example.com/item/{i}",
-                Title = $"Performance Test Item {i} with longer title text to make it more realistic",
-                Excerpt =
-                    $"This is a performance test excerpt for item {i}. It contains descriptive text that would normally be found in a real article or video description. This helps simulate real-world data sizes and compression scenarios for performance testing.",
-                Cover = $"https://example.com/images/cover_{i}.jpg",
-                Created = DateTime.UtcNow.AddDays(-i),
-                Type = i % 2 == 0 ? "article" : "video"
-            });
+            items.Add(
+                new RaindropItem
+                {
+                    Id = i,
+                    Link = $"https://example.com/item/{i}",
+                    Title =
+                        $"Performance Test Item {i} with longer title text to make it more realistic",
+                    Excerpt =
+                        $"This is a performance test excerpt for item {i}. It contains descriptive text that would normally be found in a real article or video description. This helps simulate real-world data sizes and compression scenarios for performance testing.",
+                    Cover = $"https://example.com/images/cover_{i}.jpg",
+                    Created = DateTime.UtcNow.AddDays(-i),
+                    Type = i % 2 == 0 ? "article" : "video",
+                }
+            );
         return items;
     }
 
@@ -56,7 +57,7 @@ public partial class RaindropItemsCacheTests
                 Cover = "https://example.com/cover1.jpg",
                 Domain = "example.com",
                 Created = DateTime.UtcNow.AddDays(-1),
-                Type = "video"
+                Type = "video",
             },
             new RaindropItem
             {
@@ -67,8 +68,8 @@ public partial class RaindropItemsCacheTests
                 Cover = "https://example.com/cover2.jpg",
                 Domain = "example.com",
                 Created = DateTime.UtcNow.AddDays(-2),
-                Type = "video"
-            }
+                Type = "video",
+            },
         ];
     }
 
@@ -85,7 +86,7 @@ public partial class RaindropItemsCacheTests
             Version = "1.0",
             ItemCount = 2,
             CompressedSize = 1024,
-            OriginalSize = 2048
+            OriginalSize = 2048,
         };
     }
 
@@ -102,7 +103,7 @@ public partial class RaindropItemsCacheTests
             Version = "1.0",
             ItemCount = 2,
             CompressedSize = 1024,
-            OriginalSize = 2048
+            OriginalSize = 2048,
         };
     }
 
@@ -113,17 +114,20 @@ public partial class RaindropItemsCacheTests
     {
         var items = new List<RaindropItem>();
         for (var i = 1; i <= 100; i++)
-            items.Add(new RaindropItem
-            {
-                Id = i,
-                Link = $"https://example.com/item{i}",
-                Title = $"Test Item {i} with a longer title to increase data size",
-                Excerpt = $"This is a longer excerpt for item {i} to test compression efficiency with more substantial content that should compress well.",
-                Cover = $"https://example.com/covers/item{i}.jpg",
-                Domain = "example.com",
-                Created = DateTime.UtcNow.AddDays(-i),
-                Type = i % 2 == 0 ? "video" : "article"
-            });
+            items.Add(
+                new RaindropItem
+                {
+                    Id = i,
+                    Link = $"https://example.com/item{i}",
+                    Title = $"Test Item {i} with a longer title to increase data size",
+                    Excerpt =
+                        $"This is a longer excerpt for item {i} to test compression efficiency with more substantial content that should compress well.",
+                    Cover = $"https://example.com/covers/item{i}.jpg",
+                    Domain = "example.com",
+                    Created = DateTime.UtcNow.AddDays(-i),
+                    Type = i % 2 == 0 ? "video" : "article",
+                }
+            );
         return items;
     }
 
@@ -143,7 +147,7 @@ public partial class RaindropItemsCacheTests
                 Cover = "https://example.com/cover-special.jpg",
                 Domain = "example.com",
                 Created = DateTime.UtcNow.AddDays(-1),
-                Type = "article"
+                Type = "article",
             },
             new RaindropItem
             {
@@ -154,14 +158,13 @@ public partial class RaindropItemsCacheTests
                 Cover = "https://example.com/cover-unicode.jpg",
                 Domain = "example.com",
                 Created = DateTime.UtcNow.AddDays(-2),
-                Type = "video"
-            }
+                Type = "video",
+            },
         ];
     }
 
-
     /// <summary>
-    ///     Manual mock implementation for ILocalStorageService since LightMock.Generator doesn't support it.
+    ///     Hand-written recording fake for ILocalStorageService.
     /// </summary>
     public sealed class LocalStorageService_Mock : ILocalStorageService
     {
@@ -172,6 +175,16 @@ public partial class RaindropItemsCacheTests
         private readonly Dictionary<string, Exception> _getItemExceptions = new();
         private readonly Dictionary<string, Exception> _setItemExceptions = new();
         private readonly Dictionary<string, Exception> _removeItemExceptions = new();
+
+        /// <summary>
+        ///     Gets the storage keys recorded by SetItemAsync.
+        /// </summary>
+        public List<string> SetKeys { get; } = [];
+
+        /// <summary>
+        ///     Gets the storage keys recorded by RemoveItemAsync.
+        /// </summary>
+        public List<string> RemovedKeys { get; } = [];
 
         public void SetupContainKeyAsync(string key, bool result)
         {
@@ -208,45 +221,68 @@ public partial class RaindropItemsCacheTests
             _removeItemExceptions[key] = exception;
         }
 
-        public ValueTask<bool> ContainKeyAsync(string key, CancellationToken cancellationToken = default)
+        public ValueTask<bool> ContainKeyAsync(
+            string key,
+            CancellationToken cancellationToken = default
+        )
         {
-            if (_containsKeyExceptions.TryGetValue(key, out var exception)) throw exception;
+            if (_containsKeyExceptions.TryGetValue(key, out var exception))
+                throw exception;
 
             var result = _containsKeyResults.ContainsKey(key) && _containsKeyResults[key];
 
             return ValueTask.FromResult(result);
         }
 
-        public ValueTask<T?> GetItemAsync<T>(string key, CancellationToken cancellationToken = default)
+        public ValueTask<T?> GetItemAsync<T>(
+            string key,
+            CancellationToken cancellationToken = default
+        )
         {
-            if (_getItemExceptions.TryGetValue(key, out var exception)) throw exception;
+            if (_getItemExceptions.TryGetValue(key, out var exception))
+                throw exception;
 
             if (_getItemResults.TryGetValue(key, out var result))
             {
-                if (result is T typedResult) return ValueTask.FromResult<T?>(typedResult);
-                if (result != null) return ValueTask.FromResult<T?>(default);
+                if (result is T typedResult)
+                    return ValueTask.FromResult<T?>(typedResult);
+                if (result != null)
+                    return ValueTask.FromResult<T?>(default);
             }
 
             return ValueTask.FromResult<T?>(default);
         }
 
-        public ValueTask<string?> GetItemAsStringAsync(string key, CancellationToken cancellationToken = default)
+        public ValueTask<string?> GetItemAsStringAsync(
+            string key,
+            CancellationToken cancellationToken = default
+        )
         {
             var result = _getItemAsStringResults.TryGetValue(key, out var value) ? value : null;
 
             return ValueTask.FromResult(result);
         }
 
-        public ValueTask SetItemAsync<T>(string key, T data, CancellationToken cancellationToken = default)
+        public ValueTask SetItemAsync<T>(
+            string key,
+            T data,
+            CancellationToken cancellationToken = default
+        )
         {
-            if (_setItemExceptions.TryGetValue(key, out var exception)) throw exception;
+            if (_setItemExceptions.TryGetValue(key, out var exception))
+                throw exception;
 
+            SetKeys.Add(key);
             _getItemResults[key] = data;
             _containsKeyResults[key] = true; // Ensure ContainKeyAsync returns true for stored items
             return ValueTask.CompletedTask;
         }
 
-        public ValueTask SetItemAsStringAsync(string key, string data, CancellationToken cancellationToken = default)
+        public ValueTask SetItemAsStringAsync(
+            string key,
+            string data,
+            CancellationToken cancellationToken = default
+        )
         {
             _getItemAsStringResults[key] = data;
             _containsKeyResults[key] = true; // Ensure ContainKeyAsync returns true for stored items
@@ -255,15 +291,20 @@ public partial class RaindropItemsCacheTests
 
         public ValueTask RemoveItemAsync(string key, CancellationToken cancellationToken = default)
         {
-            if (_removeItemExceptions.TryGetValue(key, out var exception)) throw exception;
+            if (_removeItemExceptions.TryGetValue(key, out var exception))
+                throw exception;
 
+            RemovedKeys.Add(key);
             _getItemResults.Remove(key);
             _getItemAsStringResults.Remove(key);
             _containsKeyResults.Remove(key);
             return ValueTask.CompletedTask;
         }
 
-        public ValueTask RemoveItemsAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
+        public ValueTask RemoveItemsAsync(
+            IEnumerable<string> keys,
+            CancellationToken cancellationToken = default
+        )
         {
             foreach (var key in keys)
             {
@@ -294,7 +335,9 @@ public partial class RaindropItemsCacheTests
             return new ValueTask<string?>(index < keys.Length ? keys[index] : null);
         }
 
-        public ValueTask<IEnumerable<string>> KeysAsync(CancellationToken cancellationToken = default)
+        public ValueTask<IEnumerable<string>> KeysAsync(
+            CancellationToken cancellationToken = default
+        )
         {
             return new ValueTask<IEnumerable<string>>(_getItemResults.Keys.ToArray());
         }
@@ -312,16 +355,15 @@ public partial class RaindropItemsCacheTests
     {
         public TestScope()
         {
-            RaindropAPI_Mock = new Mock<IRaindropAPI>();
-            Logger_Mock = new Mock<ILogger<RaindropItemsCache>>();
             Logger = new Logger_Spy<RaindropItemsCache>();
             LocalStorageService_Mock = new LocalStorageService_Mock();
-            JsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+            JsonOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            };
             Cache = new RaindropItemsCache(LocalStorageService_Mock, Logger);
         }
 
-        public Mock<IRaindropAPI> RaindropAPI_Mock { get; }
-        public Mock<ILogger<RaindropItemsCache>> Logger_Mock { get; }
         public Logger_Spy<RaindropItemsCache> Logger { get; }
         public LocalStorageService_Mock LocalStorageService_Mock { get; }
         public RaindropItemsCache Cache { get; }
@@ -332,48 +374,4 @@ public partial class RaindropItemsCacheTests
             // No resources to dispose in this implementation
         }
     }
-
-    /// <summary>
-    ///     Test logger implementation that captures log entries for verification in tests.
-    /// </summary>
-    public sealed class Logger_Spy<T> : ILogger<T>
-    {
-        private readonly List<LogEntry> _logEntries = [];
-
-        public IReadOnlyList<LogEntry> LogEntries => _logEntries.AsReadOnly();
-
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull
-        {
-            return null;
-        }
-
-        public bool IsEnabled(LogLevel logLevel)
-        {
-            return true;
-        }
-
-        public void Log<TState>(
-            LogLevel logLevel,
-            EventId eventId,
-            TState state,
-            Exception? exception,
-            Func<TState, Exception?, string> formatter)
-        {
-            var message = formatter(state, exception);
-            _logEntries.Add(new LogEntry(logLevel, eventId, message, exception));
-        }
-    }
-
-    /// <summary>
-    ///     Represents a captured log entry for test verification.
-    /// </summary>
-    /// <param name="LogLevel">The log level of the entry.</param>
-    /// <param name="EventId">The event ID of the entry.</param>
-    /// <param name="Message">The formatted log message.</param>
-    /// <param name="Exception">The exception associated with the log entry, if any.</param>
-    public sealed record LogEntry(
-        LogLevel LogLevel,
-        EventId EventId,
-        string Message,
-        Exception? Exception);
 }

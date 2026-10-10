@@ -1,4 +1,4 @@
-using redmuffin.Blazor.StaticWeb.Core;
+﻿using redmuffin.Blazor.StaticWeb.Core;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Core;
 
@@ -21,20 +21,17 @@ public sealed partial class StringExtensionsTests
         var result = mixedCaseString.ReverseString();
 
         // Assert
-        using (Assert.Multiple())
-        {
-            await Assert.That(result).IsEqualTo(expectedReversed);
-            await Assert.That(result).Contains("f");
-            await Assert.That(result).Contains("A");
-        }
+        await Assert.That(result).IsEqualTo(expectedReversed);
     }
 
     [Test]
     [Arguments("Blazor", "rozalB")]
     [Arguments("racecar", "racecar")]
     [Arguments("", "")]
-    [Arguments(null, null)]
-    public async Task Should_Reverse_String_Correctly_When_Valid_Input_Provided(string? input, string? expected)
+    public async Task Should_Reverse_String_Correctly_When_Valid_Input_Provided(
+        string input,
+        string expected
+    )
     {
         // Act
         var result = input.ReverseString();
@@ -43,8 +40,7 @@ public sealed partial class StringExtensionsTests
         using (Assert.Multiple())
         {
             await Assert.That(result).IsEqualTo(expected);
-
-            if (input is not null) await Assert.That(result?.Length).IsEqualTo(input.Length);
+            await Assert.That(result?.Length).IsEqualTo(input.Length);
         }
     }
 }

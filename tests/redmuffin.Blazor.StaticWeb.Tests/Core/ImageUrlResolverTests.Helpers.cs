@@ -1,7 +1,6 @@
-﻿using LightMock.Generator;
-using redmuffin.Blazor.StaticWeb.Common.ImagePlaceholder;
-using redmuffin.Blazor.StaticWeb.Common.Raindrop;
+﻿using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
+using redmuffin.Blazor.StaticWeb.Tests.Support.Images;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Core;
 
@@ -49,15 +48,15 @@ public sealed partial class ImageUrlResolverTests
 
         public TestScope()
         {
-            ImagePlaceholderService_Mock = new Mock<IImagePlaceholderService>();
+            ImagePlaceholderService_Mock = new ImagePlaceholderService_Mock();
 
-            Service = new ImageUrlResolver(ImagePlaceholderService_Mock.Object);
+            Service = new ImageUrlResolver(ImagePlaceholderService_Mock);
         }
 
         /// <summary>
         ///     Gets the mock for IImagePlaceholderService.
         /// </summary>
-        internal Mock<IImagePlaceholderService> ImagePlaceholderService_Mock { get; }
+        internal ImagePlaceholderService_Mock ImagePlaceholderService_Mock { get; }
 
         /// <summary>
         ///     Gets the ImageUrlResolver instance under test.

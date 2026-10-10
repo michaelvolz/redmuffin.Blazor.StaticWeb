@@ -1,8 +1,9 @@
-using Mediator;
+﻿using Mediator;
 using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb.Common;
 using redmuffin.Blazor.StaticWeb.Common.PipelineBehaviors;
 using redmuffin.Blazor.StaticWeb.Modules.AzureHealthCheck.Contracts;
+using redmuffin.Blazor.StaticWeb.Tests.Support.Logging;
 
 namespace redmuffin.Blazor.StaticWeb.Modules.AzureHealthCheck.Tests;
 
@@ -17,10 +18,13 @@ public sealed partial class LoggingBehaviorTests
         var query = new GetHelloQuery();
         var response = Result.Success(new HelloResponse("test"));
 
-        var result = await behavior.Handle(
-            query,
-            (_, _) => new ValueTask<Result<HelloResponse>>(response),
-            CancellationToken.None).ConfigureAwait(false);
+        var result = await behavior
+            .Handle(
+                query,
+                (_, _) => new ValueTask<Result<HelloResponse>>(response),
+                CancellationToken.None
+            )
+            .ConfigureAwait(false);
 
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value.Message).IsEqualTo("test");

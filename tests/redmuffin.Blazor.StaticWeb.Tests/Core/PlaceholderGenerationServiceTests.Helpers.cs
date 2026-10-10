@@ -1,6 +1,6 @@
-using System.Text;
-using Microsoft.Extensions.Logging;
+﻿using System.Text;
 using redmuffin.Blazor.StaticWeb.Core.ImagePlaceholder.Services;
+using redmuffin.Blazor.StaticWeb.Tests.Support.Logging;
 
 namespace redmuffin.Blazor.StaticWeb.Tests.Core;
 
@@ -51,7 +51,10 @@ public sealed partial class PlaceholderGenerationServiceTests
         {
             const string prefix = "data:image/svg+xml;base64,";
             if (!dataUri.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-                throw new ArgumentException($"Invalid data URI format. Expected to start with '{prefix}'", nameof(dataUri));
+                throw new ArgumentException(
+                    $"Invalid data URI format. Expected to start with '{prefix}'",
+                    nameof(dataUri)
+                );
 
             var base64Data = dataUri[prefix.Length..];
             var svgBytes = Convert.FromBase64String(base64Data);
@@ -63,85 +66,9 @@ public sealed partial class PlaceholderGenerationServiceTests
         /// </summary>
         public void Dispose()
         {
-            if (_disposed) return;
+            if (_disposed)
+                return;
             _disposed = true;
         }
-    }
-
-    /// <summary>
-    ///     Test logger implementation for capturing log messages during tests.
-    /// </summary>
-    /// <typeparam name="T">The category type for the logger.</typeparam>
-    public sealed class Logger_Spy<T> : ILogger<T>
-    {
-        private readonly List<LogEntry> _logs = [];
-
-        /// <summary>
-        ///     Gets the captured log entries.
-        /// </summary>
-        public IReadOnlyList<LogEntry> Logs => _logs.AsReadOnly();
-
-        /// <summary>
-        ///     Clears all captured log entries.
-        /// </summary>
-        public void Clear()
-        {
-            _logs.Clear();
-        }
-
-        /// <inheritdoc />
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull
-        {
-            return null;
-        }
-
-        /// <inheritdoc />
-        public bool IsEnabled(LogLevel logLevel)
-        {
-            return true;
-        }
-
-        /// <inheritdoc />
-        public void Log<TState>(
-            LogLevel logLevel,
-            EventId eventId,
-            TState state,
-            Exception? exception,
-            Func<TState, Exception?, string> formatter)
-        {
-            _logs.Add(new LogEntry
-            {
-                LogLevel = logLevel,
-                EventId = eventId,
-                Message = formatter(state, exception),
-                Exception = exception
-            });
-        }
-    }
-
-    /// <summary>
-    ///     Represents a captured log entry for testing.
-    /// </summary>
-    public sealed class LogEntry
-    {
-        /// <summary>
-        ///     Gets or sets the log level.
-        /// </summary>
-        public LogLevel LogLevel { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the event ID.
-        /// </summary>
-        public EventId EventId { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the log message.
-        /// </summary>
-        public string Message { get; set; } = string.Empty;
-
-        /// <summary>
-        ///     Gets or sets the exception, if any.
-        /// </summary>
-        public Exception? Exception { get; set; }
     }
 }

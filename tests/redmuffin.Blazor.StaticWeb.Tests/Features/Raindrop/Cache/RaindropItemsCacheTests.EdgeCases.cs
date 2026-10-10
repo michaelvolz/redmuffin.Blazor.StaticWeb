@@ -1,5 +1,6 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using LZStringCSharp;
+using Microsoft.Extensions.Logging;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Enums;
 using redmuffin.Blazor.StaticWeb.Modules.Raindrop.Models;
@@ -11,16 +12,37 @@ public sealed partial class RaindropItemsCacheTests
 {
     [Test]
     [Category("Smoke")]
-    public async Task ClearAsync_ExistingCache_RemovesSuccessfully()
+    public async Task ClearAsync_ExistingCache_Removes_Storage_Keys_And_Reads_Miss()
     {
         // Arrange
         using var scope = CreateTestScope();
+        var testItems = CreateTestRaindropItems();
+        await scope
+            .Cache.SetAsync("videos", testItems, CancellationToken.None)
+            .ConfigureAwait(false);
 
         // Act
         await scope.Cache.ClearAsync("videos", CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        await Assert.That(scope.Logger.LogEntries.Any(entry => entry.Message.Contains("Cache clear successful"))).IsTrue();
+        using (Assert.Multiple())
+        {
+            await Assert
+                .That(scope.LocalStorageService_Mock.RemovedKeys.Contains("raindrop_cache_videos"))
+                .IsTrue();
+            await Assert
+                .That(
+                    scope.LocalStorageService_Mock.RemovedKeys.Contains(
+                        "raindrop_cache_videos_metadata"
+                    )
+                )
+                .IsTrue();
+        }
+
+        var result = await scope
+            .Cache.GetAsync("videos", CancellationToken.None)
+            .ConfigureAwait(false);
+        await Assert.That(result.Status).IsEqualTo(RaindropCacheStatus.Miss);
     }
 
     [Test]
@@ -28,12 +50,17 @@ public sealed partial class RaindropItemsCacheTests
     {
         // Arrange
         using var scope = CreateTestScope();
-        scope.LocalStorageService_Mock.SetupRemoveItemAsyncThrows("raindrop_cache_videos", new InvalidOperationException("Storage access denied"));
+        scope.LocalStorageService_Mock.SetupRemoveItemAsyncThrows(
+            "raindrop_cache_videos",
+            new InvalidOperationException("Storage access denied")
+        );
 
         var cache = scope.Cache;
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await cache.ClearAsync("videos").ConfigureAwait(false));
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await cache.ClearAsync("videos").ConfigureAwait(false)
+        );
         await Assert.That(exception).IsNotNull();
     }
 
@@ -49,7 +76,10 @@ public sealed partial class RaindropItemsCacheTests
         // Act - Compress and decompress empty dataset
         var compressedData = LZString.CompressToUTF16(jsonData);
         var decompressedData = LZString.DecompressFromUTF16(compressedData);
-        var deserializedItems = JsonSerializer.Deserialize<List<RaindropItem>>(decompressedData!, scope.JsonOptions);
+        var deserializedItems = JsonSerializer.Deserialize<List<RaindropItem>>(
+            decompressedData!,
+            scope.JsonOptions
+        );
 
         // Assert
         using (Assert.Multiple())
@@ -69,11 +99,19 @@ public sealed partial class RaindropItemsCacheTests
         var metadata = CreateTestMetadata();
 
         scope.LocalStorageService_Mock.SetupContainKeyAsync("raindrop_cache_videos_metadata", true);
-        scope.LocalStorageService_Mock.SetupGetItemAsync("raindrop_cache_videos_metadata", metadata);
-        scope.LocalStorageService_Mock.SetupGetItemAsync("raindrop_cache_videos", invalidCompressedData);
+        scope.LocalStorageService_Mock.SetupGetItemAsync(
+            "raindrop_cache_videos_metadata",
+            metadata
+        );
+        scope.LocalStorageService_Mock.SetupGetItemAsync(
+            "raindrop_cache_videos",
+            invalidCompressedData
+        );
 
         // Act
-        var result = await scope.Cache.GetAsync("videos", CancellationToken.None).ConfigureAwait(false);
+        var result = await scope
+            .Cache.GetAsync("videos", CancellationToken.None)
+            .ConfigureAwait(false);
 
         // Assert
         using (Assert.Multiple())
@@ -89,10 +127,15 @@ public sealed partial class RaindropItemsCacheTests
     {
         // Arrange
         using var scope = CreateTestScope();
-        scope.LocalStorageService_Mock.SetupContainKeyAsync("raindrop_cache_videos_metadata", false);
+        scope.LocalStorageService_Mock.SetupContainKeyAsync(
+            "raindrop_cache_videos_metadata",
+            false
+        );
 
         // Act
-        var result = await scope.Cache.GetAsync("videos", CancellationToken.None).ConfigureAwait(false);
+        var result = await scope
+            .Cache.GetAsync("videos", CancellationToken.None)
+            .ConfigureAwait(false);
 
         // Assert
         await Assert.That(result.Status).IsEqualTo(RaindropCacheStatus.Miss);
@@ -105,11 +148,19 @@ public sealed partial class RaindropItemsCacheTests
         using var scope = CreateTestScope();
         var metadata = CreateTestMetadata();
         scope.LocalStorageService_Mock.SetupContainKeyAsync("raindrop_cache_videos_metadata", true);
-        scope.LocalStorageService_Mock.SetupGetItemAsync("raindrop_cache_videos_metadata", metadata);
-        scope.LocalStorageService_Mock.SetupGetItemAsyncThrows<string>("raindrop_cache_videos", new InvalidOperationException("Storage access denied"));
+        scope.LocalStorageService_Mock.SetupGetItemAsync(
+            "raindrop_cache_videos_metadata",
+            metadata
+        );
+        scope.LocalStorageService_Mock.SetupGetItemAsyncThrows<string>(
+            "raindrop_cache_videos",
+            new InvalidOperationException("Storage access denied")
+        );
 
         // Act
-        var result = await scope.Cache.GetAsync("videos", CancellationToken.None).ConfigureAwait(false);
+        var result = await scope
+            .Cache.GetAsync("videos", CancellationToken.None)
+            .ConfigureAwait(false);
 
         // Assert
         using (Assert.Multiple())
@@ -124,10 +175,15 @@ public sealed partial class RaindropItemsCacheTests
     {
         // Arrange
         using var scope = CreateTestScope();
-        scope.LocalStorageService_Mock.SetupContainKeyAsyncThrows("raindrop_cache_videos_metadata", new InvalidOperationException("LocalStorage unavailable"));
+        scope.LocalStorageService_Mock.SetupContainKeyAsyncThrows(
+            "raindrop_cache_videos_metadata",
+            new InvalidOperationException("LocalStorage unavailable")
+        );
 
         // Act
-        var result = await scope.Cache.GetAsync("videos", CancellationToken.None).ConfigureAwait(false);
+        var result = await scope
+            .Cache.GetAsync("videos", CancellationToken.None)
+            .ConfigureAwait(false);
 
         // Assert
         using (Assert.Multiple())
@@ -143,11 +199,15 @@ public sealed partial class RaindropItemsCacheTests
         // Arrange
         using var scope = CreateTestScope();
         scope.LocalStorageService_Mock.SetupContainKeyAsync("raindrop_cache_videos_metadata", true);
-        scope.LocalStorageService_Mock.SetupGetItemAsyncThrows<RaindropCacheMetadata>("raindrop_cache_videos_metadata",
-            new InvalidOperationException("Storage quota exceeded"));
+        scope.LocalStorageService_Mock.SetupGetItemAsyncThrows<RaindropCacheMetadata>(
+            "raindrop_cache_videos_metadata",
+            new InvalidOperationException("Storage quota exceeded")
+        );
 
         // Act
-        var result = await scope.Cache.GetAsync("videos", CancellationToken.None).ConfigureAwait(false);
+        var result = await scope
+            .Cache.GetAsync("videos", CancellationToken.None)
+            .ConfigureAwait(false);
 
         // Assert
         using (Assert.Multiple())
@@ -164,10 +224,15 @@ public sealed partial class RaindropItemsCacheTests
         using var scope = CreateTestScope();
 
         scope.LocalStorageService_Mock.SetupContainKeyAsync("raindrop_cache_videos_metadata", true);
-        scope.LocalStorageService_Mock.SetupGetItemAsync<RaindropCacheMetadata>("raindrop_cache_videos_metadata", null);
+        scope.LocalStorageService_Mock.SetupGetItemAsync<RaindropCacheMetadata>(
+            "raindrop_cache_videos_metadata",
+            null
+        );
 
         // Act
-        var result = await scope.Cache.IsExpiredAsync("videos", CancellationToken.None).ConfigureAwait(false);
+        var result = await scope
+            .Cache.IsExpiredAsync("videos", CancellationToken.None)
+            .ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsTrue();
@@ -178,10 +243,15 @@ public sealed partial class RaindropItemsCacheTests
     {
         // Arrange
         using var scope = CreateTestScope();
-        scope.LocalStorageService_Mock.SetupContainKeyAsyncThrows("raindrop_cache_videos_metadata", new InvalidOperationException("Storage unavailable"));
+        scope.LocalStorageService_Mock.SetupContainKeyAsyncThrows(
+            "raindrop_cache_videos_metadata",
+            new InvalidOperationException("Storage unavailable")
+        );
 
         // Act
-        var result = await scope.Cache.IsExpiredAsync("videos", CancellationToken.None).ConfigureAwait(false);
+        var result = await scope
+            .Cache.IsExpiredAsync("videos", CancellationToken.None)
+            .ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsTrue();
@@ -193,30 +263,58 @@ public sealed partial class RaindropItemsCacheTests
         // Arrange
         using var scope = CreateTestScope();
         scope.LocalStorageService_Mock.SetupContainKeyAsync("raindrop_cache_videos_metadata", true);
-        scope.LocalStorageService_Mock.SetupGetItemAsyncThrows<RaindropCacheMetadata>("raindrop_cache_videos_metadata",
-            new InvalidOperationException("Storage corrupted"));
+        scope.LocalStorageService_Mock.SetupGetItemAsyncThrows<RaindropCacheMetadata>(
+            "raindrop_cache_videos_metadata",
+            new InvalidOperationException("Storage corrupted")
+        );
 
         // Act
-        var result = await scope.Cache.IsExpiredAsync("videos", CancellationToken.None).ConfigureAwait(false);
+        var result = await scope
+            .Cache.IsExpiredAsync("videos", CancellationToken.None)
+            .ConfigureAwait(false);
 
         // Assert
         await Assert.That(result).IsTrue();
     }
 
     [Test]
-    public async Task SetAsync_LocalStorageMetadataSetThrows_LogsWarningButContinues()
+    public async Task SetAsync_LocalStorageMetadataSetThrows_Writes_Data_And_Logs_Failure()
     {
         // Arrange
         using var scope = CreateTestScope();
         var testItems = CreateTestRaindropItems();
-        scope.LocalStorageService_Mock.SetupSetItemAsyncThrows<RaindropCacheMetadata>("raindrop_cache_videos_metadata",
-            new InvalidOperationException("Storage quota exceeded"));
+        scope.LocalStorageService_Mock.SetupSetItemAsyncThrows<RaindropCacheMetadata>(
+            "raindrop_cache_videos_metadata",
+            new InvalidOperationException("Storage quota exceeded")
+        );
 
         // Act
-        await scope.Cache.SetAsync("videos", testItems, CancellationToken.None).ConfigureAwait(false);
+        await scope
+            .Cache.SetAsync("videos", testItems, CancellationToken.None)
+            .ConfigureAwait(false);
 
         // Assert
-        await Assert.That(scope.Logger.LogEntries.Any(entry => entry.Message.Contains("Cache storage successful"))).IsTrue();
+        using (Assert.Multiple())
+        {
+            await Assert
+                .That(scope.LocalStorageService_Mock.SetKeys.Contains("raindrop_cache_videos"))
+                .IsTrue();
+            await Assert
+                .That(
+                    scope.LocalStorageService_Mock.SetKeys.Contains(
+                        "raindrop_cache_videos_metadata"
+                    )
+                )
+                .IsFalse();
+            await Assert
+                .That(
+                    scope.Logger.LogEntries.Any(entry =>
+                        entry.Level >= LogLevel.Warning
+                        && entry.Message.Contains("LocalStorage operation failed")
+                    )
+                )
+                .IsTrue();
+        }
     }
 
     [Test]
@@ -224,14 +322,18 @@ public sealed partial class RaindropItemsCacheTests
     {
         // Arrange
         using var scope = CreateTestScope();
-        scope.LocalStorageService_Mock.SetupSetItemAsyncThrows<string>("raindrop_cache_videos", new InvalidOperationException("Storage quota exceeded"));
+        scope.LocalStorageService_Mock.SetupSetItemAsyncThrows<string>(
+            "raindrop_cache_videos",
+            new InvalidOperationException("Storage quota exceeded")
+        );
 
         var cache = scope.Cache;
         var items = CreateTestRaindropItems();
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await cache.SetAsync("videos", items, CancellationToken.None).ConfigureAwait(false));
+            await cache.SetAsync("videos", items, CancellationToken.None).ConfigureAwait(false)
+        );
         await Assert.That(exception).IsNotNull();
     }
 }

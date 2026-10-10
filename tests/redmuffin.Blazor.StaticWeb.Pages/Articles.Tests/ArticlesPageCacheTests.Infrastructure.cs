@@ -1,4 +1,4 @@
-using Bunit;
+﻿using Bunit;
 using Microsoft.AspNetCore.Components.Web;
 using redmuffin.Blazor.StaticWeb.Common.Raindrop;
 using redmuffin.Blazor.StaticWeb.Pages.Articles;
@@ -15,11 +15,11 @@ public sealed partial class ArticlesPageCacheTests
         using var scope = CreateTestScope();
         var cachedArticles = new List<RaindropItem>
         {
-            CreateTestArticle("1", "Old Article", "Old excerpt")
+            CreateTestArticle("1", "Old Article", "Old excerpt"),
         };
         var freshArticles = new List<RaindropItem>
         {
-            CreateTestArticle("1", "Updated Article", "Updated excerpt")
+            CreateTestArticle("1", "Updated Article", "Updated excerpt"),
         };
 
         scope.Mediator_Mock.SetupLoad(cachedArticles, isFromCache: true);
@@ -31,30 +31,27 @@ public sealed partial class ArticlesPageCacheTests
         if (component.Instance.BackgroundRefreshTask is { } refreshTask)
             await refreshTask.ConfigureAwait(false);
 
-        // Act
-        // Wait for background refresh to show badge (data differs)
-        component.WaitForElement(".refresh-badge", TimeSpan.FromSeconds(5));
+        var refreshCallsBeforeClick = scope.Mediator_Mock.RefreshCallCount;
 
-        // First click — re-find badge in case background refresh caused re-render
+        // Act — first click refreshes once and hides the badge
         var refreshBadge = component.Find(".refresh-badge");
         await refreshBadge.ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
+        var refreshCallsAfterFirstClick = scope.Mediator_Mock.RefreshCallCount;
 
-        // Second click should be ignored — find fresh after any re-renders
+        // Second click attempt is a no-op because the badge is already hidden
         var badgesAfterClick = component.FindAll(".refresh-badge");
         if (badgesAfterClick.Count > 0)
-        {
             await badgesAfterClick[0].ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
-        }
 
-        // Wait for refresh to complete — badge goes back to Hidden after success
-        component.WaitForState(() =>
+        // Assert — exactly one refresh per click, and no refresh from the second click
+        using (Assert.Multiple())
         {
-            var badges = component.FindAll(".refresh-badge");
-            return badges.Count == 0;
-        }, TimeSpan.FromSeconds(5));
-
-        // Assert — badge no longer in DOM (Hidden)
-        await Assert.That(component.FindAll(".refresh-badge")).IsEmpty();
+            await Assert.That(refreshCallsAfterFirstClick).IsEqualTo(refreshCallsBeforeClick + 1);
+            await Assert
+                .That(scope.Mediator_Mock.RefreshCallCount)
+                .IsEqualTo(refreshCallsAfterFirstClick);
+            await Assert.That(component.FindAll(".refresh-badge")).IsEmpty();
+        }
     }
 
     [Test]
@@ -65,7 +62,7 @@ public sealed partial class ArticlesPageCacheTests
         var freshArticles = new List<RaindropItem>
         {
             CreateTestArticle("1", "Fresh Article 1", "Fresh excerpt 1"),
-            CreateTestArticle("2", "Fresh Article 2", "Fresh excerpt 2")
+            CreateTestArticle("2", "Fresh Article 2", "Fresh excerpt 2"),
         };
 
         scope.Mediator_Mock.SetupLoad(freshArticles, isFromCache: false);
@@ -96,7 +93,7 @@ public sealed partial class ArticlesPageCacheTests
         var cachedArticles = new List<RaindropItem>
         {
             CreateTestArticle("1", "Cached Article 1", "Cached excerpt 1"),
-            CreateTestArticle("2", "Cached Article 2", "Cached excerpt 2")
+            CreateTestArticle("2", "Cached Article 2", "Cached excerpt 2"),
         };
 
         scope.Mediator_Mock.SetupLoad(cachedArticles, isFromCache: true);
@@ -122,12 +119,12 @@ public sealed partial class ArticlesPageCacheTests
         using var scope = CreateTestScope();
         var cachedArticles = new List<RaindropItem>
         {
-            CreateTestArticle("1", "Old Article", "Old excerpt")
+            CreateTestArticle("1", "Old Article", "Old excerpt"),
         };
         var freshArticles = new List<RaindropItem>
         {
             CreateTestArticle("1", "Updated Article", "Updated excerpt"),
-            CreateTestArticle("2", "New Article", "New excerpt")
+            CreateTestArticle("2", "New Article", "New excerpt"),
         };
 
         scope.Mediator_Mock.SetupLoad(cachedArticles, isFromCache: true);

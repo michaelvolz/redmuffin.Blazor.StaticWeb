@@ -1,5 +1,4 @@
-using Bunit;
-using Microsoft.AspNetCore.Components.Web;
+﻿using Bunit;
 using ArticlesComponent = redmuffin.Blazor.StaticWeb.Pages.Articles.Articles;
 
 namespace redmuffin.Blazor.StaticWeb.Pages.Articles.Tests;
@@ -7,33 +6,6 @@ namespace redmuffin.Blazor.StaticWeb.Pages.Articles.Tests;
 [Category("Feature:Articles")]
 public sealed partial class ArticlesTests
 {
-    [Test]
-    [Category("Smoke")]
-    public async Task Articles_Should_Clear_Cache_On_Fetch()
-    {
-        // Arrange
-        using var scope = CreateTestScope();
-
-        // Act
-        var component = scope.BUnitContext.Render<ArticlesComponent>();
-
-        component.Render();
-
-        // Trigger another fetch (if there's a refresh button or similar)
-        var buttons = component.FindAll("button");
-        if (buttons.Count > 0) await buttons[0].ClickAsync(new MouseEventArgs()).ConfigureAwait(false);
-
-        // Assert
-        using (Assert.Multiple())
-        {
-            await Assert.That(component).IsNotNull();
-
-            // Component should handle cache clearing gracefully
-            var markup = component.Markup;
-            await Assert.That(markup).IsNotNull();
-        }
-    }
-
     [Test]
     [Category("Smoke")]
     public async Task Articles_Should_Display_Articles_When_Available()
@@ -52,8 +24,11 @@ public sealed partial class ArticlesTests
             await Assert.That(component).IsNotNull();
 
             // Should display article titles
-            var articleElements = component.FindAll(".article-item, .card, [data-testid='article']");
-            if (articleElements.Count > 0) await Assert.That(articleElements.Count).IsGreaterThan(0);
+            var articleElements = component.FindAll(
+                ".article-item, .card, [data-testid='article']"
+            );
+            if (articleElements.Count > 0)
+                await Assert.That(articleElements.Count).IsGreaterThan(0);
 
             // Check for article content in the rendered markup
             var markup = component.Markup;
@@ -66,28 +41,30 @@ public sealed partial class ArticlesTests
     {
         // Arrange
         using var scope = CreateTestScope();
+        var item = CreateTestItem(link: "https://example.com/missing-cover", cover: null!);
+        scope.Mediator_Mock.SetupLoad([item]);
+        scope.Mediator_Mock.SetupRefresh([item]);
 
         // Act
         var component = scope.BUnitContext.Render<ArticlesComponent>();
 
-        component.Render();
-
         // Assert
-        using (Assert.Multiple())
-        {
-            await Assert.That(component).IsNotNull();
-
-            // Should display fallback placeholders for missing images
-            var markup = component.Markup;
-            await Assert.That(markup).Contains("placeholder").Or.Contains("fallback").Or.Contains("img");
-        }
+        await Assert
+            .That(component.Find("img").GetAttribute("src"))
+            .IsEqualTo("/images/placeholder.svg");
     }
 
     [Test]
-    public async Task Articles_Should_Handle_Image_Load_Events()
+    public async Task Articles_Should_Populate_Image_Cache_On_Load()
     {
         // Arrange
-        using var scope = CreateTestScope().WithJSInterop(JSRuntimeMode.Loose);
+        using var scope = CreateTestScope();
+        var item = CreateTestItem(
+            link: "https://example.com/loaded-image",
+            cover: "https://example.com/cover.jpg"
+        );
+        scope.Mediator_Mock.SetupLoad([item]);
+        scope.Mediator_Mock.SetupRefresh([item]);
 
         // Act
         var component = scope.BUnitContext.Render<ArticlesComponent>();
@@ -96,43 +73,19 @@ public sealed partial class ArticlesTests
         if (component.Instance.BackgroundRefreshTask is { } refreshTask)
             await refreshTask.ConfigureAwait(false);
 
-        // Try to find and trigger image load events
-        var images = component.FindAll("img");
-        if (images.Count > 0)
-            // Simulate image load event
-            await images[0].TriggerEventAsync("onload", new EventArgs()).ConfigureAwait(false);
+        await component
+            .Find("img")
+            .TriggerEventAsync("onload", EventArgs.Empty)
+            .ConfigureAwait(false);
 
         // Assert
+        var loadCall = scope.ImagePlaceholderService.HandleImageLoadCalls.Single();
         using (Assert.Multiple())
         {
-            await Assert.That(component).IsNotNull();
-
-            // Component should handle image events gracefully
-            var markup = component.Markup;
-            await Assert.That(markup).IsNotNull();
-        }
-    }
-
-    [Test]
-    public async Task Articles_Should_Populate_Image_Cache_On_Load()
-    {
-        // Arrange
-        using var scope = CreateTestScope();
-
-        // Act
-        var component = scope.BUnitContext.Render<ArticlesComponent>();
-
-        component.Render();
-
-        // Assert
-        using (Assert.Multiple())
-        {
-            await Assert.That(component).IsNotNull();
-
-            // Verify that image validation cache service was called
-            // This is implicitly tested through the component rendering successfully
-            var markup = component.Markup;
-            await Assert.That(markup).IsNotNull();
+            await Assert.That(loadCall.ItemLink).IsEqualTo(item.Link);
+            await Assert.That(loadCall.ImageUrlCache[item.Link!]).IsEqualTo(item.Cover!);
+            await Assert.That(component.FindAll(".article-card")).Count().IsEqualTo(1);
+            await Assert.That(scope.ImageUrlResolver.PopulateCallCount).IsEqualTo(1);
         }
     }
 }

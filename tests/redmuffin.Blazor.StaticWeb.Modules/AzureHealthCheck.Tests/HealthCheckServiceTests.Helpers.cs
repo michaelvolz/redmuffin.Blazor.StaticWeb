@@ -1,12 +1,16 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using redmuffin.Blazor.StaticWeb.Tests.Support.Http;
+using redmuffin.Blazor.StaticWeb.Tests.Support.Logging;
 
 namespace redmuffin.Blazor.StaticWeb.Modules.AzureHealthCheck.Tests;
 
 [Category("Feature:ApiHealth")]
 public sealed partial class HealthCheckServiceTests
 {
-    private static TestScope CreateScope(Func<HttpRequestMessage, Task<HttpResponseMessage>> handler)
+    private static TestScope CreateScope(
+        Func<HttpRequestMessage, Task<HttpResponseMessage>> handler
+    )
     {
         return new TestScope(handler);
     }
@@ -31,43 +35,9 @@ public sealed partial class HealthCheckServiceTests
 
         public IReadOnlyList<LogEntry> LogEntries => _logger.LogEntries;
 
-        internal HealthCheckService Service => _serviceProvider.GetRequiredService<HealthCheckService>();
+        internal HealthCheckService Service =>
+            _serviceProvider.GetRequiredService<HealthCheckService>();
 
         public void Dispose() => _serviceProvider.Dispose();
-    }
-
-    private sealed class HttpClientFactory_Fake : IHttpClientFactory, IDisposable
-    {
-        private readonly ControlledHttpHandler_Fake _handler;
-
-        public HttpClientFactory_Fake(Func<HttpRequestMessage, Task<HttpResponseMessage>> handler)
-        {
-            _handler = new ControlledHttpHandler_Fake(handler);
-        }
-
-        public HttpClient CreateClient(string name)
-        {
-            var client = new HttpClient(_handler, disposeHandler: false);
-            client.BaseAddress = new Uri("http://localhost/");
-            return client;
-        }
-
-        public void Dispose() => _handler.Dispose();
-    }
-
-    public sealed class ControlledHttpHandler_Fake : HttpMessageHandler
-    {
-        private readonly Func<HttpRequestMessage, Task<HttpResponseMessage>> _handler;
-
-        public ControlledHttpHandler_Fake(Func<HttpRequestMessage, Task<HttpResponseMessage>> handler)
-        {
-            _handler = handler;
-        }
-
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            return _handler(request);
-        }
     }
 }
