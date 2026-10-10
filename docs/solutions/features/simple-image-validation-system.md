@@ -12,7 +12,11 @@ problem_type: feature
 > [Render-and-observe image URL resolution](../architecture-patterns/render-and-observe-image-url-resolution.md).
 > This doc is preserved as architectural intent — the WHY behind removing the
 > complexity holds, and the planned single-service design it describes was
-> never built.
+> never built. The render-and-observe decision also closes the consume-side
+> direction for good: no network image layer — probe or media proxy — will be
+> added for third-party cover assets. The planned image-proxy is publish-side
+> (it delivers the meta-tag data a page declares for sharing); see
+> [URL-unfurling image re-hosting](../architecture-patterns/url-unfurling-image-proxy-platform-pattern.md).
 
 ## Problem
 
@@ -44,7 +48,7 @@ interface ISimpleImageValidationService
 }
 ```
 
-**Organization:** Services live under `Features/Pages/ArticlesPage/Core/` (feature-local, not global `Services/` folder) — `Core/Services/SimpleImageValidationService.cs`, `Core/Models/ImageValidationResult.cs`, `Core/Templates/PlaceholderTemplate.cs`.
+**Organization (planned layout, never built):** Services live under `Features/Pages/ArticlesPage/Core/` (feature-local, not a global `Services/` folder) — `Core/Services/SimpleImageValidationService.cs`, `Core/Models/ImageValidationResult.cs`, `Core/Templates/PlaceholderTemplate.cs`.
 
 **Target outcomes:** 60%+ code reduction, initial page load under 500ms maintained, consistent behavior across page visits, understandable by new developers in under 30 minutes.
 

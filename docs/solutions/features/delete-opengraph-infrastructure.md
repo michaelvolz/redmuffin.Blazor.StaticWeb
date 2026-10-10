@@ -57,3 +57,4 @@ Systematic removal in six phases:
 - Before implementing infrastructure for a feature, confirm the UI integration exists or is planned
 - Regularly audit the codebase for dead code — services registered in DI but never consumed
 - Use incremental removal with continuous testing rather than bulk deletion
+- 2026-10-10 follow-up: the removal is not a permanent decision. The platform-standard consumer for this fetch layer is the URL-unfurling image-proxy ([URL-unfurling image re-hosting](../architecture-patterns/url-unfurling-image-proxy-platform-pattern.md)), and its rebuild is planned. The deleted-file inventory and commit hashes above are the recall path.

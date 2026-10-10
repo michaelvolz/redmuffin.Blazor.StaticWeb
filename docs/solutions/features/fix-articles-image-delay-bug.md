@@ -5,7 +5,15 @@ tags: [image, performance, cache, bug, wasm]
 problem_type: bug
 ---
 
-> **Current (2026-06-08):** Image loading now flows through RaindropPageOrchestrator.FetchAsync and IImageUrlResolver. The PopulateImageUrlCacheAsync/SemaphoreSlim pattern described here has been superseded.
+> **Current (2026-10-09):** Image loading no longer validates at all: the
+> pages call `IImageUrlResolver.PopulateImageUrlCacheAsync` — a synchronous
+> mapping with no network access — and the `<img>` load/error events decide
+> renderability. See
+> [Render-and-observe image URL resolution](../architecture-patterns/render-and-observe-image-url-resolution.md).
+> The background HTTP HEAD validation described here was removed with the
+> whole validation chain (commit `cdfbdbed`), and `RaindropPageOrchestrator`,
+> which an earlier banner named as the flow's owner, was deleted in the
+> Mediator cut-over. The body below records the 2026-04 two-phase fix.
 
 ## Problem
 

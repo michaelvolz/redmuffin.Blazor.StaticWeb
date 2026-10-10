@@ -5,7 +5,7 @@ tags: [blazor, azure-functions, caching, performance]
 problem_type: architecture
 ---
 
-> **Current (2026-06-08):** Cache infrastructure (RaindropItemsCache, PrunedRaindropItem) still exists. Page integration now uses RaindropPageOrchestrator (see composition-over-inheritance-orchestrator-pattern.md) — the page-level wiring documented here has been superseded.
+> **Current (2026-10-10):** Cache infrastructure (RaindropItemsCache, PrunedRaindropItem) still exists. The page-level wiring documented here used RaindropPageOrchestrator, which was deleted in the Mediator cut-over; the pages (Articles.razor.cs, Videos.razor.cs) now populate RaindropPageContext.ImageUrlCache by calling IImageUrlResolver directly (see composition-over-inheritance-orchestrator-pattern.md for the deletion record and render-and-observe-image-url-resolution.md for the current image flow).
 
 ## Problem
 
@@ -33,7 +33,7 @@ No caching infrastructure existed. `IRaindropAPI` fetched fresh data from Azure 
    - Compare timestamps; if API data is newer, update cache and show a refresh badge
    - User can click badge to swap displayed data to fresh version with smooth transition
 
-**Refresh badge** — Simple reusable `RefreshBadge.razor` component (not a complex helper class). States: hidden, visible, loading, error. Uses Foundation styling with SCSS partial under `Features/Common/Components/`.
+**Refresh badge** — Simple reusable `RefreshBadge.razor` component (not a complex helper class). States: hidden, visible, loading, error. Uses Foundation styling with an SCSS partial; the original home was the host feature's shared component folder (historical — `RefreshBadge.razor` now lives under `src/redmuffin.Blazor.StaticWeb.Components/Raindrop/`).
 
 **Key design decisions:**
 

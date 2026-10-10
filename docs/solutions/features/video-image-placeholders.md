@@ -11,9 +11,11 @@ problem_type: feature
 > [Render-and-observe image URL resolution](../architecture-patterns/render-and-observe-image-url-resolution.md)
 > — the resolver fills the URL cache with no network access, and the `<img>`
 > load/error events decide renderability. What survives:
-> IImagePlaceholderService (Common/ImagePlaceholder/), PlaceholderGenerationService
-> and SvgPlaceholderTemplate (Core/ImagePlaceholder/). The body below records
-> the 2025 extraction.
+> IImagePlaceholderService
+> (src/redmuffin.Blazor.StaticWeb.Common/ImagePlaceholder/),
+> PlaceholderGenerationService and SvgPlaceholderTemplate
+> (src/redmuffin.Blazor.StaticWeb/Core/ImagePlaceholder/). The body below
+> records the 2025 extraction.
 
 ## Problem
 
@@ -25,7 +27,7 @@ Articles page had image placeholder logic (fallback SVGs, shimmer effects, failu
 
 ## Solution
 
-**Extract shared image placeholder services** into `Core/ImagePlaceholder/`, then consume them from both Articles and Videos pages:
+**Extract shared image placeholder services** into `src/redmuffin.Blazor.StaticWeb/Core/ImagePlaceholder/`, then consume them from both Articles and Videos pages:
 
 ```
 Core/ImagePlaceholder/
@@ -54,6 +56,13 @@ Core/ImagePlaceholder/
 **Videos page integration:** Added `IImagePlaceholderService` and `ISimpleImageValidationService` injection, an `_imageUrlCache` dictionary, and wrapper methods that delegate to services. Template uses `@onload` / `@onerror` handlers with shimmer effects, identical to Articles page behavior.
 
 **Failure reasons displayed in placeholders:** "CORS blocked", "Image not found", "Network error", "Invalid format", "Image not available".
+
+> **Current (2026-10-09):** After the validation retirement, the only reason
+> inputs are `NO_IMAGE` (no cover) and `LOAD_FAILED` (the `<img>` error
+> event), and both map to "Image not available". The four probe-era strings
+> above remain in `SvgPlaceholderTemplate.MapFailureReasonToDisplayText` as
+> unreachable branches. See
+> [Render-and-observe image URL resolution](../architecture-patterns/render-and-observe-image-url-resolution.md).
 
 ## Prevention
 
