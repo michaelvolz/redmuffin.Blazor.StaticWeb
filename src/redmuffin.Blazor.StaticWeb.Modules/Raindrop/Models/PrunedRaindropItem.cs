@@ -1,6 +1,5 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using redmuffin.Blazor.StaticWeb.Common.Validation;
 
 namespace redmuffin.Blazor.StaticWeb.Modules.Raindrop.Models;
 
@@ -14,7 +13,6 @@ public sealed class PrunedRaindropItem
     ///     Gets or sets the unique identifier for the raindrop item.
     /// </summary>
     [JsonPropertyName("i")]
-    [Range(1, long.MaxValue, ErrorMessage = "ID must be a positive value.")]
     public long Id { get; set; }
 
     /// <summary>
@@ -22,7 +20,6 @@ public sealed class PrunedRaindropItem
     /// </summary>
     [JsonPropertyName("l")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    [AbsoluteUrl(ErrorMessage = "Link must be a valid absolute URI.")]
     public string? Link { get; set; }
 
     /// <summary>
@@ -30,7 +27,6 @@ public sealed class PrunedRaindropItem
     /// </summary>
     [JsonPropertyName("t")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    [MaxLength(500, ErrorMessage = "Title cannot exceed 500 characters.")]
     public string? Title { get; set; }
 
     /// <summary>
@@ -38,7 +34,6 @@ public sealed class PrunedRaindropItem
     /// </summary>
     [JsonPropertyName("e")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    [MaxLength(2000, ErrorMessage = "Excerpt cannot exceed 2000 characters.")]
     public string? Excerpt { get; set; }
 
     /// <summary>
@@ -46,15 +41,13 @@ public sealed class PrunedRaindropItem
     /// </summary>
     [JsonPropertyName("c")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    [AbsoluteUrl(ErrorMessage = "Cover must be a valid absolute URI.")]
     public string? Cover { get; set; }
 
     /// <summary>
     ///     Validates the integrity of the pruned raindrop item data.
     /// </summary>
     /// <returns>True if the item data is valid; otherwise, false.</returns>
-    public bool IsValid() =>
-        Validator.TryValidateObject(this, new(this), null, validateAllProperties: true);
+    public bool IsValid() => GetValidationErrorOrNull() is null;
 
     /// <summary>
     ///     Validates the integrity of the pruned raindrop item data and throws an exception if invalid.
@@ -62,8 +55,30 @@ public sealed class PrunedRaindropItem
     /// <exception cref="ValidationException">Thrown when the item data is invalid.</exception>
     public void ValidateOrThrow()
     {
-        var results = new List<ValidationResult>();
-        if (!Validator.TryValidateObject(this, new(this), results, validateAllProperties: true))
-            throw new ValidationException(results[0], null, this);
+        var error = GetValidationErrorOrNull();
+        if (error is not null)
+            throw new ValidationException(error);
+    }
+
+    // Explicit validation: the DataAnnotations Validator path is reflection-based and
+    // reports IL2026 on .NET 10 trimmed publishes.
+    private string? GetValidationErrorOrNull()
+    {
+        if (Id < 1)
+            return "ID must be a positive value.";
+
+        if (Title is { Length: > 500 })
+            return "Title cannot exceed 500 characters.";
+
+        if (Excerpt is { Length: > 2000 })
+            return "Excerpt cannot exceed 2000 characters.";
+
+        if (Link is not null && !Uri.TryCreate(Link, UriKind.Absolute, out _))
+            return "Link must be a valid absolute URI.";
+
+        if (Cover is not null && !Uri.TryCreate(Cover, UriKind.Absolute, out _))
+            return "Cover must be a valid absolute URI.";
+
+        return null;
     }
 }
