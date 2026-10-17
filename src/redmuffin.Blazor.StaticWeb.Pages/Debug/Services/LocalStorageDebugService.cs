@@ -1,5 +1,5 @@
 ﻿using System.Globalization;
-using System.Text.Json;
+using System.Text.Json.Nodes;
 using Blazored.LocalStorage;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -184,19 +184,17 @@ public partial class LocalStorageDebugService
         {
             var testKey =
                 "__json_test_" + DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
-            var testObject = new
+            // JsonObject keeps the roundtrip test trim-safe: anonymous-type
+            // serialization is reflection-based and fails IL2026 on .NET 10.
+            var testObject = new JsonObject
             {
-                Name = "Test",
-                Value = 123,
-                Date = DateTime.UtcNow,
+                ["Name"] = JsonValue.Create("Test"),
+                ["Value"] = JsonValue.Create(123),
+                ["Date"] = JsonValue.Create(DateTime.UtcNow),
             };
 
             await _localStorage
-                .SetItemAsStringAsync(
-                    testKey,
-                    JsonSerializer.Serialize(testObject),
-                    cancellationToken
-                )
+                .SetItemAsStringAsync(testKey, testObject.ToJsonString(), cancellationToken)
                 .ConfigureAwait(false);
             var retrieved = await _localStorage
                 .GetItemAsStringAsync(testKey, cancellationToken)
