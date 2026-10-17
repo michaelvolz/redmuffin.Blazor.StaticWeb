@@ -45,10 +45,22 @@ public sealed partial class HomeTests
         // Arrange - render, interact with, and dispose components in their own scopes
         var weakReferences = RenderInteractAndDisposeComponents(5);
 
-        // Act - force collection of the disposed components
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
+        // Act - collect in bounded rounds. The GC reports live stack slots
+        // conservatively, so one pass may still see a stale slot from a
+        // returned frame and keep a fully unreachable component alive.
+        // A genuinely rooted component still fails the assertion below.
+        const int maxCollectRounds = 5;
+        for (
+            var round = 0;
+            round < maxCollectRounds
+                && weakReferences.Any(reference => reference.TryGetTarget(out _));
+            round++
+        )
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+        }
 
         // Assert - every disposed component is collectable and repeated disposal did not throw
         await Assert.That(weakReferences.All(reference => !reference.TryGetTarget(out _))).IsTrue();
