@@ -5,7 +5,7 @@
   "dotnet.server.waitForDebugger": false,
   "dotnet.tests.useUtmps": true,
   "azureFunctions.projectSubpath": "src/redmuffin.Blazor.StaticWeb.Api",
-  "azureFunctions.deploySubpath": "src/redmuffin.Blazor.StaticWeb.Api/bin/Release/net9.0/publish",
+  "azureFunctions.deploySubpath": "src/redmuffin.Blazor.StaticWeb.Api/bin/Release/net10.0/publish",
   "azureFunctions.projectLanguage": "C#",
   "azureFunctions.projectRuntime": "~4",
   "azureFunctions.preDeployTask": "publish (functions)",
@@ -23,5 +23,5 @@
   "remote.containers.copyGitCredentials": true,
   "remote.containers.useDockerSdkFromHost": false,
   "security.workspace.trust.enabled": true,
-  "security.workspace.trust.startupPrompt": "never",
+  "security.workspace.trust.startupPrompt": "never"
 }

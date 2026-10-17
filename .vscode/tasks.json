@@ -197,7 +197,7 @@
       "type": "shell",
       "dependsOn": "build (functions)",
       "options": {
-        "cwd": "${workspaceFolder}/src/redmuffin.Blazor.StaticWeb.Api/bin/Debug/net9.0"
+        "cwd": "${workspaceFolder}/src/redmuffin.Blazor.StaticWeb.Api/bin/Debug/net10.0"
       },
       "command": "func host start",
       "isBackground": true,
