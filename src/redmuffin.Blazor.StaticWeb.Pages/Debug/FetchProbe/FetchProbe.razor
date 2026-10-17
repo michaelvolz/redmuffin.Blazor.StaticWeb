@@ -1,0 +1,193 @@
+@page "/debug/fetchprobe"
+@namespace redmuffin.Blazor.StaticWeb.Pages.Debug.FetchProbe
+
+<PageTitle>Fetch Probe - Programming & AI Article Hub</PageTitle>
+
+<DebugNavigation/>
+
+<div class="grid-container">
+    <div class="grid-x grid-margin-x">
+        <div class="cell">
+            <h1>Fetch Probe</h1>
+
+            @if (_isRunning)
+            {
+                <div class="callout secondary">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+                        <span>Fetching the X cover URL from the Azure Functions host...</span>
+                    </div>
+                </div>
+            }
+            else if (_hasError)
+            {
+                <div class="callout alert">
+                    <h4><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Probe Call Failed</h4>
+                    <p>
+                        The probe call failed: <strong>@_errorMessage</strong>
+                    </p>
+                    <p>
+                        The probe endpoint lives in the Azure Functions API. It answers only when
+                        the API is deployed and reachable.
+                    </p>
+                    <div class="button-group">
+                        <button @onclick="RunProbeAsync" class="button warning">
+                            <i class="fas fa-retry" aria-hidden="true"></i> Try Again
+                        </button>
+                    </div>
+                </div>
+            }
+            else if (HasResult)
+            {
+                @if (_reached == true && _apiError is null)
+                {
+                    <div class="callout success">
+                        <h4><i class="fas fa-check-circle" aria-hidden="true"></i> Fetch Reached the Origin</h4>
+                    </div>
+                }
+                else
+                {
+                    <div class="callout warning">
+                        <h4><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Fetch Did Not Complete</h4>
+                    </div>
+                }
+
+                <table>
+                    <tbody>
+                        @if (_statusCode is not null)
+                        {
+                            <tr><th>Status code</th><td>@_statusCode</td></tr>
+                        }
+                        @if (_contentType is not null)
+                        {
+                            <tr><th>Content type</th><td>@_contentType</td></tr>
+                        }
+                        @if (_contentLength is not null)
+                        {
+                            <tr><th>Content length</th><td>@_contentLength bytes</td></tr>
+                        }
+                        @if (_bodyRead is not null)
+                        {
+                            <tr><th>Body read</th><td>@(_bodyRead == true ? "yes" : "no")</td></tr>
+                        }
+                        @if (_byteCount is not null)
+                        {
+                            <tr><th>Bytes read</th><td>@_byteCount</td></tr>
+                        }
+                        @if (_reason is not null)
+                        {
+                            <tr><th>Reason</th><td>@_reason</td></tr>
+                        }
+                        @if (_apiError is not null)
+                        {
+                            <tr><th>Error</th><td>@_apiError</td></tr>
+                        }
+                    </tbody>
+                </table>
+
+                <div class="button-group">
+                    <button @onclick="RunProbeAsync" class="button secondary">
+                        <i class="fas fa-redo" aria-hidden="true"></i> Run Again
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="callout secondary">
+                    <h4><i class="fas fa-network-wired" aria-hidden="true"></i> Run the Fetch Probe</h4>
+                    <p>
+                        Calls the temporary probe function in the Azure Functions API. The probe
+                        fetches the X cover URL from inside the Functions host and reports what it
+                        sees: reachability, status, content type, length, and whether the body reads.
+                    </p>
+                    <p>
+                        This answers the hosting question in the cover thumbnail re-hosting spec.
+                    </p>
+                    <div class="button-group">
+                        <button @onclick="RunProbeAsync" class="button primary">
+                            <i class="fas fa-play" aria-hidden="true"></i> Run Probe
+                        </button>
+                    </div>
+                </div>
+            }
+
+            <style>
+    .loading-spinner {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 16px;
+    }
+
+    .loading-spinner i {
+        font-size: 20px;
+        color: #007bff;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .callout {
+        padding: 20px;
+        margin: 20px 0;
+        border-left: 4px solid;
+        border-radius: 4px;
+    }
+
+    .callout.success {
+        background-color: #d4edda;
+        color: #155724;
+        border-color: #28a745;
+    }
+
+    .callout.warning {
+        background-color: #fff3cd;
+        color: #856404;
+        border-color: #ffc107;
+    }
+
+    .callout.alert {
+        background-color: #f8d7da;
+        color: #721c24;
+        border-color: #dc3545;
+    }
+
+    .callout.secondary {
+        background-color: #e2e3e5;
+        color: #383d41;
+        border-color: #6c757d;
+    }
+
+    .callout h4 {
+        margin-top: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    table {
+        margin: 20px 0;
+        border-collapse: collapse;
+        width: 100%;
+        max-width: 640px;
+    }
+
+    table th,
+    table td {
+        border: 1px solid #dee2e6;
+        padding: 8px 12px;
+        text-align: left;
+        word-break: break-word;
+    }
+
+    table th {
+        background-color: #f8f9fa;
+        width: 180px;
+    }
+</style>
+        </div>
+    </div>
+</div>

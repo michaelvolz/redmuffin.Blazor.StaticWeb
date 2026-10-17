@@ -1,5 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
-
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -7,15 +6,14 @@
     <RootNamespace>redmuffin.Blazor.StaticWeb.Pages.Debug</RootNamespace>
     <AddRazorSupportForMvc>false</AddRazorSupportForMvc>
   </PropertyGroup>
-
   <ItemGroup>
     <SupportedPlatform Include="browser" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
   </ItemGroup>
-
+  <ItemGroup>
+  </ItemGroup>
 </Project>
