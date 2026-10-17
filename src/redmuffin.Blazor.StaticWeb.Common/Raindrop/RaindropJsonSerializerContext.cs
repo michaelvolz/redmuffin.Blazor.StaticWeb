@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace redmuffin.Blazor.StaticWeb.Common.Raindrop;
@@ -8,6 +8,7 @@ namespace redmuffin.Blazor.StaticWeb.Common.Raindrop;
 /// </summary>
 [JsonSerializable(typeof(List<RaindropItem>), TypeInfoPropertyName = "RaindropItemList")]
 [JsonSerializable(typeof(RaindropItem))]
+[JsonSerializable(typeof(RaindropItem[]))]
 [JsonSerializable(typeof(UserReference))]
 [JsonSerializable(typeof(CreatorReference))]
 [JsonSerializable(typeof(MediaItem))]
@@ -23,19 +24,36 @@ namespace redmuffin.Blazor.StaticWeb.Common.Raindrop;
 [JsonSerializable(typeof(DateTime))]
 public partial class RaindropJsonSerializerContext : JsonSerializerContext
 {
-    public static JsonSerializerOptions DefaultOptions { get; } = CreateOptions();
+    // Lazy: user field initializers run before the generated Default field is assigned,
+    // so eager creation once captured a null resolver.
+    private static readonly Lazy<JsonSerializerOptions> LazyDefaultOptions = new(() =>
+        CreateOptions()
+    );
 
-    public static JsonSerializerOptions StrictOptions { get; } = CreateOptions(
-        allowTrailingCommas: false,
-        commentHandling: JsonCommentHandling.Disallow,
-        caseInsensitive: false,
-        numberHandling: JsonNumberHandling.Strict,
-        ignoreCondition: JsonIgnoreCondition.Never,
-        unmappedHandling: JsonUnmappedMemberHandling.Disallow);
+    private static readonly Lazy<JsonSerializerOptions> LazyStrictOptions = new(() =>
+        CreateOptions(
+            allowTrailingCommas: false,
+            commentHandling: JsonCommentHandling.Disallow,
+            caseInsensitive: false,
+            numberHandling: JsonNumberHandling.Strict,
+            ignoreCondition: JsonIgnoreCondition.Never,
+            unmappedHandling: JsonUnmappedMemberHandling.Disallow
+        )
+    );
 
-    public static JsonSerializerOptions LenientOptions { get; } = CreateOptions(
-        numberHandling: JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.AllowNamedFloatingPointLiterals,
-        indented: true);
+    private static readonly Lazy<JsonSerializerOptions> LazyLenientOptions = new(() =>
+        CreateOptions(
+            numberHandling: JsonNumberHandling.AllowReadingFromString
+                | JsonNumberHandling.AllowNamedFloatingPointLiterals,
+            indented: true
+        )
+    );
+
+    public static JsonSerializerOptions DefaultOptions => LazyDefaultOptions.Value;
+
+    public static JsonSerializerOptions StrictOptions => LazyStrictOptions.Value;
+
+    public static JsonSerializerOptions LenientOptions => LazyLenientOptions.Value;
 
     private static JsonSerializerOptions CreateOptions(
         bool allowTrailingCommas = true,
@@ -44,7 +62,8 @@ public partial class RaindropJsonSerializerContext : JsonSerializerContext
         JsonNumberHandling numberHandling = JsonNumberHandling.AllowReadingFromString,
         JsonIgnoreCondition ignoreCondition = JsonIgnoreCondition.WhenWritingNull,
         JsonUnmappedMemberHandling unmappedHandling = JsonUnmappedMemberHandling.Skip,
-        bool indented = false)
+        bool indented = false
+    )
     {
         return new()
         {
@@ -56,7 +75,7 @@ public partial class RaindropJsonSerializerContext : JsonSerializerContext
             NumberHandling = numberHandling,
             DefaultIgnoreCondition = ignoreCondition,
             UnmappedMemberHandling = unmappedHandling,
-            TypeInfoResolver = Default
+            TypeInfoResolver = Default,
         };
     }
 }
