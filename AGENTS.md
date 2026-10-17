@@ -53,15 +53,15 @@ errors. LSP is a fast pre-check, not a substitute for the build+test gate.
 **Impact test** — ask whether the change can affect compilation, test
 outcomes, or published output. Matching a file extension is not enough.
 
-| Category      | Extensions                                 | Rationale                                           |
-| ------------- | ------------------------------------------ | --------------------------------------------------- |
-| C# source     | `.cs`                                      | Compilation, test logic, analyzers                  |
-| Razor markup  | `.razor`                                   | Compilation, bUnit selectors, rendering             |
-| Project/build | `.csproj`, `.props`, `.targets`            | Compilation, package resolution                     |
-| Solution      | `.slnx`                                    | Project discovery                                   |
-| SCSS          | `.scss`                                    | CSS output affects bUnit DOM assertions             |
-| NuGet         | `Directory.Packages.props`, `nuget.config` | Package resolution                                  |
-| Workflow      | `.github/workflows/*.yml`                  | CI pipeline — validate with `act push`, never build |
+| Category      | Extensions                                 | Rationale                                                  |
+| ------------- | ------------------------------------------ | ---------------------------------------------------------- |
+| C# source     | `.cs`                                      | Compilation, test logic, analyzers                         |
+| Razor markup  | `.razor`                                   | Compilation, bUnit selectors, rendering                    |
+| Project/build | `.csproj`, `.props`, `.targets`            | Compilation, package resolution                            |
+| Solution      | `.slnx`                                    | Project discovery                                          |
+| SCSS          | `.scss`                                    | CSS output affects bUnit DOM assertions                    |
+| NuGet         | `Directory.Packages.props`, `nuget.config` | Package resolution                                         |
+| Workflow      | `.github/workflows/*.yml`                  | CI pipeline — validate with `wrkflw validate`, never build |
 
 **Never run `dotnet build` for `scripts/**` changes.** CI and MSBuild
 never invoke `scripts/` (pipeline-neutral). Local helper scripts only.
@@ -104,8 +104,7 @@ Q1: Can this change break dotnet build, test outcomes, or published output?
 
 Q2: Did the change include workflow files?
     ├─ YES → Never run dotnet build. Validate with:
-    │        `wrkflw validate .github/workflows/<file>.yml`
-    │        then `act push`. Then commit.
+    │        `wrkflw validate .github/workflows/<file>.yml`. Then commit.
     └─ NO  → Commit.
 ```
 
@@ -128,7 +127,6 @@ Q2: Did the change include workflow files?
   AST-structure queries — load `ast-grep` and `rm-coding-ast-grep-lsp-companion`.
 - **Browser automation**: Load `rm-agent-browser-companion` (co-loads upstream `agent-browser`) for live-site QA, snapshots, screenshots, navigation, network, vitals, and a11y checks on redmuffin.net or local dev. Never use bUnit for live-app QA. See `rm-dev-environment` for site startup; `rm-dev-shutdown` for cleanup.
 - **Structural code search**: Load `rm-coding-ast-grep-lsp-companion` (co-loads `ast-grep`) for syntax-shape queries across `.cs` files.
-- **Local workflow testing (`act`)**: Never push a workflow change without running the full pipeline locally first. `act push -W .github/workflows/azure-static-web-apps-lively-cliff-0945be603.yml -P ubuntu-latest=dotnet-sdk-node:10.0 --pull=false`. Full procedure in `rm-coding-ci-github-actions-companion` skill.
 - **Quality Gates — Recursive Loop**: Gates are not one-shot. Run → fix worst violations → re-run → repeat until zero violations across all gates. See `rm-coding-code-cleanup-orchestrator` for the full principle.
 - **Cleanup Sessions**: Load `rm-coding-code-cleanup-orchestrator` to activate the cleanup skills in one call.
 - **Code Knowledge Graph (code-review-graph)**: Use for `file_summary`, `children_of`, and `large_functions` queries only. Never rely on `callers_of`, `callees_of`, `tests_for`, `inheritors_of`, `importers_of`, `impact`, or `security scan` for C# — the Tree-sitter C# parser produces incomplete semantic edges (no IMPLEMENTS, no TESTED_BY, no reliable cross-file calls). Use LSP tools for call graphs and references, quality gates for security, and `dotnet test` for test discovery.

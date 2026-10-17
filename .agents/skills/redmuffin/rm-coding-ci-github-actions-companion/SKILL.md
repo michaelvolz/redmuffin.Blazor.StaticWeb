@@ -140,8 +140,9 @@ Every requirement must be satisfied by every workflow change in this repo.
 
 ## Local testing
 
-Validate with `act` (nektos/act) before pushing. Docker image (build
-once, never commit a `Dockerfile`):
+Optional local pipeline runs with `act` (nektos/act). Pushing goes through
+the GitHub pipeline only. Docker image (build once, never commit a
+`Dockerfile`):
 
 ```bash
 cat <<'DOCKERFILE' > /tmp/Dockerfile.dotnet-node
