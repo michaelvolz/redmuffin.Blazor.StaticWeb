@@ -135,8 +135,8 @@ Q2: Did the change include workflow files?
 
 ## STACK & STRUCTURE
 
-- **Technology Stack**: .NET 10 SDK, Blazor WebAssembly (.NET 10), Azure Functions (isolated worker, .NET 9), TUnit testing framework, SCSS.
-- **SDK vs Target**: The API project targets `net9.0` for Azure SWA Functions compatibility. The Blazor WASM frontend and SwaLauncher target `net10.0`. The .NET 10 SDK provides build tooling, Roslyn, and MSBuild for both frameworks. When SWA adds .NET 10 Functions support, updating the API target is a one-line change per `.csproj`.
+- **Technology Stack**: .NET 10 SDK, Blazor WebAssembly (.NET 10), Azure Functions (isolated worker, .NET 10), TUnit testing framework, SCSS.
+- **SDK vs Target**: The whole solution targets `net10.0`. SWA managed functions support `dotnet-isolated:10.0` (verified 2026-10-17, `learn.microsoft.com/en-us/azure/static-web-apps/languages-runtimes`, page updated 2026-10-05). The `staticwebapp.config.json` `apiRuntime`, the `swa-cli.config.json` `apiVersion`, and the workflow's `api-version` must move in the same change as the Api target framework.
 - **Knowledge Base**: `docs/solutions/` — searchable archive of past solutions, bugs, best practices, and workflow patterns. All entries use YAML frontmatter with `module`, `tags`, and `problem_type` fields.
 - **Key Paths**:
   - `src/` — Application projects (Blazor frontend, Azure Functions API)

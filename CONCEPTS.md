@@ -68,7 +68,7 @@ Delivery model for ConfigureAwaitFixer: harness post-edit hooks invoke a publish
 
 ## Dual TFM stack
 
-Intentional multi-target layout for this solution: the Azure Static Web Apps Functions API remains on **net9.0** until the host supports .NET 10 Functions, while the Blazor WASM app, launcher, and most tools target **net10.0**. Shared libraries used by the API stay on net9. Package *versions* (for example Microsoft.Extensions on the 10.x line) can still apply to net9 projects when packages multi-target; dual TFM alone is not a reason to leave sibling packages in the same family on mismatched patches.
+Retired multi-target layout: the Azure Static Web Apps Functions API ran on **net9.0** until SWA supported .NET 10 managed Functions, while the Blazor WASM app, launcher, and most tools ran on **net10.0**. Every project now targets **net10.0**, and the API is served by the `dotnet-isolated:10.0` managed Functions runtime. The dated solution records that reason about dual-TFM package policy stay valid for the era they describe.
 
 ## Shared Microsoft version property
 

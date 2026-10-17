@@ -49,7 +49,7 @@ cleanup is unreliable (orphaned previews when deploy finishes after the
 close job runs, Issue #898); never skip this job.
 
 `api-version` sets the Azure Functions runtime version for the managed
-API. The API project targets `net9.0`, so the value `9.0` matches the
+API. The API project targets `net10.0`, so the value `10.0` matches the
 runtime.
 
 ```yaml
@@ -60,7 +60,7 @@ runtime.
     app-location: ${{ env.APP_LOCATION }}/bin/Release/publish/wwwroot
     api-location: ${{ env.API_LOCATION }}/bin/Release/publish
     api-language: dotnetisolated
-    api-version: 9.0
+    api-version: 10.0
     environment-name: production
     deployment-token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
 ```
@@ -93,11 +93,11 @@ Never run deploy-only steps on PR events — gate on
 
 ## Cache strategy
 
-| Cache         | Key                                                     | Why                                                                |
-| ------------- | ------------------------------------------------------- | ------------------------------------------------------------------ |
-| NuGet         | `nuget-${{ hashFiles('**/Directory.Packages.props') }}` | `Directory.Packages.props` is the single source of package versions. |
-| WASM workload | Skip install if `dotnet workload list \| grep -q wasm-tools` | The workload is present on 95%+ of runs (ubuntu-24.04 ships it). |
-| Deploy binary | Handled automatically by `shibayan/swa-deploy@v1`      | The action caches `~/.swa/deploy` internally.                      |
+| Cache         | Key                                                          | Why                                                                  |
+| ------------- | ------------------------------------------------------------ | -------------------------------------------------------------------- |
+| NuGet         | `nuget-${{ hashFiles('**/Directory.Packages.props') }}`      | `Directory.Packages.props` is the single source of package versions. |
+| WASM workload | Skip install if `dotnet workload list \| grep -q wasm-tools` | The workload is present on 95%+ of runs (ubuntu-24.04 ships it).     |
+| Deploy binary | Handled automatically by `shibayan/swa-deploy@v1`            | The action caches `~/.swa/deploy` internally.                        |
 
 Never cache on `packages.lock.json` — lock files were removed from the
 repo. Never use `setup-dotnet` or `setup-node`: the Ubuntu 24.04 runner

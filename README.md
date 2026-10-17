@@ -14,10 +14,10 @@ AI assistants should refer to .github/copilot-instructions.md for technical guid
 ![GitHub language count](https://img.shields.io/github/languages/count/michaelvolz/redmuffin.Blazor.StaticWeb)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/michaelvolz/redmuffin.Blazor.StaticWeb)
 
-[![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) [![.NET 9](https://img.shields.io/badge/.NET-9-512BD4)](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+[![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
 [![Blazor WebAssembly](https://img.shields.io/badge/Blazor-WebAssembly-512BD4?logo=blazor&logoColor=white)](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor)
 [![Azure Functions](https://img.shields.io/badge/Azure-Functions-0078D4?logo=microsoftazure&logoColor=white)](https://azure.microsoft.com/en-us/products/functions)
-[![C# 13](https://img.shields.io/badge/C%23-13-239120?logo=csharp&logoColor=white)](https://learn.microsoft.com/en-us/dotnet/csharp/)
+[![C# 14](https://img.shields.io/badge/C%23-14-239120?logo=csharp&logoColor=white)](https://learn.microsoft.com/en-us/dotnet/csharp/)
 [![TUnit](https://img.shields.io/badge/Testing-TUnit-green?logo=.net&logoColor=white)](https://github.com/thomhurst/TUnit)
 [![Code Coverage](https://img.shields.io/badge/Coverage-Coverlet-blue?logo=.net&logoColor=white)](https://github.com/coverlet-coverage/coverlet)
 [![Foundation](https://img.shields.io/badge/UI-Foundation-29A2DD?logo=foundation&logoColor=white)](https://get.foundation/)
@@ -38,7 +38,7 @@ Suitable for experimentation, learning, and development environments.
 
 ## Overview
 
-**redmuffin.Blazor.StaticWeb** is a modern full-stack web application built with Blazor WebAssembly (.NET 9) and Azure Functions (.NET 9). The solution provides a performant, maintainable static web application with serverless backend capabilities, featuring OAuth integration and comprehensive testing infrastructure.
+**redmuffin.Blazor.StaticWeb** is a modern full-stack web application built with Blazor WebAssembly (.NET 10) and Azure Functions (.NET 10). The solution provides a performant, maintainable static web application with serverless backend capabilities, featuring OAuth integration and comprehensive testing infrastructure.
 
 ## Table of Contents
 
@@ -75,8 +75,8 @@ Suitable for experimentation, learning, and development environments.
 
 ### Core Functionality
 
-- **Blazor WebAssembly (.NET 9)** - Client-side execution with modern C# features
-- **Azure Functions (.NET 9)** - Serverless backend with HTTP triggers
+- **Blazor WebAssembly (.NET 10)** - Client-side execution with modern C# features
+- **Azure Functions (.NET 10)** - Serverless backend with HTTP triggers
 - **Raindrop.io OAuth Integration** - External API integration with secure authentication
 - **Markdown Content Rendering** - Advanced Markdown processing with Markdig
 
@@ -106,7 +106,7 @@ Suitable for experimentation, learning, and development environments.
 ### For Local Development
 
 - **Visual Studio 2026 (Community)**
-- **.NET 10 SDK** — Builds net9.0 projects for Azure SWA compatibility
+- **.NET 10 SDK** — Builds the net10.0 solution for Azure SWA compatibility
   - Download: [dotnet.microsoft.com](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
   - Installs `wasm-tools` workload for Blazor WebAssembly
   - See [.NET SDK Guide](#net-sdk-guide) below for details
@@ -287,19 +287,20 @@ Suitable for experimentation, learning, and development environments.
 
 ### .NET SDK Guide
 
-This project uses **.NET 10 SDK** (10.0.104+) to build and test **.NET 9** projects.
-All `.csproj` files target `net9.0` for compatibility with Azure Static Web Apps
-(which does not yet support .NET 10 managed Functions). The SDK version and
-target framework are separate concerns — the SDK is just the build tool.
+This project uses the **.NET 10 SDK** (10.0.104+) to build **net10.0** projects.
+All `.csproj` files target `net10.0`, including the Azure Functions API, which
+Azure Static Web Apps serves with the `dotnet-isolated:10.0` Functions runtime.
+The SDK version and target framework are separate concerns — the SDK is just
+the build tool.
 
 #### Why SDK 10?
 
 | Benefit               | Detail                                                                           |
 | --------------------- | -------------------------------------------------------------------------------- |
 | Faster builds         | SDK 10 includes MSBuild and Roslyn performance improvements                      |
-| Latest C# 13 features | Available in the QualityGates tools project (targets net10.0)                    |
+| Latest C# 14 features | Available across the net10.0 solution                                     |
 | Single SDK            | One `global.json` for the entire repository — no per-directory version switching |
-| Future-proof          | Ready when Azure SWA adds .NET 10 support                                        |
+| Supported today       | Azure SWA ships the `dotnet-isolated:10.0` managed Functions runtime        |
 
 #### Installation
 
@@ -315,8 +316,8 @@ sudo dotnet workload install wasm-tools
 
 ```bash
 dotnet --version    # Should show 10.0.xxx
-dotnet build        # 11 projects, 0 errors
-dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests  # 293 tests pass
+dotnet build        # 32 projects, 0 errors
+dotnet run --project tests/redmuffin.Blazor.StaticWeb.Tests  # 210 tests pass
 ```
 
 #### Key Commands
@@ -343,16 +344,12 @@ dotnet publish src/redmuffin.Blazor.StaticWeb.Api -c Release \
   -o publish/api
 ```
 
-#### Why target net9.0?
+#### Why target net10.0?
 
-Azure Static Web Apps managed Functions currently support up to .NET 9
-(`apiRuntime: dotnet-isolated:9.0` in `staticwebapp.config.json`).
-The .NET 10 Functions runtime is not yet available on SWA. When it becomes
-available, updating is a single-line change in each `.csproj`.
-
-The Blazor WebAssembly app also targets `net9.0` for consistency, even
-though it runs entirely in the browser and has no server-side runtime
-constraint.
+Azure Static Web Apps managed Functions support .NET 10, so every project in
+this solution targets `net10.0` (`apiRuntime: dotnet-isolated:10.0` in
+`staticwebapp.config.json`), including the Blazor WebAssembly app and the
+Azure Functions API.
 
 ---
 
@@ -414,7 +411,7 @@ Set-Alias -Name opencode -Value "C:\path\to\scripts\opencode-secure.ps1"
 
 2. **Verify prerequisites:**
    - Check .NET versions: `dotnet --list-sdks`
-   - Ensure you have .NET 9 SDK installed
+   - Ensure you have .NET 10 SDK installed
    - Verify Node.js: `node --version`
 
 3. **Install global tools:**
@@ -770,18 +767,18 @@ redmuffin.Blazor.StaticWeb/
 │   ├── workflows/                           # GitHub Actions
 │   └── prompts/                             # AI prompts
 ├── src/
-│   ├── redmuffin.Blazor.StaticWeb/          # Blazor WebAssembly (.NET 9)
+│   ├── redmuffin.Blazor.StaticWeb/          # Blazor WebAssembly (.NET 10)
 │   │   ├── Features/
 │   │   │   ├── Pages/
 │   │   │   └── Shared/
 │   │   ├── Core/
 │   │   ├── wwwroot/
 │   │   └── Properties/
-│   ├── redmuffin.Blazor.StaticWeb.Api/      # Azure Functions (.NET 9)
+│   ├── redmuffin.Blazor.StaticWeb.Api/      # Azure Functions (.NET 10)
 │   │   ├── Functions/
 │   │   └── Core/
 │   ├── redmuffin.Blazor.StaticWeb.Common/   # Shared utilities
-│   └── SwaLauncher/                         # SWA CLI launcher (.NET 9)
+│   └── SwaLauncher/                         # SWA CLI launcher (.NET 10)
 ├── tests/
 │   ├── redmuffin.Blazor.StaticWeb.Tests/
 │   └── redmuffin.Blazor.StaticWeb.Api.Tests/
@@ -801,13 +798,13 @@ redmuffin.Blazor.StaticWeb/
 - **[C# 12/13](https://learn.microsoft.com/en-us/dotnet/csharp/)**
   Modern, object-oriented programming language with latest features including primary constructors, collection expressions, and ref readonly parameters.
 
-- **[.NET 9](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)**
+- **[.NET 10](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)**
   Cross-platform, high-performance framework for building modern applications with the latest features and performance improvements.
 
 ### Backend Technologies
 
 - **[Azure Functions](https://azure.microsoft.com/en-us/products/functions)**
-  Serverless compute platform running on .NET 9 with HTTP triggers for RESTful API endpoints.
+  Serverless compute platform running on .NET 10 with HTTP triggers for RESTful API endpoints.
 
 - **[Raindrop.io API](https://developer.raindrop.io/)**
   External API integration with OAuth 2.0 authentication for bookmark management functionality.
@@ -1099,11 +1096,11 @@ This project is licensed under the [Unlicense](https://unlicense.org/).
 
 ## Azure Functions Integration
 
-The API project leverages **Azure Functions with .NET 9 Isolated Worker** to provide serverless compute capabilities. This integration enables scalable and event-driven backend functionality for the Blazor WebAssembly application.
+The API project leverages **Azure Functions with .NET 10 Isolated Worker** to provide serverless compute capabilities. This integration enables scalable and event-driven backend functionality for the Blazor WebAssembly application.
 
 ### Key Features
 
-- **Azure Functions Worker SDK (.NET 9)**: Isolated worker process for better performance and control
+- **Azure Functions Worker SDK (.NET 10)**: Isolated worker process for better performance and control
 - **HTTP Triggers**: RESTful API endpoints with strong typing and dependency injection
 - **OAuth Integration**: Secure token exchange for external API authentication
 - **Dependency Injection**: Full DI container support with `IHttpClientFactory`, `ILogger`, and custom services
@@ -1176,7 +1173,7 @@ MCP servers are pre-configured in the project's `.mcp.json` file and integrate s
 Once configured, you can ask your AI assistant to:
 
 - "Fetch the latest Blazor WebAssembly documentation"
-- "Search for recent .NET 9 performance improvements"
+- "Search for recent .NET 10 performance improvements"
 - "Get current Azure Functions examples using Context7"
 - "Help me think through this architecture problem step by step"
 
@@ -1245,12 +1242,14 @@ env:
 1. **IMMEDIATELY rotate the exposed secret** (generate new key/token)
 2. **Alert the team** about the exposure
 3. **Remove from git history** if committed:
+
    ```bash
    git filter-branch --force --index-filter \
      'git rm --cached --ignore-unmatch path/to/file' \
      --prune-empty --tag-name-filter cat -- --all
    git push origin --force --all
    ```
+
 4. **Update all dependent systems** with the new secret
 
 ### Security Checklist

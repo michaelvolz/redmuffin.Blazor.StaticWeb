@@ -41,10 +41,12 @@ wins for this repo.
 
 ## Target frameworks
 
-- The API, its tests, Common, and the Contracts projects stay on `net9.0`
-  for Azure Static Web Apps Functions compatibility; the rest of the repo
-  targets `net10.0`. Never bump a target framework as part of a config
-  edit.
+- Every project in the repo targets `net10.0`. SWA managed functions
+  support `dotnet-isolated:10.0` (verified 2026-10-17), so the Api no
+  longer holds a lower target. The `staticwebapp.config.json`
+  `apiRuntime` and the workflow's `api-version` move together with any
+  Api target-framework change. Never bump a target framework as part
+  of a config edit.
 
 ## WASM mobile (iOS Safari)
 
