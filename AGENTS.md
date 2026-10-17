@@ -38,6 +38,18 @@ If any answer is incomplete, if you are guessing about a constraint the user hol
   the deploy boundary.
 - Frontend modules may **HTTP-call** `/api/...` only. Dual-consumed DTOs go in
   `Common` when deliberate — not by extracting Functions source.
+- **Frontend API calls reuse the configured auth path.** Function endpoints
+  carry `AuthorizationLevel.Function`, and the SWA managed-Functions proxy
+  injects the host key, so the frontend calls a plain relative
+  `/api/<FunctionName>` with no key and no custom header. Never put a function
+  key or access token in a URL, never add an unauthenticated side door, and
+  never lower a trigger's authorization level so a call gets easier. New
+  diagnostic surfaces hang off Debug pages that drive the same configured
+  path. Reasoning: `docs/solutions/conventions/api-calls-reuse-configured-swa-auth-path.md`.
+- **Implementation contract: no hacks.** Every change lands professional,
+  maintainable, long-lasting, and transparent. No hacks, no shortcuts, no
+  weakened code, no quick workarounds — unless no other path exists and the
+  user has reviewed and accepted the exception explicitly.
 - Full rule: ADR `docs/adr/0013-riverbooks-modular-layout-and-result.md` and
   `docs/modular-monolith-module-guide-2026-08-03.md` § Hard constraint.
 - Modularization roadmap (destination, Mediator, sequencing):
