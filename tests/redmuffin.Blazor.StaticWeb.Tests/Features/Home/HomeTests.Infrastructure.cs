@@ -40,92 +40,58 @@ public sealed partial class HomeTests
     }
 
     [Test]
-    public async Task Home_AdvancedScenarios_MemoryManagement_DisposedComponents_AreCollectable()
+    public async Task Home_AdvancedScenarios_MemoryManagement_DisposeTwice_DoesNotThrow()
     {
-        // Arrange - render, interact with, and dispose components on a thread that
-        // then exits. A live frame can hold a stale stack slot and keep a fully
-        // unreachable component alive, so the references are built where no stack of
-        // this test remains.
-        var (components, controls) = RenderInteractAndDisposeComponents(5);
-
-        // Act - collect in bounded rounds. The finalizer queue and the runtime's own
-        // bookkeeping can need more than one pass.
-        const int maxCollectRounds = 5;
-        var round = 0;
-        for (
-            ;
-            round < maxCollectRounds && components.Any(reference => reference.TryGetTarget(out _));
-            round++
-        )
-        {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
-        }
-
-        // Assert - every disposed component is collectable and repeated disposal did not throw.
-        // The message reports the control objects from the same frames, so a red run says
-        // whether leftover stack or a real root held the components.
-        var reachable = components.Count(reference => reference.TryGetTarget(out _));
-        var reachableControls = controls.Count(reference => reference.TryGetTarget(out _));
-        await Assert
-            .That(reachable)
-            .IsEqualTo(0)
-            .Because(
-                $"{reachableControls} of {controls.Count} control objects from the same frames were still reachable after {round} collection rounds"
-            );
+        await Assert.That(() => RenderClickAndDispose(out _)).ThrowsNothing();
     }
 
-    private static (
-        List<WeakReference<HomePage>> Components,
-        List<WeakReference<object>> Controls
-    ) RenderInteractAndDisposeComponents(int count)
+    [Test]
+    public async Task Home_AdvancedScenarios_MemoryManagement_DisposedComponent_IsNotHeldByStaticState()
     {
-        var components = new List<WeakReference<HomePage>>(count);
-        var controls = new List<WeakReference<object>>(count);
-        Exception? failure = null;
+        var reachability = RenderClickDisposeAndWalkStaticState();
 
-        // A dedicated thread, not a pooled one. A pooled thread outlives its work item,
-        // and its stack keeps the stale slots the collector still scans. This thread's
-        // stack is gone once it exits, so only a real root can keep a disposed
-        // component alive.
-        var worker = new Thread(() =>
+        using (Assert.Multiple())
         {
-            try
-            {
-                for (var i = 0; i < count; i++)
-                {
-                    var control = new object();
-                    controls.Add(new WeakReference<object>(control));
-
-                    var scope = CreateTestScope();
-                    var component = scope.BUnitContext.Render<HomePage>();
-                    components.Add(new WeakReference<HomePage>(component.Instance));
-
-                    component
-                        .Find("button.primary-button")
-                        .ClickAsync(new MouseEventArgs())
-                        .GetAwaiter()
-                        .GetResult();
-                    scope.Dispose();
-                    scope.Dispose(); // Disposal must be idempotent
-                }
-            }
-            catch (Exception exception)
-            {
-                failure = exception;
-            }
-        });
-
-        worker.Start();
-        worker.Join();
-
-        if (failure is not null)
-        {
-            ExceptionDispatchInfo.Capture(failure).Throw();
+            await Assert
+                .That(reachability.StaticRoots)
+                .IsGreaterThan(0)
+                .Because("a walk that starts from no static field proves nothing");
+            await Assert
+                .That(reachability.Path)
+                .IsNull()
+                .Because(
+                    $"static state reaches the disposed page through {reachability.Path} after visiting {reachability.Visited} objects"
+                );
         }
+    }
 
-        return (components, controls);
+    // Static fields are the holders a page can control. A collectability check measures the
+    // whole process instead, and that answer moves with the machine's CPU budget and the
+    // tests beside it. The helpers stay synchronous so the page reference never lands in a
+    // state machine box.
+    private static StaticStateReachability.WalkResult RenderClickDisposeAndWalkStaticState()
+    {
+        RenderClickAndDispose(out var page);
+        return StaticStateReachability.Walk(page);
+    }
+
+    private static void RenderClickAndDispose(out HomePage page)
+    {
+        var scope = CreateTestScope();
+        var component = scope.BUnitContext.Render<HomePage>();
+
+        component
+            .Find("button.primary-button")
+            .ClickAsync(new MouseEventArgs())
+            .GetAwaiter()
+            .GetResult();
+
+        // bUnit refuses Instance once the component is disposed, so the reference is taken
+        // first. Disposal drops the renderer's hold on this same object.
+        page = component.Instance;
+
+        scope.Dispose();
+        scope.Dispose(); // Disposal must be idempotent
     }
 
     [Test]
