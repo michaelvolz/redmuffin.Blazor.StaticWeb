@@ -347,9 +347,11 @@ jobs:
           echo "::endgroup::"
 
       # Gate: the deployed boot manifest (inlined in dotnet.js) must match the
-      # served assemblies. A mismatch is the stale-cache SRI failure that
-      # kills Blazor boot for returning visitors after a deploy.
+      # served boot files. Lazy assemblies load after boot and are skipped.
+      # A mismatch is the stale-cache SRI failure that kills Blazor boot for
+      # returning visitors after a deploy.
       - name: Verify boot manifest digests
+        timeout-minutes: 3
         run: pwsh -NoProfile -File scripts/verify-boot-digests.ps1 -BaseUrl https://redmuffin.net
 
   # JOB: Handle pipeline-neutral changes (skipped deployment)
