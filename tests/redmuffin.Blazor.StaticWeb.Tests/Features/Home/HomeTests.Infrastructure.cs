@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -42,18 +42,19 @@ public sealed partial class HomeTests
     [Test]
     public async Task Home_AdvancedScenarios_MemoryManagement_DisposedComponents_AreCollectable()
     {
-        // Arrange - render, interact with, and dispose components in their own scopes
-        var weakReferences = RenderInteractAndDisposeComponents(5);
+        // Arrange - render, interact with, and dispose components on a thread that
+        // then exits. A live frame can hold a stale stack slot and keep a fully
+        // unreachable component alive, so the references are built where no stack of
+        // this test remains.
+        var (components, controls) = RenderInteractAndDisposeComponents(5);
 
-        // Act - collect in bounded rounds. The GC reports live stack slots
-        // conservatively, so one pass may still see a stale slot from a
-        // returned frame and keep a fully unreachable component alive.
-        // A genuinely rooted component still fails the assertion below.
+        // Act - collect in bounded rounds. The finalizer queue and the runtime's own
+        // bookkeeping can need more than one pass.
         const int maxCollectRounds = 5;
+        var round = 0;
         for (
-            var round = 0;
-            round < maxCollectRounds
-                && weakReferences.Any(reference => reference.TryGetTarget(out _));
+            ;
+            round < maxCollectRounds && components.Any(reference => reference.TryGetTarget(out _));
             round++
         )
         {
@@ -62,29 +63,69 @@ public sealed partial class HomeTests
             GC.Collect();
         }
 
-        // Assert - every disposed component is collectable and repeated disposal did not throw
-        await Assert.That(weakReferences.All(reference => !reference.TryGetTarget(out _))).IsTrue();
+        // Assert - every disposed component is collectable and repeated disposal did not throw.
+        // The message reports the control objects from the same frames, so a red run says
+        // whether leftover stack or a real root held the components.
+        var reachable = components.Count(reference => reference.TryGetTarget(out _));
+        var reachableControls = controls.Count(reference => reference.TryGetTarget(out _));
+        await Assert
+            .That(reachable)
+            .IsEqualTo(0)
+            .Because(
+                $"{reachableControls} of {controls.Count} control objects from the same frames were still reachable after {round} collection rounds"
+            );
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static List<WeakReference<HomePage>> RenderInteractAndDisposeComponents(int count)
+    private static (
+        List<WeakReference<HomePage>> Components,
+        List<WeakReference<object>> Controls
+    ) RenderInteractAndDisposeComponents(int count)
     {
-        var weakReferences = new List<WeakReference<HomePage>>(count);
-        for (var i = 0; i < count; i++)
+        var components = new List<WeakReference<HomePage>>(count);
+        var controls = new List<WeakReference<object>>(count);
+        Exception? failure = null;
+
+        // A dedicated thread, not a pooled one. A pooled thread outlives its work item,
+        // and its stack keeps the stale slots the collector still scans. This thread's
+        // stack is gone once it exits, so only a real root can keep a disposed
+        // component alive.
+        var worker = new Thread(() =>
         {
-            var scope = CreateTestScope();
-            var component = scope.BUnitContext.Render<HomePage>();
-            weakReferences.Add(new WeakReference<HomePage>(component.Instance));
-            component
-                .Find("button.primary-button")
-                .ClickAsync(new MouseEventArgs())
-                .GetAwaiter()
-                .GetResult();
-            scope.Dispose();
-            scope.Dispose(); // Disposal must be idempotent
+            try
+            {
+                for (var i = 0; i < count; i++)
+                {
+                    var control = new object();
+                    controls.Add(new WeakReference<object>(control));
+
+                    var scope = CreateTestScope();
+                    var component = scope.BUnitContext.Render<HomePage>();
+                    components.Add(new WeakReference<HomePage>(component.Instance));
+
+                    component
+                        .Find("button.primary-button")
+                        .ClickAsync(new MouseEventArgs())
+                        .GetAwaiter()
+                        .GetResult();
+                    scope.Dispose();
+                    scope.Dispose(); // Disposal must be idempotent
+                }
+            }
+            catch (Exception exception)
+            {
+                failure = exception;
+            }
+        });
+
+        worker.Start();
+        worker.Join();
+
+        if (failure is not null)
+        {
+            ExceptionDispatchInfo.Capture(failure).Throw();
         }
 
-        return weakReferences;
+        return (components, controls);
     }
 
     [Test]
