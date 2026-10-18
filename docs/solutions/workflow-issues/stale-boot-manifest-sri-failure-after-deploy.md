@@ -1,6 +1,7 @@
 ---
 title: Stale boot manifest SRI failure after deploy
 date: 2026-10-04
+last_updated: 2026-10-18
 category: workflow-issues
 module: azure-swa-publish-pipeline
 problem_type: runtime_error
@@ -47,9 +48,16 @@ Split the cache header rules in `src/redmuffin.Blazor.StaticWeb/staticwebapp.con
 
 Fingerprinting context: `BlazorFingerprintBlazorJs=false` and `WasmFingerprintAssets=false` stay set in `redmuffin.Blazor.StaticWeb.csproj` (lines 41 and 42; the Safari version comment sits at line 40). Framework files therefore keep stable URLs, and cache headers are the only freshness lever for them.
 
-Added `scripts/verify-boot-digests.ps1`: the script downloads `dotnet.js`, extracts the inlined boot manifest by brace matching from the `/*json-start*/` marker, hashes every listed asset with SHA-256, and compares each hash to the manifest digest. It checks every asset, then exits code 1 when any hash mismatched.
+Added `scripts/verify-boot-digests.ps1`: the script downloads `dotnet.js`,
+extracts the inlined boot manifest by brace matching from the `/*json-start*/`
+marker, and checks the boot resources. It fetches the JS loader modules, the
+native runtime, the core assemblies, and the eager assemblies in parallel, hashes each
+file with SHA-256, and compares the hash to the manifest digest. It skips the
+`lazyAssembly` section, because those files load after boot and a cold visitor
+does not need them to start. It exits code 1 when a file is missing or a hash
+mismatched.
 
-Wired the script as a CI gate: the `health_check` job in `.github/workflows/azure-static-web-apps-lively-cliff-0945be603.yml` (line 297) checks out the repo (line 305) and runs the probe against production after each deploy (line 353).
+Wired the script as a CI gate: the `health_check` job in `.github/workflows/azure-static-web-apps-lively-cliff-0945be603.yml` (line 297) checks out the repo (line 305) and runs the probe against production after each deploy (line 354).
 
 ## Why This Works
 
