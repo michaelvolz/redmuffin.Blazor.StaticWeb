@@ -5,8 +5,8 @@
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <PropertyGroup Label="SharedVersions">
-    <MicrosoftExtensionsVersion>10.0.12</MicrosoftExtensionsVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>10.0.12</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+    <MicrosoftExtensionsVersion>10.0.13</MicrosoftExtensionsVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>10.0.13</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
     <TUnitVersion>1.53.0</TUnitVersion>
     <AzureFunctionsWorkerVersion>2.52.0</AzureFunctionsWorkerVersion>
     <AzureFunctionsWorkerExtensionsHttpVersion>3.3.0</AzureFunctionsWorkerExtensionsHttpVersion>
@@ -14,12 +14,12 @@
     <AzureFunctionsWorkerSdkVersion>2.1.0</AzureFunctionsWorkerSdkVersion>
     <BunitVersion>2.11.3</BunitVersion>
     <MicrosoftTestingPlatformVersion>2.2.3</MicrosoftTestingPlatformVersion>
-    <AngleSharpVersion>1.8.4</AngleSharpVersion>
+    <AngleSharpVersion>1.8.5</AngleSharpVersion>
     <BlazoredLocalStorageVersion>4.5.0</BlazoredLocalStorageVersion>
     <LZStringCSharpVersion>1.4.0</LZStringCSharpVersion>
     <MarkdigVersion>1.4.0</MarkdigVersion>
     <NewtonsoftJsonVersion>13.0.4</NewtonsoftJsonVersion>
-    <MeziantouAnalyzerVersion>3.0.296</MeziantouAnalyzerVersion>
+    <MeziantouAnalyzerVersion>3.0.303</MeziantouAnalyzerVersion>
     <VSThreadingAnalyzersVersion>18.7.23</VSThreadingAnalyzersVersion>
     <RoslynatorVersion>5.0.1</RoslynatorVersion>
     <StyleCopAnalyzersVersion>1.2.0-beta.556</StyleCopAnalyzersVersion>
