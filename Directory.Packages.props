@@ -17,10 +17,10 @@
     <AngleSharpVersion>1.8.5</AngleSharpVersion>
     <BlazoredLocalStorageVersion>4.5.0</BlazoredLocalStorageVersion>
     <LZStringCSharpVersion>1.4.0</LZStringCSharpVersion>
-    <MarkdigVersion>1.4.0</MarkdigVersion>
+    <MarkdigVersion>1.4.2</MarkdigVersion>
     <NewtonsoftJsonVersion>13.0.4</NewtonsoftJsonVersion>
-    <MeziantouAnalyzerVersion>3.0.303</MeziantouAnalyzerVersion>
-    <VSThreadingAnalyzersVersion>18.7.23</VSThreadingAnalyzersVersion>
+    <MeziantouAnalyzerVersion>3.0.316</MeziantouAnalyzerVersion>
+    <VSThreadingAnalyzersVersion>18.12.1</VSThreadingAnalyzersVersion>
     <RoslynatorVersion>5.0.1</RoslynatorVersion>
     <StyleCopAnalyzersVersion>1.2.0-beta.556</StyleCopAnalyzersVersion>
     <AsyncFixerVersion>2.1.0</AsyncFixerVersion>
