@@ -14,12 +14,12 @@
     <AzureFunctionsWorkerSdkVersion>2.1.0</AzureFunctionsWorkerSdkVersion>
     <BunitVersion>2.13.3</BunitVersion>
     <MicrosoftTestingPlatformVersion>2.2.3</MicrosoftTestingPlatformVersion>
-    <AngleSharpVersion>1.8.6</AngleSharpVersion>
+    <AngleSharpVersion>1.9.0</AngleSharpVersion>
     <BlazoredLocalStorageVersion>4.5.0</BlazoredLocalStorageVersion>
     <LZStringCSharpVersion>1.4.0</LZStringCSharpVersion>
-    <MarkdigVersion>1.5.0</MarkdigVersion>
+    <MarkdigVersion>1.5.1</MarkdigVersion>
     <NewtonsoftJsonVersion>13.0.4</NewtonsoftJsonVersion>
-    <MeziantouAnalyzerVersion>3.0.317</MeziantouAnalyzerVersion>
+    <MeziantouAnalyzerVersion>3.0.321</MeziantouAnalyzerVersion>
     <VSThreadingAnalyzersVersion>18.12.1</VSThreadingAnalyzersVersion>
     <RoslynatorVersion>5.0.1</RoslynatorVersion>
     <StyleCopAnalyzersVersion>1.2.0-beta.556</StyleCopAnalyzersVersion>
